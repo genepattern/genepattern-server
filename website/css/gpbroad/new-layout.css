@@ -22,11 +22,11 @@
 
 .module-listing:hover {
     background-image: url(images/sidebar-topBG.png);
-	background-repeat: repeat-x;
+    background-repeat: repeat-x;
 }
 
 .module-name {
-	color: gray;
+    color: gray;
     font-size: 11pt;
     line-height: 13pt;
     overflow: hidden;
@@ -85,15 +85,15 @@
     max-height: 26px;
     overflow: hidden;
     text-overflow: ellipsis;
-	margin-top: 2px;
+    margin-top: 2px;
 }
 
 .module-tag {
     font-size:8pt;
     color: #000099 !important;
     text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .module-tag a {
@@ -101,11 +101,11 @@
 }
 
 .disable-select {
-  -webkit-user-select: none;  
-  -moz-user-select: none;    
-  -ms-user-select: none;     
-  -o-user-select: none; 
-  user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 .module-expanded {
@@ -260,8 +260,8 @@ body {
     padding-bottom: 3px;
     padding-right: 3px;
     background-color: #CED8DD;
-	background-image: url(images/bottom-band.png);
-	background-repeat: repeat-x;
+    background-image: url(images/bottom-band.png);
+    background-repeat: repeat-x;
     border-top: solid 1px #A3B1DA;
 }
 
@@ -270,7 +270,7 @@ body {
     left: 0px;
     right: 0px;
     bottom: 0px;
-    top: 0px;
+    top: 2px;
     margin-top: 71px;
     margin-bottom: 36px;
     height: auto;
@@ -288,14 +288,14 @@ body {
     margin: 0px;
     border-radius: 0px;
     border-top-width: 1px;
-	border-top-color: #F1F2F2;
-	border-right-width: 1px;
-	border-right-color: #A3B1DA;
-	border-top-style: solid;
-	border-right-style: solid;
-	border-left-color: #F1F2F2;
-	border-left-style: solid;
-	border-left-width: 1px;
+    border-top-color: #F1F2F2;
+    border-right-width: 1px;
+    border-right-color: #A3B1DA;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-left-color: #F1F2F2;
+    border-left-style: solid;
+    border-left-width: 1px;
 }
 
 .left-nav-tab {
@@ -309,20 +309,20 @@ body {
 }
 
 #left-nav-tabs {
-	padding-left: 2px !important;
+    padding-left: 2px !important;
     border-top: none;
-	border-right: none;
-	border-left: none;
-	border-bottom: solid 1px #A3B1DA;
-	display: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: solid 1px #A3B1DA;
+    display: none;
 }
 
 .left-nav-top {
     border: none;
-	border-bottom: solid 1px #A3B1DA;
+    border-bottom: solid 1px #A3B1DA;
     background: #BDD3E9 url(images/sidebar-topBG.png) repeat-x;
     padding: 10px;
-	top: 33px;
+    top: 33px;
     overflow: auto;
     min-height: 30px;
 }
@@ -332,7 +332,7 @@ body {
 }
 
 #left-nav-modules {
-	padding: 0px !important;
+    padding: 0px !important;
 }
 
 #left-nav-files {
@@ -343,11 +343,27 @@ body {
 
 #uploadTree {
     padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 329px;
+}
+
+#genomeSpaceFileTree {
+    padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 319px;
 }
 
 #left-nav-genomespace {
-	padding: 0px !important;
-	width: 348px;
+    padding: 0px !important;
+    width: 348px;
 }
 
 #left-nav-genomespace-logo {
@@ -363,11 +379,11 @@ body {
 }
 
 #left-nav-modules.ui-widget-content a {
-	color: #000099;
+    color: #000099;
 }
 
 #left-nav-modules.ui-widget-content a:hover {
-	color: #6666FF;
+    color: #6666FF;
 }
 
 .left-nav-top a {
@@ -383,15 +399,15 @@ body {
 }
 
 #pinned-modules, #recent-modules {
-	padding: 10px;
+    padding: 10px;
 }
 
 #pinned-modules .module-list-empty {
-	border: dashed 2px darkgray;
+    border: dashed 2px darkgray;
     font-size: 28px;
     line-height: 28pt;
     font-weight: 400;
-	margin-left: 0px;
+    margin-left: 0px;
     margin-top: 10px;
     margin-bottom: 10px;
     padding: 10px 5px;
@@ -405,7 +421,7 @@ body {
 }
 
 #module-browse .module-doc {
-	display: none;
+    display: none;
 }
 
 #main-pane {
@@ -417,15 +433,15 @@ body {
     padding-top: 10px;
     padding-bottom: 10px;
     padding-right: 30px;
-	padding-left: 30px;
+    padding-left: 30px;
     top: 0px;
     bottom: 0px;
     background-color: white;
 }
 
 .jstree-leaf a {
-	max-width: 260px;
-	text-overflow: ellipsis;
+    max-width: 260px;
+    text-overflow: ellipsis;
 }
 
 .jstree > ul > li > a {
@@ -445,33 +461,33 @@ body {
 }
 
 .current-job-status {
-	float:left;
-	font-size: 8pt;
-	position: relative;
-	width: 150px;
-	text-align: left;
-	top: 2px;
+    float:left;
+    font-size: 8pt;
+    position: relative;
+    width: 150px;
+    text-align: left;
+    top: 2px;
 }
 
 .current-job-status img {
-	position: relative;
-	top: 5px;
-	height: 17px;
+    position: relative;
+    top: 5px;
+    height: 17px;
 }
 
 .ui-draggable-dragging {
-	background-image: url(images/sidebar-topBG.png);
-	width: 322px;
+    background-image: url(images/sidebar-topBG.png);
+    width: 322px;
 }
 
 #loading-modules {
-	color: darkgray;
-	padding: 15px;
-	text-align: center;
+    color: darkgray;
+    padding: 15px;
+    text-align: center;
 }
 
 #loading-modules h4 {
-	color: darkgray;
+    color: darkgray;
 }
 
 #module-list-allnsuite .module-listing {
@@ -616,13 +632,13 @@ body {
     text-overflow: ellipsis;
 }
 
- .file-widget-actions .module-listing, .job-widget-actions .module-listing {
+.file-widget-actions .module-listing, .job-widget-actions .module-listing {
     background-image: linear-gradient(#F4F5F5, #EDEEEE);
 }
 
- .file-widget .module-name {
-     width: 91%;
- }
+.file-widget .module-name {
+    width: 91%;
+}
 
 .file-widget-actions .module-listing:hover, .job-widget-actions .module-listing:hover {
     background-image: url(images/sidebar-topBG.png);
@@ -661,12 +677,27 @@ body {
     padding: 0px;
 }
 
-#left-nav-jobs-browse {
+#left-nav-jobs-refresh {
     float: right;
 }
 
 #left-nav-jobs-list {
     padding: 10px;
+    position: absolute;
+    top: 54px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 328px;
+}
+
+#left-nav-modules-list {
+    position: absolute;
+    top: 76px;
+    bottom: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 349px;
 }
 
 .job-status-icon {

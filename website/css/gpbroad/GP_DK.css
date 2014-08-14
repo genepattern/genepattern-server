@@ -2,172 +2,172 @@
 /* CSS Document */
 
 .statusReport img {
-	border:0;
+    border:0;
 }
 
 .statusReport .moduleDiv {
-	font-family:Arial, verdana, Helvetica, sans-serif;
-	font-size:12px;
-	color:#666666;
-	background-color:#FFFFFF;
-	width:100%;
-	float:left;
+    font-family:Arial, verdana, Helvetica, sans-serif;
+    font-size:12px;
+    color:#666666;
+    background-color:#FFFFFF;
+    width:100%;
+    float:left;
 }
 .statusReport table.parameter {
-	margin:10px 0 0 0;
-	text-align:left;
-	border-bottom:solid #94966a 1px;
-	border-right:solid #eef5ff 1px;
-	border-top:solid #fafccf 1px;
+    margin:10px 0 0 0;
+    text-align:left;
+    border-bottom:solid #94966a 1px;
+    border-right:solid #eef5ff 1px;
+    border-top:solid #fafccf 1px;
 }
 
 .statusReport table.parameter td,th {
-	padding:4px 10px 2px 10px;
+    padding:4px 10px 2px 10px;
 }
 
 .statusReport table.parameter th{
-	background-color:#ddd;
+    background-color:#ddd;
 }
 
 .statusReport .moduleTop {
-	width:auto;
+    width:auto;
 }
 .statusReport .moduleMiddle {
-	width:100%;
+    width:100%;
 }
 
 .statusReport .moduleDiv h1{
-	font-size:16px;
-	font-weight:bold;
-	color:#666;
+    font-size:16px;
+    font-weight:bold;
+    color:#666;
 }
 
 
 .statusReport .moduleDiv a{
-	color:#333399;
-	font-weight:bold;
-	font-size:95%;
-	text-decoration:none;
+    color:#333399;
+    font-weight:bold;
+    font-size:95%;
+    text-decoration:none;
 }
 
 .statusReport .moduleDiv a:hover{
-	color:#999;
+    color:#999;
 }
 
 .statusReport .moduleDiv label.small {
-	font-size:10px;
+    font-size:10px;
 }
 
 .statusReport .moduleDiv select {
-	font-size: 10px;
+    font-size: 10px;
 }
 
 .statusReport .moduleDiv tr.title{
-	font-size:10px;
+    font-size:10px;
 }
 
 .statusReport .moduleDiv font.tiny{
-	font-size:8px;
+    font-size:8px;
 }
 
 .statusReport .moduleDiv font.item{
-	font-size:110%;
-	font-weight:normal;
-	color:#333333;
+    font-size:110%;
+    font-weight:normal;
+    color:#333333;
 }
 
 .statusReport .moduleDiv font.info{
-	font-size:10px;
-	font-weight:normal;
+    font-size:10px;
+    font-weight:normal;
 }
 
 .statusReport .moduleDiv hr{
-	color:#999999;
+    color:#999999;
 }
 
 .statusReport .shareEdit {
-	font-family:Arial, verdana, Helvetica, sans-serif;
-	font-size:12px;
-	color:#333333;
-	margin-left:10px;
-	margin-top:20px;
+    font-family:Arial, verdana, Helvetica, sans-serif;
+    font-size:12px;
+    color:#333333;
+    margin-left:10px;
+    margin-top:20px;
 }
 
 .statusReport .shareEdit h1 {
-	font-size:18px;
-	font-weight:bold;
-	color:#333333;
+    font-size:18px;
+    font-weight:bold;
+    color:#333333;
 }
 .statusReport .shareEdit table.main {
-	border-style:none;
+    border-style:none;
 }
 
 .statusReport .shareEdit tr.Title {
-	height:25px;
-	background-color:#D8DAAE;
+    height:25px;
+    background-color:#D8DAAE;
 }
 
 .statusReport .shareEdit tr.White {
-	background-color:#FFFFFF;
+    background-color:#FFFFFF;
 }
 
 .statusReport .shareEdit tr.Brown {
-	background-color:#eef5ff;
+    background-color:#eef5ff;
 }
 
 .statusReport .shareEdit td.TD1 {
-	padding:3px;
-	width:20px;
-	text-align:center;		
+    padding:3px;
+    width:20px;
+    text-align:center;
 }
 
 .statusReport .shareEdit td.TD2 {
-	padding:3px;
-	width:150px;
-	text-indent:5px;
+    padding:3px;
+    width:150px;
+    text-indent:5px;
 }
 
 .shareEdit td.TD3 {
-	padding:3px;
-	vertical-align:middle;
-	text-indent:5px;
+    padding:3px;
+    vertical-align:middle;
+    text-indent:5px;
 }
 
 .statusReport .shareEdit td.TD4 {
-	padding:3px;
-	width:150px;
-	text-indent:15px;
+    padding:3px;
+    width:150px;
+    text-indent:15px;
 }
 
 .statusReport .shareEdit td.spacer {
-	width:1px;
-	background-color:#999900;
+    width:1px;
+    background-color:#999900;
 }
 
 .statusReport .jobResults {
-	color:#333;
-	font-size:12px;
-	font-family:Arial, verdana, Helvetica, sans-serif;
+    color:#333;
+    font-size:12px;
+    font-family:Arial, verdana, Helvetica, sans-serif;
 }
 
 .statusReport {
-	width:100%;
-	min-width:700px;
-	max-width: 900px;
-	color:#333;
-	font-size:12px;
-	font-family:Arial, verdana, Helvetica, sans-serif;
-	float:left;
+    width:100%;
+    min-width:700px;
+    max-width: 900px;
+    color:#333;
+    font-size:12px;
+    font-family:Arial, verdana, Helvetica, sans-serif;
+    float:left;
 }
 
 .statusReport table.title {
-	width:100%;
-	padding:5px;
-	background-color: #eef5ff;
-	border-bottom: solid #666699 1px;
-	border-right: solid #666699 1px;
-	border-left: solid #666699 1px;
-	border-top: solid #666699 1px;
+    width:100%;
+    padding:5px;
+    background-color: #eef5ff;
+    border-bottom: solid #666699 1px;
+    border-right: solid #666699 1px;
+    border-left: solid #666699 1px;
+    border-top: solid #666699 1px;
 }
 
 .jobResults {
@@ -209,6 +209,18 @@
     font-weight: bold;
 }
 
+.job-task .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
+.jobresults-child a .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
+.jobresult-job .glyphicon {
+    color: rgb(169, 169, 169);
+}
+
 #jobresults-show {
     position: relative;
     top: -3px;
@@ -244,105 +256,105 @@
 }
 
 .statusReport .icon {
-	width: 90px;
-	color: #666;
-	font-size: 10px;
-	font-weight: normal;
-	line-height: 10px;
-	vertical-align: baseline;
-	margin-top: 9px;
-	margin-right: 5px;
-	float: right;
+    width: 90px;
+    color: #666;
+    font-size: 10px;
+    font-weight: normal;
+    line-height: 10px;
+    vertical-align: baseline;
+    margin-top: 9px;
+    margin-right: 5px;
+    float: right;
 }
 
 .statusReport .icon img {
-	border:none;
-	margin-top:-5px;
-	margin-right:3px;
+    border:none;
+    margin-top:-5px;
+    margin-right:3px;
 }
 
 .statusReport .icon2 {
-	color:#666;
-	font-size:10px;
-	font-weight:normal;
-	line-height:10px;
-	vertical-align:baseline;
-	margin-top:3px;
-	margin-right:5px;
-	float:right;
-	padding-right: 15px;
+    color:#666;
+    font-size:10px;
+    font-weight:normal;
+    line-height:10px;
+    vertical-align:baseline;
+    margin-top:3px;
+    margin-right:5px;
+    float:right;
+    padding-right: 15px;
 }
 
 .statusReport .icon2 img {
-	border:none;
-	margin-right:3px;
+    border:none;
+    margin-right:3px;
 }
 
 .statusReport table.module {
-	width: 100%;
-	padding: 5px;
-	background-color: #f0f0ff;
-	text-indent: 10px;
-	font-size: 12px;
-	color: #666;
-	font-weight: bold;
-	border-bottom: solid #666699 1px;
-	border-right: solid #666699 1px;
-	border-left: solid #666699 1px;
-	border-top: solid #666699 1px;
-	margin-top: 2px;
+    width: 100%;
+    padding: 5px;
+    background-color: #f0f0ff;
+    text-indent: 10px;
+    font-size: 12px;
+    color: #666;
+    font-weight: bold;
+    border-bottom: solid #666699 1px;
+    border-right: solid #666699 1px;
+    border-left: solid #666699 1px;
+    border-top: solid #666699 1px;
+    margin-top: 2px;
 }
 
 .statusReport table.worningModule {
-	width:100%;
-	padding:5px;
-	background-color:#ffcccc;
-	text-indent:10px;
-	font-size:12px;
-	color:#666;
-	font-weight:bold;
-	border-bottom:solid #b6b88c 1px;
-	border-right:solid #d8daae 1px;
-	border-left:solid #d8daae 1px;
-	border-top:solid #fafccf 1px;
-	margin-top:2px;
+    width:100%;
+    padding:5px;
+    background-color:#ffcccc;
+    text-indent:10px;
+    font-size:12px;
+    color:#666;
+    font-weight:bold;
+    border-bottom:solid #b6b88c 1px;
+    border-right:solid #d8daae 1px;
+    border-left:solid #d8daae 1px;
+    border-top:solid #fafccf 1px;
+    margin-top:2px;
 }
 
 .statusReport .reminders {
-	display:block;
-	padding:10px;
-	font-size:12px;
-	color:#666;	
+    display:block;
+    padding:10px;
+    font-size:12px;
+    color:#666;
 }
 
 .statusReport table.summary th {
-   background-color:#eee;
-   border-top:solid #dfdfdf 1px;
-   border-left:solid #eef5ff 1px;
-   border-bottom:solid #eef5ff 1px;
+    background-color:#eee;
+    border-top:solid #dfdfdf 1px;
+    border-left:solid #eef5ff 1px;
+    border-bottom:solid #eef5ff 1px;
 }
 
 .statusReport tr.summaryTitle {
-	background-color:#eef5ff;
+    background-color:#eef5ff;
 }
 
 .statusReport .brown {
-	background-color:#eef5ff;
+    background-color:#eef5ff;
 }
 
 .statusReport .white {
-	background-color:#ffffff;
+    background-color:#ffffff;
 }
 
 .statusReport table.summary td {
- 	line-height:18px;
-	vertical-align:top;
-	padding:6px 15px 1px 5px;
-	border-left:solid #eef5ff 1px;	
+    line-height:18px;
+    vertical-align:top;
+    padding:6px 15px 1px 5px;
+    border-left:solid #eef5ff 1px;
 }
 
 .statusReport table.summary tr.brown td {
-	border-bottom: solid white 1px;
+    border-bottom: solid white 1px;
 }
 
 .statusReport td {
@@ -350,47 +362,47 @@
 }
 
 .statusReport td.center {
-	text-align:center;
+    text-align:center;
 }
 
 .statusReport td.right {
-	text-align:right;
+    text-align:right;
 }
 
 .statusReport td.childJob {
-	text-indent:13px;
+    text-indent:13px;
 }
 
 .statusReport td.file {
-	text-indent:13px;
+    text-indent:13px;
 }
 
 .statusReport td.childFile {
-	text-indent:26px;
+    text-indent:26px;
 }
 
 .statusReport .indented {
-	padding-left:20px;
+    padding-left:20px;
 }
 
 .statusReport td.title {
-	text-indent: 10px;
-	font-size: 16px;
-	color: #666;
-	font-weight: bold;
-	font-weight: bold;
+    text-indent: 10px;
+    font-size: 16px;
+    color: #666;
+    font-weight: bold;
+    font-weight: bold;
 }
 
 .statusReport td.smallTitle {
-	padding-top:5px;
-	text-indent:10px;
-	font-size:12px;
-	color:#666;
-	font-weight:bold;
+    padding-top:5px;
+    text-indent:10px;
+    font-size:12px;
+    color:#666;
+    font-weight:bold;
 }
 
 .statusReport td.header-sm a {
-	color: #333366;	
+    color: #333366;
 }
 
 .statusReport .header-sm {
@@ -402,44 +414,44 @@
 }
 
 .statusReport a {
-	text-decoration:none;
+    text-decoration:none;
 }
 
 .statusReport a.execution {
-	font-weight:bold;
+    font-weight:bold;
 }
 
 .statusReport a.ID {
-	font-weight:bold;
+    font-weight:bold;
 }
 
 .statusReport a.view {
-	font-size:12px;
+    font-size:12px;
 }
 
 .statusReport table.indicator {
-	width:100%;
-	height:3px;
-	color:#fff;
-	font-size:7px;
-	background-color:#999999;
-	overflow: hidden;
+    width:100%;
+    height:3px;
+    color:#fff;
+    font-size:7px;
+    background-color:#999999;
+    overflow: hidden;
 }
 
 .statusReport table.indicator td {
-	border-left:solid #fff 2px;
-	padding:0 0 0 3px;
-	height:3px;
-	overflow: hidden;
-	line-height: 4px;
+    border-left:solid #fff 2px;
+    padding:0 0 0 3px;
+    height:3px;
+    overflow: hidden;
+    line-height: 4px;
 }
 
 .statusReport table.indicator td.green {
-	background-color:#CCFF00;	
+    background-color:#CCFF00;
 }
 
 .statusReport table.indicator td.blue {
-	background-color:#00CCFF;
+    background-color:#00CCFF;
 }
 
 .statusReport table.indicator td.red {
@@ -451,68 +463,68 @@
 }
 
 .statusReport .jobContent {
-	width:100%;
+    width:100%;
 }
 
 .statusReport table.emailReminder {
-	line-height:22px;
+    line-height:22px;
 }
 
 .statusReport table.emailReminder td {
-	padding:10px 0 0 3px;
-	vertical-align:top;
-	white-space: nowrap;
+    padding:10px 0 0 3px;
+    vertical-align:top;
+    white-space: nowrap;
 }
 
 .statusReport #SubMenuContainer {
-	width: auto;
-	position:absolute;
-	top:116px;
-	left:411px;
-	z-index:51;
+    width: auto;
+    position:absolute;
+    top:116px;
+    left:411px;
+    z-index:51;
 }
 
 .statusReport .SubCell {
-	display: block;
-	text-decoration:none;
-	text-align:center;
-	padding-top:7px;
-	font-size:10px;
-	font-weight:bold;
-	color:#437192;
-	width: 91px;
-	height:18px;
-	background:url(../images/SubMenuBtn.jpg);
-	background-position: -104px 0;
+    display: block;
+    text-decoration:none;
+    text-align:center;
+    padding-top:7px;
+    font-size:10px;
+    font-weight:bold;
+    color:#437192;
+    width: 91px;
+    height:18px;
+    background:url(../images/SubMenuBtn.jpg);
+    background-position: -104px 0;
 }
 
 .statusReport .SubCell:hover {
-	color:#FFFFFF;
-	font-weight:bold;
-	background-position: 0 0;
+    color:#FFFFFF;
+    font-weight:bold;
+    background-position: 0 0;
 }
 
 .statusReport table.window {
-	width:100%;
-	border:solid #ddd 1px;
-	border-top:solid #eee 1px;
-	border-bottom:solid #bbb 1px;
-	background-color:#f0f0f0;
-	margin: 0 0 5px 0;
+    width:100%;
+    border:solid #ddd 1px;
+    border-top:solid #eee 1px;
+    border-bottom:solid #bbb 1px;
+    background-color:#f0f0f0;
+    margin: 0 0 5px 0;
 }
 
 .statusReport table.shareEdit {
-	border-bottom:solid #94966a 1px;
-	border-right:solid #eef5ff 1px;
-	border-top:solid #fafccf 1px;
+    border-bottom:solid #94966a 1px;
+    border-right:solid #eef5ff 1px;
+    border-top:solid #fafccf 1px;
 }
 
 .statusReport .files {
-	display:block;
-	text-indent:32px;
-	margin:5px 0 0 0;
+    display:block;
+    text-indent:32px;
+    margin:5px 0 0 0;
 }
 
 .statusReport p.narrow {
-	margin:3px 0 3px 0;
+    margin:3px 0 3px 0;
 }
