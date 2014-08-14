@@ -60,7 +60,7 @@ public class DrmJobStatus {
         //for debugging
         StringBuffer buf=new StringBuffer();
         buf.append("drmJobId="); buf.append(drmJobId);
-        buf.append("queueId="); buf.append(queueId);
+        buf.append(", queueId="); buf.append(queueId);
         buf.append(", jobState="); buf.append(jobState); 
         buf.append(", exitCode="); buf.append(exitCode);
         if (log.isDebugEnabled()) {
