@@ -381,11 +381,11 @@ public class JobExecutor implements CommandExecutor2 {
         log.info("initializing jobs on startup: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         final List<DrmJobRecord> jobs=jobLookupTable.getRunningDrmJobRecords();
         log.info("found "+jobs.size()+ " running job(s)");
-        for(final DrmJobRecord drmJobId : jobs) {
-            log.debug("adding drmJobId="+drmJobId+" to list of running jobs");
-            boolean success=runningJobs.offer(drmJobId);
+        for(final DrmJobRecord jobRecord : jobs) {
+            log.debug("adding gpJobNo="+jobRecord.getGpJobNo()+", extJobId="+jobRecord.getExtJobId()+" to list of running jobs");
+            boolean success=runningJobs.offer(jobRecord);
             if (!success) {
-                log.error("Failed to add drmJobId to runningJobs, drmJobId="+drmJobId+". The queue is at capacity");
+                log.error("Failed to add gpJobNo="+jobRecord.getGpJobNo()+", extJobId="+jobRecord.getExtJobId()+" to in-memory queue. The queue is at capacity");
             }
         }
     }
