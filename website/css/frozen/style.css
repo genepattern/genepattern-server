@@ -962,9 +962,9 @@ strong.filtered-number
     color: #000000;
 }
 
-#top-status-box {
-    height: 61px;
-    width: 125px;
+#user-box-main {
+    height: 30px;
+    width: 115px;
     z-index: 6000;
     position: fixed;
     right: 0;
@@ -976,8 +976,21 @@ strong.filtered-number
     letter-spacing: 1px;
 }
 
-#quota-box {
+#quota-box-main {
+    width: 145px;
+    z-index: 6000;
+    position: fixed;
+    right: 0;
     top: 54px;
+    padding: 5px;
+    border-radius: 0 0 0 5px;
+    color: white;
+    text-shadow: 1px 1px black;
+    letter-spacing: 1px;
+}
+
+#quota-box {
+    top: 0;
     position: absolute;
     width: 150px;
     font-size: 7pt;

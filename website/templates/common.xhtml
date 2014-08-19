@@ -128,14 +128,18 @@
 
             <!-- User settings area -->
             <div id="top-status-box" style="display: none;">
-                <div id="quota-box">
-                    <div id="quota-space-progressbar">
-                        <span id="quota-space-label"></span>
+                <div id="user-box-main">
+                    <div id="user-box" onclick="userBoxClick();">
+                        <span class="glyphicon glyphicon-user"></span><span class="user-box-arrow">&#x25BC;</span>
+                        <div id="user-box-name"></div>
                     </div>
                 </div>
-                <div id="user-box" onclick="userBoxClick();">
-                    <span class="glyphicon glyphicon-user"></span><span class="user-box-arrow">&#x25BC;</span>
-                    <div id="user-box-name"></div>
+                <div id="quota-box-main">
+                    <div id="quota-box">
+                        <div id="quota-space-progressbar">
+                            <span id="quota-space-label"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <script type="text/javascript">
