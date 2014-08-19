@@ -166,11 +166,13 @@ $(function()
             }
             else if(intro._currentStep == 3)
             {
-                $("#menus-uploads .file-widget-actions").find(".module-listing").last().css("border", "3px solid red");
+                $("#menus-uploads .file-widget-actions").find(".module-listing").last().addClass("tourHighlight");
             }
 
             else if(intro._currentStep == 4)
             {
+                $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
+
                 $("#main-pane").children().each(function()
                 {
                     if($(this).is(":visible"))
@@ -207,6 +209,8 @@ $(function()
 
         intro.onexit(function()
         {
+            $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
+
             $(".search-widget").searchslider("hide");
 
             $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
@@ -216,6 +220,8 @@ $(function()
 
         intro.oncomplete(function()
         {
+            $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
+
             $(".search-widget").searchslider("hide");
 
             $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
@@ -229,36 +235,6 @@ $(function()
     });
 });
 
-function launchTour()
-{
-    //alert("webtour: " + window.location);
-    /*if (RegExp('webtour', 'gi').test(window.location))
-    {
-        alert("found webtour step 8");
-        var introJobRes = introJs();
-
-        //create the steps
-        var steps = [
-            {
-                element: "#jobTable_paginate",
-                intro: '<div class="tour-header"> Job Results Summary Page </div> Paginate',
-                position: 'right',
-                scrollToElement: true
-            }
-        ];
-
-        introJobRes.setOptions({
-            steps: steps,
-            showStepNumbers: false,
-            skipLabel: "End tour",
-            tooltipClass: "tourStyle"
-        });
-
-        //while($("#jobTable_paginate".length == 0)){}
-        introJobRes.start();
-    }*/
-}
-
 function newTourCleanup()
 {
     $(".tour_congestion_image").remove();
@@ -268,4 +244,35 @@ function newTourCleanup()
 
 function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
+}
+
+
+function launchTour()
+{
+    //alert("webtour: " + window.location);
+    /*if (RegExp('webtour', 'gi').test(window.location))
+     {
+     alert("found webtour step 8");
+     var introJobRes = introJs();
+
+     //create the steps
+     var steps = [
+     {
+     element: "#jobTable_paginate",
+     intro: '<div class="tour-header"> Job Results Summary Page </div> Paginate',
+     position: 'right',
+     scrollToElement: true
+     }
+     ];
+
+     introJobRes.setOptions({
+     steps: steps,
+     showStepNumbers: false,
+     skipLabel: "End tour",
+     tooltipClass: "tourStyle"
+     });
+
+     //while($("#jobTable_paginate".length == 0)){}
+     introJobRes.start();
+     }*/
 }
