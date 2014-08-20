@@ -486,10 +486,10 @@ public class TestJobStatus {
         assertEquals("cpuTime", "4 hours, 37 minutes, 20 seconds and 120 milliseconds", statusObj.getString("cpuTime"));
         
         assertEquals("maxMemoryBytes", maxMemory.getNumBytes(), statusObj.getLong("maxMemoryBytes")); 
-        assertEquals("maxMemory", "21266 mb", statusObj.getString("maxMemory"));
+        assertEquals("maxMemory", "20.8 GB", statusObj.getString("maxMemory"));
 
         assertEquals("maxSwapBytes", maxSwap.getNumBytes(), statusObj.getLong("maxSwapBytes")); 
-        assertEquals("maxSwap", "21341 mb", statusObj.getString("maxSwap"));
+        assertEquals("maxSwap", "20.8 GB", statusObj.getString("maxSwap"));
         assertEquals("maxProcesses", maxProcesses, (Integer) statusObj.getInt("maxProcesses"));
         assertEquals("maxThreads", maxThreads, (Integer) statusObj.getInt("maxThreads"));
         assertEquals("queueId", queueId, statusObj.getString("queueId"));
