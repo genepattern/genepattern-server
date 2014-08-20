@@ -35,11 +35,13 @@ public class HibernateSessionRequestFilter implements Filter {
      * For GP-5200
      * @param request
      */
-    protected boolean beginDbTransaction(final ServletRequest request) {
+    protected boolean shouldBeginDbTransaction(final ServletRequest request) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String uri=httpRequest.getRequestURI();
-        log.debug("uri="+uri);
-        //httpRequest.getRequestURI().startsWith("/rest/RunTask/upload");
+        if (uri.contains("/rest/RunTask/upload")) {
+            log.debug("ignoring uri="+uri);
+            return false;
+        }
         return true;
     }
     
@@ -50,7 +52,7 @@ public class HibernateSessionRequestFilter implements Filter {
                 final boolean alreadyInTransaction=HibernateUtil.isInTransaction();
                 log.debug("about to begin transaction, alreadyInTransaction="+alreadyInTransaction);
             }
-            if (beginDbTransaction(request)) {
+            if (shouldBeginDbTransaction(request)) {
                 HibernateUtil.beginTransaction();
             }
             
