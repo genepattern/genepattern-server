@@ -39,12 +39,15 @@ public class UserDiskPair {
     public Memory getDiskQuota() {
         GpConfig config = ServerConfigurationFactory.instance();
         GpContext context = GpContext.getContextForUser(user);
-        return config.getGPMemoryProperty(context, "quota", new Memory(32212254720l));
+        return config.getGPMemoryProperty(context, "quota");
     }
 
     public boolean isOverQuota() {
         Memory quota = this.getDiskQuota();
-        return quota.getNumBytes() < diskUsage;
+        if (quota == null) {
+            return false;
+        }
+        return quota.getNumBytes() <= diskUsage;
     }
 }
 
