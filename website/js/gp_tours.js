@@ -1,7 +1,6 @@
 var last_left_nav_tab = null;
 var last_left_nav_tab_new = null;
 
-
 $(document).ready(function() {
     last_left_nav_tab = $("#left-nav").tabs( "option", "active");
 });
@@ -49,6 +48,15 @@ $(function()
             });
         }
 
+        if($("#submitJob").is(":visible"))
+        {
+            steps.push({
+                element: '#submitJob',
+                intro: '<div class="tour-header"> Main Display Pane</div>The main display pane displays interactive information including protocols for common GenePattern analyses.',
+                position: 'left'
+            });
+        }
+
         intro.setOptions({
             steps: steps,
             showStepNumbers: false,
@@ -58,26 +66,45 @@ $(function()
 
         intro.onbeforechange(function(targetElement)
         {
+            //hack to not show the hidden native file upload button
+            $("#submitJob").find(".uploadedinputfile").hide();
+
             //switch the active left navigation tab to the appropriate one for the step
             if(intro._currentStep == 2)
             {
+                $(this).data("last-left-nav-tab", $("#left-nav").tabs( "option", "active"));
 
+                $( "#left-nav" ).tabs( "option", "active", 0 );
+            }
+            else if(intro._currentStep == 3)
+            {
+                $( "#left-nav" ).tabs( "option", "active", 1 );
+            }
+            else if(intro._currentStep == 4)
+            {
+                $( "#left-nav" ).tabs( "option", "active", 2 );
+            }
+            else if(targetElement.id == "submitJob")
+            {
+                //hack to not show the hidden native file upload button
+               // $("#submitJob").find(".uploadedinputfile").hide();
             }
         });
 
         intro.onexit(function()
         {
-
+            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
         });
 
         intro.oncomplete(function()
         {
-
+            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
 
         });
 
         intro.start();
     });
+
 
     $(".gp_new").click(function(event)
     {
