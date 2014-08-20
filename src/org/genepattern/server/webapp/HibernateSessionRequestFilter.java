@@ -20,6 +20,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
@@ -29,16 +30,30 @@ public class HibernateSessionRequestFilter implements Filter {
 
     private static Logger log = Logger.getLogger(HibernateSessionRequestFilter.class);
 
+    /**
+     * Hand-coded filter, return false if we should not begin a db connection.
+     * For GP-5200
+     * @param request
+     */
+    protected boolean beginDbTransaction(final ServletRequest request) {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String uri=httpRequest.getRequestURI();
+        log.debug("uri="+uri);
+        //httpRequest.getRequestURI().startsWith("/rest/RunTask/upload");
+        return true;
+    }
+    
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-
+            ServletException { 
         try {
             if (log.isDebugEnabled()) {
                 final boolean alreadyInTransaction=HibernateUtil.isInTransaction();
                 log.debug("about to begin transaction, alreadyInTransaction="+alreadyInTransaction);
             }
-            HibernateUtil.beginTransaction();
-
+            if (beginDbTransaction(request)) {
+                HibernateUtil.beginTransaction();
+            }
+            
             // Call the next filter (continue request processing)
             chain.doFilter(request, response);
 
