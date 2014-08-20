@@ -34,7 +34,8 @@ public class TestMemory {
     @Test
     public void testBytes() {
         final String spec="1024 b";
-        Assert.assertEquals("numBytes for '"+spec+"'", 1024L, Memory.fromString(spec).getNumBytes());        
+        Assert.assertEquals("numBytes for '"+spec+"'", 1024L, Memory.fromString(spec).getNumBytes());
+        Assert.assertEquals("displayValue", "1.0 KB", new Memory(Memory.fromString(spec).getNumBytes()).getDisplayValue());
     }
     
     @Test
@@ -217,39 +218,52 @@ public class TestMemory {
     }
 
     @Test
-    public void format_toBytes() {
+    public void format_toKb_roundBytesUp() {
         long numBytes=Memory.fromString("32 b").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "32 b", mem.format());
+        assertEquals("mem.format", "1.0 KB", mem.format());
     }
 
     @Test
+    public void format_toKb_exactly_one() {
+        long numBytes=Memory.fromString("1024 b").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "1.0 KB", mem.format());
+    }
+    
+    @Test
     public void format_toKb() {
+        long numBytes=Memory.fromString("512 Kb").getNumBytes();
+        Memory mem=Memory.fromSizeInBytes(numBytes);
+        assertEquals("mem.format", "512.0 KB", mem.format());
+    }
+
+    
+    @Test
+    public void format_roundKbToMb() {
         long numBytes=Memory.fromString("1365 kb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "1365 kb", mem.format());
+        assertEquals("mem.format", "1.3 MB", mem.format());
     }
 
     @Test
     public void format_toMb() {
         long numBytes=Memory.fromString("512 mb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "512 mb", mem.format());
+        assertEquals("mem.format", "512 MB", mem.format());
     }
     
     @Test
     public void format_toGb() {
         long numBytes=Memory.fromString("2048 Mb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "2 gb", mem.format());
+        assertEquals("mem.format", "2 GB", mem.format());
     }
     
     @Test
     public void format_toGb_resolution() {
-        //long numBytes=Memory.fromString("2832 Mb").getNumBytes();
-        long numBytes=2969658452L;
-        Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "2832 mb", mem.format());
+        Memory mem=Memory.fromSizeInBytes(2969658452L);
+        assertEquals("mem.format", "2.8 GB", mem.format());
     }
 
 
@@ -257,21 +271,21 @@ public class TestMemory {
     public void format_toGb_fractional() {
         long numBytes=Memory.fromString("2.5 Gb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "2560 mb", mem.format());
+        assertEquals("mem.format", "2.5 GB", mem.format());
     }
 
     @Test
     public void format_toTb_exactly_one() {
         long numBytes=Memory.fromString("1 Tb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "1 tb", mem.format());
+        assertEquals("mem.format", "1 TB", mem.format());
     }
     
     @Test
     public void format_toPb() {
         long numBytes=Memory.fromString("1024 Tb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "1 pb", mem.format());
+        assertEquals("mem.format", "1 PB", mem.format());
         
     }
     
@@ -280,7 +294,7 @@ public class TestMemory {
     public void format_toPb_overflow() {
         long numBytes=Memory.fromString("1050624 Tb").getNumBytes();
         Memory mem=Memory.fromSizeInBytes(numBytes);
-        assertEquals("mem.format", "1026 pb", mem.format());
+        assertEquals("mem.format", "1,026 PB", mem.format());
     }
     
     @Test

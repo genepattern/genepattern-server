@@ -1,9 +1,9 @@
 package org.genepattern.drm;
 
+import java.text.NumberFormat;
 import java.util.EnumSet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.webapp.jsf.JobHelper;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -23,6 +23,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Memory {
     private static final Logger log = Logger.getLogger(Memory.class);
+    private static NumberFormat numberFormat;
+    static {
+        numberFormat = NumberFormat.getInstance();
+        numberFormat.setMaximumFractionDigits(1);
+    }
 
     /**
      * A unit of memory in bytes, based on a 1024 scale factor.
@@ -117,7 +122,7 @@ public class Memory {
      * @return a new Memory instance
      */
     public static final Memory fromSizeInBytes(long numBytes) {
-        String displayValue=JobHelper.getFormattedSize(numBytes);
+        String displayValue=Memory.formatNumBytes(numBytes);
         return new Memory(numBytes, displayValue);
     }
 
@@ -180,31 +185,31 @@ public class Memory {
 
     /**
      * Human readable representation by scaling the raw number of bytes up to a reasonable approximation.
-     * For example, long numBytes=2969658452L will be formatted as '2832 mb'.
+     * For example, long numBytes=2969658452L will be formatted as '2.8 GB'.
+     * For small numbers, rounds up to the nearest 1.0 KB.
      * 
      * @return
      */
-    public static final String formatNumBytes(final long numBytes) {
-        for(Unit unit : Unit.elements) {
-            final long num=numBytes / unit.getMultiplier();
-            final long mod=numBytes % unit.getMultiplier();
-            if (num < 1024) {
-                final long numUnits;
-                if (mod==0) {
-                    numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / unit.getMultiplier() ));
-                }
-                else {  //scale down and round to nearest int
-                    unit=Unit.scaleDown(unit);
-                    numUnits=1024L*num + (long) Math.round(((double)mod) / unit.getMultiplier());
-                }
-                String displayValue=toString(numUnits, unit);
-                return displayValue;
-            }
+    public static final String formatNumBytes(long size) {
+        if (size >= Unit.pb.getMultiplier()) {
+            double petabytes = size / (double) Unit.pb.getMultiplier();
+            return numberFormat.format(petabytes) + " PB";
         }
-        // scale to petabytes
-        long numUnits = (long)Math.max(1, Math.round( ((double)numBytes) / Unit.pb.getMultiplier() ));
-        String displayValue=toString(numUnits, Unit.pb);
-        return displayValue;
+        else if (size >= Unit.tb.getMultiplier()) {
+            double terabytes = size / (double) Unit.tb.getMultiplier();
+            return numberFormat.format(terabytes) + " TB";
+        }
+        else if (size >= Unit.gb.getMultiplier()) {
+            double gigabytes = size / (double) Unit.gb.getMultiplier();
+            return numberFormat.format(gigabytes) + " GB";
+        } 
+        else if (size >= Unit.mb.getMultiplier()) {
+            double megabytes = size / (double) Unit.mb.getMultiplier();
+            return numberFormat.format(megabytes) + " MB";
+        } 
+        else {
+            return Math.max(0, Math.ceil(size / 1024.0)) + " KB";
+        }
     }
 
     private final double value;
@@ -220,11 +225,14 @@ public class Memory {
         this.displayValue=in.displayValue;
     }
 
-    public Memory(Long bytes) {
-        this.value = bytes;
+    /**
+     * @deprecated, Use Memory.fromSizeInBytes instead.
+     */
+    public Memory(Long numBytes) {
+        this.value = numBytes;
         this.unit = Unit.b;
-        this.numBytes = bytes;
-        this.displayValue = JobHelper.getFormattedSize(bytes);
+        this.numBytes = numBytes;
+        this.displayValue = Memory.formatNumBytes(numBytes);
     }
     
     /**
