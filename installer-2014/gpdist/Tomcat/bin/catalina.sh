@@ -42,6 +42,12 @@
 # $Id: catalina.sh 3160 2006-08-03 14:38:55Z liefeld $
 # -----------------------------------------------------------------------------
 
+# Hack fix for Mavericks support
+if [ "$(uname)" == "Darwin" ]; then
+    export JAVA_HOME=$(/usr/libexec/java_home)
+    export JRE_HOME=$(/usr/libexec/java_home)
+fi
+
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false
 os400=false
