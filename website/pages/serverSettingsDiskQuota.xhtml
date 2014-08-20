@@ -18,18 +18,18 @@
                 <th>Disk Usage</th>
                 <th>Quota</th>
             </tr>
-            <t:dataList value="#{serverSettingsBean.diskUsages}" var="usage">
+            <t:dataList value="#{serverSettingsBean.diskInfos}" var="diskInfo">
                 <tr>
-                    <td>#{usage.user}</td>
+                    <td>#{diskInfo.userId}</td>
                     <td>
-                        <t:div rendered="#{usage.overQuota}">
-                            <span style="color: red;">#{usage.prettyDiskUsage}</span>
+                        <t:div rendered="#{diskInfo.aboveQuota}">
+                            <span style="color: red;">#{diskInfo.diskUsage}</span>
                         </t:div>
-                        <t:div rendered="#{!usage.overQuota}">
-                            #{usage.prettyDiskUsage}
+                        <t:div rendered="#{!diskInfo.aboveQuota}">
+                            #{diskInfo.diskUsage}
                         </t:div>
                 </td>
-                    <td>#{usage.diskQuota.displayValue}</td>
+                    <td>#{diskInfo.quota}</td>
                 </tr>
             </t:dataList>
         </table>

@@ -5,11 +5,14 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.userupload.UserDiskPair;
+import org.genepattern.server.job.input.cache.FileCache;
+import org.genepattern.server.quota.DiskInfo;
 import org.hibernate.Query;
 
 public class UserUploadDao extends BaseDAO {
@@ -183,48 +186,60 @@ public class UserUploadDao extends BaseDAO {
         return numDeleted;
     }
 
-    public List<UserDiskPair> allDiskUsage() {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
-        List<UserDiskPair> pairList = new ArrayList<UserDiskPair>();
+    /**
+     * For the admin page, get the list of all DiskInfo for each registered user,
+     * sorted by amount of disk usage in descending order.
+     * @return
+     */
+    public List<DiskInfo> allDiskInfo() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final List<DiskInfo> diskInfoList=new ArrayList<DiskInfo>();
 
         try {
             HibernateUtil.beginTransaction();
-
-            String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu GROUP BY uu.userId";
-            // "SELECT LIST(uu.userId, SUM(uu.fileLength)) FROM " + UserUpload.class.getName() + " uu WHERE uu.path NOT LIKE '" + TMP_DIR + "/%' GROUP BY uu.userId"; // "SELECT , SUM(uu.file_length) FROM user_upload uu"; // GROUP BY uu.user_id
-
-            Query query = HibernateUtil.getSession().createQuery(hql);
+            final String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu where uu.userId != :cacheUserId GROUP BY uu.userId";
+            final Query query = HibernateUtil.getSession().createQuery(hql);
+            query.setString("cacheUserId", FileCache.CACHE_USER_ID);
             query.setReadOnly(true);
 
-            List<Object[]> queryList = query.list();
-
-            for (Object[] usageObject : queryList) {
-                UserDiskPair pair = new UserDiskPair(usageObject);
-                pairList.add(pair);
+            final List<Object[]> results = query.list();
+            for (final Object[] result : results) {
+                final String userId= (String) result[0];
+                final long numBytes= (Long) result[1];
+                final DiskInfo diskInfo=DiskInfo.createDiskInfo(gpConfig, userId, numBytes);
+                diskInfoList.add(diskInfo);
             }
-
-            Collections.sort(pairList, new Comparator<UserDiskPair>() {
+            
+            // sort by size, descending, use name as the tie-breaker
+            Collections.sort(diskInfoList, new Comparator<DiskInfo>() {
                 @Override
-                public int compare(UserDiskPair a, UserDiskPair b) {
-                    return a.getDiskUsage() < b.getDiskUsage() ? 1
-                            : a.getDiskUsage() > b.getDiskUsage() ? -1
-                            : 0;
+                public int compare(DiskInfo o1, DiskInfo o2) {
+                    long n1=o1.getDiskUsageFilesTab().getNumBytes();
+                    long n2=o2.getDiskUsageFilesTab().getNumBytes();
+                    if (n1==n2) {
+                        // sort by userId as tie-breaker
+                        return o1.getUserId().toLowerCase().compareTo(o2.getUserId().toLowerCase());
+                    }
+                    else if (n1<n2) {
+                        // reverse sort
+                        return 1;
+                    }
+                    return -1;
                 }
             });
         }
         catch (Throwable t) {
             log.error(t);
-            HibernateUtil.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
                 HibernateUtil.closeCurrentSession();
             }
-            //TODO: finally block does not complete normally
-            return pairList;
         }
+        return diskInfoList;
     }
-
+    
     /**
      * Get the total size of files for the given user.
      *
@@ -281,8 +296,6 @@ public class UserUploadDao extends BaseDAO {
                 HibernateUtil.closeCurrentSession();
             }
         }
-
-
 
         return size;
     }

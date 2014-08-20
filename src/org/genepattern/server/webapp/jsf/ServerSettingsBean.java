@@ -36,9 +36,9 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.dm.userupload.UserDiskPair;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.purger.PurgerFactory;
+import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
 public class ServerSettingsBean implements Serializable {
@@ -819,8 +819,13 @@ public class ServerSettingsBean implements Serializable {
         PurgerFactory.instance().restart();
     }
 
-    public List<UserDiskPair> getDiskUsages() {
-        UserUploadDao userUploadDao = new UserUploadDao();
-        return userUploadDao.allDiskUsage();
+    public List<DiskInfoBean> getDiskInfos() {
+        List<DiskInfoBean> diskInfoBeans=new ArrayList<DiskInfoBean>();
+        for(final DiskInfo diskInfo :  new UserUploadDao().allDiskInfo()) {
+            if (diskInfo != null) {
+                diskInfoBeans.add(new DiskInfoBean(diskInfo));
+            }
+        }
+        return diskInfoBeans;
     }
 }
