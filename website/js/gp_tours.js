@@ -121,7 +121,7 @@ $(function()
             },
             {
                 element: "#quota-box-main",
-                intro: '<div class="tour-header"> Disk Usage </div>Disk usage is now displayed for the Files tab.',
+                intro: '<div class="tour-header"> Disk Usage </div>Disk usage for the Files tab is now displayed.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -152,6 +152,18 @@ $(function()
             {
                 element: "#main-pane",
                 intro: '<div class="tour-header"> Pending Jobs </div>Red indicates high job volume which estimates that the job may take days to enter the processing state.',
+                position: 'left',
+                scrollToElement: true
+            },
+            {
+                element: "#main-pane",
+                intro: '<div class="tour-header"> Job Status Details </div>The Job Status page now provides additional information about a job is now available by clicking the Show Details link.',
+                position: 'left',
+                scrollToElement: true
+            },
+            {
+                element: "#main-pane",
+                intro: '<div class="tour-header"> Job Status Details </div>Additional job details such as time added to GenePattern, run start time, cpu usage, and max memory used are displayed.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -208,19 +220,29 @@ $(function()
                     }
                 });
 
-                $("#main-pane").append('<img class="tour_congestion_image" src="/gp/images/congestion_indicator_green.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
+                $("#main-pane").append('<img class="tour_congestion_image" src="../images/congestion_indicator_green.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
             }
             else if(intro._currentStep == 5)
             {
                 $(".tour_congestion_image").remove();
-                $("#main-pane").append('<img class="tour_congestion_image" src="/gp/images/congestion_indicator_yellow.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
+                $("#main-pane").append('<img class="tour_congestion_image" src="../images/congestion_indicator_yellow.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
             }
             else if(intro._currentStep == 6)
             {
                 $(".tour_congestion_image").remove();
-                $("#main-pane").append('<img class="tour_congestion_image" src="/gp/images/congestion_indicator_red.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
+                $("#main-pane").append('<img class="tour_congestion_image" src="../images/congestion_indicator_red.png" alt="Pending job" width="820" height="500" style="border: none;"></img>');
             }
             else if(intro._currentStep == 7)
+            {
+                $(".tour_congestion_image").remove();
+                $("#main-pane").append('<img class="tour_congestion_image" src="../images/job_status_details_show.png" alt="Job Detail" width="820" height="300" style="border: none;"></img>');
+            }
+            else if(intro._currentStep == 8)
+            {
+                $(".tour_congestion_image").remove();
+                $("#main-pane").append('<img class="tour_congestion_image" src="../images/job_status_details_hide.png" alt="Job Details" width="820" height="500" style="border: none;"></img>');
+            }
+            else if(intro._currentStep == 9)
             {
                 newTourCleanup();
             }
