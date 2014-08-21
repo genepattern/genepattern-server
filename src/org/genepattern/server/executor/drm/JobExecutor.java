@@ -815,10 +815,10 @@ public class JobExecutor implements CommandExecutor2 {
         // an rval < 0 indicates to the calling method to ignore this
         if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
             handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
-            return -1;
+            return JobStatus.JOB_ERROR;
         }
         //it's still processing
-        return -1;
+        return JobStatus.JOB_PROCESSING;
     }
 
 }
