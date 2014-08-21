@@ -37,9 +37,26 @@ public class HibernateSessionRequestFilter implements Filter {
      */
     protected boolean shouldBeginDbTransaction(final ServletRequest request) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String contextPath=httpRequest.getContextPath();
         String uri=httpRequest.getRequestURI();
-        if (uri.contains("/rest/RunTask/upload")) {
+        if (uri.startsWith(contextPath+"/rest/RunTask/upload")) {
             log.debug("ignoring uri="+uri);
+            return false;
+        }
+        // filter out image files, for example, /gp/images/GP-logo.gif
+        else if (uri.startsWith(contextPath+"/images/")) {
+            return false;
+        }
+        // filter out css files, for example, /gp/css/frozen/menu.css
+        else if (uri.startsWith(contextPath+"/css/")) {
+            return false;
+        }
+        // filter out js files, for example, /gp/js/jquery/jquery-1.8.3.js
+        else if (uri.startsWith(contextPath+"/js/")) {
+            return false;
+        }
+        // filter out the download files, for example, /gp/downloads/GenePattern.zip
+        else if (uri.startsWith(contextPath+"/downloads/")) {
             return false;
         }
         return true;
