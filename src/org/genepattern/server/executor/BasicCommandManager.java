@@ -94,8 +94,8 @@ public class BasicCommandManager implements CommandManager {
             catch (CommandExecutorNotFoundException e) {
                 log.error("error getting command executor for job #"+jobId, e); 
             }
-            catch (Exception e) {
-                log.error("error handling running job on server startup for job #"+jobId, e);
+            catch (Throwable t) {
+                log.error("error handling running job on server startup for job #"+jobId, t);
             }
             if (statusChanged(curStatus, updatedStatusId)) {
                 setJobStatus(jobInfo, updatedStatusId);

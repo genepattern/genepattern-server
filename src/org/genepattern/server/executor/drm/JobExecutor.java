@@ -800,17 +800,37 @@ public class JobExecutor implements CommandExecutor2 {
         final DrmJobRecord drmJobRecord=JobRunnerJob.toDrmJobRecord(existing);
         if (drmJobRecord==null || drmJobRecord.getExtJobId()==null) {
             //no match found, what to do?
-            log.error("No matching drmJobId found for gpJobId="+jobInfo.getJobNumber());
-            return JobStatus.JOB_ERROR;
+            final String message="Server Error: No matching drmJobId found for gpJobId="+jobInfo.getJobNumber();
+            log.error(message);
+            final DrmJobStatus drmJobStatus=new DrmJobStatus.Builder()
+                .jobState(DrmJobState.UNDETERMINED)
+                .jobStatusMessage(message)
+                .exitCode(-1) 
+            .build();
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
+            //return JobStatus.JOB_ERROR;
+            return -1;
         }
         if (log.isDebugEnabled()) {
             log.debug(jobRunnerName+" handleRunningJob, gpJobNo="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId());
+            log.debug("checking status ...");
         }
-        final DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
+        DrmJobStatus drmJobStatus=jobRunner.getStatus(drmJobRecord);
+        if (log.isDebugEnabled()) {
+            log.debug("jobStatus is "+drmJobStatus);
+        }
         
         if (drmJobStatus==null) {
-            log.error("No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId());
-            return JobStatus.JOB_ERROR;
+            final String message="No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId();
+            log.error(message);
+            drmJobStatus=new DrmJobStatus.Builder()
+                .jobState(DrmJobState.UNDETERMINED)
+                .jobStatusMessage(message)
+                .exitCode(-1) 
+            .build();
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
+            //return JobStatus.JOB_ERROR;
+            return -1;
         }
         if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
             handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
