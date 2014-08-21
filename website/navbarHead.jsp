@@ -44,6 +44,7 @@
 
     // Layout hack for old JSF pages
     $(document).ready(function() {
-        $("#top-status-box").css("position", "absolute");
+        $("#user-box-main").css("position", "absolute");
+        $("#quota-box-main").css("position", "absolute");
     });
 </script>
