@@ -139,7 +139,7 @@ $(function()
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Pending Jobs </div>There is a new congestion status indicator for pending jobs. Green indicates low job volume which estimates that the job should enter the processing state soon.',
+                intro: '<div class="tour-header"> Pending Jobs </div>There is a new congestion status indicator for pending jobs. Pending jobs are jobs that have been submitted but have not yet started processing. Green indicates low job volume which estimates that the job should enter the processing state soon.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -151,7 +151,7 @@ $(function()
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Pending Jobs </div>Red indicates high job volume which estimates that the job may take days to enter the processing state.',
+                intro: '<div class="tour-header"> Pending Jobs </div>Red indicates high job volume which estimates that the job may take days to enter the processing state..',
                 position: 'left',
                 scrollToElement: true
             },
