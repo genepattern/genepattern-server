@@ -105,6 +105,10 @@ public class BasicCommandManager implements CommandManager {
     }
     
     private static boolean statusChanged(String origStatus, int updatedStatusId) {
+        // ignore -1
+        if (updatedStatusId < 0) {
+            return false;
+        }
         int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
         return origStatusId != updatedStatusId;
     }

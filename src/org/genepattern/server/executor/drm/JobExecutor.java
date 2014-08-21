@@ -812,10 +812,9 @@ public class JobExecutor implements CommandExecutor2 {
             log.error("No matching drmJobStatus for gpJobId="+jobInfo.getJobNumber()+", extJobId="+drmJobRecord.getExtJobId());
             return JobStatus.JOB_ERROR;
         }
-        // an rval < 0 indicates to the calling method to ignore this
         if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
             handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
-            return JobStatus.JOB_ERROR;
+            return -1;
         }
         //it's still processing
         return JobStatus.JOB_PROCESSING;
