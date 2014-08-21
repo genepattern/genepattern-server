@@ -25,19 +25,25 @@
             <table class="window">
                 <tr>
                     <td align="center">
-                        <table class="summary" style="width: 100%;" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+                        <table class="summary" style="width: 100%; margin: auto;" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+                            <tr><th colspan="2">Status</th></tr>
+                            <tr><td colspan="2">#{jobStatus.statusMessage}</td></tr>
+                            <h:outputText rendered="#{jobStatus.isFinished and jobStatus.exitCode != 0}" escape="false">
+                            <tr><td style="white-space: nowrap">Exit Code</td><td style="width: 99%">#{jobStatus.exitCode}</td></tr>
+                            </h:outputText>
+                            <tr><td style="white-space: nowrap">Status date</td><td style="width: 99%"><h:outputText value="#{jobStatus.statusDate}" converter="gp" /></td></tr>
                             <tr><th colspan="2">Event log</th></tr>
-                            <tr><td>Added to GenePattern</td><td><h:outputText value="#{jobStatus.dateSubmittedToGp}" converter="gp" /></td></tr>
-                            <tr><td>Submitted to queue</td><td><h:outputText value="#{jobStatus.submitTime}" converter="gp" /></td></tr>
-                            <tr><td>Started running</td><td><h:outputText value="#{jobStatus.startTime}" converter="gp" /></td></tr>
-                            <tr><td>Finished running</td><td><h:outputText value="#{jobStatus.endTime}" converter="gp" /></td></tr>
-                            <tr><td>Completed in GenePattern</td><td><h:outputText value="#{jobStatus.dateCompletedInGp}" converter="gp" /></td></tr>
+                            <tr><td style="white-space: nowrap">Added to GenePattern</td><td style="width: 99%"><h:outputText value="#{jobStatus.dateSubmittedToGp}" converter="gp" /></td></tr>
+                            <tr><td style="white-space: nowrap">Submitted to queue</td><td style="width: 99%"><h:outputText value="#{jobStatus.submitTime}" converter="gp" /></td></tr>
+                            <tr><td style="white-space: nowrap">Started running</td><td style="width: 99%"><h:outputText value="#{jobStatus.startTime}" converter="gp" /></td></tr>
+                            <tr><td style="white-space: nowrap">Finished running</td><td style="width: 99%"><h:outputText value="#{jobStatus.endTime}" converter="gp" /></td></tr>
+                            <tr><td style="white-space: nowrap">Completed in GenePattern</td><td style="width: 99%"><h:outputText value="#{jobStatus.dateCompletedInGp}" converter="gp" /></td></tr>
                             <tr><th colspan="2">Usage stats</th></tr>
-                            <tr><td>CPU usage</td><td><h:outputText value="#{jobStatus.cpuTime.displayValue}"  /></td></tr>
-                            <tr><td>Max memory</td><td><h:outputText value="#{jobStatus.maxMemory.displayValue}"  /></td></tr>
-                            <tr><td>Max swap</td><td><h:outputText value="#{jobStatus.maxSwap.displayValue}"  /></td></tr>
-                            <tr><td>Max processes</td><td><h:outputText value="#{jobStatus.maxProcesses}"  /></td></tr>
-                            <tr><td>Max threads</td><td><h:outputText value="#{jobStatus.maxThreads}"  /></td></tr>
+                            <tr><td style="white-space: nowrap">CPU usage</td><td style="width: 99%"><h:outputText value="#{jobStatus.cpuTime.displayValue}"  /></td></tr>
+                            <tr><td style="white-space: nowrap">Max memory</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxMemory.displayValue}"  /></td></tr>
+                            <tr><td style="white-space: nowrap">Max swap</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxSwap.displayValue}"  /></td></tr>
+                            <tr><td style="white-space: nowrap">Max processes</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxProcesses}"  /></td></tr>
+                            <tr><td style="white-space: nowrap">Max threads</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxThreads}"  /></td></tr>
                         </table>
                     </td>
                 </tr>
