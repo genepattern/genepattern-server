@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using InstallAnywhere 2012 Enterprise, Build 4390
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Tue Aug 12 17:15:10 EDT 2014 -->
-<InstallAnywhere_Deployment_Project increments="17447">
+     DATE:   Thu Aug 21 10:56:07 EDT 2014 -->
+<InstallAnywhere_Deployment_Project increments="17457">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="14" minor="0" revision="0"/>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,49,56,45,49,57,52,46,56,46,49,46,101,108,53,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,55,46,48,95,48,51,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,64,-57,26,16,16,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,1,15,115,44,7,1,0,0</authorizationID>
+		<authorizationID>1,0,0,64,-9,26,80,80,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,14,1,113,41,7,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="768">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
@@ -11973,7 +11973,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="bundledVM">
-												<string><![CDATA[SunJRE1.6.0_25Win32.vm]]></string>
+												<string><![CDATA[OracleJRE170u45_Windows32.vm]]></string>
 											</property>
 											<property name="withoutVmSearchOption">
 												<short>10</short>
@@ -12007,10 +12007,10 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="buildWithVM">
-												<boolean>true</boolean>
+												<boolean>false</boolean>
 											</property>
 											<property name="bundledVM">
-												<string><![CDATA[SunJRE1.6.0_22Linux.vm]]></string>
+												<string><![CDATA[SUN_160_B23_LINUX_64Bit.vm]]></string>
 											</property>
 											<property name="withoutVmSearchOption">
 												<short>10</short>
@@ -13270,7 +13270,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="df945e54be20">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="0c92908ebdf6">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13327,7 +13327,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="df945e55be20">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="0c929090bdf6">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13501,7 +13501,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[August 12, 2014 5:15:10 PM EDT]]></string>
+						<string><![CDATA[August 21, 2014 10:56:07 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -13613,7 +13613,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<boolean>true</boolean>
 					</property>
 					<property name="titleTextColorRGB">
-						<int>-16777216</int>
+						<int>-65536</int>
 					</property>
 					<property name="installFrameWidth">
 						<int>600</int>
@@ -15165,11 +15165,20 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 					<property name="entitlementRequiredIndicator">
 						<boolean>false</boolean>
 					</property>
+					<property name="softwareCreatorName">
+						<string><![CDATA[]]></string>
+					</property>
 					<property name="softwareIdUniqueId">
 						<string><![CDATA[df441493-1f19-11b2-bccd-a57a962e8f36]]></string>
 					</property>
+					<property name="tagCreatorName">
+						<string><![CDATA[Broad Institute, MIT]]></string>
+					</property>
+					<property name="tagCreatorRegid">
+						<string><![CDATA[regid.2014-08.org.broadinstitute,cancer/software/genepattern]]></string>
+					</property>
 					<property name="tagCreatorNameFlag">
-						<boolean>false</boolean>
+						<boolean>true</boolean>
 					</property>
 					<property name="swCreatorNameFlag">
 						<boolean>false</boolean>
@@ -15189,10 +15198,16 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				</object>
 			</property>
 			<property name="swidTagIncluded">
-				<boolean>false</boolean>
+				<boolean>true</boolean>
 			</property>
 			<property name="codeSignOnMacEnabled">
-				<boolean>false</boolean>
+				<boolean>true</boolean>
+			</property>
+			<property name="pkcs12Certificate">
+				<string><![CDATA[/xchip/genepattern/tools/InstallAnywhere2012/genepattern.p12]]></string>
+			</property>
+			<property name="keystorePassword">
+				<string><![CDATA[P9VsjtDQpF]]></string>
 			</property>
 			<property name="oldStyleInstallersEnabled">
 				<boolean>false</boolean>
