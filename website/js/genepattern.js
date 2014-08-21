@@ -1434,9 +1434,9 @@ function createInputFileWidget(linkElement, appendTo) {
 
         data.push({
             "lsid": "",
-            "name": "Save or View File",
+            "name": "Open Link",
             "description": "Will either open the file for viewing or prompt you to save the file.",
-            "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            "version": "<span class='glyphicon glyphicon-eye-open' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
 
         return data;
@@ -1457,9 +1457,9 @@ function createInputFileWidget(linkElement, appendTo) {
                 droppable: false,
                 draggable: false,
                 click: function(event) {
-                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save") == 0;
+                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") == 0;
 
-                    if (saveAction) {
+                    if (openAction) {
                         window.open(url);
                         $(".search-widget:visible").searchslider("hide");
                     }
@@ -1549,6 +1549,13 @@ function createFileWidget(linkElement, appendTo) {
                     "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>", "documentation": "", "categories": [], "suites": [], "tags": []
                 });
             }
+
+            data.push({
+                "lsid": "",
+                "name": "Open Link",
+                "description": "Will either open the file for viewing or prompt you to save the file.",
+                "version": "<span class='glyphicon glyphicon-eye-open' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            });
         }
 
         if (!isPartialFile && isUpload) {
@@ -1629,6 +1636,7 @@ function createFileWidget(linkElement, appendTo) {
                     var renameAction = actionClicked.indexOf("Rename") == 0;
                     var jobCopyAction = actionClicked.indexOf("Copy to Files") == 0;
                     var moveAction = actionClicked.indexOf("Move") == 0;
+                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") == 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1642,6 +1650,11 @@ function createFileWidget(linkElement, appendTo) {
                             window.location.href = url + "?download";
                         }
 
+                        $(".search-widget:visible").searchslider("hide");
+                    }
+
+                    else if (openAction) {
+                        window.open(url);
                         $(".search-widget:visible").searchslider("hide");
                     }
 
