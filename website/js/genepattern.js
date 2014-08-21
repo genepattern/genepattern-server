@@ -3210,8 +3210,8 @@ function updateDiskUsageBox(diskInfo)
     {
         if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab != null)
         {
-            diskUsedBytes = diskInfo.diskUsageTotal.numBytes;
-            diskUsedDisplay = diskInfo.diskUsageTotal.displayValue;
+            diskUsedBytes = diskInfo.diskUsageFilesTab.numBytes;
+            diskUsedDisplay = diskInfo.diskUsageFilesTab.displayValue;
             diskUsedDisplay = diskUsedDisplay.toUpperCase();
         }
 
