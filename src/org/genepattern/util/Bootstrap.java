@@ -26,9 +26,8 @@ public class Bootstrap {
         File fakeDir = new File( "Bootstrap" );
         File fakeDirAbsolute = new File(fakeDir.getAbsolutePath());
         File workingDir = fakeDirAbsolute.getParentFile();
-        File parentDir = workingDir.getParentFile();
 
-        builder.directory(parentDir);
+        builder.directory(workingDir);
 
         builder.redirectErrorStream(true);
         Process process = null;
