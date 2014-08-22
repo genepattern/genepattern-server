@@ -26,7 +26,7 @@ public class Memory {
     private static NumberFormat numberFormat;
     static {
         numberFormat = NumberFormat.getInstance();
-        numberFormat.setMaximumFractionDigits(1);
+        numberFormat.setMaximumFractionDigits(2);
     }
 
     /**
@@ -202,13 +202,17 @@ public class Memory {
         else if (size >= Unit.gb.getMultiplier()) {
             double gigabytes = size / (double) Unit.gb.getMultiplier();
             return numberFormat.format(gigabytes) + " GB";
-        } 
+        }
         else if (size >= Unit.mb.getMultiplier()) {
             double megabytes = size / (double) Unit.mb.getMultiplier();
             return numberFormat.format(megabytes) + " MB";
-        } 
+        }
+        else if (size >= Unit.kb.getMultiplier()) {
+            double megabytes = size / (double) Unit.kb.getMultiplier();
+            return numberFormat.format(megabytes) + " KB";
+        }
         else {
-            return Math.max(0, Math.ceil(size / 1024.0)) + " KB";
+            return size + " B";
         }
     }
 
