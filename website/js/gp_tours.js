@@ -16,7 +16,7 @@ $(function()
         var steps = [
             {
                 element: "#topband",//"img[src*='GP-logo.gif']",
-                intro: '<div class="tour-header"> GP Icon </div>You can click the GenePattern icon to return to this home page at any time.'
+                intro: '<div class="tour-header"> GenePattern Icon </div>You can click the GenePattern icon to return to this home page at any time.'
             },
             {
                 element: '#navband1',
@@ -34,7 +34,7 @@ $(function()
             },
             {
                 element: '#left-nav-files-tab',
-                intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server',
+                intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server. You can also copy results files to the Files Tab.',
                 position: 'right'
             }];
 
@@ -115,13 +115,13 @@ $(function()
         var steps = [
             {
                 element: "#user-box-main",
-                intro: '<div class="tour-header"> User Settings </div>There is a new UI for managing user settings and accessing system messages.',
+                intro: '<div class="tour-header"> User Settings </div>Manage user settings and access system messages by clicking here.',
                 position: 'left',
                 scrollToElement: true
             },
             {
                 element: "#quota-box-main",
-                intro: '<div class="tour-header"> Disk Usage </div>Disk usage for the Files tab is now displayed.',
+                intro: '<div class="tour-header"> Disk Usage </div>Disk usage for the Files tab are displayed.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -180,7 +180,7 @@ $(function()
             //replace the second step with item that mentions quota information
             steps[1] = {
                 element: "#quota-box-main",
-                intro: '<div class="tour-header"> Disk Usage and Quota </div>Disk usage and disk quota is now displayed for the Files tab.',
+                intro: '<div class="tour-header"> Disk Usage and Quota </div>Disk usage for the Files tab are displayed. Indicator bar turns red when user nears quota. Quota only applies to Files tab content and not to linked GenomeSpace or Jobs Tab.',
                 position: 'left',
                 scrollToElement: true
             };
