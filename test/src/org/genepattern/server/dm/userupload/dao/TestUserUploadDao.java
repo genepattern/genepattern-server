@@ -177,7 +177,7 @@ public class TestUserUploadDao {
             UserUploadDao dao = new UserUploadDao();
             final boolean includeTempFiles=false;
             Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
-            Assert.assertEquals("size of files excluding tmp", 70, size.getNumBytes());
+            Assert.assertEquals("size of files excluding tmp", 60, size.getNumBytes());
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -195,7 +195,7 @@ public class TestUserUploadDao {
             UserUploadDao dao = new UserUploadDao();
             final boolean includeTempFiles=true;
             Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
-            Assert.assertEquals("size of files including tmp", 180, size.getNumBytes());
+            Assert.assertEquals("size of files including tmp", 150, size.getNumBytes());
         }
         finally {
             HibernateUtil.closeCurrentSession();
