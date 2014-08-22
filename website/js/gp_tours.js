@@ -34,10 +34,14 @@ $(function()
             },
             {
                 element: '#left-nav-files-tab',
-                intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server. You can also copy results files to the Files Tab.',
+                intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server. You can also copy job result files to the Files Tab.',
                 position: 'right'
-            }];
-
+            },
+            {
+                element: '#left-nav-genomespace-tour-created',
+                intro: '<div class="tour-header"> GenomeSpace Tab</div> If you sign-in using your GenomeSpace account, access via tab that appears here.',
+                position: 'right'
+        }];
 
         if($("#protocols").is(":visible"))
         {
@@ -83,6 +87,28 @@ $(function()
             else if(intro._currentStep == 4)
             {
                 $( "#left-nav" ).tabs( "option", "active", 2 );
+
+                //add the genome space tab
+                if($("#left-nav-genomespace-tab").length == 0)
+                {
+                    $("#left-nav-files-tab").after('<li id="left-nav-genomespace-tour-created">' +
+                        '<a href="#left-nav-genomespace">GenomeSpace</a> </li>');
+
+                    $("#left-nav-genomespace-tour-created").parent().after('<li id="left-nav-genomespace-tour-created">' +
+                        '<a href="#left-nav-genomespace">GenomeSpace</a>' +
+                        '<div id="left-nav-genomespace" class="left-nav-tab">' +
+                        '<div class="left-nav-top">' +
+                        '<button id="left-nav-genomespace-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>' +
+                        '<a href="http://gsui.genomespace.org" target="_blank"><img id="left-nav-genomespace-logo" src="/gp/pages/genomespace/genomespacelogo.png" /></a>' +
+                        '</div>' +
+                        '</div>'+
+                        '</li>');
+                    $("#left-nav").tabs("refresh");
+                }
+            }
+            else if(intro._currentStep == 5)
+            {
+                $( "#left-nav" ).tabs( "option", "active", 3 );
             }
             else if(targetElement.id == "submitJob")
             {
@@ -93,13 +119,12 @@ $(function()
 
         intro.onexit(function()
         {
-            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
+            introTourCleanup();
         });
 
         intro.oncomplete(function()
         {
-            $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
-
+            introTourCleanup();
         });
 
         intro.start();
@@ -258,22 +283,13 @@ $(function()
 
         intro.onexit(function()
         {
-            $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
-
-            $(".search-widget").searchslider("hide");
-
-            $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
-
+            introTourCleanup();
             newTourCleanup();
         });
 
         intro.oncomplete(function()
         {
-            $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
-
-            $(".search-widget").searchslider("hide");
-
-            $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
+            introTourCleanup();
 
             newTourCleanup()
         });
@@ -289,12 +305,26 @@ function newTourCleanup()
     $(".tour_congestion_image").remove();
     $("#main-pane").children(".wasVisibleBefore").show();
     $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
+
+    $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
+
+    $(".search-widget").searchslider("hide");
+
+    $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
 }
 
 function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
 }
 
+function introTourCleanup()
+{
+    //set tab back to original selection
+    $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
+
+    $("#left-nav-genomespace-tour-created").remove();
+    $("#left-nav").tabs("refresh");
+}
 
 function launchTour()
 {
