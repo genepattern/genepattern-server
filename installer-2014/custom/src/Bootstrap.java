@@ -23,7 +23,12 @@ public class Bootstrap {
         ProcessBuilder builder = new ProcessBuilder(processList);
 
         // This is where you set the root folder for the executable to run in
-        builder.directory( new File( "Tomcat" ).getAbsoluteFile() );
+        File fakeDir = new File( "Bootstrap" );
+        File fakeDirAbsolute = new File(fakeDir.getAbsolutePath());
+        File workingDir = fakeDirAbsolute.getParentFile();
+        File parentDir = workingDir.getParentFile();
+
+        builder.directory(parentDir);
 
         builder.redirectErrorStream(true);
         Process process = null;
