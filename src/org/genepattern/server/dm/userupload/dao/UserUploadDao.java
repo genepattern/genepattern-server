@@ -259,6 +259,7 @@ public class UserUploadDao extends BaseDAO {
 
             String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
 
+            hql += " and uu.kind not like 'directory'";
             if (!includeTempFiles) {
                 hql += " and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
             }
