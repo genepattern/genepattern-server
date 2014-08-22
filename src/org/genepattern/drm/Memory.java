@@ -26,7 +26,7 @@ public class Memory {
     private static NumberFormat numberFormat;
     static {
         numberFormat = NumberFormat.getInstance();
-        numberFormat.setMaximumFractionDigits(2);
+        numberFormat.setMaximumFractionDigits(1);
     }
 
     /**
