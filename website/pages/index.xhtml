@@ -149,16 +149,19 @@ function setInputField(elementId, value, groupId) {
         groupId = getFileGroupIdByIndex(elementId,  0);
     }
 
-    var fileObjListings = getFilesForGroup(groupId, elementId);
+    // If it has a file type
+    if ($.inArray(field_types.FILE,run_task_info.params[elementId].type) != -1)
+    {
+        var fileObjListings = getFilesForGroup(groupId, elementId);
+        if(fileObjListings !== null && fileObjListings !== undefined)
+        {
+            validateMaxFiles(elementId, fileObjListings.length + 1);
 
-    // If it is a file
-    if (fileObjListings !== null && fileObjListings !== undefined) {
-        validateMaxFiles(elementId, fileObjListings.length + 1);
-
-        fileObjListings.push({"name": value});
-        updateFilesForGroup(groupId, elementId, fileObjListings);
-        updateParamFileTable(elementId, null, groupId);
-        toggleFileButtons(elementId);
+            fileObjListings.push({"name": value});
+            updateFilesForGroup(groupId, elementId, fileObjListings);
+            updateParamFileTable(elementId, null, groupId);
+            toggleFileButtons(elementId);
+        }
     }
     else { // Otherwise, assume it's a directory
         setParameter(elementId, value);

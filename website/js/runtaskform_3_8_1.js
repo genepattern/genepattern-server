@@ -747,6 +747,10 @@ function initParam(parameterInfo, index, batchParams) {
 }
 
 function addSendToParam(parameterInfo) {
+    //add special case for legacy modules which used type=DIRECTORY to
+    // indicate parameters that accept directories
+    var type = parameterInfo.type;
+    var directoryType = "directory";
     if (parameterInfo.fileFormat) {
         var formats = parameterInfo.fileFormat.split(";");
         for (var i = 0; i < formats.length; i++) {
@@ -756,6 +760,15 @@ function addSendToParam(parameterInfo) {
             }
             run_task_info.sendTo[format].push(parameterInfo.name);
         }
+    }
+    else if(type != undefined && type != null && type.toLowerCase() == directoryType)
+    {
+        if(run_task_info.sendTo[directoryType] == undefined)
+        {
+            run_task_info.sendTo["directory"] = [];
+        }
+
+        run_task_info.sendTo["directory"].push(parameterInfo.name);
     }
 }
 
@@ -2767,6 +2780,7 @@ function setParameter(paramName, value, groupId) {
 
     if ($.inArray(field_types.TEXT, paramDetails.type) != -1) {
         paramRow.find(".paramValueTd").find(".textDiv").find(".pValue").first().val(value);
+        paramRow.find(".paramValueTd").find(".textDiv").find(".pValue").first().trigger("change");
         return;
     }
 
