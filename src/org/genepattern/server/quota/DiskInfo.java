@@ -133,7 +133,7 @@ public class DiskInfo
             return false;
         }
 
-        long diskUsagePlus = diskUsageFilesTab.getNumBytes() + fileSizeInBytes;
+        long diskUsagePlus = diskUsageFilesTab.getNumBytes();
 
         if(fileSizeInBytes > 0)
         {

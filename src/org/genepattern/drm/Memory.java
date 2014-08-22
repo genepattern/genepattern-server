@@ -207,12 +207,8 @@ public class Memory {
             double megabytes = size / (double) Unit.mb.getMultiplier();
             return numberFormat.format(megabytes) + " MB";
         }
-        else if (size >= Unit.kb.getMultiplier()) {
-            double megabytes = size / (double) Unit.kb.getMultiplier();
-            return numberFormat.format(megabytes) + " KB";
-        }
         else {
-            return size + " B";
+            return Math.max(0, Math.ceil(size / 1024.0)) + " KB";
         }
     }
 
