@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.CopyUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
@@ -537,7 +536,15 @@ public class ParamListHelper {
                     final GpFilePath file=inputRecord.gpFilePath;
                     boolean canRead=file.canRead(jobContext.isAdmin(), jobContext);
                     if (!canRead) {
-                        throw new Exception("You are not permitted to access the file: "+paramValueIn.getValue());
+                        String pname=parameterInfoRecord.getFormal().getName();
+                        String value=paramValueIn.getValue();
+                        if (value==null) {
+                            value="null";
+                        }
+                        else if (value.length()==0) {
+                            value="<empty string>";
+                        }
+                        throw new Exception("For the input parameter, "+pname+", You are not permitted to access the file: "+value);
                     }
                     parameterInfoRecord.getActual().setValue(file.getUrl().toExternalForm());
                 }
