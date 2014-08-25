@@ -52,9 +52,18 @@ default.properties:
     # (default=250mB)
     pipeline.max.file.size: 256000000
     
+    #
+    # GenomeSpace integration
+    #
     genomeSpaceEnabled: true
     genomeSpaceUrl: https://identity.genomespace.org/identityServer/xrd.jsp
     genomeSpaceEnvironment: prod
+
+    #
+    # GPARC integration
+    #
+    gparcUploadURL: http://www.gparc.org/server_upload.php
+    gparcSubmitURL: http://www.gparc.org/uniqid
     
     # 
     # for per-module End-user license agreements (EULA)
