@@ -2,8 +2,15 @@
 
 <project basedir="." name="GenePatternMatlab" default="create-zip">
 
+    <target name="create-zip">
+        <copy todir="../../build">
+            <fileset dir="./downloads">
+                <include name="GenePatternMatlab.zip" />
+            </fileset>
+        </copy>
+    </target>
 
-	<target name="create-zip">
+	<target name="create-zip-old">
 		<copy todir="GenePattern/lib">
 			<fileset dir="../../build">
 				<include name="gpwebservice.jar" />
