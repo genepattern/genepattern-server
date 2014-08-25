@@ -2499,77 +2499,7 @@ jQuery(document).ready(function() {
     });
 
     $('#publishGParc').button().click(function() {
-        var token = null;
-        var buttons = {
-            "Submit to GParc": function() {
-                $(this).dialog("close");
-
-                var afterHTML = "<div><div style='width:100%;text-align:center;'><img id='gparcUploadProgress' style='height: 32px; margin: 10px;' src='/gp/images/runningJob.gif'/></div>" +
-                    "<div id='gparcInfoText'>Uploading your module to GParc</div></div>";
-                var afterButtons = {"Finalize on GParc": function() {
-                    window.open(token);
-                    $(this).dialog("close");
-                }};
-
-                showDialog("Uploading to GParc. Please Wait...", $(afterHTML), afterButtons);
-                setTimeout(function() {
-                    $(".ui-dialog-buttonset > button:visible").button("disable");
-                }, 100);
-
-                $.ajax({
-                    type: "GET",
-                    dataType: "json",
-                    url: "/gp/ModuleCreator/gparc?lsid=" + module_editor.lsid,
-                    success: function(response) {
-                        if (response.token) {
-                            token = response.token;
-                            $("#gparcUploadProgress").attr("src", "/gp/images/checkbox.gif");
-                            var successHTML = 'Your module has been uploaded to GParc. Please click the button below to log into GParc and finalize your submission.<br/><br/>' +
-                                '<strong>Remember, in order to finish the submission you will need to a GParc account and will need to be logged in. This account is different ' +
-                                'from your GenePattern account.</strong>' +
-                                '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
-                                '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul>' +
-                                'Once you have logged in, click the "Finalize on GParc" button below.</div>';
-                            $("#gparcInfoText").html(successHTML);
-                            setTimeout(function() {
-                                $(".ui-dialog-buttonset > button:visible").button("enable");
-                            }, 101);
-                        }
-                        else {
-                            token = response.error;
-                            $("#gparcUploadProgress").attr("src", "/gp/images/error.gif");
-                            var successHTML = 'There was an error submitting your module to GParc. ' + token;
-                            $("#gparcInfoText").text(successHTML);
-                        }
-                    },
-                    error: function(error) {
-                        alert(error);
-                    }
-                });
-            }
-        };
-        var dialogHTML = '<div><a href="http://gparc.org"><img src="/gp/css/frozen/modules/styles/images/gparc.png" alt="GParc" style="margin-bottom: 10px;" /></a><br />\
-			<strong>GParc</strong> is a repository and community where users can share and discuss their own GenePattern modules.<br/><br/>';
-
-        if (isDirty()) {
-            dialogHTML += '<img src="/gp/css/frozen/modules/styles/images/alert.gif" alt="Alert" /> <span style="color:red;">Changes to this module must be saved before it can be submitted to GParc.</span><br/><br/>';
-        }
-
-        if (!hasDocFiles()) {
-            dialogHTML += '<img src="/gp/css/frozen/modules/styles/images/alert.gif" alt="Alert" /> <span style="color:red;">This module does not have attached documentation.</span><br/><br/>';
-        }
-
-        dialogHTML += '<ol><li>To submit a module to GParc the module will need to have attached documentation.</li>' + 
-        	'<li>Click the Submit to GParc button below and wait for your module to be uploaded.</li>' +
-            '<li><strong>You will need a GParc account and will need to be logged in. This account is different from your GenePattern account.</strong>' +
-            '<ul><li>To register for a GParc account <a href="http://www.broadinstitute.org/software/gparc/user/register" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li>' +
-            '<li>To log in to GParc <a href="http://www.broadinstitute.org/software/gparc/user" target="_blank" style="text-decoration: underline; color: #000099;">click here</a>.</li></ul></li></ol></div>';
-        if (!hasDocFiles() || isDirty()) {
-            setTimeout(function() {
-                $(".ui-dialog-buttonset > button:visible").button("disable");
-            }, 100);
-        }
-        showDialog("Submit Module to GParc", $(dialogHTML), buttons);
+        window.open("http://gparc.org");
     });
 
     $('#whatIsGparc').click(function(event) {
