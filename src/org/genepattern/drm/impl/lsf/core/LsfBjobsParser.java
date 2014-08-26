@@ -177,6 +177,9 @@ public class LsfBjobsParser {
             log.error("Error parsing date from string="+date, e);
             return null;
         }
+        catch (Throwable t) {
+            log.error("Unexpected error parsing date from string="+date, t);
+        }
         // silly LSF does not have the year in the date format
         // assume the year is this year but if the date ends up being
         // in the future set it to last year
