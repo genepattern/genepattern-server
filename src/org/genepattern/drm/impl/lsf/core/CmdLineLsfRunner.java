@@ -81,6 +81,9 @@ public class CmdLineLsfRunner implements JobRunner {
             Thread.currentThread().interrupt();
             return null;
         }
+        catch (Throwable t) {
+            log.error("Unexpected error checking status for job="+jobRecord.getGpJobNo(), t);
+        }
         return new DrmJobStatus.Builder()
             .jobState(DrmJobState.UNDETERMINED)
             .jobStatusMessage("Error getting status for job")
