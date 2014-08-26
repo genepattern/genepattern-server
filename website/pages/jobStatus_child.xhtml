@@ -51,14 +51,17 @@
                         </h:outputText>
                     </td>
                     <td width="30px">
-                        <h:outputText rendered="#{childJobInfo.status == 'Pending'}">Pending</h:outputText>
-                        <h:outputText rendered="#{childJobInfo.status == 'Processing'}">
+                        <h:outputText
+                            rendered="#{childJobInfo.jobStatus.isPending and not childJobInfo.jobStatus.hasError}">Pending</h:outputText>
+                        <h:outputText 
+                            rendered="#{childJobInfo.jobStatus.isRunning and not childJobInfo.jobStatus.hasError}">
                             <img src="/gp/images/spin.gif" alt="#{childJobInfo.status}" id="jobStatusIcon#{childJobInfo.jobNumber}" />
                         </h:outputText>
-                        <h:outputText rendered="#{childJobInfo.status == 'Finished'}">
+                        <h:outputText 
+                            rendered="#{childJobInfo.jobStatus.isFinished and not childJobInfo.jobStatus.hasError}">
                             <img src="/gp/images/complete.gif" alt="#{childJobInfo.status}" id="jobStatusIcon#{childJobInfo.jobNumber}" />
                         </h:outputText>
-                        <h:outputText rendered="#{childJobInfo.status == 'Error'}">
+                        <h:outputText rendered="#{childJobInfo.jobStatus.hasError}">
                             <img src="/gp/images/error.gif" alt="#{childJobInfo.status}" border="0" id="jobStatusIcon#{childJobInfo.jobNumber}" />
                         </h:outputText>
                     </td>

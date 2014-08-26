@@ -24,6 +24,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.job.status.JobStatusLoaderFromDb;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -147,6 +149,11 @@ public class JobInfoManager {
     }
 
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, JobInfo jobInfo) {
+        return getJobInfo(documentCookie, contextPath, currentUser, jobInfo, false, null);
+    }
+    
+    public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, JobInfo jobInfo, boolean includeStatus, String gpUrl) {
+
         AnalysisDAO analysisDao = new AnalysisDAO();
         UserDAO userDao = new UserDAO();
         boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
@@ -161,9 +168,10 @@ public class JobInfoManager {
                 contextPath,
                 analysisDao,
                 adminDao,
-                //kindToModules,
                 jobInfo,
-                visualizerJavaFlags);
+                visualizerJavaFlags,
+                includeStatus,
+                gpUrl);
 
         //this call initializes the helper methods
         jobInfoWrapper.getPathFromRoot();
@@ -179,6 +187,9 @@ public class JobInfoManager {
      * @param contextPath
      * @param analysisDao
      * @param jobInfo
+     * @param visualizerJavaFlags
+     * @param includeJobStatus
+     * 
      * @return a new JobInfoWrapper
      */
     private JobInfoWrapper processChildren(
@@ -189,7 +200,9 @@ public class JobInfoManager {
             AnalysisDAO analysisDao,
             AdminDAO adminDao,
             JobInfo jobInfo,
-            String visualizerJavaFlags) {
+            String visualizerJavaFlags,
+            boolean includeJobStatus,
+            String gpUrl) {
         TaskInfo taskInfo = null;
         try {
             //an exception is thrown if the module has been deleted
@@ -211,6 +224,14 @@ public class JobInfoManager {
             String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfo, visualizerJavaFlags);
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }
+        
+        if (includeJobStatus) {
+            GpContext jobContext=new GpContext.Builder()
+                .jobInfo(jobInfo)
+            .build();
+            Status jobStatus = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
+            jobInfoWrapper.setJobStatus(jobStatus);
+        }
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
         for (JobInfo child : children) {
@@ -222,7 +243,9 @@ public class JobInfoManager {
                     analysisDao,
                     adminDao,
                     child,
-                    visualizerJavaFlags);
+                    visualizerJavaFlags,
+                    includeJobStatus,
+                    gpUrl);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
 

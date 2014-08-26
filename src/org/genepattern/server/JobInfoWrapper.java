@@ -26,6 +26,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.status.Status;
 import org.genepattern.server.process.JobPurgerUtil;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
@@ -674,6 +675,7 @@ public class JobInfoWrapper implements Serializable {
     transient private SourceInfo sourceInfo = null;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
+    private Status jobStatus = null;
     
     private void lazyInitQualityInfo() {
         if (sourceInfo == null) {
@@ -756,18 +758,20 @@ public class JobInfoWrapper implements Serializable {
         this.taskInfo = taskInfo;
     }
     
-    //public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
     public void setJobInfo(boolean showExecutionLogs, String servletContextPath, JobInfo jobInfo) {
         this.servletContextPath = servletContextPath;
         this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
-        //this.kindToModules = kindToModules;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
         processParameterInfoArray();
         this.jobPermissionsBean = null;
         
         initPurgeDate();
+        
+        if (jobStatus==null) {
+            jobStatus=new Status.Builder().jobInfo(jobInfo).build();
+        }
     }
 
     //JobInfo wrapper methods
@@ -833,6 +837,20 @@ public class JobInfoWrapper implements Serializable {
         log.error("jobInfo is null");
         return null;
     }
+    
+    public void setJobStatus(final Status jobStatus) {
+        this.jobStatus=jobStatus;
+    }
+    
+    /**
+     * Get the job status details. This method uses the same model as the REST api call to 
+     *     GET /rest/v1/jobs/{jobId}/status.json
+     * @return
+     */
+    public Status getJobStatus() {
+        return jobStatus;
+    }
+
     //--- end JobInfo wrapper methods
     public long getElapsedTimeMillis() {
         if (jobInfo != null) {
