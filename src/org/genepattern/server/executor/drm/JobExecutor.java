@@ -274,7 +274,7 @@ public class JobExecutor implements CommandExecutor2 {
     private long getDelay_proposed(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             log.error("drmJobStatus==null, returning hard-coded value");
-            return 1000L;
+            return fixedDelay;
         }
         final Date now=new Date();
         final Date submitTime=drmJobStatus.getSubmitTime();
@@ -734,9 +734,12 @@ public class JobExecutor implements CommandExecutor2 {
     private boolean doCancel(final DrmJobRecord drmJobRecord) {
         try {
             Boolean cancelled=cancelJobInThread(drmJobRecord);
-            //Thread.sleep(2000); // brief hard-coded delay to allow for the jobrunner to properly cancel the job
             //check the status of the job
             DrmJobStatus cancelledStatus = getJobStatus(drmJobRecord, 5000L); // 5 seconds
+            if (cancelledStatus == null) {
+                log.error("null status for cancelled job, gpJobNo="+drmJobRecord.getGpJobNo());
+                return false;
+            }
             if (!cancelledStatus.getJobState().is(DrmJobState.TERMINATED)) {
                 cancelledStatus = new DrmJobStatus.Builder(cancelledStatus)
                      .jobStatusMessage("Cancellation requested from GenePattern user")
@@ -759,36 +762,62 @@ public class JobExecutor implements CommandExecutor2 {
         }
         return false;
     }
-
+    
+    /**
+     * Cancel the job, waiting a hard-coded 5 second timeout interval before exiting.
+     * 
+     * @param drmJobRecord
+     * @return
+     * @throws InterruptedException
+     */
     private Boolean cancelJobInThread(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        final long taskCancellationTimeout_ms=5000L;
+        return cancelJobInThread(drmJobRecord, taskCancellationTimeout_ms);
+    }
+
+    /**
+     * Cancel the job, waiting the given amount of seconds before returning.
+     * 
+     * @param drmJobRecord, the job to cancel
+     * @param taskCancellationTimeout_ms, the amount of time, in milliseconds, to wait for the call to {@link JobRunner#cancelJob(DrmJobRecord)}
+     * 
+     * @return true if the job was successfully cancelled, 
+     *  false when there was an error cancelling the job, and
+     *  null when a timeout occurs waiting for the task to be cancelled.
+     *  
+     * @throws InterruptedException
+     */
+    private Boolean cancelJobInThread(final DrmJobRecord drmJobRecord, final long taskCancellationTimeout_ms) throws InterruptedException {
         if (drmJobRecord==null) {
             throw new IllegalArgumentException("drmJobRecord==null");
         }
         final int gpJobNo=drmJobRecord.getGpJobNo();
-        log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
-        
-        Boolean cancelled=null;
-        Future<Boolean> f = jobCancellationService.submit(new Callable<Boolean>() {
+        if (log.isDebugEnabled()) {
+            log.debug(jobRunnerName+" terminateJob, gpJobNo="+gpJobNo);
+        }
+        final Future<Boolean> f = jobCancellationService.submit(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                boolean cancelled=jobRunner.cancelJob(drmJobRecord);
-                return cancelled;
+                return jobRunner.cancelJob(drmJobRecord);
             }
         });
         
         try {
-            //hard-coded ... wait at most 5 seconds to cancel the job before falling back to manually updating the job status record
-            cancelled=f.get(5, TimeUnit.SECONDS);
+            // attempt to cancel the job, wait for the given taskCancellationTimeout
+            return f.get(taskCancellationTimeout_ms, TimeUnit.MILLISECONDS);
         }
         catch (ExecutionException e) {
             log.error("Error cancelling job="+gpJobNo, e);
+            return false;
         }
         catch (TimeoutException e) {
             log.debug("Timeout while cancelling job="+gpJobNo, e);
+            return null;
         }
-
-        log.debug("jobRunner.cancelJob returned "+cancelled);
-        return cancelled;
+        catch (Throwable t) {
+            log.error("Unexpected error cancelling job="+gpJobNo, t);
+            return false;
+        }
     }
 
     /**
