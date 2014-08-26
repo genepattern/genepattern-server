@@ -607,7 +607,7 @@
                                 </t:dataList>
                             </h:outputText>
                             <h:outputText
-                                rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
+                                rendered="#{jobStatusBean.jobStatus.isFinished and not jobStatusBean.jobStatus.hasError}">
                                 <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
                                     <script type="text/javascript">
                                             addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
