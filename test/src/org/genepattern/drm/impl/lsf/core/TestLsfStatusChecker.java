@@ -183,11 +183,6 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     }
     
     // Note: max_swap, max_processes, and max_threads are not logged yet  
-
-    @Test
-    public void parseMaxSwap() {
-        
-    }
     
     @Test
     public void checkStatus() throws Exception {
@@ -203,6 +198,20 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         statusChecker.checkStatus();
         DrmJobStatus jobStatus=statusChecker.getStatus();
         assertEquals(DrmJobState.RUNNING, jobStatus.getJobState());
+    }
+
+    /**
+     * Test-case for an LSF job which was cancelled via the 'bkill' command while the job was still pending.
+     */
+    @Test
+    public void checkStatus_bkillPendingJob() throws InterruptedException {
+        final String line="6540474 gpdev   EXIT  genepattern gpint01        -        62071      08/26-02:39:00 default    000:00:00.00 0      0       -  -  08/26-02:41:34";
+        final File lsfLogFile=new File(".lsf.out"); // doesn't exist, should be ignored
+        assertFalse("For this test, the '.lsf.out' file must not exist", lsfLogFile.exists());
+        int sleepInterval=1;
+        int retryCount=1;
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(line, lsfLogFile, sleepInterval, retryCount);
+        assertEquals("jobState", DrmJobState.ABORTED, jobStatus.getJobState());
     }
     
 }

@@ -41,6 +41,23 @@ public class LsfBjobsParser {
     }
 
     public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile) throws InterruptedException {
+        final int sleepInterval=3000;
+        final int retryCount=5;
+        return parseAsJobStatus(line, lsfLogFile, sleepInterval, retryCount);
+    }
+    
+    /**
+     * Get the job status from the LSF system.
+     * 
+     * @param line, the output from the bjobs -W command
+     * @param lsfLogFile, the optional path to the .lsf.out log file
+     * @param sleepInterval, the optional amount of time in milliseconds to wait for the lsfLogFile to become available. This is a workaround for NFS file systems.
+     * @param retryCount, the optional retry count to wait for the lsfLogFile.
+     * 
+     * @return
+     * @throws InterruptedException
+     */
+    public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile, final int sleepInterval, final int retryCount) throws InterruptedException { 
         final Matcher lineMatcher = LINE_PATTERN.matcher(line);
         if (!lineMatcher.matches()) {
             log.error("Unable to initialize DrmJobStatus from line="+line);
@@ -59,7 +76,14 @@ public class LsfBjobsParser {
         
         if ((lsfState==LsfState.EXIT || lsfState==LsfState.DONE) && lsfLogFile != null) {
             //for completed jobs, parse the lsf log file (.lsf.out)
-            waitForFile(lsfLogFile);  // <-- on NFS it can take a bit for the log file to get written
+            waitForFile(lsfLogFile, sleepInterval, retryCount);  // <-- on NFS it can take a bit for the log file to get written
+            if (log.isDebugEnabled()) {
+                if (!lsfLogFile.exists()) {
+                    log.debug("lsfLogFile does not exist, lsfLogFile="+lsfLogFile);
+                }
+            }
+        }
+        if ((lsfState==LsfState.EXIT || lsfState==LsfState.DONE) && lsfLogFile != null && lsfLogFile.exists()) {
             LsfErrorStatus lsfErrorStatus = checkStatusFromLsfLogFile(startTime != null, lsfLogFile);
             jobState = lsfErrorStatus.getJobState();
             exitCode = lsfErrorStatus.getExitCode();
@@ -129,6 +153,12 @@ public class LsfBjobsParser {
     }
 
     public static void waitForFile(final File file, int sleepInterval, int retryCount) throws InterruptedException {
+        if (sleepInterval<=0) {
+            if (log.isDebugEnabled()) {
+                log.debug("sleepInterval="+sleepInterval);
+            }
+            return;
+        }
         int count=0;
         while(count<retryCount && !file.exists()) {
             ++count;
