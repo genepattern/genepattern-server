@@ -126,10 +126,9 @@ public class JobStatusBean {
 
         
         JobInfoManager jobInfoManager = new JobInfoManager();
-        //this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
-        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo);
         final String gpUrl=UrlUtil.getGpUrl(request);
-
+        final boolean includeJobStatus=true;
+        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo, includeJobStatus, gpUrl);
           
         if (jobInfoWrapper == null) {
             String errorMessage = "Job # "+jobNumber+" is deleted.";
