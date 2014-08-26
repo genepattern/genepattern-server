@@ -74,7 +74,7 @@ public class CongestionManager {
      * Use when you don't already have a congestion object
      *
      * Estimate algorithm:
-     *     If there is no waiting jobs in thw queue, return 0
+     *     If there is no waiting jobs in the queue, return 0
      *     Otherwise return the time the last job that left the queue waited
      *
      * @param queuetime
