@@ -1223,22 +1223,23 @@ public class JobInfoWrapper implements Serializable {
      */
     public List<JobInfoWrapper> getAllSteps() {
         if (allSteps == null) {
-            allSteps = getAllSteps(this);
+            allSteps = initAllSteps();
         }
         return allSteps;
     }
     
-    private List<JobInfoWrapper> getAllSteps(JobInfoWrapper parent) {
+    private List<JobInfoWrapper> initAllSteps() {
         List<JobInfoWrapper> all = new ArrayList<JobInfoWrapper>();
-        //don't include the root job
-        if (!parent.isRoot()) {
-            all.add(parent);
-        }
-        for (JobInfoWrapper child : parent.children) {
-            List<JobInfoWrapper> allChildren = getAllSteps(child);
-            all.addAll(allChildren);
-        }
+        addChildSteps(all, this);
         return all;
+    }
+    
+    private void addChildSteps(List<JobInfoWrapper> all, JobInfoWrapper item) {
+        for(final JobInfoWrapper child : item.children) {
+            all.add(child);
+            addChildSteps(all, child);
+        }
+        return;
     }
     
     private List<JobInfoWrapper> pathFromRoot = null;
