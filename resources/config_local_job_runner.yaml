@@ -18,6 +18,8 @@ executors:
             jobRunnerName: CommonsExecJobRunner
             # polling interval for running jobs
             fixedDelay: 2000
+            # when true, use algorithm instead of fixed delay (by default useDynamicDisplay: true)
+            useDynamicDelay: false
             # name of hidden log file added to each job result directory
             job.logFile: ".rte.out"
             

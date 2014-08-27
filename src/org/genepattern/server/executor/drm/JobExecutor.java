@@ -83,6 +83,11 @@ public class JobExecutor implements CommandExecutor2 {
     public static final String PROP_FIXED_DELAY="fixedDelay";
     
     /**
+     * When true, use an algorithm to dynamically increase the polling interval based on how long the job has been PENDING or RUNNING.
+     */
+    public static final String PROP_USE_DYNAMIC_DELAY="useDynamicDelay";
+    
+    /**
      * For debugging, optionally set the persistence option for the job status records.
      * By default it saved to the GP database. It can optionally be set to an in-memory hash.
      * <pre>
@@ -185,6 +190,7 @@ public class JobExecutor implements CommandExecutor2 {
     private EventBus eventBus;
     
     private long fixedDelay=2000L;
+    private boolean useDynamicDelay=true;
 
     private BlockingQueue<DrmJobRecord> runningJobs;
     private Thread jobHandlerThread;
@@ -267,11 +273,21 @@ public class JobExecutor implements CommandExecutor2 {
      * @return the number of milliseconds to delay
      */
     private long getDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
+        if (useDynamicDelay) {
+            return getDynamicDelay(drmJobRecord, drmJobStatus);
+        }
+        else {
+            return getFixedDelay(drmJobRecord, drmJobStatus);
+        }
+    }
+    
+    
+    private long getFixedDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         return fixedDelay;
     }
     
     // more intelligent delay
-    private long getDelay_proposed(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
+    private long getDynamicDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             log.error("drmJobStatus==null, returning hard-coded value");
             return fixedDelay;
@@ -291,19 +307,16 @@ public class JobExecutor implements CommandExecutor2 {
         }
         
         //hard-coded rule as a function of how long the job has been 'pending' or 'running'
-        if (delta < MINUTE) {
-            return SEC;
-        }
-        else if (delta < 2L*MINUTE) {
+        if (delta < 2L*MINUTE) {
             return 2L * SEC;
         }
         else if (delta < 5L*MINUTE) {
             return 10L * SEC;
         }
         else if (delta < 10L*MINUTE) {
-            return 30L * SEC;
+            return 20L * SEC;
         }
-        return 60L * SEC;
+        return 30L * SEC;
     }
     
     @Override
@@ -331,7 +344,7 @@ public class JobExecutor implements CommandExecutor2 {
         String fixedDelayStr=properties.getProperty(PROP_FIXED_DELAY);
         if (fixedDelayStr != null && fixedDelayStr.trim().length()>0) {
             if (log.isDebugEnabled()) {
-                log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
+                log.debug(PROP_FIXED_DELAY+"="+fixedDelayStr);
             }
             try {
                 this.fixedDelay=Long.parseLong(fixedDelayStr);
@@ -340,11 +353,20 @@ public class JobExecutor implements CommandExecutor2 {
                 log.error("Error initializing value from config file, "+PROP_FIXED_DELAY+": "+fixedDelayStr, t);
             }
         }
+        String useDynamicDelayStr=properties.getProperty(PROP_USE_DYNAMIC_DELAY, "true");
+        if (useDynamicDelayStr != null && useDynamicDelayStr.trim().length()>0) {
+            if (log.isDebugEnabled()) {
+                log.debug(PROP_USE_DYNAMIC_DELAY+"="+useDynamicDelayStr);
+            }
+            this.useDynamicDelay=Boolean.valueOf(useDynamicDelayStr.trim());
+        }
+        
         if (log.isDebugEnabled()) {
             log.debug(PROP_JOB_RUNNER_CLASSNAME+"="+jobRunnerClassname);
             log.debug(PROP_JOB_RUNNER_NAME+"="+jobRunnerName);
             log.debug(PROP_LOOKUP_TYPE+"="+lookupType);
             log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
+            log.debug(PROP_USE_DYNAMIC_DELAY+"="+useDynamicDelay);
         }
 
         this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname, properties);
