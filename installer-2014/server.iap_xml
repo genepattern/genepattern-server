@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using InstallAnywhere 2012 Enterprise, Build 4390
+<!-- This script was automatically generated using InstallAnywhere 2014 Premier, Build 4783
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Fri Aug 22 15:55:30 EDT 2014 -->
-<InstallAnywhere_Deployment_Project increments="17289">
+     DATE:   Wed Aug 27 15:00:17 EDT 2014 -->
+<InstallAnywhere_Deployment_Project increments="17443">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="14" minor="0" revision="0"/>
-		<editionID>49,52,46,48,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,52,51,57,48</editionID>
+		<versionID major="16" minor="0" revision="0"/>
+		<editionID>49,54,46,48,32,80,114,101,109,105,101,114,32,66,117,105,108,100,32,52,55,56,51</editionID>
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
-		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,49,56,45,49,57,52,46,56,46,49,46,101,108,53,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,55,46,48,95,48,51,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,49,56,45,49,57,52,46,56,46,49,46,101,108,53,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,55,46,48,95,54,48,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,64,-9,73,-64,112,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,3,6,121,47,7,1,0,0</authorizationID>
+		<authorizationID>1,0,0,64,23,-39,0,48,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,1,4,119,40,8,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="762">
+	<installationObjects uniqueObjects="772">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="belongsToUninstallPhase">
 				<boolean>false</boolean>
@@ -10380,12 +10380,15 @@ and any path to a file to read from that file]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 													<property name="propertyValue">
-														<string><![CDATA[./temp]]></string>
+														<string><![CDATA[2750]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[java.io.tmpdir]]></string>
+														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+													</property>
+													<property name="propertyComment">
+														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 													</property>
 												</object>
 											</method>
@@ -10404,15 +10407,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 													<property name="propertyValue">
-														<string><![CDATA[2750]]></string>
+														<string><![CDATA[./temp]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-													</property>
-													<property name="propertyComment">
-														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+														<string><![CDATA[java.io.tmpdir]]></string>
 													</property>
 												</object>
 											</method>
@@ -11761,6 +11761,22 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</property>
 				</object>
 			</property>
+			<property name="winCodeSign">
+				<object class="com.flexera.ia.designer.windows.codesign.WindowsCodeSign" objectID="2c543f5a95bc">
+					<property name="certificationFileLoc">
+						<string><![CDATA[]]></string>
+					</property>
+					<property name="url">
+						<string><![CDATA[]]></string>
+					</property>
+					<property name="timestampServer">
+						<string><![CDATA[]]></string>
+					</property>
+					<property name="password">
+						<string><![CDATA[]]></string>
+					</property>
+				</object>
+			</property>
 			<property name="bundledJREInstall">
 				<int>2</int>
 			</property>
@@ -11923,7 +11939,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="bundledVM">
-												<string><![CDATA[SUN_160_B23_LINUX_64Bit.vm]]></string>
+												<string><![CDATA[ORACLEJRE7u60_linux32.vm]]></string>
 											</property>
 											<property name="withoutVmSearchOption">
 												<short>10</short>
@@ -11952,6 +11968,40 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 											</property>
 											<property name="outputDir">
 												<string><![CDATA[Java]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="withoutVmSearchOption">
+												<short>10</short>
+											</property>
+											<property name="withVMSearchOption">
+												<short>21</short>
+											</property>
+											<property name="win32InstallerLauncherType">
+												<short>90</short>
+											</property>
+											<property name="jvmResolutionFileSpecs">
+												<object class="java.util.Vector"/>
+											</property>
+											<property name="md5CheckApplicable_search_notFound_download">
+												<boolean>false</boolean>
+											</property>
+											<property name="md5CheckApplicable_dontSearch_download">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="2c54605496ee">
+											<property name="type">
+												<int>9</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Windows_Pure_64_Bit]]></string>
 											</property>
 											<property name="buildNoVM">
 												<boolean>true</boolean>
@@ -12096,965 +12146,1083 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 									<property name="children">
 										<object class="java.util.ArrayList" list="true">
 											<method name="add">
-												<object class="com.flexera.ia.vapp.datastructures.VirtualMachine" objectID="df44594dbdfe">
+												<object class="com.flexera.ia.vapp.datastructures.VirtualMachineCollection" objectID="2c54605696ee">
 													<property name="parent">
 														<object refID="df445935bdea"/>
 													</property>
 													<property name="productInformationList">
-														<object class="java.util.ArrayList" list="true">
-															<method name="add">
-																<object class="com.flexera.ia.vapp.datastructures.ProductInformation" objectID="df44593dbdea">
-																	<property name="productName">
-																		<string><![CDATA[GenePattern]]></string>
-																	</property>
-																	<property name="productInformation">
-																		<string><![CDATA[]]></string>
-																	</property>
-																	<property name="productVersion">
-																		<string><![CDATA[3.2.0.0]]></string>
-																	</property>
-																	<property name="productVendor">
-																		<string><![CDATA[Broad Institute, MIT]]></string>
-																	</property>
-																	<property name="productProperties">
-																		<object class="java.util.ArrayList" list="true">
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf2">
-																					<property name="propertyKey">
-																						<string><![CDATA[USER_INSTALL_DIR]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[Choose Install Folder]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf3">
-																					<property name="propertyKey">
-																						<string><![CDATA[USER_SHORTCUTS]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[Choose Link Folder]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf3">
-																					<property name="propertyKey">
-																						<string><![CDATA[webmaster]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf4">
-																					<property name="propertyKey">
-																						<string><![CDATA[purgeJobsAfter]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf4">
-																					<property name="propertyKey">
-																						<string><![CDATA[purgeTime]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf5">
-																					<property name="propertyKey">
-																						<string><![CDATA[GENEPATTERN_PORT]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf5">
-																					<property name="propertyKey">
-																						<string><![CDATA[HSQL_port]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf6">
-																					<property name="propertyKey">
-																						<string><![CDATA[R25]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf6">
-																					<property name="propertyKey">
-																						<string><![CDATA[PERL]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf7">
-																					<property name="propertyKey">
-																						<string><![CDATA[webmaster]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf7">
-																					<property name="propertyKey">
-																						<string><![CDATA[purgeJobsAfter]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf8">
-																					<property name="propertyKey">
-																						<string><![CDATA[purgeTime]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf8">
-																					<property name="propertyKey">
-																						<string><![CDATA[GENEPATTERN_PORT]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf9">
-																					<property name="propertyKey">
-																						<string><![CDATA[HSQL_port]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf9">
-																					<property name="propertyKey">
-																						<string><![CDATA[PERL]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[GenePattern server configuration]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445942bdf9">
-																					<property name="propertyKey">
-																						<string><![CDATA[HTTP_PROXYSERVER]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[Web Proxy Settings]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdfa">
-																					<property name="propertyKey">
-																						<string><![CDATA[HTTP_PROXYPORT]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[Web Proxy Settings]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																			<method name="add">
-																				<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445942bdfa">
-																					<property name="propertyKey">
-																						<string><![CDATA[LSID_AUTHORITY]]></string>
-																					</property>
-																					<property name="propertyType">
-																						<object class="java.lang.Enum" javaEnum="true">
-																							<method name="add">
-																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
-																								<string><![CDATA[string]]></string>
-																							</method>
-																						</object>
-																					</property>
-																					<property name="propertyDescription">
-																						<string><![CDATA[LSID Authority]]></string>
-																					</property>
-																					<property name="propertyValue">
-																						<string><![CDATA[]]></string>
-																					</property>
-																				</object>
-																			</method>
-																		</object>
-																	</property>
-																	<property name="internalUID">
-																		<string><![CDATA[df445941-1f19-11b2-bdfb-a57a962e8f36]]></string>
-																	</property>
-																</object>
-															</method>
-														</object>
-													</property>
-													<property name="UUID">
-														<string><![CDATA[df445950-1f19-11b2-be00-a57a962e8f36]]></string>
+														<object class="java.util.ArrayList" list="true"/>
 													</property>
 													<property name="id">
 														<int>0</int>
 													</property>
 													<property name="name">
-														<string><![CDATA[GPserver_VM1]]></string>
+														<string><![CDATA[Default VM Tier]]></string>
+													</property>
+													<property name="UUID">
+														<string><![CDATA[2c546055-1f1a-11b2-96ef-845d79c3c68f]]></string>
 													</property>
 													<property name="info">
 														<string><![CDATA[]]></string>
 													</property>
-													<property name="virtualMachineVersion">
-														<string><![CDATA[1.0]]></string>
-													</property>
-													<property name="osInformation">
-														<object class="com.flexera.ia.vapp.datastructures.OperatingSystemInformation" objectID="df445944bdfc">
-															<property name="jeosType">
-																<object class="java.lang.Enum" javaEnum="true">
-																	<method name="add">
-																		<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
-																		<string><![CDATA[LINUX_UBUNTU_JEOS]]></string>
-																	</method>
-																</object>
-															</property>
-															<property name="osFullName">
-																<string><![CDATA[Ubuntu Oneric Omelot]]></string>
-															</property>
-															<property name="version">
-																<string><![CDATA[12.0]]></string>
-															</property>
-															<property name="osVendor">
-																<string><![CDATA[Ubuntu]]></string>
-															</property>
-															<property name="fetchPackagesFromLocalRepository">
-																<boolean>false</boolean>
-															</property>
-														</object>
-													</property>
-													<property name="operatingSystemPackageInformation">
+													<property name="children">
 														<object class="java.util.ArrayList" list="true">
 															<method name="add">
-																<object class="com.flexera.ia.vapp.datastructures.OperatingSystemPackage" objectID="df445946bdfc">
-																	<property name="displayName">
-																		<string><![CDATA[openssh-server]]></string>
+																<object class="com.flexera.ia.vapp.datastructures.VirtualMachine" objectID="df44594dbdfe">
+																	<property name="parent">
+																		<object refID="df445935bdea"/>
 																	</property>
-																	<property name="version">
-																		<string><![CDATA[1.0.1-4ubuntu3]]></string>
-																	</property>
-																	<property name="internalName">
-																		<string><![CDATA[openssh-server]]></string>
-																	</property>
-																	<property name="description">
-																		<string><![CDATA[secure shell (SSH) server, for secure access from remote machines]]></string>
-																	</property>
-																	<property name="targetedJeOS">
-																		<object class="java.lang.Enum" javaEnum="true">
+																	<property name="productInformationList">
+																		<object class="java.util.ArrayList" list="true">
 																			<method name="add">
-																				<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
-																				<string><![CDATA[LINUX_UBUNTU_JEOS]]></string>
-																			</method>
-																		</object>
-																	</property>
-																	<property name="osPkgType">
-																		<object class="java.lang.Enum" javaEnum="true">
-																			<method name="add">
-																				<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.OperatingSystemPackageType]]></string>
-																				<string><![CDATA[DEBIAN]]></string>
-																			</method>
-																		</object>
-																	</property>
-																	<property name="pacakgeLocationType">
-																		<string><![CDATA[internet]]></string>
-																	</property>
-																	<property name="pacakgeFileLocation">
-																		<string><![CDATA[]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="add">
-																<object class="com.flexera.ia.vapp.datastructures.OperatingSystemPackage" objectID="df445944bdfd">
-																	<property name="displayName">
-																		<string><![CDATA[openssh-server.i686]]></string>
-																	</property>
-																	<property name="version">
-																		<string><![CDATA[5.3p1-81.el6]]></string>
-																	</property>
-																	<property name="internalName">
-																		<string><![CDATA[openssh-server.i686]]></string>
-																	</property>
-																	<property name="description">
-																		<string><![CDATA[openssh-server.i686]]></string>
-																	</property>
-																	<property name="targetedJeOS">
-																		<object class="java.lang.Enum" javaEnum="true">
-																			<method name="add">
-																				<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
-																				<string><![CDATA[LINUX_CENTOS_JEOS]]></string>
-																			</method>
-																		</object>
-																	</property>
-																	<property name="osPkgType">
-																		<object class="java.lang.Enum" javaEnum="true">
-																			<method name="add">
-																				<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.OperatingSystemPackageType]]></string>
-																				<string><![CDATA[RPM]]></string>
-																			</method>
-																		</object>
-																	</property>
-																	<property name="pacakgeLocationType">
-																		<string><![CDATA[internet]]></string>
-																	</property>
-																	<property name="pacakgeFileLocation">
-																		<string><![CDATA[]]></string>
-																	</property>
-																</object>
-															</method>
-														</object>
-													</property>
-													<property name="scriptsInformation">
-														<object class="com.flexera.ia.vapp.datastructures.ScriptsInformation" objectID="df445950bdff"/>
-													</property>
-													<property name="buildTimeApplicationInstallationInformation">
-														<object class="com.flexera.ia.vapp.datastructures.ApplicationInstallationInformation" objectID="df44594dbdff">
-															<property name="installers">
-																<object class="java.util.ArrayList" list="true"/>
-															</property>
-														</object>
-													</property>
-													<property name="virtualHardwareInformation">
-														<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardwareInformation" objectID="df445945bdfd">
-															<property name="virtualHardwareProfileList">
-																<object class="java.util.ArrayList" list="true">
-																	<method name="add">
-																		<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardwareProfile" objectID="df445947bdfd">
-																			<property name="profileId">
-																				<string><![CDATA[A Virtual Machine]]></string>
-																			</property>
-																			<property name="profileDescription">
-																				<string><![CDATA[Ubuntu 12.0 Linux]]></string>
-																			</property>
-																			<property name="hardwareItems">
-																				<object class="java.util.ArrayList" list="true">
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualCPU" objectID="df445948bdfd">
-																							<property name="id">
-																								<int>7</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[Virtual CPU(s)]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[Number of virtual CPUs]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>0</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>0</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>1</long>
-																							</property>
-																							<property name="reservation">
-																								<long>1</long>
-																							</property>
-																							<property name="limit">
-																								<long>1</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[Others]]></string>
-																									</method>
+																				<object class="com.flexera.ia.vapp.datastructures.ProductInformation" objectID="df44593dbdea">
+																					<property name="productName">
+																						<string><![CDATA[GenePattern]]></string>
+																					</property>
+																					<property name="productInformation">
+																						<string><![CDATA[]]></string>
+																					</property>
+																					<property name="productVersion">
+																						<string><![CDATA[3.2.0.0]]></string>
+																					</property>
+																					<property name="productVendor">
+																						<string><![CDATA[Broad Institute, MIT]]></string>
+																					</property>
+																					<property name="productProperties">
+																						<object class="java.util.ArrayList" list="true">
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf2">
+																									<property name="propertyKey">
+																										<string><![CDATA[USER_INSTALL_DIR]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[Choose Install Folder]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
 																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>false</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[hertz * 10^6]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[Processor]]></string>
-																									</method>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf3">
+																									<property name="propertyKey">
+																										<string><![CDATA[USER_SHORTCUTS]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[Choose Link Folder]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
 																								</object>
-																							</property>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf3">
+																									<property name="propertyKey">
+																										<string><![CDATA[webmaster]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf4">
+																									<property name="propertyKey">
+																										<string><![CDATA[purgeJobsAfter]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf4">
+																									<property name="propertyKey">
+																										<string><![CDATA[purgeTime]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf5">
+																									<property name="propertyKey">
+																										<string><![CDATA[GENEPATTERN_PORT]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf5">
+																									<property name="propertyKey">
+																										<string><![CDATA[HSQL_port]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf6">
+																									<property name="propertyKey">
+																										<string><![CDATA[R25]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf6">
+																									<property name="propertyKey">
+																										<string><![CDATA[PERL]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf7">
+																									<property name="propertyKey">
+																										<string><![CDATA[webmaster]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf7">
+																									<property name="propertyKey">
+																										<string><![CDATA[purgeJobsAfter]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf8">
+																									<property name="propertyKey">
+																										<string><![CDATA[purgeTime]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf8">
+																									<property name="propertyKey">
+																										<string><![CDATA[GENEPATTERN_PORT]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445940bdf9">
+																									<property name="propertyKey">
+																										<string><![CDATA[HSQL_port]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdf9">
+																									<property name="propertyKey">
+																										<string><![CDATA[PERL]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[GenePattern server configuration]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445942bdf9">
+																									<property name="propertyKey">
+																										<string><![CDATA[HTTP_PROXYSERVER]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[Web Proxy Settings]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445941bdfa">
+																									<property name="propertyKey">
+																										<string><![CDATA[HTTP_PROXYPORT]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[Web Proxy Settings]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
+																							<method name="add">
+																								<object class="com.flexera.ia.vapp.datastructures.ProductInformationProperty" objectID="df445942bdfa">
+																									<property name="propertyKey">
+																										<string><![CDATA[LSID_AUTHORITY]]></string>
+																									</property>
+																									<property name="propertyType">
+																										<object class="java.lang.Enum" javaEnum="true">
+																											<method name="add">
+																												<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.ProductPropertyType]]></string>
+																												<string><![CDATA[string]]></string>
+																											</method>
+																										</object>
+																									</property>
+																									<property name="propertyDescription">
+																										<string><![CDATA[LSID Authority]]></string>
+																									</property>
+																									<property name="propertyValue">
+																										<string><![CDATA[]]></string>
+																									</property>
+																								</object>
+																							</method>
 																						</object>
-																					</method>
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualSCSIController" objectID="df44594abdfd">
-																							<property name="id">
-																								<int>68</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[SCSI Controller 0 - LSI Logic]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[SCSI Controller]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>0</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>0</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>1</long>
-																							</property>
-																							<property name="reservation">
-																								<long>1</long>
-																							</property>
-																							<property name="limit">
-																								<long>1</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[lsilogic]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>false</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[Parallel_SCSI_HBA]]></string>
-																									</method>
-																								</object>
-																							</property>
-																						</object>
-																					</method>
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualIDEController" objectID="df44594bbdfd">
-																							<property name="id">
-																								<int>0</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[IDE]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[IDE Controller]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>0</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>0</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>1</long>
-																							</property>
-																							<property name="reservation">
-																								<long>1</long>
-																							</property>
-																							<property name="limit">
-																								<long>1</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[lsilogic]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>false</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[IDE_Controller]]></string>
-																									</method>
-																								</object>
-																							</property>
-																						</object>
-																					</method>
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardDisk" objectID="df44594dbdfd">
-																							<property name="id">
-																								<int>27</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[disk1]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>68</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>0</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>4</long>
-																							</property>
-																							<property name="reservation">
-																								<long>4</long>
-																							</property>
-																							<property name="limit">
-																								<long>4</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[ovf:/disk/vmdisk1]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[Others]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>false</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[byte * 2^30]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[Disk_Drive]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="fileReferenceIDOfHardDisk">
-																								<string><![CDATA[file1]]></string>
-																							</property>
-																							<property name="locationOfDiskFile">
-																								<string><![CDATA[]]></string>
-																							</property>
-																						</object>
-																					</method>
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualNetworkAdapter" objectID="df44594bbdfe">
-																							<property name="id">
-																								<int>1</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[Flexible]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[The bridged network]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>0</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[VM Network]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>2</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>1</long>
-																							</property>
-																							<property name="reservation">
-																								<long>1</long>
-																							</property>
-																							<property name="limit">
-																								<long>1</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[Flexible]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>true</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[Ethernet_Adapter]]></string>
-																									</method>
-																								</object>
-																							</property>
-																						</object>
-																					</method>
-																					<method name="add">
-																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualRAM" objectID="df44594cbdfe">
-																							<property name="id">
-																								<int>12</int>
-																							</property>
-																							<property name="name">
-																								<string><![CDATA[MB of Memory]]></string>
-																							</property>
-																							<property name="info">
-																								<string><![CDATA[Memory size]]></string>
-																							</property>
-																							<property name="parent">
-																								<int>0</int>
-																							</property>
-																							<property name="connection">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="address">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="addressOnParent">
-																								<int>0</int>
-																							</property>
-																							<property name="virtualQuantity">
-																								<long>1024</long>
-																							</property>
-																							<property name="reservation">
-																								<long>1024</long>
-																							</property>
-																							<property name="limit">
-																								<long>1024</long>
-																							</property>
-																							<property name="weight">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="hostResource">
-																								<string><![CDATA[]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceSubtype">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
-																										<string><![CDATA[Others]]></string>
-																									</method>
-																								</object>
-																							</property>
-																							<property name="automaticAllocation">
-																								<boolean>false</boolean>
-																							</property>
-																							<property name="allocationUnit">
-																								<string><![CDATA[byte * 2^20]]></string>
-																							</property>
-																							<property name="virtualHardwareResourceType">
-																								<object class="java.lang.Enum" javaEnum="true">
-																									<method name="add">
-																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
-																										<string><![CDATA[Memory]]></string>
-																									</method>
-																								</object>
-																							</property>
-																						</object>
-																					</method>
+																					</property>
+																					<property name="internalUID">
+																						<string><![CDATA[df445941-1f19-11b2-bdfb-a57a962e8f36]]></string>
+																					</property>
 																				</object>
-																			</property>
-																			<property name="amazonInstanceType">
+																			</method>
+																		</object>
+																	</property>
+																	<property name="UUID">
+																		<string><![CDATA[df445950-1f19-11b2-be00-a57a962e8f36]]></string>
+																	</property>
+																	<property name="id">
+																		<int>0</int>
+																	</property>
+																	<property name="name">
+																		<string><![CDATA[GPserver_VM1]]></string>
+																	</property>
+																	<property name="info">
+																		<string><![CDATA[]]></string>
+																	</property>
+																	<property name="virtualMachineVersion">
+																		<string><![CDATA[1.0]]></string>
+																	</property>
+																	<property name="osInformation">
+																		<object class="com.flexera.ia.vapp.datastructures.OperatingSystemInformation" objectID="df445944bdfc">
+																			<property name="jeosType">
 																				<object class="java.lang.Enum" javaEnum="true">
 																					<method name="add">
-																						<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.AmazonInstanceType]]></string>
-																						<string><![CDATA[SMALL]]></string>
+																						<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
+																						<string><![CDATA[LINUX_UBUNTU_JEOS]]></string>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="osFullName">
+																				<string><![CDATA[Ubuntu Oneric Omelot]]></string>
+																			</property>
+																			<property name="version">
+																				<string><![CDATA[12.0]]></string>
+																			</property>
+																			<property name="osVendor">
+																				<string><![CDATA[Ubuntu]]></string>
+																			</property>
+																			<property name="fetchPackagesFromLocalRepository">
+																				<boolean>false</boolean>
+																			</property>
+																		</object>
+																	</property>
+																	<property name="operatingSystemPackageInformation">
+																		<object class="java.util.ArrayList" list="true">
+																			<method name="add">
+																				<object class="com.flexera.ia.vapp.datastructures.OperatingSystemPackage" objectID="df445946bdfc">
+																					<property name="displayName">
+																						<string><![CDATA[openssh-server]]></string>
+																					</property>
+																					<property name="version">
+																						<string><![CDATA[1.0.1-4ubuntu3]]></string>
+																					</property>
+																					<property name="internalName">
+																						<string><![CDATA[openssh-server]]></string>
+																					</property>
+																					<property name="description">
+																						<string><![CDATA[secure shell (SSH) server, for secure access from remote machines]]></string>
+																					</property>
+																					<property name="targetedJeOS">
+																						<object class="java.lang.Enum" javaEnum="true">
+																							<method name="add">
+																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
+																								<string><![CDATA[LINUX_UBUNTU_JEOS]]></string>
+																							</method>
+																						</object>
+																					</property>
+																					<property name="osPkgType">
+																						<object class="java.lang.Enum" javaEnum="true">
+																							<method name="add">
+																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.OperatingSystemPackageType]]></string>
+																								<string><![CDATA[DEBIAN]]></string>
+																							</method>
+																						</object>
+																					</property>
+																					<property name="pacakgeLocationType">
+																						<string><![CDATA[internet]]></string>
+																					</property>
+																					<property name="pacakgeFileLocation">
+																						<string><![CDATA[]]></string>
+																					</property>
+																				</object>
+																			</method>
+																			<method name="add">
+																				<object class="com.flexera.ia.vapp.datastructures.OperatingSystemPackage" objectID="df445944bdfd">
+																					<property name="displayName">
+																						<string><![CDATA[openssh-server.i686]]></string>
+																					</property>
+																					<property name="version">
+																						<string><![CDATA[5.3p1-81.el6]]></string>
+																					</property>
+																					<property name="internalName">
+																						<string><![CDATA[openssh-server.i686]]></string>
+																					</property>
+																					<property name="description">
+																						<string><![CDATA[openssh-server.i686]]></string>
+																					</property>
+																					<property name="targetedJeOS">
+																						<object class="java.lang.Enum" javaEnum="true">
+																							<method name="add">
+																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.JeOS]]></string>
+																								<string><![CDATA[LINUX_CENTOS_JEOS]]></string>
+																							</method>
+																						</object>
+																					</property>
+																					<property name="osPkgType">
+																						<object class="java.lang.Enum" javaEnum="true">
+																							<method name="add">
+																								<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.OperatingSystemPackageType]]></string>
+																								<string><![CDATA[RPM]]></string>
+																							</method>
+																						</object>
+																					</property>
+																					<property name="pacakgeLocationType">
+																						<string><![CDATA[internet]]></string>
+																					</property>
+																					<property name="pacakgeFileLocation">
+																						<string><![CDATA[]]></string>
+																					</property>
+																				</object>
+																			</method>
+																		</object>
+																	</property>
+																	<property name="scriptsInformation">
+																		<object class="com.flexera.ia.vapp.datastructures.ScriptsInformation" objectID="df445950bdff"/>
+																	</property>
+																	<property name="buildTimeApplicationInstallationInformation">
+																		<object class="com.flexera.ia.vapp.datastructures.ApplicationInstallationInformation" objectID="df44594dbdff">
+																			<property name="installers">
+																				<object class="java.util.ArrayList" list="true"/>
+																			</property>
+																		</object>
+																	</property>
+																	<property name="virtualHardwareInformation">
+																		<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardwareInformation" objectID="df445945bdfd">
+																			<property name="virtualHardwareProfileList">
+																				<object class="java.util.ArrayList" list="true">
+																					<method name="add">
+																						<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardwareProfile" objectID="df445947bdfd">
+																							<property name="profileId">
+																								<string><![CDATA[A Virtual Machine]]></string>
+																							</property>
+																							<property name="profileDescription">
+																								<string><![CDATA[Ubuntu 12.0 Linux]]></string>
+																							</property>
+																							<property name="hardwareItems">
+																								<object class="java.util.ArrayList" list="true">
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualCPU" objectID="df445948bdfd">
+																											<property name="id">
+																												<int>7</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[Virtual CPU(s)]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[Number of virtual CPUs]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>0</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>0</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>1</long>
+																											</property>
+																											<property name="reservation">
+																												<long>1</long>
+																											</property>
+																											<property name="limit">
+																												<long>1</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[Others]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>false</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[hertz * 10^6]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[Processor]]></string>
+																													</method>
+																												</object>
+																											</property>
+																										</object>
+																									</method>
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualSCSIController" objectID="df44594abdfd">
+																											<property name="id">
+																												<int>68</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[SCSI Controller 0 - LSI Logic]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[SCSI Controller]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>0</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>0</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>1</long>
+																											</property>
+																											<property name="reservation">
+																												<long>1</long>
+																											</property>
+																											<property name="limit">
+																												<long>1</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[lsilogic]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>false</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[Parallel_SCSI_HBA]]></string>
+																													</method>
+																												</object>
+																											</property>
+																										</object>
+																									</method>
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualIDEController" objectID="df44594bbdfd">
+																											<property name="id">
+																												<int>0</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[IDE]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[IDE Controller]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>0</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>0</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>1</long>
+																											</property>
+																											<property name="reservation">
+																												<long>1</long>
+																											</property>
+																											<property name="limit">
+																												<long>1</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[lsilogic]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>false</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[IDE_Controller]]></string>
+																													</method>
+																												</object>
+																											</property>
+																										</object>
+																									</method>
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualHardDisk" objectID="df44594dbdfd">
+																											<property name="id">
+																												<int>27</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[disk1]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>68</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>0</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>4</long>
+																											</property>
+																											<property name="reservation">
+																												<long>4</long>
+																											</property>
+																											<property name="limit">
+																												<long>4</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[ovf:/disk/vmdisk1]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[Others]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>false</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[byte * 2^30]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[Disk_Drive]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="fileReferenceIDOfHardDisk">
+																												<string><![CDATA[file1]]></string>
+																											</property>
+																											<property name="locationOfDiskFile">
+																												<string><![CDATA[]]></string>
+																											</property>
+																										</object>
+																									</method>
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualNetworkAdapter" objectID="df44594bbdfe">
+																											<property name="id">
+																												<int>1</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[Flexible]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[The bridged network]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>0</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[VM Network]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>2</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>1</long>
+																											</property>
+																											<property name="reservation">
+																												<long>1</long>
+																											</property>
+																											<property name="limit">
+																												<long>1</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[Flexible]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>true</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[Ethernet_Adapter]]></string>
+																													</method>
+																												</object>
+																											</property>
+																										</object>
+																									</method>
+																									<method name="add">
+																										<object class="com.flexera.ia.vapp.datastructures.hardware.VirtualRAM" objectID="df44594cbdfe">
+																											<property name="id">
+																												<int>12</int>
+																											</property>
+																											<property name="name">
+																												<string><![CDATA[MB of Memory]]></string>
+																											</property>
+																											<property name="info">
+																												<string><![CDATA[Memory size]]></string>
+																											</property>
+																											<property name="parent">
+																												<int>0</int>
+																											</property>
+																											<property name="connection">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="address">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="addressOnParent">
+																												<int>0</int>
+																											</property>
+																											<property name="virtualQuantity">
+																												<long>1024</long>
+																											</property>
+																											<property name="reservation">
+																												<long>1024</long>
+																											</property>
+																											<property name="limit">
+																												<long>1024</long>
+																											</property>
+																											<property name="weight">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="hostResource">
+																												<string><![CDATA[]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceSubtype">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceSubtype]]></string>
+																														<string><![CDATA[Others]]></string>
+																													</method>
+																												</object>
+																											</property>
+																											<property name="automaticAllocation">
+																												<boolean>false</boolean>
+																											</property>
+																											<property name="allocationUnit">
+																												<string><![CDATA[byte * 2^20]]></string>
+																											</property>
+																											<property name="virtualHardwareResourceType">
+																												<object class="java.lang.Enum" javaEnum="true">
+																													<method name="add">
+																														<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualHardwareResourceType]]></string>
+																														<string><![CDATA[Memory]]></string>
+																													</method>
+																												</object>
+																											</property>
+																										</object>
+																									</method>
+																								</object>
+																							</property>
+																							<property name="amazonInstanceType">
+																								<object class="java.lang.Enum" javaEnum="true">
+																									<method name="add">
+																										<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.AmazonInstanceType]]></string>
+																										<string><![CDATA[SMALL]]></string>
+																									</method>
+																								</object>
+																							</property>
+																						</object>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="systemType">
+																				<object class="java.lang.Enum" javaEnum="true">
+																					<method name="add">
+																						<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualSystemType]]></string>
+																						<string><![CDATA[vmx07]]></string>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="instanceId">
+																				<int>18</int>
+																			</property>
+																		</object>
+																	</property>
+																	<property name="startupInfo">
+																		<object class="com.flexera.ia.vapp.datastructures.VirtualSystemEntityStartupInfo" objectID="df44594ebe00">
+																			<property name="startupDelaySeconds">
+																				<long>10</long>
+																			</property>
+																			<property name="stopDelaySeconds">
+																				<long>10</long>
+																			</property>
+																			<property name="startAction">
+																				<object class="java.lang.Enum" javaEnum="true">
+																					<method name="add">
+																						<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.StartAction]]></string>
+																						<string><![CDATA[powerOn]]></string>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="stopAction">
+																				<object class="java.lang.Enum" javaEnum="true">
+																					<method name="add">
+																						<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.StopAction]]></string>
+																						<string><![CDATA[guestShutdown]]></string>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="startOrder">
+																				<int>0</int>
+																			</property>
+																			<property name="stopOrder">
+																				<int>0</int>
+																			</property>
+																		</object>
+																	</property>
+																	<property name="firstBootTimeApplicationInstallationInformation">
+																		<object class="com.flexera.ia.vapp.datastructures.ApplicationInstallationInformation" objectID="df445942bdfb">
+																			<property name="installers">
+																				<object class="java.util.ArrayList" list="true">
+																					<method name="add">
+																						<object class="com.flexera.ia.vapp.datastructures.ApplicationInstaller" objectID="df445942bdfc">
+																							<property name="iaInstaller">
+																								<boolean>true</boolean>
+																							</property>
+																							<property name="thisInstaller">
+																								<boolean>true</boolean>
+																							</property>
+																							<property name="buildConfiguration">
+																								<object refID="6d3e301889ac"/>
+																							</property>
+																							<property name="locationOfInstaller">
+																								<string><![CDATA[]]></string>
+																							</property>
+																							<property name="locationOfResponseFile">
+																								<string><![CDATA[]]></string>
+																							</property>
+																							<property name="installationCommand">
+																								<string><![CDATA[]]></string>
+																							</property>
+																							<property name="executable">
+																								<string><![CDATA[]]></string>
+																							</property>
+																							<property name="buildTarget">
+																								<string><![CDATA[Linux]]></string>
+																							</property>
+																							<property name="internalUID">
+																								<string><![CDATA[df445941-1f19-11b2-bdfb-a57a962e8f36]]></string>
+																							</property>
+																						</object>
 																					</method>
 																				</object>
 																			</property>
 																		</object>
-																	</method>
+																	</property>
+																	<property name="choosenVMInfo">
+																		<object class="com.flexera.ia.vapp.chooseavm.ChoosenVMInfo" objectID="2c54606196ef">
+																			<property name="templateTypeOption">
+																				<object class="java.lang.Enum" javaEnum="true">
+																					<method name="add">
+																						<string><![CDATA[com.flexera.ia.vapp.chooseavm.VMTemplateTypeOption]]></string>
+																						<string><![CDATA[IA_VM_TEMPLATE]]></string>
+																					</method>
+																				</object>
+																			</property>
+																			<property name="vmTemplateName">
+																				<string><![CDATA[No VM Templates available]]></string>
+																			</property>
+																			<property name="powerOnVmIfNotRunning">
+																				<boolean>false</boolean>
+																			</property>
+																			<property name="vmPartOfVapp">
+																				<boolean>false</boolean>
+																			</property>
+																		</object>
+																	</property>
 																</object>
-															</property>
-															<property name="systemType">
-																<object class="java.lang.Enum" javaEnum="true">
-																	<method name="add">
-																		<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.VirtualSystemType]]></string>
-																		<string><![CDATA[vmx07]]></string>
-																	</method>
-																</object>
-															</property>
-															<property name="instanceId">
-																<int>18</int>
-															</property>
+															</method>
 														</object>
 													</property>
-													<property name="startupInfo">
-														<object class="com.flexera.ia.vapp.datastructures.VirtualSystemEntityStartupInfo" objectID="df44594ebe00">
+													<property name="vseStartupInfo">
+														<object class="com.flexera.ia.vapp.datastructures.VirtualSystemEntityStartupInfo" objectID="2c54605596ee">
 															<property name="startupDelaySeconds">
 																<long>10</long>
 															</property>
@@ -13073,48 +13241,15 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 																<object class="java.lang.Enum" javaEnum="true">
 																	<method name="add">
 																		<string><![CDATA[com.flexera.ia.vapp.datastructures.enums.StopAction]]></string>
-																		<string><![CDATA[guestShutdown]]></string>
+																		<string><![CDATA[powerOff]]></string>
 																	</method>
 																</object>
 															</property>
-														</object>
-													</property>
-													<property name="firstBootTimeApplicationInstallationInformation">
-														<object class="com.flexera.ia.vapp.datastructures.ApplicationInstallationInformation" objectID="df445942bdfb">
-															<property name="installers">
-																<object class="java.util.ArrayList" list="true">
-																	<method name="add">
-																		<object class="com.flexera.ia.vapp.datastructures.ApplicationInstaller" objectID="df445942bdfc">
-																			<property name="iaInstaller">
-																				<boolean>true</boolean>
-																			</property>
-																			<property name="thisInstaller">
-																				<boolean>true</boolean>
-																			</property>
-																			<property name="buildConfiguration">
-																				<object refID="6d3e301889ac"/>
-																			</property>
-																			<property name="locationOfInstaller">
-																				<string><![CDATA[]]></string>
-																			</property>
-																			<property name="locationOfResponseFile">
-																				<string><![CDATA[]]></string>
-																			</property>
-																			<property name="installationCommand">
-																				<string><![CDATA[]]></string>
-																			</property>
-																			<property name="executable">
-																				<string><![CDATA[]]></string>
-																			</property>
-																			<property name="buildTarget">
-																				<string><![CDATA[Linux]]></string>
-																			</property>
-																			<property name="internalUID">
-																				<string><![CDATA[df445941-1f19-11b2-bdfb-a57a962e8f36]]></string>
-																			</property>
-																		</object>
-																	</method>
-																</object>
+															<property name="startOrder">
+																<int>0</int>
+															</property>
+															<property name="stopOrder">
+																<int>0</int>
 															</property>
 														</object>
 													</property>
@@ -13183,7 +13318,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="12cb0585be14">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="2c5842d196f6">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13240,7 +13375,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="12cb0587be14">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="2c5842d396f6">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -13414,7 +13549,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[August 22, 2014 3:55:30 PM EDT]]></string>
+						<string><![CDATA[August 27, 2014 3:00:17 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -13602,6 +13737,25 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 			<property name="fileModificationTimestampBehavior">
 				<int>1</int>
 			</property>
+			<property name="RAIRSpec">
+				<object class="com.zerog.ia.installer.iseries.RAIRSpec" objectID="2c5460bf96f3">
+					<property name="belongsToUninstallPhase">
+						<boolean>false</boolean>
+					</property>
+					<property name="rollbackEnabledCancel">
+						<boolean>true</boolean>
+					</property>
+					<property name="rollbackEnabledError">
+						<boolean>true</boolean>
+					</property>
+					<property name="ruleExpression">
+						<string><![CDATA[]]></string>
+					</property>
+					<property name="enabled">
+						<boolean>false</boolean>
+					</property>
+				</object>
+			</property>
 			<property name="fileModificationTimestamp">
 				<long>-1</long>
 			</property>
@@ -13681,6 +13835,13 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 							<property name="subRevision">
 								<int>0</int>
 							</property>
+						</object>
+					</property>
+					<property name="upgradeCode">
+						<object class="com.zerog.registry.UUID">
+							<method name="update">
+								<string><![CDATA[72a1c4c9-1eca-11b2-b1c1-946cdf544dbd]]></string>
+							</method>
 						</object>
 					</property>
 					<property name="supportURL">
@@ -15017,6 +15178,12 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 					<property name="defaultWinUninstallerUIMode">
 						<string><![CDATA[SAME_AS_INSTALLER]]></string>
 					</property>
+					<property name="defaultWin64InstallerUIMode">
+						<string><![CDATA[GUI]]></string>
+					</property>
+					<property name="defaultWin64UninstallerUIMode">
+						<string><![CDATA[SAME_AS_INSTALLER]]></string>
+					</property>
 					<property name="defaultUnixInstallerUIMode">
 						<string><![CDATA[GUI]]></string>
 					</property>
@@ -15051,6 +15218,12 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			</property>
 			<property name="installerIconName">
 				<string><![CDATA[Icon1.ico]]></string>
+			</property>
+			<property name="installerIconImagePath">
+				<string><![CDATA[com/zerog/ia/installer/images/]]></string>
+			</property>
+			<property name="installerIconImageName">
+				<string><![CDATA[iaIcon.png]]></string>
 			</property>
 			<property name="billboardTimerEnabled">
 				<boolean>false</boolean>
@@ -15146,6 +15319,80 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			</property>
 			<property name="oldStyleInstallersEnabled">
 				<boolean>false</boolean>
+			</property>
+			<property name="upgradeSettings">
+				<object class="com.zerog.ia.installer.UpgradeSettings" objectID="2c543f5795b6">
+					<property name="enableUpgrade">
+						<boolean>false</boolean>
+					</property>
+					<property name="upgradeConfigurationsList">
+						<object class="java.util.ArrayList" list="true">
+							<method name="add">
+								<object class="com.zerog.ia.installer.UpgradeConfiguration" objectID="2c543f5695b7">
+									<property name="detectionBasedOn">
+										<string><![CDATA[PRODUCT_CODE]]></string>
+									</property>
+									<property name="requireValidationForPreviousProductCode">
+										<boolean>false</boolean>
+									</property>
+									<property name="maxVersion">
+										<object class="com.zerog.ia.installer.util.Version" objectID="2c543f5795b7">
+											<property name="major">
+												<int>1</int>
+											</property>
+											<property name="minor">
+												<int>0</int>
+											</property>
+											<property name="revision">
+												<int>0</int>
+											</property>
+											<property name="subRevision">
+												<int>0</int>
+											</property>
+										</object>
+									</property>
+									<property name="minVersion">
+										<object class="com.zerog.ia.installer.util.Version" objectID="2c543f5895b7">
+											<property name="major">
+												<int>1</int>
+											</property>
+											<property name="minor">
+												<int>0</int>
+											</property>
+											<property name="revision">
+												<int>0</int>
+											</property>
+											<property name="subRevision">
+												<int>0</int>
+											</property>
+										</object>
+									</property>
+									<property name="configurationName">
+										<string><![CDATA[Default Upgrade Configuration]]></string>
+									</property>
+								</object>
+							</method>
+						</object>
+					</property>
+					<property name="abortInstallationIfUninstallFails">
+						<boolean>true</boolean>
+					</property>
+					<property name="automaticallyRemoveAllExistingInstallations">
+						<boolean>true</boolean>
+					</property>
+					<property name="promptUserOnExistanceOfMultiplePreviousInstallations">
+						<boolean>false</boolean>
+					</property>
+					<property name="allowCustomizationOfUserInstallDirectory">
+						<boolean>false</boolean>
+					</property>
+					<property name="retainFeaturePreferences">
+						<boolean>false</boolean>
+					</property>
+				</object>
+			</property>
+			<property name="tomcatServerNamesList">
+				<object class="java.util.ArrayList" list="true"/>
 			</property>
 			<visualChildren>
 				<object class="com.zerog.ia.installer.InstallSet" objectID="72a1c57eb1d3">
@@ -17190,16 +17437,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa8">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -17214,15 +17460,16 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa8">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -18432,15 +18679,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="12c7332fbe13">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -18455,16 +18703,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="12c7332fbe13">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar:$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$gp-full.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -23860,15 +24107,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -23883,16 +24131,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -25311,6 +25558,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 			</visualChildren>
 			<installChildren>
 				<object refID="72a1c57eb1d3"/>
+				<object refID="2c5460bf96f3"/>
 			</installChildren>
 		</object>
 	</installationObjects>
