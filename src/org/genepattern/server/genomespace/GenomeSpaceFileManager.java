@@ -202,7 +202,19 @@ public class GenomeSpaceFileManager {
 
         int lastSlash = baseUrl.lastIndexOf("/");
         if (lastSlash < 0 || lastSlash == baseUrl.length()) throw new IOException("Unable to extract filename from " + url);
-        
-        return baseUrl.substring(lastSlash + 1);
+
+        baseUrl = baseUrl.substring(lastSlash + 1);
+
+        //hack to string out text in parenthesis for google drive files
+        if(urlString.toLowerCase().contains("/googledrive:"))
+        {
+            int parenthesisIndex = baseUrl.lastIndexOf(("("));
+            if(parenthesisIndex >= 0)
+            {
+                baseUrl = baseUrl.substring(0, parenthesisIndex);
+            }
+        }
+
+        return baseUrl;
     }
 }
