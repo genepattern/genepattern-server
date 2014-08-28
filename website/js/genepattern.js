@@ -3261,6 +3261,10 @@ function updateDiskUsageBox(diskInfo)
                 value: percentUsed
             });
 
+            //remove existing color coding for disk quota box
+            jqQuotaProgress.removeClass("quota-space-red");
+            jqQuotaProgress.removeClass("quota-space-yellow");
+
             if (percentUsed >= 90) {
                 jqQuotaProgress.addClass("quota-space-red");
             }
