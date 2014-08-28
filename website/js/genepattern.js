@@ -1695,6 +1695,9 @@ function createFileWidget(linkElement, appendTo) {
                                             refreshUploadTree();
 
                                             $(".search-widget:visible").searchslider("hide");
+
+                                            //after copying the files to the Files check and update the disk quota
+                                            checkDiskQuota();
                                         },
                                         error: function(data) {
                                             if (typeof data === 'object') {
