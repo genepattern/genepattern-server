@@ -3,40 +3,41 @@
         <!ENTITY release_targets SYSTEM "./releaseTargets.xml">
         ]>
 <project basedir="." default="targets" name="genepattern">
-	<import file="test/build.xml"/>
-	
+    <import file="test/build.xml"/>
+
     <description>JAR deployment for genepattern</description>
-    <property name="java.target" value="1.7" />
-    <property name="java.source" value="1.7" />
-    <property location="lib" name="lib_compile" />
-    <property location="website/WEB-INF/lib" name="lib" />
+    <property name="java.target" value="1.7"/>
+    <property name="java.source" value="1.7"/>
+    <property location="lib" name="lib_compile"/>
+    <property location="website/WEB-INF/lib" name="lib"/>
 
-    <property location="src" name="src" />
-    <property location="build" name="build" />
-    <property location="." name="dist" />
-    <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
+    <property location="src" name="src"/>
+    <property location="build" name="build"/>
+    <property location="." name="dist"/>
+    <property name="classpath"
+              value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
 
-    <property name="common-manifest" value="gp-common.mf" />
-    <property name="uisupport-manifest" value="ui_support.mf" />
-    <property name="common-jarname" value="gp-common.jar" />
+    <property name="common-manifest" value="gp-common.mf"/>
+    <property name="uisupport-manifest" value="ui_support.mf"/>
+    <property name="common-jarname" value="gp-common.jar"/>
 
-    <property name="full-jarname" value="gp-full.jar" />
-    <property name="uisupport-jarname" value="ui_support.jar" />
-    <property name="runtask-jarname" value="runMain.jar" />
-    <property name="gp-library-jarname" value="GenePattern.jar" />
+    <property name="full-jarname" value="gp-full.jar"/>
+    <property name="uisupport-jarname" value="ui_support.jar"/>
+    <property name="runtask-jarname" value="runMain.jar"/>
+    <property name="gp-library-jarname" value="GenePattern.jar"/>
     <!-- signed applet stuff for running visualizers from web page -->
-    <property name="runVisualizer-jarname" value="runVisualizer.jar" />
+    <property name="runVisualizer-jarname" value="runVisualizer.jar"/>
 
     <path id="genepattern.root">
-        <pathelement location="${basedir}" />
+        <pathelement location="${basedir}"/>
     </path>
 
 
     <!-- bring in the release targets from their seperate file -->
     &release_targets;
 
-    <property name="clover.dest" location="${basedir}/build/clover" />
-    <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0" />
+    <property name="clover.dest" location="${basedir}/build/clover"/>
+    <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0"/>
     <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
     <clover-env/>
 
@@ -49,62 +50,62 @@
     </target>
 
     <target name="init">
-        <tstamp />
+        <tstamp/>
 
-        <property name="genepattern.root" value="${basedir}" />
-        <property name="genepattern.website" value="${genepattern.root}/website" />
-        <property name="genepattern.clients" value="${genepattern.root}/clients" />
-        <property name="genepattern.common" value="${genepattern.root}" />
-        <property name="genepattern.build" value="${genepattern.root}/build" />
-        <property name="defaultInstallDir" value="/xchip/gpint/gpdev03/gp-3.2" />
-        <property name="genepattern.installer" value="${genepattern.root}/installer-2014" />
-        <property name="genepattern.package" value="org/genepattern" />
+        <property name="genepattern.root" value="${basedir}"/>
+        <property name="genepattern.website" value="${genepattern.root}/website"/>
+        <property name="genepattern.clients" value="${genepattern.root}/clients"/>
+        <property name="genepattern.common" value="${genepattern.root}"/>
+        <property name="genepattern.build" value="${genepattern.root}/build"/>
+        <property name="defaultInstallDir" value="/xchip/gpint/gpdev03/gp-3.2"/>
+        <property name="genepattern.installer" value="${genepattern.root}/installer-2014"/>
+        <property name="genepattern.package" value="org/genepattern"/>
 
-        <available file="post-compile.xml" property="post-compile.present" />
+        <available file="post-compile.xml" property="post-compile.present"/>
         <!-- available file="${keyStore}" property="keyStore.present" / -->
 
         <path id="library.classpath">
             <fileset dir="${lib_compile}">
-                <include name="*.jar" />
-                <include name="*.zip" />
+                <include name="*.jar"/>
+                <include name="*.zip"/>
             </fileset>
             <fileset dir="${lib}">
-                <include name="*.jar" />
-                <include name="*.zip" />
+                <include name="*.jar"/>
+                <include name="*.zip"/>
             </fileset>
 
             <fileset dir="${genepattern.root}">
-                <include name="*.jar" />
-                <include name="*.zip" />
+                <include name="*.jar"/>
+                <include name="*.zip"/>
             </fileset>
         </path>
-        
+
         <path id="junit.classpath">
-            <pathelement location="lib/junit-4.8.2.jar" />
-            <pathelement location="lib/javax.servlet.jar" />
+            <pathelement location="lib/junit-4.8.2.jar"/>
+            <pathelement location="lib/javax.servlet.jar"/>
             <fileset dir="test/lib">
-                <include name="*.jar" />
+                <include name="*.jar"/>
             </fileset>
-            <pathelement location="${build}/junit/classes" />
-            <pathelement location="${build}" />
+            <pathelement location="${build}/junit/classes"/>
+            <pathelement location="${build}"/>
             <fileset dir="website/WEB-INF/lib">
                 <!-- exclude older version of ant, so that we can use junit4 -->
-                <exclude name="ant-1.6.5.jar" />
-                <exclude name="ant-antlr-1.6.5.jar" />
-                <exclude name="ant-junit-1.6.5.jar" />
-                <exclude name="ant-launcher-1.6.5.jar" />
-                <exclude name="ant-swing-1.6.5.jar" />
-                <exclude name="groovy-all-1.0.jar" />
+                <exclude name="ant-1.6.5.jar"/>
+                <exclude name="ant-antlr-1.6.5.jar"/>
+                <exclude name="ant-junit-1.6.5.jar"/>
+                <exclude name="ant-launcher-1.6.5.jar"/>
+                <exclude name="ant-swing-1.6.5.jar"/>
+                <exclude name="groovy-all-1.0.jar"/>
                 <!-- include the rest -->
-                <include name="*.jar" />
+                <include name="*.jar"/>
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
-            <pathelement location="test/src" />
+            <pathelement location="test/src"/>
             <pathelement location="${clover.home}/lib/clover.jar"/>
         </path>
-        
-        <mkdir dir="${build}" />
-        <mkdir dir="${build}/jars" />
+
+        <mkdir dir="${build}"/>
+        <mkdir dir="${build}/jars"/>
     </target>
 
     <target name="clover.clean" description="Deletes the clover database.">
@@ -112,218 +113,238 @@
     </target>
 
     <target name="clean" depends="clean-junit, clover.clean">
-        <delete dir="applet-build" />
+        <delete dir="applet-build"/>
         <delete quiet="true" failonerror="false">
-            <fileset dir="src/" includes="**/*.class" />
-            <fileset dir="website/" includes="**/*.class" />
-            <fileset dir="installer-2014/GP_server_Build_Output/" includes="**/*" />
-            <fileset dir="installer-2014/server_Build_Output/" includes="**/*" />
-            <fileset dir="installer-2014/" includes=".buildinstaller*.tmp/**" />
-            </delete>
+            <fileset dir="src/" includes="**/*.class"/>
+            <fileset dir="website/" includes="**/*.class"/>
+            <fileset dir="installer-2014/GP_server_Build_Output/" includes="**/*"/>
+            <fileset dir="installer-2014/server_Build_Output/" includes="**/*"/>
+            <fileset dir="installer-2014/" includes=".buildinstaller*.tmp/**"/>
+        </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
-            <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
+            <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties"/>
         </delete>
         <!-- <ant antfile="build.xml" dir="clients/MATLAB" target="clean" /> -->
         <!--<ant antfile="build.xml" dir="clients/R" target="clean" >-->
-            <!--<property name="R.client.downloads" location="${R.client.downloads}" />-->
+        <!--<property name="R.client.downloads" location="${R.client.downloads}" />-->
         <!--</ant>-->
     </target>
-    
+
     <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
             <classpath>
                 <pathelement location="${basedir}/lib/findbugs-ant.jar"/>
-            </classpath> 
-        </taskdef> 
-        <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
-            <sourcePath path="${basedir}/src" />
-            <class location="${build}/${full-jarname}" />
+            </classpath>
+        </taskdef>
+        <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml">
+            <sourcePath path="${basedir}/src"/>
+            <class location="${build}/${full-jarname}"/>
         </findbugs>
     </target>
 
     <target name="compile-junit" depends="init,compile">
-        <mkdir dir="${build}/junit/classes" />
-        <javac debug="true" classpathref="junit.classpath" 
-            destdir="${build}/junit/classes" 
-            srcdir="test/src" 
-        />
+        <mkdir dir="${build}/junit/classes"/>
+        <javac debug="true" classpathref="junit.classpath"
+               destdir="${build}/junit/classes"
+               srcdir="test/src"
+                />
     </target>
-            
+
     <target name="junit" depends="compile-junit">
-        <property name="junit.report.dir" location="${build}/junit/reports" />
-        <mkdir dir="${junit.report.dir}" />
-        <mkdir dir="${junit.report.dir}/xml" />
-        <mkdir dir="${junit.report.dir}/html" />
+        <property name="junit.report.dir" location="${build}/junit/reports"/>
+        <mkdir dir="${junit.report.dir}"/>
+        <mkdir dir="${junit.report.dir}/xml"/>
+        <mkdir dir="${junit.report.dir}/html"/>
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes"
+               forkmode="perTest">
             <formatter type="xml"/>
-            <classpath refid="junit.classpath" />
+            <classpath refid="junit.classpath"/>
             <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
                 <fileset dir="test/src">
-                    <exclude name="org/genepattern/junitutil/*.java" />
-                    <exclude name="**/RecordEulaStub.java" />
-                    <include name="**/*.java" />
+                    <exclude name="org/genepattern/junitutil/*.java"/>
+                    <exclude name="**/RecordEulaStub.java"/>
+                    <include name="**/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
 
         <junitreport todir="${junit.report.dir}">
             <fileset dir="${junit.report.dir}/xml">
-                <include name="*.xml" />
+                <include name="*.xml"/>
             </fileset>
-            <report format="frames" todir="${junit.report.dir}/html" />
+            <report format="frames" todir="${junit.report.dir}/html"/>
         </junitreport>
     </target>
 
     <target name="clean-junit">
         <!-- cleanup -->
-        <delete dir="${junit.report.dir}" />
+        <delete dir="${junit.report.dir}"/>
     </target>
 
     <target name="compile" depends="init" description="Compiles all the source.">
-        <javac debug="true" source="${java.source}" target="${java.target}" 
-            classpathref="library.classpath" 
-            destdir="${genepattern.build}" 
-            srcdir="${src}" 
-            excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
-        />
+        <javac debug="true" source="${java.source}" target="${java.target}"
+               classpathref="library.classpath"
+               destdir="${genepattern.build}"
+               srcdir="${src}"
+               excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
+                />
 
         <copy todir="${genepattern.build}">
-            <fileset dir="${src}" includes="**/*.xml" />
+            <fileset dir="${src}" includes="**/*.xml"/>
         </copy>
     </target>
 
     <target depends="init" name="get_dependencies">
         <copy todir="${build}">
-            <fileset dir="${lib}" includes="**/*.jar" />
+            <fileset dir="${lib}" includes="**/*.jar"/>
         </copy>
     </target>
 
-    <target name="gp-library-doc" depends="init" unless="skipdoc" description="Builds the javadoc for the Java programming API">
+    <target name="gp-library-doc" depends="init" unless="skipdoc"
+            description="Builds the javadoc for the Java programming API">
         <!-- requires https://svnrepos/gp2/modules be checked out to ../modules -->
-        <property name="gp.modules.src.dir" value="../modules/common/src/" />
+        <property name="gp.modules.src.dir" value="../modules/common/src/"/>
 
-        <javadoc destdir="clients/Java/doc" Author="no" Public="true" Verbose="false" sourcepath="website/WEB-INF/gp-modules.jar" classpathref="library.classpath">
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/cls/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/featureset/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/gct/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/mage/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/odf/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/res/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/snp/*.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/stanford/*.java" />
+        <javadoc destdir="clients/Java/doc" Author="no" Public="true" Verbose="false"
+                 sourcepath="website/WEB-INF/gp-modules.jar" classpathref="library.classpath">
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/cls/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/featureset/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/gct/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/mage/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/odf/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/res/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/snp/*.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/stanford/*.java"/>
             <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/io/ParseException.java, org/genepattern/io/IOUtil.java,
                             org/genepattern/io/DefaultDatasetCreator.java, org/genepattern/io/DatasetWriter.java, org/genepattern/io/DatasetParser.java,
                             org/genepattern/io/DatasetHandler.java, org/genepattern/io/DatasetCreator.java, org/genepattern/module/AnalysisUtil.java, 
-                            org/genepattern/module/VisualizerUtil.java" />
-            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/matrix/*.java" />
+                            org/genepattern/module/VisualizerUtil.java"/>
+            <fileset dir="${gp.modules.src.dir}" includes="org/genepattern/matrix/*.java"/>
 
             <fileset dir="src">
-                <include name="org/genepattern/client/GPClient.java" />
-                <include name="org/genepattern/client/Util.java" />
-                <include name="org/genepattern/webservice/JobResult.java" />
-                <include name="org/genepattern/webservice/Parameter.java" />
+                <include name="org/genepattern/client/GPClient.java"/>
+                <include name="org/genepattern/client/Util.java"/>
+                <include name="org/genepattern/webservice/JobResult.java"/>
+                <include name="org/genepattern/webservice/Parameter.java"/>
             </fileset>
         </javadoc>
     </target>
 
 
-    <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
-        <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
+    <target name="gp-library" depends="init"
+            description="builds GenePattern.zip, the zip file containing the Java programming API">
+        <jar basedir="${genepattern.build}" defaultexcludes="true"
+             includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml"
+             jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
+                <attribute name="Class-Path"
+                           value="./lib/activation.jar ./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             </manifest>
         </jar>
 
         <zip destfile="build/GenePattern.zip">
             <zipfileset dir="${genepattern.build}">
-                <include name="${gp-library-jarname}" />
+                <include name="${gp-library-jarname}"/>
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
-            <zipfileset dir="clients/Java/doc" prefix="doc" />
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib"
+                        includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
+            <zipfileset dir="clients/Java/doc" prefix="doc"/>
         </zip>
     </target>
 
     <target depends="init,compile" name="common">
         <!-- Makes gp-common.jar -->
-        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" includes="org/**/*.class" jarfile="${genepattern.build}/${common-jarname}" />
+        <jar basedir="${genepattern.build}" defaultexcludes="true"
+             excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs"
+             includes="org/**/*.class" jarfile="${genepattern.build}/${common-jarname}"/>
 
         <!-- get code fragments for pipeline code generation -->
         <copy todir="${build}">
-            <fileset dir="${src}" includes="**/*.code" />
+            <fileset dir="${src}" includes="**/*.code"/>
         </copy>
 
-        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class, **/*.xml" jarfile="${genepattern.build}/${full-jarname}" />
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs"
+             includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class, **/*.xml"
+             jarfile="${genepattern.build}/${full-jarname}"/>
 
-        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="edu/mit/genome/gp/ui/analysis/*.class" jarfile="${genepattern.build}/analysis.jar">
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs"
+             includes="edu/mit/genome/gp/ui/analysis/*.class" jarfile="${genepattern.build}/analysis.jar">
 
             <manifest>
-                <attribute name="Class-Path" value="${full-jarname} hsqldb.jar xalan.jar saaj.jar jaxrpc.jar jaxb-rt-1.0-ea.jar" />
+                <attribute name="Class-Path"
+                           value="${full-jarname} hsqldb.jar xalan.jar saaj.jar jaxrpc.jar jaxb-rt-1.0-ea.jar"/>
             </manifest>
 
         </jar>
     </target>
 
     <target depends="init" name="runtask">
-        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
+        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}"
+               target="${java.target}" source="${java.target}"
+               includes="org/genepattern/util/RunGenePatternTaskMain.java"/>
 
 
         <!-- Makes runMain.jar -->
-        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class" jarfile="${genepattern.build}/${runtask-jarname}">
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs"
+             includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class"
+             jarfile="${genepattern.build}/${runtask-jarname}">
             <manifest>
-                <attribute name="Main-Class" value="org.genepattern.RunGenePatternTaskMain" />
+                <attribute name="Main-Class" value="org.genepattern.RunGenePatternTaskMain"/>
             </manifest>
         </jar>
     </target>
 
     <target depends="init,compile" name="uisupport">
-        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/modules/ui/,org/genepattern/module/" jarfile="${genepattern.build}/${uisupport-jarname}" />
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs"
+             includes="org/genepattern/modules/ui/,org/genepattern/module/"
+             jarfile="${genepattern.build}/${uisupport-jarname}"/>
     </target>
     <target depends="common,compile,get_dependencies,init,runtask,uisupport" name="package">
     </target>
 
     <target depends="init" name="jwhich">
         <java classname="org.genepattern.debug.JWhich" classpathref="library.classpath" dir="${build}" fork="true">
-            <arg value="javax.ejb.EJBObject" />
+            <arg value="javax.ejb.EJBObject"/>
         </java>
     </target>
 
     <target depends="init" name="prepare-compile" unless="prepare.disable">
-        <mkdir dir="${genepattern.build}" />
+        <mkdir dir="${genepattern.build}"/>
     </target>
 
     <target depends="init" name="runsuite">
         <java classname="org.genepattern.server.process.SuiteRepository">
             <classpath>
                 <fileset dir="lib">
-                    <include name="**/*.jar" />
+                    <include name="**/*.jar"/>
                 </fileset>
-                <fileset dir="${build}" />
+                <fileset dir="${build}"/>
             </classpath>
 
         </java>
     </target>
 
-    <target  name="clients" depends="R-client,matlabclient">
+    <target name="clients" depends="R-client,matlabclient">
     </target>
 
-    <property name="R.client.downloads" location="clients/R/downloads" />
-    <target  name="R-client" depends="init, gp-library">
+    <property name="R.client.downloads" location="clients/R/downloads"/>
+    <target name="R-client" depends="init, gp-library">
         <ant antfile="build.xml" dir="${genepattern.root}/clients/R">
-            <property name="R.client.downloads" location="${R.client.downloads}" />
+            <property name="R.client.downloads" location="${R.client.downloads}"/>
         </ant>
     </target>
-	
-    <target  name="matlabclient" depends="gp-library, analysis">
-        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
+
+    <target name="matlabclient" depends="gp-library, analysis">
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
     </target>
 
     <target name="analysis" depends="init,common,runtask,uisupport">
         <jar jarfile="${build}/gpwebservice.jar">
             <fileset dir="${build}">
-                <include name="org/apache/xml/**" />
-                <include name="org/genepattern/**" />
+                <include name="org/apache/xml/**"/>
+                <include name="org/genepattern/**"/>
             </fileset>
         </jar>
     </target>
@@ -331,65 +352,67 @@
     <target name="show-version" depends="initBuildProperties">
         <echo>
             genepattern.version: ${genepattern.version}
-            version.label: ${version.label} 
+            version.label: ${version.label}
             version.revision.id: ${version.revision.id}
             version.build.date: ${version.build.date}
         </echo>
     </target>
 
-    <target  name="installers" depends="website">
-        <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers" />
+    <target name="installers" depends="website">
+        <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers"/>
     </target>
 
-    <target name="build-visualizer-applet" depends="sign-visualizer-applet" />
+    <target name="build-visualizer-applet" depends="sign-visualizer-applet"/>
     <target name="compile-visualizer-applet" depends="init">
-        <mkdir dir="applet-build" />
-        <javac debug="true" destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
+        <mkdir dir="applet-build"/>
+        <javac debug="true" destdir="applet-build" srcdir="src" classpathref="library.classpath"
+               includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2"/>
     </target>
-    
+
     <target name="jar-visualizer-applet" depends="compile-visualizer-applet">
-        <mkdir dir="${genepattern.build}/META-INF" />
+        <mkdir dir="${genepattern.build}/META-INF"/>
         <manifest file="${genepattern.build}/META-INF/MANIFEST.MF">
-            <attribute name="Permissions" value="all-permissions" />
-            <attribute name="Trusted-Library" value="true" />
-            <attribute name="Application-Name" value="GenePattern Visualizer launcher" />
+            <attribute name="Permissions" value="all-permissions"/>
+            <attribute name="Trusted-Library" value="true"/>
+            <attribute name="Application-Name" value="GenePattern Visualizer launcher"/>
         </manifest>
 
-        <jar basedir="applet-build" 
-            manifest="${genepattern.build}/META-INF/MANIFEST.MF"
-            defaultexcludes="true" 
-            includes="org/genepattern/visualizer/*.class" 
-            jarfile="${genepattern.build}/${runVisualizer-jarname}">
+        <jar basedir="applet-build"
+             manifest="${genepattern.build}/META-INF/MANIFEST.MF"
+             defaultexcludes="true"
+             includes="org/genepattern/visualizer/*.class"
+             jarfile="${genepattern.build}/${runVisualizer-jarname}">
         </jar>
     </target>
-    
+
     <target name="init-signjar">
         <!-- load signjar.properties -->
-        <property file="${user.home}/.gp_build/signjar.properties" />
-        <property file="signjar.properties" />
-        
+        <property file="${user.home}/.gp_build/signjar.properties"/>
+        <property file="signjar.properties"/>
+
         <!-- for properties not set in 'signjar.properties', set defaults directly -->
-        <property name="signjar.keystore" location="${build}/keystore" />
-        <property name="signjar.alias" value="Genepattern" />
-        
+        <property name="signjar.keystore" location="${build}/keystore"/>
+        <property name="signjar.alias" value="Genepattern"/>
+
         <!-- if not otherwise defined, prompt for password -->
         <input message="Password for Jar Signing Key: " addproperty="signjar.storepass" defaultValue="gEnEpAtTeRn">
-            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler"/>
         </input>
 
-        <available file="${signjar.keystore}" property="keyStore.present" />
+        <available file="${signjar.keystore}" property="keyStore.present"/>
     </target>
 
     <target name="makeKeystore" depends="init-signjar" unless="keyStore.present">
-        <genkey alias="GenePattern" keypass="${signjar.storepass}" storepass="${signjar.storepass}" keystore="${signjar.keystore}" keyalg="RSA">
+        <genkey alias="GenePattern" keypass="${signjar.storepass}" storepass="${signjar.storepass}"
+                keystore="${signjar.keystore}" keyalg="RSA">
             <dname>
-                <param name="CN" value="GenePattern" />
-                <param name="OU" value="Cancer Genomics" />
-                <param name="O" value="Broad Institute" />
-                <param name="L" value="Cambridge" />
-                <param name="S" value="MA" />
-                <param name="C" value="US" />
-                <param name="EMAILADDRESS" value="gp-help@broadinstitute.org" />
+                <param name="CN" value="GenePattern"/>
+                <param name="OU" value="Cancer Genomics"/>
+                <param name="O" value="Broad Institute"/>
+                <param name="L" value="Cambridge"/>
+                <param name="S" value="MA"/>
+                <param name="C" value="US"/>
+                <param name="EMAILADDRESS" value="gp-help@broadinstitute.org"/>
             </dname>
         </genkey>
     </target>
@@ -397,203 +420,208 @@
     <target name="sign-visualizer-applet" depends="jar-visualizer-applet,init-signjar,makeKeystore">
         <echo>signing visualizer applet with keystore=${signjar.keystore}</echo>
         <signjar jar="${genepattern.build}/${runVisualizer-jarname}"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
+                 keystore="${signjar.keystore}"
+                 maxmemory="1024M"
+                 alias="${signjar.alias}"
+                 storepass="${signjar.storepass}"
+                />
         <signjar jar="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
+                 keystore="${signjar.keystore}"
+                 maxmemory="1024M"
+                 alias="${signjar.alias}"
+                 storepass="${signjar.storepass}"
+                />
         <signjar jar="website/WEB-INF/lib/commons-codec-1.3.jar"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
+                 keystore="${signjar.keystore}"
+                 maxmemory="1024M"
+                 alias="${signjar.alias}"
+                 storepass="${signjar.storepass}"
+                />
     </target>
 
     <!-- =================================================================== -->
     <!-- Custom post-compilation step                                        -->
     <!-- =================================================================== -->
     <target depends="init" if="post-compile.present" name="post-compile">
-        <ant antfile="post-compile.xml" dir="${genepattern.root}" />
+        <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
     </target>
     <!--            classpathref="library.classpath" -->
     <target depends="init,prepare-compile,common,analysis,build-visualizer-applet" name="website">
-        <mkdir dir="${genepattern.build}/website/classes" />
-        <mkdir dir="${genepattern.build}/website/lib" />
-        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
+        <mkdir dir="${genepattern.build}/website/classes"/>
+        <mkdir dir="${genepattern.build}/website/lib"/>
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
 
-        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <javac debug="true" destdir="${genepattern.build}/website/classes"
+               srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath"/>
 
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
         <copy todir="${genepattern.build}/website/lib">
             <fileset dir="${lib}">
-                <include name="activation.jar" />
-                <include name="axis.jar" />
-                <include name="axis-ant.jar" />
-                <include name="commons-discovery-0.2.jar" />
-                <include name="commons-logging.jar" />
-                <include name="commons-fileupload-1.1.1.jar" />
-                <include name="commons-io-2.0.1.jar" />
-                <include name="hsqldb.jar" />
-                <include name="jaxb-rt-1.0-ea.jar" />
-                <include name="jaxp.jar" />
-                <include name="jaxrpc.jar" />
-                <include name="jdom.jar" />
-                <include name="jspsmart.jar" />
-                <include name="log4j-1.2.8.jar" />
-                <include name="mail.jar" />
-                <include name="PDFBox*.jar" />
-                <include name="saaj.jar" />
-                <include name="wsdl4j-1.5.1.jar" />
-                <include name="xalan.jar" />
+                <include name="activation.jar"/>
+                <include name="axis.jar"/>
+                <include name="axis-ant.jar"/>
+                <include name="commons-discovery-0.2.jar"/>
+                <include name="commons-logging.jar"/>
+                <include name="commons-fileupload-1.1.1.jar"/>
+                <include name="commons-io-2.0.1.jar"/>
+                <include name="hsqldb.jar"/>
+                <include name="jaxb-rt-1.0-ea.jar"/>
+                <include name="jaxp.jar"/>
+                <include name="jaxrpc.jar"/>
+                <include name="jdom.jar"/>
+                <include name="jspsmart.jar"/>
+                <include name="log4j-1.2.8.jar"/>
+                <include name="mail.jar"/>
+                <include name="PDFBox*.jar"/>
+                <include name="saaj.jar"/>
+                <include name="wsdl4j-1.5.1.jar"/>
+                <include name="xalan.jar"/>
             </fileset>
-            <fileset dir="${genepattern.build}" includes="${full-jarname}" />
+            <fileset dir="${genepattern.build}" includes="${full-jarname}"/>
         </copy>
 
 
         <!-- Now call any custom post-compilation people want to do -->
-        <antcall target="post-compile" inheritall="true" inheritrefs="true" />
+        <antcall target="post-compile" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
-        <mkdir dir="${genepattern.build}/website/classes" />
-        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <mkdir dir="${genepattern.build}/website/classes"/>
+        <javac debug="true" destdir="${genepattern.build}/website/classes"
+               srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath"/>
         <!-- Now call any custom post-compilation people want to do -->
-        <antcall target="post-compile" />
+        <antcall target="post-compile"/>
     </target>
 
     <target name="getSvnInfoLastRev" unless="version"
-        description="Sets property 'version' to the head svn Last Changed Rev">  
-        
+            description="Sets property 'version' to the head svn Last Changed Rev">
+
         <!-- find out revision number of HEAD, need svn.exe installed on local machine -->
-        <exec executable="svn" outputproperty="svninfo.out"> 
-            <arg line="info -r HEAD" />
+        <exec executable="svn" outputproperty="svninfo.out">
+            <arg line="info -r HEAD"/>
         </exec>
         <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
-            <arg line="'Last Changed Rev:'" />
+            <arg line="'Last Changed Rev:'"/>
         </exec>
         <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
-            <arg value="s/Last\ Changed\ Rev:\ //" />
+            <arg value="s/Last\ Changed\ Rev:\ //"/>
         </exec>
 
-        <property name="version" value="${svn.info.lastRev}" />
+        <property name="version" value="${svn.info.lastRev}"/>
     </target>
-    
+
     <target name="getVersion" depends="getSvnInfoLastRev">
-        <echo>version: ${version}</echo> 
+        <echo>version: ${version}</echo>
     </target>
-    
+
     <target name="initBuildProperties" depends="getVersion"
-        description="Updates the build.properties file." >
+            description="Updates the build.properties file.">
 
-        <property file="build.versionNumbers" />
-        <property name="build.properties.file" value="resources/build.properties" />
-        <propertyfile  file="${build.properties.file}" comment="Created by ANT; defines the build version, date etc.">
-            <entry key="genepattern.version" type="string" value="${genepattern.version}" />
-            <entry key="version.label" type="string" value="${version.label}" />
-            <entry key="version.revision.id" type="string" value="${version}" />
-            <entry key="version.build.date" type="date" pattern="yyyy-MM-dd HH:mm" value="${TSTAMP}" />
+        <property file="build.versionNumbers"/>
+        <property name="build.properties.file" value="resources/build.properties"/>
+        <propertyfile file="${build.properties.file}" comment="Created by ANT; defines the build version, date etc.">
+            <entry key="genepattern.version" type="string" value="${genepattern.version}"/>
+            <entry key="version.label" type="string" value="${version.label}"/>
+            <entry key="version.revision.id" type="string" value="${version}"/>
+            <entry key="version.build.date" type="date" pattern="yyyy-MM-dd HH:mm" value="${TSTAMP}"/>
 
-            <entry key="builders.name" operation="=" type="string" value="${user.name}" /> 
-            
+            <entry key="builders.name" operation="=" type="string" value="${user.name}"/>
+
             <!-- add entries required for GenePattern Client installation -->
-            <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now" />
-            <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now" />
-            <entry key="version.major" operation="=" type="int" value="${version.major}" />
-            <entry key="version.minor" operation="=" type="string" value="${version.minor}" />
-            <entry key="version.revision" operation="=" type="int" value="0" default="-1" />
-            <entry key="count" operation="+" type="int" default="0" />
-            <entry key="release" operation="=" type="string" value="" />
-            <entry key="program.name" operation="=" type="string" value="GenePattern Client" />
-            <entry key="build.tag" operation="=" type="string" value="${version}" />
+            <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now"/>
+            <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now"/>
+            <entry key="version.major" operation="=" type="int" value="${version.major}"/>
+            <entry key="version.minor" operation="=" type="string" value="${version.minor}"/>
+            <entry key="version.revision" operation="=" type="int" value="0" default="-1"/>
+            <entry key="count" operation="+" type="int" default="0"/>
+            <entry key="release" operation="=" type="string" value=""/>
+            <entry key="program.name" operation="=" type="string" value="GenePattern Client"/>
+            <entry key="build.tag" operation="=" type="string" value="${version}"/>
         </propertyfile>
-        
-        <property file="${build.properties.file}" />
+
+        <property file="${build.properties.file}"/>
     </target>
 
     <!-- **************** ANTHILL TARGETS *************-->
     <target name="loadModules" depends="">
-        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile" />
-        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir" />
+        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile"/>
+        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir"/>
     </target>
 
     <target name="checkForOldInstall" depends="init">
-        <available property="oldInstallpresent" value="true" file="${defaultInstallDir}" />
-        <available file="${defaultInstallDir}/StopGenePatternServer" property="stopServerPresent" />
-        <available file="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern" property="uninstallerPresent" />
+        <available property="oldInstallpresent" value="true" file="${defaultInstallDir}"/>
+        <available file="${defaultInstallDir}/StopGenePatternServer" property="stopServerPresent"/>
+        <available file="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern" property="uninstallerPresent"/>
     </target>
 
     <target name="startServer" depends="init">
-        <exec executable="${defaultInstallDir}/StartGenePatternServer" failifexecutionfails="false" failonerror="false" />
+        <exec executable="${defaultInstallDir}/StartGenePatternServer" failifexecutionfails="false"
+              failonerror="false"/>
     </target>
 
     <target name="stopServer" depends="checkForOldInstall" if="stopServerPresent">
-        <exec executable="${defaultInstallDir}/StopGenePatternServer" failifexecutionfails="false" failonerror="false" />
+        <exec executable="${defaultInstallDir}/StopGenePatternServer" failifexecutionfails="false" failonerror="false"/>
     </target>
 
     <target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stopServer">
-        <exec failifexecutionfails="false" dir="${defaultInstallDir}/UninstallerData" executable="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern">
-            <arg line="-i SILENT" />
+        <exec failifexecutionfails="false" dir="${defaultInstallDir}/UninstallerData"
+              executable="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern">
+            <arg line="-i SILENT"/>
         </exec>
     </target>
 
     <target name="installLocal" depends="init, uninstall">
         <!-- install the new one -->
-        <copy overwrite="true" 
+        <copy overwrite="true"
               file="./installer-2014/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin"
-              todir="./" />
+              todir="./"/>
 
-        <chmod file="./GPserver.bin" perm="a+rwx" />
+        <chmod file="./GPserver.bin" perm="a+rwx"/>
 
         <exec dir="./" executable="./GPserver.bin">
-            <arg line="-f gp3.2.dev_node256.properties" />
+            <arg line="-f gp3.2.dev_node256.properties"/>
         </exec>
     </target>
 
-    <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, installers, createWar, copyWar" />
+    <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, installers, createWar, copyWar"/>
 
     <target name="publishBuild">
         <!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
-        <antcall target="installLocal" />
+        <antcall target="installLocal"/>
 
-        <!-- To complete the install -->    
+        <!-- To complete the install -->
         <!-- 1. force a server registration -->
         <!-- 2. load the modules since the installer doesn't - once we can start the server -->
     </target>
 
     <target name="jspc">
-        <property name="webapp.path" value="website" />
-        <property name="tomcat.home" value="installer-2014/gpdist/Tomcat" />
-        <property name="output.dir" value="${webapp.path}/WEB-INF/src" />
-        <mkdir dir="${webapp.path}/WEB-INF/src" />
+        <property name="webapp.path" value="website"/>
+        <property name="tomcat.home" value="installer-2014/gpdist/Tomcat"/>
+        <property name="output.dir" value="${webapp.path}/WEB-INF/src"/>
+        <mkdir dir="${webapp.path}/WEB-INF/src"/>
         <delete>
-            <fileset dir="${output.dir}" includes="**" />
+            <fileset dir="${output.dir}" includes="**"/>
         </delete>
 
         <taskdef classname="org.apache.jasper.JspC" name="jasper2">
             <classpath id="jspc.classpath">
-                <pathelement location="${java.home}/../lib/tools.jar" />
+                <pathelement location="${java.home}/../lib/tools.jar"/>
                 <fileset dir="${tomcat.home}/bin">
-                    <include name="*.jar" />
+                    <include name="*.jar"/>
                 </fileset>
                 <fileset dir="${tomcat.home}/server/lib">
-                    <include name="*.jar" />
+                    <include name="*.jar"/>
                 </fileset>
                 <fileset dir="${tomcat.home}/common/lib">
-                    <include name="*.jar" />
+                    <include name="*.jar"/>
                 </fileset>
-                <fileset dir="build" includes="gp-full.jar" />
-                <fileset dir="lib" includes="*.jar" />
+                <fileset dir="build" includes="gp-full.jar"/>
+                <fileset dir="lib" includes="*.jar"/>
             </classpath>
         </taskdef>
 
-        <jasper2 validateXml="false" uriroot="${webapp.path}" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}" />
+        <jasper2 validateXml="false" uriroot="${webapp.path}" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml"
+                 outputDir="${output.dir}"/>
     </target>
 </project>

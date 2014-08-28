@@ -1,88 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="installer" name="ServerInstaller">
-<target name="installers" depends="installer" />
-<target name="installer" depends="setVersionFile" >
-  <property file="../resources/build.properties"/>
-  <delete verbose="true" file="GP_serverlocales/custom_en"/>
+    <target name="installers" depends="installer"/>
+    <target name="installer" depends="setVersionFile">
+        <property file="../resources/build.properties"/>
+        <delete verbose="true" file="GP_serverlocales/custom_en"/>
 
-  <copy file="server.iap_xml" tofile="GP_server.iap_xml">
-    <filterset>
-      <filter token="version.major" value="${version.major}"/>
-      <filter token="version.minor" value="${version.minor}"/>
-      <filter token="buildrelease" value="${release}"/>
-      <filter token="builddate" value="${date}"/>
-      <filter token="buildtag" value="${build.tag}"/>
-   	</filterset>
-  </copy>
+        <copy file="server.iap_xml" tofile="GP_server.iap_xml">
+            <filterset>
+                <filter token="version.major" value="${version.major}"/>
+                <filter token="version.minor" value="${version.minor}"/>
+                <filter token="buildrelease" value="${release}"/>
+                <filter token="builddate" value="${date}"/>
+                <filter token="buildtag" value="${build.tag}"/>
+            </filterset>
+        </copy>
 
-  <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2014/build" >
-    <arg line="${basedir}/GP_server.iap_xml"/>
-  </exec>
+        <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2014/build">
+            <arg line="${basedir}/GP_server.iap_xml"/>
+        </exec>
 
-  <copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/> 
-  <delete file="GP_server.iap_xml"/>
-  <delete file="GP_serverBuild.iap_xml"/>
- </target>
+        <copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
+        <delete file="GP_server.iap_xml"/>
+        <delete file="GP_serverBuild.iap_xml"/>
+    </target>
 
-<target name="test">
-  <copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
-</target>
+    <target name="test">
+        <copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
+    </target>
 
-<target description="Removes all the .class files" name="clean">
-  <delete>
-    <fileset dir="../../../build/Web_Installers" />
-  </delete>
-</target>
-    
-<target name="createDistribution" description="create a distributable platform neutral image">
-    <mkdir dir="distribution"/>
-    <copy todir="distribution/Tomcat">
-      <fileset dir="gpdist/Tomcat" excludes="CVS" />
-    </copy>
-    <copy todir="distribution/Datasets" >
-      <fileset dir="gpdist/Datasets" excludes="CVS"/>
-    </copy>
-    <copy todir="distribution/modules">
-      <fileset dir="../modules/build" excludes="CVS"/>
-    </copy>
-    <copy todir="distribution/GenePattern">
-      <fileset dir="../clients/R/GenePattern" excludes="CVS"/>
-    </copy>
-    <copy todir="distribution/resources">
-      <fileset dir="../resources" excludes="CVS"/>
-    </copy>
-    <copy todir="distribution/Tomcat/webapps/gp">
-      <fileset dir="../website" excludes="CVS"/>
-    </copy>
-    <copy todir="distribution/Tomcat/webapps/gp/WEB-INF/classes">
-      <fileset dir="../build/website/classes" excludes="CVS"/>
-    </copy>
-    <copy file="../analysis/build/jars/analysis-no-ejb.jar" 
-          tofile="distribution/Tomcat/webapps/gp/WEB-INF/lib/analysis-no-ejb.jar" /> 
-    <copy todir="distribution/Tomcat/webapps/gp/Web_Installers">
-      <fileset dir="../build/Web_Installers" excludes="CVS"/>
-    </copy>
-    <copy file="distribution/Tomcat/webapps/gp/WEB-INF/gpweb.xml" 
-          tofile="distribution/Tomcat/webapps/gp/WEB-INF/web.xml" />
-    <mkdir dir="distribution/Tasklib"/>
-    <mkdir dir="distribution/Temp"/> 
-    <zip destfile="gpdist.zip"  basedir="distribution" />
-</target>
-    
-<target name="setVersionFile">
-    <property file="../resources/build.properties"/>
-    <echo> ${version.major}</echo>
-    <delete file="version.txt"/>
+    <target description="Removes all the .class files" name="clean">
+        <delete>
+            <fileset dir="../../../build/Web_Installers"/>
+        </delete>
+    </target>
 
-    <copy file="gpversions.txt" tofile="version.txt">
-        <filterset>
-            <filter token="version.major" value="${version.major}"/>
-            <filter token="version.minor" value="${version.minor}"/>
-            <filter token="buildrelease" value="${release}"/>
-            <filter token="builddate" value="${date}"/>
-            <filter token="buildtag" value="${build.tag}"/>
-        </filterset>
-    </copy>	
-</target>
-   
+    <target name="createDistribution" description="create a distributable platform neutral image">
+        <mkdir dir="distribution"/>
+        <copy todir="distribution/Tomcat">
+            <fileset dir="gpdist/Tomcat" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/Datasets">
+            <fileset dir="gpdist/Datasets" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/modules">
+            <fileset dir="../modules/build" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/GenePattern">
+            <fileset dir="../clients/R/GenePattern" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/resources">
+            <fileset dir="../resources" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/Tomcat/webapps/gp">
+            <fileset dir="../website" excludes="CVS"/>
+        </copy>
+        <copy todir="distribution/Tomcat/webapps/gp/WEB-INF/classes">
+            <fileset dir="../build/website/classes" excludes="CVS"/>
+        </copy>
+        <copy file="../analysis/build/jars/analysis-no-ejb.jar"
+              tofile="distribution/Tomcat/webapps/gp/WEB-INF/lib/analysis-no-ejb.jar"/>
+        <copy todir="distribution/Tomcat/webapps/gp/Web_Installers">
+            <fileset dir="../build/Web_Installers" excludes="CVS"/>
+        </copy>
+        <copy file="distribution/Tomcat/webapps/gp/WEB-INF/gpweb.xml"
+              tofile="distribution/Tomcat/webapps/gp/WEB-INF/web.xml"/>
+        <mkdir dir="distribution/Tasklib"/>
+        <mkdir dir="distribution/Temp"/>
+        <zip destfile="gpdist.zip" basedir="distribution"/>
+    </target>
+
+    <target name="setVersionFile">
+        <property file="../resources/build.properties"/>
+        <echo>${version.major}</echo>
+        <delete file="version.txt"/>
+
+        <copy file="gpversions.txt" tofile="version.txt">
+            <filterset>
+                <filter token="version.major" value="${version.major}"/>
+                <filter token="version.minor" value="${version.minor}"/>
+                <filter token="buildrelease" value="${release}"/>
+                <filter token="builddate" value="${date}"/>
+                <filter token="buildtag" value="${build.tag}"/>
+            </filterset>
+        </copy>
+    </target>
+
 </project>
