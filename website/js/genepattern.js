@@ -1933,6 +1933,9 @@ function createFileWidget(linkElement, appendTo) {
                     }
 
                     else if (uploadAction) {
+                        //close the slider menu
+                        $(".search-widget:visible").searchslider("hide");
+
                         var directory = $(event.target).closest(".file-widget").attr("name");
 
                         var dropzoneInput = $("#upload-dropzone-input");
