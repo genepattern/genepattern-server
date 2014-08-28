@@ -499,6 +499,41 @@ function diskQuotaCheckPlus(diskInfo, fileSize)
     return exceeded;
 }
 
+function validateDiskQuota(diskInfo, fileSize)
+{
+    var validateObj = {
+        error: true,
+        message: null
+    }
+
+    //error if disk quota was already exceeded before
+    //uploading this file
+    var exceeded = false;
+    var willBeExceeded = false;
+
+    if(diskInfo != undefined && diskInfo != null)
+    {
+        //first check if disk quota was already exceeded
+        exceeded = diskInfo.aboveQuota;
+        willBeExceeded = diskQuotaCheckPlus(diskInfo, fileSize);
+    }
+
+    if(exceeded)
+    {
+        validateObj.message = "Disk quota exceeded";
+    }
+    else if (willBeExceeded)
+    {
+        validateObj.message = "Uploading to Files Tab will cause the disk quota to be exceeded";
+    }
+    else
+    {
+        validateObj.error = false;
+    }
+
+    return validateObj;
+}
+
 /**
  * Upload the multipart file
  *
@@ -589,29 +624,14 @@ function ajaxFileTabUpload(file, directory, done, index) {
     eventQueue.push(function() {
         checkDiskQuota(function(diskInfo)
         {
-            //error if disk quota was already exceeded before
-            //uploading this file
-            var exceeded = false;
-            var willBeExceeded = false;
-
-            if(diskInfo != undefined && diskInfo != null)
+            var validateObj = validateDiskQuota(diskInfo, file.size);
+            if(validateObj.error == false)
             {
-                //first check if disk quota was already exceeded
-                exceeded = diskInfo.aboveQuota;
-                willBeExceeded = diskQuotaCheckPlus(diskInfo, file.size);
-            }
-
-            if(exceeded)
-            {
-                eventError = "Disk quota exceeded";
-            }
-            else if (willBeExceeded)
-            {
-                eventError = "Uploading this file will cause the disk quota to be exceeded";
+                createUploadPath();
             }
             else
             {
-                createUploadPath();
+                eventError = validateObj.message;
             }
         });
     });
@@ -901,28 +921,49 @@ function uploadAfterDialog(filelist, directory) {
     // Create upload done indicator
     var done = [];
 
-    // Do each upload
+    //get the total size of all the files first to
+    //make sure that it will not exceed the size of the disk quota
+    var totalSize = 0;
     for (var i = 0; i < filelist.length; i++) {
-        // Create the done indicator
-        done[i] = false;
 
-        // Upload the file
         var file = filelist[i];
-        ajaxFileTabUpload(file, directory, done, i);
+        totalSize += file.size;  // The total file size
     }
 
-    // Finish all uploads, cycling until done
-    var testForCleanup = function() {
-        setTimeout(function() {
-            if (done.reduce(function(a, b) {return a && b})) {
-                cleanUploadToaster();
+    checkDiskQuota(function(diskInfo)
+    {
+        var validateObj = validateDiskQuota(diskInfo, totalSize);
+        if(validateObj.error == false)
+        {
+            // Do each upload
+            for (var i = 0; i < filelist.length; i++) {
+                // Create the done indicator
+                done[i] = false;
+
+                // Upload the file
+                var file = filelist[i];
+                ajaxFileTabUpload(file, directory, done, i);
             }
-            else {
-                testForCleanup();
-            }
-        }, 1000);
-    };
-    testForCleanup();
+
+            // Finish all uploads, cycling until done
+            var testForCleanup = function() {
+                setTimeout(function() {
+                    if (done.reduce(function(a, b) {return a && b})) {
+                        cleanUploadToaster();
+                    }
+                    else {
+                        testForCleanup();
+                    }
+                }, 1000);
+            };
+            testForCleanup();
+        }
+        else
+        {
+            cleanUploadToaster();
+            showErrorMessage(validateObj.message);
+        }
+    });
 }
 
 function uploadEnter() {
