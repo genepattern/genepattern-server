@@ -26,6 +26,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -195,22 +196,7 @@ public class UploadResource {
                 log.debug("fileSize=" + fileSize);
             }
 
-            //first check if the disk quota is or will be exceeded
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
-
-            if(diskInfo.isAboveQuota())
-            {
-                //disk usage exceeded so abort the file upload
-                throw new FileUploadException("Disk usage quota exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
-                        + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
-            }
-
-            if(diskInfo.isAboveQuota(fileSize))
-            {
-                //disk usage exceeded so abort the fail upload
-                throw new FileUploadException("Uploading file will cause disk usage to be exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
-                        + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
-            }
+            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, fileSize);
 
             GpFilePath file = getUploadFile(userContext, path);
 
@@ -280,6 +266,8 @@ public class UploadResource {
             // Write the file
             InputStream is = request.getInputStream();
             appendPartition(is, toWrite);
+
+            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, toWrite.length());
 
             // Return the status object
             JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
@@ -375,11 +363,24 @@ public class UploadResource {
             // Get the list of parts and sort
             File[] fileList = getFileParts(uploadDir);
 
+
+            //check again to see that the disk quota is not exceeded
+            //we need to total the size of all the file chunks first
+            long totalSize = 0;
+            for (File myfile : fileList) {
+                if(myfile != null)
+                {
+                    totalSize += myfile.length();
+                }
+            }
+            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, totalSize);
+
             // Write the file
             for (File i : fileList) {
                 FileInputStream fileIS = new FileInputStream(i);
                 appendPartition(fileIS, file.getServerFile());
             }
+
 
             // Update the database
             UserUploadManager.createUploadFile(userContext, file, fileList.length);
@@ -393,5 +394,26 @@ public class UploadResource {
         catch (Throwable t) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
+    }
+
+    private void checkDiskQuota(GpConfig gpConfig, GpContext userContext, long fileSizeBytes) throws Exception
+    {
+        //first check if the disk quota is or will be exceeded
+        DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, userContext);
+
+        if(diskInfo.isAboveQuota())
+        {
+            //disk usage exceeded so abort the file upload
+            throw new FileUploadException("Disk usage quota exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
+                    + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
+        }
+
+        if(diskInfo.isAboveQuota(fileSizeBytes))
+        {
+            //disk usage exceeded so abort the fail upload
+            throw new FileUploadException("Uploading file will cause disk usage to be exceeded. Disk Usage:" + diskInfo.getDiskUsageFilesTab().getDisplayValue().toUpperCase()
+                    + ". Quota: " + diskInfo.getDiskQuota().getDisplayValue().toUpperCase() + ". Please delete some files from the Files Tab.");
+        }
+
     }
 }
