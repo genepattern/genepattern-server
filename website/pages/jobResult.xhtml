@@ -236,6 +236,7 @@
                             var file = data.outputFiles[i];
                             var fileLink = $(".jobresult-file-output[name='" + escapeJquerySelector(file.link.name) + "']");
                             fileLink.attr("data-kind", file.kind);
+                            fileLink.attr("data-size", file.fileLength);
                             fileLink.attr("data-sendtomodule", JSON.stringify(file.sendTo));
                         }
                     }
