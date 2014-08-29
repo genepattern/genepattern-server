@@ -912,6 +912,7 @@ public class GenomeSpaceBean {
         }
         catch (Throwable e) {
             UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
+            log.error(e.getLocalizedMessage(), e);
             return "Error: " + e.getLocalizedMessage();
         }
     }
