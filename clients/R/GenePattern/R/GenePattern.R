@@ -20,7 +20,7 @@
     if (major.version < 2) {
 		minor.version = version[2]
 		if(minor.version < 7) {
-			cat ('You are using the wrong version of Java. Java version 1.7 or higher is required.\n')
+			stop ('You are using the wrong version of Java. Java version 1.7 or higher is required.\n')
 		}
 	}
 }
