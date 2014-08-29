@@ -2701,6 +2701,7 @@ function populateJobResultsTable(settings, callback) {
                 .attr("href", file.link.href)
                 .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
                 .attr("data-kind", file.kind)
+                .attr("data-size", file.fileLength)
                 .append(file.link.name)
                 .appendTo(results);
             $("<br/>").appendTo(results);
@@ -2740,6 +2741,7 @@ function populateJobResultsTable(settings, callback) {
                 .attr("href", file.link.href)
                 .attr("onclick", "openFileWidget(this, '#menus-jobs'); return false;")
                 .attr("data-kind", file.kind)
+                .attr("data-size", file.fileLength)
                 .append(file.link.name)
                 .appendTo(results);
             $("<br/>").appendTo(results);
