@@ -1716,10 +1716,14 @@ function createFileWidget(linkElement, appendTo) {
 
                             if(exceeded)
                             {
+                                $(".search-widget:visible").searchslider("hide");
+
                                 showErrorMessage("Disk quota exceeded");
                             }
                             else if (willBeExceeded)
                             {
+                                $(".search-widget:visible").searchslider("hide");
+
                                 showErrorMessage("Uploading this file will cause the disk quota to be exceeded");
                             }
                             else
@@ -1745,8 +1749,8 @@ function createFileWidget(linkElement, appendTo) {
                                                 data = data.responseText;
                                             }
 
-                                            showErrorMessage(data);
                                             $(".search-widget:visible").searchslider("hide");
+                                            showErrorMessage(data);
                                         }
                                     });
                                 });
