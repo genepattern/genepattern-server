@@ -13,14 +13,14 @@
 	require ("rJava")
 	fullPathToJars = paste (libname, pkgname, 'jars', 'GenePattern.jar', sep=.Platform$file.sep)
 	.jinit (fullPathToJars)
-	#Check that the java version is 1.5. or higher
+	#Check that the java version is 1.7. or higher
 	jvmVersion = .jcall ("java/lang/System", "S", "getProperty", "java.version")
 	version <- strsplit(jvmVersion, "\\.")[[1]]
 	major.version = version[1]
     if (major.version < 2) {
 		minor.version = version[2]
-		if(minor.version < 5) {
-			cat ('You are using the wrong version of Java. Java version 1.5 or higher is required.\n')
+		if(minor.version < 7) {
+			cat ('You are using the wrong version of Java. Java version 1.7 or higher is required.\n')
 		}
 	}
 }
