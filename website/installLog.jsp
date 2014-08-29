@@ -11,6 +11,8 @@
                  java.io.File,
                  java.io.FileReader"
          session="false" contentType="text/html" language="Java" %>
+<%@ page import="java.io.FileFilter" %>
+<%@ page import="org.apache.commons.io.filefilter.WildcardFileFilter" %>
 <%
 
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -24,18 +26,22 @@
     String ADDITIONAL_NOTES = "Additional Notes: ";
     String DETAIL = "Action Notes:";
     int numErrors = 0;
-    File f = new File("..", filename);
+
+    FileFilter fileFilter = new WildcardFileFilter("GenePattern_Install_*.log");
+    File dir = new File("../../UninstallerData/Logs");
+    File[] logs = dir.listFiles(fileFilter);
+    File f = logs[0];
 %>
 <html>
-    <head>
-        <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-        <link rel="SHORTCUT ICON" href="favicon.ico">
-        <title><%= filename %>
-        </title>
-        <jsp:include page="navbarHead.jsp" />
-    </head>
-    <body>
-        <jsp:include page="navbar.jsp" />
+<head>
+    <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+    <link rel="SHORTCUT ICON" href="favicon.ico">
+    <title><%= filename %>
+    </title>
+    <jsp:include page="navbarHead.jsp"/>
+</head>
+<body>
+<jsp:include page="navbar.jsp"/>
 <pre>
 <%= f.getCanonicalPath() %>
 <hr>
@@ -79,9 +85,9 @@
     logFile.close();
 %>
 </pre>
-        <script language="javascript">
-            //	if (<%= numErrors %> == 0) window.close();
-        </script>
-        <jsp:include page="footer.jsp" />
-    </body>
+<script language="javascript">
+    //	if (<%= numErrors %> == 0) window.close();
+</script>
+<jsp:include page="footer.jsp"/>
+</body>
 </html>
