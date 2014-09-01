@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input.batch;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
@@ -24,6 +26,9 @@ import org.genepattern.server.rest.GpServerException;
  *
  */
 public class FilenameBatchGenerator implements BatchGenerator {
+
+    private static Logger log = Logger.getLogger(FilenameBatchGenerator.class);
+
     private final boolean extractBatchValues;
     private final Map<String,List<GpFilePath>> batchValues;
     
@@ -131,11 +136,29 @@ public class FilenameBatchGenerator implements BatchGenerator {
                         sortedValues.put(basename,inputFile);
                         //this is done to prevent using duplicate values for different batch
                         //params when there are multiple files with the same basename
-                        if(!usedFiles.contains(inputFile.getServerFile().getAbsolutePath()))
+                        String fileUrlOrPath = null;
+                        if(inputFile.getServerFile() == null)
                         {
-                            usedFiles.add(inputFile.getServerFile().getAbsolutePath());
-                            ignoredBasenames.add(basename);
+                            //the file path is not available so use the file url instead
+                            //to check for duplicates
+                            try {
+                                fileUrlOrPath = inputFile.getUrl().getPath();
+                            }
+                            catch(Exception e)
+                            {
+                                log.error("Error getting file url for " + inputFile.getName());
+
+                                //file url is not available so just use the file name
+                                fileUrlOrPath = inputFile.getName();
+                            }
                         }
+                        else
+                        {
+                            fileUrlOrPath = inputFile.getServerFile().getAbsolutePath();
+                        }
+
+                        usedFiles.add(fileUrlOrPath);
+                        ignoredBasenames.add(basename);
                     }
                     else
                     {
