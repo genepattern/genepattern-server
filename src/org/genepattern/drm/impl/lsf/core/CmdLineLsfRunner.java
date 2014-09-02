@@ -54,8 +54,8 @@ public class CmdLineLsfRunner implements JobRunner {
             return lsfJob.getLsfJobId();
         }
         catch (Throwable t) {
-            log.error("Error adding job to LSF queue, gpJobNo="+drmJobSubmission.getGpJobNo(), t);
-            throw new CommandExecutorException("Error adding job to LSF queue: "+t.getLocalizedMessage());
+            log.error("Error adding gpJobNo="+drmJobSubmission.getGpJobNo()+" to LSF queue", t);
+            throw new CommandExecutorException("Error adding gpJobNo="+drmJobSubmission.getGpJobNo()+" to LSF queue: "+t.getLocalizedMessage(), t);
         }
     }
 

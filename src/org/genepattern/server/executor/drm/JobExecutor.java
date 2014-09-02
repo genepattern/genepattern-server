@@ -675,17 +675,18 @@ public class JobExecutor implements CommandExecutor2 {
         .build();
         new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
         
-        //TODO: make fault tolerant in the event that (1) startJob gets hung or (2) startJob throws an exception
-        final String extJobId=jobRunner.startJob(drmJobSubmission);
+        //TODO: make fault tolerant in the event that (1) startJob gets hung
+        final String extJobId;
+        try {
+            extJobId=jobRunner.startJob(drmJobSubmission);
+        }
+        catch (Throwable t) {
+            throwJobStartError(gpJobNo, "Error submitting job to queue: "+t.getLocalizedMessage(), t);
+            return;
+        }
+
         if (!isSet(extJobId)) {
-            final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).build();
-            try {
-                new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
-            }
-            catch (DbException e) {
-                // ignore
-            }
-            throw new CommandExecutorException("invalid drmJobId returned from startJob, gpJobId="+gpJobNo);
+            throwJobStartError(gpJobNo, "External job id not set", null);
         }
         else {
             try {
@@ -695,7 +696,7 @@ public class JobExecutor implements CommandExecutor2 {
                 new JobRunnerJobDao().updateJobStatus(gpJobNo, jobStatus);
             }
             catch (DbException e1) {
-                // ignore
+                log.error("Unexpected DB error while updating job_runner_job table for gpJobNo="+gpJobNo, e1);
             }
             try {
                 final DrmJobRecord drmJobRecord = new DrmJobRecord.Builder(extJobId, drmJobSubmission)
@@ -709,6 +710,41 @@ public class JobExecutor implements CommandExecutor2 {
                 return;
             }
         }
+    }
+
+    /**
+     * Call this when an error occurs submitting a job to the queue. 
+     * This method updates the job_runner_job table and throws a CommandExecutorException.
+     * 
+     * @param gpJobNo
+     * @param jobStatusMessage
+     * @param t
+     * @throws CommandExecutorException
+     */
+    private void throwJobStartError(final Integer gpJobNo, final String jobStatusMessage, Throwable t) throws CommandExecutorException {
+        final DrmJobStatus drmJobStatus = new DrmJobStatus.Builder()
+            .jobState(DrmJobState.ABORTED)
+            .jobStatusMessage(jobStatusMessage)
+            .exitCode(-1)
+            .endTime(new Date())
+        .build();
+        try {
+            new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
+        }
+        catch (DbException e) {
+            log.error("Unexpected DB error while updating job_runner_job table for gpJobNo="+gpJobNo, e);
+        }
+        final CommandExecutorException e;
+        if (t instanceof CommandExecutorException) {
+            e = (CommandExecutorException) t;
+        }
+        else if (t!=null) {
+            e = new CommandExecutorException(jobStatusMessage, t);
+        }
+        else {
+            e = new CommandExecutorException(jobStatusMessage);
+        }
+        throw e;
     }
 
     protected DrmJobRecord lookupJobRecord(JobInfo jobInfo) {
