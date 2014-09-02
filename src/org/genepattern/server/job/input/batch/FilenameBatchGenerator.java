@@ -157,8 +157,11 @@ public class FilenameBatchGenerator implements BatchGenerator {
                             fileUrlOrPath = inputFile.getServerFile().getAbsolutePath();
                         }
 
-                        usedFiles.add(fileUrlOrPath);
-                        ignoredBasenames.add(basename);
+                        if(!usedFiles.contains(fileUrlOrPath))
+                        {
+                            usedFiles.add(fileUrlOrPath);
+                            ignoredBasenames.add(basename);
+                        }
                     }
                     else
                     {
