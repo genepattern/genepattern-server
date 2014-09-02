@@ -2,6 +2,7 @@ package org.genepattern.server.executor.listener;
 
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.events.GpJobAddedEvent;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -13,9 +14,15 @@ import com.google.common.eventbus.Subscribe;
 public class GpJobStatusListener {
     private static final Logger log = Logger.getLogger(GpJobStatusListener.class);
 
+    // Uncomment this method to listen to all events
+//    @Subscribe
+//    public void logEvent(Object event) {
+//        log.debug("event: "+event);
+//    }
+    
     @Subscribe
-    public void on(Object any) {
-        log.debug("event: "+any);
+    public void onGpJobAddedEvent(GpJobAddedEvent event) {
+        log.debug("job added: "+event.getTaskLsid()+", "+event.getJobStatus());
     }
 
 }
