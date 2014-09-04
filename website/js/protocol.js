@@ -24,3 +24,13 @@ function openModuleWindow(theTarget, theEvent) {
   w.focus();
   return false;
 }
+
+function openIgvWindow(theTarget, theEvent) {
+    var theURL = theTarget.href;
+    if (theEvent != null) { //for IE
+      theEvent.returnValue = false;
+    }
+    w = window.open(theURL,'igv','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=800,height=600',false);
+    w.focus();
+    return false;
+}
