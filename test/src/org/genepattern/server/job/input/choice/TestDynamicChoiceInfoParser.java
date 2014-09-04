@@ -263,8 +263,7 @@ public class TestDynamicChoiceInfoParser {
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        Assert.assertEquals("num choices", 143, choiceInfo.getChoices().size());
-        Assert.assertEquals("always pass", true, true);
+        Assert.assertEquals("num choices", 144, choiceInfo.getChoices().size());
     }
 
     //TODO: set up junit test with non-standard ftp port
