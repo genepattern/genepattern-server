@@ -10,3 +10,8 @@
     border-bottom: 1px solid #CFCFCF;
     margin-bottom: 7px;
 }
+
+.tourHighlight
+{
+    border: 3px solid red !important;
+}

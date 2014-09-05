@@ -262,6 +262,13 @@ button.urlButton
     color: red;
 }
 
+.errorMessageBig
+{
+    font-weight: bold;
+    color: red;
+    font-size: 14px;
+}
+
 .elemSpacing
 {
     margin: 0 7px 0 7px;
@@ -324,6 +331,11 @@ img.buttonIcon {
 	padding-right: 5px;
 	margin-left: -5px;
 	vertical-align:top;
+}
+
+.whiteBg
+{
+    background-color: white;
 }
 
 #mod_description
