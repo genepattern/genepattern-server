@@ -3280,7 +3280,7 @@ function updateDiskUsageBox(diskInfo)
             percentUsed = (diskUsedBytes / diskQuotaBytes) * 100;
         }
 
-        var quotaTooltip = $("<table></table>");
+        var quotaInfoTable = $("<table></table>");
 
         $(document).ready(function() {
             // Set up the user box
@@ -3327,16 +3327,18 @@ function updateDiskUsageBox(diskInfo)
 
             var jqQuotaTooltip = $("#disk-quota-tooltip");
 
-            quotaTooltip.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
+            quotaInfoTable.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
 
             //only display quota information if it is available
             if(diskQuotaDisplay != null)
             {
-                quotaTooltip.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
+                quotaInfoTable.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
             }
 
-            jqQuotaTooltip.append(quotaTooltip);
+            //clear the contents of the tooltip
+            jqQuotaTooltip.empty();
 
+            jqQuotaTooltip.append(quotaInfoTable);
 
             $("#quota-box").click(function() {
                 $("#disk-quota-tooltip").dialog({
