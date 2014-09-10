@@ -221,10 +221,15 @@ public class GenomeSpaceFile extends GpFilePath {
         URL url = null;
         String urlString = "#";
         try {
-            url = GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSession, this, format);
+            if ("directory".equals(format)) {
+                url = this.getUrl();
+            }
+            else {
+                url = GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSession, this, format);
+            }
             urlString = url.toString();
         }
-        catch (GenomeSpaceException e) {
+        catch (Exception e) {
             log.error("Exception getting converted URL in getEncodedConversionUrl(): " + this.getName());
         }
         return UrlUtil.encodeURIcomponent(urlString);

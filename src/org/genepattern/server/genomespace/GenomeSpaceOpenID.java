@@ -294,6 +294,9 @@ public class GenomeSpaceOpenID extends HttpServlet {
             log.debug("Obtaining return URL");
             String returnToUrl = getRequestURL(httpReq) + "?is_return=true";
 
+            // Try to fox the assoc_type error
+            manager.setMaxAssocAttempts(0);
+
             // Performs openId discovery, puts association into in-memory store, and creates the auth request.
             log.debug("Obtaining list of OpenID discoveries");
             List discoveries = manager.discover(claimedId);
