@@ -2500,6 +2500,9 @@ jQuery(document).ready(function() {
 
     $('#publishGParc').button().click(function() {
         window.open("http://gparc.org");
+        if (module_editor.lsid !== null && module_editor.lsid.length > 0) {
+            window.location.href = "/gp/makeZip.jsp?name=" + encodeURIComponent(module_editor.lsid);
+        }
     });
 
     $('#whatIsGparc').click(function(event) {
