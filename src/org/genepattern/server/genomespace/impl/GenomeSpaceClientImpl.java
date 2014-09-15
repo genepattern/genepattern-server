@@ -471,7 +471,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             if (tool.getName().equals(toolName)) {
                 List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(tool.getFileParameters(), metadata);
                 try {
-                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers, false);
+                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers);
                 }
                 catch (InternalServerException e) {
                     log.error("Error getting the tool URL for the tool: " + tool.getName() + " file: " + file.getName());
@@ -547,7 +547,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         // Declare necessary objects
         DataManagerClient dmClient = gsSession.getDataManagerClient();
-        return dmClient.getMetadata(gsUrl);
+        return dmClient.getMetadata(gsUrl.toString());
     }
 
     public String getToken(Object session) throws GenomeSpaceException {
