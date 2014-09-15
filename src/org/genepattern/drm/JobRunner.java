@@ -46,10 +46,18 @@ public interface JobRunner {
     public static final String PROP_VIRTUAL_QUEUE="job.virtualQueue";
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_JAVA_XMX="job.javaXmx";
+    /**
+     * The 'job.walltime' runtime limit for the job in d-hh:mm:ss format, e.g.
+     * <pre>
+     *     job.walltime: 1-00:00:00
+     * </pre>
+     */
     public static final String PROP_WALLTIME="job.walltime";
     public static final String PROP_NODE_COUNT="job.nodeCount";
     public static final String PROP_CPU_COUNT="job.cpuCount";
     public static final String PROP_EXTRA_ARGS="job.extraArgs";
+    /** The optional 'job.project' property specifies a queuing system specific project name for the job, for example the '-P' arg to the LSF bsub command. */
+    public static final String PROP_PROJECT="job.project";
     
     /**
      * Set a boolean value, when true, it means flag the job as ERROR if there is stderr output. 
