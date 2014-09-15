@@ -1365,7 +1365,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
             delete parameter_and_val_groups[paramName].groups[groupId];
             $(this).parents(".valueEntryDiv").remove();
         });
-        GP-5161
+
         //check that this is group 2 or greater before adding a delete button
         if(parameter_and_val_groups[parameterName].groupCountIncrementer > 1)
         {
