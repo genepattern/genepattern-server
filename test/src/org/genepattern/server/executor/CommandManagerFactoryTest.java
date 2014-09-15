@@ -160,7 +160,7 @@ public class CommandManagerFactoryTest {
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
         int numExecutors = map.size();
-        assertEquals("Number of executors", 5, numExecutors);
+        assertEquals("Number of executors", 4, numExecutors);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");
@@ -169,7 +169,7 @@ public class CommandManagerFactoryTest {
         try {
             CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
             String canonicalName = cmdExecutor.getClass().getCanonicalName();
-            assertEquals("expecting LsfCommandExecutor for SNPFileSorter", "org.genepattern.server.executor.lsf.LsfCommandExecutor", canonicalName);
+            assertEquals("expecting LsfCommandExecutor for SNPFileSorter", "org.genepattern.server.executor.drm.JobExecutor", canonicalName);
             //assertTrue("expecting LsfCommandExecutor for SNPFileSorter but found "+cmdExecutor.getClass().getCanonicalName()+" instead", (cmdExecutor instanceof LsfCommandExecutor));
         }
         catch (Exception e) {
@@ -179,11 +179,11 @@ public class CommandManagerFactoryTest {
         assertNotNull("", jobProperties);
         assertEquals("checking job properties: lsf.max.memory", "12", ""+jobProperties.getProperty("lsf.max.memory"));
         assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.getProperty("java_flags"));
-        assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.getProperty("lsf.project"));
-        assertEquals("checking job properties: lsf.queue", "week", jobProperties.getProperty("lsf.queue"));
-        assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.getProperty("lsf.job.report.file"));
-        assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
-        assertNull("checking job properties: lsf.extra.bsub.args", jobProperties.getProperty("lsf.extra.bsub.args"));
+        assertEquals("checking job properties: job.project", "genepattern", jobProperties.getProperty("job.project"));
+        assertEquals("checking job properties: job.queue", "genepattern", jobProperties.getProperty("job.queue"));
+        assertEquals("checking job properties: job.logFile", ".lsf.out", jobProperties.getProperty("job.logFile"));
+        //assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
+        //assertNull("checking job properties: lsf.extra.bsub.args", jobProperties.getProperty("lsf.extra.bsub.args"));
     }
 
     /**
