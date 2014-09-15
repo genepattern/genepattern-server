@@ -121,6 +121,22 @@ public class CmdLineLsfRunner implements JobRunner {
         }
         return file;
     }
+
+    /**
+     * Get the LSF project from the config, support legacy 'lsf.project' config param or the more general 'job.project' config param.
+     * When both are set the 'job.project' value is used and a warning is added to the log file. 
+     * 
+     * @param gpJob
+     * @return
+     */
+    protected String getProject(final DrmJobSubmission gpJob) {
+        String project=gpJob.getProperty(JobRunner.PROP_PROJECT);
+        if (project != null) {
+            return project;
+        } 
+        project=gpJob.getProperty(LsfProperties.Key.PROJECT.getKey());
+        return project;
+    }
     
     /**
      * Get the command line flags to set the max memory. 
@@ -265,6 +281,9 @@ public class CmdLineLsfRunner implements JobRunner {
     protected LsfJob initLsfJob(final DrmJobSubmission gpJob) {
         final Integer jobId=gpJob.getGpJobNo();
         final File runDir=gpJob.getWorkingDir();
+        if (runDir==null) {
+            throw new IllegalArgumentException("gpJob.workingDir is null");
+        }
         final File stdinFile=gpJob.getStdinFile();
         final File stdoutFile=gpJob.getStdoutFile();
         final File stderrFile=gpJob.getStderrFile();
@@ -302,7 +321,7 @@ public class CmdLineLsfRunner implements JobRunner {
             lsfJob.setErrorFileName("stderr.txt");
         }
         
-        final String lsfProject=gpJob.getProperty(LsfProperties.Key.PROJECT.getKey());
+        final String lsfProject=getProject(gpJob);
         final String lsfQueue=gpJob.getQueue();
         Value extraBsubArgsFromConfigFile = gpJob.getValue(JobRunner.PROP_EXTRA_ARGS);
         if (extraBsubArgsFromConfigFile == null) {

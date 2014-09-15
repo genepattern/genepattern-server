@@ -121,69 +121,29 @@ executors:
         configuration.file: test_command_executor.yaml
 
     #
-    # Lsf integration with the JobRunner API, using the Broad Core library
-    #
-    LsfBroadCore: 
-        # Note: technically, you are using the JobExecutor implementation of the CommandExecutor API ...
-        classname: org.genepattern.server.executor.drm.JobExecutor
-        configuration.properties:
-            # ... which loads the JobRunner with the 'jobRunnerClassname'
-            jobRunnerClassname: org.genepattern.drm.impl.lsf.broadcore.BroadCoreLsfRunner
-            jobRunnerName: LsfBroadCore
-        default.properties:
-            job.logFile: .lsf.out
-            job.queue: genepattern
-    
-
-    #
-    # Lsf integration with the CommandExecutor API
-    # Deprecated in GP 3.8.2 release.
+    # Lsf integration via the JobRunner API
     #
     LSF:
-        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
-        #BroadCore configuration properties
+        classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
-            hibernate.connection.datasource: java:comp/env/jdbc/gpdb
-            hibernate.default_schema: GENEPATTERN_DEV_01
-            hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
-            hibernate.current_session_context_class: thread
-            hibernate.transaction.factory_class: org.hibernate.transaction.JDBCTransactionFactory
-            # number of seconds to check for completed jobs
-            lsf.check.frequency: 15
-            # number of threads in job submission pool
-            lsf.num.job.submission.threads: 3
-            # number of threads in job completion pool
-            lsf.num.job.completion.threads: 3
-
-            # set the GAP_SERVER_ID column of the JOB_LSF table
-            #     <broadcore.env>:<hostname>:<jboss.server.name>
-            # where hostname is the result of InetAddress.getLocalHost().getHostName()
-            # and jboss.server.name = System.getProperty("jboss.server.name")
-            broadcore.env: prod
-            # use 'broadcore.server.name' to replace the 'jboss.server.name'
-            broadcore.server.name: genepattern
-
-        #job specific default properties applied to all jobs run with this executor
-        #note: to override executor specific default properties add entries to module.properties, group.properties, or user.properties
+            jobRunnerClassname: org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner
+            jobRunnerName: CmdLineLsfRunner
         default.properties:
-            lsf.project: genepattern
-            # valid values include "week" and "hour"
-            lsf.queue: week
-            lsf.max.memory: 2
-            lsf.stdout.file: stdout.txt
-            lsf.job.report.file: .lsf.out
-            # wrap "true" and "false" in double-quotes, because a string literal is expected
-            lsf.use.pre.exec.command: "false"
-            # optionally set the number of CPU slots which the job requires, e.g. bsub -n 4 
-            #lsf.cpu.slots: 4
-            # optionally set the lsf job group, e.g. bsub -g /genepattern
-            #lsf.group: 
-            # optionally set the lsf hostname(s), e.g. bsub -m "host1 host2"
-            #lsf.hostname: 
-            # make sure to include valid list of value for lsf.extra.bsub.args, it doesn't work with an empty string
-            #lsf.extra.bsub.args: 
-            # default setting, no need to set
-            #lsf.job.completion.listener: org.genepattern.server.executor.lsf.LsfJobCompletionListener
+            job.project: genepattern
+            job.logFile: .lsf.out
+            job.queue: genepattern
+
+            #
+            # additional JobRunner properties
+            #
+            ## the requested memory for the job
+            #job.memory: 2 Gb
+            ## the runtime limit for the job in d-hh:mm:ss format 
+            #job.walltime: 7-00:00:00
+            ## the '-n' arg to the bsub command         
+            #job.cpuCount: 1
+            ## extra command line arguments to the 'bsub' command
+            # job.extaArgs: ["arg1", "arg2", "arg3"]
 
     # Example configuration for Sun Grid Engine (SGE) executor
     # This example is based on the gp server deployed at the Broad institute
