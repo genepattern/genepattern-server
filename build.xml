@@ -428,6 +428,7 @@
         <mkdir dir="${genepattern.build}/website/lib" />
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
 
+        <mkdir dir="${genepattern.website}/WEB-INF/classes" />
         <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
 
         <!-- copy the web sites jar files to build/web-site/lib -->
