@@ -575,17 +575,28 @@ $.widget("gp.searchslider", {
     _create: function() {
         this.element.addClass('search-widget');
 
+        // Add the titlebar
+        this.titlebar = $('<div>', {
+            'class': 'search-titlebar' })
+            .append(
+                $('<div>', {
+                    'class': 'module-list-title'
+                })
+            )
+            .appendTo(this.element);
+
         // Add the inner div
         this.inner = $('<div>', {
             'class': 'search-inner'})
             .appendTo(this.element);
         var inner = this.inner;
         var slider = this.element;
+        var titlebar = this.titlebar;
 
         // Add the close button
         this.close = $("<div>", {
             class: 'slider-close-block'})
-            .appendTo(this.inner);;
+            .appendTo(this.titlebar);
         $('<button></button>', {
             'class': 'slider-close',
             'text': 'X' })
@@ -597,7 +608,14 @@ $.widget("gp.searchslider", {
             .appendTo(this.close);
 
         // Add the module lists
+        var firstList = true;
         $(this.options.lists).each(function(index, list) {
+            if (firstList) {
+                var title = $(list).find(".module-list-title");
+                titlebar.find(".module-list-title").text(title.text());
+                title.hide();
+                firstList = false;
+            }
             inner.append(list);
         });
     },
