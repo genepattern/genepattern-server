@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="gp-gs-plugin/src"/>
-	<classpathentry kind="src" path="test/regression/src"/>
-	<classpathentry kind="src" path="build_tools/ZipUpload/src"/>
-	<classpathentry kind="src" path="test/load_testing/gp-2580"/>
 	<classpathentry kind="src" path="test/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
@@ -126,7 +121,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpcore-4.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/activation.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="installer/gpdist/Tomcat/server/lib/jaas.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.9.4.jar"/>
@@ -145,5 +139,15 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-14.0.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
+	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
