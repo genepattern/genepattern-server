@@ -254,7 +254,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             {
                 choice.find("option").each(function()
                         {
-                    if(initialValuesList[n] != "" && initialValuesList[n] == $(this).val())
+                    if(initialValuesList[n] == $(this).val())
                     {
                         matchingValueList.push(initialValuesList[n]);
                     }
