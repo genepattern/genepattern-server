@@ -26,10 +26,12 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.process.JobPurgerUtil;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -41,10 +43,7 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.*;
 
 /**
  * Wrapper class to access JobInfo from JSF formatted pages.
@@ -942,6 +941,8 @@ public class JobInfoWrapper implements Serializable {
      * and store the input and output parameters.
      */
     private void processParameterInfoArray() {
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
                 OutputFile outputFile = new OutputFile(outputDir, servletContextPath, jobInfo, param);
@@ -973,6 +974,27 @@ public class JobInfoWrapper implements Serializable {
                 else {
                     // [optional] parameter that the user did not give a value for
                     inputParam = new ParameterInfoWrapper(param);
+                }
+
+                //Changes for GP-5372
+                if(paramInfoMap.containsKey(param.getName()))
+                {
+                    ParameterInfoRecord pInfoRec = paramInfoMap.get(param.getName());
+                    ParameterInfo pInfo = pInfoRec.getActual();
+                    if(!ChoiceInfo.hasDynamicChoiceInfo(pInfo) && ChoiceInfo.hasStaticChoiceInfo(pInfo))
+                    {
+                        Map<String, String> choices = pInfo.getChoices();
+                        if(choices.containsValue(param.getValue()))
+                        {
+                            for (Map.Entry<String, String> entry : choices.entrySet())
+                            {
+                                if(entry.getValue().contains(param.getValue()))
+                                {
+                                    inputParam.setDisplayValue(entry.getKey());
+                                }
+                            }
+                        }
+                    }
                 }
                 inputParameters.add(inputParam);
             }

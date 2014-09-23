@@ -25,7 +25,8 @@
                         <table class="summary" style="width: 100%;" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
                             <tr>
                                 <th width="150px">Input Parameter</th>
-                                <th>Value</th>
+                                <th>Display Value</th>
+                                <th>Actual Value</th>
                             </tr>
 
                             <t:dataList var="p" value="#{jobInfo.inputParameters}">
@@ -35,6 +36,10 @@
                                             ><a style="color:#0066FF;" href="#{p.link}">#{p.displayValue}</a></h:outputText>
                                         <h:outputText rendered="#{empty p.link}" escape="false"
                                                 >#{p.displayValue}</h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText rendered="#{empty p.link}" escape="false"
+                                                >#{p.value}</h:outputText>
                                     </td>
                                 </tr>
                             </t:dataList>

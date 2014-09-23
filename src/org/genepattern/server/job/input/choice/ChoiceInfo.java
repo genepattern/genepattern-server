@@ -160,6 +160,29 @@ public class ChoiceInfo {
         return Type.NotSet;
     }
 
+    public static final boolean hasDynamicChoiceInfo(final ParameterInfo param)
+    {
+        final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
+        if (choiceDir != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static final boolean hasStaticChoiceInfo(final ParameterInfo param)
+    {
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (declaredChoicesStr != null) {
+            return true;
+        }
+        Map<String,String> legacy=param.getChoices();
+        if (legacy != null && legacy.size()>0) {
+            return true;
+        }
+        return false;
+    }
+
     public static final boolean hasChoiceInfo(final ParameterInfo param) {
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
         if (choiceDir != null) {
