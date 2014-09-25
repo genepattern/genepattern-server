@@ -175,7 +175,7 @@
     display: none;
     position: absolute;
     z-index: 1;
-    top: 40px;
+    top: 0px;
     bottom: 0px;
     left: 351px;
     background-color: #FCFCFC;
@@ -195,7 +195,7 @@
     border-right: 2px solid lightgray;
     background-color: white;
     position: absolute;
-    top: -40px;
+    top: 0px;
     left: 0px;
     height: 40px;
     width: 100%;
@@ -216,7 +216,9 @@
 }
 
 .search-inner {
-    height: 100%;
+    top: 40px;
+    bottom: 0px;
+    position: absolute;
     overflow: auto;
     padding-left: 20px;
 }
