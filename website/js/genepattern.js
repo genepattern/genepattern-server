@@ -1241,7 +1241,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                         if (confirm('Are you sure you want to delete the selected file or directory?')) {
                             $.ajax({
                                 type: "DELETE",
-                                url: "/gp/rest/v1/genomespace/delete?url=" + url,
+                                url: "/gp/rest/v1/genomespace/delete?url=" + encodeURIComponent(url),
                                 success: function(data) {
                                     showSuccessMessage(data);
 
