@@ -134,7 +134,7 @@
                             $.ajax({
                                 type:"POST",
                                 // The String.fromCharCode(38) is a hack to include the ampersand because JSF won't let it be directly included
-                                url:"/gp/GenomeSpace/saveFile?directory=" + escape(directory) + String.fromCharCode(38) + "file=" + escape(file),
+                                url:"/gp/GenomeSpace/saveFile?directory=" + encodeURIComponent(directory) + String.fromCharCode(38) + "file=" + encodeURIComponent(file),
                                 data:{},
                                 success:function (data, textStatus, jqXHR) {
                                     $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
