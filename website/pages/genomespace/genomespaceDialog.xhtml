@@ -146,7 +146,13 @@
 
                                     // Test for 403 and give better error message
                                     if (data.statusText.indexOf("403") > -1) {
-                                        showErrorMessage("You do not have permission to save to this directory. Please select a directory for which you have write access.");
+                                        if (directory.indexOf("GenomeSpacePublic") > -1) {
+                                            showSuccessMessage("Saved to Google Drive");
+                                            $(".left-nav-genomespace-refresh-real").trigger("click");
+                                        }
+                                        else {
+                                            showErrorMessage("You do not have permission to save to this directory. Please select a directory for which you have write access.");
+                                        }
                                     }
                                     else {
                                         showErrorMessage(data.statusText);
