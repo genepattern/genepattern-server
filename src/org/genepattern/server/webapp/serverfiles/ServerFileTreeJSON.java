@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.genepattern.server.genomespace.TreeJSON.TreeComparator;
@@ -82,8 +83,16 @@ public class ServerFileTreeJSON extends JSONArray {
         if ("".equals(file.getName())) {
             data.put(TITLE, "/ ");
         }
-        else {
-            data.put(TITLE, file.getName() + " ");
+        else
+        {
+            String title = file.getName();
+
+            if(!file.isDirectory())
+            {
+                title += "  (" + Memory.formatNumBytes(file.getFileLength()) + ")" + " ";
+            }
+
+            data.put(TITLE, title);
         } 
         
         JSONObject attr = new JSONObject();
@@ -129,6 +138,7 @@ public class ServerFileTreeJSON extends JSONArray {
             try {
                 JSONObject data1 = obj1.getJSONObject("data");
                 JSONObject data2 = obj2.getJSONObject("data");
+
                 name1 = data1.getString(TITLE);
                 name2 = data2.getString(TITLE);
             }
