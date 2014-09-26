@@ -20,18 +20,14 @@
                 }
 				
 				.urlInput {
-					width: 350px;
+					width: 320px;
 					margin-left: 20px;
-				}
-				
-				.urlDiv .ui-button {
-					display:none;
 				}
             </style>
             <script type="text/javascript" language="javascript">
                 /* <![CDATA[ */
                 var selectedInput = null;
-				var selectedFile = null;
+				var lastSelectedFile = null;
 
                 function openServerFileDialog(node) {
 					// Remove excess URL components
@@ -49,24 +45,104 @@
 							jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
 						}
 					};
-					jq(".urlInput").keyup(enableSelectButton);
+					/*jq(".urlInput").keyup(enableSelectButton);
 					jq(".urlInput").bind("paste", function() {
 						setTimeout(enableSelectButton, 100);
-					});
-					
+					});*/
+
 					jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
-					jq(selectedFile).removeClass("serverFileTreeSelected");
+					jq(".serverFileTreeSelected").removeClass("serverFileTreeSelected");
 					selectedInput = jq(node).closest(".pRow").attr("id");
                     jq('#serverFileTreeDialog').dialog('open');
                     return false;
                 }
 
+                function removeFileSelection(node)
+                {
+                    jq(node).removeClass("serverFileTreeSelected");
+                    var value = jq(node).attr("href");
+
+                    $(".urlInput").each(function()
+                    {
+                        if($(this).val() == decodeURIComponent(value))
+                        {
+                            $(this).next().click();
+                        }
+                    });
+                }
+
                 function handleServerFileClick(node) {
-                    jq(selectedFile).removeClass("serverFileTreeSelected");
-                    jq(node).addClass("serverFileTreeSelected");
-                    selectedFile = node;
-					jq("#dialogUrlDiv").find(".urlInput").val(jq(selectedFile).attr("href"));
-                    jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane").find("button:first").button("enable");
+                    var canSelectMultiple =  run_task_info.params[selectedInput].allowMultiple
+                            || run_task_info.params[selectedInput].isBatch;
+
+                    if(canSelectMultiple && !(event.metaKey || event.shiftKey))
+                    {
+                        //remove all other selections
+                        $(".serverFileTreeSelected").each(function()
+                        {
+                            if(jq(node).attr("href") != jq(this).attr("href"))
+                            {
+                                removeFileSelection(this);
+                            }
+                        });
+                    }
+
+                    if(jq(node).hasClass("serverFileTreeSelected"))
+                    {
+                        if(canSelectMultiple)
+                        {   //deselect this node
+                            if(event.metaKey || event.shiftKey)
+                            {
+                                removeFileSelection(node);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(lastSelectedFile != null && !(canSelectMultiple && (event.metaKey || event.shiftKey)))
+                        {
+                            removeFileSelection(lastSelectedFile);
+                        }
+
+                        jq(node).addClass("serverFileTreeSelected");
+                        if(jq("#dialogUrlDiv").find(".urlInput").length == 0 || jq("#dialogUrlDiv").find(".urlInput").last().val() != "" && (canSelectMultiple && (event.metaKey || event.shiftKey)))
+                        {
+                            $("#addFileUrl").click();
+                        }
+
+                        lastSelectedFile = node;
+                        var urlInput = jq("#dialogUrlDiv").find(".urlInput").last();
+                        urlInput.next().click(function()
+                        {
+                            jq(".serverFileTreeSelected").each(function()
+                            {
+                                var myValue = decodeURIComponent(jq(this).attr("href"));
+                                if(myValue == urlInput.val())
+                                {
+                                    jq(this).removeClass("serverFileTreeSelected");
+                                }
+                            })
+                        });
+
+                        urlInput.val(decodeURIComponent(jq(lastSelectedFile).attr("href")));
+
+                        //move the position of the cursor in the text field to the end so that the
+                        //selected file name is visible
+                        /*urlInput.focus(function() {
+                            this.value = this.value
+                        });
+                        urlInput.focus();
+                        */
+                    }
+
+                    if(jq("#dialogUrlDiv").find(".urlInput").length == 1 && jq("#dialogUrlDiv").find(".urlInput").val() == "")
+                    {
+                        jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
+                    }
+                    else
+                    {
+                        jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("enable");
+                    }
                     return false;
                 }
                 /* ]]> */
@@ -136,7 +212,7 @@
         </div>
         <script type="text/javascript">
             jq("#serverFileTreeDialog").dialog({
-                width:500,
+                width:550,
 				zIndex: 9000,
 				position: ["center", 100],
                 autoOpen:false,
@@ -145,13 +221,16 @@
                     {
                         text:"Select",
                         click:function () {
-							var selectedUrl = jq.trim(jq("#dialogUrlDiv").find(".urlInput").val());
-                            if (selectedUrl === "") {
-                                return;
-                            }						// Prevent submitting if no file is selected
+                            jq.trim(jq("#dialogUrlDiv").find(".urlInput").each(function()
+                            {
+                                var selectedUrl = $(this).val();
+                                if (selectedUrl === "") {
+                                    return;
+                                }	// Prevent submitting if no file is selected
 
-                            var groupId = jq("#dialogUrlDiv").data("groupId");
-							setParameter(selectedInput, selectedUrl, groupId);
+                                var groupId = jq("#dialogUrlDiv").data("groupId");
+                                setParameter(selectedInput, selectedUrl, groupId);
+                            }));
 
                             jq("#serverFileTreeDialog").dialog("close"); 			// Close the dialog
                         }

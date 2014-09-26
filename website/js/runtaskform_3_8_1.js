@@ -1008,55 +1008,42 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
     urlButton.button().click(function () {
         var urlDiv = $("<div class='urlDiv'/>");
 
-        urlDiv.append("Enter url:");
-        var urlInput = $("<input type='text' class='urlInput'/>");
-        urlDiv.append(urlInput);
-
         var urlActionDiv = $("<div class='center'/>");
-        var enterButton = $("<button>Enter</button>");
-        enterButton.button().click(function () {
-            var paramName = $(this).parents("tr:first").data("pname");
+        var addURLBtn = $("<button id='addFileUrl'>Add URL</button>");
+        addURLBtn.button().click(function () {
+            var urlEntryDiv = $("<div class='urlEntry'> Enter URL:<input type='text' class='urlInput'/> </div>");
+            var delBtn = $("<img class='images delBtn' src='/gp/images/delete-blue.png'/>");
 
-            var url = $(this).parents("div:nth-child(2)").find(".urlInput").first().val();
+            delBtn.button().click(function()
+            {
+                //just empty the value if this is the first in the list of url entries
+                if(urlDiv.find(".urlEntry").length > 1)
+                {
+                    $(this).parent(".urlEntry").remove();
+                }
+                else
+                {
+                    urlDiv.find(".urlEntry").first().find(".urlInput").val("");
+                }
+                urlDiv.find(".urlEntry").first().find(".delBtn").hide();
+            });
+            urlEntryDiv.append(delBtn);
 
-            $(this).parents("td:first").children().show();
+            $(this).parent().before(urlEntryDiv);
 
-            $(this).parents(".urlDiv").first().remove();
-
-            //check if this is not an empty string and
-            // no non-space characters were entered
-            if ($.trim(url) == '') {
-                return;
-            }
-
-            var groupId = getGroupId($(this));
-            var fileObjListings = getFilesForGroup(groupId, paramName);
-
-            var totalFileLength = fileObjListings.length + 1;
-            validateMaxFiles(paramName, totalFileLength);
-
-            var fileObj = {
-                name: url,
-                id: fileId++
-            };
-            fileObjListings.push(fileObj);
-
-            updateFilesForGroup(groupId, paramName, fileObjListings);
-
-            // add to file listing for the specified parameter
-            updateParamFileTable(paramName, $(this).closest(".fileDiv"), groupId);
-            toggleFileButtons(paramName);
-
+            urlDiv.find(".urlEntry").first().find(".delBtn").hide();
         });
-        urlActionDiv.append(enterButton);
-
-        var cancelButton = $("<button>Cancel</button>");
-        cancelButton.button().click(function () {
-            $(this).parents("td:first").children().show();
-            $(this).parents(".urlDiv").first().remove();
-        });
-        urlActionDiv.append(cancelButton);
+        urlActionDiv.append(addURLBtn);
         urlDiv.append(urlActionDiv);
+        addURLBtn.click();
+
+        //this is the first url entry field so hide it the delete button
+        //urlDiv.find(".urlEntry").first().find(".delBtn").hide();
+
+        if(!(paramDetails.allowMultiple || paramDetails.isBatch))
+        {
+            addURLBtn.hide();
+        }
 
         $("#dialogUrlDiv").data("groupId", groupId);
         $("#dialogUrlDiv").append(urlDiv);
