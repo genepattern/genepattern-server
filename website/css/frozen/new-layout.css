@@ -32,6 +32,7 @@
     overflow: hidden;
     width: 91%;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .module-version {
