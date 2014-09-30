@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="IAClasses">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/installer-2014/IAClasses.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

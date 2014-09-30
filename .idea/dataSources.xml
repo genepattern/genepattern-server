@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="4068330647">
+    <data-source source="LOCAL" name="hibernate.hsqldb.cfg.xml" uuid="73a52171-2f1c-4f7b-807c-31f1b6472676">
+      <driver-ref>hsqldb.remote</driver-ref>
+      <jdbc-driver>org.hsqldb.jdbcDriver</jdbc-driver>
+      <jdbc-url>jdbc:hsqldb:hsql://localhost/xdb</jdbc-url>
+      <user-name>sa</user-name>
+      <libraries />
+    </data-source>
+    <data-source source="LOCAL" name="hibernate.junit.cfg.xml" uuid="4469a0b3-42b7-4000-94fc-68e7cc5ebed6">
+      <driver-ref>hsqldb.remote</driver-ref>
+      <jdbc-driver>org.hsqldb.jdbcDriver</jdbc-driver>
+      <jdbc-url>jdbc:hsqldb:hsql://localhost/xdb</jdbc-url>
+      <user-name>sa</user-name>
+      <libraries />
+    </data-source>
+  </component>
+</project>
+

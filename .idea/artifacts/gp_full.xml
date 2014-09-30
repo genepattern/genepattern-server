@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" build-on-make="true" name="gp-full">
+    <output-path>$USER_HOME$/GenePatternServer/Tomcat/webapps/gp</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="gp-trunk" />
+        </element>
+        <element id="directory" name="lib" />
+      </element>
+      <element id="javaee-facet-resources" facet="gp-trunk/web/Web" />
+    </root>
+  </artifact>
+</component>
