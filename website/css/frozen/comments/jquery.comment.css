@@ -1,0 +1,98 @@
+/*!
+ * jQuery Post-Comment Plugin v.1.0
+ * created [2013-02-26 17:49 AM]
+ * TODO: Documentation
+ *
+ * Copyright 2013, hendra@kunchy.com or henyana@gmail.com
+ * http://www.abelware.com
+ */
+.clear{
+	clear: both;
+}
+
+.comments-display{
+
+}
+
+.comments-display .dot{
+	padding: 0 3px;
+	font-size: 75%;
+	color: #CCC;
+	line-height: 1.4;
+}
+
+.comments-display .in-reply-to{
+	display:inline-table;
+}
+
+.comments-display .in-reply-to .ui-icon{
+	height:12px;
+}
+
+.comments-display .comment-length{
+	font-weight:bold;
+	padding-bottom:7px;
+}
+
+.comments-display .posted-comments-postbox {
+	padding-top:3px;
+	border-bottom:2px solid #F0F0F0;
+}
+
+ul.posted-comments {
+	list-style: none;
+	margin: 0;
+}
+
+ul.posted-comments li {
+	padding:10px 0 0;
+	border-top:1px solid #F0F0F0;
+}
+
+.avatar img{
+	width:28px;
+	height:28px;
+}
+
+.posted-comments-postbox .avatar{
+
+}
+
+.posted-comments-postbox .form{
+	margin-left: 10px;
+	min-width: 85%;
+}
+
+.posted-comments-postbox textarea, .posted-comment-form-edit textarea{
+	min-width:98%;
+}
+
+.posted-comment-container{
+	margin-left: 10px;
+	min-width:85%;
+}
+
+.posted-comment-container .posted-comment-head{
+	font-size:7pt;
+}
+
+.posted-comment-container .posted-comment-head .posted-comment-author{
+	font-weight:bold;
+}
+
+.posted-comment-container .posted-comment-foot{
+	font-size:7pt;
+	color:#F0F0F0;
+}
+
+ul.posted-comment-childs{
+	list-style: none;
+	margin-left:40px;
+	padding-top:7px;
+}
+
+ul.posted-comment-childs .avatar img{
+	width:22px;
+	height:22px;
+}
+
