@@ -47,15 +47,14 @@ public class JobComment {
 
     @Id
     @GeneratedValue
-    private long id;
+    private int id;
 
     //this is a foreign key to the analysis_job table
-    @Id
     @Column(name="gp_job_no")
     private int gpJobNo;
 
     @Column(name="parent_id")
-    private long parentId;
+    private int parentId;
 
     @Column(name="posted_date", nullable=false)
     private Date postedDate;
@@ -67,101 +66,17 @@ public class JobComment {
     @Size(max=COMMENT_TEXT_LENGTH)
     private String comment;
 
-
-    private JobComment(final Builder builder)
-    {
-        this.id=builder.id;
-        this.gpJobNo=builder.gpJobNo;
-        this.parentId=builder.parentId;
-        this.postedDate=builder.postedDate;
-        this.userId=builder.userId;
-        this.comment=builder.comment;
-    }
-
-    public static final class Builder
-    {
-        private int gpJobNo;
-        private long id;
-        private long parentId;
-        private Date postedDate;
-        private String userId="";
-        private String comment=""; // null means 'not set'
-
-
-        public Builder()
-        {
-        }
-
-        public Builder(final JobComment in)
-        {
-            this.gpJobNo=in.gpJobNo;
-            this.gpJobNo=in.gpJobNo;
-            this.id=in.id;
-            this.parentId=in.parentId;
-            this.postedDate=in.postedDate;
-            this.userId=in.userId;
-            this.comment=in.comment;
-        }
-
-
-        public Builder gpJobNo(int gpJobNo)
-        {
-            this.gpJobNo=gpJobNo;
-            return this;
-        }
-
-        public Builder id(final int id)
-        {
-            this.id=id;
-            return this;
-        }
-
-        public Builder parentId(final Integer parentId)
-        {
-            this.parentId=parentId;
-            return this;
-        }
-
-        public Builder postedDate(final Date postedDate)
-        {
-            this.postedDate=postedDate;
-            return this;
-        }
-
-        public Builder userId(final String userId)
-        {
-            this.userId = userId;
-            return this;
-        }
-
-
-        public Builder comment(final String commentIn)
-        {
-            this.comment=truncate(commentIn, COMMENT_TEXT_LENGTH);
-            if (log.isDebugEnabled() && commentIn.length() > COMMENT_TEXT_LENGTH)
-            {
-                log.warn("truncating comment because it is greater than max DB length="+COMMENT_TEXT_LENGTH);
-            }
-            return this;
-        }
-
-        public JobComment build()
-        {
-            return new JobComment(this);
-        }
-    }
-
-    public Integer getGpJobNo()
+    public int getGpJobNo()
     {
         return gpJobNo;
     }
 
-    public long getId()
+    public int getId()
     {
         return id;
     }
 
-    public long getParentId()
+    public int getParentId()
     {
         return parentId;
     }
@@ -181,38 +96,32 @@ public class JobComment {
         return comment;
     }
 
-    //private no-arg constructor for hibernate
-    private JobComment()
-    {
-    }
-
-    //private setters for hibernate, making this class 'kind-of' immutable
-    private void setGpJobNo(final int gpJobNo)
+    public void setGpJobNo(final int gpJobNo)
     {
         this.gpJobNo = gpJobNo;
     }
 
-    private void setCommentId(final long commentId)
+    public void setCommentId(final int commentId)
     {
         this.id = commentId;
     }
 
-    private void setParentId(final long parentId)
+    public void setParentId(final int parentId)
     {
         this.parentId = parentId;
     }
 
-    private void setPostedDate(final Date postedDate)
+    public void setPostedDate(final Date postedDate)
     {
         this.postedDate = postedDate;
     }
 
-    private void setUserId(final String userId)
+    public void setUserId(final String userId)
     {
         this.userId = userId;
     }
 
-    private void setComment(final String comment)
+    public void setComment(final String comment)
     {
         this.comment = comment;
     }
