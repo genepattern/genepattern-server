@@ -28,7 +28,7 @@
     int numErrors = 0;
 
     FileFilter fileFilter = new WildcardFileFilter("GenePattern_Install_*.log");
-    File dir = new File("../../UninstallerData/Logs");
+    File dir = new File("../UninstallerData/Logs");
     File[] logs = dir.listFiles(fileFilter);
     File f = logs[0];
 %>
