@@ -1,9 +1,0 @@
-<!-- map of users to groups -->
-
-<userGroups>
-
-<group name="administrators">
-	<user name="*"/>
-</group>
-
-</userGroups>
