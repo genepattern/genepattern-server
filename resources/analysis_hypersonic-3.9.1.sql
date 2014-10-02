@@ -8,6 +8,7 @@ create table job_comment (
  primary key (id)
 );
 
+create index idx_comment_text on job_comment(comment_text);
 
 -- update schema version
 update props set value='3.9.1' where key='schemaVersion';
