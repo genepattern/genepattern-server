@@ -1,8 +1,8 @@
 package org.genepattern.server.webapp.rest.api.v1.job.comment;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.comment.JobComment;
-import org.genepattern.server.comment.dao.JobCommentDao;
+import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;

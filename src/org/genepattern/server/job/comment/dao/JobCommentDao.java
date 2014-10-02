@@ -1,9 +1,8 @@
-package org.genepattern.server.comment.dao;
+package org.genepattern.server.job.comment.dao;
 
-import com.amazonaws.services.importexport.model.Job;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
-import org.genepattern.server.comment.JobComment;
+import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
 

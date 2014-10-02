@@ -61,7 +61,7 @@
     <mapping class="org.genepattern.server.executor.drm.dao.JobRunnerJob" />
     <mapping class="org.genepattern.server.job.input.dao.JobInputValue" />
     <mapping class="org.genepattern.server.job.output.JobOutputFile" />
-    <mapping class="org.genepattern.server.comment.JobComment" />
+    <mapping class="org.genepattern.server.job.comment.JobComment" />
 
   </session-factory>
 </hibernate-configuration>

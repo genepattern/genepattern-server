@@ -1,4 +1,4 @@
-package org.genepattern.server.comment;
+package org.genepattern.server.job.comment;
 
 import org.apache.log4j.Logger;
 import org.hibernate.validator.Size;

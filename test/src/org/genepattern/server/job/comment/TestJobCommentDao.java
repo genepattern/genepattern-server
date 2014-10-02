@@ -1,11 +1,10 @@
-package org.genepattern.server.comment;
+package org.genepattern.server.job.comment;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
-import org.genepattern.server.comment.dao.JobCommentDao;
+import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.webservice.JobInfo;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
