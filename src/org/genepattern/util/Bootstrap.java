@@ -14,11 +14,22 @@ import java.util.ArrayList;
 public class Bootstrap {
 
     public static void main(String[] args) {
+        String command = null;
+        if (args.length >= 1) {
+            command = args[0];
+        }
+
         File catalinaPath = new File( "bin/catalina.sh" );
 
         List<String> processList = new ArrayList<String>();
         processList.add(catalinaPath.getPath());
-        processList.add("run");
+
+        if ("stop".equals(command)) {
+            processList.add("stop");
+        }
+        else {
+            processList.add("run");
+        }
 
         ProcessBuilder builder = new ProcessBuilder(processList);
 
