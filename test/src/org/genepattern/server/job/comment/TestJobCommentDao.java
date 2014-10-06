@@ -116,19 +116,14 @@ public class TestJobCommentDao
         jobComment.setComment(comment);
 
         dao.insertJobComment(jobComment);
+        jobComment.setComment("This comment has been updated");
 
-        List<JobComment> query=dao.selectJobComments(gpJobNo);
-        JobComment result = query.get(0);
-        assertEquals("comment", comment, result.getComment());
-        int id = result.getId();
-
-        String updatedComment = "This comment has been updated";
-        boolean success = dao.updateJobComment(id, gpJobNo, updatedComment);
+        boolean success = dao.updateJobComment(jobComment);
         assertEquals("success", true, success);
 
         List<JobComment> updatedQuery=dao.selectJobComments(gpJobNo);
         JobComment updatedResult = updatedQuery.get(0);
-        assertEquals("comment", updatedComment, updatedResult.getComment());
+        assertEquals("comment", jobComment.getComment(), updatedResult.getComment());
     }
 
     /**
