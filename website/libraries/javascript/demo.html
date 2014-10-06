@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>GP Library Demo</title>
+    <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.15.0.css">
+    <script src="//code.jquery.com/qunit/qunit-1.15.0.js"></script>
+    <script src="../../js/jquery/jquery-1.8.3.js"></script>
+    <script src="gp.js"></script>
+</head>
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+
+    <script type="text/javascript">
+        // Setup the tests
+        gp.setServer("http://127.0.0.1:8080/gp");
+        QUnit.config.autostart = false;
+        gp.tasks({
+            success: function(response, tasks) {
+                gp.jobs({
+                    success: function(response, jobs) {
+                        QUnit.start();
+                    }
+                });
+            }
+        });
+
+        // The tests
+
+        QUnit.test("Server Set", function(assert) {
+            assert.ok(gp.isServerSet());
+        });
+
+        QUnit.asyncTest("Tasks Cached", function(assert) {
+            gp.tasks({
+                success: function(response, tasks) {
+                    assert.ok(gp._tasks);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.test("Get Task by Name String", function(assert) {
+            assert.ok(gp.task("ConvertLineEndings"));
+        });
+
+        QUnit.test("Get Task by LSID String", function(assert) {
+            assert.ok(gp.task("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1"));
+        });
+
+        QUnit.test("Get Task by Name Property", function(assert) {
+            assert.ok(gp.task({name:"ConvertLineEndings"}), "Passed!" );
+        });
+
+        QUnit.test("Get Task by String Property", function(assert) {
+            assert.ok(gp.task({lsid:"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1"}));
+        });
+
+        QUnit.asyncTest("Task Params", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+
+            task.params({
+                success: function(response, params) {
+                    assert.ok(task._params && task._params.length > 0);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Jobs Cached", function(assert) {
+            gp.tasks({
+                success: function(response, jobs) {
+                    assert.ok(gp._jobs);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.test("Get Job by Number", function(assert) {
+            var jobNumber = parseInt(gp._jobs[0].jobNumber());
+            assert.ok(gp.job(jobNumber));
+        });
+
+        QUnit.test("Get Job by Number String", function(assert) {
+            var jobNumber = gp._jobs[0].jobNumber().toString();
+            assert.ok(gp.job(jobNumber));
+        });
+
+        QUnit.test("Get Job by Number Parameter", function(assert) {
+            var jobNumber = parseInt(gp._jobs[0].jobNumber());
+            assert.ok(gp.job({jobNumber: jobNumber}));
+        });
+
+        QUnit.test("Get Job by Number String", function(assert) {
+            var jobNumber = gp._jobs[0].jobNumber().toString();
+            assert.ok(gp.job({jobNumber: jobNumber}));
+        });
+
+        QUnit.asyncTest("Job Status Update", function(assert) {
+            var job = gp._jobs[0];
+            job.update({
+                success: function(response, status) {
+                    assert.ok(status);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Create Job Input", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, params) {
+                    assert.ok(task.jobInput());
+                    QUnit.start();
+                }
+            });
+
+        });
+
+        QUnit.asyncTest("Job Input Has Params", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var params = task.jobInput().params();
+                    assert.ok(params && params.length > 0);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Job Input Has LSID", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var lsid = task.jobInput().lsid();
+                    assert.ok(lsid);
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Get Job Input Parameter", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var jobInput = task.jobInput();
+                    assert.ok(jobInput.param("input.filename"));
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Job Parameter Values", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var jobInput = task.jobInput();
+                    var param = jobInput.param("input.filename");
+                    param.values(["TEST"]);
+                    assert.ok(param.values() && param.values()[0] === "TEST");
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Job Parameter Batch", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var jobInput = task.jobInput();
+                    var param = jobInput.param("input.filename");
+                    param.batchParam(true);
+                    assert.ok(param.batchParam());
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Job Parameter Group ID", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var jobInput = task.jobInput();
+                    var param = jobInput.param("input.filename");
+                    param.groupId("TEST");
+                    assert.ok(param.groupId() && param.groupId() === "TEST");
+                    QUnit.start();
+                }
+            });
+        });
+
+        QUnit.asyncTest("Submit Job", function(assert) {
+            var task = gp.task("ConvertLineEndings");
+            task.params({
+                success: function(response, pParams) {
+                    var jobInput = task.jobInput();
+                    var param = jobInput.param("input.filename");
+                    param.values(["ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res"]);
+                    jobInput.submit({
+                        success: function(response, job) {
+                            assert.ok(job);
+                            QUnit.start();
+                        },
+                        error: function(exception) {
+                            assert.ok(false, exception.statusText)
+                            QUnit.start();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
