@@ -4,11 +4,10 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
-import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -197,7 +196,7 @@ public class JobCommentsResource
         jb.put("parent_id", jobComment.getParentId());
         jb.put("created_by", jobComment.getUserId());
         jb.put("fullname", jobComment.getUserId());
-        jb.put("posted_date",jobComment.getPostedDate());
+        jb.put("posted_date", DateUtil.toTimeAgoUtc(jobComment.getPostedDate()));
         jb.put("text", jobComment.getComment());
         jb.put("childrens", new JSONArray());
 
