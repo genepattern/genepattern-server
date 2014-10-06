@@ -27,6 +27,7 @@ public class DateUtil {
      */
     public static final DateTimeFormatter isoNoMillis=DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZZ");
     public static final DateTimeFormatter isoNoMillisUtc=DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZoneUTC();
+    public static final DateTimeFormatter timeAgoUtc=DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
     
     /**
      * Outputs the date in 'ECMAScript 5 ISO-8601' format, in the server's timezone.
@@ -64,6 +65,25 @@ public class DateUtil {
     
     public static String toIso8601_duration(final long durationInMillis) {
         return ISOPeriodFormat.standard().print(new Duration(durationInMillis).toPeriod());
+    }
+    
+    /**
+     * Custom date formatter for the <a href="http://henyana.github.io/jquery-comment/">jquery-comment plugin</a>, 
+     * which uses the <a href="http://timeago.yarp.com/">timeago</a> plugin for jQuery. Convert the given date
+     * to UTC time zone and format using the following spec:
+     * <pre>
+     * yyyy-MM-dd HH:mm:ss
+     * </pre>
+     * 
+     * @param date, a non-null date as stored in a timestamp column in the database in the local server time zone.
+     * @return a formatted String representation of the date in the UTC time zone
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static String toTimeAgoUtc(Date date) throws IllegalArgumentException {
+        if (date==null) {
+            throw new IllegalArgumentException("date==null");
+        }
+        return DateUtil.timeAgoUtc.withZoneUTC().print(date.getTime());
     }
 
 }
