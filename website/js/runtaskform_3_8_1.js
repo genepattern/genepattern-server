@@ -232,6 +232,14 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 $("#protocols").hide();
                 $("#submitJob").show();
 
+                //add the tags
+                $('#jobTags').tagsInput(
+                {
+                    'defaultText':'Add tags...',
+                     width: '94%',
+                     height: '40px'
+                });
+
                 // Update the history & title
                 document.title = "GenePattern - " + run_task_info.name
                 if (reloadId) {
@@ -1433,7 +1441,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
                 var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='19' height='19' class='paramSectionToggle'/>");
 
-                headerTitleDiv.click(function () {
+                $(".pHeaderTitleDiv").live("click", function () {
                     $(this).next().toggle();
 
                     var toggleImg = $(this).find(".paramSectionToggle");
@@ -1601,7 +1609,8 @@ function createParamDescriptionRow(parameterName) {
     return $("<tr class='paramDescription'><td></td><td colspan='3'>" + pDescription + "</td></tr>");
 }
 
-function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl) {
+function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
+{
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
@@ -2067,6 +2076,12 @@ function submitTask() {
         "params": JSON.stringify(param_values_by_group),
         "batchParams": buildBatchList()
     };
+
+    if($("#jobComment").val() != undefined && $("#jobComment").val() != null
+        && $("#jobComment").val().length > 0)
+    {
+        taskJsonObj["comment"] = $("#jobComment").val();
+    }
 
     $.ajax({
         type: "POST",

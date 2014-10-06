@@ -53,7 +53,8 @@ if ( typeof Object.create !== 'function' ) {
 
 			var textarea = $('<textarea></textarea>');
 			textarea.attr('name', 'text');
-			textarea.attr('placeHolder', 'Leave a message...');
+			textarea.attr('placeHolder', self.options.placeHolderText);
+            textarea.attr('maxlength', self.options.maxlength);
 			textarea.css('overflow', 'hidden');
 			textarea.autogrow();
 
@@ -169,19 +170,20 @@ if ( typeof Object.create !== 'function' ) {
 			elem.addClass('posted-comments-postbox');
 
 			//self.user_info_
-			var img_elem = $('<img/>');
-			img_elem.attr('src', self.user_info_.picture);
-			img_elem.attr('border', 0);
-			img_elem.addClass('ui-corner-all');
-			img_elem.addClass('curr-user-photo');
+            if(self.user_info_.picture != undefined && self.user_info_.picture != null && self.user_info_.picture != "")
+            {
+                var img_elem = $('<img/>');
+			    img_elem.attr('src', self.user_info_.picture);
+                img_elem.attr('border', 0);
+                img_elem.addClass('ui-corner-all');
+                img_elem.addClass('curr-user-photo');
 
-			var avatar = $('<div></div>');
-			avatar.addClass('avatar').addClass('pull-left');
-			avatar.append(img_elem);
-			
-			elem.append(avatar);
+                var avatar = $('<div></div>');
+                avatar.addClass('avatar').addClass('pull-left');
+                avatar.append(img_elem);
 
-
+                elem.append(avatar);
+            }
 			var form = $('<div></div>');
 			form.addClass('form').addClass('pull-left');
 
@@ -270,21 +272,23 @@ if ( typeof Object.create !== 'function' ) {
 			item.attr('id', 'posted-'+comment_info.comment_id);
 
 			// avatar-image
-			var avatar = $('<div></div>');
-			avatar.addClass('avatar').addClass('pull-left');
+            if(comment_info.picture != undefined && comment_info.picture !== null && comment_info.picture !== "")
+            {
+                var avatar = $('<div></div>');
+                 avatar.addClass('avatar').addClass('pull-left');
 
-			var img_elem = $('<img/>');
-			img_elem.attr('src', comment_info.picture);
-			img_elem.attr('border', 0);
-			img_elem.addClass('ui-corner-all');
+                 var img_elem = $('<img/>');
+                 img_elem.attr('src', comment_info.picture);
+                 img_elem.attr('border', 0);
+                 img_elem.addClass('ui-corner-all');
 
-			if(comment_info.created_by==self.user_info_.user_id)
-				img_elem.addClass('curr-user-photo');
+                 if(comment_info.created_by==self.user_info_.user_id)
+                    img_elem.addClass('curr-user-photo');
 
-			avatar.append(img_elem);
+                 avatar.append(img_elem);
 
-			item.append(avatar);
-
+                 item.append(avatar);
+            }
 			// posted-comment-container
 			var post_container = $('<div></div>');
 			post_container.addClass('posted-comment-container').addClass('pull-left');
@@ -433,7 +437,7 @@ if ( typeof Object.create !== 'function' ) {
 			// reply 
 			if(self.user_info_.is_add_allowed)
 			{
-				var reply_container = $('<span></span>');
+				/*var reply_container = $('<span></span>');
 				reply_container.addClass('post-reply');
 
 				var reply = $('<a>Reply</a>');
@@ -442,7 +446,7 @@ if ( typeof Object.create !== 'function' ) {
 
 				reply_container.append(reply);
 
-				post_foot.append(reply_container);
+				post_foot.append(reply_container);*/
 			}
 
 			post_container.append(post_foot);
@@ -467,10 +471,10 @@ if ( typeof Object.create !== 'function' ) {
 				ul_child_elem.append(postbox);
 
 				// reply events-apply
-				reply.on('click', function(e){
+				/*reply.on('click', function(e){
 					e.preventDefault();
 					postbox.toggle();
-				});				
+				});	*/
 
 			}
 
@@ -572,7 +576,7 @@ if ( typeof Object.create !== 'function' ) {
 
 				var icon_alert = $('<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 50px 0;"></span>');
 
-				var message = $('<span>Are You sure want to delete this data?</span>');
+				var message = $('<span>Are you sure want to delete this comment?</span>');
 
 				p.append(icon_alert);
 				p.append(message);
@@ -649,12 +653,14 @@ if ( typeof Object.create !== 'function' ) {
 		url_get: '#',
 		url_input: '#',
 		url_delete: '#',
-		wrapEachWith: '<li></li>',
+        placeHolderText: "Add a message...", //place holder text for comment text area
+        maxlength: 500,
+        wrapEachWith: '<li></li>',
 		limit: 10,
 		auto_refresh: true,
 		refresh: null,
 		onComplete: null,
-		transition: 'fadeToggle',
+		transition: 'fadeToggle'
 	};
 
 })(jQuery, window, document);

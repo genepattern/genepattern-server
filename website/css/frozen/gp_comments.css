@@ -1,0 +1,35 @@
+.comments
+{
+    max-height: 320px;
+}
+
+#commentsHeader
+{
+    font-size: 15px;
+    font-weight: bold;
+    background-color: #cddcf1;
+    padding-top: 5px;
+    padding-bottom: 2px;
+    padding-left: 8px;
+    border: 1px solid black;
+    border-top: none;
+}
+
+#commentsHeader:hover
+{
+    cursor: pointer;
+}
+
+#commentsContent
+{
+    border: 1px solid black;
+    border-top: none;
+    padding-left: 35px;
+    padding-right: 12px;
+    overflow: auto;
+}
+
+img {
+    vertical-align: middle;
+}
+

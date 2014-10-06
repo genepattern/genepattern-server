@@ -19,8 +19,11 @@
         GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
     </ui:define>
 	<ui:define name="headText">
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/gp_comments.css?version=#{aboutBean.buildTag}" />
+
         <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js"></script>
-		<script type="text/javascript">
+
+        <script type="text/javascript">
                 var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};                
 
                 function setEmailNotification(cb, jobId, userId, userEmail) {
@@ -292,7 +295,9 @@
                 initPendingStatus();
                 /* ]]> */
             </script>
-	</ui:define>
+
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_comments.js"></script>
+    </ui:define>
 
 	<ui:define name="body">
         <h:outputText rendered="#{jobStatusBean.canViewJob}">
@@ -446,7 +451,9 @@
                                     </td>
                                 </tr>
                             </table>
+                            <ui:include src="jobComments.xhtml"/>
                         </div>
+
 
                         <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
                             <div>

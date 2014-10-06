@@ -87,17 +87,6 @@ tr.paramDescription td
     padding-bottom: 2px;
 }
 
-/*.paramsTable tr td
-{
-    padding-right: 5px;
-}
-
-tr td
-{
-    padding-right: 5px;
-}
-*/
-
 .paramsTable tr td:nth-child(even)
 {
 /*    padding-left: 14px;*/
@@ -646,6 +635,21 @@ span.drop-box
     margin-top: 8px;
 }
 
+.commentsContent
+{
+    margin-top: 7px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
 
+.commentsContent textarea
+{
+    min-width: 98%;
+}
 
-
+.tagsContent
+{
+    margin-top: 7px;
+    margin-left: 10px;
+    margin-right: 10px;
+}

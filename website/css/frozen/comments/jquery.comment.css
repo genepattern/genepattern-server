@@ -16,7 +16,7 @@
 
 .comments-display .dot{
 	padding: 0 3px;
-	font-size: 75%;
+	font-size: 80%;
 	color: #CCC;
 	line-height: 1.4;
 }
@@ -73,7 +73,7 @@ ul.posted-comments li {
 }
 
 .posted-comment-container .posted-comment-head{
-	font-size:7pt;
+	font-size:8pt;
 }
 
 .posted-comment-container .posted-comment-head .posted-comment-author{
@@ -81,7 +81,7 @@ ul.posted-comments li {
 }
 
 .posted-comment-container .posted-comment-foot{
-	font-size:7pt;
+	font-size:8pt;
 	color:#F0F0F0;
 }
 

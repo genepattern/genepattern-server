@@ -1,7 +1,9 @@
 package org.genepattern.server.webapp.rest.api.v1.job.comment;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.rest.api.v1.Util;
@@ -14,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -41,10 +44,8 @@ public class JobCommentsResource
                 throw new Exception("A job number must be specified");
             }
 
-            JobCommentDao jobCommentDao  = new JobCommentDao();
-
             int gpJobNo = Integer.parseInt(jobNo);
-            List<JobComment> jobComments = jobCommentDao.selectJobComments(gpJobNo);
+            List<JobComment> jobComments = JobCommentManager.selectAllJobComments(gpJobNo);
 
             JSONObject jobCommentsResult = createJobCommentBundle(userContext, jobComments);
             JSONObject result = new JSONObject();
@@ -68,8 +69,38 @@ public class JobCommentsResource
         {
             final GpContext userContext = Util.getUserContext(request);
 
-            JSONObject result = addOrUpdateComment(userContext, multivaluedMap, jobNo);
-            return Response.ok().entity(result.toString()).build();
+            JSONObject jobCommentsResult = new JSONObject();
+            boolean success = false;
+
+            if( multivaluedMap != null && multivaluedMap.getFirst("text") != null
+                    && multivaluedMap.getFirst("text").trim().length() > 0 && jobNo != null
+                    && jobNo.length() >0)
+            {
+                String commentText = multivaluedMap.getFirst("text").trim();
+                commentText = StringEscapeUtils.unescapeHtml(commentText);
+                int gpJobNo = Integer.parseInt(jobNo);
+
+                int parentId = 0;
+                if(multivaluedMap.getFirst("parent_id") != null)
+                {
+                    parentId = Integer.parseInt(multivaluedMap.getFirst("parent_id"));
+                }
+
+                JobComment jobComment = new JobComment();
+                jobComment.setGpJobNo(gpJobNo);
+                jobComment.setParentId(parentId);
+                jobComment.setPostedDate(new Date());
+                jobComment.setComment(commentText);
+                jobComment.setUserId(userContext.getUserId());
+                jobComment = JobCommentManager.addJobComment(jobComment);
+
+                jobCommentsResult = jobCommentJson(jobComment);
+                success = true;
+            }
+
+            jobCommentsResult.put("success", success);
+
+            return Response.ok().entity(jobCommentsResult.toString()).build();
         }
         catch (Throwable t) {
             log.error(t);
@@ -88,9 +119,32 @@ public class JobCommentsResource
         try
         {
             final GpContext userContext = Util.getUserContext(request);
-            JSONObject jobCommentsResult = addOrUpdateComment(userContext, multivaluedMap, jobNo, id);
+
             JSONObject result = new JSONObject();
-            result.put("results", result);
+            boolean success = false;
+
+            if( multivaluedMap != null && multivaluedMap.getFirst("text") != null && jobNo != null
+                    && jobNo.length() >0 && id != null && id.length() > 0)
+            {
+                String commentText = multivaluedMap.getFirst("text");
+                int gpJobNo = Integer.parseInt(jobNo);
+
+                JobComment jobComment = new JobComment();
+
+                int commentId = Integer.parseInt(id);
+                jobComment.setUserId(userContext.getUserId());
+                jobComment.setCommentId(commentId);
+                jobComment.setGpJobNo(gpJobNo);
+                jobComment.setComment(commentText);
+                success = JobCommentManager.updateJobComment(jobComment);
+                if(success)
+                {
+                    result.put("text", commentText);
+                }
+            }
+
+            result.put("success", success);
+
             return Response.ok().entity(result.toString()).build();
         }
         catch (Throwable t) {
@@ -100,30 +154,34 @@ public class JobCommentsResource
     }
 
     @POST
-    @Path("/delete")
+    @Path("/delete/{jobNo}")
     public Response deleteComment(
             MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
             @Context HttpServletRequest request)
     {
         try
         {
             JSONObject result = new JSONObject();
-            result.put("success", false);
+            boolean success = false;
 
             if( multivaluedMap != null && multivaluedMap.getFirst("comment_id") != null
-                    && multivaluedMap.getFirst("comment_id").length() > 0)
+                    && multivaluedMap.getFirst("comment_id").length() > 0
+                    && jobNo != null && jobNo.length() > 0)
             {
                 int id = Integer.parseInt(multivaluedMap.getFirst("comment_id"));
 
-                JobCommentDao jobCommentDao  = new JobCommentDao();
-
-                boolean success = jobCommentDao.deleteJobComment(id);
+                success = JobCommentManager.deleteJobComment(id);
 
                 if(success)
                 {
-                    result.put("success", true);
+                    int gpJobNo = Integer.parseInt(jobNo);
+                    List<JobComment> jobCommentList = JobCommentManager.selectAllJobComments(gpJobNo);
+                    result.put("total_comment", jobCommentList.size());
                 }
             }
+
+            result.put("success", success);
             return Response.ok().entity(result.toString()).build();
         }
         catch (Throwable t) {
@@ -132,53 +190,18 @@ public class JobCommentsResource
         }
     }
 
-    public JSONObject addOrUpdateComment(GpContext userContext, MultivaluedMap<String,String> multivaluedMap, String jobNo) throws JSONException
+    private JSONObject jobCommentJson(JobComment jobComment) throws Exception
     {
-        return addOrUpdateComment(userContext,multivaluedMap,jobNo, null);
-    }
+        JSONObject jb = new JSONObject();
+        jb.put("comment_id", jobComment.getId());
+        jb.put("parent_id", jobComment.getParentId());
+        jb.put("created_by", jobComment.getUserId());
+        jb.put("fullname", jobComment.getUserId());
+        jb.put("posted_date",jobComment.getPostedDate());
+        jb.put("text", jobComment.getComment());
+        jb.put("childrens", new JSONArray());
 
-    public JSONObject addOrUpdateComment(GpContext userContext, MultivaluedMap<String,String> multivaluedMap, String jobNo, String commentId) throws JSONException
-    {
-        JSONObject result = new JSONObject();
-        result.put("success", false);
-
-        if( multivaluedMap != null && multivaluedMap.getFirst("text") != null && jobNo != null
-                && jobNo.length() >0 )
-        {
-            String commentText = multivaluedMap.getFirst("text");
-
-            JobCommentDao jobCommentDao  = new JobCommentDao();
-
-            int gpJobNo = Integer.parseInt(jobNo);
-
-            if(commentId != null)
-            {
-                int id = Integer.parseInt(commentId);
-                jobCommentDao.updateJobComment(id, gpJobNo, commentText);
-            }
-            else
-            {
-                JobComment jobComment = new JobComment();
-
-                int parentId = 0;
-                if(multivaluedMap.getFirst("parent_id") != null)
-                {
-                    parentId = Integer.parseInt(multivaluedMap.getFirst("parent_id"));
-                }
-
-                jobComment.setGpJobNo(gpJobNo);
-                jobComment.setParentId(parentId);
-                jobComment.setPostedDate(new Date());
-                jobComment.setUserId(userContext.getUserId());
-                jobComment.setComment(commentText);
-                jobCommentDao.insertJobComment(jobComment);
-            }
-
-            result.put("success", true);
-            result.put("text", commentText);
-        }
-
-        return result;
+        return jb;
     }
 
     private JSONObject createJobCommentBundle(GpContext userContext, List<JobComment> jobComments) throws Exception
@@ -189,20 +212,12 @@ public class JobCommentsResource
         jobCommentsResult.put("comments", comments);
         for(JobComment jobComment : jobComments)
         {
-            JSONObject jb = new JSONObject();
-            jb.put("comment_id", jobComment.getId());
-            jb.put("parent_id", jobComment.getParentId());
-            jb.put("created_by", jobComment.getUserId());
-            jb.put("fullname", jobComment.getUserId());
-            jb.put("posted_date",jobComment.getPostedDate());
-            jb.put("text", jobComment.getComment());
-            jb.put("childrens", new JSONArray());
-
-            comments.put(jb);
+            comments.put(jobCommentJson(jobComment));
         }
 
         JSONObject user = new JSONObject();
         user.put("user_id", userContext.getUserId());
+        user.put("fullname", userContext.getUserId());
         user.put("is_logged_in", true);
         user.put("is_add_allowed", true);
         user.put("is_edit_allowed", true);

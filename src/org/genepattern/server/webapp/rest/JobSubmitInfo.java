@@ -16,6 +16,7 @@ public class JobSubmitInfo
     String lsid;
 	String params;
 	List<String> batchParams;
+    String comment;
 
     @JsonProperty("lsid")
 	public String getLsid() {
@@ -43,6 +44,11 @@ public class JobSubmitInfo
     public void setBatchParams(List<String> batchParams) {
         this.batchParams = batchParams;
     }
+
+    @JsonProperty("comment")
+    public String getComment() { return comment; }
+
+    public void setComment(String comment) { this.comment = comment; }
 
 	@Override
 	public String toString()

@@ -5,28 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
@@ -42,6 +26,8 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -526,6 +512,18 @@ public class RunTaskServlet extends HttpServlet
                 result.addChild("batchId", receipt.getBatchId());
                 request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
             }
+
+            //check if there was a comment specified for job and add it to database
+            if(jobSubmitInfo.getComment() != null && jobSubmitInfo.getComment().length() > 0)
+            {
+                JobComment jobComment = new JobComment();
+                jobComment.setUserId(userContext.getUserId());
+                jobComment.setComment(jobSubmitInfo.getComment());
+                jobComment.setGpJobNo(Integer.parseInt(jobId));
+                jobComment.setPostedDate(new Date());
+                JobCommentManager.addJobComment(jobComment);
+            }
+
             return Response.ok(result.toString()).build();
         }
         catch (GpServerException e) {
