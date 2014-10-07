@@ -89,19 +89,8 @@ $(function() {
         }
 
         toggleImg.attr("src", imageSrc);
-
-        if (isVisible) {
-            $.cookie("show_job_comments", "true");
-        }
-        else {
-            $.removeCookie("show_job_comments");
-        }
     });
 
+    $("#commentsHeader").click();
 
-    //if comments were already visible before refresh then keep it that way
-    if (!($.cookie("show_job_comments")))
-    {
-        $("#commentsHeader").click();
-    }
 });
