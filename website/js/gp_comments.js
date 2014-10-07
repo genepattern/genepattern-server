@@ -1,4 +1,4 @@
-function updateCommentTotal(event)
+function updateCommentTotalAfterLoad(event)
 {
     var totalComments = 0;
     if(event != null && event.results != null && event.results.total_comment != undefined
@@ -7,7 +7,21 @@ function updateCommentTotal(event)
         totalComments = event.results.total_comment;
     }
     $("#commentHeaderTotal").empty().append("(" +  totalComments + ")");
+
+    alert("comment total updated");
 }
+
+function updateCommentTotalAfterUpdate(event)
+{
+    var totalComments = 0;
+    if(event != null && event.total_comment != undefined
+        && event.total_comment != null)
+    {
+        totalComments = event.total_comment;
+    }
+    $("#commentHeaderTotal").empty().append("(" +  totalComments + ")");
+}
+
 function setupComments()
 {
     $('.comments').comment({
@@ -15,12 +29,13 @@ function setupComments()
         url_get: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments',
         url_input: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments/add',
         url_delete: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments/delete',
-        limit: 10,
+        limit: 100,
         auto_refresh: false,
         refresh: 10000,
         placeHolderText: "Add a comment...",
         maxlength: 1023,
-        onComplete: updateCommentTotal,
+        onComplete: updateCommentTotalAfterLoad,
+        onUpdate: updateCommentTotalAfterUpdate,
         transition: 'slideToggle'
     });
 
@@ -28,14 +43,20 @@ function setupComments()
     {
         $('div.comments').toggle();
 
+        var isVisible = false;
+
         var hideMode = $(this).text();
         if (hideMode == "Show Comments") {
             $(this).text("Hide Comments");
+            isVisible = true;
         }
         else
         {
             $(this).text("Show Comments");
         }
+
+
+
     });
 }
 
@@ -56,6 +77,7 @@ $(function() {
             return;
         }
 
+        var isVisible = false;
         //change the toggle image to indicate hide or show
         var imageSrc = toggleImg.attr("src");
         if (imageSrc.indexOf('collapse') != -1)
@@ -65,12 +87,23 @@ $(function() {
         else
         {
             imageSrc = imageSrc.replace("expand", "collapse");
+            isVisible = true;
         }
 
         toggleImg.attr("src", imageSrc);
+
+        /*if (isVisible) {
+            $.cookie("show_job_comments", "true");
+        }
+        else {
+            $.removeCookie("show_job_comments");
+        }*/
     });
 
-    //hide by default
-    $("#commentsHeader").click();
 
+    //if comments were already visible before refresh then keep it that way
+   // if (!($.cookie("show_job_comments")))
+   // {
+        $("#commentsHeader").click();
+   // }
 });

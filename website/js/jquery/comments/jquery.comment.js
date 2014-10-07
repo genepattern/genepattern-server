@@ -155,7 +155,12 @@ if ( typeof Object.create !== 'function' ) {
 
                     	// clear and enable textarea
 	                    $('textarea', self.$elem).val('');                    	
-	                    $('textarea', self.$elem).attr("disabled", false);                    	                    		
+	                    $('textarea', self.$elem).attr("disabled", false);
+
+                        arguments[0].total_comment = self.total_comment;
+                        if ( typeof self.options.onUpdate === 'function' ) {
+                            self.options.onUpdate.apply( self.elem, arguments);
+                        }
                     }
                 }                   
 
@@ -595,7 +600,7 @@ if ( typeof Object.create !== 'function' ) {
 							url: self.options.url_delete,
 							data: form_data,
 							type: 'post',
-							dataType: 'json',
+							dataType: 'json'
 			            }).done( function(result){
 
 			                if(result.success!=undefined)
@@ -620,7 +625,11 @@ if ( typeof Object.create !== 'function' ) {
 			                    	
 			                    	self.$total_comment.html(self.total_comment+' '+self.options.title);
 			                    	
-			                    	delete_confirm.dialog("close");        	                    		
+			                    	delete_confirm.dialog("close");
+
+                                    if ( typeof self.options.onUpdate === 'function' ) {
+                                        self.options.onUpdate.apply( self.elem, arguments );
+                                    }
 			                    }
 			                }                   
 			            });
@@ -660,6 +669,7 @@ if ( typeof Object.create !== 'function' ) {
 		auto_refresh: true,
 		refresh: null,
 		onComplete: null,
+        onUpdate: null,
 		transition: 'fadeToggle'
 	};
 
