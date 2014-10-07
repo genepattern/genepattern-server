@@ -338,7 +338,7 @@ public class TestMemory {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testNegativeNumber() {
+    public void fromString_negativeNumber() {
         Memory.fromString("-5 kb");
     }
     
@@ -350,6 +350,11 @@ public class TestMemory {
     @Test(expected=IllegalArgumentException.class)
     public void testExtraTokens() {
         Memory.fromString(" 8 Gb max");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void fromSizeInBytes_negativeNumber() {
+        Memory.fromSizeInBytes(-90L);
     }
 
 }
