@@ -86,10 +86,10 @@ public class GenomeSpaceResource {
             return Response.status(500).entity("GenomeSpace is not enabled").build();
         }
 
-        GenomeSpaceFile file = getFile(url, request.getSession());
-        Object gsSessionObject = request.getSession().getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-
         try {
+            GenomeSpaceFile file = getFile(url, request.getSession());
+            Object gsSessionObject = request.getSession().getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+
             boolean success = GenomeSpaceClientFactory.getGenomeSpaceClient().deleteFile(gsSessionObject, file);
             if (success) {
                 return Response.ok().entity("Deleted from GenomeSpace " + file.getName()).build();
@@ -98,7 +98,7 @@ public class GenomeSpaceResource {
                 return Response.status(500).entity("Unable to delete in GenomeSpace " + file.getName()).build();
             }
         }
-        catch (GenomeSpaceException e) {
+        catch (Exception e) {
             return Response.status(500).entity(e.getLocalizedMessage()).build();
         }
     }
