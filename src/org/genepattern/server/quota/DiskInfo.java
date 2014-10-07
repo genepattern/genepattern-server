@@ -91,8 +91,9 @@ public class DiskInfo
             HibernateUtil.beginTransaction();
             UserUploadDao userUploadDao = new UserUploadDao();
 
-            Memory diskUsageTotal = userUploadDao.sizeOfAllUserUploads(userId, true);
+            // bug fix, GP-5412, make sure to compute files tab usage before total usage
             Memory diskUsageFilesTab = userUploadDao.sizeOfAllUserUploads(userId, false);
+            Memory diskUsageTotal = userUploadDao.sizeOfAllUserUploads(userId, true);
 
             Memory diskUsageTmp = null;
             if(diskUsageTotal != null && diskUsageFilesTab != null)
