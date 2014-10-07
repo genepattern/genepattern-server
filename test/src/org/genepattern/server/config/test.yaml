@@ -1,5 +1,11 @@
 default.properties:
     listOfString: ["A", "B", "C"]
+    valueNotSet:
+    valueAsNull: null
+    valueAsNegativeOne: -1
+    valueAsZero: 0
+    valueAsString: 2 Gb
+    
 
 #
 # require at least one executor or we get a parse error
