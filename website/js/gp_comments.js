@@ -7,8 +7,6 @@ function updateCommentTotalAfterLoad(event)
         totalComments = event.results.total_comment;
     }
     $("#commentHeaderTotal").empty().append("(" +  totalComments + ")");
-
-    alert("comment total updated");
 }
 
 function updateCommentTotalAfterUpdate(event)
@@ -92,18 +90,18 @@ $(function() {
 
         toggleImg.attr("src", imageSrc);
 
-        /*if (isVisible) {
+        if (isVisible) {
             $.cookie("show_job_comments", "true");
         }
         else {
             $.removeCookie("show_job_comments");
-        }*/
+        }
     });
 
 
     //if comments were already visible before refresh then keep it that way
-   // if (!($.cookie("show_job_comments")))
-   // {
+    if (!($.cookie("show_job_comments")))
+    {
         $("#commentsHeader").click();
-   // }
+    }
 });
