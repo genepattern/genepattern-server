@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -19,12 +20,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 
 import com.sun.jersey.api.client.ClientResponse;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.DbException;
@@ -36,6 +35,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
@@ -46,7 +47,9 @@ import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
@@ -813,4 +816,47 @@ public class JobsResource {
         }
     }
 
+    @GET
+    @Path("{jobNo}/comments")
+    public Response loadComments(
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        JobCommentsResource res = new JobCommentsResource();
+        return res.loadComments(jobNo, request);
+    }
+
+    @POST
+    @Path("/{jobNo}/comments/add")
+    public Response addComment(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        JobCommentsResource res = new JobCommentsResource();
+        return res.addComment(multivaluedMap, jobNo, request);
+    }
+
+    @POST
+    @Path("/{jobNo}/comments/add/{id}")
+    public Response editComment(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("id") String id,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        JobCommentsResource res = new JobCommentsResource();
+        return res.editComment(multivaluedMap, id, jobNo, request);
+    }
+
+    @POST
+    @Path("/{jobNo}/comments/delete")
+    public Response deleteComment(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        JobCommentsResource res = new JobCommentsResource();
+        return res.deleteComment(multivaluedMap, jobNo, request);
+    }
 }

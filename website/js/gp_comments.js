@@ -12,9 +12,9 @@ function setupComments()
 {
     $('.comments').comment({
         title: 'Comments',
-        url_get: '/gp/rest/v1/jobs/comments/load/' + currentJobNumber,
-        url_input: '/gp/rest/v1/jobs/comments/add/'+ currentJobNumber,
-        url_delete: '/gp/rest/v1/jobs/comments/delete/' + currentJobNumber,
+        url_get: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments',
+        url_input: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments/add',
+        url_delete: '/gp/rest/v1/jobs/' + currentJobNumber + '/comments/delete',
         limit: 10,
         auto_refresh: false,
         refresh: 10000,

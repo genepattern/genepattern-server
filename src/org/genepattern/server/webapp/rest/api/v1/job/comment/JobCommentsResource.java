@@ -22,14 +22,10 @@ import java.util.List;
 /**
  * Created by nazaire on 10/1/14.
  */
-@Path("/"+JobCommentsResource.URI_PATH)
 public class JobCommentsResource
 {
     final static private Logger log = Logger.getLogger(JobCommentsResource.class);
-    final static public String URI_PATH="v1/jobs/comments";
 
-    @GET
-    @Path("/load/{jobNo}")
     public Response loadComments(
             @PathParam("jobNo") String jobNo,
             @Context HttpServletRequest request)
@@ -57,8 +53,6 @@ public class JobCommentsResource
         }
     }
 
-    @POST
-    @Path("/add/{jobNo}")
     public Response addComment(
             MultivaluedMap<String,String> multivaluedMap,
             @PathParam("jobNo") String jobNo,
@@ -107,8 +101,6 @@ public class JobCommentsResource
         }
     }
 
-    @POST
-    @Path("/add/{jobNo}/{id}")
     public Response editComment(
             MultivaluedMap<String,String> multivaluedMap,
             @PathParam("id") String id,
@@ -152,8 +144,6 @@ public class JobCommentsResource
         }
     }
 
-    @POST
-    @Path("/delete/{jobNo}")
     public Response deleteComment(
             MultivaluedMap<String,String> multivaluedMap,
             @PathParam("jobNo") String jobNo,
@@ -226,5 +216,4 @@ public class JobCommentsResource
 
         return jobCommentsResult;
     }
-
 }
