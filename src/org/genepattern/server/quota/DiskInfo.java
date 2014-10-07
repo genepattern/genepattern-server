@@ -96,9 +96,13 @@ public class DiskInfo
             Memory diskUsageTotal = userUploadDao.sizeOfAllUserUploads(userId, true);
 
             Memory diskUsageTmp = null;
-            if(diskUsageTotal != null && diskUsageFilesTab != null)
-            {
-                diskUsageTmp = Memory.fromSizeInBytes(diskUsageTotal.getNumBytes() - diskUsageFilesTab.getNumBytes());
+            if(diskUsageTotal != null && diskUsageFilesTab != null) {
+                long diff=diskUsageTotal.getNumBytes() - diskUsageFilesTab.getNumBytes();
+                if (diff<0L) {
+                    log.error("Invalid diskUsageTmp for userId="+userId+", value="+diff+", setting to 0L");
+                    diff=0L;
+                }
+                diskUsageTmp = Memory.fromSizeInBytes(diff);
             }
 
             diskInfo.setDiskUsageTotal(diskUsageTotal);
