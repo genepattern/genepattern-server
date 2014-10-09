@@ -546,8 +546,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
         
         // Declare necessary objects
+        String path = GenomeSpaceFileManager.urlToPath(gsUrl);
         DataManagerClient dmClient = gsSession.getDataManagerClient();
-        return dmClient.getMetadata(gsUrl.toString());
+        return dmClient.getMetadata(path);
     }
 
     public String getToken(Object session) throws GenomeSpaceException {

@@ -106,7 +106,7 @@ public class GenomeSpaceFileManager {
                 try {
                     metadata = GenomeSpaceClientFactory.getGenomeSpaceClient().obtainMetadata(gsSession, url);
                 }
-                catch (GenomeSpaceException e) {
+                catch (Exception e) {
                     log.error("Error obtaining metadata for: " + url);
                 }
             }
@@ -216,5 +216,23 @@ public class GenomeSpaceFileManager {
         }
 
         return baseUrl;
+    }
+
+    public static String urlToPath(URL gsUrl) {
+        // Parse using the new DM pattern for files
+        String[] parts = gsUrl.getPath().split("/file/");
+
+        // Check to see if this parsing was successful, if not try old pattern
+        if (parts.length < 2) {
+            parts = gsUrl.getPath().split("/users/");
+        }
+
+        // If there is still an issue with the parsing, throw an error
+        if (parts.length < 2) {
+            log.error("GenomeSpace file URL does not match URL pattern: " + gsUrl.getPath());
+            return null;
+        }
+
+        return parts[1];
     }
 }
