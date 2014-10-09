@@ -12,38 +12,13 @@ import java.util.Date;
 public class JobTag
 {
     private static final Logger log = Logger.getLogger(JobTag.class);
-    /** DB max length of the status_message column, e.g. varchar2(2000) in Oracle. */
-    public static final int TAG_LENGTH=511;
-
-    /**
-     * Truncate the string so that it is no longer than MAX characters.
-     * @param in
-     * @param MAX
-     * @return
-     */
-    public static String truncate(String in, int MAX)
-    {
-        if (in==null)
-        {
-            return in;
-        }
-        if (in.length() <= MAX)
-        {
-            return in;
-        }
-        if (MAX<0)
-        {
-            log.error("expecting value >0 for MAX="+MAX);
-        }
-        return in.substring(0, MAX);
-    }
 
     @Id
     @GeneratedValue
     private int id;
 
     //this is a foreign key to the tag table
-    @Column(name="tag_id")
+    @Column(name="tag_id", nullable=false)
     private int tagId;
 
     //this is a foreign key to the analysis_job table
@@ -56,9 +31,7 @@ public class JobTag
     @Column(name="user_id", nullable=false, length=255)
     private String userId;
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
     public void setId(int id) {
         this.id = id;
