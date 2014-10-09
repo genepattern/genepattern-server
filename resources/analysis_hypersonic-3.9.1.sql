@@ -5,7 +5,11 @@ create table job_comment (
  parent_id bigint,
  posted_date timestamp not null,
  user_id varchar(255) not null,
- primary key (id)
+ primary key (id),
+ CONSTRAINT fk_gp_job_no
+    FOREIGN KEY (gp_job_no)
+    REFERENCES analysis_job (job_no)
+    ON DELETE CASCADE
 );
 
 create table tag (
@@ -23,7 +27,11 @@ create table job_tag (
  gp_job_no integer not null,
  tag_id integer not null,
  user_id varchar(255) not null,
- primary key (id)
+ primary key (id),
+ CONSTRAINT jt_fk_gp_job_no
+    FOREIGN KEY (gp_job_no)
+    REFERENCES analysis_job (job_no)
+    ON DELETE CASCADE
 );
 
 create index idx_comment_text on job_comment(comment_text);
