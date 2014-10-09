@@ -62,6 +62,8 @@
     <mapping class="org.genepattern.server.job.input.dao.JobInputValue" />
     <mapping class="org.genepattern.server.job.output.JobOutputFile" />
     <mapping class="org.genepattern.server.job.comment.JobComment" />
+    <mapping class="org.genepattern.server.tag.Tag" />
+    <mapping class="org.genepattern.server.job.tag.JobTag" />
 
   </session-factory>
 </hibernate-configuration>
