@@ -27,7 +27,7 @@ create table job_tag (
 );
 
 
-alter table job_comment add constraint gp_job_no_fk FOREIGN KEY (gp_job_no) references ANALYSIS_JOB(job_no) on delete cascade;
+alter table job_comment FOREIGN KEY (gp_job_no) references ANALYSIS_JOB(job_no) on delete cascade;
 
 create index idx_comment_text on job_comment(comment_text);
 
