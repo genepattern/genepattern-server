@@ -183,7 +183,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
     /**
      * Constructs a tree of GenomeSpaceFiles representing the user's files on GenomeSpace
      */
-    public GenomeSpaceFile buildFileTree(Object gsSessionObject) {
+    public synchronized GenomeSpaceFile buildFileTree(Object gsSessionObject) {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
             gsSession = (GsSession) gsSessionObject;
@@ -202,7 +202,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
      * Constructs a recursive representation as a directory as a GenomeSpaceFile
      * @return
      */
-    public GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) {
+    public synchronized GenomeSpaceFile buildDirectory(Object gsSessionObject, Object metadataObject) {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
             gsSession = (GsSession) gsSessionObject;
