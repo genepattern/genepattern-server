@@ -43,6 +43,10 @@ public class HibernateSessionRequestFilter implements Filter {
             log.debug("ignoring uri="+uri);
             return false;
         }
+        else if (uri.startsWith(contextPath+"/rest/v1/upload/multipart/assemble/")) {
+            log.debug("ignoring url="+uri);
+            return false;
+        }
         // filter out image files, for example, /gp/images/GP-logo.gif
         else if (uri.startsWith(contextPath+"/images/")) {
             return false;
