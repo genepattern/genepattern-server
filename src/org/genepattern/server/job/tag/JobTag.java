@@ -1,6 +1,8 @@
 package org.genepattern.server.job.tag;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.tag.Tag;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -17,9 +19,9 @@ public class JobTag
     @GeneratedValue
     private int id;
 
-    //this is a foreign key to the tag table
-    @Column(name="tag_id", nullable=false)
-    private int tagId;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "tag_id", nullable=false)
+    private Tag tagObj;
 
     //this is a foreign key to the analysis_job table
     @Column(name="gp_job_no", nullable=false)
@@ -37,12 +39,10 @@ public class JobTag
         this.id = id;
     }
 
-    public int getTagId() {
-        return tagId;
-    }
+    public Tag getTagObj() { return tagObj; }
 
-    public void setTagId(int tagId) {
-        this.tagId = tagId;
+    public void setTagObj(Tag tag) {
+        this.tagObj = tag;
     }
 
     public int getGpJobNo() {

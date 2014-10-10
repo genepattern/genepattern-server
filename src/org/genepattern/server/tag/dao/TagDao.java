@@ -17,6 +17,11 @@ public class TagDao
 
     public void insertTag(final Tag tag)
     {
+        if (tag==null) {
+            log.error("No entry to update");
+            return;
+        }
+
         final boolean isInTransaction= HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
@@ -26,15 +31,9 @@ public class TagDao
                 HibernateUtil.commitTransaction();
             }
         }
-        catch (Throwable t) {
-
-            String tagText = null;
-            if(tag != null)
-            {
-                tagText = tag.getTag();
-            }
-
-            log.error("Error adding tag=" + tagText, t);
+        catch (Throwable t)
+        {
+            log.error("Error adding tag=" + tag.getTag(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -44,7 +43,7 @@ public class TagDao
         }
     }
 
-    public Tag selectTagById(int tagId) {
+    public Tag selectTagById(final int tagId) {
         Tag tag = null;
         final boolean isInTransaction= HibernateUtil.isInTransaction();
         try {
@@ -67,7 +66,7 @@ public class TagDao
         return tag;
     }
 
-    public List<Tag> selectAllTags(boolean includePrivate) {
+    public List<Tag> selectAllTags(final boolean includePrivate) {
         List<Tag> tagList = new ArrayList();
         final boolean isInTransaction= HibernateUtil.isInTransaction();
         try {
@@ -94,7 +93,7 @@ public class TagDao
         return tagList;
     }
 
-    public List<Tag> selectTagsAvailableToUser(String userId, boolean includePublicTags) {
+    public List<Tag> selectTagsAvailableToUser(final String userId, final boolean includePublicTags) {
         List<Tag> tagList = new ArrayList();
         final boolean isInTransaction= HibernateUtil.isInTransaction();
         try {
@@ -128,7 +127,7 @@ public class TagDao
         return tagList;
     }
 
-    public boolean deleteTag(int id)
+    public boolean deleteTag(final int id)
     {
         boolean deleted = false;
         final boolean isInTransaction= HibernateUtil.isInTransaction();

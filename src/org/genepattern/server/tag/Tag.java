@@ -42,6 +42,7 @@ public class Tag
 
     @Id
     @GeneratedValue
+    @Column(name="tag_id")
     private int id;
 
     @Column(name="tag", nullable=false, length=TAG_LENGTH)
