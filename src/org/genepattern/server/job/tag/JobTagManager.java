@@ -1,9 +1,10 @@
 package org.genepattern.server.job.tag;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.dao.JobTagDao;
+import org.genepattern.server.tag.Tag;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -12,6 +13,24 @@ import java.util.List;
 public class JobTagManager
 {
     private static Logger log = Logger.getLogger(JobTagManager.class);
+
+    static public void addTag(String userId, int jobNo,String tagText, Date date, boolean isPublic)
+    {
+        JobTag jobTag = new JobTag();
+        jobTag.setGpJobNo(jobNo);
+        jobTag.setDate(date);
+        jobTag.setUserId(userId);
+
+        Tag tag = new Tag();
+        tag.setDate(date);
+        tag.setTag(tagText);
+        tag.setUserId(userId);
+        tag.setPublicTag(isPublic);
+
+        jobTag.setTagObj(tag);
+
+        addTag(jobTag);
+    }
 
     static public void addTag(JobTag jobTag)
     {

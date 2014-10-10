@@ -27,9 +27,9 @@ public class JobTagDao
         try {
             HibernateUtil.beginTransaction();
 
-            //first check if a public tag with the same tag text already exists
+            //first check if a public tag with the same tag text already exists and it is public to the user
             List<Tag> matchingPublicTag = HibernateUtil.getSession().createCriteria(Tag.class).add(Restrictions.eq("tag", jobTag.getTagObj().getTag()))
-            .add(Restrictions.eq("publicTag", true)).list();
+            .add(Restrictions.or(Restrictions.eq("publicTag", true), Restrictions.eq("userId", jobTag.getUserId()))).list();
 
             //if there are multiple hits even though there shouldn't be then take first one
             if(matchingPublicTag.size() > 0)

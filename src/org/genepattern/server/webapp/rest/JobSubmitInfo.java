@@ -17,6 +17,7 @@ public class JobSubmitInfo
 	String params;
 	List<String> batchParams;
     String comment;
+    List<String> tags;
 
     @JsonProperty("lsid")
 	public String getLsid() {
@@ -49,6 +50,15 @@ public class JobSubmitInfo
     public String getComment() { return comment; }
 
     public void setComment(String comment) { this.comment = comment; }
+
+    @JsonProperty("tags")
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
 
 	@Override
 	public String toString()

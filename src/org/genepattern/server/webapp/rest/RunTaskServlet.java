@@ -36,6 +36,7 @@ import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.repository.SourceInfo;
 import org.genepattern.server.repository.SourceInfoLoader;
@@ -513,15 +514,27 @@ public class RunTaskServlet extends HttpServlet
                 request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
             }
 
+            int gpJobNo = Integer.parseInt(jobId);
             //check if there was a comment specified for job and add it to database
             if(jobSubmitInfo.getComment() != null && jobSubmitInfo.getComment().length() > 0)
             {
                 JobComment jobComment = new JobComment();
                 jobComment.setUserId(userContext.getUserId());
                 jobComment.setComment(jobSubmitInfo.getComment());
-                jobComment.setGpJobNo(Integer.parseInt(jobId));
+                jobComment.setGpJobNo(gpJobNo);
                 jobComment.setPostedDate(new Date());
                 JobCommentManager.addJobComment(jobComment);
+            }
+
+            //check if there were tags specified for this job and add it to database
+            List<String> tags = jobSubmitInfo.getTags();
+            if(tags != null && tags.size() > 0)
+            {
+                Date date = new Date();
+                for(String tag: tags)
+                {
+                    JobTagManager.addTag(userContext.getUserId(), gpJobNo, tag, date, false);
+                }
             }
 
             return Response.ok(result.toString()).build();
