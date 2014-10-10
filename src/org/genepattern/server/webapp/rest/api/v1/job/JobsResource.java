@@ -53,6 +53,7 @@ import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
+import org.genepattern.server.webapp.rest.api.v1.job.tag.JobTagsResource;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -858,5 +859,37 @@ public class JobsResource {
     {
         JobCommentsResource res = new JobCommentsResource();
         return res.deleteComment(multivaluedMap, jobNo, request);
+    }
+
+    @GET
+    @Path("{jobNo}/tags")
+    public Response loadTags(
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        JobTagsResource res = new JobTagsResource();
+        return res.loadTags(jobNo, request);
+    }
+
+    @POST
+    @Path("/{jobNo}/tags/add")
+    public Response addTag(
+            @PathParam("jobNo") int jobNo,
+            @QueryParam("tagText") String tagText,
+            @Context HttpServletRequest request)
+    {
+        JobTagsResource res = new JobTagsResource();
+        return res.addTag(jobNo, tagText, request);
+    }
+
+    @POST
+    @Path("/{jobNo}/tags/delete")
+    public Response deleteTag(
+            @PathParam("jobNo") int jobNo,
+            @QueryParam("jobTagId") int jobTagId,
+            @Context HttpServletRequest request)
+    {
+        JobTagsResource res = new JobTagsResource();
+        return res.deleteTag(jobNo, jobTagId, request);
     }
 }

@@ -1,0 +1,23 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  --><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" 
+	  xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+    <ui:composition>
+        <div id="tagsHeader">
+            <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='sectionToggle'/>
+            <span id="tagHeaderTitle"> Tags </span> <span id="tagHeaderTotal">(0)</span>
+        </div>
+         <div id="tagsContent">
+            <div>
+                <p class="tags">
+                    <input id="statusJobTags"/>
+                </p>
+            </div>
+        </div>
+    </ui:composition>
+</html>

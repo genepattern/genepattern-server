@@ -20,6 +20,7 @@
     </ui:define>
 	<ui:define name="headText">
         <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/gp_comments.css?version=#{aboutBean.buildTag}" />
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/gp_tags.css?version=#{aboutBean.buildTag}" />
 
         <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js"></script>
 
@@ -297,6 +298,7 @@
             </script>
 
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_comments.js"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tags.js"></script>
     </ui:define>
 
 	<ui:define name="body">
@@ -452,6 +454,7 @@
                                 </tr>
                             </table>
                             <ui:include src="jobComments.xhtml"/>
+                            <ui:include src="jobTags.xhtml"/>
                         </div>
 
 
