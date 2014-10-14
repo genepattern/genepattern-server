@@ -71,7 +71,7 @@ public class TestJobTagDao
      *
      * @throws org.genepattern.server.DbException
      */
-   /* @Test
+    @Test
     public void insertJobTag() throws DbException
     {
         String tagText = "insert jobtag";
@@ -96,10 +96,10 @@ public class TestJobTagDao
         assertEquals("job tag id", jobTag.getId(), jobTagList.get(0).getId());
         assertEquals("tag id", jobTag.getTagObj().getId(), jobTagList.get(0).getTagObj().getId());
         assertEquals("tag text", jobTag.getTagObj().getTag(), jobTagList.get(0).getTagObj().getTag());
-    }*/
+    }
 
     /**
-     * Test saving a record to the job_tag table
+     * Test selecting a record in the job_tag table
      *
      * @throws org.genepattern.server.DbException
      */

@@ -120,6 +120,8 @@ public class JobTagDao
                 HibernateUtil.commitTransaction();
             }
 
+            HibernateUtil.getSession().flush();
+
             deleted = true;
         }
         catch (Throwable t) {
