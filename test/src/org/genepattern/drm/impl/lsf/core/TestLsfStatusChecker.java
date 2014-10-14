@@ -214,4 +214,22 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("jobState", DrmJobState.ABORTED, jobStatus.getJobState());
     }
     
+    /**
+     * older format, on gpbroad,
+     *     JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME  PROJ_NAME CPU_USED MEM SWAP PIDS START_TIME FINISH_TIME
+     * newer format, on cilgenepattern,
+     *     JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME  PROJ_NAME CPU_USED MEM SWAP PIDS START_TIME FINISH_TIME SLOTS
+     *
+     * @throws InterruptedException
+     */
+    @Test
+    public void checkStatus_cilgenepattern() throws InterruptedException {
+        final String line="1978625 cilgenepattern EXIT  week       cilgenepattern node1750    5          10/14-12:49:07 default    000:00:00.42 2      0      28722 10/14-12:49:07 10/14-12:49:09 1";
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(line);
+        assertEquals("jobState is failed", true, jobStatus.getJobState().is(DrmJobState.FAILED));
+        assertEquals("drmJobId", "1978625", jobStatus.getDrmJobId());
+        assertEquals("cpuTime (ms)", 420L, jobStatus.getCpuTime().asMillis());
+        assertEquals("memory", Memory.fromString("2 mb"), jobStatus.getMemory());
+    }
+    
 }

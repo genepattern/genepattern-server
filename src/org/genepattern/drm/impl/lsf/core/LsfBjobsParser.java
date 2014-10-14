@@ -29,7 +29,15 @@ public class LsfBjobsParser {
     private static Log log = LogFactory.getLog(LsfBjobsParser.class);
     
     // see this regex in action: http://regexr.com/38o8a
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?<JOBID>\\d+)\\s+(?<USER>\\S+)\\s+(?<STATUS>\\S+)\\s+(?<QUEUE>\\S+)\\s+(?<FROMHOST>\\S+)\\s+(?<EXECHOST>\\S+)\\s+(?<JOBNAME>.*\\S)\\s+(?<SUBMITTIME>\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<PROJNAME>\\S+)\\s+(?<CPUhours>\\d\\d\\d):(?<CPUmins>\\d\\d):(?<CPUsecs>\\d\\d\\.\\d\\d)\\s+(?<MEM>\\d+)\\s+(?<SWAP>\\d+)\\s+(?<PIDS>-|(?:(?:\\d+,)*\\d+))\\s+(?<STARTTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<FINISHTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s*");
+    public static final Pattern LINE_PATTERN_ORIG = 
+             Pattern.compile("(?<JOBID>\\d+)\\s+(?<USER>\\S+)\\s+(?<STATUS>\\S+)\\s+(?<QUEUE>\\S+)\\s+(?<FROMHOST>\\S+)\\s+(?<EXECHOST>\\S+)\\s+(?<JOBNAME>.*\\S)\\s+(?<SUBMITTIME>\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<PROJNAME>\\S+)\\s+(?<CPUhours>\\d\\d\\d):(?<CPUmins>\\d\\d):(?<CPUsecs>\\d\\d\\.\\d\\d)\\s+(?<MEM>\\d+)\\s+(?<SWAP>\\d+)\\s+(?<PIDS>-|(?:(?:\\d+,)*\\d+))\\s+(?<STARTTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<FINISHTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s*");
+    /**
+     * Updated LINE_PATTERN which works on newer LSF version on RHEL 6.5 VMs.
+     * The original LINE_PATTERN worked with the LSF running on CentOS 5.5.
+     */
+    public static final Pattern LINE_PATTERN_DEFAULT = 
+            Pattern.compile(
+                    "(?<JOBID>\\d+)\\s+(?<USER>\\S+)\\s+(?<STATUS>\\S+)\\s+(?<QUEUE>\\S+)\\s+(?<FROMHOST>\\S+)\\s+(?<EXECHOST>\\S+)\\s+(?<JOBNAME>.*\\S)\\s+(?<SUBMITTIME>\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<PROJNAME>\\S+)\\s+(?<CPUhours>\\d\\d\\d):(?<CPUmins>\\d\\d):(?<CPUsecs>\\d\\d\\.\\d\\d)\\s+(?<MEM>\\d+)\\s+(?<SWAP>\\d+)\\s+(?<PIDS>-|(?:(?:\\d+,)*\\d+))\\s+(?<STARTTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)\\s+(?<FINISHTIME>-|\\d\\d\\/\\d\\d-\\d\\d:\\d\\d:\\d\\d)(?<SLOT>\\s*\\d*)\\s*");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd-HH:mm:ss");
     
     private static final String NA = "-";
@@ -41,9 +49,18 @@ public class LsfBjobsParser {
     }
 
     public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile) throws InterruptedException {
+        return parseAsJobStatus(LINE_PATTERN_DEFAULT, line, lsfLogFile);
+    }
+
+    public static DrmJobStatus parseAsJobStatus(final Pattern LINE_PATTERN, final String line, final File lsfLogFile) throws InterruptedException {
         final int sleepInterval=3000;
         final int retryCount=5;
-        return parseAsJobStatus(line, lsfLogFile, sleepInterval, retryCount);
+        return parseAsJobStatus(LINE_PATTERN, line, lsfLogFile, sleepInterval, retryCount);
+    }
+
+    
+    public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile, final int sleepInterval, final int retryCount) throws InterruptedException {
+        return parseAsJobStatus(LINE_PATTERN_DEFAULT, line, lsfLogFile, sleepInterval, retryCount);
     }
     
     /**
@@ -57,7 +74,7 @@ public class LsfBjobsParser {
      * @return
      * @throws InterruptedException
      */
-    public static DrmJobStatus parseAsJobStatus(final String line, final File lsfLogFile, final int sleepInterval, final int retryCount) throws InterruptedException { 
+    public static DrmJobStatus parseAsJobStatus(final Pattern LINE_PATTERN, final String line, final File lsfLogFile, final int sleepInterval, final int retryCount) throws InterruptedException { 
         final Matcher lineMatcher = LINE_PATTERN.matcher(line);
         if (!lineMatcher.matches()) {
             log.error("Unable to initialize DrmJobStatus from line="+line);
