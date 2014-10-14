@@ -236,8 +236,13 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 $('#jobTags').tagsInput(
                 {
                     'defaultText':'Add tags...',
-                     width: '94%',
-                     height: '40px'
+                    width: '97%',
+                    height: '40px',
+                    autocomplete_url: '/gp/rest/v1/tags/',
+                    autocomplete:{
+                        minLength: 0,
+                        response: tagResponse
+                    }
                 });
 
                 // Update the history & title
@@ -2083,6 +2088,12 @@ function submitTask() {
         taskJsonObj["comment"] = $("#jobComment").val();
     }
 
+    if($("#jobTags").val() != undefined && $("#jobTags").val() != null
+        && $("#jobTags").val().length > 0)
+    {
+        taskJsonObj["tags"] = $("#jobTags").val().split(",");
+    }
+
     $.ajax({
         type: "POST",
         url: "/gp/rest/RunTask/addJob",
@@ -2824,4 +2835,28 @@ function sendToByKind(url, kind) {
     var selectedParam = paramNames[0];
 
     setInputField(selectedParam, url);
+}
+
+function tagResponse(event, ui)
+{
+    var value = $(event.target).val();
+
+    var matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( value ), "i" );
+
+    var contentLen = ui.content.length;
+
+    var content = ui.content;
+
+    for(var i=0;i<contentLen;i++)
+    {
+        if(matcher.test( ui.content[i].value))
+        {
+            ui.content.push(
+                { "label" : ui.content[i].label,
+                    "value" : ui.content[i].value
+                });
+        }
+    }
+
+    ui.content.splice(0, contentLen);
 }

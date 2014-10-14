@@ -1,21 +1,24 @@
 package org.genepattern.server.webapp.rest.api.v1.tag;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.PinModuleDAO;
+import org.genepattern.server.tag.Tag;
+import org.genepattern.server.tag.TagManager;
+import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 @Path("/"+TagResource.URI_PATH)
 public class TagResource {
@@ -93,12 +96,39 @@ public class TagResource {
             }
         }
     }
-    
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTags(@Context UriInfo uriInfo, @Context HttpServletRequest request, String body)
+    {
+        try
+        {
+            GpContext userContext = Util.getUserContext(request);
+
+            JSONArray result = new JSONArray();
+
+            List<Tag> tags = TagManager.selectAllJobTags(userContext.getUserId(), true);
+            for(Tag tag: tags)
+            {
+                JSONObject tagObj = new JSONObject();
+                tagObj.put("value", tag.getTag());
+                result.put(tagObj);
+            }
+
+            return Response.ok().entity(result.toString()).build();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+
     public class PinModuleObject {
         String user;
         String lsid;
         double position;
-        
+
         public PinModuleObject() { super(); }  
         
         public PinModuleObject(String json) throws JSONException { 

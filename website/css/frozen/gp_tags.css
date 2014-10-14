@@ -32,3 +32,15 @@
 img {
     vertical-align: middle;
 }
+
+div.tagsinput span.tag
+{
+    background:   lightgray;
+    border: 1px solid #000099;
+    color: #3333CC;
+}
+
+div.tagsinput span.tag a
+{
+    color: #3333CC;
+}

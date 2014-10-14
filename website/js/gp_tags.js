@@ -76,6 +76,11 @@ $(function() {
         height: '40px',
         onAddTag: addTag,
         onRemoveTag: deleteTag,
+        autocomplete_url: '/gp/rest/v1/tags/',
+        autocomplete:{
+            minLength: 0,
+            response: tagResponse
+        },
         maxChars: 511
     });
 
