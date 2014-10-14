@@ -51,10 +51,18 @@ $.widget("gp.fileInput", {
                         .addClass("file-widget-upload-file")
                         .text("Upload File...")
                         .button()
+                        .click(function () {
+                            $(this).parents(".file-widget").find(".file-widget-input-file").click();
+                        })
                 )
                 .append(
-                    $("<div></div>")
+                    $("<input />")
                         .addClass("file-widget-input-file")
+                        .attr("type", "file")
+                        .change(function () {
+                            // TODO: Implement
+                            alert("OK");
+                        })
                 )
                 .append(
                     $("<button></button>")
@@ -90,6 +98,25 @@ $.widget("gp.fileInput", {
     _destroy: function() {
         this.element.removeClass("file-widget");
         this.element.empty();
+    },
+
+    /**
+     * Shows or hides the box of selected files
+     *
+     * @param file - A file object if to show, undefined or null if to hide
+     * @private
+     */
+    _fileBox: function(file) {
+        // TODO: Implement
+    },
+
+    /**
+     * Displays the select path or URL dialog
+     *
+     * @private
+     */
+    _pathDialog: function() {
+        // TODO: Implement
     },
 
     /**
@@ -142,6 +169,45 @@ $.widget("gp.fileInput", {
         this._super(key, value);
         this._setPointers();
         this._setDisplayOptions();
+    },
+
+    /**
+     * Upload the selected file to the server
+     *
+     * @param pObj - Object containing the following params:
+     *                  success: Callback for success, expects url to file
+     *                  error: Callback on error, expects exception
+     */
+    upload: function(pObj) {
+        // TODO: Implement
+    },
+
+    /**
+     * Getter for associated RunTask object
+     *
+     * @returns {object|null}
+     */
+    runTask: function() {
+        return this.runTask;
+    },
+
+    /**
+     * Getter for associated parameter
+     * @returns {string|null|object}
+     */
+    param: function() {
+        return this.param;
+    },
+
+    /**
+     * Gets or sets the value of this widget
+     *
+     * @param val - String value for file (undefined is getter)
+     * @returns {string} - The value of this widget
+     */
+    value: function(val) {
+        // TODO: Implement
+        return "";
     }
 });
 

@@ -1,6 +1,5 @@
 .file-widget {
     border: 2px dashed darkgray;
-    /*padding: 8px 6px 6px;*/
     display: inline-block;
     margin-bottom: 0;
     min-width: 570px;
@@ -20,6 +19,10 @@
     top: -5px;
     vertical-align: bottom;
     font-weight: normal;
+}
+
+.file-widget-input-file {
+    display: none;
 }
 
 .file-widget-url {
