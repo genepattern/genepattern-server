@@ -653,3 +653,15 @@ span.drop-box
     margin-left: 10px;
     margin-right: 10px;
 }
+
+div.tagsinput span.tag
+{
+    background:   lightgray;
+    border: 1px solid #000099;
+    color: #3333CC;
+}
+
+div.tagsinput span.tag a
+{
+    color: #3333CC;
+}
