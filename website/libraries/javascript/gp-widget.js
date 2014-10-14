@@ -39,8 +39,7 @@ $.widget("gp.fileInput", {
      */
     _create: function() {
         // Save pointers to associated Run Task widget or parameter
-        if (this.options.runTask) { this.runTask = this.options.runTask; }
-        if (this.options.param) { this.param = this.options.param; }
+        this._setPointers();
 
         // Add classes and child elements
         this.element.addClass("file-widget");
@@ -80,14 +79,7 @@ $.widget("gp.fileInput", {
         );
 
         // Hide elements if not in use by options
-        if (!this.options.allowJobUploads) {
-            this.find(".file-widget-upload-file").hide();
-            this.find(".file-widget-drop").hide();
-            this.find(".file-widget-size").hide();
-        }
-        if (!this.options.allowExternalUrls && !this.options.allowFilePaths) { this.find(".file-widget-url").hide(); }
-        else if (!this.options.allowExternalUrls && this.options.allowFilePaths) { this.find(".file-widget-url").text("Add Path..."); }
-        else if (this.options.allowExternalUrls && !this.options.allowFilePaths) { this.find(".file-widget-url").text("Add URL..."); }
+        this._setDisplayOptions();
     },
 
     /**
@@ -101,6 +93,33 @@ $.widget("gp.fileInput", {
     },
 
     /**
+     * Update the pointers to the Run Task widget and parameter
+     *
+     * @private
+     */
+    _setPointers: function() {
+        if (this.options.runTask) { this.runTask = this.options.runTask; }
+        if (this.options.param) { this.param = this.options.param; }
+    },
+
+    /**
+     * Update the display of the UI to match current options
+     *
+     * @private
+     */
+    _setDisplayOptions: function() {
+        if (!this.options.allowJobUploads) {
+            this.element.find(".file-widget-upload-file").hide();
+            this.element.find(".file-widget-drop").hide();
+            this.element.find(".file-widget-size").hide();
+        }
+        if (!this.options.allowExternalUrls && !this.options.allowFilePaths) { this.element.find(".file-widget-url").hide(); }
+        else if (!this.options.allowExternalUrls && this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add Path..."); }
+        else if (this.options.allowExternalUrls && !this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add URL..."); }
+        else if (this.options.allowExternalUrls && this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add Path or URL..."); }
+    },
+
+    /**
      * Update all options
      *
      * @param options - Object contain options to update
@@ -108,6 +127,8 @@ $.widget("gp.fileInput", {
      */
     _setOptions: function(options) {
         this._superApply(arguments);
+        this._setPointers();
+        this._setDisplayOptions();
     },
 
     /**
@@ -119,6 +140,8 @@ $.widget("gp.fileInput", {
      */
     _setOption: function(key, value) {
         this._super(key, value);
+        this._setPointers();
+        this._setDisplayOptions();
     }
 });
 
