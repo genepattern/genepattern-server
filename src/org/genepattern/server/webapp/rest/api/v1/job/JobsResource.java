@@ -22,7 +22,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 
 import com.sun.jersey.api.client.ClientResponse;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.DbException;

@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.rest.api.v1.job.tag;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.tag.JobTag;
@@ -78,6 +79,8 @@ public class JobTagsResource
 
             Tag tag = new Tag();
             tag.setDate(date);
+
+            tagText = StringEscapeUtils.unescapeHtml(tagText);
             tag.setTag(tagText);
             tag.setUserId(userContext.getUserId());
             tag.setPublicTag(false);
