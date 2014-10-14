@@ -1,0 +1,59 @@
+.file-widget {
+    border: 2px dashed darkgray;
+    /*padding: 8px 6px 6px;*/
+    display: inline-block;
+    margin-bottom: 0;
+    min-width: 570px;
+    padding: 9px 10px 10px;
+    vertical-align: bottom;
+    white-space: normal;
+    word-break: break-all;
+}
+
+.file-widget-upload-file {
+    background: #dae4f4 repeat-x;
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+    font-size: 11px;
+    padding: 1px;
+    margin-right: 7px;
+    position: relative;
+    top: -5px;
+    vertical-align: bottom;
+    font-weight: normal;
+}
+
+.file-widget-url {
+    background: #dae4f4 repeat-x;
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+    font-size: 11px;
+    padding: 1px;
+    position: relative;
+    top: -4px;
+    font-weight: normal;
+}
+
+.file-widget-input-file {
+    position: absolute;
+    z-index: -1000;
+}
+
+.file-widget-drop {
+    color: darkgray;
+    font-family: Helvetica,Arial,sans-serif;
+    font-size: 28px;
+    height: 20px;
+    letter-spacing: 1px;
+    line-height: 28pt;
+    margin-left: 9px;
+    padding: 5px 10px;
+    text-align: center;
+    width: 120px;
+}
+
+.file-widget-size {
+    font-size: 10px;
+    font-style: italic;
+    margin-left: 5px;
+}
