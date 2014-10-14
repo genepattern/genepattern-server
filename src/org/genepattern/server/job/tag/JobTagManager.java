@@ -18,11 +18,11 @@ public class JobTagManager
     {
         JobTag jobTag = new JobTag();
         jobTag.setGpJobNo(jobNo);
-        jobTag.setDate(date);
+        jobTag.setDateTagged(date);
         jobTag.setUserId(userId);
 
         Tag tag = new Tag();
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setTag(tagText);
         tag.setUserId(userId);
         tag.setPublicTag(isPublic);

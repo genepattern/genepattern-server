@@ -80,14 +80,14 @@ public class TestJobTagDao
         Tag tag = new Tag();
         tag.setUserId(user);
         tag.setTag(tagText);
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setPublicTag(false);
 
         JobTag jobTag = new JobTag();
         jobTag.setUserId(user);
         jobTag.setTagObj(tag);
         jobTag.setGpJobNo(gpJobNo);
-        jobTag.setDate(date);
+        jobTag.setDateTagged(date);
 
         jobTagDao.insertJobTag(jobTag);
 
@@ -112,14 +112,14 @@ public class TestJobTagDao
         Tag tag = new Tag();
         tag.setUserId(user);
         tag.setTag(tagText1);
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setPublicTag(false);
 
         JobTag jobTag = new JobTag();
         jobTag.setUserId(user);
         jobTag.setTagObj(tag);
         jobTag.setGpJobNo(gpJobNo);
-        jobTag.setDate(date);
+        jobTag.setDateTagged(date);
         jobTagDao.insertJobTag(jobTag);
 
 
@@ -129,14 +129,14 @@ public class TestJobTagDao
         Tag tag2 = new Tag();
         tag2.setUserId(admin);
         tag2.setTag(tagText2);
-        tag2.setDate(date2);
+        tag2.setDateAdded(date2);
         tag2.setPublicTag(false);
 
         JobTag jobTag2 = new JobTag();
         jobTag2.setUserId(admin);
         jobTag2.setTagObj(tag2);
         jobTag2.setGpJobNo(gpJobNo);
-        jobTag2.setDate(date2);
+        jobTag2.setDateTagged(date2);
 
         jobTagDao.insertJobTag(jobTag2);
 
@@ -157,14 +157,14 @@ public class TestJobTagDao
         Tag tag = new Tag();
         tag.setUserId(user);
         tag.setTag(tagText);
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setPublicTag(false);
 
         JobTag jobTag = new JobTag();
         jobTag.setUserId(user);
         jobTag.setTagObj(tag);
         jobTag.setGpJobNo(gpJobNo);
-        jobTag.setDate(date);
+        jobTag.setDateTagged(date);
         jobTag.setTagObj(tag);
 
         //add a tag

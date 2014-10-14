@@ -27,8 +27,8 @@ public class JobTag
     @Column(name="gp_job_no", nullable=false)
     private int gpJobNo;
 
-    @Column(name="date", nullable=false)
-    private Date date;
+    @Column(name="date_tagged", nullable=false)
+    private Date dateTagged;
 
     @Column(name="user_id", nullable=false, length=255)
     private String userId;
@@ -53,12 +53,12 @@ public class JobTag
         this.gpJobNo = gpJobNo;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getDateTagged() {
+        return dateTagged;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDateTagged(Date date) {
+        this.dateTagged = date;
     }
 
     public String getUserId() {

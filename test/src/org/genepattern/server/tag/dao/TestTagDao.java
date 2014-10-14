@@ -1,8 +1,6 @@
 package org.genepattern.server.tag.dao;
 
-import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.tag.Tag;
 import org.junit.*;
@@ -59,7 +57,7 @@ public class TestTagDao
         Date date = new Date();
 
         Tag tag = new Tag();
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setUserId(user);
         tag.setTag("insert test tag");
         tag.setPublicTag(true);
@@ -67,7 +65,7 @@ public class TestTagDao
         dao.insertTag(tag);
 
         Tag result = dao.selectTagById(tag.getId());
-        assertEquals("posted date", date, result.getDate());
+        assertEquals("posted date", date, result.getDateAdded());
         assertEquals("userId", user, result.getUserId());
         assertEquals("comment", tag.getTag(), result.getTag());
         assertEquals("public", tag.isPublicTag(), result.isPublicTag());
@@ -83,7 +81,7 @@ public class TestTagDao
         Date date = new Date();
 
         Tag tag = new Tag();
-        tag.setDate(date);
+        tag.setDateAdded(date);
         tag.setUserId(user);
         tag.setTag("Tag to delete");
 
@@ -116,14 +114,14 @@ public class TestTagDao
 
         //add tag for one user
         Tag userTag = new Tag();
-        userTag.setDate(date);
+        userTag.setDateAdded(date);
         userTag.setUserId(user);
         userTag.setTag("user test tag");
         dao.insertTag(userTag);
 
         //add tag for another user
         Tag adminTag = new Tag();
-        adminTag.setDate(date);
+        adminTag.setDateAdded(date);
         adminTag.setUserId(admin);
         adminTag.setTag("user admin tag");
         dao.insertTag(adminTag);
@@ -138,7 +136,7 @@ public class TestTagDao
 
         //add public tag for admin user
         Tag publicTag = new Tag();
-        publicTag.setDate(date);
+        publicTag.setDateAdded(date);
         publicTag.setUserId(admin);
         publicTag.setTag("user admin public tag");
         publicTag.setPublicTag(true);

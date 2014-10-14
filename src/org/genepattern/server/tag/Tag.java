@@ -49,8 +49,8 @@ public class Tag
     @Size(max=TAG_LENGTH)
     private String tag;
 
-    @Column(name="date", nullable=false)
-    private Date date;
+    @Column(name="date_added", nullable=false)
+    private Date dateAdded;
 
     @Column(name="user_id", nullable=false, length=255)
     private String userId;
@@ -76,12 +76,12 @@ public class Tag
 
     public void setPublicTag(boolean publicTag) { this.publicTag = publicTag; }
 
-    public Date getDate() {
-        return date;
+    public Date getDateAdded() {
+        return dateAdded;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDateAdded(Date date) {
+        this.dateAdded = date;
     }
 
     public String getUserId() {

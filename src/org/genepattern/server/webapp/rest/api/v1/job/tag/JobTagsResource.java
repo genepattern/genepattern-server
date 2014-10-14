@@ -74,11 +74,11 @@ public class JobTagsResource
             Date date = new Date();
             JobTag jobTag = new JobTag();
             jobTag.setGpJobNo(jobNo);
-            jobTag.setDate(date);
+            jobTag.setDateTagged(date);
             jobTag.setUserId(userContext.getUserId());
 
             Tag tag = new Tag();
-            tag.setDate(date);
+            tag.setDateAdded(date);
 
             tagText = StringEscapeUtils.unescapeHtml(tagText);
             tag.setTag(tagText);
@@ -108,6 +108,8 @@ public class JobTagsResource
     {
         try
         {
+            final GpContext userContext = Util.getUserContext(request);
+
             JSONObject result = new JSONObject();
             boolean success = false;
 
