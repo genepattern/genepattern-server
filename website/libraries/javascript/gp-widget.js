@@ -78,6 +78,16 @@ $.widget("gp.fileInput", {
             $("<div></div>")
                 .addClass("file-widget-listing")
         );
+
+        // Hide elements if not in use by options
+        if (!this.options.allowJobUploads) {
+            this.find(".file-widget-upload-file").hide();
+            this.find(".file-widget-drop").hide();
+            this.find(".file-widget-size").hide();
+        }
+        if (!this.options.allowExternalUrls && !this.options.allowFilePaths) { this.find(".file-widget-url").hide(); }
+        else if (!this.options.allowExternalUrls && this.options.allowFilePaths) { this.find(".file-widget-url").text("Add Path..."); }
+        else if (this.options.allowExternalUrls && !this.options.allowFilePaths) { this.find(".file-widget-url").text("Add URL..."); }
     },
 
     /**
@@ -87,6 +97,7 @@ $.widget("gp.fileInput", {
      */
     _destroy: function() {
         this.element.removeClass("file-widget");
+        this.element.empty();
     },
 
     /**

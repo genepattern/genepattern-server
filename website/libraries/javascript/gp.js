@@ -15,6 +15,7 @@ gp._server = null;
 gp._tasks = null;
 gp._jobs = null;
 
+
 /**
  * Sets the URL to the GP server
  * Example: http://genepattern.broadinstitute.org/gp
@@ -25,6 +26,7 @@ gp.setServer = function(url) {
     gp._server = url;
 };
 
+
 /**
  * Easily determine if the URL to the GenePattern server has been set or not.
  *
@@ -33,6 +35,7 @@ gp.setServer = function(url) {
 gp.isServerSet = function() {
     return gp._server ? true : false;
 };
+
 
 /**
  * Returns the server at which this library is pointed
@@ -105,6 +108,7 @@ gp.tasks = function(pObj) {
     }
 };
 
+
 /**
  * Returns a cached Task() object matching the provided LSID or module name
  *
@@ -132,6 +136,7 @@ gp.task = function(pObj) {
 
     return null;
 };
+
 
 /**
  * Returns a list of jobs on the server and caches those jobs.
@@ -216,6 +221,7 @@ gp.jobs = function(pObj) {
     }
 };
 
+
 /**
  * Returns a cached Job() object matching the provided job number
  *
@@ -239,6 +245,48 @@ gp.job = function(pObj) {
     }
 
     return null;
+};
+
+
+/**
+ * Uploads a file for running a job
+ *
+ * @param pObj - An object specifying this property:
+ *                  file: This is a File object for the file to upload
+ *                          (See the HTML5 File API)
+ *                  success: This a callback for after the upload.
+ *                          Expects a response and URL to the file resource
+ *                  error: Callback for an error. Expects an exception
+ */
+gp.upload = function(pObj) {
+    // Ensure the file is specified
+    if (!pObj) throw "gp.upload() parameter either null or undefined";
+    if (typeof pObj === 'object' && typeof pObj.file !== 'object') throw "gp.upload() parameter does not contain a File object";
+
+    var REST_ENDPOINT = "/rest/v1/data/upload/job_input";
+    var nameParam = "?name=" + pObj.file.name;
+
+    return $.ajax({
+            url: gp.server() + REST_ENDPOINT + nameParam,
+            type: 'POST',
+            dataType: "text",
+            processData: false,
+            data: pObj.file,
+            headers: {
+                "Content-Length": pObj.file.size
+            },
+            success: function(data, textStatus, request){
+                var location = request.getResponseHeader('Location');
+                if (pObj && pObj.success) {
+                    pObj.success(textStatus, location);
+                }
+            }
+        })
+        .fail(function(exception) {
+            if (pObj && pObj.error) {
+                pObj.error(exception);
+            }
+        });
 };
 
 

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="gp-widget.css">
 </head>
 <body>
+    <span style="color: red; font-weight: bold;">For these demos and tests to work appropriately you must have an active GenePattern session in this browser.</span>
     <div>
         <h1>GP Widget Demos</h1>
 
@@ -37,6 +38,27 @@
 
     <div id="qunit" style="display:none;"></div>
     <div id="qunit-fixture" style="display:none;"></div>
+    <div id="qunit-manual">
+        <h4>File Upload Manual Test</h4>
+        <input id="upload-test" type="file" /> <span id="upload-test-result">Click & Select File to Test Upload</span>
+        <script type="text/javascript">
+            $("#upload-test").change(function() {
+                $("#upload-test-result").text("Pending...");
+                var fileObj = $("#upload-test")[0].files[0];
+                gp.setServer("http://127.0.0.1:8080/gp");
+                gp.upload({
+                    file: fileObj,
+                    success: function(response, url) {
+                        $("#upload-test-result").text("SUCCESS: " + url);
+                    },
+                    error: function(exception) {
+                        $("#upload-test-result").text("ERROR: " + exception.statusText);
+                    }
+                });
+            });
+        </script>
+
+    </div>
 
     <script type="text/javascript">
         function executeTests() {
@@ -44,6 +66,7 @@
             $("#execute-link").hide();
             $("#qunit").show();
             $("#qunit-fixture").show();
+            $("#qunit-manual").show();
 
             // Setup the tests
             gp.setServer("http://127.0.0.1:8080/gp");
