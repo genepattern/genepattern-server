@@ -101,9 +101,9 @@ public class JobTagDao
         return jobTag;
     }
 
-    public boolean deleteJobTag(final int gpJobNo)
+    public boolean deleteJobTag(final int jobTagId)
     {
-        if (gpJobNo < 1) {
+        if (jobTagId < 1) {
             log.error("No entry to delete");
             return false;
         }
@@ -113,19 +113,17 @@ public class JobTagDao
         try {
             HibernateUtil.beginTransaction();
 
-            JobTag jobTag = (JobTag)HibernateUtil.getSession().get(JobTag.class, gpJobNo);
+            JobTag jobTag = (JobTag)HibernateUtil.getSession().get(JobTag.class, jobTagId);
             HibernateUtil.getSession().delete(jobTag);
 
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
 
-            HibernateUtil.getSession().flush();
-
             deleted = true;
         }
         catch (Throwable t) {
-            log.error("Error deleting tag with gpJobNo="+ gpJobNo, t);
+            log.error("Error deleting tag with jobTagId="+ jobTagId, t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
