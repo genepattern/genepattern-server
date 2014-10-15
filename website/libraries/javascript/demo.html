@@ -71,6 +71,41 @@
         <div id="file-input"></div>
         <script type="text/javascript">$("#file-input").fileInput();</script>
 
+        <h2>Text Input Widget</h2>
+        <button id="make-text">Make Text</button>
+        <script type="text/javascript">
+            $("#make-text").click(function() {
+                $("#text-input").textInput({
+                    type: "text"
+                });
+            });
+        </script>
+        <button id="make-password">Make Password</button>
+        <script type="text/javascript">
+            $("#make-password").click(function() {
+                $("#text-input").textInput({
+                    type: "password"
+                });
+            });
+        </script>
+        <button id="make-number">Make Number</button>
+        <script type="text/javascript">
+            $("#make-number").click(function() {
+                $("#text-input").textInput({
+                    type: "number"
+                });
+            });
+        </script>
+        <button id="text-value">Get Value</button>
+        <script type="text/javascript">
+            $("#text-value").click(function() {
+                alert("VALUE: " + $("#text-input").textInput("value"));
+            });
+        </script>
+        <br/><br/>
+        <div id="text-input"></div>
+        <script type="text/javascript">$("#text-input").textInput();</script>
+
         <h2>Run Task Widget</h2>
         <div id="run-task"></div>
         <script type="text/javascript">$("#run-task").runTask();</script>

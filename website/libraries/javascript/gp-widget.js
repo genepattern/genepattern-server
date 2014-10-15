@@ -426,6 +426,216 @@ $.widget("gp.fileInput", {
 });
 
 
+$.widget("gp.textInput", {
+    options: {
+        type: "text", // Accepts: text, number, password
+        default: "",
+
+        // Pointers to associated runTask widget
+        runTask: null,
+        param: null
+    },
+
+    /**
+     * Constructor
+     *
+     * @private
+     */
+    _create: function() {
+        // Save pointers to associated Run Task widget or parameter
+        this._setPointers();
+
+        // Set variables
+        var widget = this;
+        //noinspection JSValidateTypes
+        this._value = this.options.default;
+
+        // Clean the type option
+        this._cleanType();
+
+        // Add classes and child elements
+        this.element.addClass("text-widget");
+        this.element.append(
+            $("<input />")
+                .addClass("text-widget-input")
+                .attr("type", this.options.type)
+                .val(this._value)
+                .change(function() {
+                    widget._value = $(this).val();
+                })
+        );
+
+        // Hide elements if not in use by options
+        this._setDisplayOptions();
+    },
+
+    /**
+     * Destructor
+     *
+     * @private
+     */
+    _destroy: function() {
+        this.element.removeClass("text-widget");
+        this.element.empty();
+    },
+
+    /**
+     * Update all options
+     *
+     * @param options - Object contain options to update
+     * @private
+     */
+    _setOptions: function(options) {
+        this._superApply(arguments);
+        this._setPointers();
+        this._setDisplayOptions();
+    },
+
+    /**
+     * Update for single options
+     *
+     * @param key - The name of the option
+     * @param value - The new value of the option
+     * @private
+     */
+    _setOption: function(key, value) {
+        this._super(key, value);
+        this._setPointers();
+        this._setDisplayOptions();
+    },
+
+    /**
+     * Update the pointers to the Run Task widget and parameter
+     *
+     * @private
+     */
+    _setPointers: function() {
+        if (this.options.runTask) { this._runTask = this.options.runTask; }
+        if (this.options.param) { this._param = this.options.param; }
+    },
+
+    /**
+     * Update the display of the UI to match current options
+     *
+     * @private
+     */
+    _setDisplayOptions: function() {
+        this._cleanType();
+        this.element.find(".text-widget-input").prop("type", this.options.type);
+    },
+
+    /**
+     * Removes bad type listings, defaulting to text
+     *
+     * @private
+     */
+    _cleanType: function() {
+        if (typeof this.options.type !== 'string') {
+            console.log("Type option for text input is not a string, defaulting to text");
+            this.options.type = "text";
+        }
+        if (this.options.type.toLowerCase() !== "text" &&
+            this.options.type.toLowerCase() !== "password" &&
+            this.options.type.toLowerCase() !== "number") {
+            console.log("Type option for text input is not 'text', 'password' or 'number', defaulting to text");
+            this.options.type = "text";
+        }
+    },
+
+    /**
+     * Gets or sets the value of the input
+     *
+     * @param val - the value for the setter
+     * @returns {_value|string}
+     */
+    value: function(val) {
+        // Do setter
+        if (val) {
+            this._value = val;
+            this.element.find("#text-widget-input").val(val);
+        }
+        // Do getter
+        else {
+            return this._value;
+        }
+    }
+});
+
+
+$.widget("gp.choiceInput", {
+    options: {
+        choices: [],
+        default: null,
+
+        // Pointers to associated runTask widget
+        runTask: null,
+        param: null
+    },
+
+    /**
+     * Constructor
+     *
+     * @private
+     */
+    _create: function() {
+        //TODO: Implement
+    },
+
+    /**
+     * Destructor
+     *
+     * @private
+     */
+    _destroy: function() {
+        //TODO: Implement
+    },
+
+    /**
+     * Update all options
+     *
+     * @param options - Object contain options to update
+     * @private
+     */
+    _setOptions: function(options) {
+        //TODO: Implement
+        this._superApply(arguments);
+        this._setPointers();
+    },
+
+    /**
+     * Update for single options
+     *
+     * @param key - The name of the option
+     * @param value - The new value of the option
+     * @private
+     */
+    _setOption: function(key, value) {
+        //TODO: Implement
+        this._super(key, value);
+        this._setPointers();
+    },
+
+    /**
+     * Update the pointers to the Run Task widget and parameter
+     *
+     * @private
+     */
+    _setPointers: function() {
+        if (this.options.runTask) { this._runTask = this.options.runTask; }
+        if (this.options.param) { this._param = this.options.param; }
+    },
+
+    /**
+     * Update the display of the UI to match current options
+     *
+     * @private
+     */
+    _setDisplayOptions: function() {
+
+    }
+});
+
+
 /**
  * Widget for entering parameters and launching a job from a task.
  *
@@ -477,7 +687,7 @@ $.widget("gp.runTask", {
     },
 
     /**
-     * Update all options
+     * Update for single options
      *
      * @param key - The name of the option
      * @param value - The new value of the option
@@ -537,7 +747,7 @@ $.widget("gp.jobResults", {
     },
 
     /**
-     * Update all options
+     * Update for single options
      *
      * @param key - The name of the option
      * @param value - The new value of the option

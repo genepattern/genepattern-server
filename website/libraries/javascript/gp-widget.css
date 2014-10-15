@@ -1,3 +1,7 @@
+/*
+ * File Input Styles
+ */
+
 .file-widget {
     font-family: Verdana,Arial,Helvetica,sans-serif;
     border: 2px dashed darkgray;
@@ -95,4 +99,12 @@
 .file-widget-path-buttons {
     margin-top: 5px;
     text-align: right;
+}
+
+/*
+ * Text Input Styles
+ */
+
+.text-widget-input {
+    width: 570px;
 }
