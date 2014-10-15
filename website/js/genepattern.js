@@ -2222,7 +2222,7 @@ function createJobWidget(job) {
         actionData.push({
             "lsid": "",
             "name": "Download Job",
-            "description": "Download a copy of this job, including all input and result files.",
+            "description": "Download a copy of this job, including all result files.",
             "version": "<span class='glyphicon glyphicon-download' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
