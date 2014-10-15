@@ -22,7 +22,7 @@ CREATE SEQUENCE JOB_COMMENT_SEQ
   NOORDER;
 
 create table tag (
- id integer not null,
+ tag_id integer not null,
  date_added timestamp not null,
  public_tag number(1,0) default 0 not null,
  tag varchar(511) not null,
