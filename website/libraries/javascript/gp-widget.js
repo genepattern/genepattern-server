@@ -44,6 +44,7 @@ $.widget("gp.fileInput", {
         // Set variables
         var widget = this;
         this._value = null;
+        this._display = null;
 
         // Add classes and child elements
         this.element.addClass("file-widget");
@@ -64,7 +65,7 @@ $.widget("gp.fileInput", {
                         .addClass("file-widget-input-file")
                         .attr("type", "file")
                         .change(function () {
-                            var newValue = widget.element.find(".file-widget-input-file").val();
+                            var newValue = widget.element.find(".file-widget-input-file")[0].files[0];
                             widget.value(newValue);
                         })
                 )
@@ -156,6 +157,11 @@ $.widget("gp.fileInput", {
                 )
         );
 
+        // Initialize the drag & drop functionality
+        if (this.options.allowJobUploads) {
+            this._initDragDrop();
+        }
+
         // Hide elements if not in use by options
         this._setDisplayOptions();
     },
@@ -168,6 +174,40 @@ $.widget("gp.fileInput", {
     _destroy: function() {
         this.element.removeClass("file-widget");
         this.element.empty();
+    },
+
+    /**
+     * Initializes the drag & drop functionality in the widget
+     *
+     * @private
+     */
+    _initDragDrop: function() {
+        var widget = this;
+        var dropTarget = this.element[0];
+
+        dropTarget.addEventListener("dragenter", function(event) {
+            widget.element.css("background-color", "#dfeffc");
+            event.stopPropagation();
+            event.preventDefault();
+        }, false);
+        dropTarget.addEventListener("dragexit", function(event) {
+            widget.element.css("background-color", "");
+            event.stopPropagation();
+            event.preventDefault();
+        }, false);
+        dropTarget.addEventListener("dragover", function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }, false);
+        dropTarget.addEventListener("drop", function(event) {
+            var files = event['dataTransfer'].files;
+            if (files.length > 0) {
+                widget.value(files[0]);
+            }
+            widget.element.css("background-color", "");
+            event.stopPropagation();
+            event.preventDefault();
+        }, false);
     },
 
     /**
@@ -185,6 +225,22 @@ $.widget("gp.fileInput", {
         else {
             this.element.find(".file-widget-upload").show();
             this.element.find(".file-widget-listing").hide();
+        }
+    },
+
+    /**
+     * Takes a value and returns the display string for the value
+     *
+     * @param value - the value, either a string or File object
+     * @returns {string} - the display value
+     * @private
+     */
+    _valueToDisplay: function(value) {
+        if (typeof value === 'string') {
+            return value;
+        }
+        else {
+            return value.name;
         }
     },
 
@@ -276,10 +332,10 @@ $.widget("gp.fileInput", {
      */
     upload: function(pObj) {
         var currentlyUploading = null;
-        var fileUpload = this.element.find(".file-widget-input-file");
         var widget = this;
 
-        if (fileUpload.val()) {
+        // Value is a File object
+        if (typeof this.value() === 'object') {
             gp.upload({
                 file: fileUpload[0].files[0],
                 success: function(response, url) {
@@ -297,10 +353,12 @@ $.widget("gp.fileInput", {
             });
             currentlyUploading = true;
         }
-        else if (!fileUpload.val() && !this.value()) {
-            console.log("Cannot upload from file input: value is null and no file selected.");
+        // If the value is not ste, give an error
+        else if (!this.value()) {
+            console.log("Cannot upload from file input: value is null.");
             currentlyUploading = false;
         }
+        // If the value is a string, do nothing
         else {
             // Else assume we have a non-upload value selected
             currentlyUploading = false;
@@ -329,13 +387,14 @@ $.widget("gp.fileInput", {
      * Gets or sets the value of this widget
      *
      * @param [val=optional] - String value for file (undefined is getter)
-     * @returns {_value|string|null} - The value of this widget
+     * @returns {object|string|null} - The value of this widget
      */
     value: function(val) {
         // Do setter
         if (val) {
             this._value = val;
-            this._fileBox(val);
+            this._display = this._valueToDisplay(val);
+            this._fileBox(this._display);
         }
         // Do getter
         else {
