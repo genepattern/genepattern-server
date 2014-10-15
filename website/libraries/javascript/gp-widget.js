@@ -337,7 +337,7 @@ $.widget("gp.fileInput", {
         // Value is a File object
         if (typeof this.value() === 'object') {
             gp.upload({
-                file: fileUpload[0].files[0],
+                file: this.value(),
                 success: function(response, url) {
                     widget.value(url);
                     if (pObj.success) {
