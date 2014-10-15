@@ -282,16 +282,26 @@ $.widget("gp.fileInput", {
             this.element.find(".file-widget-drop").hide();
             this.element.find(".file-widget-size").hide();
         }
-        if (!this.options.allowExternalUrls && !this.options.allowFilePaths) { this.element.find(".file-widget-url").hide(); }
+        else {
+            this.element.find(".file-widget-upload-file").show();
+            this.element.find(".file-widget-drop").show();
+            this.element.find(".file-widget-size").show();
+        }
+        if (!this.options.allowExternalUrls && !this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").hide();
+        }
         else if (!this.options.allowExternalUrls && this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").show();
             this.element.find(".file-widget-url").button("option", "label", "Add Path...");
             this.element.find(".file-widget-path-label").text("Enter Path");
         }
         else if (this.options.allowExternalUrls && !this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").show();
             this.element.find(".file-widget-url").button("option", "label", "Add URL...");
             this.element.find(".file-widget-path-label").text("Enter URL");
         }
         else if (this.options.allowExternalUrls && this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").show();
             this.element.find(".file-widget-url").button("option", "label", "Add Path or URL...");
             this.element.find(".file-widget-path-label").text("Enter Path or URL");
         }
@@ -310,7 +320,7 @@ $.widget("gp.fileInput", {
     },
 
     /**
-     * Update all options
+     * Update individual option
      *
      * @param key - The name of the option
      * @param value - The new value of the option
@@ -335,11 +345,11 @@ $.widget("gp.fileInput", {
         var widget = this;
 
         // Value is a File object
-        if (typeof this.value() === 'object') {
+        if (typeof this.value() === 'object' && this.value()) {
             gp.upload({
                 file: this.value(),
                 success: function(response, url) {
-                    widget.value(url);
+                    widget._value = url;
                     if (pObj.success) {
                         pObj.success(response, url);
                     }
@@ -357,6 +367,9 @@ $.widget("gp.fileInput", {
         else if (!this.value()) {
             console.log("Cannot upload from file input: value is null.");
             currentlyUploading = false;
+            if (pObj.error) {
+                pObj.error({statusText: "Cannot upload from file input: value is null."});
+            }
         }
         // If the value is a string, do nothing
         else {

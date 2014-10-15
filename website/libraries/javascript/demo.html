@@ -20,6 +20,54 @@
         <h1>GP Widget Demos</h1>
 
         <h2>File Input Widget</h2>
+        <button id="toggle-uploads">Toggle Uploads</button>
+        <script type="text/javascript">
+            $("#toggle-uploads").click(function() {
+                var currentlyAllowed = $("#file-input").fileInput("option", "allowJobUploads");
+                $("#file-input").fileInput({
+                    allowJobUploads: !currentlyAllowed
+                });
+            });
+        </script>
+        <button id="toggle-paths">Toggle Paths</button>
+        <script type="text/javascript">
+            $("#toggle-paths").click(function() {
+                var currentlyAllowed = $("#file-input").fileInput("option", "allowFilePaths");
+                $("#file-input").fileInput({
+                    allowFilePaths: !currentlyAllowed
+                });
+            });
+        </script>
+        <button id="toggle-urls">Toggle URLs</button>
+        <script type="text/javascript">
+            $("#toggle-urls").click(function() {
+                var currentlyAllowed = $("#file-input").fileInput("option", "allowExternalUrls");
+                $("#file-input").fileInput({
+                    allowExternalUrls: !currentlyAllowed
+                });
+            });
+        </script>
+        <button id="perform-upload">Perform Upload</button>
+        <script type="text/javascript">
+            $("#perform-upload").click(function() {
+                gp.setServer("http://127.0.0.1:8080/gp");
+                var uploadStarted = $("#file-input").fileInput("upload", {
+                    success: function(response, url) {
+                        alert("SUCCESS: " + url);
+                    },
+                    error: function(exception) {
+                        alert("ERROR: " + exception.statusText);
+                    }
+                });
+                if (uploadStarted) {
+                    alert("Upload Was Started");
+                }
+                else {
+                    alert("Upload Was Not Started");
+                }
+            });
+        </script>
+        <br/><br/>
         <div id="file-input"></div>
         <script type="text/javascript">$("#file-input").fileInput();</script>
 
