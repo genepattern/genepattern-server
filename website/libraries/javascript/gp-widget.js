@@ -41,6 +41,10 @@ $.widget("gp.fileInput", {
         // Save pointers to associated Run Task widget or parameter
         this._setPointers();
 
+        // Set variables
+        var widget = this;
+        this._value = null;
+
         // Add classes and child elements
         this.element.addClass("file-widget");
         this.element.append(
@@ -60,15 +64,19 @@ $.widget("gp.fileInput", {
                         .addClass("file-widget-input-file")
                         .attr("type", "file")
                         .change(function () {
-                            // TODO: Implement
-                            alert("OK");
+                            var newValue = widget.element.find(".file-widget-input-file").val();
+                            widget.value(newValue);
                         })
                 )
                 .append(
                     $("<button></button>")
                         .addClass("file-widget-url")
+                        .addClass("file-widget-button")
                         .text("Add Path or URL...")
                         .button()
+                        .click(function() {
+                            widget._pathBox(true);
+                        })
                 )
                 .append(
                     $("<span></span>")
@@ -84,6 +92,68 @@ $.widget("gp.fileInput", {
         this.element.append(
             $("<div></div>")
                 .addClass("file-widget-listing")
+                .css("display", "none")
+                .append(
+                    $("<div></div>")
+                        .addClass("file-widget-value")
+                        .append(
+                            $("<div></div>")
+                                .addClass("file-widget-value-erase")
+                                .append(
+                                    $("<a></a>")
+                                        .html("&times;")
+                                        .click(function() {
+                                            widget.clear();
+                                        })
+                                )
+                        )
+                        .append(
+                            $("<span></span>")
+                                .addClass("file-widget-value-text")
+                        )
+                )
+        );
+        this.element.append(
+            $("<div></div>")
+                .addClass("file-widget-path")
+                .css("display", "none")
+                .append(
+                    $("<div></div>")
+                        .addClass("file-widget-path-label")
+                        .text("Enter Path or URL")
+                )
+                .append(
+                    $("<input />")
+                        .addClass("file-widget-path-input")
+                        .attr("type", "text")
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("file-widget-path-buttons")
+                        .append(
+                            $("<button></button>")
+                                .addClass("file-widget-button")
+                                .text("Select")
+                                .button()
+                                .click(function() {
+                                    var boxValue = widget.element.find(".file-widget-path-input").val();
+                                    widget.element.find(".file-widget-path-input").val("");
+                                    widget._pathBox(false);
+                                    widget.value(boxValue);
+                                })
+                        )
+                        .append(" ")
+                        .append(
+                            $("<button></button>")
+                                .addClass("file-widget-button")
+                                .text("Cancel")
+                                .button()
+                                .click(function() {
+                                    widget._pathBox(false);
+                                    widget.element.find(".file-widget-path-input").val("");
+                                })
+                        )
+                )
         );
 
         // Hide elements if not in use by options
@@ -103,20 +173,36 @@ $.widget("gp.fileInput", {
     /**
      * Shows or hides the box of selected files
      *
-     * @param file - A file object if to show, undefined or null if to hide
+     * @param file - A string if to show, undefined or null if to hide
      * @private
      */
     _fileBox: function(file) {
-        // TODO: Implement
+        if (file) {
+            this.element.find(".file-widget-value-text").text(file);
+            this.element.find(".file-widget-listing").show();
+            this.element.find(".file-widget-upload").hide();
+        }
+        else {
+            this.element.find(".file-widget-upload").show();
+            this.element.find(".file-widget-listing").hide();
+        }
     },
 
     /**
-     * Displays the select path or URL dialog
+     * Displays the select path or URL box
      *
+     * @param showPathBox - Whether to display or hide the path box
      * @private
      */
-    _pathDialog: function() {
-        // TODO: Implement
+    _pathBox: function(showPathBox) {
+        if (showPathBox) {
+            this.element.find(".file-widget-path").show();
+            this.element.find(".file-widget-upload").hide();
+        }
+        else {
+            this.element.find(".file-widget-path").hide();
+            this.element.find(".file-widget-upload").show();
+        }
     },
 
     /**
@@ -125,8 +211,8 @@ $.widget("gp.fileInput", {
      * @private
      */
     _setPointers: function() {
-        if (this.options.runTask) { this.runTask = this.options.runTask; }
-        if (this.options.param) { this.param = this.options.param; }
+        if (this.options.runTask) { this._runTask = this.options.runTask; }
+        if (this.options.param) { this._param = this.options.param; }
     },
 
     /**
@@ -141,9 +227,18 @@ $.widget("gp.fileInput", {
             this.element.find(".file-widget-size").hide();
         }
         if (!this.options.allowExternalUrls && !this.options.allowFilePaths) { this.element.find(".file-widget-url").hide(); }
-        else if (!this.options.allowExternalUrls && this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add Path..."); }
-        else if (this.options.allowExternalUrls && !this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add URL..."); }
-        else if (this.options.allowExternalUrls && this.options.allowFilePaths) { this.element.find(".file-widget-url").button("option", "label", "Add Path or URL..."); }
+        else if (!this.options.allowExternalUrls && this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").button("option", "label", "Add Path...");
+            this.element.find(".file-widget-path-label").text("Enter Path");
+        }
+        else if (this.options.allowExternalUrls && !this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").button("option", "label", "Add URL...");
+            this.element.find(".file-widget-path-label").text("Enter URL");
+        }
+        else if (this.options.allowExternalUrls && this.options.allowFilePaths) {
+            this.element.find(".file-widget-url").button("option", "label", "Add Path or URL...");
+            this.element.find(".file-widget-path-label").text("Enter Path or URL");
+        }
     },
 
     /**
@@ -177,9 +272,40 @@ $.widget("gp.fileInput", {
      * @param pObj - Object containing the following params:
      *                  success: Callback for success, expects url to file
      *                  error: Callback on error, expects exception
+     * @returns {boolean} - Whether an upload was just initiated or not
      */
     upload: function(pObj) {
-        // TODO: Implement
+        var currentlyUploading = null;
+        var fileUpload = this.element.find(".file-widget-input-file");
+        var widget = this;
+
+        if (fileUpload.val()) {
+            gp.upload({
+                file: fileUpload[0].files[0],
+                success: function(response, url) {
+                    widget.value(url);
+                    if (pObj.success) {
+                        pObj.success(response, url);
+                    }
+                },
+                error: function(exception) {
+                    console.log("Error uploading file from file input widget: " + exception.statusText);
+                    if (pObj.error) {
+                        pObj.error(exception);
+                    }
+                }
+            });
+            currentlyUploading = true;
+        }
+        else if (!fileUpload.val() && !this.value()) {
+            console.log("Cannot upload from file input: value is null and no file selected.");
+            currentlyUploading = false;
+        }
+        else {
+            // Else assume we have a non-upload value selected
+            currentlyUploading = false;
+        }
+        return currentlyUploading;
     },
 
     /**
@@ -188,7 +314,7 @@ $.widget("gp.fileInput", {
      * @returns {object|null}
      */
     runTask: function() {
-        return this.runTask;
+        return this._runTask;
     },
 
     /**
@@ -196,18 +322,34 @@ $.widget("gp.fileInput", {
      * @returns {string|null|object}
      */
     param: function() {
-        return this.param;
+        return this._param;
     },
 
     /**
      * Gets or sets the value of this widget
      *
-     * @param val - String value for file (undefined is getter)
-     * @returns {string} - The value of this widget
+     * @param [val=optional] - String value for file (undefined is getter)
+     * @returns {_value|string|null} - The value of this widget
      */
     value: function(val) {
-        // TODO: Implement
-        return "";
+        // Do setter
+        if (val) {
+            this._value = val;
+            this._fileBox(val);
+        }
+        // Do getter
+        else {
+            return this._value;
+        }
+    },
+
+    /**
+     * Clears the current value of the widget and hides file box
+     * @private
+     */
+    clear: function() {
+        this._value = null;
+        this._fileBox(null);
     }
 });
 
