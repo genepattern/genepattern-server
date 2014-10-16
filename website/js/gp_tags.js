@@ -109,6 +109,8 @@ $(function() {
             console.log(response);
             if(response != null && response.tags != undefined && response.tags != null)
             {
+                var focusIn = $.cookie("show_tags_focus"+currentJobNumber);
+
                 jobTagToIdMap = response.tags;
 
                 var tagValues = Object.keys(jobTagToIdMap);
@@ -116,6 +118,17 @@ $(function() {
 
                 jobTagsInput.importTags(tagValues.join(","));
                 updateTagsTotal();
+
+               var tag = $.cookie("show_tags_value"+currentJobNumber);
+                if(tag)
+                {
+                    $("#tagsContent").find("input").last().val(tag);
+                }
+
+                if(focusIn)
+                {
+                    $("#tagsContent").find("input").last().focus();
+                }
             }
         },
         dataType: "json",
@@ -138,21 +151,44 @@ $(function() {
             return;
         }
 
-        var isVisible = false;
         //change the toggle image to indicate hide or show
         var imageSrc = toggleImg.attr("src");
         if (imageSrc.indexOf('collapse') != -1)
         {
             imageSrc = imageSrc.replace("collapse", "expand");
+            $.removeCookie("show_tags_"+currentJobNumber);
         }
         else
         {
             imageSrc = imageSrc.replace("expand", "collapse");
-            isVisible = true;
+            $.cookie("show_tags_"+currentJobNumber, true);
+
         }
 
         toggleImg.attr("src", imageSrc);
     });
 
-    $("#tagsHeader").click();
+
+    if($.cookie("show_tags_"+currentJobNumber) == null)
+    {
+        $("#tagsHeader").click();
+    }
+
+    //keep track of changes to the tag text area
+    $("#statusJobTags_tag").keyup(function()
+    {
+        $.cookie("show_tags_value"+currentJobNumber, $(this).val());
+    });
+
+    //keep track of focus events in the tag text area
+    $("#tagsContent").find("input").last().focus(function()
+    {
+        $.cookie("show_tags_focus"+currentJobNumber, true);
+    });
+
+    //keep track of blur events in the tag text area
+    $("#tagsContent").find("input").last().blur(function()
+    {
+        $.removeCookie("show_tags_focus"+currentJobNumber);
+    });
 });

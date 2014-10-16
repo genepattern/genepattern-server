@@ -12,12 +12,12 @@ function updateCommentTotalAfterLoad(event)
 
     if(comment != undefined && comment != null)
     {
-        if($.cookie("show_comments_focus"+currentJobNumber))
-        {
-            $("#commentsContent").find(".posted-comments-postbox").find("textarea").focus();
-        }
-
         $("#commentsContent").find(".posted-comments-postbox").find("textarea").val(comment);
+    }
+
+    if($.cookie("show_comments_focus"+currentJobNumber))
+    {
+        $("#commentsContent").find(".posted-comments-postbox").find("textarea").focus();
     }
 }
 
