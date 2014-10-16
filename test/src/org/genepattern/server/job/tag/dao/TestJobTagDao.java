@@ -67,38 +67,6 @@ public class TestJobTagDao
     }
 
     /**
-     * Test saving a record to the job_tag table
-     *
-     * @throws org.genepattern.server.DbException
-     */
-    @Test
-    public void insertJobTag() throws DbException
-    {
-        String tagText = "insert jobtag";
-        Date date = new Date();
-
-        Tag tag = new Tag();
-        tag.setUserId(user);
-        tag.setTag(tagText);
-        tag.setDateAdded(date);
-        tag.setPublicTag(false);
-
-        JobTag jobTag = new JobTag();
-        jobTag.setUserId(user);
-        jobTag.setTagObj(tag);
-        jobTag.setGpJobNo(gpJobNo);
-        jobTag.setDateTagged(date);
-
-        jobTagDao.insertJobTag(jobTag);
-
-        List<JobTag> jobTagList = jobTagDao.selectJobTags(gpJobNo);
-        assertEquals("num tags", 1, jobTagList.size());
-        assertEquals("job tag id", jobTag.getId(), jobTagList.get(0).getId());
-        assertEquals("tag id", jobTag.getTagObj().getId(), jobTagList.get(0).getTagObj().getId());
-        assertEquals("tag text", jobTag.getTagObj().getTag(), jobTagList.get(0).getTagObj().getTag());
-    }
-
-    /**
      * Test selecting a record in the job_tag table
      *
      * @throws org.genepattern.server.DbException
@@ -122,7 +90,6 @@ public class TestJobTagDao
         jobTag.setDateTagged(date);
         jobTagDao.insertJobTag(jobTag);
 
-
         String tagText2 = "insert jobtag 2";
         Date date2 = new Date();
 
@@ -145,13 +112,13 @@ public class TestJobTagDao
     }
 
     /**
-     * Test deleting a record in the job_tag table
+     * Test inserting and deleting a record in the job_tag table
      *
      */
     @Test
-    public void deleteTag()
+    public void insertAndDeleteTag()
     {
-        String tagText = "delete jobtag";
+        String tagText = "insert and delete jobtag";
         Date date = new Date();
 
         Tag tag = new Tag();
@@ -169,6 +136,12 @@ public class TestJobTagDao
 
         //add a tag
         jobTagDao.insertJobTag(jobTag);
+
+        List<JobTag> jobTagList = jobTagDao.selectJobTags(gpJobNo);
+        assertEquals("num tags", 1, jobTagList.size());
+        assertEquals("job tag id", jobTag.getId(), jobTagList.get(0).getId());
+        assertEquals("tag id", jobTag.getTagObj().getId(), jobTagList.get(0).getTagObj().getId());
+        assertEquals("tag text", jobTag.getTagObj().getTag(), jobTagList.get(0).getTagObj().getTag());
 
         //now retrieve the tag
         JobTag tagResult = jobTagDao.selectJobTagById(jobTag.getId());

@@ -37,7 +37,7 @@ public class JobTagDao
                 jobTag.setTagObj(matchingPublicTag.get(0));
             }
 
-            HibernateUtil.getSession().save(jobTag);
+            HibernateUtil.getSession().saveOrUpdate(jobTag);
 
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
