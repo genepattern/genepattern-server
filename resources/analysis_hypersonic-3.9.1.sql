@@ -28,6 +28,9 @@ create table job_tag (
  tag_id integer not null,
  user_id varchar(255) not null,
  primary key (id),
+ CONSTRAINT jt_fk_tag_id
+    FOREIGN KEY (tag_id)
+    REFERENCES tag (tag_id),
  CONSTRAINT jt_fk_gp_job_no
     FOREIGN KEY (gp_job_no)
     REFERENCES analysis_job (job_no)

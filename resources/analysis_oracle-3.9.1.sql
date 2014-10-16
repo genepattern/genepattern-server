@@ -38,7 +38,6 @@ CREATE SEQUENCE TAG_SEQ
   NOCACHE
   NOORDER;
 
-
 create table job_tag (
  id integer not null,
  date_tagged timestamp not null,
@@ -46,11 +45,15 @@ create table job_tag (
  tag_id integer not null,
  user_id varchar(255) not null,
  primary key (id),
+ CONSTRAINT jt_fk_tag_id
+    FOREIGN KEY (tag_id)
+    REFERENCES tag (tag_id),
  CONSTRAINT jt_fk_gp_job_no
     FOREIGN KEY (gp_job_no)
     REFERENCES analysis_job (job_no)
     ON DELETE CASCADE
 );
+
 CREATE SEQUENCE JOB_TAG_SEQ
   START WITH 1
   MAXVALUE 999999999999999999999999999
