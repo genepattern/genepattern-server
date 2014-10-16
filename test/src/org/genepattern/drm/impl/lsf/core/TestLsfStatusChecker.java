@@ -4,7 +4,9 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
@@ -194,10 +196,52 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
                 return Arrays.asList(new String[] { exampleOutput[1] });
             }
         };
-        LsfStatusChecker statusChecker=new LsfStatusChecker(jobRecord, lsfLogFile, cmdRunner);
-        statusChecker.checkStatus();
-        DrmJobStatus jobStatus=statusChecker.getStatus();
+        LsfStatusChecker statusChecker=new LsfStatusChecker(cmdRunner);
+        DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord, lsfLogFile);
         assertEquals(DrmJobState.RUNNING, jobStatus.getJobState());
+    }
+    
+    @Test
+    public void initStatusCmd() {
+        final String extJobId="34000";
+        jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
+        .build();
+
+        LsfStatusChecker statusChecker=new LsfStatusChecker();
+        assertEquals(Arrays.asList("bjobs", "-W", extJobId), statusChecker.initStatusCmd(jobRecord));
+    }
+    
+    @Test
+    public void initStatusCmd_nullExtJobId() {
+        final String extJobId="";
+        jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
+        .build();
+
+        LsfStatusChecker statusChecker=new LsfStatusChecker();
+        assertEquals(Arrays.asList("bjobs", "-W"), statusChecker.initStatusCmd(jobRecord));
+    }
+    
+    @Test
+    public void initStatusCmd_emptyListOfJobRecords() {
+        List<DrmJobRecord> jobRecords=Collections.emptyList();
+        final String extJobId="";
+        jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
+        .build();
+
+        LsfStatusChecker statusChecker=new LsfStatusChecker();
+        assertEquals(Arrays.asList("bjobs", "-W"), statusChecker.initStatusCmd(jobRecords));
+    }
+    
+    @Test
+    public void initStatusCmd_customLsfStatusCmd() {
+        final String extJobId="34000";
+            jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
+        .build();
+
+        LsfStatusChecker statusChecker=new LsfStatusChecker( 
+                Arrays.asList("bjobs", "-W", "-a"),
+                null);
+        assertEquals(Arrays.asList("bjobs", "-W", "-a", extJobId), statusChecker.initStatusCmd(jobRecord));
     }
 
     /**
@@ -223,9 +267,21 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
      * @throws InterruptedException
      */
     @Test
-    public void checkStatus_cilgenepattern() throws InterruptedException {
+    public void checkStatus_rhel_format() throws InterruptedException {
         final String line="1978625 cilgenepattern EXIT  week       cilgenepattern node1750    5          10/14-12:49:07 default    000:00:00.42 2      0      28722 10/14-12:49:07 10/14-12:49:09 1";
         DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(line);
+        assertEquals("jobState is failed", true, jobStatus.getJobState().is(DrmJobState.FAILED));
+        assertEquals("drmJobId", "1978625", jobStatus.getDrmJobId());
+        assertEquals("cpuTime (ms)", 420L, jobStatus.getCpuTime().asMillis());
+        assertEquals("memory", Memory.fromString("2 mb"), jobStatus.getMemory());
+    }
+    
+    @Test
+    public void checkStatus_customLsfStatusRegex() throws InterruptedException {
+        Pattern regexPattern=LsfBjobsParser.LINE_PATTERN_ORIG;
+        final String line="1978625 cilgenepattern EXIT  week       cilgenepattern node1750    5          10/14-12:49:07 default    000:00:00.42 2      0      28722 10/14-12:49:07 10/14-12:49:09";
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(regexPattern, line);
+        assertNotNull(jobStatus);
         assertEquals("jobState is failed", true, jobStatus.getJobState().is(DrmJobState.FAILED));
         assertEquals("drmJobId", "1978625", jobStatus.getDrmJobId());
         assertEquals("cpuTime (ms)", 420L, jobStatus.getCpuTime().asMillis());

@@ -2,12 +2,16 @@ package org.genepattern.drm.impl.lsf.core;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobStatus;
+
+import com.google.common.base.Strings;
 
 
 /**
@@ -22,47 +26,69 @@ import org.genepattern.drm.DrmJobStatus;
 public class LsfStatusChecker {
     private static final Logger log = Logger.getLogger(LsfStatusChecker.class);
     
-//    private LinkedHashMap<String, DrmJobRecord> jobRecords=new LinkedHashMap<String, DrmJobRecord>();
-//    private LinkedHashMap<String, File> lsfLogFiles=new LinkedHashMap<String, File>();
-//    private LinkedHashMap<String, String> bjobsOutputLines=new LinkedHashMap<String,String>();
-//    private List<DrmJobStatus> jobStatuses=new ArrayList<DrmJobStatus>();
+    public static final List<String> DEFAULT_LSF_STATUS_CMD_PREFIX=Arrays.asList("bjobs", "-W");
     
-    private DrmJobRecord jobRecord=null;
-    private File lsfLogFile=null;
-    private CmdRunner cmdRunner;
-    
-    private DrmJobStatus jobStatus=null;
-    
-    
-    public LsfStatusChecker(DrmJobRecord jobRecord) {
-        this.jobRecord=jobRecord;
-        this.lsfLogFile=getLogFile(jobRecord);
-        this.cmdRunner=initCmdRunner();
+    private final CmdRunner cmdRunner;
+    private final List<String> lsfStatusCmdPrefix;
+    private final Pattern lsfStatusPattern;
+
+    public LsfStatusChecker() {
+        this(null, null, null);
+    }
+
+    public LsfStatusChecker(CmdRunner cmdRunner) {
+        this(cmdRunner, null, null);
+    }
+
+    public LsfStatusChecker(List<String> lsfStatusCmdPrefix, Pattern lsfStatusPattern) {
+        this(null, lsfStatusCmdPrefix, lsfStatusPattern);
+    }
+
+    public LsfStatusChecker(CmdRunner cmdRunner, List<String> lsfStatusCmdPrefix, Pattern lsfStatusPattern) {
+        // null means, use default
+        if (cmdRunner==null) {
+            this.cmdRunner=initCmdRunner();
+        }
+        else {
+            this.cmdRunner=cmdRunner;
+        }
+        // null means, use default
+        if (lsfStatusCmdPrefix==null) {
+            this.lsfStatusCmdPrefix=LsfStatusChecker.DEFAULT_LSF_STATUS_CMD_PREFIX;
+        }
+        else {
+            this.lsfStatusCmdPrefix=lsfStatusCmdPrefix;
+        }
+        // null means, use default
+        if (lsfStatusPattern==null) {
+            this.lsfStatusPattern=LsfBjobsParser.LINE_PATTERN_DEFAULT;
+        }
+        else {
+            this.lsfStatusPattern=lsfStatusPattern;
+        }
+    }
+
+    // for debugging
+    protected CmdRunner getCmdRunner() {
+        return cmdRunner;
+    }
+
+    // for debugging
+    protected Pattern getLsfStatusPattern() {
+        return lsfStatusPattern;
     }
     
-    public LsfStatusChecker(DrmJobRecord jobRecord, File lsfLogFile) {
-        this.jobRecord=jobRecord;
-        this.lsfLogFile=lsfLogFile;
-        this.cmdRunner=initCmdRunner();
-    }
-    
-    public LsfStatusChecker(DrmJobRecord jobRecord, File lsfLogFile, CmdRunner cmdRunner) {
-        this.jobRecord=jobRecord;
-        this.lsfLogFile=lsfLogFile;
-        this.cmdRunner=cmdRunner;
-    }
-    
-    protected CmdRunner initCmdRunner() {
+    protected static final CmdRunner initCmdRunner() {
         //skip the first line
         final int numHeaderLines=1;
         return new CommonsExecCmdRunner(numHeaderLines);
     }
 
-    private File getLogFile(DrmJobRecord drmJobRecord) {
+    protected static final File initLogFile(DrmJobRecord drmJobRecord) {
         return getRelativeFile(drmJobRecord.getWorkingDir(), drmJobRecord.getLogFile());
     }
 
-    private File getRelativeFile(final File workingDir, final File file) {
+    protected static final File getRelativeFile(final File workingDir, final File file) {
         if (file == null) {
             return null;
         }
@@ -75,30 +101,60 @@ public class LsfStatusChecker {
         return file;
     }
     
+    /**
+     * Initialize the LSF status command line for the given job. This is the command
+     * that the GP server runs to check for the status of a job.
+     * By default use the 'bjobs -W {extJobId}' command.
+     * This can optionally be configured with the 'lsf.statusCmd' property in the 'command.properties' 
+     * section of the config_yaml file. E.g.
+     * <pre>
+       executors:
+           LSF:
+               command.properties:
+                   lsf.statusCmd: [ "bjobs", "-W" ]
+     * </pre>
+     * 
+     * Note: the extJobId is always appended at the end of the command line.
+     * 
+     * @param jobRecord
+     * @return
+     */
     protected List<String> initStatusCmd(final DrmJobRecord jobRecord) {
-        // e.g. bjobs -W 1044898
-        List<String> cmd=new ArrayList<String>();
-        cmd.add("bjobs");
-        cmd.add("-W");
-        cmd.add(""+jobRecord.getExtJobId());
-        return cmd;
+        List<DrmJobRecord> jobRecords=Arrays.asList(jobRecord);
+        return initStatusCmd(jobRecords);
     }
     
     protected List<String> initStatusCmd(final Collection<DrmJobRecord> jobRecords) {
-        // e.g. bjobs -W 1044898
+        // e.g. bjobs -W 1044898 1044899
         List<String> cmd=new ArrayList<String>();
-        cmd.add("bjobs");
-        cmd.add("-W");
+        cmd.addAll(lsfStatusCmdPrefix);
         for(DrmJobRecord jobRecord : jobRecords) {
-            cmd.add(""+jobRecord.getExtJobId());
+            if (!Strings.isNullOrEmpty(jobRecord.getExtJobId())) {
+                cmd.add(""+jobRecord.getExtJobId());
+            }
         }
         return cmd;
     }
 
     /**
-     * Runs the 'bjobs -W' command for the given list of jobRecords.
+     * Runs the 'bjobs -W' command for the given jobRecord.
      */
-    public void checkStatus() throws CmdException, InterruptedException {
+    public DrmJobStatus checkStatus(DrmJobRecord jobRecord) throws CmdException, InterruptedException {
+        File lsfLogFile=initLogFile(jobRecord);
+        return checkStatus(jobRecord, lsfLogFile);
+    }
+
+    /**
+     * Runs the 'bjobs -W' command for the given jobRecord and lsfLogFile path.
+     * 
+     * @param jobRecord, the GenePattern job
+     * @param lsfLogFile, the path to the '.lsf.out' log file
+     * 
+     * @return
+     * @throws CmdException
+     * @throws InterruptedException
+     */
+    public DrmJobStatus checkStatus(DrmJobRecord jobRecord, File lsfLogFile) throws CmdException, InterruptedException {
         if (log.isDebugEnabled()) {
             log.debug("checkStatus for jobId="+jobRecord.getExtJobId());
         }
@@ -117,19 +173,16 @@ public class LsfStatusChecker {
         if (out.size()!=1) {
             throw new CmdException("Can only accept one line from 'bjobs -W' command, num lines="+out.size());
         }
-
+    
         String line=out.get(0);
         if (log.isDebugEnabled()) {
             log.debug("line="+line);
             log.debug("lsfLogFile="+lsfLogFile);
         }
-        jobStatus = LsfBjobsParser.parseAsJobStatus(line, lsfLogFile);
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(lsfStatusPattern, line, lsfLogFile);
         if (log.isDebugEnabled()) {
             log.debug("jobStatus="+jobStatus);
         }
-    }
-
-    public DrmJobStatus getStatus() {
         return jobStatus;
     }
 

@@ -330,6 +330,12 @@ public class TestMemory {
         final String spec1="0.5g";
         Assert.assertEquals(spec0+"=="+spec1, Memory.fromString(spec0), Memory.fromString(spec1));
     }
+    
+    @Test
+    public void numUnits_mbToGb() {
+        Memory mem=Memory.fromString("8 Gb");
+        assertEquals("8 Gb as Mb", 8192, Math.round( mem.numUnits(Unit.mb) ));
+    }
 
     @Test(expected=IllegalArgumentException.class)
     public void testNegativeNumberNoUnit() {

@@ -43,6 +43,11 @@ public class LsfBjobsParser {
     private static final String NA = "-";
     private static final String memUsageUnits="mb";
     
+    public static DrmJobStatus parseAsJobStatus(final Pattern LINE_PATTERN, final String line) throws InterruptedException {
+        File lsfLogFile=null;
+        return parseAsJobStatus(LINE_PATTERN, line, lsfLogFile);
+    }
+
     public static DrmJobStatus parseAsJobStatus(final String line) throws InterruptedException {
         File lsfLogFile=null;
         return parseAsJobStatus(line, lsfLogFile);

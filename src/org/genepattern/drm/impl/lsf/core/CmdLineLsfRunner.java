@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
@@ -19,6 +20,7 @@ import org.genepattern.drm.Memory;
 import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.lsf.LsfProperties;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -27,13 +29,58 @@ import edu.mit.broad.core.lsf.LsfJob;
 
 /**
  * LSF integration via the JobRunner API, the implementation uses external command line wrappers
- * for running the LSF commands.
+ * for running the LSF commands. Additional configuration.properties: 'lsf.memoryUnit', 'lsf.statusCmd' and  'lsf.statusRegex'
  *  
  * @author pcarr
  *
  */
 public class CmdLineLsfRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(CmdLineLsfRunner.class);
+    
+    /**
+     * optional customization parameter for setting the Memory unit for the LSF bsub command line, 
+     * the default is Gb.
+     * For example,
+     *     bsub -R rusage[mem=2] -M 2,
+     * By default this means request a node with 2 Gb of RAM.
+     * On some LSF systems the preferred memory units are Mb. To use Mb instead of Gb set lsf.memoryUnit to "Mb".
+     * <pre>
+       LSF:
+           configuration.properties:
+               lsf.memoryUnit: "Gb"
+     * </pre>
+     */
+    public static final String PROP_MEMORY_UNIT="lsf.memoryUnit";
+    
+    /**
+     * optional customization parameter for setting the command line for checking the status of an LSF job.
+     * <pre>
+       LSF:
+           configuration.properties:
+               lsf.statusCmd: [ "bjobs", "-W" ]
+     * </pre>
+     */
+    public static final String PROP_STATUS_CMD="lsf.statusCmd";
+    
+    /**
+     * optional customization parameter for setting the regular expression used to parse the output of the lsf.statusCmd ('bjobs -W').
+     * <pre>
+       LSF:
+           configuration.properties:
+               lsf.statusRegex: (?<JOBID>\d+)\s+(?<USER>\S+)\s+(?<STATUS>\S+)\s+(?<QUEUE>\S+)\s+(?<FROMHOST>\S+)\s+(?<EXECHOST>\S+)\s+(?<JOBNAME>.*\S)\s+(?<SUBMITTIME>\d\d\/\d\d-\d\d:\d\d:\d\d)\s+(?<PROJNAME>\S+)\s+(?<CPUhours>\d\d\d):(?<CPUmins>\d\d):(?<CPUsecs>\d\d\.\d\d)\s+(?<MEM>\d+)\s+(?<SWAP>\d+)\s+(?<PIDS>-|(?:(?:\d+,)*\d+))\s+(?<STARTTIME>-|\d\d\/\d\d-\d\d:\d\d:\d\d)\s+(?<FINISHTIME>-|\d\d\/\d\d-\d\d:\d\d:\d\d)(?<SLOT>\s*\d*)\s*
+     * </pre>
+     */
+    public static final String PROP_STATUS_REGEX="lsf.statusRegex";
+    
+    // null means use default
+    private List<String> lsfStatusCmd=null;
+    // null means use default
+    private Pattern lsfStatusPattern=null;
+    // null means use default
+    private Memory.Unit lsfMemoryUnit=Memory.Unit.gb;
+    
+    private LsfStatusChecker statusChecker=null;
+
 
     @Override
     public void stop() {
@@ -64,10 +111,8 @@ public class CmdLineLsfRunner implements JobRunner {
         if (log.isTraceEnabled()) {
             log.trace("getStatus for jobId="+jobRecord.getExtJobId());
         }
-        LsfStatusChecker statusChecker=new LsfStatusChecker(jobRecord);
         try {
-            statusChecker.checkStatus();
-            DrmJobStatus jobStatus=statusChecker.getStatus();
+            DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord);
             if (log.isTraceEnabled()) {
                 log.trace("jobStatus="+jobStatus);
             }
@@ -105,6 +150,38 @@ public class CmdLineLsfRunner implements JobRunner {
         return true;
     }
     
+    public void setCommandProperties(CommandProperties properties) {
+        if (properties.containsKey(CmdLineLsfRunner.PROP_STATUS_CMD)) {
+            this.lsfStatusCmd=new ArrayList<String>(properties.get(CmdLineLsfRunner.PROP_STATUS_CMD).getValues());
+        }
+        if (properties.containsKey(CmdLineLsfRunner.PROP_STATUS_REGEX)) {
+            String lsfStatusRegex=properties.getProperty(CmdLineLsfRunner.PROP_STATUS_REGEX);
+            try {
+                this.lsfStatusPattern=Pattern.compile(lsfStatusRegex);
+            }
+            catch (Throwable t) {
+                log.error("Error compiling regex pattern from config file, lsf.statusRegex="+lsfStatusRegex, t);
+            }
+        }
+        if (properties.containsKey(CmdLineLsfRunner.PROP_MEMORY_UNIT)) {
+            String memoryUnitSpec=properties.getProperty(CmdLineLsfRunner.PROP_MEMORY_UNIT);
+            try {
+                this.lsfMemoryUnit=Memory.Unit.valueOf(memoryUnitSpec.trim().toLowerCase());
+            }
+            catch (Throwable t) {
+                log.error("Error initializing Memory.Unit from "+CmdLineLsfRunner.PROP_MEMORY_UNIT+"="+memoryUnitSpec, t);
+            }
+        }
+    }
+    
+    public void start() {
+        this.statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
+    }
+    
+    protected LsfStatusChecker initLsfStatusChecker() {
+        return new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
+    }
+
     private File getLogFile(DrmJobSubmission drmJobSubmission) {
         return getRelativeFile(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile());
     }
@@ -156,28 +233,42 @@ public class CmdLineLsfRunner implements JobRunner {
      * @return
      */
     protected static List<String> getMemFlags(final DrmJobSubmission gpJob) {
-        final Memory drmMemory=gpJob.getMemory();
-        Integer numGb;
-        if (drmMemory==null) {
-            try {
-                numGb=Integer.parseInt( gpJob.getProperty(LsfProperties.Key.MAX_MEMORY.getKey()) );
-            }
-            catch (Throwable t) {
-                 numGb=LsfProperties.MAX_MEMORY_DEFAULT;
-            }
-        }
-        else {
-            numGb = (int) Math.ceil(drmMemory.numGb());
-            if (numGb > drmMemory.numGb()) {
-                log.debug("Rounded up to nearest int, LSF executor expects an integer value, was "+drmMemory.numGb());
-            }
-        }
+        return getMemFlags(gpJob, Memory.Unit.gb);
+    }
 
+    protected static List<String> getMemFlags(final DrmJobSubmission gpJob, final Memory.Unit lsfMemoryUnit) {
+        Memory requestedMemory=gpJob.getMemory();
+        if (requestedMemory==null) {
+            log.debug("requestedMemory for job #"+gpJob.getGpJobNo()+" is null; use default values");
+            // use global default (always in Gb)
+            Integer numGb=LsfProperties.MAX_MEMORY_DEFAULT;
+            String lsfMaxMemory=gpJob.getProperty(LsfProperties.Key.MAX_MEMORY.getKey());
+            if (lsfMaxMemory != null) {
+                try {
+                    numGb=Integer.parseInt( lsfMaxMemory );
+                }
+                catch (Throwable t) {
+                    log.error("Invalid value for lsf.max.memory="+lsfMaxMemory, t);
+                }
+            }
+            requestedMemory=new Memory(numGb, Memory.Unit.gb, numGb+" Gb");
+        }
+        
+        return getMemFlags(requestedMemory, lsfMemoryUnit);
+    }
+    
+    protected static List<String> getMemFlags(final Memory requestedMemory, Memory.Unit lsfMemoryUnit) {
+        if (lsfMemoryUnit==null) {
+            log.debug("lsfMemoryUnit==null, use Gb");
+            lsfMemoryUnit=Memory.Unit.gb;
+        }
+        int numUnit=(int) Math.ceil(requestedMemory.numUnits(lsfMemoryUnit));
+        
         final List<String> memFlags = new ArrayList<String>();
         memFlags.add("-R");
-        memFlags.add("rusage[mem="+numGb+"]");
+        memFlags.add("rusage[mem="+numUnit+"]");
         memFlags.add("-M");
-        memFlags.add(""+numGb);
+        memFlags.add(""+numUnit);
         
         return memFlags;
     }
@@ -335,7 +426,7 @@ public class CmdLineLsfRunner implements JobRunner {
         lsfJob.setQueue(lsfQueue);
         
         final List<String> extraBsubArgs = new ArrayList<String>();
-        final List<String> memFlags=getMemFlags(gpJob);
+        final List<String> memFlags=getMemFlags(gpJob, lsfMemoryUnit);
         if (memFlags!=null) {
             extraBsubArgs.addAll( memFlags );
         }

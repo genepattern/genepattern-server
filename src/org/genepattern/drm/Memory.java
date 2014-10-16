@@ -115,6 +115,11 @@ public class Memory {
             return multiplier;
         }
     }
+
+    /** exactly one Mb */
+    public static final Memory MB=new Memory(1L, Unit.mb, Unit.mb.getMultiplier(), "1 Mb");
+    /** exactly one Gb */
+    public static final Memory GB=new Memory(1L, Unit.gb, Unit.gb.getMultiplier(), "1 Gb");
     
     /** 
      * Create a new Memory instance based on the number of bytes.
@@ -256,7 +261,7 @@ public class Memory {
      * @param unit, in the given units
      * @param displayValue, a formatted display value for the UI
      */
-    protected Memory(final double value, final Unit unit, final String displayValue) {
+    public Memory(final double value, final Unit unit, final String displayValue) {
         if (value < 0) {
             throw new IllegalArgumentException("value must be >= 0");
         }
@@ -264,6 +269,13 @@ public class Memory {
         this.unit=unit;
         this.numBytes=Math.round(value * unit.getMultiplier());
         this.displayValue=displayValue;
+    }
+
+    protected Memory(final double value, final Unit unit, final long numBytes, final String displayValue) {
+        this.value = numBytes;
+        this.unit = Unit.b;
+        this.numBytes = numBytes;
+        this.displayValue = displayValue;
     }
 
     public long getNumBytes() {
@@ -277,6 +289,16 @@ public class Memory {
     public double numGb() {
         double numGb=(double) getNumBytes() / (double) Unit.gb.getMultiplier();
         return numGb;
+    }
+    
+    /**
+     * Get this memory value in the given units.
+     * @param unit
+     * @return
+     */
+    public double numUnits(Unit unit) {
+        double numUnits=(double) getNumBytes() / (double) unit.getMultiplier();
+        return numUnits;
     }
 
     /**
