@@ -277,6 +277,16 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     }
     
     @Test
+    public void checkStatus_rhel_format_no_slots() throws InterruptedException {
+        final String line="1997198 cilgenepattern PEND  week       cilgenepattern    -        16 10/16-17:15:22 cilgenepattern 000:00:00.00 0      0       -  -  -  -";
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(line);
+        assertEquals("jobState is queued", true, jobStatus.getJobState().is(DrmJobState.IS_QUEUED));
+        assertEquals("drmJobId", "1997198", jobStatus.getDrmJobId());
+        assertEquals("cpuTime (ms)", 0L, jobStatus.getCpuTime().asMillis());
+        assertEquals("memory", Memory.fromString("0 mb"), jobStatus.getMemory());
+    }
+    
+    @Test
     public void checkStatus_customLsfStatusRegex() throws InterruptedException {
         Pattern regexPattern=LsfBjobsParser.LINE_PATTERN_ORIG;
         final String line="1978625 cilgenepattern EXIT  week       cilgenepattern node1750    5          10/14-12:49:07 default    000:00:00.42 2      0      28722 10/14-12:49:07 10/14-12:49:09";
