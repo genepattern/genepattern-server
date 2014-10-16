@@ -69,7 +69,7 @@ function deleteTag(tag)
 }
 
 $(function() {
-    $('#statusJobTags').tagsInput(
+    var jobTagsInput = $('#statusJobTags').tagsInput(
     {
         defaultText:'Add tags...',
         width: '98%',
@@ -99,8 +99,8 @@ $(function() {
                 var tagValues = Object.keys(jobTagToIdMap);
                 tagValues.sort();
 
-                $('#statusJobTags').importTags(tagValues.join(","));
-                updateTagsTotal()
+                jobTagsInput.importTags(tagValues.join(","));
+                updateTagsTotal();
             }
         },
         dataType: "json",
