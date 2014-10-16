@@ -71,6 +71,52 @@
         <div id="file-input"></div>
         <script type="text/javascript">$("#file-input").fileInput();</script>
 
+        <h2>Choice Input Widget</h2>
+        <button id="add-choice">Add Choice</button>
+        <script type="text/javascript">
+            $("#add-choice").click(function() {
+                var choices = $("#choice-input").choiceInput("option", "choices");
+                choices.push(["New Key " + choices.length+1, "New Value " + choices.length+1]);
+                $("#choice-input").choiceInput({
+                    choices: choices
+                });
+            });
+        </script>
+        <button id="remove-choice">Remove Choice</button>
+        <script type="text/javascript">
+            $("#remove-choice").click(function() {
+                var choices = $("#choice-input").choiceInput("option", "choices");
+                choices.pop();
+                $("#choice-input").choiceInput({
+                    choices: choices
+                });
+            });
+        </script>
+        <button id="change-default">Change Default</button>
+        <script type="text/javascript">
+            $("#change-default").click(function() {
+                var newDefault = prompt("Enter the new Default:");
+                $("#choice-input").choiceInput({
+                    default: newDefault
+                });
+            });
+        </script>
+        <button id="choice-value">Get Value</button>
+        <script type="text/javascript">
+            $("#choice-value").click(function() {
+                alert("VALUE: " + $("#choice-input").choiceInput("value"));
+            });
+        </script>
+        <br/><br/>
+        <div id="choice-input"></div>
+        <script type="text/javascript">$("#choice-input").choiceInput({
+            choices: [
+                    ["choice 1 key", "choice 1 value"],
+                    ["choice 2 key", "choice 2 value"],
+                    ["choice 3 key", "choice 3 value"]
+            ]
+        });</script>
+
         <h2>Text Input Widget</h2>
         <button id="make-text">Make Text</button>
         <script type="text/javascript">

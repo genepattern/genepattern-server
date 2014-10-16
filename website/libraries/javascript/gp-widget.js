@@ -552,7 +552,7 @@ $.widget("gp.textInput", {
         // Do setter
         if (val) {
             this._value = val;
-            this.element.find("#text-widget-input").val(val);
+            this.element.find(".text-widget-input").val(val);
         }
         // Do getter
         else {
@@ -564,7 +564,7 @@ $.widget("gp.textInput", {
 
 $.widget("gp.choiceInput", {
     options: {
-        choices: [],
+        choices: [], // Assumes an array of [key, value] arrays
         default: null,
 
         // Pointers to associated runTask widget
@@ -578,7 +578,31 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _create: function() {
-        //TODO: Implement
+        // Save pointers to associated Run Task widget or parameter
+        this._setPointers();
+
+        // Set variables
+        var widget = this;
+
+        // Add classes and child elements
+        this.element.addClass("choice-widget");
+        this.element.append(
+            $("<select></select>")
+                .addClass("choice-widget-select")
+                .change(function() {
+                    widget._value = $(this).val();
+                })
+        );
+
+        // Apply the choices and default
+        this._applyChoices();
+        this._applyDefault();
+
+        // Get the current value
+        this._value = this.element.find(".choice-widget-select").val();
+
+        // Hide elements if not in use by options
+        this._setDisplayOptions();
     },
 
     /**
@@ -587,7 +611,8 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _destroy: function() {
-        //TODO: Implement
+        this.element.removeClass("choice-widget");
+        this.element.empty();
     },
 
     /**
@@ -597,9 +622,9 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _setOptions: function(options) {
-        //TODO: Implement
         this._superApply(arguments);
         this._setPointers();
+        this._setDisplayOptions();
     },
 
     /**
@@ -610,9 +635,9 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _setOption: function(key, value) {
-        //TODO: Implement
         this._super(key, value);
         this._setPointers();
+        this._setDisplayOptions();
     },
 
     /**
@@ -631,7 +656,55 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _setDisplayOptions: function() {
+        this._applyChoices();
+        this._applyDefault();
+    },
 
+    _applyChoices: function() {
+        if (typeof this.options.choices !== 'Array' && typeof this.options.choices !== 'object') {
+            console.log("Error reading choices in Choice Input, aborting");
+            return;
+        }
+
+        var select = this.element.find(".choice-widget-select");
+        select.empty();
+
+        for (var i = 0; i < this.options.choices.length; i++) {
+            var choice = this.options.choices[i];
+
+            if (choice.length !== 2) {
+                console.log("Malformed choice option in Choice Input, skipping");
+                continue;
+            }
+
+            select.append(
+                $("<option></option>")
+                    .text(choice[0])
+                    .val(choice[1])
+            );
+        }
+    },
+
+    _applyDefault: function() {
+        this.element.find(".choice-widget-select").val(this.options.default);
+    },
+
+    /**
+     * Gets or sets the value of the input
+     *
+     * @param val - the value for the setter
+     * @returns {_value|string}
+     */
+    value: function(val) {
+        // Do setter
+        if (val) {
+            this._value = val;
+            this.element.find(".choice-widget-select").val(val);
+        }
+        // Do getter
+        else {
+            return this._value;
+        }
     }
 });
 

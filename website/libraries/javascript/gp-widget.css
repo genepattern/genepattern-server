@@ -108,3 +108,11 @@
 .text-widget-input {
     width: 570px;
 }
+
+/*
+ * Choice Input Styles
+ */
+
+.choice-widget-select {
+    width: 570px;
+}
