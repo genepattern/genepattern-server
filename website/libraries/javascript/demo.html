@@ -109,13 +109,15 @@
         </script>
         <br/><br/>
         <div id="choice-input"></div>
-        <script type="text/javascript">$("#choice-input").choiceInput({
-            choices: [
-                    ["choice 1 key", "choice 1 value"],
-                    ["choice 2 key", "choice 2 value"],
-                    ["choice 3 key", "choice 3 value"]
-            ]
-        });</script>
+        <script type="text/javascript">
+            $("#choice-input").choiceInput({
+                choices: [
+                        ["choice 1 key", "choice 1 value"],
+                        ["choice 2 key", "choice 2 value"],
+                        ["choice 3 key", "choice 3 value"]
+                ]
+            });
+        </script>
 
         <h2>Text Input Widget</h2>
         <button id="make-text">Make Text</button>
@@ -154,7 +156,16 @@
 
         <h2>Run Task Widget</h2>
         <div id="run-task"></div>
-        <script type="text/javascript">$("#run-task").runTask();</script>
+        <script type="text/javascript">
+            gp.setServer("http://127.0.0.1:8080/gp");
+            gp.tasks({
+                success: function() {
+                    $("#run-task").runTask({
+                        name: "ConvertLineEndings"
+                    });
+                }
+            });
+        </script>
 
         <h2>Job Results Widget</h2>
         <div id="job-results"></div>

@@ -116,3 +116,106 @@
 .choice-widget-select {
     width: 570px;
 }
+
+/*
+ * Run Task Styles
+ */
+
+.task-widget {
+    width: 800px;
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+}
+
+.task-widget-header {
+    background-color: #e5ebe9;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 100%;
+}
+
+.task-widget-name {
+    margin-left: 5px;
+    margin-right: 20px;
+}
+
+.task-widget-version {
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.task-widget-doc {
+    color: #000099;
+    display: block;
+    font-size: 11px;
+    font-weight: normal;
+    float: right;
+    margin-right: 10px;
+}
+
+.task-widget-message-success {
+    background-color: #f1fcf3;
+    border: 1px solid #a3cfa5;
+    border-radius: 5px;
+    font-size: 9pt;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+}
+
+.task-widget-message-error {
+    background-color: #fcf1f3;
+    border: 1px solid #cfa3a5;
+    border-radius: 5px;
+    font-size: 9pt;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+}
+
+.task-widget-subheader {
+    border-bottom: 1px solid #466eb6;
+}
+
+.task-widget-desc {
+    color: #000000;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 12px;
+    line-height: 14px;
+    margin: 7px 10px;
+}
+
+.task-widget-run {
+    overflow: auto;
+    margin-left: 20px;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 11px;
+    padding-top: 10px;
+}
+
+.task-widget-run-button {
+    float: right;
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+    font-size: 11px;
+    padding: 1px;
+    font-weight: normal;
+    margin-right: 10px;
+    position: relative;
+    top: -10px;
+}
+
+.task-widget-form {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.task-widget-footer {
+    border-top: 1px solid #466eb6;
+    padding-top: 10px;
+}

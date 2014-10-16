@@ -8,7 +8,7 @@
 "use strict";
 
 /**
- * Widget for inputing a file into a GenePattern Notebook.
+ * Widget for file input into a GenePattern Notebook.
  * Used for file inputs by the runTask widget.
  *
  * Supported Features:
@@ -426,6 +426,18 @@ $.widget("gp.fileInput", {
 });
 
 
+/**
+ * Widget for text input into a GenePattern Notebook.
+ * Used for text, number and password inputs by the runTask widget.
+ *
+ * Supported Features:
+ *      Text input
+ *      Password input
+ *      Number input
+ *
+ * Non-Supported Features:
+ *      Directory input
+ */
 $.widget("gp.textInput", {
     options: {
         type: "text", // Accepts: text, number, password
@@ -562,6 +574,17 @@ $.widget("gp.textInput", {
 });
 
 
+/**
+ * Widget for choice input into a GenePattern Notebook.
+ * Used for choice inputs by the runTask widget.
+ *
+ * Supported Features:
+ *      Simple Choice Input
+ *
+ * Non-Supported Features:
+ *      File choice input
+ *      Dynamic choice parameters
+ */
 $.widget("gp.choiceInput", {
     options: {
         choices: [], // Assumes an array of [key, value] arrays
@@ -660,6 +683,11 @@ $.widget("gp.choiceInput", {
         this._applyDefault();
     },
 
+    /**
+     * Applies the choices options, setting them to the provided values
+     *
+     * @private
+     */
     _applyChoices: function() {
         if (typeof this.options.choices !== 'Array' && typeof this.options.choices !== 'object') {
             console.log("Error reading choices in Choice Input, aborting");
@@ -685,6 +713,11 @@ $.widget("gp.choiceInput", {
         }
     },
 
+    /**
+     * Applies the option for default, resetting the selected option
+     *
+     * @private
+     */
     _applyDefault: function() {
         this.element.find(".choice-widget-select").val(this.options.default);
     },
@@ -737,7 +770,86 @@ $.widget("gp.runTask", {
      * @private
      */
     _create: function() {
-        //TODO: Implement
+        // Set variables
+        var widget = this;
+        var identifier = this._getIdentifier();
+        this._task = this._loadTask(identifier);
+
+        // Add classes and scaffolding
+        this.element.addClass("task-widget");
+        this.element.append( // Attach header
+            $("<div></div>")
+                .addClass("task-widget-header")
+                .append(
+                    $("<span></span>")
+                        .addClass("task-widget-name")
+                )
+                .append(
+                    $("<span></span>")
+                        .addClass("task-widget-version")
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("task-widget-doc")
+                        .attr("target", "_blank")
+                        .text("Documentation")
+                )
+        );
+        this.element.append( // Attach message box
+            $("<div></div>")
+                .addClass("task-widget-message")
+                .css("display", "none")
+        );
+        this.element.append( // Attach subheader
+            $("<div></div>")
+                .addClass("task-widget-subheader")
+                .append(
+                    $("<div></div>")
+                        .addClass("task-widget-desc")
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("task-widget-run")
+                        .append(
+                            $("<button></button>")
+                                .addClass("task-widget-run-button")
+                                .text("Run")
+                                .button()
+                                .click(function() {
+                                    widget.validate();
+                                    widget.submit();
+                                })
+                        )
+                        .append("* Required Field")
+                )
+        );
+        this.element.append( // Attach form placeholder
+            $("<div></div>")
+                .addClass("task-widget-form")
+        );
+        this.element.append( // Attach footer
+            $("<div></div>")
+                .addClass("task-widget-footer")
+                .append(
+                    $("<div></div>")
+                        .addClass("task-widget-run")
+                        .append(
+                            $("<button></button>")
+                                .addClass("task-widget-run-button")
+                                .text("Run")
+                                .button()
+                                .click(function() {
+                                    widget.validate();
+                                    widget.submit();
+                                })
+                        )
+                        .append("* Required Field")
+                )
+        );
+
+        // Make call to build the header & form
+        this._buildHeader();
+        this._buildForm();
     },
 
     /**
@@ -746,7 +858,8 @@ $.widget("gp.runTask", {
      * @private
      */
     _destroy: function() {
-        //TODO: Implement
+        this.element.removeClass("task-widget");
+        this.element.empty();
     },
 
     /**
@@ -756,7 +869,11 @@ $.widget("gp.runTask", {
      * @private
      */
     _setOptions: function(options) {
-        //TODO: Implement
+        this._superApply(arguments);
+        var identifier = this._getIdentifier();
+        this._task = this._loadTask(identifier);
+        this._buildHeader();
+        this._buildForm();
     },
 
     /**
@@ -767,7 +884,102 @@ $.widget("gp.runTask", {
      * @private
      */
     _setOption: function(key, value) {
-        //TODO: Implement
+        this._super(key, value);
+    },
+
+    /**
+     * Returns an identifier for attaining the Task object from the server
+     *
+     * @returns {string|null}
+     * @private
+     */
+    _getIdentifier: function() {
+        if (this.options.lsid) { return this.options.lsid; }
+        else if (this.options.name) { return this.options.name }
+        else {
+            throw "Error creating Run Task widget! No LSID or name!";
+        }
+    },
+
+    /**
+     * Returns the Task object based on the identifier
+     *
+     * @param identifier - String containing name or LSID
+     * @returns {gp.Task|null}
+     * @private
+     */
+    _loadTask: function(identifier) {
+        return gp.task(identifier);
+    },
+
+    /**
+     * Build the header and return the Task object
+     *
+     * @private
+     */
+    _buildHeader: function() {
+        this.element.find(".task-widget-name").empty().text(this._task.name());
+        this.element.find(".task-widget-version").empty().text("Version " + this._task.version());
+        this.element.find(".task-widget-doc").attr("href", this._task.documentation());
+        this.element.find(".task-widget-desc").empty().text(this._task.description());
+    },
+
+    /**
+     * Make the call to the server to get the params and build the form
+     *
+     * @private
+     */
+    _buildForm: function() {
+        var widget = this;
+
+        this._task.params({
+            success: function(response, task) {
+                // TODO: Implement
+            },
+            error: function(exception) {
+                widget.errorMessage("Could not load task: " + exception.statusText);
+            }
+        });
+    },
+
+    /**
+     * Show a success message to the user
+     *
+     * @param message - String containing the message to show
+     */
+    successMessage: function(message) {
+        var messageBox = this.element.find(".task-widget-message");
+        messageBox.removeClass("task-widget-message-error");
+        messageBox.addClass("task-widget-message-success");
+        messageBox.text(message);
+        messageBox.show("shake", {}, 500);
+    },
+
+    /**
+     * Show an error message to the user
+     *
+     * @param message - String containing the message to show
+     */
+    errorMessage: function(message) {
+        var messageBox = this.element.find(".task-widget-message");
+        messageBox.removeClass("task-widget-message-success");
+        messageBox.addClass("task-widget-message-error");
+        messageBox.text(message);
+        messageBox.show("shake", {}, 500);
+    },
+
+    /**
+     * Validate the current Run Task form
+     */
+    validate: function() {
+        // TODO
+    },
+
+    /**
+     * Submit the Run Task form to the server
+     */
+    submit: function() {
+        // TODO
     }
 });
 
