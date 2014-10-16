@@ -32,11 +32,11 @@ public class JobTagManager
         addTag(jobTag);
     }
 
-    static public void addTag(JobTag jobTag)
+    static public boolean addTag(JobTag jobTag)
     {
         JobTagDao jobTagDao  = new JobTagDao();
 
-        jobTagDao.insertJobTag(jobTag);
+        return jobTagDao.insertJobTag(jobTag);
     }
 
     static public List<JobTag> selectAllJobTags(int jobNo)

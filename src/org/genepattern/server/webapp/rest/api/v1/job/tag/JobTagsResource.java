@@ -87,10 +87,10 @@ public class JobTagsResource
 
             jobTag.setTagObj(tag);
 
-            JobTagManager.addTag(jobTag);
+            boolean success  =JobTagManager.addTag(jobTag);
 
             JSONObject result = new JSONObject();
-            result.put("success", true);
+            result.put("success", success);
             result.put("jobTagId", jobTag.getId());
 
             return Response.ok().entity(result.toString()).build();

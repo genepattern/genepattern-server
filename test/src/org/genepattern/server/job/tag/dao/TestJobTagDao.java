@@ -88,7 +88,8 @@ public class TestJobTagDao
         jobTag.setTagObj(tag);
         jobTag.setGpJobNo(gpJobNo);
         jobTag.setDateTagged(date);
-        jobTagDao.insertJobTag(jobTag);
+        boolean success = jobTagDao.insertJobTag(jobTag);
+        assertTrue("insert success", success);
 
         String tagText2 = "insert jobtag 2";
         Date date2 = new Date();
@@ -135,7 +136,8 @@ public class TestJobTagDao
         jobTag.setTagObj(tag);
 
         //add a tag
-        jobTagDao.insertJobTag(jobTag);
+        boolean success = jobTagDao.insertJobTag(jobTag);
+        assertTrue("insert success", success);
 
         List<JobTag> jobTagList = jobTagDao.selectJobTags(gpJobNo);
         assertEquals("num tags", 1, jobTagList.size());
@@ -149,7 +151,7 @@ public class TestJobTagDao
         assertEquals("tag text", jobTag.getTagObj().getTag(), tagResult.getTagObj().getTag());
 
         //now delete the tag
-        boolean success = jobTagDao.deleteJobTag(jobTag.getId());
+        success = jobTagDao.deleteJobTag(jobTag.getId());
         assertTrue("success", success);
 
         //verify tag is not still in the database

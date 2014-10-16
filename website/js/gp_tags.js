@@ -1,4 +1,5 @@
 var jobTagToIdMap = {};
+var jobTagsInput;
 
 function updateTagsTotal()
 {
@@ -27,6 +28,8 @@ function addTag(tag)
             }
             else
             {
+                alert("An error occurred while adding tag " + tag);
+                console.log("An error occurred while adding tag " + tag);
                 $('#statusJobTags').removeTag(tag);
             }
         },
@@ -57,9 +60,20 @@ function deleteTag(tag)
 
             console.log(response);
 
-            delete jobTagToIdMap[tag];
+            if(response.success)
+            {
+                delete jobTagToIdMap[tag];
+                updateTagsTotal();
+            }
+            else
+            {
+                alert("An error occurred while deleting " + tag);
+                console.log("An error occurred while deleting tag " + tag);
+                var tagValues = Object.keys(jobTagToIdMap);
+                tagValues.sort();
 
-            updateTagsTotal();
+                jobTagsInput.importTags(tagValues.join(","));
+            }
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
@@ -69,11 +83,12 @@ function deleteTag(tag)
 }
 
 $(function() {
-    var jobTagsInput = $('#statusJobTags').tagsInput(
+    jobTagsInput = $('#statusJobTags').tagsInput(
     {
         defaultText:'Add tags...',
         width: '98%',
         height: '40px',
+        interactive: true,
         onAddTag: addTag,
         onRemoveTag: deleteTag,
         autocomplete_url: '/gp/rest/v1/tags/',

@@ -16,11 +16,12 @@ public class JobTagDao
 {
     private static final Logger log = Logger.getLogger(JobTagDao.class);
 
-    public void insertJobTag(final JobTag jobTag)
+    public boolean insertJobTag(final JobTag jobTag)
     {
+        boolean result = false;
         if (jobTag==null) {
             log.error("No entry to update");
-            return;
+            return false;
         }
         final boolean isInTransaction= HibernateUtil.isInTransaction();
 
@@ -42,10 +43,12 @@ public class JobTagDao
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
+
+            result = true;
         }
         catch (Throwable t) {
 
-            log.error("Error adding tag for gpJobNo="+jobTag.getGpJobNo(), t);
+            log.error("Error adding tag for gpJobNo=" + jobTag.getGpJobNo(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -53,6 +56,8 @@ public class JobTagDao
                 HibernateUtil.closeCurrentSession();
             }
         }
+
+        return result;
     }
 
     public List<JobTag> selectJobTags(final int gpJobNo) {
