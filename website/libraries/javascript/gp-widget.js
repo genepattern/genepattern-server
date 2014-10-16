@@ -931,15 +931,72 @@ $.widget("gp.runTask", {
      */
     _buildForm: function() {
         var widget = this;
+        this.element.find(".task-widget-form").empty();
 
         this._task.params({
-            success: function(response, task) {
-                // TODO: Implement
+            success: function(response, params) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    widget._addParam(param);
+                }
             },
             error: function(exception) {
                 widget.errorMessage("Could not load task: " + exception.statusText);
             }
         });
+    },
+
+    /**
+     * Add the parameter to the form
+     *
+     * @param param {gp.Param}
+     * @private
+     */
+    _addParam: function(param) {
+        var form = this.element.find(".task-widget-form");
+        var required = param.optional() ? "" : "*";
+
+        var paramBox = $("<div></div>")
+            .addClass("task-widget-param")
+            .attr("name", param.name())
+            .append(
+                $("<div></div>")
+                    .addClass("task-widget-param-name")
+                    .text(param.name() + required)
+            )
+            .append(
+                $("<div></div>")
+                    .addClass("task-widget-param-wrapper")
+                    .append(
+                    $("<div></div>")
+                        .addClass("task-widget-param-input")
+                    )
+                    .append(
+                    $("<div></div>")
+                        .addClass("task-widget-param-desc")
+                        .text("DESCRIPTION PLACEHOLDER")
+                    )
+            );
+        form.append(paramBox);
+
+        // Add the correct input widget
+        if (param.type() === "java.io.File") {
+            paramBox.find(".task-widget-param-input").fileInput({
+                runTask: this,
+                param: param
+            });
+        }
+        else if (param.type() === "java.lang.String") {
+            paramBox.find(".task-widget-param-input").textInput({
+                runTask: this,
+                param: param,
+                default: param.defaultValue()
+            });
+        }
+        else {
+            // TODO: Handle choice params
+            console.log("Unknown input type for Run Task widget");
+        }
     },
 
     /**

@@ -211,8 +211,35 @@
 }
 
 .task-widget-form {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.task-widget-param {
+    margin: 20px;
+}
+
+.task-widget-param-name {
+    display: inline-block;
+    width: 150px;
+    font-weight: bold;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 11px;
+    word-break: break-all;
+    vertical-align: top;
+    padding-top: 10px;
+}
+
+.task-widget-param-wrapper {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.task-widget-param-desc {
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 11px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .task-widget-footer {
