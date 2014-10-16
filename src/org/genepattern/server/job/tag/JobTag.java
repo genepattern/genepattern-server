@@ -5,6 +5,7 @@ import org.genepattern.server.tag.Tag;
 
 import javax.persistence.*;
 import java.util.Date;
+import org.hibernate.annotations.Cascade;
 
 /**
  * Created by nazaire on 10/7/14.
@@ -19,7 +20,8 @@ public class JobTag
     @GeneratedValue
     private int id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
+    @Cascade(value=org.hibernate.annotations.CascadeType.SAVE_UPDATE)
     @JoinColumn(name = "tag_id", nullable=false)
     private Tag tagObj;
 
