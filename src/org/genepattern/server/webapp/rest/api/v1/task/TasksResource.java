@@ -608,6 +608,7 @@ public class TasksResource {
                 }
                 final JSONObject attrObj = new JSONObject();
                 attrObj.put("attributes", attributesJson);
+                attrObj.put("description", pinfo.getDescription());
                 final JSONObject paramJson = new JSONObject();
                 paramJson.put(pinfo.getName(), attrObj);
                 paramsJson.put(paramJson);

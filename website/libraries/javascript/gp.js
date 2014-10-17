@@ -776,6 +776,7 @@ gp.JobInput = function(task) {
 gp.Param = function(paramJson) {
     // Define class members
     this._name = null;
+    this._description = null;
     this._values = null;
     this._batchParam = null;
     this._groupId = null;
@@ -793,6 +794,7 @@ gp.Param = function(paramJson) {
         if (paramJson) {
             if (paramJson) {
                 this._name = Object.keys(paramJson)[0];
+                this._description = paramJson[this._name]['description'];
                 this._values = null;
                 this._batchParam = false;
                 this._groupId = null;
@@ -879,6 +881,21 @@ gp.Param = function(paramJson) {
         }
         else {
             return this._name;
+        }
+    };
+
+    /**
+     * Returns or sets the description of the parameter
+     *
+     * @param [description=optional] - The description of the parameter
+     * @returns {string}
+     */
+    this.description = function(description) {
+        if (description !== undefined) {
+            this._description = description;
+        }
+        else {
+            return this._description;
         }
     };
 

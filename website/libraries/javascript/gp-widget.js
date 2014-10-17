@@ -974,7 +974,7 @@ $.widget("gp.runTask", {
                     .append(
                     $("<div></div>")
                         .addClass("task-widget-param-desc")
-                        .text("DESCRIPTION PLACEHOLDER")
+                        .text(param.description())
                     )
             );
         form.append(paramBox);
