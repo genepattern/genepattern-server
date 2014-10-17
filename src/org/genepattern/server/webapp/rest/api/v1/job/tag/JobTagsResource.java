@@ -80,7 +80,7 @@ public class JobTagsResource
             Tag tag = new Tag();
             tag.setDateAdded(date);
 
-            tagText = StringEscapeUtils.unescapeHtml(tagText);
+            tagText = StringEscapeUtils.escapeHtml(tagText);
             tag.setTag(tagText);
             tag.setUserId(userContext.getUserId());
             tag.setPublicTag(false);
