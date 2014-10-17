@@ -98,7 +98,12 @@
                     $(saveTreeSelected).removeClass("saveTreeSelected");
                     $(node).addClass("saveTreeSelected");
                     saveTreeSelected = node;
-                    $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
+                    if ($(node).attr("href") === "https://dm.genomespace.org/datamanager/v1.0/file/Home") { // Disable Home directory
+                        $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("disable");
+                    }
+                    else { // Enable everything else
+                        $("#genomeSpaceSaveDialog").parent().find(".ui-button:first").button("enable");
+                    }
                     return false;
                 }
                 /* ]]> */
