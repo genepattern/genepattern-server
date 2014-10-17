@@ -75,6 +75,7 @@ function deleteTag(tag)
                 jobTagsInput.importTags(tagValues.join(","));
             }
         },
+        dataType: "json",
         error: function (xhr, ajaxOptions, thrownError) {
             console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
             console.log(thrownError);
