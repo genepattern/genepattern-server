@@ -76,7 +76,8 @@
         <script type="text/javascript">
             $("#add-choice").click(function() {
                 var choices = $("#choice-input").choiceInput("option", "choices");
-                choices.push(["New Key " + choices.length+1, "New Value " + choices.length+1]);
+                var length = Object.keys(choices).length;
+                choices[length] = length;
                 $("#choice-input").choiceInput({
                     choices: choices
                 });
@@ -86,7 +87,8 @@
         <script type="text/javascript">
             $("#remove-choice").click(function() {
                 var choices = $("#choice-input").choiceInput("option", "choices");
-                choices.pop();
+                var prop = Object.keys(choices).length > 0 ? Object.keys(choices)[Object.keys(choices).length-1] : "";
+                delete choices[prop];
                 $("#choice-input").choiceInput({
                     choices: choices
                 });
@@ -112,7 +114,7 @@
         <script type="text/javascript">
             $("#choice-input").choiceInput({
                 choices: {
-                    0: 1,
+                    0: 0,
                     1: 1,
                     2: 2
                 }

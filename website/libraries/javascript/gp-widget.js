@@ -619,9 +619,6 @@ $.widget("gp.choiceInput", {
 
         // Hide elements if not in use by options
         this._setDisplayOptions();
-
-        // Get the current value
-        this._value = this.element.find(".choice-widget-select").val();
     },
 
     /**
@@ -713,6 +710,7 @@ $.widget("gp.choiceInput", {
      */
     _applyDefault: function() {
         this.element.find(".choice-widget-select").val(this.options.default);
+        this._value = this.element.find(".choice-widget-select").val();
     },
 
     /**
