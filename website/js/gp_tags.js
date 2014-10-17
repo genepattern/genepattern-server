@@ -182,6 +182,14 @@ $(function() {
     });
 
     //keep track of focus events in the tag text area
+    $("#tagsContent").find("input").last().keyup(function()
+    {
+        var value = $(this).val();
+
+        $(this).val(value.toLowerCase());
+    });
+
+    //keep track of focus events in the tag text area
     $("#tagsContent").find("input").last().focus(function()
     {
         $.cookie("show_tags_focus"+currentJobNumber, true);
