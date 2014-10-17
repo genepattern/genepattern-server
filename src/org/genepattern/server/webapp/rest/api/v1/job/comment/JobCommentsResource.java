@@ -70,7 +70,7 @@ public class JobCommentsResource
                     && jobNo.length() >0)
             {
                 String commentText = multivaluedMap.getFirst("text").trim();
-                commentText = StringEscapeUtils.unescapeHtml(commentText);
+                commentText = StringEscapeUtils.escapeHtml(commentText);
                 int gpJobNo = Integer.parseInt(jobNo);
 
                 int parentId = 0;
