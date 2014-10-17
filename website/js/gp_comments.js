@@ -19,6 +19,33 @@ function updateCommentTotalAfterLoad(event)
     {
         $("#commentsContent").find(".posted-comments-postbox").find("textarea").focus();
     }
+
+
+    //only execute this once
+    if($("#jobCommentsBtn").length == 0)
+    {
+        //the jqueryinput tags plugin submits a comment when ENTER button is pressed
+        //instead we want to the user to press a submit button
+
+        var newCommentTextArea = $("#commentsContent").find(".posted-comments-postbox").find("textarea").clone(true);
+        newCommentTextArea.addClass("newJobComment");
+        $("#commentsContent").append(newCommentTextArea);
+        $(".newJobComment").hide();
+
+        $("#commentsContent").find(".posted-comments-postbox").find("textarea").off("keypress");
+
+        var submitComment = $("<button id='jobCommentsBtn'>Submit Comment</button>");
+        submitComment.button().click(function()
+        {
+            var comment = $("#commentsContent").find(".posted-comments-postbox").find("textarea").val();
+            $(".newJobComment").val(comment);
+
+            //trigger enter event
+            $(".newJobComment").trigger(jQuery.Event( 'keypress', { keyCode: 13, which: 13 } ));
+        });
+
+        $("#commentsContent").find(".posted-comments-postbox").append(submitComment);
+    }
 }
 
 function updateCommentTotalAfterUpdate(event)
@@ -30,6 +57,8 @@ function updateCommentTotalAfterUpdate(event)
         totalComments = event.total_comment;
     }
     $("#commentHeaderTotal").empty().append("(" +  totalComments + ")");
+
+    $.removeCookie("show_comments_value"+currentJobNumber);
 }
 
 function setupComments()
@@ -48,6 +77,8 @@ function setupComments()
         onUpdate: updateCommentTotalAfterUpdate,
         transition: 'none'
     });
+
+
 }
 
 $(function()

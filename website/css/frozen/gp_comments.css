@@ -33,3 +33,11 @@ img {
     vertical-align: middle;
 }
 
+#jobCommentsBtn
+{
+    margin-left: 10px;
+    margin-top: 3px;
+    margin-bottom: 6px;
+    font-size: 91%;
+}
+
