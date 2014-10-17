@@ -777,6 +777,7 @@ gp.Param = function(paramJson) {
     // Define class members
     this._name = null;
     this._description = null;
+    this._choices = null;
     this._values = null;
     this._batchParam = null;
     this._groupId = null;
@@ -795,6 +796,7 @@ gp.Param = function(paramJson) {
             if (paramJson) {
                 this._name = Object.keys(paramJson)[0];
                 this._description = paramJson[this._name]['description'];
+                this._choices = paramJson[this._name]['choices'] ? paramJson[this._name]['choices'] : null;
                 this._values = null;
                 this._batchParam = false;
                 this._groupId = null;
@@ -896,6 +898,22 @@ gp.Param = function(paramJson) {
         }
         else {
             return this._description;
+        }
+    };
+
+    /**
+     * Returns or sets the choices for the parameter
+     *
+     * @param [choices=optional] - The choices for the parameter.
+     *              Assumes a object of key : value pairings.
+     * @returns {string}
+     */
+    this.choices = function(choices) {
+        if (choices !== undefined) {
+            this._choices = choices;
+        }
+        else {
+            return this._choices;
         }
     };
 

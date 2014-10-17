@@ -233,6 +233,7 @@
 .task-widget-param-wrapper {
     display: inline-block;
     vertical-align: top;
+    width: 600px;
 }
 
 .task-widget-param-desc {

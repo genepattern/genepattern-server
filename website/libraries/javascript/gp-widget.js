@@ -587,7 +587,7 @@ $.widget("gp.textInput", {
  */
 $.widget("gp.choiceInput", {
     options: {
-        choices: [], // Assumes an array of [key, value] arrays
+        choices: [], // Assumes an object of key, value pairs
         default: null,
 
         // Pointers to associated runTask widget
@@ -617,15 +617,11 @@ $.widget("gp.choiceInput", {
                 })
         );
 
-        // Apply the choices and default
-        this._applyChoices();
-        this._applyDefault();
+        // Hide elements if not in use by options
+        this._setDisplayOptions();
 
         // Get the current value
         this._value = this.element.find(".choice-widget-select").val();
-
-        // Hide elements if not in use by options
-        this._setDisplayOptions();
     },
 
     /**
@@ -689,7 +685,7 @@ $.widget("gp.choiceInput", {
      * @private
      */
     _applyChoices: function() {
-        if (typeof this.options.choices !== 'Array' && typeof this.options.choices !== 'object') {
+        if (typeof this.options.choices !== 'object') {
             console.log("Error reading choices in Choice Input, aborting");
             return;
         }
@@ -697,19 +693,16 @@ $.widget("gp.choiceInput", {
         var select = this.element.find(".choice-widget-select");
         select.empty();
 
-        for (var i = 0; i < this.options.choices.length; i++) {
-            var choice = this.options.choices[i];
+        for (var key in this.options.choices) {
+            if (this.options.choices.hasOwnProperty(key)) {
+                var value = this.options.choices[key];
 
-            if (choice.length !== 2) {
-                console.log("Malformed choice option in Choice Input, skipping");
-                continue;
+                select.append(
+                    $("<option></option>")
+                        .text(key)
+                        .val(value)
+                );
             }
-
-            select.append(
-                $("<option></option>")
-                    .text(choice[0])
-                    .val(choice[1])
-            );
         }
     },
 
@@ -986,6 +979,14 @@ $.widget("gp.runTask", {
                 param: param
             });
         }
+        else if (param.choices()) {
+            paramBox.find(".task-widget-param-input").choiceInput({
+                runTask: this,
+                param: param,
+                choices: param.choices(),
+                default: param.defaultValue()
+            });
+        }
         else if (param.type() === "java.lang.String") {
             paramBox.find(".task-widget-param-input").textInput({
                 runTask: this,
@@ -993,8 +994,15 @@ $.widget("gp.runTask", {
                 default: param.defaultValue()
             });
         }
+        else if (param.type() === "java.lang.Integer") {
+            paramBox.find(".task-widget-param-input").textInput({
+                runTask: this,
+                param: param,
+                default: param.defaultValue(),
+                type: "number"
+            });
+        }
         else {
-            // TODO: Handle choice params
             console.log("Unknown input type for Run Task widget");
         }
     },

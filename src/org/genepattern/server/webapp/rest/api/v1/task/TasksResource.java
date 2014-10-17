@@ -609,6 +609,21 @@ public class TasksResource {
                 final JSONObject attrObj = new JSONObject();
                 attrObj.put("attributes", attributesJson);
                 attrObj.put("description", pinfo.getDescription());
+
+                if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
+                    final JSONObject choicesObj = new JSONObject();
+                    for(final Object key : pinfo.getChoices().keySet()) {
+                        final Object value = pinfo.getChoices().get(key);
+                        if (value != null) {
+                            choicesObj.put(key.toString(), value.toString());
+                        }
+                        else {
+                            choicesObj.put(key.toString(), key.toString());
+                        }
+                    }
+                    attrObj.put("choices", choicesObj);
+                }
+
                 final JSONObject paramJson = new JSONObject();
                 paramJson.put(pinfo.getName(), attrObj);
                 paramsJson.put(paramJson);
