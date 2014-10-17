@@ -27,7 +27,7 @@ create table tag (
  public_tag number(1,0) default 0 not null,
  tag varchar(511) not null,
  user_id varchar(255) not null,
- primary key (id)
+ primary key (tag_id)
 );
 
 CREATE SEQUENCE TAG_SEQ
