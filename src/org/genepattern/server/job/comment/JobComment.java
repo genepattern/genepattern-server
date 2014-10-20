@@ -1,7 +1,11 @@
 package org.genepattern.server.job.comment;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.hibernate.validator.Size;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -124,5 +128,19 @@ public class JobComment {
     public void setComment(final String comment)
     {
         this.comment = comment;
+    }
+
+    public JSONObject toJson() throws JSONException
+    {
+        JSONObject jobComment = new JSONObject();
+        jobComment.put("comment_id", getId());
+        jobComment.put("parent_id", getParentId());
+        jobComment.put("created_by", getUserId());
+        jobComment.put("fullname", getUserId());
+        jobComment.put("posted_date", DateUtil.toTimeAgoUtc(getPostedDate()));
+        jobComment.put("text", getComment());
+        jobComment.put("childrens", new JSONArray());
+
+        return jobComment;
     }
 }

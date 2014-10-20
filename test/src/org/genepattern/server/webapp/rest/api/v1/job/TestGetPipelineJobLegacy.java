@@ -7,8 +7,6 @@ import java.util.Date;
 
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
-import org.genepattern.server.webapp.rest.api.v1.job.GetJobException;
-import org.genepattern.server.webapp.rest.api.v1.job.GetPipelineJobLegacy;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONException;
@@ -74,7 +72,7 @@ public class TestGetPipelineJobLegacy {
     public void testExecutionLog_v_3_8_1() throws GetJobException, JSONException {
         
         
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, true, true);
         Assert.assertEquals("status.executionLogLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONObject("status").get("executionLogLocation")
@@ -93,7 +91,7 @@ public class TestGetPipelineJobLegacy {
      */
     @Test
     public void testExecutionLog_v_3_8_2() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, true, true);
         Assert.assertEquals("logFiles[0].href",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONArray("logFiles")
@@ -121,7 +119,7 @@ public class TestGetPipelineJobLegacy {
     
     @Test
     public void testStderrLocation() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, true, true);
         Assert.assertEquals("status.stderrLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/stderr.txt",
                 jobObj.getJSONObject("status")

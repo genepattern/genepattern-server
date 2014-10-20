@@ -1,12 +1,10 @@
 package org.genepattern.server.job.comment;
 
-import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.comment.dao.JobCommentDao;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,4 +58,27 @@ public class JobCommentManager
         return jobCommentDao.selectJobComments(jobNo);
     }
 
+    static public JSONObject createJobCommentBundle(String userId, List<JobComment> jobComments) throws JSONException
+    {
+        JSONObject jobCommentsResult = new JSONObject();
+
+        JSONArray comments = new JSONArray();
+        jobCommentsResult.put("comments", comments);
+        for(JobComment jobComment : jobComments)
+        {
+            comments.put(jobComment.toJson());
+        }
+
+        JSONObject user = new JSONObject();
+        user.put("user_id", userId);
+        user.put("fullname", userId);
+        user.put("is_logged_in", true);
+        user.put("is_add_allowed", true);
+        user.put("is_edit_allowed", true);
+        jobCommentsResult.put("user", user);
+
+        jobCommentsResult.put("total_comment", jobComments.size());
+
+        return jobCommentsResult;
+    }
 }

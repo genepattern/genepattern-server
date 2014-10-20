@@ -2,6 +2,8 @@ package org.genepattern.server.tag;
 
 import org.apache.log4j.Logger;
 import org.hibernate.validator.Size;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -90,6 +92,17 @@ public class Tag
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public JSONObject toJSON() throws JSONException
+    {
+        JSONObject tag = new JSONObject();
+        tag.put("id", getId());
+        tag.put("user_id", getUserId());
+        tag.put("date_added", getDateAdded());
+        tag.put("tag", getTag());
+        tag.put("is_public", isPublicTag());
+        return tag;
     }
 }
 

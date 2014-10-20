@@ -33,17 +33,23 @@ public class InitPipelineJson implements JobInfoVisitor {
     private final String jobsResourcePath;
     private boolean includeSummary=false;
     private final boolean includeOutputFiles;
+    private final boolean includeComments;
+    private final boolean includeTags;
     private JSONObject jobJson;
     //create an ordered Map of jobId -> JSONObject
     private final Map<Integer,JSONObject> jobMap=new LinkedHashMap<Integer,JSONObject>();
     private final List<GpFilePath> outputFiles=new ArrayList<GpFilePath>();
 
-    public InitPipelineJson(final GpContext userContext, final String gpUrl, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeOutputFiles) {
+    public InitPipelineJson(final GpContext userContext, final String gpUrl, final String jobsResourcePath,
+                            final JobInfo jobInfo, final boolean includeOutputFiles, final boolean includeComments,
+                            final boolean includeTags) {
         this.gpUrl=gpUrl;
         this.jobsResourcePath=jobsResourcePath;
         this.jobInfo=jobInfo;
         this.userContext = userContext;
         this.includeOutputFiles=includeOutputFiles;
+        this.includeComments = includeComments;
+        this.includeTags = includeTags;
     }
     public void setIncludeSummary(final boolean includeSummary) {
         this.includeSummary=includeSummary;
@@ -86,7 +92,7 @@ public class InitPipelineJson implements JobInfoVisitor {
         }
         JSONObject jobJson=jobMap.get(jobInfo.getJobNumber());
         if (jobJson==null) {
-            jobJson=GetPipelineJobLegacy.initJsonObject(gpUrl, jobInfo, includeOutputFiles);
+            jobJson=GetPipelineJobLegacy.initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
             jobMap.put(jobInfo.getJobNumber(), jobJson);                
         }
         return jobJson;

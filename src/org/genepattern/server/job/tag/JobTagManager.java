@@ -3,6 +3,8 @@ package org.genepattern.server.job.tag;
 import org.apache.log4j.Logger;
 import org.genepattern.server.job.tag.dao.JobTagDao;
 import org.genepattern.server.tag.Tag;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.Date;
 import java.util.List;
@@ -51,5 +53,16 @@ public class JobTagManager
         JobTagDao jobTagDao  = new JobTagDao();
 
         return jobTagDao.deleteJobTag(jobTagId);
+    }
+
+    static public JSONArray createJobTagBundle(List<JobTag> jobTags) throws JSONException
+    {
+        JSONArray jt = new JSONArray();
+        for(JobTag jobTag : jobTags)
+        {
+            jt.put(jobTag.toJson());
+        }
+
+        return jt;
     }
 }

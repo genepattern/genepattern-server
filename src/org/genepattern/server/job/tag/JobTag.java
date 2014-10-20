@@ -5,7 +5,10 @@ import org.genepattern.server.tag.Tag;
 
 import javax.persistence.*;
 import java.util.Date;
+
 import org.hibernate.annotations.Cascade;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by nazaire on 10/7/14.
@@ -69,5 +72,15 @@ public class JobTag
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public JSONObject toJson() throws JSONException
+    {
+        JSONObject jobTag = new JSONObject();
+        jobTag.put("id", getId());
+        jobTag.put("user_id", getUserId());
+        jobTag.put("date_tagged", getDateTagged());
+        jobTag.put("tag", getTagObj().toJSON());
+        return jobTag;
     }
 }

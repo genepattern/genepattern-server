@@ -34,20 +34,20 @@ public class JobTagsResource
 
             if(jobNo == null)
             {
-                throw new Exception("A job number must be specified");
+                throw new Exception("Error loading tags: A job number must be specified");
+            }
+
+            if(userContext == null || userContext.getUserId() == null || userContext.getUserId().length() == 0)
+            {
+                throw new Exception("Error loading tags: A user id must be specified");
             }
 
             int gpJobNo = Integer.parseInt(jobNo);
-            List<JobTag> jobTags = JobTagManager.selectAllJobTags(gpJobNo);
-
             JSONObject result = new JSONObject();
-            JSONObject tags = new JSONObject();
-            for(JobTag jobTag : jobTags)
-            {
-                tags.put(jobTag.getTagObj().getTag(), String.valueOf(jobTag.getId()));
-            }
 
-            result.put("tags", tags);
+            List<JobTag> jobTags = JobTagManager.selectAllJobTags(gpJobNo);
+            result.put("tags", JobTagManager.createJobTagBundle(jobTags));
+
             return Response.ok().entity(result.toString()).build();
         }
         catch (Throwable t) {
@@ -55,7 +55,6 @@ public class JobTagsResource
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
-
 
     public Response addTag(
             @PathParam("jobNo") int jobNo,

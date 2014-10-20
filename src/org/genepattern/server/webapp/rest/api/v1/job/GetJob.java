@@ -10,6 +10,6 @@ import org.json.JSONObject;
  *
  */
 interface GetJob {
-    JSONObject getJob(final GpContext userContext, final String jobId)
+    JSONObject getJob(final GpContext userContext, final String jobId, boolean includeComments, boolean includeTags)
     throws GetJobException;
 }

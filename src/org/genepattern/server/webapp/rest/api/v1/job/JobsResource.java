@@ -123,7 +123,10 @@ import org.json.JSONObject;
 public class JobsResource {
     final static private Logger log = Logger.getLogger(JobsResource.class);
     final static public String URI_PATH="v1/jobs";
-    
+
+    final boolean includeComments = true;
+    final boolean includeTags = true;
+
     ////////////////////////////////////////
     // adding a job
     ////////////////////////////////////////
@@ -301,6 +304,7 @@ public class JobsResource {
         
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=Util.getUserContext(request);
+
         try {
             final String gpUrl=UrlUtil.getGpUrl(request);
             final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
@@ -322,10 +326,26 @@ public class JobsResource {
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (final JobInfo jobInfo : jobInfoResults) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren,
+                        includeOutputFiles, includePermissions, includeComments, includeTags);
                 //decorate with 'self'
                 final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
                 jobObject.put("self", self);
+
+                //check whether to include comments
+                /*if(includeComments)
+                {
+                    JobCommentsResource jcRes = new JobCommentsResource();
+                    jobObject.put("comments", jcRes.loadComments(userContext, jobInfo.getJobNumber()));
+                }
+
+                //check whether to include tags
+                if(includeTags)
+                {
+                    JobTagsResource jcRes = new JobTagsResource();
+                    jobObject.put("tags", jcRes.loadTags(userContext, jobInfo.getJobNumber()));
+                }*/
+
                 jobs.put(jobObject);
             }
 
@@ -393,8 +413,10 @@ public class JobsResource {
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
+
             JSONObject job=null;
-            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles, includePermissions);
+            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
+                    includePermissions, includeComments, includeTags);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
@@ -701,7 +723,8 @@ public class JobsResource {
             final boolean includePermissions=false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
-                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
+                JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles,
+                        includePermissions, includeComments, includeTags);
                 jobs.put(jobObject);
             }
 

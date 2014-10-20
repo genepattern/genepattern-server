@@ -14,7 +14,11 @@ import org.genepattern.server.executor.drm.DbLookup;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
+import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.status.Status;
+import org.genepattern.server.job.tag.JobTag;
+import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -90,28 +94,33 @@ public class GetPipelineJobLegacy implements GetJob {
 
     
     @Override
-    public JSONObject getJob(final GpContext userContext, final String jobId)
+    public JSONObject getJob(final GpContext userContext, final String jobId,
+                             boolean includeComments, boolean includeTags)
     throws GetJobException
     {
         final boolean includeChildren=false; //legacy support
         final boolean includeOutputFiles=true;
-        return getJob(userContext, jobId, includeChildren, includeOutputFiles);
+        return getJob(userContext, jobId, includeChildren, includeOutputFiles, includeComments, includeTags);
     }
 
-    public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren, final boolean includeOutputFiles) throws GetJobException {
+    public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren,
+                             final boolean includeOutputFiles, boolean includeComments, boolean includeTags) throws GetJobException {
         final JobInfo jobInfo=initJobInfo(userContext, jobId);
-        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions);
+        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
-    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren, final boolean includeOutputFiles, final boolean includePermissions) throws GetJobException {
+    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
+                             final boolean includeOutputFiles, final boolean includePermissions,
+                             final boolean includeComments, final boolean includeTags) throws GetJobException {
         //manually create a JSONObject representing the job
         final JSONObject job;
         if (!includeChildren) {
-            job = initJsonObject(gpUrl, jobInfo, includeOutputFiles);
+            job = initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
         }
         else {
             try {
-                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo, includeOutputFiles);
+                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo,
+                        includeOutputFiles, includeComments, includeTags);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
             }
@@ -176,7 +185,9 @@ public class GetPipelineJobLegacy implements GetJob {
      * @param includeOutputFiles, if true include a representation of the output files
      * @return
      */
-    public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final boolean includeOutputFiles) throws GetJobException {
+    public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo,
+                                            final boolean includeOutputFiles, final boolean includeComments,
+                                            final boolean includeTags) throws GetJobException {
         final JSONObject job = new JSONObject();
         try {
             job.put("jobId", ""+jobInfo.getJobNumber());
@@ -254,6 +265,18 @@ public class GetPipelineJobLegacy implements GetJob {
                 }
                 final JSONObject jobStatus = initJobStatusJson(jobInfo, jobStatusRecord, executionLogLocation, stderrLocation); 
                 job.put("status", jobStatus);
+            }
+
+            if(includeComments)
+            {
+                List<JobComment> jobComments = JobCommentManager.selectAllJobComments(jobInfo.getJobNumber());
+                job.put("comments", JobCommentManager.createJobCommentBundle(jobInfo.getUserId(), jobComments));
+            }
+
+            if(includeTags)
+            {
+                List<JobTag> jobTags = JobTagManager.selectAllJobTags(jobInfo.getJobNumber());
+                job.put("tags", JobTagManager.createJobTagBundle(jobTags));
             }
         }
         catch (JSONException e) {

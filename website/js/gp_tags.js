@@ -112,8 +112,22 @@ $(function() {
             {
                 var focusIn = $.cookie("show_tags_focus"+currentJobNumber);
 
-                jobTagToIdMap = response.tags;
+                if(response.tags == undefined || response.tags == null
+                    || response.tags.length == 0)
+                {
+                    console.log("Error getting tags: " + response.tags);
+                }
 
+                for(var i=0; i < response.tags.length;i++)
+                {
+                    var tag = response.tags[i].tag;
+
+                    if(tag != undefined && tag != null)
+                    {
+                        jobTagToIdMap[tag.tag] = response.tags[i].id;
+                    }
+
+                }
                 var tagValues = Object.keys(jobTagToIdMap);
                 tagValues.sort();
 

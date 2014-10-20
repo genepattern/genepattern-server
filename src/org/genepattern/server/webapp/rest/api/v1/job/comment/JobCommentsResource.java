@@ -26,6 +26,18 @@ public class JobCommentsResource
 {
     final static private Logger log = Logger.getLogger(JobCommentsResource.class);
 
+    public JSONObject loadComments(GpContext userContext, int gpJobNo) throws Exception
+    {
+        if(userContext == null || userContext.getUserId() == null || userContext.getUserId().length() == 0)
+        {
+            throw new Exception("Error loading comments: A user id must be specified");
+        }
+
+        List<JobComment> jobComments = JobCommentManager.selectAllJobComments(gpJobNo);
+
+        return JobCommentManager.createJobCommentBundle(userContext.getUserId(), jobComments);
+    }
+
     public Response loadComments(
             @PathParam("jobNo") String jobNo,
             @Context HttpServletRequest request)
@@ -36,13 +48,16 @@ public class JobCommentsResource
 
             if(jobNo == null)
             {
-                throw new Exception("A job number must be specified");
+                throw new Exception("Error loading comments: A job number must be specified");
+            }
+
+            if(userContext == null || userContext.getUserId() == null || userContext.getUserId().length() == 0)
+            {
+                throw new Exception("Error loading comments: A user id must be specified");
             }
 
             int gpJobNo = Integer.parseInt(jobNo);
-            List<JobComment> jobComments = JobCommentManager.selectAllJobComments(gpJobNo);
-
-            JSONObject jobCommentsResult = createJobCommentBundle(userContext, jobComments);
+            JSONObject jobCommentsResult = loadComments(userContext, gpJobNo);
             JSONObject result = new JSONObject();
             result.put("results", jobCommentsResult);
             return Response.ok().entity(result.toString()).build();
@@ -191,29 +206,5 @@ public class JobCommentsResource
         jb.put("childrens", new JSONArray());
 
         return jb;
-    }
-
-    private JSONObject createJobCommentBundle(GpContext userContext, List<JobComment> jobComments) throws Exception
-    {
-        JSONObject jobCommentsResult = new JSONObject();
-
-        JSONArray comments = new JSONArray();
-        jobCommentsResult.put("comments", comments);
-        for(JobComment jobComment : jobComments)
-        {
-            comments.put(jobCommentJson(jobComment));
-        }
-
-        JSONObject user = new JSONObject();
-        user.put("user_id", userContext.getUserId());
-        user.put("fullname", userContext.getUserId());
-        user.put("is_logged_in", true);
-        user.put("is_add_allowed", true);
-        user.put("is_edit_allowed", true);
-        jobCommentsResult.put("user", user);
-
-        jobCommentsResult.put("total_comment", jobComments.size());
-
-        return jobCommentsResult;
     }
 }
