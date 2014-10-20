@@ -30,7 +30,13 @@
     FileFilter fileFilter = new WildcardFileFilter("GenePattern_Install_*.log");
     File dir = new File("../UninstallerData/Logs");
     File[] logs = dir.listFiles(fileFilter);
-    File f = logs[0];
+    File f;
+    if (logs != null && logs.length>0) {
+        f = logs[0];
+    }
+    else {
+        f = new File("GenePattern_InstallLog.log");
+    }
 %>
 <html>
 <head>
@@ -47,7 +53,7 @@
 <hr>
 <%
     // wait for the installer to materialize the log file
-    for (int i = 0; i < 30 && !f.exists(); i++) {
+    for (int i = 0; i < 10 && !f.exists(); i++) {
         Thread.sleep(1000); // sleep one second
     }
     if (!f.exists()) {
