@@ -81,6 +81,8 @@ public class JobTagsResource
             tag.setDateAdded(date);
 
             tagText = StringEscapeUtils.escapeHtml(tagText);
+            //make tag lowercase
+            tagText = tagText.toLowerCase();
             tag.setTag(tagText);
             tag.setUserId(userContext.getUserId());
             tag.setPublicTag(false);
