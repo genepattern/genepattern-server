@@ -82,11 +82,14 @@ public class StartupServlet extends HttpServlet {
         loadProperties(config);
         setServerURLs(config);
 
-        String dbVendor = System.getProperty("database.vendor", "HSQL");
+        final String expectedSchemaVersion=HsqlDbUtil.initExpectedSchemaVersion();
+        final String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
+                String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+
                 log.info("\tstarting HSQL database...");
-                HsqlDbUtil.startDatabase();
+                HsqlDbUtil.startDatabase(hsqlArgs, expectedSchemaVersion);
             }
             catch (Throwable t) {
                 log.error("Unable to start HSQL Database!", t);

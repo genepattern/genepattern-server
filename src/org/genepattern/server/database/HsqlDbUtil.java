@@ -33,10 +33,12 @@ public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
 
     /**
-     * HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
+     * Get the current version of GenePattern, (e.g. '3.9.1'). 
+     * Automatic schema update is based on the difference between this value (as defined by the GP installation)
+     * and the entry in the database.
+     * 
      */
-    public static void startDatabase() throws Throwable {
-        String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+    public static String initExpectedSchemaVersion() {
         final String expectedSchemaVersion;
         
         final String gpVersion = ServerConfigurationFactory.instance().getGenePatternVersion();
@@ -49,10 +51,16 @@ public class HsqlDbUtil {
         else {
             expectedSchemaVersion=gpVersion;
         }
-
-        startDatabase(hsqlArgs, expectedSchemaVersion);
+        return expectedSchemaVersion;
     }
     
+    /**
+     * Start the database, initializing the DB schema if necessary.
+     * 
+     * @param hsqlArgs, default value, HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb 
+     * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
+     * @throws Throwable
+     */
     public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
         log.debug("Starting HSQL Database...");
 
