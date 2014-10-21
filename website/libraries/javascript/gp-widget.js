@@ -807,8 +807,9 @@ $.widget("gp.runTask", {
                                 .text("Run")
                                 .button()
                                 .click(function() {
-                                    widget.validate();
-                                    widget.submit();
+                                    if (widget.validate()) {
+                                        widget.submit();
+                                    }
                                 })
                         )
                         .append("* Required Field")
@@ -830,8 +831,9 @@ $.widget("gp.runTask", {
                                 .text("Run")
                                 .button()
                                 .click(function() {
-                                    widget.validate();
-                                    widget.submit();
+                                    if (widget.validate()) {
+                                        widget.submit();
+                                    }
                                 })
                         )
                         .append("* Required Field")
@@ -968,6 +970,7 @@ $.widget("gp.runTask", {
                         .text(param.description())
                     )
             );
+        if (required) paramBox.addClass("task-widget-required");
         form.append(paramBox);
 
         // Add the correct input widget
@@ -1006,6 +1009,29 @@ $.widget("gp.runTask", {
     },
 
     /**
+     * From the input widget's element get the input widget's value
+     *
+     * @param inputDiv - The element that has been made into the widget
+     * @returns {*}
+     * @private
+     */
+    _getInputValue: function(inputDiv) {
+        if ($(inputDiv).hasClass("file-widget")) {
+            return $(inputDiv).fileInput("value");
+        }
+        else if ($(inputDiv).hasClass("text-widget")) {
+            return $(inputDiv).textInput("value");
+        }
+        else if ($(inputDiv).hasClass("choice-widget")) {
+            return $(inputDiv).choiceInput("value");
+        }
+        else {
+            console.log("Unknown input widget type.");
+            return null;
+        }
+    },
+
+    /**
      * Show a success message to the user
      *
      * @param message - String containing the message to show
@@ -1035,14 +1061,110 @@ $.widget("gp.runTask", {
      * Validate the current Run Task form
      */
     validate: function() {
-        // TODO
+        var validated = true;
+        var missing = [];
+        var params = this.element.find(".task-widget-param");
+
+        // Validate each required parameter
+        for (var i = 0; i < params.length; i++) {
+            var param = $(params[i]);
+            var required = param.hasClass("task-widget-required");
+            if (required) {
+                var input = param.find(".task-widget-param-input");
+                var value = this._getInputValue(input);
+                if (value === null || value === "") {
+                    param.addClass("task-widget-param-missing");
+                    missing.push(param.attr("name"));
+                    validated = false;
+                }
+                else {
+                    param.removeClass("task-widget-param-missing");
+                }
+            }
+        }
+
+        // Display message to user
+        if (validated) {
+            this.successMessage("All required parameters present.");
+        }
+        else {
+            this.errorMessage("Missing required parameters: " + missing.join(", "));
+        }
+
+        return validated;
     },
 
     /**
      * Submit the Run Task form to the server
      */
     submit: function() {
-        // TODO
+        // Create the job input
+        var jobInput = this._task.jobInput();
+        var widget = this;
+
+        this.uploadAll({
+            success: function() {
+                // Assign values from the inputs to the job input
+                var uiParams = widget.element.find(".task-widget-param");
+                for (var i = 0; i < uiParams.length; i++) {
+                    var uiParam = $(uiParams[i]);
+                    var uiInput = uiParam.find(".task-widget-param-input");
+                    var uiValue = widget._getInputValue(uiInput);
+
+                    var objParam = jobInput.params()[i];
+                    objParam.values([uiValue]);
+                }
+
+                // Submit the job input
+                jobInput.submit({
+                    success: function(response, jobNumber) {
+                        // TODO: Implement
+                        alert("SUCCESS");
+                    },
+                    error: function(exception) {
+                        widget.errorMessage("Error submitting job: " + exception.statusText);
+                    }
+                });
+            },
+            error: function(exception) {
+                widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
+            }
+        });
+    },
+
+    /**
+     * Upload all the file inputs that still need uploading
+     *
+     * @param pObj - Object containing the following params:
+     *                  success: Callback for success, expects no arguments
+     *                  error: Callback on error, expects exception
+     * @returns {boolean} - Whether an upload was just initiated or not
+     */
+    uploadAll: function(pObj) {
+        var files = this.element.find(".file-widget");
+        var widget = this;
+
+        // Cycle through all files
+        for (var i = 0; i < files.length; i++) {
+            var fileWidget = $(files[i]);
+            var value = fileWidget.fileInput("value");
+
+            // If one needs to be uploaded, upload, recheck
+            if (typeof value === 'object' && value !== null) {
+                widget.successMessage("Uploading file: " + value.name);
+                fileWidget.fileInput("upload", {
+                    success: function() {
+                        widget.uploadAll(pObj);
+                    },
+                    error: pObj.error
+                });
+                return true
+            }
+        }
+
+        // If none need to be uploaded, call success function
+        pObj.success();
+        return false;
     }
 });
 

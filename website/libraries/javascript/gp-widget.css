@@ -216,7 +216,8 @@
 }
 
 .task-widget-param {
-    margin: 20px;
+    margin: 10px;
+    padding: 10px;
 }
 
 .task-widget-param-name {
@@ -241,6 +242,10 @@
     font-size: 11px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.task-widget-param-missing {
+    border: 2px solid red;
 }
 
 .task-widget-footer {
