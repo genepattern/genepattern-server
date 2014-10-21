@@ -1111,8 +1111,10 @@ $.widget("gp.runTask", {
                     var uiInput = uiParam.find(".task-widget-param-input");
                     var uiValue = widget._getInputValue(uiInput);
 
-                    var objParam = jobInput.params()[i];
-                    objParam.values([uiValue]);
+                    if (uiValue !== null) {
+                        var objParam = jobInput.params()[i];
+                        objParam.values([uiValue]);
+                    }
                 }
 
                 // Submit the job input
