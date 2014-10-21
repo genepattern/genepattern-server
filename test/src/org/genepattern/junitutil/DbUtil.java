@@ -64,7 +64,7 @@ public class DbUtil {
             }
             
             final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
-            System.setProperty("HSQL.args", " -port 9001  -database.0 file:"+path+" -dbname.0 xdb");
+            String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
 
             final String hibernateConfigFile="hibernate.junit.cfg.xml";
             final String hibernateConnectionUrl="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb";
@@ -79,7 +79,7 @@ public class DbUtil {
 
             try {
                 isDbInitialized = true;
-                HsqlDbUtil.startDatabase();
+                HsqlDbUtil.startDatabase(hsqlArgs, gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...
