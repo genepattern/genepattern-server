@@ -50,7 +50,7 @@ public class HibernateUtil {
         }
     }
 
-    private static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
+    public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
         AnnotationConfiguration config = new AnnotationConfiguration();
         config.configure(configResource);
         mergeSystemProperties(config);
