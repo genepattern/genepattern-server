@@ -1120,8 +1120,7 @@ $.widget("gp.runTask", {
                 // Submit the job input
                 jobInput.submit({
                     success: function(response, jobNumber) {
-                        // TODO: Implement
-                        alert("SUCCESS");
+                        widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
                     },
                     error: function(exception) {
                         widget.errorMessage("Error submitting job: " + exception.statusText);
