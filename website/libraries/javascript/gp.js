@@ -796,7 +796,7 @@ gp.Param = function(paramJson) {
             if (paramJson) {
                 this._name = Object.keys(paramJson)[0];
                 this._description = paramJson[this._name]['description'];
-                this._choices = paramJson[this._name]['choices'] ? paramJson[this._name]['choices'] : null;
+                this._choices = paramJson[this._name]['choiceInfo'] ? this._parseChoices(paramJson[this._name]['choiceInfo']) : null;
                 this._values = null;
                 this._batchParam = false;
                 this._groupId = null;
@@ -807,7 +807,28 @@ gp.Param = function(paramJson) {
             }
         }
     };
-    this._init_();
+
+    /**
+     * Parses the choice info JSON returned by the server into the expected format
+     *
+     * @param choiceInfo - The choice info JSON
+     * @returns {*}
+     * @private
+     */
+    this._parseChoices = function(choiceInfo) {
+        if (choiceInfo['choices']) {
+            var choices = {};
+            for (var i = 0; i < choiceInfo['choices'].length; i++) {
+                var choice = choiceInfo['choices'][i];
+                choices[choice['label']] = choice['value'];
+            }
+            return choices;
+        }
+        else {
+            console.log("No choices in choice info. Dynamic choices not yet supported.");
+            return null;
+        }
+    };
 
     /**
      * Return a clone of this param
@@ -976,4 +997,7 @@ gp.Param = function(paramJson) {
             return this._type;
         }
     };
+
+    // Init the object
+    this._init_();
 };
