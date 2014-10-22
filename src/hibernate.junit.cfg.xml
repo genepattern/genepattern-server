@@ -12,7 +12,7 @@
     <!--  auto-create ddl -->
     <!--  property name="hbm2ddl.auto">update</property --> 
 
-    <!-- HSQL setup (the default).  These values can be overriden in genepattern.properties  -->
+    <!-- HSQL setup (the default).  These values can be set in genepattern.properties  -->
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
     <property name="hibernate.connection.shutdown">true</property>
     <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
@@ -20,6 +20,15 @@
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
 
+
+    <!-- MySQL setup
+    <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://192.168.59.103:3306/xdb</property>
+    <property name="hibernate.connection.username">genepattern</property>
+    <property name="hibernate.connection.password">genepattern</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    -->
+    
     <!--  Misc settings -->
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
