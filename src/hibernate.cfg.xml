@@ -47,23 +47,7 @@
     <mapping resource="org/genepattern/server/auth/JobGroup.hbm.xml"/>
     <mapping resource="org/genepattern/server/executor/sge/JobSge.hbm.xml" />  
     
-    <!-- annotated classes -->
-    <mapping class="org.genepattern.server.dm.congestion.Congestion" />
-    <mapping class="org.genepattern.server.dm.userupload.dao.UserUpload" />
-	<mapping class="org.genepattern.server.dm.jobinput.JobInput" />
-	<mapping class="org.genepattern.server.dm.jobinput.JobInputAttribute" />
-	<mapping class="org.genepattern.server.dm.jobresult.JobResult" />
-    <mapping class="org.genepattern.server.jobqueue.JobQueue" />
-    <mapping class="org.genepattern.server.eula.dao.EulaRecord" />
-    <mapping class="org.genepattern.server.eula.dao.EulaRemoteQueue" />
-    <mapping class="org.genepattern.server.taskinstall.dao.TaskInstall" />
-    <mapping class="org.genepattern.server.task.category.dao.TaskCategory" />
-    <mapping class="org.genepattern.server.executor.drm.dao.JobRunnerJob" />
-    <mapping class="org.genepattern.server.job.input.dao.JobInputValue" />
-    <mapping class="org.genepattern.server.job.output.JobOutputFile" />
-    <mapping class="org.genepattern.server.job.comment.JobComment" />
-    <mapping class="org.genepattern.server.tag.Tag" />
-    <mapping class="org.genepattern.server.job.tag.JobTag" />
+    <!-- annotated classes are defined in the HibernateUtil.class -->
 
   </session-factory>
 </hibernate-configuration>
