@@ -1261,6 +1261,24 @@ $.widget("gp.jobResults", {
     },
 
     /**
+     * Initialize polling as appropriate for options and status
+     *
+     * @param statusObj
+     * @private
+     */
+    _initPoll: function(statusObj) {
+        var running = !statusObj["hasError"] && !statusObj["completedInGp"];
+        var widget = this;
+
+        // If polling is turned on, attach the event
+        if (this.options.poll && running) {
+            setTimeout(function() {
+                widget._loadJobStatus();
+            }, 10000);
+        }
+    },
+
+    /**
      * Make a quest to the server to update the job status, and then update the UI
      *
      * @private
@@ -1294,6 +1312,9 @@ $.widget("gp.jobResults", {
                 // Display the log files
                 var logList = widget._outputsList(job.logFiles());
                 widget.element.find(".job-widget-outputs").append(logList);
+
+                // Initialize status polling
+                widget._initPoll(job.status());
             },
             error: function(exception) {
                 // Clean the old data
