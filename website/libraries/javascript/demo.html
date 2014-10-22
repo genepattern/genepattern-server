@@ -171,7 +171,16 @@
 
         <h2>Job Results Widget</h2>
         <div id="job-results"></div>
-        <script type="text/javascript">$("#job-results").jobResults();</script>
+        <script type="text/javascript">
+            gp.setServer("http://127.0.0.1:8080/gp");
+            gp.tasks({
+                success: function() {
+                    $("#job-results").jobResults({
+                        jobNumber: 746
+                    });
+                }
+            });
+        </script>
     </div>
     <div>
         <h1>GP Library Tests</h1>
