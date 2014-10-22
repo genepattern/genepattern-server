@@ -146,6 +146,7 @@
 	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
 	<classpathentry kind="lib" path="test/lib/com.springsource.org.objenesis-1.0.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/com.springsource.org.hamcrest.core-1.1.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
