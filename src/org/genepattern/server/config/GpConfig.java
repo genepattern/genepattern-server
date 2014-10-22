@@ -423,7 +423,7 @@ public class GpConfig {
         }
         
         if (configError) {
-            return getTempDir();
+            return getTempDir(null);
         }
 
         String userUploadPath = getGPProperty(context, "user.upload.dir");
@@ -447,10 +447,10 @@ public class GpConfig {
         
         //otherwise, use the web upload dir
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
-        return getTempDir();
+        return getTempDir(null);
     } 
 
-    public File getTempDir() {
+    public File getTempDir(GpContext gpContext) {
         String str = System.getProperty("java.io.tmpdir");
         return new File(str);
     }
@@ -465,7 +465,7 @@ public class GpConfig {
             throw new Exception("userid not set");
         }
 
-        File serverTempDir = getTempDir();
+        File serverTempDir = getTempDir(null);
         // prefix is used to restrict access to input files based on username
         String prefix = username + "_";
         File tempDir = File.createTempFile(prefix + "run", null, serverTempDir);
