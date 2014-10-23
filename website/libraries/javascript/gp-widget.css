@@ -128,6 +128,8 @@
 }
 
 .task-widget-header {
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
     background-color: #e5ebe9;
     font-family: Verdana,Arial,Helvetica,sans-serif;
     font-size: 15px;
@@ -251,4 +253,63 @@
 .task-widget-footer {
     border-top: 1px solid #466eb6;
     padding-top: 10px;
+}
+
+/*
+ * Job Results Styles
+ */
+
+.job-widget {
+    width: 800px;
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+}
+
+.job-widget-header {
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    background-color: #eef5ff;
+    border-bottom: 1px solid #666699;
+    width: 100%;
+}
+
+.job-widget-task {
+    font-family: Arial,verdana,Helvetica,sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.job-widget-submitted {
+    font-size: 12px;
+    font-family: Arial,verdana,Helvetica,sans-serif;
+    padding-left: 20px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+.job-widget-status {
+    float: right;
+    width: 100px;
+    padding: 10px;
+    text-align: right;
+    font-family: Arial,verdana,Helvetica,sans-serif;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.job-widget-outputs {
+    margin: 10px;
+}
+
+.job-widget-outputs-list a {
+    display: block;
+    color: #0066ff;
+    text-decoration: none;
+    text-indent: 20px;
+    line-height: 20px;
+    font-family: Arial,verdana,Helvetica,sans-serif;
+    font-size: 12px;
 }

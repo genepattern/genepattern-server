@@ -58,7 +58,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     private String getProviderURL() {
         GpContext context = GpContext.getServerContext();
-        String gsUrl = ServerConfigurationFactory.instance().getGPProperty(context, "genomeSpaceUrl", "https://identity.genomespace.org:8444/identityServer/xrd.jsp");
+        String gsUrl = ServerConfigurationFactory.instance().getGPProperty(context, "genomeSpaceUrl", "https://identity.genomespace.org/identityServer/xrd.jsp");
         log.debug("Getting the OpenID provider URL.  URL is: " + gsUrl);
         return gsUrl;
     }
