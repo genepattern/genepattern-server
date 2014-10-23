@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -60,8 +61,8 @@ public class ReloadFromPreviousVersion {
         
         final File inputFileParent = originalServerFile.getParentFile();
         final File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
-        final File webUploadDirectory = new GpConfig.Builder().build().getTempDir(null);
-        
+        final File webUploadDirectory = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
+
         this.isWebUpload=FileUtil.fileEquals(inputFileGrandParent, webUploadDirectory);
         if (this.isWebUpload) {
             this.isSoapUpload=false;

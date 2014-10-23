@@ -433,7 +433,7 @@ public class GenePatternAnalysisTask {
             }
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
-                File parentTempdir = new GpConfig.Builder().build().getTempDir(null);
+                File parentTempdir = ServerConfigurationFactory.instance().getTempDir(jobContext);
                 File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
@@ -903,7 +903,7 @@ public class GenePatternAnalysisTask {
                             }
                         }
                         String webUploadDirectory = null;
-                        String tmpDir = new GpConfig.Builder().build().getTempDir(null).getAbsolutePath();
+                        String tmpDir = gpConfig.getTempDir(jobContext).getAbsolutePath();
                         if (tmpDir != null) {
                             try {
                                 webUploadDirectory = new File(tmpDir).getCanonicalPath();
@@ -3580,10 +3580,11 @@ public class GenePatternAnalysisTask {
                 }
                 // if we get here, the zip file contains only other zip files recursively install them
                 String firstLSID = null;
+                final File tempDir=ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
                 for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
                     zipEntry = (ZipEntry) eEntries.nextElement();
                     is = zipFile.getInputStream(zipEntry);
-                    outFile = new File(new GpConfig.Builder().build().getTempDir(null), zipEntry.getName());
+                    outFile = new File(tempDir, zipEntry.getName());
                     outFile.deleteOnExit();
                     os = new FileOutputStream(outFile);
                     fileLength = zipEntry.getSize();

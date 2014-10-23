@@ -2,8 +2,8 @@ package org.genepattern.server;
 
 import java.io.File;
 
-import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 public class InputFilePermissionsHelper {
@@ -17,7 +17,7 @@ public class InputFilePermissionsHelper {
 		this.currentUser = userId;
 		this.isAdmin = AuthorizationHelper.adminJobs(currentUser);
 
-        File parentTempDir = new GpConfig.Builder().build().getTempDir(null);
+        File parentTempDir =  ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
 		File in = new File(parentTempDir, filename);
         int underscoreIndex = filename.indexOf("_");
     	String owningUser = filename.substring(0, underscoreIndex);

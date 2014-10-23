@@ -111,7 +111,7 @@ public class Purger02 extends TimerTask {
      * @param dateCutoff
      */
     private void purgeLegacyWebUploadsFromTmpdir(final long dateCutoff) {
-        File webUploadDir =new GpConfig.Builder().build().getTempDir(null);
+        File webUploadDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 

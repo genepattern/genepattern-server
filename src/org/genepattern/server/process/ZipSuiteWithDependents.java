@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
@@ -59,7 +61,7 @@ public class ZipSuiteWithDependents extends ZipSuite {
      */
     private void zipDependentTasks(ZipOutputStream zos, SuiteInfo suiteInfo,
             String userID) throws Exception {
-        File parentTempDir = new GpConfig.Builder().build().getTempDir(null);
+        File parentTempDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
         File tmpDir = new File(parentTempDir, suiteInfo.getName());
         try {
             tmpDir.mkdir();

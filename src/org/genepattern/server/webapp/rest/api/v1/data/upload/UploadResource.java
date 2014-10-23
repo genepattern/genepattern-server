@@ -72,7 +72,7 @@ public class UploadResource {
 
     public File getTempDir() {
 
-        String str = new GpConfig.Builder().build().getTempDir(null).getAbsolutePath();
+        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
 
         return new File(str);
     }

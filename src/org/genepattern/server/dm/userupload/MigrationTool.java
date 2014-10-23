@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
-import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -134,7 +133,7 @@ public class MigrationTool {
             return;
         }
         
-        String str = new GpConfig.Builder().build().getTempDir(null).getAbsolutePath();
+        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
         File webUploadDir = new File(str);
         if (!webUploadDir.canRead()) {
             log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());

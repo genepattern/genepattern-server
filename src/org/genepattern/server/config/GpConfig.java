@@ -543,6 +543,9 @@ public class GpConfig {
         private ConfigFromYaml configFromYaml=null;
         private IGroupMembershipPlugin groupInfo=null;
         private List<Throwable> initErrors=null;
+        
+        public Builder() {
+        }
 
         public Builder genePatternURL(final URL gpUrl) {
             this.genePatternURL=gpUrl;

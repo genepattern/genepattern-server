@@ -92,7 +92,7 @@ public class FileUtil {
         File inputFileParent = inputFile.getParentFile();
         File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
 
-        File webUploadDirectory = new GpConfig.Builder().build().getTempDir(null);
+        File webUploadDirectory = ServerConfigurationFactory.instance().getTempDir(null);
         return fileEquals(inputFileGrandParent, webUploadDirectory);
     }
     
