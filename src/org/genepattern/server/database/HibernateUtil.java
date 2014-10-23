@@ -12,10 +12,19 @@
 
 package org.genepattern.server.database;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.persistence.Entity;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Sequence;
@@ -27,6 +36,8 @@ import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
+
+import com.google.common.reflect.ClassPath;
 
 public class HibernateUtil {
     private static Logger log = Logger.getLogger(HibernateUtil.class);
@@ -49,9 +60,78 @@ public class HibernateUtil {
             log.debug("", ex);
         }
     }
+    
+    
+    /**
+     * Hard-coded list of Hibernate mapping annotated classes.
+     * @return
+     */
+    protected static List<Class<?>> hardCodedAnnotatedClasses() {
+        return Arrays.<Class<?>>asList( 
+                org.genepattern.server.dm.congestion.Congestion.class,
+                org.genepattern.server.dm.userupload.dao.UserUpload.class,
+                org.genepattern.server.dm.jobinput.JobInput.class,
+                org.genepattern.server.dm.jobinput.JobInputAttribute.class,
+                org.genepattern.server.dm.jobresult.JobResult.class,
+                org.genepattern.server.jobqueue.JobQueue.class,
+                org.genepattern.server.eula.dao.EulaRecord.class,
+                org.genepattern.server.eula.dao.EulaRemoteQueue.class,
+                org.genepattern.server.taskinstall.dao.TaskInstall.class,
+                org.genepattern.server.task.category.dao.TaskCategory.class,
+                org.genepattern.server.executor.drm.dao.JobRunnerJob.class,
+                org.genepattern.server.job.input.dao.JobInputValue.class,
+                org.genepattern.server.job.output.JobOutputFile.class,
+                org.genepattern.server.job.comment.JobComment.class,
+                org.genepattern.server.tag.Tag.class,
+                org.genepattern.server.job.tag.JobTag.class
+                );
+    }
+    
+    /**
+     * Scan the current class loader for all classes with the given package prefix,
+     *     packagePrefix='org.genepattern.server.'
+     * ImmutableSet<ClassPath.ClassInfo> getTopLevelClassesRecursive(String packageName)
+     */
+    protected static List<Class<?>> scanForAnnotatedClasses() throws IOException, ClassNotFoundException {
+        final String packagePrefix="org.genepattern.server";
+        return scanForAnnotatedClasses(Arrays.asList(packagePrefix));
+    }
+    
+    /**
+     * Scan the current class loader for all classes with the given list of package prefixes.
+     * Return a list of Classes which have the JPA Entity annotation.
+     */
+    protected static List<Class<?>> scanForAnnotatedClasses(List<String> packagePrefixes) throws IOException, ClassNotFoundException {
+        final ClassLoader cl=Thread.currentThread().getContextClassLoader();
+        Set<ClassPath.ClassInfo> set=new HashSet<ClassPath.ClassInfo>();
+        for(final String packagePrefix : packagePrefixes) {
+            set.addAll(ClassPath.from(cl).getTopLevelClassesRecursive(packagePrefix));
+        }
+        List<Class<?>> list=new ArrayList<Class<?>>();
+        for(ClassPath.ClassInfo ci : set) {
+            Class<?> clazz=Class.forName(ci.getName(), false, cl);
+            if (clazz.isAnnotationPresent(Entity.class)) {
+                list.add(clazz);
+            }
+        }
+        return list;
+    }
 
     public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
         AnnotationConfiguration config = new AnnotationConfiguration();
+        //add hibernate mapping classes here, instead of in the .xml file
+        Collection<Class<?>> annotatedClasses=null;
+        try {
+            annotatedClasses=scanForAnnotatedClasses();
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error scanning for hibernate annotation classes, using hard-coded list instead", t);
+            annotatedClasses=hardCodedAnnotatedClasses();
+        }
+        for(Class<?> clazz : annotatedClasses) {
+            config.addAnnotatedClass( clazz );
+        }
+        
         config.configure(configResource);
         mergeSystemProperties(config);
         if (connectionUrl != null) {
