@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
@@ -90,7 +91,8 @@ public class FileUtil {
         }
         File inputFileParent = inputFile.getParentFile();
         File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
-        File webUploadDirectory = new File(System.getProperty("java.io.tmpdir"));
+
+        File webUploadDirectory = new GpConfig.Builder().build().getTempDir(null);
         return fileEquals(inputFileGrandParent, webUploadDirectory);
     }
     

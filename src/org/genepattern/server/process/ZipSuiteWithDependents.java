@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
@@ -58,7 +59,8 @@ public class ZipSuiteWithDependents extends ZipSuite {
      */
     private void zipDependentTasks(ZipOutputStream zos, SuiteInfo suiteInfo,
             String userID) throws Exception {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"), suiteInfo.getName());
+        File parentTempDir = new GpConfig.Builder().build().getTempDir(null);
+        File tmpDir = new File(parentTempDir, suiteInfo.getName());
         try {
             tmpDir.mkdir();
             File parent = super.packageSuite(suiteInfo, userID);

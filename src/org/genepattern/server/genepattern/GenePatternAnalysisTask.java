@@ -433,7 +433,8 @@ public class GenePatternAnalysisTask {
             }
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
-                File in = new File(System.getProperty("java.io.tmpdir"), filename);
+                File parentTempdir = new GpConfig.Builder().build().getTempDir(null);
+                File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
                     //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
@@ -902,7 +903,7 @@ public class GenePatternAnalysisTask {
                             }
                         }
                         String webUploadDirectory = null;
-                        String tmpDir = System.getProperty("java.io.tmpdir");
+                        String tmpDir = new GpConfig.Builder().build().getTempDir(null).getAbsolutePath();
                         if (tmpDir != null) {
                             try {
                                 webUploadDirectory = new File(tmpDir).getCanonicalPath();
@@ -3582,7 +3583,7 @@ public class GenePatternAnalysisTask {
                 for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
                     zipEntry = (ZipEntry) eEntries.nextElement();
                     is = zipFile.getInputStream(zipEntry);
-                    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
+                    outFile = new File(new GpConfig.Builder().build().getTempDir(null), zipEntry.getName());
                     outFile.deleteOnExit();
                     os = new FileOutputStream(outFile);
                     fileLength = zipEntry.getSize();
