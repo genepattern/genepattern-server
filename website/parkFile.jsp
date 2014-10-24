@@ -18,7 +18,7 @@
                  java.util.Iterator,
                  java.util.List,
                  java.util.Vector"
-         session="false" contentType="text/plain" language="Java" %><%@ page import="org.genepattern.server.config.ServerConfigurationFactory"%><%
+         session="false" contentType="text/plain" language="Java" %><%@ page import="org.genepattern.server.config.ServerConfigurationFactory"%><%@ page import="org.genepattern.server.config.GpContext"%><%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
@@ -61,7 +61,7 @@
                 if (name == null || name.equals("")) {
                     continue;
                 }
-                File zipFile = new File(ServerConfigurationFactory.instance().getTempDir(null), name);
+                File zipFile = new File(ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()), name);
                 requestParameters
                         .put(fi.getFieldName(), zipFile);
                 fi.write(zipFile);

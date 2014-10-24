@@ -49,6 +49,7 @@
                  org.genepattern.util.LSID"
          session="false" contentType="text/html" language="Java" %>
 <%@ page import="org.genepattern.server.config.ServerConfigurationFactory" %>
+<%@ page import="org.genepattern.server.config.GpContext" %>
 <%
 
 
@@ -108,7 +109,7 @@
                 if (name == null || name.equals("")) {
                     continue;
                 }
-                File aFile = new File(ServerConfigurationFactory.instance().getTempDir(null), name);
+                File aFile = new File(ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()), name);
                 requestFiles.put(fi.getFieldName(), aFile);
                 fi.write(aFile);
             }
