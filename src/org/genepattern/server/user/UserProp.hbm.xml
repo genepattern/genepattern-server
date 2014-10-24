@@ -6,7 +6,7 @@
     <id name="id" type="integer" unsaved-value="null" column="id">
       <generator class="native"/>
     </id>
-    <property name="key" type="string" column="key"/>
+    <property name="key" type="string" column="`key`"/>
     <property name="value" type="string" column="value"/>
     <property name="gpUserId" type="string" column="gp_user_id"/>
   </class>

@@ -22,8 +22,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -39,9 +39,10 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.Props;
 import org.genepattern.server.webapp.LoginManager;
-import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
+import org.hibernate.Query;
 
 public class RegisterServerBean {
     private static Logger log = Logger.getLogger(RegisterServerBean.class);
@@ -313,44 +314,56 @@ public class RegisterServerBean {
      * if there is no entry in the database.
      * @return
      */
-    private static String getDbRegisteredVersion(final String genepatternVersion) {
+    protected static String getDbRegisteredVersion(final String genepatternVersion) {
         log.debug("getting registration info from database");
-        String dbRegisteredVersion = "";
-        final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
+        // select value from props where `key`='registeredVersion'+genepatternVersion
+        String key="registeredVersion"+genepatternVersion;
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
         try {
-            BaseDAO dao = new BaseDAO();
-            ResultSet resultSet = dao.executeSQL(sql, false);
-            if (resultSet.next()) {
-                dbRegisteredVersion = resultSet.getString(1);
+            final String hql="select p.value from "+Props.class.getName()+" p where p.key like :key";
+            Query query = HibernateUtil.getSession().createQuery(hql);  
+            query.setString("key", key);
+            List<String> rval=query.list();
+            if (rval==null || rval.size()==0) {
+                return "";
             }
-        } 
-        catch (Exception e) {
-            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+            return rval.get(0);
+        }
+        catch (Throwable t) {
+            log.error("Didn't get registration info from database: "+t.getLocalizedMessage(), t);
+            return "";
         }
         finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        return dbRegisteredVersion;
-    }
-
-    private static List<String> getDbRegisteredVersions() {
-        log.debug("getting registration info from database");
-        List<String> dbEntries = new ArrayList<String>();
-        final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
-        try {
-            BaseDAO dao = new BaseDAO();
-            ResultSet resultSet = dao.executeSQL(sql, false);
-            while(resultSet.next()) {
-                dbEntries.add(resultSet.getString(1));
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
             }
-        } 
-        catch (Exception e) {
-            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
         }
-        return dbEntries;
     }
 
-    private static void saveIsRegistered() {
+    protected static List<String> getDbRegisteredVersions() {
+        log.debug("getting registration info from database");
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        try {
+            final String hql="select p.key from "+Props.class.getName()+" p where p.key like :prefix";
+            Query query = HibernateUtil.getSession().createQuery(hql);  
+            query.setString("prefix", "registeredVersion%");
+            List<String> registeredVersions=query.list();
+            return registeredVersions;
+        }
+        catch (Throwable t) {
+            log.error("Didn't get registration info from database: "+t.getLocalizedMessage(), t);
+            return Collections.emptyList();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    protected static void saveIsRegistered() {
         log.debug("saving registration");
         AboutBean about = new AboutBean();
         String genepatternVersion = about.getGenePatternVersion();
@@ -358,19 +371,31 @@ public class RegisterServerBean {
         if (dbRegisteredVersion != null) {
             return;
         }
-
+        
         // update the DB
+        saveIsRegistered(genepatternVersion);
+    }
+    
+    protected static boolean saveIsRegistered(final String genepatternVersion) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
         try {
-            BaseDAO dao = new BaseDAO();
-            String sqlIns = "insert into props values ('registeredVersion"+genepatternVersion+"', '"+genepatternVersion+"')";
-            dao.executeUpdate(sqlIns);
-            System.setProperty(GPConstants.REGISTERED_SERVER, genepatternVersion);
-        } 
-        catch (Exception e) {
-            // either DB is down or we already have it there
-            log.debug(e);
+            Props props=new Props();
+            props.setKey("registeredVersion"+genepatternVersion);
+            props.setValue(genepatternVersion);
+            HibernateUtil.getSession().save(props);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return true;
+        }
+        catch (Throwable t) {
+            log.error("Error saving registration to DB", t);
+            HibernateUtil.rollbackTransaction();
+            return false;
         }
     }
+    
 
     public void setRegistrationUrl(String url) {
         this.registrationUrl = url;
