@@ -63,7 +63,7 @@
         } else {
             String prefix = userID + "_";
             // look in temp for pipelines run without saving
-            in = new File(System.getProperty("java.io.tmpdir"), filename);
+            in = new File(ServerConfigurationFactory.instance().getTempDir(null), filename);
 
             // look for file among the user uploaded files
             if (!in.exists()) {

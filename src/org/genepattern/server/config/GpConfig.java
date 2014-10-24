@@ -125,11 +125,11 @@ public class GpConfig {
     public String getGenePatternVersion() {
         return genePatternVersion;
     }
-    
+
     public File getConfigFile() {
         return configFile;
     }
-    
+
     public String getConfigFilepath() {
         if (configFile != null) {
             return configFile.getAbsolutePath();
@@ -140,7 +140,7 @@ public class GpConfig {
     public boolean hasInitErrors() {
         return initErrors != null && initErrors.size()>0;
     }
-    
+
     public List<Throwable> getInitializationErrors() {
         return initErrors;
     }
@@ -162,7 +162,7 @@ public class GpConfig {
         }
         return value;
     }
-    
+
     /**
      * @deprecated, use getValue instead, which supports lists.
      * @param context
@@ -179,7 +179,7 @@ public class GpConfig {
         }
         return value.getValue();
     }
-    
+
     public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
         final Value value = getValue(context, key);
         if (value == null) {
@@ -190,12 +190,12 @@ public class GpConfig {
         }
         return value.getValue();
     }
-    
+
     /**
      * Utility method for parsing properties as a boolean.
-     * The current implementation uses Boolean.parseBoolean, 
+     * The current implementation uses Boolean.parseBoolean,
      * which returns true iff the property is set and equalsIgnoreCase 'true'.
-     * 
+     *
      * @param key
      * @return
      */
@@ -211,14 +211,14 @@ public class GpConfig {
         }
         return Boolean.parseBoolean(prop);
     }
-    
+
     /**
      * Utility method for parsing a property as an Integer. If there is no property set
      * return null.
-     * 
+     *
      * When a non integer value is set in the config file, return null.
      * Errors are logged, but exceptions are not thrown.
-     * 
+     *
      * @param context
      * @param key
      * @return
@@ -226,16 +226,16 @@ public class GpConfig {
     public Integer getGPIntegerProperty(final GpContext context, final String key) {
         return getGPIntegerProperty(context, key, null);
     }
-    
+
     /**
      * Utility method for parsing a property as an Integer.
-     * 
+     *
      * When a non integer value is set in the config file, the default value is returned.
      * Errors are logged, but exceptions are not thrown.
-     * 
+     *
      * @param key
      * @param defaultValue
-     * 
+     *
      * @return the int value for the property, or the default value, can return null.
      */
     public Integer getGPIntegerProperty(final GpContext context, final String key, final Integer defaultValue) {
@@ -265,7 +265,7 @@ public class GpConfig {
             return defaultValue;
         }
     }
-    
+
     public Memory getGPMemoryProperty(final GpContext gpContext, final String key) {
         return getGPMemoryProperty(gpContext, key, null);
 
@@ -289,14 +289,14 @@ public class GpConfig {
      * Helper method for getting the queueId for a job. In most cases this is equivalent to the 'job.queue' property.
      * When the 'job.virtualQueue' is set, then that value is used.
      * The default value is the empty string when neither property is set.
-     * 
+     *
      * @param gpContext
      * @return
      */
     public String getQueueId(final GpContext gpContext) {
         return getQueueId(gpContext, "");
     }
-    
+
     public String getQueueId(final GpContext gpContext, final String defaultValue) {
         String queueId=getGPProperty(gpContext, JobRunner.PROP_VIRTUAL_QUEUE);
         if (queueId!=null) {
@@ -313,13 +313,13 @@ public class GpConfig {
     /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
      * Home directories are created in the  in the "../users" directory.
-     * The default location can be changed with the 'user.root.dir' configuration property. 
+     * The default location can be changed with the 'user.root.dir' configuration property.
      * The 'gp.user.dir' property can be set on a per user basis to change from the standard location.
-     * 
+     *
      * Note: The 'gp.user.dir' property is an untested feature. If an admin sets a non-standard user dir,
-     *     they need to take measures (undocumented and unsupported, @see gp-help) to deal with 
+     *     they need to take measures (undocumented and unsupported, @see gp-help) to deal with
      *     pre-existing files and file entries in the DB.
-     * 
+     *
      * @param context
      * @return
      */
@@ -337,7 +337,7 @@ public class GpConfig {
             File f_for_file = new File(p_for_parent,context.getUserId());
             userDirPath = f_for_file.getPath();
         }
-        
+
         File userDir = new File(userDirPath);
         if (userDir.exists()) {
             return userDir;
@@ -348,18 +348,18 @@ public class GpConfig {
         }
         return userDir;
     }
-    
+
     /**
-     * Get the jobs directory for the given user. Each job runs in a new working directory. 
-     * 
+     * Get the jobs directory for the given user. Each job runs in a new working directory.
+     *
      * circa, GP 3.2.4 and earlier, the working directory is created in the root job dir for the server,
      *     which defaults to './webapps/gp/jobResults'.
      * Edit the 'jobs' property to customize this location. The server configuration system enables setting
      * this property on a per user, group, executor or module basis.
-     * 
+     *
      * coming soon, job directories, by default, will be created in ../users/<user.id>/jobs/
      * To test this feature, remove the 'jobs' property from genepattern.properties and the configuration file.
-     * 
+     *
      * @return the parent directory in which to create the new working directory for a job.
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
@@ -384,7 +384,7 @@ public class GpConfig {
             jobsDirPath = "./webapps/gp/jobResults";
             return new File(jobsDirPath);
         }
-        
+
         File userDir = getUserDir(context);
         if (userDir != null) {
             File root = new File(userDir, "jobs");
@@ -401,10 +401,10 @@ public class GpConfig {
     /**
      * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
      * By default, user uploads are stored in ../users/<user.id>/uploads/
-     * 
+     *
      * The default location can be overridden with the 'user.upload.dir' property.
      * If there is no 'user.upload.dir' or 'gp.user.dir' set, then 'java.io.tempdir' is returned.
-     * 
+     *
      * @param context
      * @return
      * @throws IllegalArgumentException if a directory is not found for the userId.
@@ -421,7 +421,7 @@ public class GpConfig {
             //throw new IllegalArgumentException("context.userId is null");
             log.error("context.userId is null");
         }
-        
+
         if (configError) {
             return getTempDir(null);
         }
@@ -435,7 +435,7 @@ public class GpConfig {
                 userUploadPath = f.getPath();
             }
         }
-            
+
         File userUploadDir = new File(userUploadPath);
         if (userUploadDir.exists()) {
             return userUploadDir;
@@ -443,16 +443,34 @@ public class GpConfig {
         boolean success = userUploadDir.mkdirs();
         if (success) {
             return userUploadDir;
-        } 
-        
+        }
+
         //otherwise, use the web upload dir
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
         return getTempDir(null);
-    } 
+    }
+
+    public File getGPFileProperty(final GpContext gpContext, final String key, final File defaultValue)
+    {
+        Value val = getValue(gpContext, key);
+
+        if (val == null) {
+            return defaultValue;
+        }
+
+        try {
+            return new File(val.getValue());
+        }
+        catch (Throwable t) {
+            log.error("Error parsing memory value for property, "+key+"="+val, t);
+            return defaultValue;
+        }
+    }
 
     public File getTempDir(GpContext gpContext) {
-        String str = System.getProperty("java.io.tmpdir");
-        return new File(str);
+        String temp = System.getProperty("java.io.tmpdir");
+        File tempDir = new File(temp);
+        return getGPFileProperty(gpContext, "gp.temp.dir", tempDir);
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {
@@ -497,7 +515,7 @@ public class GpConfig {
         }
         return yamlProperties.getJobConfiguration();
     }
-    
+
     public String getExecutorId(final GpContext gpContext) {
         //special-case for pipelines
         if (gpContext != null && gpContext.getTaskInfo() != null) {
@@ -517,7 +535,7 @@ public class GpConfig {
     public String getCommandExecutorId(final JobInfo jobInfo) {
         if (yamlProperties == null) {
             return null;
-        }        
+        }
         return yamlProperties.getCommandExecutorId(jobInfo);
     }
 
@@ -532,7 +550,7 @@ public class GpConfig {
         }
         return yamlProperties.getCommandProperties(jobInfo);
     }
-    
+
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
@@ -543,7 +561,7 @@ public class GpConfig {
         private ConfigFromYaml configFromYaml=null;
         private IGroupMembershipPlugin groupInfo=null;
         private List<Throwable> initErrors=null;
-        
+
         public Builder() {
         }
 
@@ -558,7 +576,7 @@ public class GpConfig {
             initErrors.add(t);
             return this;
         }
-        
+
         public Builder serverProperties(final GpServerProperties serverProperties) {
             this.serverProperties=serverProperties;
             return this;
@@ -573,12 +591,12 @@ public class GpConfig {
             this.configFile=configFile;
             return this;
         }
-        
+
         public Builder groupInfo(final IGroupMembershipPlugin groupInfo) {
             this.groupInfo=groupInfo;
             return this;
         }
-        
+
         public Builder addProperty(String key, String value) {
             if (serverPropertiesBuilder==null) {
                 serverPropertiesBuilder=new GpServerProperties.Builder();
@@ -587,7 +605,7 @@ public class GpConfig {
             return this;
         }
 
-        public GpConfig build() { 
+        public GpConfig build() {
             //parse the config file here
             if (configFile != null) {
                 try {
@@ -607,7 +625,7 @@ public class GpConfig {
                     resourcesDir=serverProperties.getResourcesDir();
                 }
             }
-            
+
             if (serverProperties==null && serverPropertiesBuilder != null) {
                 serverProperties=serverPropertiesBuilder.build();
             }

@@ -1143,7 +1143,7 @@ public class GenePatternAnalysisTask {
 
                                     //special case: uploaded file from web client
                                     //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                    String webUploadDirectory = gpConfig.getTempDir(null).getCanonicalPath();
                                     boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
                                     isAllowed = isWebUpload;
 
