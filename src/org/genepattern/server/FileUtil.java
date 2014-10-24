@@ -106,7 +106,8 @@ public class FileUtil {
         }
         File inputFileParent = inputFile.getParentFile();
         File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
-        File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+
+        File soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(null);
         return fileEquals(inputFileGrandParent, soapAttachmentDir);
     }
 

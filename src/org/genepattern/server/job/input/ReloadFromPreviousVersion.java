@@ -68,7 +68,7 @@ public class ReloadFromPreviousVersion {
             this.isSoapUpload=false;
         }
         else {
-            final File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+            final File soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(GpContext.getServerContext());
             this.isSoapUpload=FileUtil.fileEquals(inputFileGrandParent, soapAttachmentDir);
         }
         

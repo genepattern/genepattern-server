@@ -464,7 +464,7 @@ public class GenePatternAnalysisTask {
                 }
 
                 //special case: Axis
-                in = new File(System.getProperty("soap.attachment.dir"), filename);
+                in = new File(ServerConfigurationFactory.instance().getSoapAttDir(jobContext), filename);
                 if (in.exists()) {
                     //TODO: permissions check for SOAP upload, see *similar* code in getFile.jsp
                     return in;
@@ -914,7 +914,7 @@ public class GenePatternAnalysisTask {
                         }
                         isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);	                    
                         if (!isWebUpload) {
-                            String soapAttachmentDir = System.getProperty("soap.attachment.dir");
+                            String soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(jobContext).getAbsolutePath();
                             if (soapAttachmentDir != null) {
                                 soapAttachmentDir = soapAttachmentDir + File.separator + jobInfo.getUserId();
                                 try {
@@ -1150,7 +1150,8 @@ public class GenePatternAnalysisTask {
                                     //special case: uploaded file from SOAP client
                                     //                <soap.attachment.dir>/<user_id>/<filename>
                                     if (!isAllowed) {
-                                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+                                        String soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(jobContext).getCanonicalPath();
+                                        soapAttachmentDir =new File(soapAttachmentDir + File.separator + jobInfo.getUserId()).getCanonicalPath();
                                         boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
                                         isAllowed = isSoapUpload;
                                     }

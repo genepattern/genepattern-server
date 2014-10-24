@@ -467,6 +467,12 @@ public class GpConfig {
         }
     }
 
+    public File getSoapAttDir(GpContext gpContext) {
+        String soapAttDirStr= "../temp/attachments";
+        File soapAttDir = new File(soapAttDirStr);
+        return getGPFileProperty(gpContext, "soap.attachment.dir", soapAttDir);
+    }
+
     public File getTempDir(GpContext gpContext) {
         String temp = System.getProperty("java.io.tmpdir");
         File tempDir = new File(temp);
