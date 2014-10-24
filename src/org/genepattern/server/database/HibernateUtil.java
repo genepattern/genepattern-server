@@ -103,9 +103,10 @@ public class HibernateUtil {
      */
     protected static List<Class<?>> scanForAnnotatedClasses(List<String> packagePrefixes) throws IOException, ClassNotFoundException {
         final ClassLoader cl=Thread.currentThread().getContextClassLoader();
+        final ClassPath classPath=ClassPath.from(cl);
         Set<ClassPath.ClassInfo> set=new HashSet<ClassPath.ClassInfo>();
         for(final String packagePrefix : packagePrefixes) {
-            set.addAll(ClassPath.from(cl).getTopLevelClassesRecursive(packagePrefix));
+            set.addAll(classPath.getTopLevelClassesRecursive(packagePrefix));
         }
         List<Class<?>> list=new ArrayList<Class<?>>();
         for(ClassPath.ClassInfo ci : set) {
@@ -116,10 +117,44 @@ public class HibernateUtil {
         }
         return list;
     }
+    
+    /**
+     * Hard-coded list of hbm.xml files for the project.
+     * This used to be set in the hibernate.cfg.xml file.
+     * 
+     * @return
+     */
+    protected final static String[] hbmXmls() {
+        return new String[]{
+                "org/genepattern/server/domain/AnalysisJob.hbm.xml", 
+                "org/genepattern/server/domain/BatchJob.hbm.xml", 
+                "org/genepattern/server/domain/JobStatus.hbm.xml", 
+                "org/genepattern/server/domain/Lsid.hbm.xml", 
+                "org/genepattern/server/domain/Props.hbm.xml", 
+                "org/genepattern/server/domain/Sequence.hbm.xml", 
+                "org/genepattern/server/domain/Suite.hbm.xml", 
+                "org/genepattern/server/domain/TaskAccess.hbm.xml", 
+                "org/genepattern/server/domain/TaskMaster.hbm.xml", 
+                "org/genepattern/server/domain/GsAccount.hbm.xml", 
+                "org/genepattern/server/domain/PinModule.hbm.xml", 
+                "org/genepattern/server/message/SystemMessage.hbm.xml", 
+                "org/genepattern/server/user/JobCompletionEvent.hbm.xml", 
+                "org/genepattern/server/user/User.hbm.xml",
+                "org/genepattern/server/user/UserProp.hbm.xml", 
+                "org/genepattern/server/auth/JobGroup.hbm.xml", 
+                "org/genepattern/server/executor/sge/JobSge.hbm.xml"  
+        };
+    }
 
     public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
         AnnotationConfiguration config = new AnnotationConfiguration();
-        //add hibernate mapping classes here, instead of in the .xml file
+        
+        // add mappings from xml files here, instead of in the .xml file
+        for (final String hbmXml : hbmXmls()) {
+            config.addResource(hbmXml);
+        }
+
+        //add annotated hibernate mapping classes here, instead of in the .xml file
         Collection<Class<?>> annotatedClasses=null;
         try {
             annotatedClasses=scanForAnnotatedClasses();

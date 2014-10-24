@@ -433,7 +433,8 @@ public class GenePatternAnalysisTask {
             }
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
-                File in = new File(System.getProperty("java.io.tmpdir"), filename);
+                File parentTempdir = ServerConfigurationFactory.instance().getTempDir(jobContext);
+                File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
                     //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
@@ -902,7 +903,7 @@ public class GenePatternAnalysisTask {
                             }
                         }
                         String webUploadDirectory = null;
-                        String tmpDir = System.getProperty("java.io.tmpdir");
+                        String tmpDir = gpConfig.getTempDir(jobContext).getAbsolutePath();
                         if (tmpDir != null) {
                             try {
                                 webUploadDirectory = new File(tmpDir).getCanonicalPath();
@@ -1142,7 +1143,7 @@ public class GenePatternAnalysisTask {
 
                                     //special case: uploaded file from web client
                                     //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                    String webUploadDirectory = gpConfig.getTempDir(null).getCanonicalPath();
                                     boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
                                     isAllowed = isWebUpload;
 
@@ -3579,10 +3580,11 @@ public class GenePatternAnalysisTask {
                 }
                 // if we get here, the zip file contains only other zip files recursively install them
                 String firstLSID = null;
+                final File tempDir=ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
                 for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
                     zipEntry = (ZipEntry) eEntries.nextElement();
                     is = zipFile.getInputStream(zipEntry);
-                    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
+                    outFile = new File(tempDir, zipEntry.getName());
                     outFile.deleteOnExit();
                     os = new FileOutputStream(outFile);
                     fileLength = zipEntry.getSize();

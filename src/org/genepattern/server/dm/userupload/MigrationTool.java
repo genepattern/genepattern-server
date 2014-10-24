@@ -133,7 +133,7 @@ public class MigrationTool {
             return;
         }
         
-        String str = System.getProperty("java.io.tmpdir");
+        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
         File webUploadDir = new File(str);
         if (!webUploadDir.canRead()) {
             log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());

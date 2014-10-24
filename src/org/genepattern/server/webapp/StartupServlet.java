@@ -253,7 +253,8 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
         startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
         startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
+        startupMessage.append("\tjava.io.tmpdir: "+ System.getProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\tgp.temp.dir: "+ ServerConfigurationFactory.instance().getTempDir(null).getAbsolutePath() + NL);
         startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
         startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
         startupMessage.append(stars);

@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -112,7 +113,7 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      */
     private void purgeWebUploads(long dateCutoff) {
-        File webUploadDir = new File(System.getProperty("java.io.tmpdir"));
+        File webUploadDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 

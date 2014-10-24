@@ -52,6 +52,8 @@
                  java.io.StringWriter"
 
          session="false" contentType="text/html" language="Java" %>
+<%@ page import="org.genepattern.server.config.ServerConfigurationFactory" %>
+<%@ page import="org.genepattern.server.config.GpContext" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
@@ -89,7 +91,7 @@
                 if (idx >= 0) name = name.substring(idx + 1);
 
 
-                File aFile = new File(System.getProperty("java.io.tmpdir"), name);
+                File aFile = new File(ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()), name);
                 requestFiles.put(fi.getFieldName(), aFile);
 
                 fi.write(aFile);

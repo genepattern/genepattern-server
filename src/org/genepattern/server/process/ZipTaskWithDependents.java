@@ -23,6 +23,9 @@ import java.util.zip.ZipOutputStream;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -95,7 +98,8 @@ public class ZipTaskWithDependents extends ZipTask {
     }
 
     public void zipDependentTasks(Vector vIncludedLSIDs, ZipOutputStream zos, TaskInfo taskInfo, String userID) throws Exception {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"), taskInfo.getName() + "_dep_" + System.currentTimeMillis());
+        File parentTempDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
+        File tmpDir = new File(parentTempDir, taskInfo.getName() + "_dep_" + System.currentTimeMillis());
         try {
             tmpDir.mkdir();
             File parent = super.packageTask(taskInfo, userID);
