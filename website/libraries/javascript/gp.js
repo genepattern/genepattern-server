@@ -83,7 +83,10 @@ gp.tasks = function(pObj) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT + includeHidden,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Create the new _tasks list and iterate over returned JSON list, creating Task objects
@@ -197,7 +200,10 @@ gp.jobs = function(pObj) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Create the new _jobs list and iterate over returned JSON list, creating Job objects
@@ -261,7 +267,10 @@ gp.job = function(pObj) {
     return $.ajax({
             url: gp.server() + REST_ENDPOINT + jobNumber,
             type: 'GET',
-            dataType: 'json'
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
         })
         .done(function(response) {
             // Create the new _jobs list and iterate over returned JSON list, creating Job objects
@@ -303,6 +312,9 @@ gp.upload = function(pObj) {
             dataType: "text",
             processData: false,
             data: pObj.file,
+            xhrFields: {
+                withCredentials: true
+            },
             headers: {
                 "Content-Length": pObj.file.size
             },
@@ -396,7 +408,10 @@ gp.Task = function(taskJson) {
             return $.ajax({
                     url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
                     type: 'GET',
-                    dataType: 'json'
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
                 })
                 .done(function(response) {
                     // Add params to Task object
@@ -552,7 +567,10 @@ gp.Job = function(jobJson) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Add params to Job object
@@ -782,6 +800,9 @@ gp.JobInput = function(task) {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
+                },
+                xhrFields: {
+                    withCredentials: true
                 }
             })
             .done(function(response) {

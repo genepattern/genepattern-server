@@ -11,6 +11,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
@@ -56,23 +57,21 @@ public class CorsFilter implements Filter {
      * proposed CorsFilter implementation
      */
     public static final void applyCorsHeaders(final HttpServletRequest request, final HttpServletResponse response) {
-        final String origin = request.getHeader("origin");
+        String origin = request.getHeader("Origin");
         if (origin != null) {
-            try {
-                final URI uri=new URI(origin);
-                final String originResponse=uri.toString();
-                //allow all clients
-                response.setHeader("Access-Control-Allow-Origin", originResponse);
-                if (log.isDebugEnabled()) {
-                    log.debug("setting 'Access-Control-Allow-Origin'="+originResponse);
-                }
-            }
-            catch (Throwable t) {
-                log.error("Invalid value for request header 'origin'="+origin, t);
-            }
+            response.setHeader("Access-Control-Allow-Origin", origin);
         }
-        // 'read-only' access
-        response.setHeader("Access-Control-Allow-Methods", "GET");
+        else {
+            response.setHeader("Access-Control-Allow-Origin", "*");
+        }
+
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+        String reqHead = request.getHeader("Access-Control-Request-Headers");
+
+        if(null != reqHead && !reqHead.equals("")){
+            response.setHeader("Access-Control-Allow-Headers", reqHead);
+        }
         // allow HTTP Basic Authentication
         response.setHeader("Access-Control-Allow-Credentials", "true");
     }
