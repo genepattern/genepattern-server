@@ -1,4 +1,4 @@
-create table job_comment (
+create table JOB_COMMENT (
     id integer not null auto_increment,
     gp_job_no integer not null references analysis_job (job_no) on delete cascade,
     -- parent id references id of the job_comment table
@@ -8,7 +8,7 @@ create table job_comment (
     comment_text varchar(1023) not null,
     primary key (id));
 
-create table tag (
+create table TAG (
     tag_id integer not null auto_increment,
     tag varchar(255) not null,
     date_added timestamp not null,
@@ -17,7 +17,7 @@ create table tag (
     primary key (tag_id));
 create index idx_tag on tag(tag);
 
-create table job_tag (
+create table JOB_TAG (
     id integer not null auto_increment,
     gp_job_no integer not null references analysis_job (job_no) on delete cascade,
     date_tagged timestamp not null,

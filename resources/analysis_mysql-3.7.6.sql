@@ -1,7 +1,7 @@
 --
 -- for the DrmExecutor, updated job table which keeps track of job runner specific external job id
 --
-create table job_runner_job (
+create table JOB_RUNNER_JOB (
     gp_job_no integer not null references ANALYSIS_JOB(job_no) on delete cascade,
     lsid varchar(255),
     jr_classname varchar(255) not null,

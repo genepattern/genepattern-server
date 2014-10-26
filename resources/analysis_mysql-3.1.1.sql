@@ -1,6 +1,6 @@
 -- add table(s) for System Alert Messages.
 
-create table GENEPATTERN.SYSTEM_MESSAGE (
+create table SYSTEM_MESSAGE (
     id bigint not null auto_increment unique,
     message varchar(4000),
     start_time timestamp not null default now(),

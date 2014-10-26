@@ -1,7 +1,7 @@
 --
 -- create the task_install_record table
 --
-create table task_install (
+create table TASK_INSTALL (
     lsid varchar(255) not null,
     user_id varchar(255),
     date_installed timestamp,

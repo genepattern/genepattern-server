@@ -1,5 +1,5 @@
 -- record of user upload files 
-create table user_upload (
+create table USER_UPLOAD (
     id bigint not null auto_increment,
     user_id varchar(255),
     path varchar(4000),
