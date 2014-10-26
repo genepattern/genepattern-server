@@ -105,6 +105,16 @@ CREATE INDEX IDX_LSID_VERSION ON LSIDS (LSID_VERSION);
 
 CREATE INDEX IDX_LSID_NO_VERSION ON LSIDS (LSID_NO_VERSION);
 
+/* SEQUENCE TABLES FOR LSIDS */
+CREATE TABLE SEQUENCE_TABLE (
+    ID INTEGER not null auto_increment,
+    NAME varchar(100) not null unique,
+    NEXT_VALUE integer not null,
+    primary key (ID));
+
+insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
+insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_suite_identifier_seq', 1);
+
 /* PROPERTY TABLE */
 CREATE TABLE PROPS
 (
@@ -112,7 +122,6 @@ CREATE TABLE PROPS
   `KEY` VARCHAR(255) NOT NULL UNIQUE,
   `VALUE` VARCHAR(255)
 );
-
 
 
 /* USER TABLE */
@@ -128,7 +137,6 @@ CREATE TABLE GP_USER
   TOTAL_LOGIN_COUNT  INTEGER  DEFAULT 0  NOT NULL,
   PRIMARY KEY (USER_ID)
 );
-
 
 CREATE TABLE GP_USER_PROP
 (
@@ -164,7 +172,6 @@ ALTER TABLE GP_USER_PROP
 
 /* Data */
 
-
 INSERT INTO JOB_STATUS VALUES(1,'Pending');
 INSERT INTO JOB_STATUS VALUES(2,'Processing');
 INSERT INTO JOB_STATUS VALUES(3,'Finished');
@@ -176,17 +183,3 @@ INSERT INTO TASK_ACCESS VALUES(2,'private','access only for the owner');
 INSERT INTO PROPS (`KEY`, VALUE) VALUES ('schemaVersion', '3.0.0');
 
 COMMIT;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
