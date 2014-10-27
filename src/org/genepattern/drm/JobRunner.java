@@ -10,7 +10,7 @@ import org.genepattern.server.executor.CommandExecutorException;
  * 
  * The GP server maintains a lookup table of drm jobId to GenePattern jobId.
  * 
- * In GenePattern version <= 3.8.3, additional methods can be invoked, if they are defined.
+ * In GenePattern version >= 3.9.0, additional methods can be invoked, if they are defined.
  * <p>
  * If your JobRunner declares a 'setCommandProperties' method, it will be invoked on system startup before any jobs are submitted.
  * The CommandProperties argument is loaded from the 'configuration.properties' of the yaml file for the given JobRunner.
