@@ -655,6 +655,9 @@ public class JobExecutor implements CommandExecutor2 {
         }
         final Integer gpJobNo=jobContext.getJobNumber();
         log.debug(jobRunnerName+" runCommand, gpJobNo="+gpJobNo);
+        if (log.isTraceEnabled()) {
+            log.trace("commandLine: "+commandLine);
+        }
         
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final String logFilename=gpConfig.getGPProperty(jobContext, JobRunner.PROP_LOGFILE);
