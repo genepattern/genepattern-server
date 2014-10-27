@@ -11,6 +11,11 @@ default.properties:
     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
     #allow.input.file.paths: false
+    
+    # filter job results based on the given comma separated list of glob patterns
+    # default setting hides all files which begin with a '.' character
+    job.FilenameFilter: [ ".*" ]
+    
     # flag to enable batch execution of jobs from the run module web page
     allow.batch.process: false
     # flag to allow users to submit jobs, set this to false to prevent new jobs
