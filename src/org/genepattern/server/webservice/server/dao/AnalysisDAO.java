@@ -382,26 +382,35 @@ public class AnalysisDAO extends BaseDAO {
      * @param jobID
      */
     public void deleteJob(int jobID) {
-	// recursively delete the job directory
-	File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));
-	Delete del = new Delete();
-	del.setDir(jobDir);
-	del.setIncludeEmptyDirs(true);
-	del.setProject(new Project());
-	del.execute();
-	AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
-	getSession().delete(aJob);
+        // recursively delete the job directory
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));	
+        deleteJobDir(jobDir);
+        AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
+        getSession().delete(aJob);
     }
     
     public void deleteJob(AnalysisJob aJob) {
         // recursively delete the job directory
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
-        Delete del = new Delete();
-        del.setDir(jobDir);
-        del.setIncludeEmptyDirs(true);
-        del.setProject(new Project());
-        del.execute();
+        deleteJobDir(jobDir);
         getSession().delete(aJob);
+    }
+
+    /**
+     * Recursively delete the job directory
+     * @param jobDir
+     */
+    protected void deleteJobDir(File jobDir) {
+        try {
+            Delete del = new Delete();
+            del.setDir(jobDir);
+            del.setIncludeEmptyDirs(true);
+            del.setProject(new Project());
+            del.execute();
+        }
+        catch (Throwable t) {
+            log.error("Error deleting job directory, name="+jobDir.getName()+", path="+jobDir.getPath(), t);
+        }
     }
 
     /**
