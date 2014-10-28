@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.domain.Props;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -16,22 +15,6 @@ import org.junit.Test;
  *
  */
 public class TestRegisterServerBean {
-    
-    //@Ignore
-    @Test
-    public void createUpdateDeleteProp() throws Exception {
-        DbUtil.initDb();
-        String key="NEW_KEY";
-        assertEquals("before save", "",  Props.selectValue(key));
-        Props.saveProp(key, "FIRST_VALUE");
-        assertEquals("after save", "FIRST_VALUE",  Props.selectValue(key));
-        Props.saveProp(key, "UPDATED_VALUE");
-        assertEquals("after update", "UPDATED_VALUE",  Props.selectValue(key));
-        Props.removeProp(key);
-        assertEquals("after delete", "",  Props.selectValue(key));
-        Props.removeProp(key);
-        assertEquals("after 2nd delete", "",  Props.selectValue(key));
-    }
 
     //@Ignore
     @Test
@@ -61,8 +44,6 @@ public class TestRegisterServerBean {
         assertEquals("", "", dbRegisteredVersion);
         
         RegisterServerBean.saveIsRegistered("3.9.1");
-        
-        //RegisterServerBean.saveIsRegistered("3.9.1");
         assertEquals("", "3.9.1", RegisterServerBean.getDbRegisteredVersion("3.9.1"));
     }
     
@@ -75,7 +56,6 @@ public class TestRegisterServerBean {
         assertEquals("numResults", 25, actual.size());
         assertTrue("startsWith('registeredVersion')", actual.get(0).startsWith("registeredVersion"));
     }
-    
     
     // only works when manually configured to connect to a MySQL server
     @Ignore 
