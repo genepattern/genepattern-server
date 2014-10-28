@@ -77,11 +77,20 @@ public class JobExecutor implements CommandExecutor2 {
     public static final String PROP_JOB_RUNNER_NAME="jobRunnerName";
     
     /**
-     * The amount of time in milliseconds to wait in between subsequent calls to check the status for particular running job.
+     * The amount of time in milliseconds to wait when polling for job status.
      * The poller will call JobRunner#getStatus for each open job in order.
+     * 
+     * This property is used as the initial delay interval when 'useDynamicDelay' is true.
      */
-    public static final String PROP_FIXED_DELAY="fixedDelay";
+    public static final String PROP_MIN_DELAY="minDelay";
     
+    /**
+     * The maximum amount of time in milliseconds to wait when polling for job status.
+     * 
+     * This property is used as the maximum delay interval when 'useDynamicDelay' is true.
+     */
+    public static final String PROP_MAX_DELAY="maxDelay";
+
     /**
      * When true, use an algorithm to dynamically increase the polling interval based on how long the job has been PENDING or RUNNING.
      */
@@ -188,8 +197,10 @@ public class JobExecutor implements CommandExecutor2 {
     private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
     private EventBus eventBus;
-    
-    private long fixedDelay=2000L;
+
+    // initial polling interval as number of milliseconds
+    private long minDelay=100L;
+    private long maxDelay=30*SEC;
     private boolean useDynamicDelay=true;
 
     private BlockingQueue<DrmJobRecord> runningJobs;
@@ -277,46 +288,40 @@ public class JobExecutor implements CommandExecutor2 {
             return getDynamicDelay(drmJobRecord, drmJobStatus);
         }
         else {
-            return getFixedDelay(drmJobRecord, drmJobStatus);
+            return minDelay;
         }
     }
     
-    
-    private long getFixedDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
-        return fixedDelay;
-    }
-    
-    // more intelligent delay
     private long getDynamicDelay(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         if (drmJobStatus==null) {
             log.error("drmJobStatus==null, returning hard-coded value");
-            return fixedDelay;
+            return minDelay;
         }
         final Date now=new Date();
         final Date submitTime=drmJobStatus.getSubmitTime();
         final Date startTime=drmJobStatus.getStartTime();
-        long delta;
+        long elapsed;
         if (startTime != null) {
-            delta=now.getTime()-startTime.getTime();
+            elapsed=now.getTime()-startTime.getTime();
         }
         else if (submitTime != null) {
-            delta=now.getTime()-submitTime.getTime();
+            elapsed=now.getTime()-submitTime.getTime();
         }
         else {
-            delta=SEC;
+            elapsed=SEC;
         }
         
         //hard-coded rule as a function of how long the job has been 'pending' or 'running'
-        if (delta < 2L*MINUTE) {
+        if (elapsed < 2L*MINUTE) {
+            return Math.min(minDelay, 2L * SEC);
+        }
+        else if (elapsed < 5L*MINUTE) {
             return 2L * SEC;
         }
-        else if (delta < 5L*MINUTE) {
-            return 10L * SEC;
+        else if (elapsed < 10L*MINUTE) {
+            return 5L * SEC;
         }
-        else if (delta < 10L*MINUTE) {
-            return 20L * SEC;
-        }
-        return 30L * SEC;
+        return maxDelay;
     }
     
     @Override
@@ -341,16 +346,28 @@ public class JobExecutor implements CommandExecutor2 {
             log.error("Error initializing value from config file, "+PROP_LOOKUP_TYPE+": "+lookupTypeStr, t);
         }
 
-        String fixedDelayStr=properties.getProperty(PROP_FIXED_DELAY);
-        if (fixedDelayStr != null && fixedDelayStr.trim().length()>0) {
+        String minDelayStr=properties.getProperty(PROP_MIN_DELAY);
+        if (minDelayStr != null && minDelayStr.trim().length()>0) {
             if (log.isDebugEnabled()) {
-                log.debug(PROP_FIXED_DELAY+"="+fixedDelayStr);
+                log.debug(PROP_MIN_DELAY+"="+minDelayStr);
             }
             try {
-                this.fixedDelay=Long.parseLong(fixedDelayStr);
+                this.minDelay=Long.parseLong(minDelayStr);
             }
             catch (Throwable t) {
-                log.error("Error initializing value from config file, "+PROP_FIXED_DELAY+": "+fixedDelayStr, t);
+                log.error("Error initializing value from config file, "+PROP_MIN_DELAY+": "+minDelayStr, t);
+            }
+        }
+        String maxDelayStr=properties.getProperty(PROP_MAX_DELAY);
+        if (maxDelayStr != null && maxDelayStr.trim().length()>0) {
+            if (log.isDebugEnabled()) {
+                log.debug(PROP_MAX_DELAY+"="+maxDelayStr);
+            }
+            try {
+                this.maxDelay=Long.parseLong(maxDelayStr);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing value from config file, "+PROP_MAX_DELAY+": "+maxDelayStr, t);
             }
         }
         String useDynamicDelayStr=properties.getProperty(PROP_USE_DYNAMIC_DELAY, "true");
@@ -365,7 +382,7 @@ public class JobExecutor implements CommandExecutor2 {
             log.debug(PROP_JOB_RUNNER_CLASSNAME+"="+jobRunnerClassname);
             log.debug(PROP_JOB_RUNNER_NAME+"="+jobRunnerName);
             log.debug(PROP_LOOKUP_TYPE+"="+lookupType);
-            log.debug(PROP_FIXED_DELAY+"="+fixedDelay);
+            log.debug(PROP_MIN_DELAY+"="+minDelay);
             log.debug(PROP_USE_DYNAMIC_DELAY+"="+useDynamicDelay);
         }
 
@@ -570,8 +587,8 @@ public class JobExecutor implements CommandExecutor2 {
         else {
             final long delay;
             if (drmJobStatus==null) {
-                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null, retry in 30 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
-                delay=30L*60L*1000L;
+                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null, retry in 5 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
+                delay=5*MINUTE;
             }
             else {
                 //put it back onto the queue

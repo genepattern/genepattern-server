@@ -110,9 +110,14 @@ executors:
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
             jobRunnerName: CommonsExecJobRunner
-            # polling interval for running jobs
-            fixedDelay: 2000
-            # when 'useDynamicDisplay' is true, use a built-in algorithm rather than the fixedDelay
-            useDynamicDelay: false
+            # interval for polling for job status (in ms)
+            #minDelay: 100
+            ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            #useDynamicDelay: true
+            ## the max polling interval, when 'useDynamicDelay' is true
+            #maxDelay: 30000
+            
+        default.properties:
             # name of hidden log file added to each job result directory
             job.logFile: ".rte.out"
+            
