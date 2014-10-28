@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.domain.Props;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -16,7 +17,23 @@ import org.junit.Test;
  */
 public class TestRegisterServerBean {
     
-    
+    //@Ignore
+    @Test
+    public void createUpdateDeleteProp() throws Exception {
+        DbUtil.initDb();
+        String key="NEW_KEY";
+        assertEquals("before save", "",  Props.selectValue(key));
+        Props.saveProp(key, "FIRST_VALUE");
+        assertEquals("after save", "FIRST_VALUE",  Props.selectValue(key));
+        Props.saveProp(key, "UPDATED_VALUE");
+        assertEquals("after update", "UPDATED_VALUE",  Props.selectValue(key));
+        Props.removeProp(key);
+        assertEquals("after delete", "",  Props.selectValue(key));
+        Props.removeProp(key);
+        assertEquals("after 2nd delete", "",  Props.selectValue(key));
+    }
+
+    //@Ignore
     @Test
     public void databaseOperationsHsqlDb() throws Exception {
         DbUtil.initDb();
@@ -35,7 +52,8 @@ public class TestRegisterServerBean {
     }
 
     // only works when manually configured to connect to a MySQL server
-    @Ignore @Test
+    @Ignore 
+    @Test
     public void getDbRegisteredVersion_mysql() throws Exception {
         System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
         //DbUtil.initDb();
@@ -49,7 +67,8 @@ public class TestRegisterServerBean {
     }
     
     // only works when manually configured to connect to a MySQL server
-    @Ignore @Test
+    @Ignore 
+    @Test
     public void getDbRegisteredVersions_mysql() {
         System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
         List<String> actual=RegisterServerBean.getDbRegisteredVersions();
@@ -59,7 +78,8 @@ public class TestRegisterServerBean {
     
     
     // only works when manually configured to connect to a MySQL server
-    @Ignore @Test
+    @Ignore 
+    @Test
     public void saveIsRegistered_hql_mysql() {
         System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
         RegisterServerBean.saveIsRegistered("3.9.2");

@@ -23,7 +23,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -38,11 +37,9 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Props;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.util.GPConstants;
-import org.hibernate.Query;
 
 public class RegisterServerBean {
     private static Logger log = Logger.getLogger(RegisterServerBean.class);
@@ -309,58 +306,22 @@ public class RegisterServerBean {
         return false;
     }
 
+    protected static String getDbRegisteredVersion(final String genepatternVersion) {
+        log.debug("getting registration info from database");
+        // select value from props where `key`='registeredVersion'+genepatternVersion
+        String key="registeredVersion"+genepatternVersion;
+        return Props.selectValue(key);
+    }
+
     /**
      * Lookup the registration key from the database, return an empty string
      * if there is no entry in the database.
      * @return
      */
-    protected static String getDbRegisteredVersion(final String genepatternVersion) {
-        log.debug("getting registration info from database");
-        // select value from props where `key`='registeredVersion'+genepatternVersion
-        String key="registeredVersion"+genepatternVersion;
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        try {
-            final String hql="select p.value from "+Props.class.getName()+" p where p.key like :key";
-            Query query = HibernateUtil.getSession().createQuery(hql);  
-            query.setString("key", key);
-            List<String> rval=query.list();
-            if (rval==null || rval.size()==0) {
-                return "";
-            }
-            return rval.get(0);
-        }
-        catch (Throwable t) {
-            log.error("Didn't get registration info from database: "+t.getLocalizedMessage(), t);
-            return "";
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-
     protected static List<String> getDbRegisteredVersions() {
         log.debug("getting registration info from database");
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        try {
-            final String hql="select p.key from "+Props.class.getName()+" p where p.key like :prefix";
-            Query query = HibernateUtil.getSession().createQuery(hql);  
-            query.setString("prefix", "registeredVersion%");
-            List<String> registeredVersions=query.list();
-            return registeredVersions;
-        }
-        catch (Throwable t) {
-            log.error("Didn't get registration info from database: "+t.getLocalizedMessage(), t);
-            return Collections.emptyList();
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
+        String key="registeredVersion%";
+        return Props.selectKeys(key);
     }
 
     protected static void saveIsRegistered() {
@@ -377,25 +338,8 @@ public class RegisterServerBean {
     }
     
     protected static boolean saveIsRegistered(final String genepatternVersion) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        try {
-            Props props=new Props();
-            props.setKey("registeredVersion"+genepatternVersion);
-            props.setValue(genepatternVersion);
-            HibernateUtil.getSession().save(props);
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
-            return true;
-        }
-        catch (Throwable t) {
-            log.error("Error saving registration to DB", t);
-            HibernateUtil.rollbackTransaction();
-            return false;
-        }
+        return Props.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
     }
-    
 
     public void setRegistrationUrl(String url) {
         this.registrationUrl = url;
