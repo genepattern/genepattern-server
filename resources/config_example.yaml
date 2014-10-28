@@ -23,7 +23,9 @@
 #     arg.list.error: [ 4, 3.14, 1.32e6, true, false ] 
 
 # apply these properties to all jobs
-default.properties: 
+default.properties:
+    #the path to the genepattern.log and webserver.log files
+    #gp.log: log
     executor: RuntimeExec
     java_flags: -Xmx512m
     # the number of milliseconds to wait before canceling a job submission (default to 5 minutes)

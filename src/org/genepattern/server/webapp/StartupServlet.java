@@ -15,16 +15,13 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.Security;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.Vector;
+import java.util.*;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletConfig;
@@ -32,7 +29,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -56,7 +53,41 @@ public class StartupServlet extends HttpServlet {
 
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
+    private void initLogging()
+    {
+        try
+        {
+            //get the directory to write the logs to
+            File logDir = ServerConfigurationFactory.instance().getLogDir(GpContext.getServerContext());
+            //System.setProperty("gp.log", logDir.getCanonicalPath());
+
+            Properties log4jprops = new Properties();
+            InputStream is = this.getClass().getResourceAsStream("/gp_log4j.properties");
+            log4jprops.load( is );
+
+            for (Map.Entry<Object, Object> entry : log4jprops.entrySet())
+            {
+                String propName= (String)entry.getKey();
+                String value= (String)entry.getValue();
+
+                //set the directory of the log files to what is specified in gp config
+                if(propName.toLowerCase().matches("^log4j.appender.*.file$"))
+                {
+                    File logFile = new File(logDir, value);
+                    log4jprops.setProperty(propName, logFile.getCanonicalPath());
+                }
+            }
+
+            PropertyConfigurator.configure(log4jprops);
+        }
+        catch(IOException io)
+        {
+            log.error(io);
+        }
+    }
+
     public StartupServlet() {
+        initLogging();
         announceStartup();
     }
     

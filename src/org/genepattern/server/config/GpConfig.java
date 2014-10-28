@@ -37,6 +37,11 @@ public class GpConfig {
      */
     public static final String PROP_SOAP_ATT_DIR="soap.attachment.dir";
 
+    /**
+     * The directory to write the log files
+     */
+    public static final String PROP_LOG_DIR="gp.log";
+
 
     /**
      * Initialize the GenePatternURL from System.property
@@ -488,6 +493,11 @@ public class GpConfig {
         String temp = System.getProperty("java.io.tmpdir");
         File tempDir = new File(temp);
         return getGPFileProperty(gpContext, GpConfig.PROP_TEMP_DIR, tempDir);
+    }
+
+    public File getLogDir(GpContext gpContext) {
+        File logDir = new File("logs");
+        return getGPFileProperty(gpContext, GpConfig.PROP_LOG_DIR, logDir);
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {
