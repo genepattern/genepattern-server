@@ -4,7 +4,7 @@
 <hibernate-mapping package="org.genepattern.server.domain">
   <class name="Props" table="PROPS" optimistic-lock="none">
     <id name="key" type="string" unsaved-value="null">
-      <column name="`KEY`" not-null="true" unique="true" index="SYS_PK_52" length="100"/>
+      <column name='"KEY"' not-null="true" unique="true" index="SYS_PK_52" length="100"/>
       <generator class="assigned"/>
     </id>
     <property name="value" type="string" column="VALUE" length="256"/>
