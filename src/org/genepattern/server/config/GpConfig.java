@@ -155,6 +155,15 @@ public class GpConfig {
     public String getGpUrl() {
         return gpUrl;
     }
+    
+    /**
+     * Get the servlet path.
+     * Note: replaces <pre>System.getProperty("GP_Path", "/gp");</pre>
+     * @return
+     */
+    public String getGpPath() {
+        return System.getProperty("GP_Path", "/gp");
+    }
 
     public String getGenePatternVersion() {
         return genePatternVersion;
