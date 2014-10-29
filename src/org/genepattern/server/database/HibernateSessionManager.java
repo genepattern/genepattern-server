@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.persistence.Entity;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -48,17 +49,35 @@ public final class HibernateSessionManager {
      * Return a list of Classes which have the JPA Entity annotation.
      */
     protected static List<Class<?>> scanForAnnotatedClasses(List<String> packagePrefixes) throws IOException, ClassNotFoundException {
-        final ClassLoader cl=Thread.currentThread().getContextClassLoader();
+        
+        ClassLoader cl=UserUpload.class.getClassLoader();
+        if (cl==null) {
+            log.info("UserUpload.class.getClassLoader returned null, trying system class loader");
+            cl=ClassLoader.getSystemClassLoader();
+        }
         final ClassPath classPath=ClassPath.from(cl);
         Set<ClassPath.ClassInfo> set=new HashSet<ClassPath.ClassInfo>();
         for(final String packagePrefix : packagePrefixes) {
-            set.addAll(classPath.getTopLevelClassesRecursive(packagePrefix));
+            Set<ClassPath.ClassInfo> classInfos=classPath.getTopLevelClassesRecursive(packagePrefix);
+            for(final ClassPath.ClassInfo classInfo : classInfos) {
+                if (classInfo.getName().startsWith(packagePrefix)) {
+                    set.add(classInfo);
+                }
+                else {
+                    log.error("Unexpected result: "+classInfo);
+                }
+            }
         }
         List<Class<?>> list=new ArrayList<Class<?>>();
         for(ClassPath.ClassInfo ci : set) {
-            Class<?> clazz=Class.forName(ci.getName(), false, cl);
-            if (clazz.isAnnotationPresent(Entity.class)) {
-                list.add(clazz);
+            try {
+                Class<?> clazz=Class.forName(ci.getName(), false, cl);
+                if (clazz.isAnnotationPresent(Entity.class)) {
+                    list.add(clazz);
+                }
+            }
+            catch (Throwable t) {
+                log.error(t);
             }
         }
         return list;
