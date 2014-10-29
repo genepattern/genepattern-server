@@ -4319,36 +4319,6 @@ public class GenePatternAnalysisTask {
 	return isDocFile(name);
     }
 
-    public static Properties loadGenePatternProperties(ServletContext application, String filename) throws IOException {
-	return appendProperties(application, filename, new Properties());
-    }
-
-    public static Properties appendProperties(ServletContext application, String filename, Properties props) throws IOException {
-	// append build.properties to the genepattern properties
-	return appendProperties((String) application.getAttribute("genepattern.properties"), filename, props);
-    }
-
-    public static Properties appendProperties(String propsDir, String filename, Properties props) throws IOException {
-	// append build.properties to the genepattern properties
-	File propFile = new File(propsDir + File.separatorChar + filename);
-	FileInputStream fis = null;
-	try {
-	    fis = new FileInputStream(propFile);
-	    props.load(fis);
-	} catch (IOException ioe) {
-	    throw new IOException(propFile.getAbsolutePath() + " cannot be loaded, reason: " + ioe.getMessage());
-	} finally {
-	    try {
-		if (fis != null) {
-		    fis.close();
-		}
-		fis = null;
-	    } catch (IOException ioe) {
-	    }
-	}
-	return props;
-    }
-
     /* TODO: put all of this stuff in database and look it up when requested */
 
     // LHS is what is presented to user, RHS is what java System.getProperty()
