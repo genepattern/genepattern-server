@@ -15,6 +15,36 @@ import org.junit.Ignore;
 public class DbUtil {
     private static boolean isDbInitialized = false;
     
+    public enum DbType {
+        HSQLDB,
+        MYSQL;
+    }
+
+    /**
+     * To help with debugging turn off batch mode by setting this property before you call initDb.
+     * <pre>
+       System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
+     * </pre>
+     * @throws Exception
+     */
+    public static void initDb() throws Exception {
+        initDb(DbType.HSQLDB);
+    }
+    
+    /**
+     * Added for manually switching between HSQLDB and MySQL databases. By default, use HSQLDB.
+     * @param dbType
+     * @throws Exception
+     */
+    public static void initDb(DbType dbType) throws Exception {
+        if (dbType==DbType.HSQLDB) {
+            DbUtil.initDbDefault();
+        }
+        else if (dbType==DbType.MYSQL) {
+            System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
+        }
+    }
+    
     @Ignore
     private static class Fnf implements FilenameFilter {
         private final String hsqlDbName;
@@ -26,21 +56,14 @@ public class DbUtil {
         }
     }
     
-    /**
-     * To help with debugging turn off batch mode by setting this property before you call initDb.
-     * <pre>
-       System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
-     * </pre>
-     * @throws Exception
-     */
-    public static void initDb() throws Exception { 
+    protected static void initDbDefault() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
         final String gpVersion="3.9.1";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
-    public static void initDb(final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
+    protected static void initDb(final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
         //some of the classes being tested require a Hibernate Session connected to a GP DB
         if (!isDbInitialized) { 
             final boolean deleteDbFiles=true;
