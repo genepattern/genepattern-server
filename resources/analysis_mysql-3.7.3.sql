@@ -3,7 +3,7 @@
 -- the task must be a baseLsid (no version)
 -- the category must be non-null, empty string or any string prefixed with a '.' means
 -- the module should be hidden from the top-level categories on the Modules & Pipelines page
-create table task_category (
+create table TASK_CATEGORY (
     category varchar(255) not null,
     task varchar(255) not null,
     primary key (category, task));

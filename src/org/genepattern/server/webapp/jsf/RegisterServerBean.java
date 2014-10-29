@@ -22,7 +22,6 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,9 +37,8 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.Props;
 import org.genepattern.server.webapp.LoginManager;
-import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
 
 public class RegisterServerBean {
@@ -308,49 +306,25 @@ public class RegisterServerBean {
         return false;
     }
 
+    protected static String getDbRegisteredVersion(final String genepatternVersion) {
+        log.debug("getting registration info from database");
+        // select value from props where `key`='registeredVersion'+genepatternVersion
+        String key="registeredVersion"+genepatternVersion;
+        return Props.selectValue(key);
+    }
+
     /**
      * Lookup the registration key from the database, return an empty string
      * if there is no entry in the database.
      * @return
      */
-    private static String getDbRegisteredVersion(final String genepatternVersion) {
+    protected static List<String> getDbRegisteredVersions() {
         log.debug("getting registration info from database");
-        String dbRegisteredVersion = "";
-        final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
-        try {
-            BaseDAO dao = new BaseDAO();
-            ResultSet resultSet = dao.executeSQL(sql, false);
-            if (resultSet.next()) {
-                dbRegisteredVersion = resultSet.getString(1);
-            }
-        } 
-        catch (Exception e) {
-            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        return dbRegisteredVersion;
+        String key="registeredVersion%";
+        return Props.selectKeys(key);
     }
 
-    private static List<String> getDbRegisteredVersions() {
-        log.debug("getting registration info from database");
-        List<String> dbEntries = new ArrayList<String>();
-        final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
-        try {
-            BaseDAO dao = new BaseDAO();
-            ResultSet resultSet = dao.executeSQL(sql, false);
-            while(resultSet.next()) {
-                dbEntries.add(resultSet.getString(1));
-            }
-        } 
-        catch (Exception e) {
-            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
-        }
-        return dbEntries;
-    }
-
-    private static void saveIsRegistered() {
+    protected static void saveIsRegistered() {
         log.debug("saving registration");
         AboutBean about = new AboutBean();
         String genepatternVersion = about.getGenePatternVersion();
@@ -358,18 +332,13 @@ public class RegisterServerBean {
         if (dbRegisteredVersion != null) {
             return;
         }
-
+        
         // update the DB
-        try {
-            BaseDAO dao = new BaseDAO();
-            String sqlIns = "insert into props values ('registeredVersion"+genepatternVersion+"', '"+genepatternVersion+"')";
-            dao.executeUpdate(sqlIns);
-            System.setProperty(GPConstants.REGISTERED_SERVER, genepatternVersion);
-        } 
-        catch (Exception e) {
-            // either DB is down or we already have it there
-            log.debug(e);
-        }
+        saveIsRegistered(genepatternVersion);
+    }
+    
+    protected static boolean saveIsRegistered(final String genepatternVersion) {
+        return Props.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
     }
 
     public void setRegistrationUrl(String url) {

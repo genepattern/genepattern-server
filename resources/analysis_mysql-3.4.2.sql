@@ -1,4 +1,4 @@
-create table eula_record (
+create table EULA_RECORD (
     id bigint not null auto_increment,
     user_id varchar(255) not null,
     lsid varchar(255) not null,

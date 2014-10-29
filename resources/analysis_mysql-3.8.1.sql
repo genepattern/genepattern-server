@@ -1,4 +1,4 @@
-create table job_input_value (
+create table JOB_INPUT_VALUE (
     gp_job_no integer not null,
     idx integer default 1 not null,
     pname varchar(511) not null,
@@ -13,7 +13,7 @@ create table job_input_value (
 --
 -- small change to make it easier to remove eula records
 -- 
-alter table eula_remote_queue
+alter table EULA_REMOTE_QUEUE
     add constraint erq_fk
     FOREIGN KEY (eula_record_id) references eula_record(id)
     on delete cascade;

@@ -3,7 +3,7 @@
 --     are POSTed to a particular remote server
 --     the 'recorded' field is set to true (aka 1) after the POST has succeeded.
 --
-create table eula_remote_queue (
+create table EULA_REMOTE_QUEUE (
     eula_record_id bigint not null references eula_record(id),
     remote_url varchar(255) not null,
     recorded bit default 0 not null,

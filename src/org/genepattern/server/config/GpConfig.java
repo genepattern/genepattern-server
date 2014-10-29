@@ -28,6 +28,22 @@ public class GpConfig {
     public static final String PROP_SHOW_ESTIMATED_QUEUETIME="gp.showEstimatedQueuetime";
 
     /**
+     * The directory to write temporary files to
+     */
+    public static final String PROP_TEMP_DIR="gp.temp.dir";
+
+    /**
+     * The directory to write files uploaded from SOAP
+     */
+    public static final String PROP_SOAP_ATT_DIR="soap.attachment.dir";
+
+    /**
+     * The directory to write the log files
+     */
+    public static final String PROP_LOG_DIR="gp.log";
+
+
+    /**
      * Initialize the GenePatternURL from System.property
      * @return
      */
@@ -470,13 +486,18 @@ public class GpConfig {
     public File getSoapAttDir(GpContext gpContext) {
         String soapAttDirStr= "../temp/attachments";
         File soapAttDir = new File(soapAttDirStr);
-        return getGPFileProperty(gpContext, "soap.attachment.dir", soapAttDir);
+        return getGPFileProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, soapAttDir);
     }
 
     public File getTempDir(GpContext gpContext) {
         String temp = System.getProperty("java.io.tmpdir");
         File tempDir = new File(temp);
-        return getGPFileProperty(gpContext, "gp.temp.dir", tempDir);
+        return getGPFileProperty(gpContext, GpConfig.PROP_TEMP_DIR, tempDir);
+    }
+
+    public File getLogDir(GpContext gpContext) {
+        File logDir = new File("logs");
+        return getGPFileProperty(gpContext, GpConfig.PROP_LOG_DIR, logDir);
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {

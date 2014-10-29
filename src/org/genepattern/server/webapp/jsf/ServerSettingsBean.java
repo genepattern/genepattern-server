@@ -35,6 +35,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.purger.PurgerFactory;
@@ -94,8 +95,7 @@ public class ServerSettingsBean implements Serializable {
 	            "tasklib", 
 	            "tomcatCommonLib", 
 	            "webappDir",
-	            "log4j.appender.R.File", 
-	            "pipeline.cp", 
+	            "pipeline.cp",
 	            "pipeline.main", 
 	            "pipeline.vmargs", 
 	            "installedPatchLSIDs", 
@@ -382,29 +382,50 @@ public class ServerSettingsBean implements Serializable {
     /**
      * @return
      */
-    private File getGpLogFile() {
-	String logPath = settings.getProperty("log4j.appender.R.File");
-	if (logPath == null || !new File(logPath).exists()) {
-	    String newLogPath = settings.getProperty(gpLogPath);
-	    if (newLogPath != null) {
-		return new File(newLogPath);
-	    }
-	}
-	return new File(logPath);
+    private File getGpLogFile()
+    {
+        File logDir = ServerConfigurationFactory.instance().getLogDir(GpContext.getServerContext());
+        File gpLogFile =  new File(logDir, "genepattern.log");
+        String logPath = null;
+        try{
+            logPath = gpLogFile.getCanonicalPath();
+        }
+        catch(IOException io)
+        {
+            log.error("Error getting path to genepattern.log file", io);
+        }
+        if (logPath == null || !new File(logPath).exists()) {
+            String newLogPath = settings.getProperty(gpLogPath);
+            if (newLogPath != null) {
+            return new File(newLogPath);
+            }
+        }
+        return new File(logPath);
     }
 
     /**
      * @return
      */
-    private File getWsLogFile() {
-	String logPath = settings.getProperty("log4j.appender.All.File");
-	if (logPath == null || !new File(logPath).exists()) {
-	    String newLogPath = settings.getProperty(wsLogPath);
-	    if (newLogPath != null) {
-		return new File(newLogPath);
-	    }
-	}
-	return new File(logPath);
+    private File getWsLogFile()
+    {
+        File logDir = ServerConfigurationFactory.instance().getLogDir(GpContext.getServerContext());
+	    File wsLogFile =  new File(logDir, "webserver.log");
+        String logPath = null;
+        try{
+            logPath = wsLogFile.getCanonicalPath();
+        }
+        catch(IOException io)
+        {
+            log.error("Error getting path to webserver.log file", io);
+        }
+
+        if (logPath == null || !new File(logPath).exists()) {
+            String newLogPath = settings.getProperty(wsLogPath);
+            if (newLogPath != null) {
+            return new File(newLogPath);
+            }
+        }
+	    return new File(logPath);
     }
 
     /**

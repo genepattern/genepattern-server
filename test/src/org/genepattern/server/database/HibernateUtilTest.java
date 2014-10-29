@@ -13,11 +13,16 @@
 package org.genepattern.server.database;
 
 
-import junit.framework.TestCase;
+import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.database.HibernateUtil;
+import org.junit.Test;
 
-public class HibernateUtilTest extends TestCase {
+
+public class HibernateUtilTest {
     
-    public void testGetNextSequenceValue() {
+    @Test
+    public void testGetNextSequenceValue() throws Exception {
+        DbUtil.initDb();
     	HibernateUtil.beginTransaction();
         System.setProperty("database.vendor", "HSQL");
         String seqName = "lsid_suite_identifier_seq";       

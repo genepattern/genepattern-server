@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration> 
+  <!-- session-factory --> 
+  <session-factory name="hibernateSessionFactory"> 
+    <!-- Database connection settings -->
+    <property name='connection.driver_class'>com.mysql.jdbc.Driver</property>
+    <property name='connection.url'>jdbc:mysql://127.0.0.1:3306/genepattern</property>
+    <property name='connection.username'>genepattern</property>
+    <property name='connection.password'>genepattern</property>
+ 
+    <!-- JDBC connection pool (use the built-in) -->
+    <property name='connection.pool_size'>1</property>
+  
+    <!-- SQL dialect -->
+    <property name='dialect'>org.hibernate.dialect.MySQLDialect</property>
+    <!--   See more at: http://www.javabeat.net/configure-mysql-database-with-hibernate-mappings/ -->
+    
+    
+    
+    <property name="hibernate.current_session_context_class">thread</property>
+    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+    
+    <!--  auto-create ddl, uncomment this for developing new schema, make sure to comment it back before deploying to production -->
+    <!--  property name="hbm2ddl.auto">update</property --> 
+
+    <!--  MySql settings -->
+    <!--  example jdbcUrl: jdbc:mysql://localhost:3306/genepattern -->
+    <property name="hibernate.default_schema">genepattern</property>
+    <property name='dialect'>org.hibernate.dialect.MySQLDialect</property>
+
+    <!--  hsql settings -->
+    <!--  
+    <property name="hibernate.default_schema">PUBLIC</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
+    -->
+    
+    <!-- oracle settings -->
+    <!-- replace the hql settings with these oracle settings when connecting to an oracle db, don't forget to enter a valid schema  
+    <property name="hibernate.default_schema">GP_SCHEMA</property>
+    <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
+    -->    
+    
+    <!--  Misc settings -->
+    <property name="hibernate.jdbc.batch_size">20</property>
+    <property name="hibernate.statement_cache.size">0</property>
+
+    <!--  for debugging -->
+    <property name="show_sql">false</property> 
+
+    <!-- Mappings -->
+    <!-- mapping hbm.xml files are defined in the HibernateUtil.class -->
+    <!-- annotated classes are defined in the HibernateUtil.class -->
+
+  </session-factory>
+</hibernate-configuration>
