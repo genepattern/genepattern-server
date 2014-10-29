@@ -1,6 +1,5 @@
 package org.genepattern.server.config;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 
 /**
@@ -18,7 +17,6 @@ import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
  * @author pcarr
  */
 public class ServerConfigurationFactory {
-    private static Logger log = Logger.getLogger(ServerConfigurationFactory.class);
     
     public static final String PROP_CONFIG_FILE = "config.file";
     //for compatibility with GP 3.2.3 and GP 3.2.4
