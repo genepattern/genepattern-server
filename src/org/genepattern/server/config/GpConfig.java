@@ -495,9 +495,29 @@ public class GpConfig {
         return getGPFileProperty(gpContext, GpConfig.PROP_TEMP_DIR, tempDir);
     }
 
-    public File getLogDir(GpContext gpContext) {
-        File logDir = new File("logs");
-        return getGPFileProperty(gpContext, GpConfig.PROP_LOG_DIR, logDir);
+    public File getLogDir(GpContext gpContext)
+    {
+        File logDir = null;
+        if(System.getProperty("GENEPATTERN_HOME") != null)
+        {
+            logDir = new File(System.getProperty("GENEPATTERN_HOME"), "logs");
+        }
+        else
+        {
+            logDir = new File("../logs");
+        }
+
+        return logDir;
+    }
+
+    public File getGPLogFile(GpContext gpContext)
+    {
+        return new File(getLogDir(gpContext), "genepattern.log");
+    }
+
+    public File getWsLogFile(GpContext gpContext)
+    {
+        return new File(getLogDir(gpContext), "webserver.log");
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {

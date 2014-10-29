@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.*;
@@ -49,45 +50,54 @@ import org.genepattern.webservice.TaskInfoCache;
  * @author Jim Lerner
  */
 public class StartupServlet extends HttpServlet {
-    private static Logger log = Logger.getLogger(StartupServlet.class);
 
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
-    private void initLogging()
+    private static Logger getLog()
+    {
+        return Logger.getLogger(StartupServlet.class);
+    }
+
+    public static void  initLogger()throws Exception
+    {
+        File logDir = null;
+
+        if(System.getProperty("GENEPATTERN_HOME") != null)
+        {
+            logDir = new File(System.getProperty("GENEPATTERN_HOME"), "logs");
+        }
+        else
+        {
+            logDir = new File("../logs");
+        }
+
+        initLogger(logDir);
+    }
+
+    public static void initLogger(File logDir)throws Exception
+    {
+        if(logDir == null)
+        {
+            throw new IllegalArgumentException("The log directory must not be null");
+        }
+
+        System.setProperty("gp.log", logDir.getCanonicalPath());
+
+        URL log4jURL = StartupServlet.class.getResource("/gp_log4j.properties");
+        PropertyConfigurator.configure(log4jURL.getFile());
+    }
+
+    public StartupServlet()
     {
         try
         {
-            //get the directory to write the logs to
-            File logDir = ServerConfigurationFactory.instance().getLogDir(GpContext.getServerContext());
-            //System.setProperty("gp.log", logDir.getCanonicalPath());
-
-            Properties log4jprops = new Properties();
-            InputStream is = this.getClass().getResourceAsStream("/gp_log4j.properties");
-            log4jprops.load( is );
-
-            for (Map.Entry<Object, Object> entry : log4jprops.entrySet())
-            {
-                String propName= (String)entry.getKey();
-                String value= (String)entry.getValue();
-
-                //set the directory of the log files to what is specified in gp config
-                if(propName.toLowerCase().matches("^log4j.appender.*.file$"))
-                {
-                    File logFile = new File(logDir, value);
-                    log4jprops.setProperty(propName, logFile.getCanonicalPath());
-                }
-            }
-
-            PropertyConfigurator.configure(log4jprops);
+            initLogger();
         }
-        catch(IOException io)
+        catch(Exception io)
         {
-            log.error(io);
+            io.printStackTrace();
         }
-    }
 
-    public StartupServlet() {
-        initLogging();
         announceStartup();
     }
     
@@ -97,11 +107,11 @@ public class StartupServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
+
         //this is for debugging only
         //System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
 
-        log.info("\tinitializing properties...");
+        getLog().info("\tinitializing properties...");
         ServletContext application = config.getServletContext();
         String genepatternProperties = config.getInitParameter("genepattern.properties");
         application.setAttribute("genepattern.properties", genepatternProperties);
@@ -119,27 +129,27 @@ public class StartupServlet extends HttpServlet {
             try {
                 String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
 
-                log.info("\tstarting HSQL database...");
+                getLog().info("\tstarting HSQL database...");
                 HsqlDbUtil.startDatabase(hsqlArgs, expectedSchemaVersion);
             }
             catch (Throwable t) {
-                log.error("Unable to start HSQL Database!", t);
+                getLog().error("Unable to start HSQL Database!", t);
                 return;
             }
         }
         
-        log.info("\tchecking database connection...");
+        getLog().info("\tchecking database connection...");
         try {
             HibernateUtil.beginTransaction();
         }
         catch (Throwable t) {
-            log.debug("Error connecting to the database", t);
+            getLog().debug("Error connecting to the database", t);
             Throwable cause = t.getCause();
             if (cause == null) {
                 cause = t;
             }
-            log.error("Error connecting to the database: "+cause);
-            log.error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            getLog().error("Error connecting to the database: " + cause);
+            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
             throw new ServletException(t);
         }
         finally {
@@ -148,20 +158,20 @@ public class StartupServlet extends HttpServlet {
         
         //load the configuration file
         try {
-            log.info("\tinitializing ServerConfiguration...");
+            getLog().info("\tinitializing ServerConfiguration...");
             String configFilepath = ServerConfigurationFactory.instance().getConfigFilepath();
         }
         catch (Throwable t) {
-            log.error("error initializing ServerConfiguration", t);
+            getLog().error("error initializing ServerConfiguration", t);
         }
         
         //initialize the taskInfoCache
         try {
-            log.info("\tinitializing TaskInfoCache...");
+            getLog().info("\tinitializing TaskInfoCache...");
             TaskInfoCache.instance();
         }
         catch (Throwable t) {
-            log.error("error initializing taskInfo cache", t);
+            getLog().error("error initializing taskInfo cache", t);
         }
         
         CommandManagerFactory.startJobQueue();
@@ -170,30 +180,30 @@ public class StartupServlet extends HttpServlet {
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
         //clear system alert messages
-        log.info("\tinitializing system messages...");
+        getLog().info("\tinitializing system messages...");
         try {
             SystemAlertFactory.getSystemAlert().deleteOnRestart();
         }
         catch (Exception e) {
-            log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
+            getLog().error("Error clearing system messages on restart: " + e.getLocalizedMessage(), e);
         }
         
         //attempt to migrate user upload files from GP 3.3.2 to GP 3.3.3
         try {
-            log.info("\tinitializing user upload directories ...");
+            getLog().info("\tinitializing user upload directories ...");
             MigrationTool.migrateUserUploads();
         }
         catch (Throwable t) {
-            log.error("Error initializing user upload directories: "+t.getLocalizedMessage(), t);
+            getLog().error("Error initializing user upload directories: " + t.getLocalizedMessage(), t);
         }
         
         //attempt to migrate job upload files from GP 3.3.2 (and earlier) to GP 3.3.3
         try {
-            log.info("\tmigrating job upload directories ...");
+            getLog().info("\tmigrating job upload directories ...");
             MigrationTool.migrateJobUploads();
         }
         catch (Throwable t) {
-            log.error("Error migrating job upload directories: "+t.getLocalizedMessage(), t);
+            getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
         }
         
         //start the JobPurger
@@ -228,7 +238,7 @@ public class StartupServlet extends HttpServlet {
         String genePatternURL = System.getProperty("GenePatternURL", "");
         if (genePatternURL == null || genePatternURL.trim().length() == 0) {
             try {
-                log.error("Error, GenePatternURL not set, initializing from canonical host name ... ");
+                getLog().error("Error, GenePatternURL not set, initializing from canonical host name ... ");
                 InetAddress addr = InetAddress.getLocalHost();
                 String host_address = addr.getCanonicalHostName();
                 String portStr = System.getProperty("GENEPATTERN_PORT", "");
@@ -239,7 +249,7 @@ public class StartupServlet extends HttpServlet {
                 contextPath = System.getProperty("GP_Path", "/gp");
                 String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
                 System.setProperty("GenePatternURL", genePatternServerURL);
-                log.error("setting GenePatternURL to "+genePatternServerURL);
+                getLog().error("setting GenePatternURL to " + genePatternServerURL);
             } 
             catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -253,7 +263,7 @@ public class StartupServlet extends HttpServlet {
         StringBuffer startupMessage = new StringBuffer();
         startupMessage.append(NL + STARS + NL);
         startupMessage.append("Starting GenePatternServer ... ");
-        log.info(startupMessage);
+        getLog().info(startupMessage);
     }
  
     protected void announceReady() {
@@ -290,34 +300,34 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tsoap.attachment.dir: "+ ServerConfigurationFactory.instance().getSoapAttDir(serverContext) + NL);
         startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
         startupMessage.append(stars);
-        
-        log.info(startupMessage);
+
+        getLog().info(startupMessage);
     }
 
     public void destroy() {
-        log.info("StartupServlet: destroy called");
+        getLog().info("StartupServlet: destroy called");
         
         //stop the job purger
         PurgerFactory.instance().stop();
 
         try {
-            log.info("stopping job queue ...");
+            getLog().info("stopping job queue ...");
             CommandManagerFactory.stopJobQueue();
-            log.info("done!");
+            getLog().info("done!");
         }
         catch (Throwable t) {
-            log.error("Error stopping job queue: "+t.getLocalizedMessage(), t);
+            getLog().error("Error stopping job queue: " + t.getLocalizedMessage(), t);
         }
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
-                log.info("stopping HSQLDB ...");
+                getLog().info("stopping HSQLDB ...");
                 HsqlDbUtil.shutdownDatabase();
-                log.info("done!");
+                getLog().info("done!");
             }
             catch (Throwable t) {
-                log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
+                getLog().error("Error stopoping HSQLDB: " + t.getLocalizedMessage(), t);
             }
         }
 
@@ -325,22 +335,22 @@ public class StartupServlet extends HttpServlet {
             Thread t = eThreads.nextElement();
             try {
                 if (t.isAlive()) {
-                    log.info("Interrupting " + t.getName());
+                    getLog().info("Interrupting " + t.getName());
                     t.interrupt();
                     t.setPriority(Thread.NORM_PRIORITY);
                     t.join();
-                    log.info(t.getName() + " exited");
+                    getLog().info(t.getName() + " exited");
                 }
             } 
             catch (Throwable e) {
-                log.error(e);
+                getLog().error(e);
             }
         }
         vThreads.removeAllElements();
 
-        log.info("StartupServlet: destroy, calling dumpThreads...");
+        getLog().info("StartupServlet: destroy, calling dumpThreads...");
         dumpThreads();
-        log.info("StartupServlet: destroy done");
+        getLog().info("StartupServlet: destroy done");
     }
 
     /**
@@ -373,12 +383,12 @@ public class StartupServlet extends HttpServlet {
             Properties props = new Properties();
             fis = new FileInputStream(propFile);
             props.load(fis);
-            log.info("\tloaded GP properties from " + propFile.getCanonicalPath());
+            getLog().info("\tloaded GP properties from " + propFile.getCanonicalPath());
 
             if (customPropFile.exists()) {
                 customFis = new FileInputStream(customPropFile);
                 props.load(customFis);
-                log.info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
+                getLog().info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
             }
 
             // copy all of the new properties to System properties
@@ -420,7 +430,7 @@ public class StartupServlet extends HttpServlet {
             for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
                 String propName = (String) iProps.next();
                 String propValue = (String) tmProps.get(propName);
-                log.debug(propName + "=" + propValue);
+                getLog().debug(propName + "=" + propValue);
             }
         } 
         catch (IOException ioe) {
@@ -444,7 +454,7 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void dumpThreads() {
-        log.info("StartupServlet.dumpThreads: what's still running...");
+        getLog().info("StartupServlet.dumpThreads: what's still running...");
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
         while (tg.getParent() != null) {
             tg = tg.getParent();
@@ -461,7 +471,7 @@ public class StartupServlet extends HttpServlet {
             if (!t.isAlive()) {
                 continue;
             }
-            log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
+            getLog().info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
                     + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
 
             //for debugging            
@@ -481,17 +491,20 @@ public class StartupServlet extends HttpServlet {
             
         }
         if (numThreads == MAX_THREADS) {
-            log.info("Possibly more than " + MAX_THREADS + " are running.");
+            getLog().info("Possibly more than " + MAX_THREADS + " are running.");
         }
     }
 }
 
 class LaunchThread extends Thread {
-    private static Logger log = Logger.getLogger(LaunchThread.class);
-
     Method mainMethod;
     String[] args;
     StartupServlet parent;
+
+    private static Logger getLog()
+    {
+        return Logger.getLogger(LaunchThread.class);
+    }
 
     public LaunchThread(String taskName, Method mainMethod, String[] args, StartupServlet parent) {
         super(taskName);
@@ -503,22 +516,22 @@ class LaunchThread extends Thread {
 
     public void run() {
         try {
-            log.debug("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
+            getLog().debug("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
             mainMethod.invoke(null, new Object[] { args });
             parent.log(getName() + " " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName()
                     + " returned from execution");
         } 
         catch (IllegalAccessException iae) {
-            log.error("Can't invoke main in " + getName(), iae);
+            getLog().error("Can't invoke main in " + getName(), iae);
         } 
         catch (IllegalArgumentException iae2) {
-            log.error("Bad args for " + getName(), iae2);
+            getLog().error("Bad args for " + getName(), iae2);
         } 
         catch (InvocationTargetException ite) {
-            log.error("InvocationTargetException for " + getName(), ite.getTargetException());
+            getLog().error("InvocationTargetException for " + getName(), ite.getTargetException());
         } 
         catch (Exception e) {
-            log.error("Exception for " + getName(), e);
+            getLog().error("Exception for " + getName(), e);
         }
     }
 }
