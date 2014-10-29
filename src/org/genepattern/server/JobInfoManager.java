@@ -432,7 +432,7 @@ public class JobInfoManager {
         writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
         writer.write("\n# Job: " + jobInfoWrapper.getJobNumber());
 
-        String GP_URL = System.getProperty("GenePatternURL");
+        String GP_URL = ServerConfigurationFactory.instance().getGpUrl();
         if (GP_URL != null) {
             writer.write("    server:  ");
             writer.write(GP_URL);

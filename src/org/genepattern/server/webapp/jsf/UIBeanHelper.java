@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
@@ -198,7 +199,7 @@ public class UIBeanHelper {
         }
 
         // Otherwise use GenePatternURL if it is set
-        String server = System.getProperty("GenePatternURL", "");
+        String server = ServerConfigurationFactory.instance().getGpUrl();
         if (server != null && server.trim().length() > 0) {
             if (server.endsWith("/")) {
                 server = server.substring(0, server.length() - 1);

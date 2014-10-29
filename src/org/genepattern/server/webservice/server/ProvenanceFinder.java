@@ -61,7 +61,7 @@ public class ProvenanceFinder {
     private ProvenancePipelineResult result = new ProvenancePipelineResult();
 
     private static String getServerURLtoUpper() {
-        String serverURL = System.getProperty("GenePatternURL");
+        String serverURL = ServerConfigurationFactory.instance().getGpUrl();
         if (serverURL == null || serverURL.trim().length() == 0) {
             try {
                 String portStr = System.getProperty("GENEPATTERN_PORT", "");
@@ -550,7 +550,7 @@ public class ProvenanceFinder {
                 value = "";
             }
             // HACK++: special-case for when the value still has a literal
-            String genePatternUrl = System.getProperty("GenePatternURL");
+            String genePatternUrl = ServerConfigurationFactory.instance().getGpUrl();
             if (value != null && genePatternUrl != null && value.startsWith(genePatternUrl)) {
                 value = value.replace(genePatternUrl, "<GenePatternURL>");
             }

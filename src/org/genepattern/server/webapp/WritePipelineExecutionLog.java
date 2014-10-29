@@ -28,6 +28,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * 
@@ -50,7 +51,7 @@ public class WritePipelineExecutionLog {
     public WritePipelineExecutionLog(File logFile, JobInfoWrapper jobInfo) {
         this.logFile = logFile;
         this.pipelineJobInfo = jobInfo;
-        this.genepatternUrl = System.getProperty("GenePatternURL");
+        this.genepatternUrl = ServerConfigurationFactory.instance().getGpUrl();
     }
     
     public void writeLogFile() {

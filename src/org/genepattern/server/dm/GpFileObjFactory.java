@@ -318,7 +318,7 @@ public class GpFileObjFactory {
     static private String[] splitUri(URI uri) {
         String servletPathPlus = uri.getPath();
         //1) chop off the servlet context (e.g. '/gp')
-        String gpPath = System.getProperty("GP_Path", "/gp");
+        String gpPath=ServerConfigurationFactory.instance().getGpPath();
         if (servletPathPlus.startsWith(gpPath)) {
             servletPathPlus = servletPathPlus.substring( gpPath.length() );
         }

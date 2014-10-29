@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -56,7 +56,7 @@ public class TestLoadModuleHelper {
 
         jobInfoLoader = new JobInfoLoaderFromMap();
         
-        gpUrl=GpFilePath.getGenePatternUrl();
+        gpUrl=ServerConfigurationFactory.instance().getGenePatternURL();
     }
     
     @Before

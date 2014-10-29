@@ -1267,7 +1267,7 @@ public class PipelineHandler {
             //special-case: handle space ' ' char in filename
             //TODO: make this more robust by using a standard method for transforming server files to URLs
             fileName = fileName.replaceAll(" ", "%20");
-            String url = getServer() + context + "/jobResults/" + fileName;
+            String url = ServerConfigurationFactory.instance().getGpUrl() + "jobResults/" + fileName;
             return url;
         }
         catch (Exception e) {
@@ -1580,30 +1580,6 @@ public class PipelineHandler {
         return isTaskLog;
     }
 
-    private static String server = null;
-    private static String getServer() {
-        if (server != null) {
-            return server;
-        }
-        //1) set server
-        String gpUrl = System.getProperty("GenePatternURL");
-        URL serverFromFile = null;
-        try {
-            serverFromFile = new URL(gpUrl);
-        } 
-        catch (MalformedURLException e) {
-            log.error("Invalid GenePatternURL: " + gpUrl, e);
-        }
-        String host = serverFromFile.getHost();
-        String port = "";
-        int portNum = serverFromFile.getPort();
-        if (portNum >= 0) {
-            port = ":" + portNum;
-        }
-        server = serverFromFile.getProtocol() + "://" + host + port;
-        return server;
-    }
-
     private static boolean isFileType(File file, String fileFormat) {
         if (file.getName().toLowerCase().endsWith(".odf")) {
             return ODFModelType(file).equalsIgnoreCase(fileFormat);
@@ -1672,7 +1648,7 @@ public class PipelineHandler {
             String value = param.getValue();
             if (value != null && value.startsWith(gpUrlTag)) {
                 // substitute <GenePatternURL> with actual value
-                value = value.replace(gpUrlTag, System.getProperty("GenePatternURL"));
+                value = value.replace(gpUrlTag, ServerConfigurationFactory.instance().getGpUrl());
                 // substitute <LSID> flags for pipeline files
                 value = value.replace(lsidTag, lsidValue);
                 param.setValue(value);

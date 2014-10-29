@@ -315,15 +315,14 @@ public class GenePatternAnalysisTask {
         String gpHost = null;
         String hostAddress = null;
         try {
-            if (System.getProperty("GenePatternURL") != null) {
-                URL gpUrl = new URL(System.getProperty("GenePatternURL"));
-                gpHost = gpUrl.getHost();
-                hostAddress = InetAddress.getLocalHost().getHostAddress();
-            }
-        } 
-        catch (MalformedURLException mfe) {
+            URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
+            gpHost = gpUrl.getHost();
+            hostAddress = InetAddress.getLocalHost().getHostAddress();
         } 
         catch (UnknownHostException uhe) {
+        }
+        catch (Throwable t) {
+            log.error(t);
         }
 
         String requestedHost = url.getHost();
