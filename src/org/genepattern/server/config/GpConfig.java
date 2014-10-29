@@ -36,6 +36,14 @@ public class GpConfig {
      * The directory to write files uploaded from SOAP
      */
     public static final String PROP_SOAP_ATT_DIR="soap.attachment.dir";
+    
+    /**
+     * The location for job results files. 
+     * Each job runs in a new working directory, by default it is created in the 'jobs' folder,
+     *     mkdir <jobs>/<jobId>, e.g.
+     *     mkdir /Applications/GenePatternServer/jobResults/1
+     */
+    public static final String PROP_JOBS="jobs";
 
     /**
      * The directory to write the log files
@@ -380,7 +388,7 @@ public class GpConfig {
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
         //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
-        String jobsDirPath = getGPProperty(context, "jobs");
+        String jobsDirPath = getGPProperty(context, PROP_JOBS);
         if (jobsDirPath != null) {
             return new File(jobsDirPath);
         }
@@ -403,7 +411,7 @@ public class GpConfig {
 
         File userDir = getUserDir(context);
         if (userDir != null) {
-            File root = new File(userDir, "jobs");
+            File root = new File(userDir, PROP_JOBS);
             jobsDirPath = root.getPath();
         }
 
