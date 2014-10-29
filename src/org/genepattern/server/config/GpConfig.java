@@ -90,6 +90,7 @@ public class GpConfig {
     }
 
     private final URL genePatternURL;
+    private final String gpUrl;
     private final String genePatternVersion;
     private final File resourcesDir;
     private final List<Throwable> initErrors;
@@ -119,6 +120,7 @@ public class GpConfig {
         else {
             this.genePatternURL=initGpUrl(this.serverProperties);
         }
+        this.gpUrl=this.genePatternURL.toExternalForm();
         if (in.configFromYaml != null && in.configFromYaml.getConfigYamlProperties() != null) {
             this.yamlProperties=in.configFromYaml.getConfigYamlProperties();
         }
@@ -144,6 +146,14 @@ public class GpConfig {
      */
     public URL getGenePatternURL() {
         return genePatternURL;
+    }
+
+    /**
+     * Get the String representation of the <GenePatternURL>, including the trailing slash.
+     * @return
+     */
+    public String getGpUrl() {
+        return gpUrl;
     }
 
     public String getGenePatternVersion() {
