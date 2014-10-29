@@ -305,11 +305,6 @@ public abstract class AbstractPipelineCodeGenerator {
         return "";
     }
 
-    public String getFullServerURL() {
-        String path = System.getProperty("GP_Path");
-        return path != null ? server + path + "/" : server + "/gp/";
-    }
-
     public String emitUserInstructions() {
         return "";
     }
