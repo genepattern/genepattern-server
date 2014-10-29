@@ -596,6 +596,15 @@ public class TasksResource {
             String href=getTaskInfoPath(request, taskInfo);
             jsonObj.put("href", href);
             jsonObj.put("name", taskInfo.getName());
+            jsonObj.put("description", taskInfo.getDescription());
+            try {
+                final LSID lsid=new LSID(taskInfo.getLsid());
+                jsonObj.put("version", lsid.getVersion());
+            }
+            catch (MalformedURLException e) {
+                log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
+            }
+            jsonObj.put("documentation", getDocLink(request, taskInfo));
             jsonObj.put("lsid", taskInfo.getLsid());
             JSONArray paramsJson=new JSONArray();
             for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
