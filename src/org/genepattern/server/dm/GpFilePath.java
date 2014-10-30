@@ -91,13 +91,32 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
             log.debug("known error: uri is null");
         }
         else {
-            str += relativeUri.toString();
+            //str += relativeUri.toString();
+            str = glue(str, relativeUri.toString());
         }
         if (isDirectory() && !str.endsWith("/")) {
             str = str + "/";
         }
         URL url = new URL(str);
         return url;
+    }
+    
+    /** append the gpUrl to the relative uri, making sure to not duplicate the '/' character. */
+    protected String glue(String prefix, String suffix) {
+        if (prefix.endsWith("/")) {
+            if (suffix.startsWith("/")) {
+                return prefix + suffix.substring(1);
+            }
+            else {
+                return prefix + "/" + suffix;
+            }
+        }
+        if (suffix.startsWith("/")) {
+            return prefix + suffix;
+        }
+        else {
+            return prefix + "/" + suffix;
+        }
     }
 
     /**
