@@ -214,7 +214,7 @@ public class JobsResource {
     /////////////////////////////////////
 
     /**
-     * Job search API.
+     * Job search API, default GET response for this resource.
      * Template:
        <pre>
        curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
@@ -245,7 +245,6 @@ public class JobsResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/")
     public Response getJobSearchResults(
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
