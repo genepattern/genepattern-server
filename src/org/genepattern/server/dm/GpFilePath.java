@@ -1,7 +1,6 @@
 package org.genepattern.server.dm;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -278,8 +277,6 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
 
     /**
      * Get the read access permission flag for this file path.
-     * 
-     * TODO: implement isAdmin in the ServerConfiguration Context class.
      * 
      * @param isAdmin, true if the current user has admin privileges.
      * @param userContext
