@@ -99,7 +99,7 @@ public class TagResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTags(@Context UriInfo uriInfo, @Context HttpServletRequest request, String body)
+    public Response getTags(@Context UriInfo uriInfo, @Context HttpServletRequest request)
     {
         try
         {
