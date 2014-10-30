@@ -19,9 +19,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.DbException;
@@ -43,7 +46,6 @@ import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
-import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
@@ -60,6 +62,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.sun.jersey.api.client.ClientResponse;
 
 /**
  * RESTful implementation of the /jobs resource.
