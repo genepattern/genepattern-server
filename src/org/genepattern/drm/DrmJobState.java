@@ -30,8 +30,8 @@ public enum DrmJobState {
     STARTED(null),
       /** The job is running on an execution host. */
       RUNNING(STARTED, "The job is running on an execution host"),
-      /** The job has been suspended by the user, the system or the administrator. */
-      SUSPENDED(STARTED, "The job has been suspended by the user, the system or the administrator"),
+      /** The running job has been suspended by the user, the system or the administrator. */
+      SUSPENDED(STARTED, "The running job has been suspended by the user, the system or the administrator"),
       /** The job was re-queued by the system, and is eligible to run. */
       REQUEUED(STARTED, "The job was re-queued by the system, and is eligible to run"),
       /** The job was re-queued by the system, and is currently placed on hold by the system, the administrator, or the submitting user. */

@@ -13,7 +13,7 @@ import org.genepattern.drm.DrmJobState;
 public enum LsfState {
     NULL (DrmJobState.UNDETERMINED, "0x00",    "State null"),
     PEND (DrmJobState.QUEUED,       "0x01",    "The job is pending, i.e., it has not been dispatched yet."),
-    PSUSP(DrmJobState.SUSPENDED,    "0x02",    "The pending job was suspended by its owner or the LSF system administrator."),
+    PSUSP(DrmJobState.QUEUED_HELD,  "0x02",    "The pending job was suspended by its owner or the LSF system administrator."),
     RUN  (DrmJobState.RUNNING,      "0x04",    "The job is running."),
     SSUSP(DrmJobState.SUSPENDED ,   "0x08",    "The running job was suspended by the system because an execution host was overloaded or the queue run window closed."),
     USUSP(DrmJobState.SUSPENDED,    "0x10",    "The running job was suspended by its owner or the LSF system administrator."),
