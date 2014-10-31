@@ -15,14 +15,17 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.security.Security;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletConfig;
@@ -30,7 +33,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -53,63 +57,120 @@ public class StartupServlet extends HttpServlet {
 
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
-    private static Logger getLog()
-    {
+    private Logger log=null;
+    private Logger getLog() {
+        if (this.log==null) {
+            return Logger.getLogger(StartupServlet.class);
+        }
+        return this.log;
+    }
+
+    public Logger initLogger(final File gpHomeDir, final File resourcesDir) throws Exception {
+        File logDir=new File(gpHomeDir, "logs");
+        logDir.mkdirs();
+        System.setProperty("gp.log", logDir.getAbsolutePath());
+        //URL log4jURL = StartupServlet.class.getResource("/gp_log4j.properties");
+        //PropertyConfigurator.configure(log4jURL.getFile());
+        PropertyConfigurator.configure(new File(resourcesDir, "log4j.properties").getAbsolutePath());
         return Logger.getLogger(StartupServlet.class);
     }
 
-    public static void  initLogger()throws Exception
-    {
-        File logDir = null;
-
-        if(System.getProperty("GENEPATTERN_HOME") != null)
-        {
-            logDir = new File(System.getProperty("GENEPATTERN_HOME"), "logs");
-        }
-        else
-        {
-            logDir = new File("../logs");
-        }
-
-        initLogger(logDir);
-    }
-
-    public static void initLogger(File logDir)throws Exception
-    {
-        if(logDir == null)
-        {
-            throw new IllegalArgumentException("The log directory must not be null");
-        }
-
-        System.setProperty("gp.log", logDir.getCanonicalPath());
-
-        URL log4jURL = StartupServlet.class.getResource("/gp_log4j.properties");
-        PropertyConfigurator.configure(log4jURL.getFile());
-    }
-
-    public StartupServlet()
-    {
-        try
-        {
-            initLogger();
-        }
-        catch(Exception io)
-        {
-            io.printStackTrace();
-        }
-
-        announceStartup();
+    public StartupServlet() {
     }
     
     public String getServletInfo() {
         return "GenePatternStartupServlet";
     }
+    
+    protected String normalizePath(String pathStr) {
+        if (pathStr==null) {
+            return pathStr;
+        }
+        try {
+            return Paths.get(pathStr).toRealPath().toString();
+        }
+        catch (Throwable t) {
+            System.err.print("Error intializing path from String="+pathStr);
+            t.printStackTrace();
+            return pathStr;
+        }
+    }
+
+    /**
+     * Figure out the value of GENEPATTERN_HOME for the web application.
+     * If it's set as a system property, then use that value.
+     * If it's not already set as a system property then ...
+     *     Check the config.initParmater
+     * If it's not set as an initParameter then ...
+     *     Assume it's relative to the web application directory.
+     *     
+     * @param config
+     * @return
+     */
+    protected File initGpHomeDir(ServletConfig config) {
+        String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
+        if (gpHome==null) {
+            gpHome = config.getInitParameter("GENEPATTERN_HOME");
+        }
+        if (gpHome==null) {
+            gpHome = config.getInitParameter("gp.home");
+        }
+        if (gpHome==null) {
+            //legacy, assume it's relative to the web application
+            gpHome=config.getServletContext().getRealPath("../../../");
+        }
+        //normalize
+        gpHome=normalizePath(gpHome);
+        
+        File gpHomeDir=new File(gpHome);
+        if (gpHomeDir.isAbsolute()) {
+            return gpHomeDir;
+        }
+        else { 
+            // special-case: handle relative path
+            System.err.println("GENEPATTERN_HOME='"+gpHome+"': Should not be a relative path");
+            gpHomeDir=new File(config.getServletContext().getRealPath("../../../"), gpHome).getAbsoluteFile();
+            System.err.println("Setting GENEPATTERN_HOME="+gpHomeDir);
+            return new File(gpHome);
+        } 
+    }
+    
+    /**
+     * Figure out the path to the 'resources' directory for the web application.
+     * It used to be based on a path relative to the working directory.
+     * Now it's based on a path relative to the web application. 
+     * 
+     * Special-case: If the relative path does not exist, look
+     * @param config
+     * @param gpHomeDir
+     * @return
+     */
+    protected File initResourcesDir(final ServletConfig config, final File gpHomeDir) {
+        File resourcesDir=new File(config.getServletContext().getRealPath("../../../resources"));
+        if (!resourcesDir.exists()) {
+            // check for a path relative to gpHomeDir
+            resourcesDir=new File(gpHomeDir, "resources");
+        } 
+        return new File(normalizePath(resourcesDir.getPath())).getAbsoluteFile();
+    }
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        
+        // must init homeDir and resourcesDir ...
+        File gpHomeDir=initGpHomeDir(config);
+        File resourcesDir=initResourcesDir(config, gpHomeDir);
+        // ... before initializing logger
+        try {
+            this.log=initLogger(gpHomeDir, resourcesDir);
+        }
+        catch (Throwable t) {
+            System.err.println("Error initializing logger");
+            t.printStackTrace();
+        }
 
-        //this is for debugging only
-        //System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
+        // must initialize logger before calling any methods which output to the log
+        announceStartup();
 
         getLog().info("\tinitializing properties...");
         ServletContext application = config.getServletContext();
@@ -290,7 +351,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tGenePatternURL: " + System.getProperty("GenePatternURL") + NL );
+        startupMessage.append("\tGenePatternURL: " + ServerConfigurationFactory.instance().getGpUrl() + NL );
         startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
         startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
         startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
@@ -476,16 +537,16 @@ public class StartupServlet extends HttpServlet {
 
             //for debugging            
             //if (t.getName().startsWith("Thread-")) {
-            //    log.info("what is this thread?");
+            //    getLog().info("what is this thread?");
             //    t.dumpStack();
             //    
             //    for(StackTraceElement e : t.getStackTrace()) {
             //        String m = ""+e.getClassName()+"."+e.getMethodName();
             //        String f = ""+e.getFileName()+":"+ e.getLineNumber();
-            //        log.info(""+m+", "+f);
+            //        getLog().info(""+m+", "+f);
             //    }
             //
-            //    log.info("calling Thread.stop()...");
+            //    getLog().info("calling Thread.stop()...");
             //    t.stop();
             //}
             
