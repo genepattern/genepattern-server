@@ -92,7 +92,13 @@ public class GpConfigLoader {
     }
 
     public static GpConfig createFromSystemProps() {
+        File logDir=null;
+        return createFromSystemProps(logDir);
+    }
+    
+    public static GpConfig createFromSystemProps(final File logDir) {
         GpConfig.Builder builder=new GpConfig.Builder();
+        builder.logDir(logDir);
         File resourcesDir=null;
         try {
             resourcesDir=initResourcesDirFromSystemProps();

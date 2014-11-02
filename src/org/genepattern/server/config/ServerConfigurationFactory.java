@@ -1,5 +1,7 @@
 package org.genepattern.server.config;
 
+import java.io.File;
+
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 
 /**
@@ -22,21 +24,31 @@ public class ServerConfigurationFactory {
     //for compatibility with GP 3.2.3 and GP 3.2.4
     public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
 
-    private static GpConfig gpConfigSingleton=GpConfigLoader.createFromSystemProps();
+    private static GpConfig gpConfigSingleton=null;
     
+    private static File logDir=null;
+    public static void setLogDir(final File logDir) {
+        ServerConfigurationFactory.logDir=logDir;
+    }
+
     private ServerConfigurationFactory() {
     }
     
     synchronized public static void reloadConfiguration() {
-        gpConfigSingleton=GpConfigLoader.createFromSystemProps();
+        gpConfigSingleton=GpConfigLoader.createFromSystemProps(logDir);
         ConfigRepositoryInfoLoader.clearCache();
     }
+
     synchronized public static void reloadConfiguration(final String configFilepath) {
         gpConfigSingleton=GpConfigLoader.createFromConfigFilepath(configFilepath);
         ConfigRepositoryInfoLoader.clearCache();
     }
     
     public static GpConfig instance() {
+        // lazy init
+        if (gpConfigSingleton==null) {
+            gpConfigSingleton=GpConfigLoader.createFromSystemProps(logDir);
+        }
         return gpConfigSingleton;
     }
 

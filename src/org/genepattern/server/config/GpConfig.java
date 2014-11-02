@@ -92,6 +92,9 @@ public class GpConfig {
     private final URL genePatternURL;
     private final String gpUrl;
     private final String genePatternVersion;
+    private final File logDir;
+    private final File gpLogFile;
+    private final File webserverLogFile;
     private final File resourcesDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
@@ -102,6 +105,14 @@ public class GpConfig {
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
+        if (in.logDir!=null) {
+            this.logDir=in.logDir;
+        }
+        else {
+            this.logDir=initLogDir();
+        }
+        this.gpLogFile=new File(logDir, "genepattern.log");
+        this.webserverLogFile=new File(logDir, "webserver.log");
         this.resourcesDir=in.resourcesDir;
         this.serverProperties=in.serverProperties;
         if (in.genePatternVersion != null) {
@@ -522,7 +533,7 @@ public class GpConfig {
         return getGPFileProperty(gpContext, GpConfig.PROP_TEMP_DIR, tempDir);
     }
 
-    public File getLogDir(GpContext gpContext)
+    private File initLogDir() 
     {
         File logDir = null;
         if(System.getProperty("GENEPATTERN_HOME") != null)
@@ -539,12 +550,12 @@ public class GpConfig {
 
     public File getGPLogFile(GpContext gpContext)
     {
-        return new File(getLogDir(gpContext), "genepattern.log");
+        return gpLogFile;
     }
 
     public File getWsLogFile(GpContext gpContext)
     {
-        return new File(getLogDir(gpContext), "webserver.log");
+        return webserverLogFile;
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {
@@ -628,6 +639,7 @@ public class GpConfig {
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
+        private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
         private GpServerProperties.Builder serverPropertiesBuilder=null;
@@ -653,6 +665,11 @@ public class GpConfig {
 
         public Builder serverProperties(final GpServerProperties serverProperties) {
             this.serverProperties=serverProperties;
+            return this;
+        }
+
+        public Builder logDir(final File logDir) {
+            this.logDir=logDir;
             return this;
         }
 
