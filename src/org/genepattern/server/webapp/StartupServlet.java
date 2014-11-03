@@ -149,6 +149,7 @@ public class StartupServlet extends HttpServlet {
         // must init homeDir and resourcesDir ...
         File gpHomeDir=initGpHomeDir(config);
         File resourcesDir=initResourcesDir(config, gpHomeDir);
+        ServerConfigurationFactory.setResourcesDir(resourcesDir);
         // ... before initializing logDir 
         // By default, logDir is '<gp.home>/logs'
         try {

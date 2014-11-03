@@ -26,24 +26,30 @@ public class ServerConfigurationFactory {
 
     private static GpConfig gpConfigSingleton=null;
     
+    private static File resourcesDir=null;
+    public static void setResourcesDir(final File resourcesDir) {
+        ServerConfigurationFactory.resourcesDir=resourcesDir;
+    }
+    
     private static File logDir=null;
     public static void setLogDir(final File logDir) {
         ServerConfigurationFactory.logDir=logDir;
+    }
+
+    /** Called from junit tests. */
+    public static void setGpConfig(final GpConfig gpConfig) {
+        gpConfigSingleton=gpConfig;
+        ConfigRepositoryInfoLoader.clearCache();
     }
 
     private ServerConfigurationFactory() {
     }
     
     synchronized public static void reloadConfiguration() {
-        gpConfigSingleton=GpConfigLoader.createFromSystemProps(logDir);
+        gpConfigSingleton=GpConfigLoader.createFromSystemProps(resourcesDir, logDir);
         ConfigRepositoryInfoLoader.clearCache();
     }
 
-    synchronized public static void reloadConfiguration(final String configFilepath) {
-        gpConfigSingleton=GpConfigLoader.createFromConfigFilepath(configFilepath);
-        ConfigRepositoryInfoLoader.clearCache();
-    }
-    
     public static GpConfig instance() {
         // lazy init
         if (gpConfigSingleton==null) {
