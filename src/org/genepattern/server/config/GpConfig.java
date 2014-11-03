@@ -2,7 +2,10 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,12 +48,24 @@ public class GpConfig {
      */
     public static final String PROP_JOBS="jobs";
 
-    /**
-     * The directory to write the log files
-     */
-    public static final String PROP_LOG_DIR="gp.log";
-
-
+    public static String normalizePath(String pathStr) {
+        if (pathStr==null) {
+            return pathStr;
+        }
+        try {
+            Path thePath=Paths.get(pathStr);
+            thePath=thePath.normalize();
+            URI uri=thePath.toUri();
+            String rval=uri.getPath();
+            return rval;
+        }
+        catch (Throwable t) {
+            System.err.print("Error intializing path from String="+pathStr);
+            t.printStackTrace();
+            return pathStr;
+        }
+    }
+    
     /**
      * Initialize the GenePatternURL from System.property
      * @return
@@ -96,6 +111,8 @@ public class GpConfig {
     private final File gpLogFile;
     private final File webserverLogFile;
     private final File resourcesDir;
+    private final File gpHomeDir;
+    private final File jobsDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -114,6 +131,13 @@ public class GpConfig {
         this.gpLogFile=new File(logDir, "genepattern.log");
         this.webserverLogFile=new File(logDir, "webserver.log");
         this.resourcesDir=in.resourcesDir;
+        if (in.gpHomeDir==null) {
+            // legacy server, assume startup in <GenePatternServer>/Tomcat folder.
+            this.gpHomeDir=new File("../");
+        }
+        else {
+            this.gpHomeDir=in.gpHomeDir;
+        }
         this.serverProperties=in.serverProperties;
         if (in.genePatternVersion != null) {
             this.genePatternVersion=in.genePatternVersion;
@@ -148,6 +172,46 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
+        this.jobsDir=initJobsDir(gpHomeDir, valueLookup);
+    }
+
+    /**
+     * Initialize root 'jobs' directory, the globally set path to the jobResults directory.
+     * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
+     * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
+     * 
+     * @param gpHomeDir
+     * @param valueLookup
+     * @return
+     */
+    private static File initJobsDir(File gpHomeDir, ValueLookup valueLookup) { 
+        File jobsDir;
+        final Value value=valueLookup.getValue(GpContext.getServerContext(), PROP_JOBS);
+        if (value != null) {
+            File file=new File(value.getValue());
+            if (!file.isAbsolute()) {
+                if (gpHomeDir != null) {
+                    jobsDir=new File(gpHomeDir, value.getValue());
+                }
+                else {
+                    jobsDir=file.getAbsoluteFile();
+                } 
+            }
+            else {
+                jobsDir=file;
+            }
+        }
+        // hard-code to default value, relative to GP_HOME
+        else if (gpHomeDir != null) {
+            jobsDir=new File(gpHomeDir, "jobResults");
+        }
+        else {
+            // legacy, hard-code relative to working dir
+            jobsDir=new File("../jobResults");
+            jobsDir=jobsDir.getAbsoluteFile();
+        }
+        boolean success=jobsDir.mkdirs();
+        return jobsDir;
     }
 
     /**
@@ -404,52 +468,22 @@ public class GpConfig {
     }
 
     /**
-     * Get the jobs directory for the given user. Each job runs in a new working directory.
+     * Get the job results directory for the server. This is a global server property.
+     * In GP > 3.9.0, the default location is the GenePattern installation directory,
+     *     <GenePatternServer>/jobResults
+     * 
+     * In GP <= 3.9.0 and earlier, the default location is the web application directory,
+     *     <GenePatternServer>/Tomcat/webapps/gp/jobResults
      *
-     * circa, GP 3.2.4 and earlier, the working directory is created in the root job dir for the server,
-     *     which defaults to './webapps/gp/jobResults'.
-     * Edit the 'jobs' property to customize this location. The server configuration system enables setting
-     * this property on a per user, group, executor or module basis.
-     *
-     * coming soon, job directories, by default, will be created in ../users/<user.id>/jobs/
-     * To test this feature, remove the 'jobs' property from genepattern.properties and the configuration file.
+     * The 'jobs' property sets an alternate location. For best results set this to a global path in the 
+     * 'default' section of the config_yaml file.
+     * 
+     * Note: Custom settings are not enabled.
      *
      * @return the parent directory in which to create the new working directory for a job.
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
-        //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
-        String jobsDirPath = getGPProperty(context, PROP_JOBS);
-        if (jobsDirPath != null) {
-            return new File(jobsDirPath);
-        }
-
-        //prototype behavior, circa GP 3.3.1 and later, default location in ../users/<user.id>/jobs/
-        boolean invalidContext = false;
-        if (context == null) {
-            invalidContext = true;
-            log.error("context == null");
-        }
-        else if (context.getUserId() == null) {
-            log.error("context.userId == null");
-            invalidContext = true;
-        }
-        if (invalidContext) {
-            log.error("Missing required configuration property, 'jobs', using default location");
-            jobsDirPath = "./webapps/gp/jobResults";
-            return new File(jobsDirPath);
-        }
-
-        File userDir = getUserDir(context);
-        if (userDir != null) {
-            File root = new File(userDir, PROP_JOBS);
-            jobsDirPath = root.getPath();
-        }
-
-        if (jobsDirPath == null) {
-            throw new ServerConfigurationException("Missing required propery, 'jobs'");
-        }
-        File rootJobDir = new File(jobsDirPath);
-        return rootJobDir;
+        return jobsDir;
     }
 
     /**
@@ -642,6 +676,7 @@ public class GpConfig {
         private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
+        private File gpHomeDir=null;
         private GpServerProperties.Builder serverPropertiesBuilder=null;
         private GpServerProperties serverProperties=null;
         private ConfigFromYaml configFromYaml=null;
@@ -668,6 +703,11 @@ public class GpConfig {
             return this;
         }
 
+        public Builder gpHomeDir(final File gpHomeDir) {
+            this.gpHomeDir=gpHomeDir;
+            return this;
+        }
+        
         public Builder logDir(final File logDir) {
             this.logDir=logDir;
             return this;

@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Paths;
 import java.security.Security;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -72,20 +72,6 @@ public class StartupServlet extends HttpServlet {
         return "GenePatternStartupServlet";
     }
     
-    protected String normalizePath(String pathStr) {
-        if (pathStr==null) {
-            return pathStr;
-        }
-        try {
-            return Paths.get(pathStr).toRealPath().toString();
-        }
-        catch (Throwable t) {
-            System.err.print("Error intializing path from String="+pathStr);
-            t.printStackTrace();
-            return pathStr;
-        }
-    }
-
     /**
      * Figure out the value of GENEPATTERN_HOME for the web application.
      * If it's set as a system property, then use that value.
@@ -110,7 +96,7 @@ public class StartupServlet extends HttpServlet {
             gpHome=config.getServletContext().getRealPath("../../../");
         }
         //normalize
-        gpHome=normalizePath(gpHome);
+        gpHome=GpConfig.normalizePath(gpHome);
         
         File gpHomeDir=new File(gpHome);
         if (gpHomeDir.isAbsolute()) {
@@ -140,15 +126,16 @@ public class StartupServlet extends HttpServlet {
             // check for a path relative to gpHomeDir
             resourcesDir=new File(gpHomeDir, "resources");
         } 
-        return new File(normalizePath(resourcesDir.getPath())).getAbsoluteFile();
+        return new File(GpConfig.normalizePath(resourcesDir.getPath())).getAbsoluteFile();
     }
     
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
+    public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
         
         // must init homeDir and resourcesDir ...
-        File gpHomeDir=initGpHomeDir(config);
-        File resourcesDir=initResourcesDir(config, gpHomeDir);
+        File gpHomeDir=initGpHomeDir(servletConfig);
+        ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
+        File resourcesDir=initResourcesDir(servletConfig, gpHomeDir);
         ServerConfigurationFactory.setResourcesDir(resourcesDir);
         // ... before initializing logDir 
         // By default, logDir is '<gp.home>/logs'
@@ -171,16 +158,16 @@ public class StartupServlet extends HttpServlet {
         announceStartup();
 
         getLog().info("\tinitializing properties...");
-        ServletContext application = config.getServletContext();
-        String genepatternProperties = config.getInitParameter("genepattern.properties");
+        ServletContext application = servletConfig.getServletContext();
+        String genepatternProperties = servletConfig.getInitParameter("genepattern.properties");
         application.setAttribute("genepattern.properties", genepatternProperties);
-        String customProperties = config.getInitParameter("custom.properties");
+        String customProperties = servletConfig.getInitParameter("custom.properties");
         if (customProperties == null) {
             customProperties = genepatternProperties;
         }
         application.setAttribute("custom.properties", customProperties);
-        loadProperties(config);
-        setServerURLs(config);
+        loadProperties(servletConfig);
+        setServerURLs(servletConfig);
 
         String gpVersion="3.9.1";
         try {
