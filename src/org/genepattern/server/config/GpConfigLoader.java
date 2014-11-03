@@ -20,7 +20,6 @@ public class GpConfigLoader {
     public static File initFileFromStr(final File parentDir, final String fileStr) throws Exception {
         if (Strings.isNullOrEmpty(fileStr)) {
             throw new Exception("fileStr not set");
-            //return null;
         }
         final File f=new File(fileStr);
         final File theFile;
@@ -47,10 +46,9 @@ public class GpConfigLoader {
      * Get the resources directory, the parent directory of the genepattern.properties file.
      * @return a File or null if there is a configuration error 
      */
-    public static File initResourcesDirFromSystemProps() throws Exception {
+    protected static File initResourcesDirFromSystemProps() throws Exception {
         log.debug("initializing resources directory from system properties ...");
         final File workingDir=new File("");
-        //final File gpHome=initFileFromStr( workingDir, System.getProperty(PROP_GP_HOME) );
 
         File resourcesDir = null;
         if (System.getProperties().containsKey(PROP_GENEPATTERN_PROPERTIES)) {
@@ -59,9 +57,6 @@ public class GpConfigLoader {
         else if (System.getProperties().containsKey(PROP_RESOURCES)) {
             resourcesDir = initFileFromStr( workingDir, System.getProperty(PROP_RESOURCES) );
         }
-        //else if (gpHome != null) {
-        //    resourcesDir = new File(gpHome, "gp/resources");
-        //}
         else {
             resourcesDir = new File("../resources");
         }
@@ -92,7 +87,13 @@ public class GpConfigLoader {
     }
 
     public static GpConfig createFromSystemProps() {
+        File logDir=null;
+        return createFromSystemProps(logDir);
+    }
+    
+    public static GpConfig createFromSystemProps(final File logDir) {
         GpConfig.Builder builder=new GpConfig.Builder();
+        builder.logDir(logDir);
         File resourcesDir=null;
         try {
             resourcesDir=initResourcesDirFromSystemProps();
@@ -115,6 +116,24 @@ public class GpConfigLoader {
         return builder.build();
     }
     
+    public static GpConfig createFromSystemProps(final File resourcesDir, final File logDir) {
+        GpConfig.Builder builder=new GpConfig.Builder();
+        builder.logDir(logDir);
+        builder.resourcesDir(resourcesDir);
+        GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .resourcesDir(resourcesDir)
+            .build();
+        builder.serverProperties(serverProperties);
+        try {
+            File configFile=initConfigFileFromServerProps(serverProperties);
+            builder.configFile(configFile);
+        }
+        catch (Throwable t) {
+            builder.addError(t);
+        }
+        return builder.build();
+    }
+
     public static GpConfig createFromConfigFilepath(final String configFilepath) {
         GpConfig.Builder builder=new GpConfig.Builder();
         File resourcesDir=null;

@@ -65,16 +65,6 @@ public class StartupServlet extends HttpServlet {
         return this.log;
     }
 
-    public Logger initLogger(final File gpHomeDir, final File resourcesDir) throws Exception {
-        File logDir=new File(gpHomeDir, "logs");
-        logDir.mkdirs();
-        System.setProperty("gp.log", logDir.getAbsolutePath());
-        //URL log4jURL = StartupServlet.class.getResource("/gp_log4j.properties");
-        //PropertyConfigurator.configure(log4jURL.getFile());
-        PropertyConfigurator.configure(new File(resourcesDir, "log4j.properties").getAbsolutePath());
-        return Logger.getLogger(StartupServlet.class);
-    }
-
     public StartupServlet() {
     }
     
@@ -140,7 +130,6 @@ public class StartupServlet extends HttpServlet {
      * It used to be based on a path relative to the working directory.
      * Now it's based on a path relative to the web application. 
      * 
-     * Special-case: If the relative path does not exist, look
      * @param config
      * @param gpHomeDir
      * @return
@@ -153,16 +142,25 @@ public class StartupServlet extends HttpServlet {
         } 
         return new File(normalizePath(resourcesDir.getPath())).getAbsoluteFile();
     }
-
+    
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
         // must init homeDir and resourcesDir ...
         File gpHomeDir=initGpHomeDir(config);
         File resourcesDir=initResourcesDir(config, gpHomeDir);
-        // ... before initializing logger
+        ServerConfigurationFactory.setResourcesDir(resourcesDir);
+        // ... before initializing logDir 
+        // By default, logDir is '<gp.home>/logs'
         try {
-            this.log=initLogger(gpHomeDir, resourcesDir);
+            File logDir=new File(gpHomeDir, "logs");
+            if (!logDir.exists()) {
+                boolean success=logDir.mkdirs();
+            }
+            System.setProperty("gp.log", logDir.getAbsolutePath());
+            PropertyConfigurator.configure(new File(resourcesDir, "log4j.properties").getAbsolutePath());
+            this.log=Logger.getLogger(StartupServlet.class);
+            ServerConfigurationFactory.setLogDir(logDir);
         }
         catch (Throwable t) {
             System.err.println("Error initializing logger");
@@ -184,14 +182,20 @@ public class StartupServlet extends HttpServlet {
         loadProperties(config);
         setServerURLs(config);
 
-        final String expectedSchemaVersion=HsqlDbUtil.initExpectedSchemaVersion();
+        String gpVersion="3.9.1";
+        try {
+            gpVersion=HsqlDbUtil.initExpectedSchemaVersion();
+        }
+        catch (Throwable t) {
+            getLog().error("Error getting gpVersion from properties",t);
+        }
         final String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
                 String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
 
                 getLog().info("\tstarting HSQL database...");
-                HsqlDbUtil.startDatabase(hsqlArgs, expectedSchemaVersion);
+                HsqlDbUtil.startDatabase(hsqlArgs, gpVersion);
             }
             catch (Throwable t) {
                 getLog().error("Unable to start HSQL Database!", t);
