@@ -26,6 +26,10 @@ public class ServerConfigurationFactory {
 
     private static GpConfig gpConfigSingleton=null;
     
+    private static File gpHomeDir=null;
+    public static void setGpHomeDir(final File gpHomeDir) {
+       ServerConfigurationFactory.gpHomeDir=gpHomeDir;
+    }
     private static File resourcesDir=null;
     public static void setResourcesDir(final File resourcesDir) {
         ServerConfigurationFactory.resourcesDir=resourcesDir;
@@ -46,14 +50,13 @@ public class ServerConfigurationFactory {
     }
     
     synchronized public static void reloadConfiguration() {
-        gpConfigSingleton=GpConfigLoader.createFromSystemProps(resourcesDir, logDir);
-        ConfigRepositoryInfoLoader.clearCache();
+        setGpConfig(GpConfigLoader.createFromSystemProps(gpHomeDir, resourcesDir, logDir));
     }
 
     public static GpConfig instance() {
         // lazy init
         if (gpConfigSingleton==null) {
-            gpConfigSingleton=GpConfigLoader.createFromSystemProps(logDir);
+            setGpConfig(GpConfigLoader.createFromSystemProps(gpHomeDir, resourcesDir, logDir));
         }
         return gpConfigSingleton;
     }
