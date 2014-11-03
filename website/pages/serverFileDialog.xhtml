@@ -36,19 +36,32 @@
 					}
 					
 					jq("#serverFileTreeDialog").parent().find("button").button();
-					var enableSelectButton = function() {
-						var text = jq(".urlInput").val();
-						if (text !== "") {
-							jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("enable");
-						}
-						else {
-							jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
-						}
+					var enableSelectButton = function()
+                    {
+                        var empty = true;
+                        //check if any url inputs are filled in
+                        jq(".urlInput").each(function()
+                        {
+                            var text = $(this).val();
+
+                            if(text != undefined && text != null && text != "")
+                            {
+                                empty = false;
+                            }
+                        });
+
+                        if(!empty)
+                        {
+                            jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("enable");
+                        }
+                        else
+                        {
+                            jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
+                        }
 					};
-					/*jq(".urlInput").keyup(enableSelectButton);
-					jq(".urlInput").bind("paste", function() {
-						setTimeout(enableSelectButton, 100);
-					});*/
+
+                    jq("#serverFileTreeDialog").on("change", ".urlInput", enableSelectButton);
+                    jq("#serverFileTreeDialog").on("keyup", ".urlInput", enableSelectButton);
 
 					jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
 					jq(".serverFileTreeSelected").removeClass("serverFileTreeSelected");
@@ -126,6 +139,7 @@
 
                         urlInput.val(decodeURIComponent(jq(lastSelectedFile).attr("href")));
 
+                        urlInput.trigger("change");
                         //move the position of the cursor in the text field to the end so that the
                         //selected file name is visible
                         /*urlInput.focus(function() {
@@ -133,15 +147,6 @@
                         });
                         urlInput.focus();
                         */
-                    }
-
-                    if(jq("#dialogUrlDiv").find(".urlInput").length == 1 && jq("#dialogUrlDiv").find(".urlInput").val() == "")
-                    {
-                        jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("disable");
-                    }
-                    else
-                    {
-                        jq("#serverFileTreeDialog").parent().find(".ui-dialog-buttonpane button:first").button("enable");
                     }
                     return false;
                 }

@@ -1029,15 +1029,15 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
             delBtn.button().click(function()
             {
+                $(this).parent(".urlEntry").find(".urlInput").val("");
+                $(this).parent(".urlEntry").find(".urlInput").trigger("change");
+
                 //just empty the value if this is the first in the list of url entries
                 if(urlDiv.find(".urlEntry").length > 1)
                 {
                     $(this).parent(".urlEntry").remove();
                 }
-                else
-                {
-                    urlDiv.find(".urlEntry").first().find(".urlInput").val("");
-                }
+
                 urlDiv.find(".urlEntry").first().find(".delBtn").hide();
             });
             urlEntryDiv.append(delBtn);
