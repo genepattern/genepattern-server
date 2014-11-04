@@ -113,6 +113,7 @@ public class GpConfig {
     private final File resourcesDir;
     private final File gpHomeDir;
     private final File jobsDir;
+    private final File userRootDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -173,6 +174,7 @@ public class GpConfig {
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
         this.jobsDir=initJobsDir(gpHomeDir, valueLookup);
+        this.userRootDir=initUserRootDir(gpHomeDir);
     }
 
     /**
@@ -184,7 +186,7 @@ public class GpConfig {
      * @param valueLookup
      * @return
      */
-    private static File initJobsDir(File gpHomeDir, ValueLookup valueLookup) { 
+    private static File initJobsDir(final File gpHomeDir, final ValueLookup valueLookup) { 
         File jobsDir;
         final Value value=valueLookup.getValue(GpContext.getServerContext(), PROP_JOBS);
         if (value != null) {
@@ -212,6 +214,37 @@ public class GpConfig {
         }
         boolean success=jobsDir.mkdirs();
         return jobsDir;
+    }
+
+    private File relativize(final File gpHomeDir, final String pathStr) {
+        File path=new File(pathStr);
+        if (path.isAbsolute()) {
+            return path;
+        }
+        else if (gpHomeDir != null) {
+            return new File(gpHomeDir, pathStr);
+        }
+        else {
+            return path.getAbsoluteFile();
+        }
+    }
+    
+    private File initUserRootDir(final File gpHomeDir) {
+        String userRootDirProp=getGPProperty(GpContext.getServerContext(), "user.root.dir");
+        File userRootDir;
+        if (userRootDirProp != null) {
+            userRootDir=relativize(gpHomeDir, userRootDirProp);
+        }
+        else if (gpHomeDir != null) {
+            userRootDir=new File(gpHomeDir, "users");
+        }
+        else {
+            userRootDir=new File("../users");
+        }
+        if (!userRootDir.exists()) {
+            boolean success=userRootDir.mkdirs();
+        }
+        return userRootDir;
     }
 
     /**
@@ -430,13 +463,12 @@ public class GpConfig {
     //helper methods for locating server files and folders
     /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
-     * Home directories are created in the  in the "../users" directory.
-     * The default location can be changed with the 'user.root.dir' configuration property.
-     * The 'gp.user.dir' property can be set on a per user basis to change from the standard location.
+     * By default, user home directories are created in the <user.root.dir> directory.
+     * The 'gp.user.dir' property can be set on a per user basis to change the default location.
      *
-     * Note: The 'gp.user.dir' property is an untested feature. If an admin sets a non-standard user dir,
-     *     they need to take measures (undocumented and unsupported, @see gp-help) to deal with
-     *     pre-existing files and file entries in the DB.
+     * Note: If an admin sets a custom 'gp.user.dir' for an existing user, they must manually migrate pre-existing files.
+     *     (1) Move existing files into the correct 'gp.user.dir'
+     *     (2) Resync Files from the Adminstration -> Server Settings -> Uploaded Files page
      *
      * @param context
      * @return
@@ -449,22 +481,21 @@ public class GpConfig {
             throw new IllegalArgumentException("context.userId is null");
         }
         String userDirPath = getGPProperty(context, "gp.user.dir");
-        if (userDirPath == null) {
-            String userRootDirPath = getGPProperty(context, "user.root.dir", "../users");
-            File p_for_parent = new File(userRootDirPath);
-            File f_for_file = new File(p_for_parent,context.getUserId());
-            userDirPath = f_for_file.getPath();
+        File gpUserDir;
+        if (userDirPath != null) {
+            gpUserDir=new File(userDirPath);
         }
-
-        File userDir = new File(userDirPath);
-        if (userDir.exists()) {
-            return userDir;
+        else {
+            gpUserDir=new File(userRootDir, context.getUserId());
         }
-        boolean success = userDir.mkdirs();
+        if (gpUserDir.exists()) {
+            return gpUserDir;
+        }
+        boolean success = gpUserDir.mkdirs();
         if (!success) {
-            throw new IllegalArgumentException("Unable to create home directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
+            throw new IllegalArgumentException("Unable to create home directory for user "+context.getUserId()+", userDir="+gpUserDir.getAbsolutePath());
         }
-        return userDir;
+        return gpUserDir;
     }
 
     /**

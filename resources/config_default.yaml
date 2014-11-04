@@ -40,9 +40,9 @@ default.properties:
     # flag to disable listing file size and modification date in the gui, 
     display.file.info: true
     
-    # location for user data
-    user.root.dir: "../users"
-    # by default each gp user account gets a home directory in <user.root.dir>/<user.id>
+    # by default each gp user account gets a home directory in <GenePatternServer>/users/<user.id>
+    # Set the 'user.root.dir' property to customize this, e.g.
+    # user.root.dir: /Applications/GenePatternServer/users
     
     # location for user files uploaded directly to the server from the upload tab
     # by default, files are uploaded to each user's uploads directory, <user.root.dir>/<user.id>/uploads
