@@ -61,11 +61,12 @@
                     </t:dataList>
                     <h:outputText rendered="#{p.jnlp}">
                         <a style="color:#0066FF;" href="#{p.link}"><img align="ABSMIDDLE" src="/gp/images/webstart_small2.jpg" /></a>
-                    </h:outputText>
-                    <h:outputText rendered="#{p.jnlp and true}">
                         Launch Java Web Start application - <em>You may be prompted by the app for your GenePattern username and password in order to load the files.</em>
                     </h:outputText>
-                    <h:outputText rendered="#{not p.jnlp}">
+                    <h:outputText rendered="#{p.name eq 'launch_igv.html'}">
+                        <a style="color:#0066FF;" id="igv_inline" href="#" load-link="#{p.link}"><img align="ABSMIDDLE" src="/gp/images/webstart_small2.jpg" /></a>
+                    </h:outputText>
+                    <h:outputText rendered="#{not p.jnlp and p.name ne 'launch_igv.html'}">
                         <a class="jobresult-file-output" name="#{p.name}" data-kind="#{p.kind}" style="color:#0066FF;" href="#{p.link}" onclick="openFileWidget(this, '#menus-jobs'); return false;"><img src="/gp/images/outputFile.gif" title="output file" /> #{p.truncatedDisplayValue}</a> (#{p.formattedSize})
                     </h:outputText>
                     <h:outputText rendered="#{not empty p.lastModified and not p.jnlp}">
