@@ -35,7 +35,7 @@
 		<echo> BASE= ${basedir}</echo>
 		<java classname="edu.mit.genome.gp.server.ZipTask" fork="true">
 		    <jvmarg value="-Dgenepattern.properties=../resources"/>
-     		    <jvmarg value="-Dlog4j.configuration=webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <jvmarg value="-Dlog4j.configuration=../resources/log4j.properties"/>
      		    <arg value="../modules_pre_12"/> 
         		 <classpath>
 			    	<fileset dir="webapps/gp/WEB-INF/lib">
@@ -51,7 +51,7 @@
 		<java classname="edu.mit.genome.gp.server.InstallTasks" fork="true" output="${basedir}/install_old_custom_modules.out">
 		    <jvmarg value="-Dgenepattern.properties=${resourcedir}"/>
      		    <jvmarg value="-DexcludeTasksFromLSIDAuthority=broad.mit.edu"/>
-     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <jvmarg value="-Dlog4j.configuration=${resourcedir}/log4j.properties"/>
      		    <arg value="${oldTasksZipDir}"/> 
         		 <classpath>
 			    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
@@ -67,7 +67,7 @@
 	<target name="create_database">
 		<java classname="edu.mit.genome.gp.server.CreateDatabase" fork="true">
 		    <jvmarg value="-Dgenepattern.properties=${basedir}/../resources"/>
-     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/../resources/log4j.properties"/>
      		    <arg value="${basedir}/../modules"/> 
      		    <classpath>
      		    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
