@@ -21902,47 +21902,6 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 										</object>
 										<object refID="4e2d83ca878d"/>
-										<object class="com.zerog.ia.installer.actions.InstallFile" objectID="4e2d83cb878d">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[log4j.properties]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../src/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[log4j.properties]]></string>
-											</property>
-											<property name="fileSize">
-												<long>3375</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
 										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="4e2e7e2d878f">
 											<property name="belongsToUninstallPhase">
 												<boolean>false</boolean>
@@ -21955,9 +21914,6 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 											<property name="ruleExpression">
 												<string><![CDATA[]]></string>
-											</property>
-											<property name="targetAction">
-												<object refID="4e2d83cb878d"/>
 											</property>
 											<property name="useInstalledFile">
 												<boolean>true</boolean>
@@ -25754,7 +25710,6 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 								<object refID="b6743a958795"/>
 								<object refID="ba7b38c68790"/>
 								<object refID="89cabc63abbe"/>
-								<object refID="4e2d83cb878d"/>
 								<object refID="4e2d83ca878d"/>
 								<object refID="4e2ce2bf878c"/>
 								<object refID="4e2e7e2d878f"/>
