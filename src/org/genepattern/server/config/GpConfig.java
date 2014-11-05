@@ -111,9 +111,10 @@ public class GpConfig {
     private final File gpLogFile;
     private final File webserverLogFile;
     private final File resourcesDir;
-    private final File gpHomeDir;
+    private final File gpWorkingDir;
     private final File jobsDir;
     private final File userRootDir;
+    private final File soapAttachmentDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -132,12 +133,12 @@ public class GpConfig {
         this.gpLogFile=new File(logDir, "genepattern.log");
         this.webserverLogFile=new File(logDir, "webserver.log");
         this.resourcesDir=in.resourcesDir;
-        if (in.gpHomeDir==null) {
+        if (in.gpWorkingDir==null) {
             // legacy server, assume startup in <GenePatternServer>/Tomcat folder.
-            this.gpHomeDir=new File("../");
+            this.gpWorkingDir=new File("").getAbsoluteFile();
         }
         else {
-            this.gpHomeDir=in.gpHomeDir;
+            this.gpWorkingDir=in.gpWorkingDir;
         }
         this.serverProperties=in.serverProperties;
         if (in.genePatternVersion != null) {
@@ -173,8 +174,9 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
-        this.jobsDir=initJobsDir(gpHomeDir, valueLookup);
-        this.userRootDir=initUserRootDir(gpHomeDir);
+        this.jobsDir=initJobsDir();
+        this.userRootDir=initUserRootDir();
+        this.soapAttachmentDir=initSoapAttachmentDir();
     }
 
     /**
@@ -186,65 +188,61 @@ public class GpConfig {
      * @param valueLookup
      * @return
      */
-    private static File initJobsDir(final File gpHomeDir, final ValueLookup valueLookup) { 
-        File jobsDir;
-        final Value value=valueLookup.getValue(GpContext.getServerContext(), PROP_JOBS);
-        if (value != null) {
-            File file=new File(value.getValue());
-            if (!file.isAbsolute()) {
-                if (gpHomeDir != null) {
-                    jobsDir=new File(gpHomeDir, value.getValue());
-                }
-                else {
-                    jobsDir=file.getAbsoluteFile();
-                } 
-            }
-            else {
-                jobsDir=file;
+    private File initJobsDir() { 
+        File jobsDir=relativize(gpWorkingDir, System.getProperty(PROP_JOBS, "../jobResults"));
+        jobsDir=new File(normalizePath(jobsDir.getPath()));
+        if (!jobsDir.exists()) {
+            boolean success=jobsDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_JOBS+"' directory="+jobsDir);
             }
         }
-        // hard-code to default value, relative to GP_HOME
-        else if (gpHomeDir != null) {
-            jobsDir=new File(gpHomeDir, "jobResults");
-        }
-        else {
-            // legacy, hard-code relative to working dir
-            jobsDir=new File("../jobResults");
-            jobsDir=jobsDir.getAbsoluteFile();
-        }
-        boolean success=jobsDir.mkdirs();
         return jobsDir;
     }
 
-    private File relativize(final File gpHomeDir, final String pathStr) {
+    public File relativize(final File rootDir, final String pathStr) {
         File path=new File(pathStr);
         if (path.isAbsolute()) {
             return path;
         }
-        else if (gpHomeDir != null) {
-            return new File(gpHomeDir, pathStr);
+        else if (rootDir != null) {
+            return new File(rootDir, pathStr);
         }
         else {
             return path.getAbsoluteFile();
         }
     }
     
-    private File initUserRootDir(final File gpHomeDir) {
+    protected File initUserRootDir() {
         String userRootDirProp=getGPProperty(GpContext.getServerContext(), "user.root.dir");
         File userRootDir;
         if (userRootDirProp != null) {
-            userRootDir=relativize(gpHomeDir, userRootDirProp);
-        }
-        else if (gpHomeDir != null) {
-            userRootDir=new File(gpHomeDir, "users");
+            userRootDir=relativize(gpWorkingDir, userRootDirProp);
         }
         else {
-            userRootDir=new File("../users");
+            userRootDir=relativize(gpWorkingDir, "../users");
         }
+        userRootDir=new File(normalizePath(userRootDir.getPath()));
         if (!userRootDir.exists()) {
             boolean success=userRootDir.mkdirs();
+            if (success) {
+                log.info("created 'user.root.dir' directory="+userRootDir);
+            }
         }
         return userRootDir;
+    }
+    
+    protected File initSoapAttachmentDir() {
+        GpContext gpContext=GpContext.getServerContext();
+        File soapAttDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "../temp/attachments"));
+        soapAttDir=new File(normalizePath(soapAttDir.getPath()));
+        if (!soapAttDir.exists()) {
+            boolean success=soapAttDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_SOAP_ATT_DIR+"' directory="+soapAttDir);
+            }
+        }
+        return soapAttDir;
     }
 
     /**
@@ -569,6 +567,10 @@ public class GpConfig {
         return getTempDir(null);
     }
 
+    public File getGPFileProperty(final GpContext gpContext, final String key) {
+        return getGPFileProperty(gpContext, key, null);
+    }
+
     public File getGPFileProperty(final GpContext gpContext, final String key, final File defaultValue)
     {
         Value val = getValue(gpContext, key);
@@ -587,9 +589,7 @@ public class GpConfig {
     }
 
     public File getSoapAttDir(GpContext gpContext) {
-        String soapAttDirStr= "../temp/attachments";
-        File soapAttDir = new File(soapAttDirStr);
-        return getGPFileProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, soapAttDir);
+        return this.soapAttachmentDir;
     }
 
     public File getTempDir(GpContext gpContext) {
@@ -707,7 +707,7 @@ public class GpConfig {
         private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
-        private File gpHomeDir=null;
+        private File gpWorkingDir=null;
         private GpServerProperties.Builder serverPropertiesBuilder=null;
         private GpServerProperties serverProperties=null;
         private ConfigFromYaml configFromYaml=null;
@@ -734,8 +734,8 @@ public class GpConfig {
             return this;
         }
 
-        public Builder gpHomeDir(final File gpHomeDir) {
-            this.gpHomeDir=gpHomeDir;
+        public Builder gpWorkingDir(final File gpWorkingDir) {
+            this.gpWorkingDir=gpWorkingDir;
             return this;
         }
         

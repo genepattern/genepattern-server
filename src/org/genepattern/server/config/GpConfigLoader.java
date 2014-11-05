@@ -116,9 +116,9 @@ public class GpConfigLoader {
         return builder.build();
     }
     
-    public static GpConfig createFromSystemProps(final File gpHomeDir, final File resourcesDir, final File logDir) {
+    public static GpConfig createFromSystemProps(final File gpWorkingDir, final File resourcesDir, final File logDir) {
         GpConfig.Builder builder=new GpConfig.Builder();
-        builder.gpHomeDir(gpHomeDir);
+        builder.gpWorkingDir(gpWorkingDir);
         builder.logDir(logDir);
         builder.resourcesDir(resourcesDir);
         GpServerProperties serverProperties=new GpServerProperties.Builder()
