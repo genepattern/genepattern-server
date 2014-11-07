@@ -64,7 +64,7 @@
                         Launch Java Web Start application - <em>You may be prompted by the app for your GenePattern username and password in order to load the files.</em>
                     </h:outputText>
                     <h:outputText rendered="#{p.name eq 'launch_igv.html'}">
-                        <a style="color:#0066FF;" href="#{p.link}"><img align="ABSMIDDLE" src="/gp/images/webstart_small2.jpg" /></a>
+                        <a style="color:#0066FF;" href="#{p.link}" target="_blank"><img align="ABSMIDDLE" src="/gp/images/webstart_small2.jpg" /></a>
                         Send data to IGV application
                     </h:outputText>
                     <h:outputText rendered="#{not p.jnlp and p.name ne 'launch_igv.html'}">
