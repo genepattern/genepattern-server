@@ -357,7 +357,7 @@
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
-  <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+  <servlet-class>org.genepattern.server.webservice.CustomAxisServlet</servlet-class>
   <load-on-startup>20</load-on-startup>
  </servlet>
  <servlet-mapping>

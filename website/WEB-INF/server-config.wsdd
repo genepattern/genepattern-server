@@ -2,7 +2,8 @@
 <deployment xmlns="http://xml.apache.org/axis/wsdd/" xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
  <globalConfiguration>
   <parameter name="adminPassword" value="admin"/>
-  <parameter name="attachments.Directory" value="../temp/attachments"/>
+  <!-- property now set with the 'soap.attachments.dir' configuration property -->
+  <!-- parameter name="attachments.Directory" value="../temp/attachments"/ -->
   <parameter name="sendMultiRefs" value="true"/>
   <parameter name="sendXsiTypes" value="true"/>
   <parameter name="attachments.implementation" value="org.apache.axis.attachments.AttachmentsImpl"/>
