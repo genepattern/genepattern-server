@@ -141,7 +141,7 @@ public class StartupServlet extends HttpServlet {
      * @param gpWorkingDir
      * @return
      */
-    protected File initResourcesDir(final ServletConfig config, final File gpWorkingDir) {
+    protected static File initResourcesDir(final ServletConfig config, final File gpWorkingDir) {
         File resourcesDir=new File(gpWorkingDir, "../resources");
         if (!resourcesDir.exists()) {
             // check for a path relative to working dir
