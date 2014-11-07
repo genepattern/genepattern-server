@@ -9,12 +9,10 @@
 	<target name="customizeWar" depends="confirmLocalValues, unzip">
 		<property file="gpinstall/resources/build.properties" />
 
-		<replace file="gp/WEB-INF/classes/log4j.properties">
+		<replace file="gpinstall/resources">
 			<replacefilter token="log4j.appender.R.File=logs/" value="log4j.appender.R.File=${INSTALL_DIR}/logs/" />
 			<replacefilter token="log4j.appender.All.File=logs/" value="log4j.appender.All.File=${INSTALL_DIR}/logs/" />
 		</replace>
-
-		<copy file="gp/WEB-INF/classes/log4j.properties" todir="gpinstall/resources" />
 
 		<replace file="gpinstall/resources/genepattern.properties">
 			<replacefilter token="$purgeTime$" value="${PURGE_TIME}" />
@@ -52,7 +50,6 @@ fullyQualifiedHostName=${HOST}.${DOMAIN}
 		<replace file="gp/WEB-INF/web.xml">
 			<replacefilter token="../resources" value="${INSTALL_DIR}/resources" />
 			<replacefilter token="./temp" value="${INSTALL_DIR}/iotemp" />
-			<replacefilter token="webapps/gp/WEB-INF/classes/log4j.properties" value="${INSTALL_DIR}/resources/log4j.properties" />
 		</replace>
 
 		<replace file="gp/WEB-INF/server-config.wsdd">
