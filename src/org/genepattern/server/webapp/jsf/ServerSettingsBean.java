@@ -22,14 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.Vector;
+import java.util.*;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -44,6 +37,7 @@ import org.genepattern.server.util.PropertiesManager_3_2;
 
 public class ServerSettingsBean implements Serializable {
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
+    private String GP_URL = "GenePatternURL";
     private Map<String, String[]> modes;
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
     private String currentClientMode = clientModes[0]; // default
@@ -52,6 +46,7 @@ public class ServerSettingsBean implements Serializable {
     private Properties settings;
     private List<KeyValuePair> customSettings;
     private Properties defaultSettings;
+    private String genepatternURL = "";
     private String newCSKey = "";
     private String newCSValue = "";
     private Calendar cal = Calendar.getInstance();
@@ -674,6 +669,22 @@ public class ServerSettingsBean implements Serializable {
 	return null;
     }
 
+
+    /**
+     * @return
+     */
+    public void setGenepatternURL(String genepatternURL) {
+        this.genepatternURL = genepatternURL;
+    }
+
+    /**
+     * @return
+     */
+    public String getGenepatternURL() {
+        return genepatternURL;
+    }
+
+
     /**
      * @return
      */
@@ -707,8 +718,21 @@ public class ServerSettingsBean implements Serializable {
      */
     public void saveNewCustomSetting(ActionEvent event) {
 	if (newCSKey != "" && newCSValue != "") {
-	    customSettings.add(new KeyValuePair(newCSKey, newCSValue));
-	    PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+        //if this is a GP_URL set using add custom new property
+        if(newCSKey.equals(GP_URL))
+        {
+            genepatternURL = newCSValue;
+            saveGenePatternURL(event);
+        }
+	    else
+        {
+            //first remove any existing keys with same name
+            removeDuplicateCustomSetting(newCSKey);
+            customSettings.add(new KeyValuePair(newCSKey, newCSValue));
+	        PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+        }
+        newCSKey = "";
+        newCSValue = "";
 	}
     }
 
@@ -720,9 +744,47 @@ public class ServerSettingsBean implements Serializable {
 	for (KeyValuePair element : customSettings) {
 	    if (element.getKey().equals(keyToRemove)) {
 		customSettings.remove(element);
+        System.getProperties().remove(keyToRemove);
+        PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
 		break;
 	    }
 	}
+    }
+
+    /**
+     * @param event
+     */
+    public void saveGenePatternURL(ActionEvent event) {
+        if (!genepatternURL.equals(""))
+        {
+            KeyValuePair gpURL = new KeyValuePair(GP_URL, genepatternURL);
+            removeDuplicateCustomSetting(GP_URL);
+            customSettings.add(gpURL);
+            PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+
+            genepatternURL = "";
+        }
+    }
+
+    private void removeDuplicateCustomSetting(String key) {
+        int removeIndex = -1;
+        //check if the key already exists
+        int i=0;
+        Iterator<KeyValuePair> csIterator = customSettings.iterator();
+        while(csIterator.hasNext())
+        {
+            KeyValuePair kvp = csIterator.next();
+            if(kvp.getKey().equals(key))
+            {
+                removeIndex = i;
+            }
+            i++;
+        }
+
+        if(removeIndex != -1)
+        {
+            customSettings.remove(removeIndex);
+        }
     }
 
     /**
