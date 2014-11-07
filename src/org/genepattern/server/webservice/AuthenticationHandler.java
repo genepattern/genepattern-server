@@ -12,6 +12,7 @@
 
 package org.genepattern.server.webservice;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -21,6 +22,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -85,5 +88,16 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         if (!authenticated) {
             throw new AxisFault("Error: Unknown user or invalid password.");
         }
+        
+        // special-case, define custom 'attachments.Directory'
+        final boolean initIsAdmin=false;
+        GpContext userContext=GpContext.createContextForUser(username, initIsAdmin);
+        File soapAttDir=ServerConfigurationFactory.instance().getSoapAttDir(userContext);
+        if (soapAttDir != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Setting "+MessageContext.ATTACHMENTS_DIR+"="+soapAttDir+" for user="+username);
+            }
+            msgContext.setProperty(MessageContext.ATTACHMENTS_DIR, soapAttDir.toString());
+        }        
     }
 }
