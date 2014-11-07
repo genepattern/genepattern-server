@@ -366,6 +366,7 @@ public class StartupServlet extends HttpServlet {
             defaultRootJobDir = "Server configuration error: "+t.getLocalizedMessage();
         }
 
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
@@ -373,15 +374,15 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tGenePatternURL: " + ServerConfigurationFactory.instance().getGpUrl() + NL );
-        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
-        startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
-        startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
-        startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: "+ System.getProperty("java.io.tmpdir") + NL );
-        startupMessage.append("\tgp.temp.dir: "+ ServerConfigurationFactory.instance().getTempDir(serverContext).getAbsolutePath() + NL);
-        startupMessage.append("\tsoap.attachment.dir: "+ ServerConfigurationFactory.instance().getSoapAttDir(serverContext) + NL);
-        startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
+        startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
+        startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
+        startupMessage.append("\ttasklib: " + System.getProperty("tasklib") + NL);
+        startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
+        startupMessage.append("\tjava.io.tmpdir: " + System.getProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
+        startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
+        startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);
         startupMessage.append(stars);
 
         getLog().info(startupMessage);
