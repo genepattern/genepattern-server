@@ -203,7 +203,7 @@ public class GpConfig {
         return jobsDir;
     }
 
-    public File relativize(final File rootDir, final String pathStr) {
+    public static File relativize(final File rootDir, final String pathStr) {
         File path=new File(pathStr);
         if (path.isAbsolute()) {
             return path;
