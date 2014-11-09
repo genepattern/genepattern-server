@@ -24,13 +24,68 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
 
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
+
+    /**
+     * Initialize the arguments to the HSQL DB startup command.
+     * 
+     * In GP <= 3.9.0 it was based on this line from the genepattern.properties file.
+     * <pre>
+     * HSQL.args= -port $HSQL_port$  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
+     * </pre>
+     * 
+     * @return
+     */
+    public static String[] initHsqlArgs(GpConfig gpConfig, GpContext gpContext) { 
+        File dbFilePath=initDbFilePath(gpConfig);
+        Value hsqlArgs=gpConfig.getValue(gpContext, "HSQL.args");
+        if (hsqlArgs != null && hsqlArgs.getNumValues()==1) {
+            String hsqlArg=hsqlArgs.getValue();
+            //special-case: replace relative legacy (pre 3.9.0) relative path with absolute path
+            hsqlArg = hsqlArg.replace("file:../resources/GenePatternDB", "file:"+dbFilePath);
+            return tokenizeHsqlArgs( hsqlArg );
+        }
+        else if (hsqlArgs != null && hsqlArgs.getNumValues()>1) {
+            List<String> values=hsqlArgs.getValues();
+            values=appendIfNecessary(values);
+            for(int i=0; i<values.size(); ++i) {
+                if (values.get(i).equals("file:../resources/GenePatternDB")) {
+                    //special-case: replace relative legacy (pre 3.9.0) relative path with absolute path
+                    values.set(i, "file:"+dbFilePath);
+                }
+            }
+            String[] rval = values.toArray(new String[values.size()]);
+            return rval;
+        }
+        
+        // initialize from the dbFilePath
+        return initHsqlArgs(dbFilePath);
+    }
+    
+    protected static File initDbFilePath(GpConfig gpConfig) {
+        File resourcesDir=gpConfig.getResourcesDir();
+        if (resourcesDir == null) {
+            log.warn("resourcesDir is not set!");
+            File workingDir=new File(System.getProperty("user.dir"));
+            resourcesDir=new File(workingDir.getParent(), "resources");
+        }
+        return new File(resourcesDir,"GenePatternDB");
+    }
+    
+    protected static String[] initHsqlArgs(final File hsqlDbFile) {
+        String hsqlArgs=" -port 9001  -database.0 file:"+hsqlDbFile+" -dbname.0 xdb";
+        return tokenizeHsqlArgs( hsqlArgs );
+    }
+    
 
     /**
      * Get the current version of GenePattern, (e.g. '3.9.1'). 
@@ -62,24 +117,20 @@ public class HsqlDbUtil {
      * @throws Throwable
      */
     public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
-        log.debug("Starting HSQL Database...");
+        String[] argsArray = tokenizeHsqlArgs(hsqlArgs);
+        startDatabase(argsArray, expectedSchemaVersion);
+    }
 
-        StringTokenizer strTok = new StringTokenizer(hsqlArgs);
-        List<String> argsList = new ArrayList<String>();
-        //int i=0;
-        while (strTok.hasMoreTokens()){
-            String tok = strTok.nextToken();
-            argsList.add(tok);
-        }
-        //prevent HSQLDB from calling System.exit when errors occur,
-        //    which is the default behavior when starting the DB using Server.main
-        if (!argsList.contains("-no_system_exit")) {
-            argsList.add("-no_system_exit");
-            argsList.add("true");
-        }
-        String[] argsArray = new String[argsList.size()];
-        argsArray = argsList.toArray(argsArray);
-        Server.main(argsArray);
+    /**
+     * Start the database, initializing the DB schema if necessary.
+     * 
+     * @param hsqlArgs, default value, HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb 
+     * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
+     * @throws Throwable
+     */
+    public static void startDatabase(final String[] hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+        log.debug("Starting HSQL Database...");
+        Server.main(hsqlArgs);
         
         try {
             // 1) ...
@@ -114,6 +165,32 @@ public class HsqlDbUtil {
                 log.error("Exception thrown closing database connection: "+e.getLocalizedMessage(), e);
             }
         }
+    }
+
+    protected static List<String> appendIfNecessary(final List<String> argsList) {
+        //prevent HSQLDB from calling System.exit when errors occur,
+        //    which is the default behavior when starting the DB using Server.main
+        if (!argsList.contains("-no_system_exit")) {
+            List<String> updatedArgs=new ArrayList<String>(argsList);
+            updatedArgs.add("-no_system_exit");
+            updatedArgs.add("true");
+            return updatedArgs;
+        }
+        return argsList;
+    }
+    
+    protected static String[] tokenizeHsqlArgs(final String hsqlArgs) {
+        StringTokenizer strTok = new StringTokenizer(hsqlArgs);
+        List<String> argsList = new ArrayList<String>();
+        //int i=0;
+        while (strTok.hasMoreTokens()){
+            String tok = strTok.nextToken();
+            argsList.add(tok);
+        }
+        argsList=appendIfNecessary(argsList);
+        String[] argsArray = new String[argsList.size()];
+        argsArray = argsList.toArray(argsArray);
+        return argsArray;
     }
 
     public static void shutdownDatabase() {

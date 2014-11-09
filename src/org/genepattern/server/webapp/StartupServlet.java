@@ -137,11 +137,10 @@ public class StartupServlet extends HttpServlet {
     /**
      * Get the path to the 'resources' directory for the web application.
      * 
-     * @param config
-     * @param gpWorkingDir
+     * @param gpWorkingDir, the working director for the GenePattern Server.
      * @return
      */
-    protected static File initResourcesDir(final ServletConfig config, final File gpWorkingDir) {
+    protected File initResourcesDir(final File gpWorkingDir) {
         File resourcesDir=new File(gpWorkingDir, "../resources");
         if (!resourcesDir.exists()) {
             // check for a path relative to working dir
@@ -180,7 +179,7 @@ public class StartupServlet extends HttpServlet {
         ServerConfigurationFactory.setGpWorkingDir(workingDir);
         
         // must init resourcesDir ...
-        File resourcesDir=initResourcesDir(servletConfig, workingDir);
+        File resourcesDir=initResourcesDir(workingDir);
         ServerConfigurationFactory.setResourcesDir(resourcesDir);
         // ... before initializing logDir 
         initLogDir(workingDir, resourcesDir);
@@ -210,8 +209,10 @@ public class StartupServlet extends HttpServlet {
         final String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
-                String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-
+                GpConfig gpConfig=ServerConfigurationFactory.instance();
+                GpContext gpContext=GpContext.getServerContext();
+                //String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+                String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
                 HsqlDbUtil.startDatabase(hsqlArgs, gpVersion);
             }
