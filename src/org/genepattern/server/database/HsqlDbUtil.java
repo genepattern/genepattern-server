@@ -28,9 +28,12 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.domain.Props;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
+
+import com.google.common.base.Strings;
 
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
@@ -251,18 +254,12 @@ public class HsqlDbUtil {
         String dbSchemaVersion = "";
 
         BaseDAO dao = new BaseDAO();
-
         // check schemaVersion
         try {
-            ResultSet resultSet = dao.executeSQL("select value from props where key='schemaVersion'", false);
-            if (resultSet.next()) {
-                dbSchemaVersion = resultSet.getString(1);
+            dbSchemaVersion=Props.selectValue("schemaVersion");
+            if (!Strings.isNullOrEmpty(dbSchemaVersion)) {
                 upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
-            }
-            else {
-                dbSchemaVersion = "";
-                upToDate = false;
-            }
+            } 
         }
         catch (Exception e) {
             log.info("Database tables not found.  Create new database");

@@ -222,6 +222,15 @@ public class StartupServlet extends HttpServlet {
                 return;
             }
         }
+        else if (dbVendor.equalsIgnoreCase("mysql")) {
+            try {
+                final String schemaPrefix="analysis_mysql";
+                HsqlDbUtil.updateSchema(schemaPrefix, gpVersion);
+            }
+            catch (Throwable t) {
+                getLog().error("Error initializing schema for mysql database", t);
+            }
+        }
         
         getLog().info("\tchecking database connection...");
         try {
