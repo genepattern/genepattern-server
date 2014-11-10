@@ -2,8 +2,7 @@ package org.genepattern.server.database;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -31,8 +30,11 @@ public class TestHsqlDbUtil {
     
     @Before
     public void setUp() {
-        gpConfig=mock(GpConfig.class);
-        when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
+        gpConfig=new GpConfig.Builder()
+            .resourcesDir(resourcesDir)
+            .addProperty("HSQL_port", "9001")
+        .build();
+
         gpContext=GpContext.getServerContext();
         defaultValue=new Value("-port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
         defaultValues=new Value(Arrays.asList("-port", "9001", "-database.0", "file:../resources/GenePatternDB", "-dbname.0", "xdb"));
@@ -44,7 +46,12 @@ public class TestHsqlDbUtil {
      */
     @Test
     public void initHsqlArgsFromConfig_default() {
-        when(gpConfig.getValue(gpContext, "HSQL.args")).thenReturn(defaultValue);
+        gpConfig=new GpConfig.Builder()
+            .resourcesDir(resourcesDir)
+            .addProperty("HSQL_port", "9001")
+            .addProperty("HSQL.args", defaultValue.getValue())
+        .build();
+
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         assertThat(actual, is(defaultExpected));
     }
@@ -54,7 +61,11 @@ public class TestHsqlDbUtil {
      */
     @Test
     public void initHsqlArgs_customPort() {
-        when(gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001)).thenReturn(new Integer(9005));
+        gpConfig=new GpConfig.Builder()
+            .resourcesDir(resourcesDir)
+            .addProperty("HSQL_port", "9005")
+        .build();
+
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         String[] expected=new String[] {
             "-port", "9005", "-database.0", "file:"+resourcesDir+"/GenePatternDB", "-dbname.0", "xdb", "-no_system_exit", "true"};
@@ -67,7 +78,11 @@ public class TestHsqlDbUtil {
     @Test
     public void initHsqlArgs_customResourcesDir() {
         File customResourcesDir=new File("resources").getAbsoluteFile();
-        when(gpConfig.getResourcesDir()).thenReturn(customResourcesDir);
+        gpConfig=new GpConfig.Builder()
+            .resourcesDir(customResourcesDir)
+            .addProperty("HSQL_port", "9001")
+        .build();
+
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         String[] expected=new String[] {
             "-port", "9001", "-database.0", "file:"+customResourcesDir+"/GenePatternDB", "-dbname.0", "xdb", "-no_system_exit", "true"};
@@ -80,6 +95,8 @@ public class TestHsqlDbUtil {
      */
     @Test
     public void initHsqlArgsFromConfig_asList() {
+        gpConfig=mock(GpConfig.class);
+        when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
         when(gpConfig.getValue(gpContext, "HSQL.args")).thenReturn(defaultValues);
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);        
         assertThat(actual, is(defaultExpected));
@@ -97,7 +114,11 @@ public class TestHsqlDbUtil {
     public void intHsqlArgsFromConfig_notset() {
         File resourcesDir=GpConfig.relativize(null, "../resources");
         resourcesDir=new File(GpConfig.normalizePath(resourcesDir.getPath())); 
-        when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
+        gpConfig=new GpConfig.Builder()
+            .resourcesDir(resourcesDir)
+            .addProperty("HSQL_port", "9001")
+        .build();
+
         String[] expected=new String[] {
                 "-port", "9001", "-database.0", "file:"+resourcesDir.getPath()+"/GenePatternDB", "-dbname.0", "xdb", "-no_system_exit", "true"};
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
