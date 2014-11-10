@@ -67,8 +67,10 @@ public class HsqlDbUtil {
             return rval;
         }
         
+        Integer hsqlPort=gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001);
+        
         // initialize from the dbFilePath
-        return initHsqlArgs(dbFilePath);
+        return initHsqlArgs(hsqlPort, dbFilePath);
     }
     
     protected static File initDbFilePath(GpConfig gpConfig) {
@@ -82,7 +84,11 @@ public class HsqlDbUtil {
     }
     
     protected static String[] initHsqlArgs(final File hsqlDbFile) {
-        String hsqlArgs=" -port 9001  -database.0 file:"+hsqlDbFile+" -dbname.0 xdb";
+        return initHsqlArgs(9001, hsqlDbFile);
+    }
+
+    protected static String[] initHsqlArgs(final Integer hsqlPort, final File hsqlDbFile) {
+        String hsqlArgs=" -port "+hsqlPort+"  -database.0 file:"+hsqlDbFile+" -dbname.0 xdb";
         return tokenizeHsqlArgs( hsqlArgs );
     }
     

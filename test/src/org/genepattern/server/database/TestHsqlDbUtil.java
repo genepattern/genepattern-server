@@ -48,6 +48,31 @@ public class TestHsqlDbUtil {
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         assertThat(actual, is(defaultExpected));
     }
+    
+    /**
+     * When 'HSQL.args is not set but HSQL_port is set.
+     */
+    @Test
+    public void initHsqlArgs_customPort() {
+        when(gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001)).thenReturn(new Integer(9005));
+        String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
+        String[] expected=new String[] {
+            "-port", "9005", "-database.0", "file:"+resourcesDir+"/GenePatternDB", "-dbname.0", "xdb", "-no_system_exit", "true"};
+        assertThat(actual, is(expected));
+    }
+
+    /**
+     * When HSQL.args is not set but the path to the 'resources' dir is set to a custom location.
+     */
+    @Test
+    public void initHsqlArgs_customResourcesDir() {
+        File customResourcesDir=new File("resources").getAbsoluteFile();
+        when(gpConfig.getResourcesDir()).thenReturn(customResourcesDir);
+        String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
+        String[] expected=new String[] {
+            "-port", "9001", "-database.0", "file:"+customResourcesDir+"/GenePatternDB", "-dbname.0", "xdb", "-no_system_exit", "true"};
+        assertThat(actual, is(expected));
+    }
 
     /**
      * In config.yaml,
