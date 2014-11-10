@@ -122,9 +122,9 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
      * @throws Throwable
      */
-    public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+    public static void startDatabase(final String hsqlArgs) throws Throwable {
         String[] argsArray = tokenizeHsqlArgs(hsqlArgs);
-        startDatabase(argsArray, expectedSchemaVersion);
+        startDatabase(argsArray);
     }
 
     /**
@@ -134,17 +134,26 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
      * @throws Throwable
      */
-    public static void startDatabase(final String[] hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+    public static void startDatabase(final String[] hsqlArgs) throws Throwable {
         log.debug("Starting HSQL Database...");
         Server.main(hsqlArgs);
-        
+    }
+    
+    /**
+     * On server startup, start a Hibernate transaction and run all necessary DDL scripts 
+     * to update the database schema to match the current GenePattern version.
+     * 
+     * @param expectedSchemaVersion
+     * @throws Throwable
+     */
+    public static void updateSchema(final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
         try {
             // 1) ...
             // HibernateUtil.init();
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
-                updateSchema(expectedSchemaVersion);
+                innerUpdateSchema(schemaPrefix, expectedSchemaVersion);
                 HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
@@ -217,12 +226,12 @@ public class HsqlDbUtil {
         }
     }
 
-    private static void updateSchema(final String expectedSchemaVersion) 
+    private static void innerUpdateSchema(final String schemaPrefix, final String expectedSchemaVersion) 
     throws Exception 
     {
         log.debug("Updating schema...");
         if (!checkSchema(expectedSchemaVersion)) {
-            createSchema(expectedSchemaVersion);
+            createSchema(schemaPrefix, expectedSchemaVersion);
             if (!checkSchema(expectedSchemaVersion)) {
                 log.error("schema didn't have correct version after creating");
                 //throw new IOException("Unable to successfully update database tables.");
@@ -284,15 +293,8 @@ public class HsqlDbUtil {
         return resourceDir;
     }
     
-    /**
-     * 
-     * @param resourceDir
-     * @param props
-     * @throws IOException
-     */
-    private static void createSchema(final String expectedSchemaVersion) {
+    private static void createSchema(final String schemaPrefix, final String expectedSchemaVersion) {
         File resourceDir = getResourceDir();
-        final String schemaPrefix = System.getProperty("HSQL.schema", "analysis_hypersonic-");
         FilenameFilter schemaFilenameFilter = new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
@@ -309,12 +311,6 @@ public class HsqlDbUtil {
                 return version1.compareToIgnoreCase(version2);
             }
         });
-//        //for junit testing, if the property is not in ServerProperties, check System properties
-//        if ("$GENEPATTERN_VERSION$".equals(expectedSchemaVersion)) {
-//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from ServerProperties)");
-//            expectedSchemaVersion = System.getProperty("GenePatternVersion", expectedSchemaVersion);
-//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
-//        }
         String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];

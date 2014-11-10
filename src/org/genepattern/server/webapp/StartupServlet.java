@@ -214,7 +214,8 @@ public class StartupServlet extends HttpServlet {
                 //String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
                 String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
-                HsqlDbUtil.startDatabase(hsqlArgs, gpVersion);
+                HsqlDbUtil.startDatabase(hsqlArgs);
+                HsqlDbUtil.updateSchema("analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 getLog().error("Unable to start HSQL Database!", t);
