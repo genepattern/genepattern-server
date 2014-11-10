@@ -122,9 +122,9 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
      * @throws Throwable
      */
-    public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+    public static void startDatabase(final String hsqlArgs) throws Throwable {
         String[] argsArray = tokenizeHsqlArgs(hsqlArgs);
-        startDatabase(argsArray, expectedSchemaVersion);
+        startDatabase(argsArray);
     }
 
     /**
@@ -134,17 +134,26 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
      * @throws Throwable
      */
-    public static void startDatabase(final String[] hsqlArgs, final String expectedSchemaVersion) throws Throwable {
+    public static void startDatabase(final String[] hsqlArgs) throws Throwable {
         log.debug("Starting HSQL Database...");
         Server.main(hsqlArgs);
-        
+    }
+    
+    /**
+     * On server startup, start a Hibernate transaction and run all necessary DDL scripts 
+     * to update the database schema to match the current GenePattern version.
+     * 
+     * @param expectedSchemaVersion
+     * @throws Throwable
+     */
+    public static void updateSchema(String expectedSchemaVersion) throws Throwable {
         try {
             // 1) ...
             // HibernateUtil.init();
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
-                updateSchema(expectedSchemaVersion);
+                innerUpdateSchema(expectedSchemaVersion);
                 HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
@@ -217,7 +226,7 @@ public class HsqlDbUtil {
         }
     }
 
-    private static void updateSchema(final String expectedSchemaVersion) 
+    private static void innerUpdateSchema(final String expectedSchemaVersion) 
     throws Exception 
     {
         log.debug("Updating schema...");
