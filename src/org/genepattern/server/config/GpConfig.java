@@ -33,7 +33,7 @@ public class GpConfig {
     /**
      * The directory to write temporary files to
      */
-    public static final String PROP_TEMP_DIR="gp.temp.dir";
+    public static final String PROP_GP_TMPDIR="gp.tmpdir";
 
     /**
      * The directory to write files uploaded from SOAP
@@ -115,6 +115,7 @@ public class GpConfig {
     private final File jobsDir;
     private final File userRootDir;
     private final File soapAttachmentDir;
+    private final File gpTmpDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -124,6 +125,7 @@ public class GpConfig {
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
+        GpContext gpContext=GpContext.getServerContext();
         if (in.logDir!=null) {
             this.logDir=in.logDir;
         }
@@ -176,7 +178,8 @@ public class GpConfig {
         this.repoConfig=initRepoConfig(this.resourcesDir);
         this.jobsDir=initJobsDir();
         this.userRootDir=initUserRootDir();
-        this.soapAttachmentDir=initSoapAttachmentDir();
+        this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
+        this.gpTmpDir=initGpTmpDir(gpContext);
     }
 
     /**
@@ -200,7 +203,7 @@ public class GpConfig {
         return jobsDir;
     }
 
-    public File relativize(final File rootDir, final String pathStr) {
+    public static File relativize(final File rootDir, final String pathStr) {
         File path=new File(pathStr);
         if (path.isAbsolute()) {
             return path;
@@ -232,8 +235,7 @@ public class GpConfig {
         return userRootDir;
     }
     
-    protected File initSoapAttachmentDir() {
-        GpContext gpContext=GpContext.getServerContext();
+    protected File initSoapAttachmentDir(final GpContext gpContext) {
         File soapAttDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "../temp/attachments"));
         soapAttDir=new File(normalizePath(soapAttDir.getPath()));
         if (!soapAttDir.exists()) {
@@ -243,6 +245,28 @@ public class GpConfig {
             }
         }
         return soapAttDir;
+    }
+    
+    /**
+     * Initialize the global path to the temp directory.
+     * If 'gp.tmpdir' is defined use that value, otherwise fall back to use 'java.io.tmpdir'.
+     * Relative paths are relative to the gpWorkingDir.
+     * 
+     * @see PROP_GP_TMPDIR
+     * 
+     * @param gpContext
+     * @return
+     */
+    protected File initGpTmpDir(final GpContext gpContext) {
+        File gpTmpDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_GP_TMPDIR, System.getProperty("java.io.tmpdir")));
+        gpTmpDir=new File(normalizePath(gpTmpDir.getPath())); 
+        if (!gpTmpDir.exists()) {
+            boolean success=gpTmpDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_GP_TMPDIR+"' directory="+gpTmpDir);
+            }
+        }
+        return gpTmpDir;
     }
 
     /**
@@ -593,9 +617,7 @@ public class GpConfig {
     }
 
     public File getTempDir(GpContext gpContext) {
-        String temp = System.getProperty("java.io.tmpdir");
-        File tempDir = new File(temp);
-        return getGPFileProperty(gpContext, GpConfig.PROP_TEMP_DIR, tempDir);
+        return gpTmpDir;
     }
 
     private File initLogDir() 

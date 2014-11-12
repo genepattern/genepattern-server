@@ -7,7 +7,7 @@ create table JOB_INPUT (
     kind varchar(255),
     primary key (id),
     unique (job_id, name));
-create index idx_job_input_job_id on job_input (job_id);
+create index IDX_JOB_INPUT_JOB_ID on JOB_INPUT (job_id);
 
 create table JOB_INPUT_ATTRIBUTE (
     id bigint not null auto_increment,
@@ -15,7 +15,7 @@ create table JOB_INPUT_ATTRIBUTE (
     name varchar(255),
     val varchar(255),
     primary key (id));
-create index idx_jia_id on job_input_attribute (input_id);
+create index IDX_JIA_ID on JOB_INPUT_attribute (input_id);
 
 create table JOB_RESULT (
     id bigint not null auto_increment,
@@ -25,7 +25,7 @@ create table JOB_RESULT (
     log bit not null,
     primary key (id),
     unique (job_id, name));
-create index idx_job_result_job_id on job_result (job_id);
+create index IDX_JOB_RESULT_JOB_ID on JOB_RESULT (job_id);
 
 -- update schema version
 insert into PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.5.2', '3.5.2');

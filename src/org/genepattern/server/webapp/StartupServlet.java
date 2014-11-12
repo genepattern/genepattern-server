@@ -137,11 +137,10 @@ public class StartupServlet extends HttpServlet {
     /**
      * Get the path to the 'resources' directory for the web application.
      * 
-     * @param config
-     * @param gpWorkingDir
+     * @param gpWorkingDir, the working director for the GenePattern Server.
      * @return
      */
-    protected File initResourcesDir(final ServletConfig config, final File gpWorkingDir) {
+    protected File initResourcesDir(final File gpWorkingDir) {
         File resourcesDir=new File(gpWorkingDir, "../resources");
         if (!resourcesDir.exists()) {
             // check for a path relative to working dir
@@ -180,7 +179,7 @@ public class StartupServlet extends HttpServlet {
         ServerConfigurationFactory.setGpWorkingDir(workingDir);
         
         // must init resourcesDir ...
-        File resourcesDir=initResourcesDir(servletConfig, workingDir);
+        File resourcesDir=initResourcesDir(workingDir);
         ServerConfigurationFactory.setResourcesDir(resourcesDir);
         // ... before initializing logDir 
         initLogDir(workingDir, resourcesDir);
@@ -210,14 +209,26 @@ public class StartupServlet extends HttpServlet {
         final String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
-                String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-
+                GpConfig gpConfig=ServerConfigurationFactory.instance();
+                GpContext gpContext=GpContext.getServerContext();
+                //String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+                String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
-                HsqlDbUtil.startDatabase(hsqlArgs, gpVersion);
+                HsqlDbUtil.startDatabase(hsqlArgs);
+                HsqlDbUtil.updateSchema("analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 getLog().error("Unable to start HSQL Database!", t);
                 return;
+            }
+        }
+        else if (dbVendor.equalsIgnoreCase("mysql")) {
+            try {
+                final String schemaPrefix="analysis_mysql";
+                HsqlDbUtil.updateSchema(schemaPrefix, gpVersion);
+            }
+            catch (Throwable t) {
+                getLog().error("Error initializing schema for mysql database", t);
             }
         }
         
@@ -366,6 +377,7 @@ public class StartupServlet extends HttpServlet {
             defaultRootJobDir = "Server configuration error: "+t.getLocalizedMessage();
         }
 
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
@@ -373,15 +385,15 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tGenePatternURL: " + ServerConfigurationFactory.instance().getGpUrl() + NL );
-        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
-        startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
-        startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
-        startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: "+ System.getProperty("java.io.tmpdir") + NL );
-        startupMessage.append("\tgp.temp.dir: "+ ServerConfigurationFactory.instance().getTempDir(serverContext).getAbsolutePath() + NL);
-        startupMessage.append("\tsoap.attachment.dir: "+ ServerConfigurationFactory.instance().getSoapAttDir(serverContext) + NL);
-        startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
+        startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
+        startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
+        startupMessage.append("\ttasklib: " + System.getProperty("tasklib") + NL);
+        startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
+        startupMessage.append("\tjava.io.tmpdir: " + System.getProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
+        startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
+        startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);
         startupMessage.append(stars);
 
         getLog().info(startupMessage);

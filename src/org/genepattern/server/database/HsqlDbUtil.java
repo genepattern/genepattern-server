@@ -24,13 +24,77 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.config.Value;
+import org.genepattern.server.domain.Props;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
 
+import com.google.common.base.Strings;
+
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
+
+    /**
+     * Initialize the arguments to the HSQL DB startup command.
+     * 
+     * In GP <= 3.9.0 it was based on this line from the genepattern.properties file.
+     * <pre>
+     * HSQL.args= -port $HSQL_port$  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
+     * </pre>
+     * 
+     * @return
+     */
+    public static String[] initHsqlArgs(GpConfig gpConfig, GpContext gpContext) { 
+        File dbFilePath=initDbFilePath(gpConfig);
+        Value hsqlArgs=gpConfig.getValue(gpContext, "HSQL.args");
+        if (hsqlArgs != null && hsqlArgs.getNumValues()==1) {
+            String hsqlArg=hsqlArgs.getValue();
+            //special-case: replace relative legacy (pre 3.9.0) relative path with absolute path
+            hsqlArg = hsqlArg.replace("file:../resources/GenePatternDB", "file:"+dbFilePath);
+            return tokenizeHsqlArgs( hsqlArg );
+        }
+        else if (hsqlArgs != null && hsqlArgs.getNumValues()>1) {
+            List<String> values=hsqlArgs.getValues();
+            values=appendIfNecessary(values);
+            for(int i=0; i<values.size(); ++i) {
+                if (values.get(i).equals("file:../resources/GenePatternDB")) {
+                    //special-case: replace relative legacy (pre 3.9.0) relative path with absolute path
+                    values.set(i, "file:"+dbFilePath);
+                }
+            }
+            String[] rval = values.toArray(new String[values.size()]);
+            return rval;
+        }
+        
+        Integer hsqlPort=gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001);
+        
+        // initialize from the dbFilePath
+        return initHsqlArgs(hsqlPort, dbFilePath);
+    }
+    
+    protected static File initDbFilePath(GpConfig gpConfig) {
+        File resourcesDir=gpConfig.getResourcesDir();
+        if (resourcesDir == null) {
+            log.warn("resourcesDir is not set!");
+            File workingDir=new File(System.getProperty("user.dir"));
+            resourcesDir=new File(workingDir.getParent(), "resources");
+        }
+        return new File(resourcesDir,"GenePatternDB");
+    }
+    
+    protected static String[] initHsqlArgs(final File hsqlDbFile) {
+        return initHsqlArgs(9001, hsqlDbFile);
+    }
+
+    protected static String[] initHsqlArgs(final Integer hsqlPort, final File hsqlDbFile) {
+        String hsqlArgs=" -port "+hsqlPort+"  -database.0 file:"+hsqlDbFile+" -dbname.0 xdb";
+        return tokenizeHsqlArgs( hsqlArgs );
+    }
+    
 
     /**
      * Get the current version of GenePattern, (e.g. '3.9.1'). 
@@ -61,33 +125,38 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
      * @throws Throwable
      */
-    public static void startDatabase(final String hsqlArgs, final String expectedSchemaVersion) throws Throwable {
-        log.debug("Starting HSQL Database...");
+    public static void startDatabase(final String hsqlArgs) throws Throwable {
+        String[] argsArray = tokenizeHsqlArgs(hsqlArgs);
+        startDatabase(argsArray);
+    }
 
-        StringTokenizer strTok = new StringTokenizer(hsqlArgs);
-        List<String> argsList = new ArrayList<String>();
-        //int i=0;
-        while (strTok.hasMoreTokens()){
-            String tok = strTok.nextToken();
-            argsList.add(tok);
-        }
-        //prevent HSQLDB from calling System.exit when errors occur,
-        //    which is the default behavior when starting the DB using Server.main
-        if (!argsList.contains("-no_system_exit")) {
-            argsList.add("-no_system_exit");
-            argsList.add("true");
-        }
-        String[] argsArray = new String[argsList.size()];
-        argsArray = argsList.toArray(argsArray);
-        Server.main(argsArray);
-        
+    /**
+     * Start the database, initializing the DB schema if necessary.
+     * 
+     * @param hsqlArgs, default value, HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb 
+     * @param expectedSchemaVersion, the version of GP defined in the genepattern.properties file, default value, GenePatternVersion=3.9.1
+     * @throws Throwable
+     */
+    public static void startDatabase(final String[] hsqlArgs) throws Throwable {
+        log.debug("Starting HSQL Database...");
+        Server.main(hsqlArgs);
+    }
+    
+    /**
+     * On server startup, start a Hibernate transaction and run all necessary DDL scripts 
+     * to update the database schema to match the current GenePattern version.
+     * 
+     * @param expectedSchemaVersion
+     * @throws Throwable
+     */
+    public static void updateSchema(final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
         try {
             // 1) ...
             // HibernateUtil.init();
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
-                updateSchema(expectedSchemaVersion);
+                innerUpdateSchema(schemaPrefix, expectedSchemaVersion);
                 HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
@@ -116,6 +185,32 @@ public class HsqlDbUtil {
         }
     }
 
+    protected static List<String> appendIfNecessary(final List<String> argsList) {
+        //prevent HSQLDB from calling System.exit when errors occur,
+        //    which is the default behavior when starting the DB using Server.main
+        if (!argsList.contains("-no_system_exit")) {
+            List<String> updatedArgs=new ArrayList<String>(argsList);
+            updatedArgs.add("-no_system_exit");
+            updatedArgs.add("true");
+            return updatedArgs;
+        }
+        return argsList;
+    }
+    
+    protected static String[] tokenizeHsqlArgs(final String hsqlArgs) {
+        StringTokenizer strTok = new StringTokenizer(hsqlArgs);
+        List<String> argsList = new ArrayList<String>();
+        //int i=0;
+        while (strTok.hasMoreTokens()){
+            String tok = strTok.nextToken();
+            argsList.add(tok);
+        }
+        argsList=appendIfNecessary(argsList);
+        String[] argsArray = new String[argsList.size()];
+        argsArray = argsList.toArray(argsArray);
+        return argsArray;
+    }
+
     public static void shutdownDatabase() {
         try {
             HibernateUtil.beginTransaction();
@@ -134,12 +229,12 @@ public class HsqlDbUtil {
         }
     }
 
-    private static void updateSchema(final String expectedSchemaVersion) 
+    private static void innerUpdateSchema(final String schemaPrefix, final String expectedSchemaVersion) 
     throws Exception 
     {
         log.debug("Updating schema...");
         if (!checkSchema(expectedSchemaVersion)) {
-            createSchema(expectedSchemaVersion);
+            createSchema(schemaPrefix, expectedSchemaVersion);
             if (!checkSchema(expectedSchemaVersion)) {
                 log.error("schema didn't have correct version after creating");
                 //throw new IOException("Unable to successfully update database tables.");
@@ -159,18 +254,12 @@ public class HsqlDbUtil {
         String dbSchemaVersion = "";
 
         BaseDAO dao = new BaseDAO();
-
         // check schemaVersion
         try {
-            ResultSet resultSet = dao.executeSQL("select value from props where key='schemaVersion'", false);
-            if (resultSet.next()) {
-                dbSchemaVersion = resultSet.getString(1);
+            dbSchemaVersion=Props.selectValue("schemaVersion");
+            if (!Strings.isNullOrEmpty(dbSchemaVersion)) {
                 upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
-            }
-            else {
-                dbSchemaVersion = "";
-                upToDate = false;
-            }
+            } 
         }
         catch (Exception e) {
             log.info("Database tables not found.  Create new database");
@@ -201,15 +290,8 @@ public class HsqlDbUtil {
         return resourceDir;
     }
     
-    /**
-     * 
-     * @param resourceDir
-     * @param props
-     * @throws IOException
-     */
-    private static void createSchema(final String expectedSchemaVersion) {
+    private static void createSchema(final String schemaPrefix, final String expectedSchemaVersion) {
         File resourceDir = getResourceDir();
-        final String schemaPrefix = System.getProperty("HSQL.schema", "analysis_hypersonic-");
         FilenameFilter schemaFilenameFilter = new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
@@ -226,12 +308,6 @@ public class HsqlDbUtil {
                 return version1.compareToIgnoreCase(version2);
             }
         });
-//        //for junit testing, if the property is not in ServerProperties, check System properties
-//        if ("$GENEPATTERN_VERSION$".equals(expectedSchemaVersion)) {
-//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from ServerProperties)");
-//            expectedSchemaVersion = System.getProperty("GenePatternVersion", expectedSchemaVersion);
-//            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
-//        }
         String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
