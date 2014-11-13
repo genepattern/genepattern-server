@@ -26,7 +26,66 @@ import com.google.common.collect.Maps;
  */
 public class GpServerProperties {
     private static Logger log = Logger.getLogger(GpServerProperties.class);
+    
+    /**
+     * Helper method for initializing a new Properties instance from a config file.
+     * Errors are reported to the log file.
+     * You should verify that you can read the file before calling this method.
+     * 
+     * @param propFile
+     * @return
+     */
+    public static Properties loadProps(File propFile) {
+        Properties props=new Properties();
+        Long dateLoaded=loadProps(props, propFile);
+        if (dateLoaded==null) {
+            log.debug("dateLoaded==null");
+        }
+        return props;
+    }
 
+    /**
+     * Helper method for loading the properties from the File into the given Properties instance.
+     * 
+     * @param props, must be non-null
+     * @param propFile, the properties file
+     * 
+     * @return null on failure, or the current time that the file was loaded.
+     */
+    public static Long loadProps(Properties props, File propFile) {
+        if (props==null) {
+            throw new IllegalArgumentException("props==null");
+        }
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+            return System.currentTimeMillis();
+        }
+        catch (IOException e) {
+            log.error("IOException reading file="+propFile.getAbsolutePath(), e);
+            return null;
+        }
+        catch (Throwable t) {
+            ///CLOVER:OFF
+            log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
+            return null;
+            ///CLOVER:ONvoid
+        }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                }
+                catch (IOException e) {
+                    ///CLOVER:OFF
+                    log.error(e);
+                    ///CLOVER:ON
+                }
+            }
+        }
+    }
+    
     public static class Record {
         private final File propFile;
         private long dateLoaded = System.currentTimeMillis();
@@ -57,34 +116,39 @@ public class GpServerProperties {
         public void reloadProps() {
             props.clear();
             dateLoaded = System.currentTimeMillis();
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(propFile);
-                props.load(fis);
-                dateLoaded = System.currentTimeMillis();
+            Long success=loadProps(props, propFile);
+            if (success!=null) {
+                dateLoaded=success;
             }
-            catch (IOException e) {
-                log.error("IOException reading file="+propFile.getAbsolutePath(), e);
-                return;
-            }
-            catch (Throwable t) {
-                ///CLOVER:OFF
-                log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
-                return;
-                ///CLOVER:ON
-            }
-            finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    }
-                    catch (IOException e) {
-                        ///CLOVER:OFF
-                        log.error(e);
-                        ///CLOVER:ON
-                    }
-                }
-            }
+            
+//            FileInputStream fis = null;
+//            try {
+//                fis = new FileInputStream(propFile);
+//                props.load(fis);
+//                dateLoaded = System.currentTimeMillis();
+//            }
+//            catch (IOException e) {
+//                log.error("IOException reading file="+propFile.getAbsolutePath(), e);
+//                return;
+//            }
+//            catch (Throwable t) {
+//                ///CLOVER:OFF
+//                log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
+//                return;
+//                ///CLOVER:ON
+//            }
+//            finally {
+//                if (fis != null) {
+//                    try {
+//                        fis.close();
+//                    }
+//                    catch (IOException e) {
+//                        ///CLOVER:OFF
+//                        log.error(e);
+//                        ///CLOVER:ON
+//                    }
+//                }
+//            }
         }
     }
 
