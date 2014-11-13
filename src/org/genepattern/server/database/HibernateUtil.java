@@ -12,10 +12,16 @@
 
 package org.genepattern.server.database;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.util.Properties;
 
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpServerProperties;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Sequence;
 import org.genepattern.webservice.OmnigeneException;
 import org.hibernate.Query;
@@ -30,11 +36,46 @@ public class HibernateUtil {
     
     private static synchronized HibernateSessionManager instance() {
         if (instance==null) {
-            final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
-            final String jdbcUrl=null;
-            instance=new HibernateSessionManager(hibernateConfigurationFile, jdbcUrl);
+            GpContext serverContext=GpContext.getServerContext();
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            instance=initFromConfig(gpConfig, serverContext);
         }
+        
         return instance;
+    }
+
+    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+        Properties hibProps=null;
+        File hibPropsDefault=new File(gpConfig.getResourcesDir(), "hibernate_default.properties");        
+        
+        if (hibPropsDefault.exists()) {
+            if (!hibPropsDefault.canRead()) {
+                log.error("Can't read 'hibernate_default.properties' file="+hibPropsDefault);
+            }
+            else {
+                hibProps=GpServerProperties.loadProps(hibPropsDefault);
+            }
+        }
+        File hibPropsCustom=new File(gpConfig.getResourcesDir(), "hibernate_custom.properties");
+        if (hibPropsCustom.exists()) {
+            if (!hibPropsCustom.canRead()) {
+                log.error("Can't read 'hibernate_custom.properties' file="+hibPropsCustom);
+            }
+            else {
+                if (hibProps==null) {
+                    hibProps=new Properties();
+                }
+                GpServerProperties.loadProps(hibProps, hibPropsCustom);
+            }
+        }
+        if (hibProps != null) {
+            return new HibernateSessionManager(hibProps);
+        }
+        
+        // fallback to pre 3.9.0 implementation
+        final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
+        final String jdbcUrl=null;
+        return new HibernateSessionManager(hibernateConfigurationFile, jdbcUrl);
     }
 
     public static final Session getSession() {

@@ -33,7 +33,11 @@ public final class HibernateSessionManager {
     public HibernateSessionManager(String hibernateConfigurationFile, String connectionUrl) {
         sessionFactory = createSessionFactory(hibernateConfigurationFile, connectionUrl);
     }
-
+    
+    public HibernateSessionManager(Properties hibernateProperties) {
+        sessionFactory = createSessionFactory(hibernateProperties);
+    }
+    
     /**
      * Scan the current class loader for all classes with the given package prefix,
      *     packagePrefix='org.genepattern.server.'
@@ -136,7 +140,7 @@ public final class HibernateSessionManager {
                 );
     }
 
-    public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
+    protected static AnnotationConfiguration preInitAnnotationConfiguration() {
         AnnotationConfiguration config = new AnnotationConfiguration();
 
         // add mappings from xml files here, instead of in the .xml file
@@ -156,12 +160,39 @@ public final class HibernateSessionManager {
         for(Class<?> clazz : annotatedClasses) {
             config.addAnnotatedClass( clazz );
         }
+        return config;
+    }
+    
+    /**
+     * Initialize the hibernate connection based on the values set in the given Properties arg.
+     * Default values are loaded from the ./resources/hibernate_default.properties file.
+     * 
+     * @param hibernateProperties
+     * @return
+     */
+    public static SessionFactory createSessionFactory(Properties hibernateProperties) {
+        AnnotationConfiguration config = preInitAnnotationConfiguration();
+        config.addProperties(hibernateProperties);
+        mergeSystemProperties(config);
+        log.info(""+config.getProperty("hibernate.connection.url"));
+        return config.buildSessionFactory();
+    }
 
+    /**
+     * @deprecated, should initialize from the a Properties object instead.
+     * 
+     * @param configResource
+     * @param connectionUrl
+     * @return
+     */
+    public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
+        AnnotationConfiguration config = preInitAnnotationConfiguration();
         config.configure(configResource);
         mergeSystemProperties(config);
         if (connectionUrl != null) {
             config.setProperty("hibernate.connection.url", connectionUrl);
-        }
+        }        
+        log.info(""+config.getProperty("hibernate.connection.url"));
         return config.buildSessionFactory();
     }
 
