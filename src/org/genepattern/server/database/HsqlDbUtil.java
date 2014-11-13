@@ -125,6 +125,9 @@ public class HsqlDbUtil {
      * @throws Throwable
      */
     public static void startDatabase(final String hsqlArgs) throws Throwable {
+        //# default table type is memory
+        System.setProperty("hsqldb.default_table_type","cached");
+
         String[] argsArray = tokenizeHsqlArgs(hsqlArgs);
         startDatabase(argsArray);
     }
