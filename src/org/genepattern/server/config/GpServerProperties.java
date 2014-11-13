@@ -120,35 +120,6 @@ public class GpServerProperties {
             if (success!=null) {
                 dateLoaded=success;
             }
-            
-//            FileInputStream fis = null;
-//            try {
-//                fis = new FileInputStream(propFile);
-//                props.load(fis);
-//                dateLoaded = System.currentTimeMillis();
-//            }
-//            catch (IOException e) {
-//                log.error("IOException reading file="+propFile.getAbsolutePath(), e);
-//                return;
-//            }
-//            catch (Throwable t) {
-//                ///CLOVER:OFF
-//                log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
-//                return;
-//                ///CLOVER:ON
-//            }
-//            finally {
-//                if (fis != null) {
-//                    try {
-//                        fis.close();
-//                    }
-//                    catch (IOException e) {
-//                        ///CLOVER:OFF
-//                        log.error(e);
-//                        ///CLOVER:ON
-//                    }
-//                }
-//            }
         }
     }
 
