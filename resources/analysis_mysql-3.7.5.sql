@@ -6,6 +6,6 @@ create table PIN_MODULE (
     primary key (id));
 
 -- update schema version
-insert into PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.7.5', '3.7.5');
+UPDATE PROPS SET VALUE = '3.7.5' where `KEY` = 'schemaVersion';
 
 commit;

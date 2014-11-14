@@ -9,7 +9,7 @@ create table SYSTEM_MESSAGE (
     primary key (id));
 
 -- update schema version
-INSERT INTO PROPS (`KEY`,VALUE) values ('registeredVersion3.1.1', '3.1.1');
+UPDATE PROPS SET VALUE = '3.1.1' where `KEY` = 'schemaVersion';
 
 COMMIT;
 

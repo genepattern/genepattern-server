@@ -13,5 +13,5 @@ create table JOB_QUEUE (
 );
 
 -- update schema version
-insert into PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.4.0', '3.4.0');
+UPDATE PROPS SET VALUE = '3.4.0' where `KEY` = 'schemaVersion';
 commit;

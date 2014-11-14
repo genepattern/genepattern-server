@@ -31,6 +31,6 @@ create table job_result (
 create index idx_job_result_job_id on job_result (job_id);
 
 -- update schema version
-insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.5.2', '3.5.2');
+UPDATE PROPS SET VALUE = '3.5.2' where KEY = 'schemaVersion';
 
 commit;

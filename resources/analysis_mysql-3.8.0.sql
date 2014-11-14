@@ -1,4 +1,4 @@
 -- update schema version
-update props set value='3.8.0' where `key`='schemaVersion';
+UPDATE PROPS SET VALUE = '3.8.0' where `KEY` = 'schemaVersion';
 
 commit;

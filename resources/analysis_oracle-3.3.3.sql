@@ -46,7 +46,7 @@ CREATE TABLE JOB_SGE
 CREATE INDEX IDX_SGE_JOB_ID on JOB_SGE (SGE_JOB_ID);
 
 -- update schema version
-INSERT INTO PROPS (KEY, VALUE) VALUES ('registeredVersion3.3.3', '3.3.3');
+UPDATE PROPS SET VALUE = '3.3.3' where KEY = 'schemaVersion';
 
 COMMIT;
 

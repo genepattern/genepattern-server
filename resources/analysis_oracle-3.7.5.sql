@@ -16,6 +16,6 @@ CREATE SEQUENCE PIN_MODULE_SEQ
 
 
 -- update schema version
-update props set value='3.7.5' where key='schemaVersion';
+UPDATE PROPS SET VALUE = '3.7.5' where KEY = 'schemaVersion';
 
 commit;

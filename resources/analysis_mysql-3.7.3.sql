@@ -13,7 +13,7 @@ create table TASK_CATEGORY (
 --    ( 'MIT_701X', 'urn:lsid:8086.jtriley.starapp.mit.edu:genepatternmodules:11'  )
 
 -- update schema version
-insert into PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.7.3', '3.7.3');
+UPDATE PROPS SET VALUE = '3.7.3' where `KEY` = 'schemaVersion';
 
 commit;
 
