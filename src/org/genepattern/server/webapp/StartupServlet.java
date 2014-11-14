@@ -181,7 +181,7 @@ public class StartupServlet extends HttpServlet {
         // must init resourcesDir ...
         File resourcesDir=initResourcesDir(workingDir);
         ServerConfigurationFactory.setResourcesDir(resourcesDir);
-        // ... before initializing logDir 
+        // ...  before initializing logDir 
         initLogDir(workingDir, resourcesDir);
 
         // must initialize logger before calling any methods which output to the log
@@ -199,37 +199,32 @@ public class StartupServlet extends HttpServlet {
         loadProperties(servletConfig, workingDir);
         setServerURLs(servletConfig);
 
-        String gpVersion="3.9.1";
-        try {
-            gpVersion=HsqlDbUtil.initExpectedSchemaVersion();
-        }
-        catch (Throwable t) {
-            getLog().error("Error getting gpVersion from properties",t);
-        }
-        final String dbVendor = System.getProperty("database.vendor", "HSQL");
-        if (dbVendor.equals("HSQL")) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        GpContext gpContext=GpContext.getServerContext();
+        String gpVersion=gpConfig.getGenePatternVersion();
+        
+        String dbVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
+        if (dbVendor.equals("HSQL") || dbVendor.equals("hypersonic")) {
+            // special-case, convert to hypersonic for DDL file listing
+            dbVendor="hypersonic";
             try {
-                GpConfig gpConfig=ServerConfigurationFactory.instance();
-                GpContext gpContext=GpContext.getServerContext();
-                //String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
                 String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                HsqlDbUtil.updateSchema("analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 getLog().error("Unable to start HSQL Database!", t);
                 return;
             }
         }
-        else if (dbVendor.equalsIgnoreCase("mysql")) {
-            try {
-                final String schemaPrefix="analysis_mysql";
-                HsqlDbUtil.updateSchema(schemaPrefix, gpVersion);
-            }
-            catch (Throwable t) {
-                getLog().error("Error initializing schema for mysql database", t);
-            }
+        
+        final String schemaPrefix="analysis_"+dbVendor.toLowerCase();
+        try {
+            getLog().info("\trunning database DDL scripts ..., schemaPrefix="+schemaPrefix);
+            HsqlDbUtil.updateSchema(resourcesDir, schemaPrefix, gpVersion);
+        }
+        catch (Throwable t) {
+            getLog().error("Error initializing DB schema", t);
         }
         
         getLog().info("\tchecking database connection...");

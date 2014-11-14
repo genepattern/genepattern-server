@@ -172,7 +172,7 @@ public class BaseDAO {
      * @throws RemoteException
      * @return int number of rows returned
      */
-    public int executeUpdate(String sql) {
+    public int executeUpdate(String sql) throws SQLException {
         getSession().flush();
         getSession().clear();
     
@@ -181,14 +181,6 @@ public class BaseDAO {
         try {
             updateStatement = getSession().connection().createStatement();
             return updateStatement.executeUpdate(sql);
-        }
-        catch (HibernateException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
-        }
-        catch (SQLException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
         }
         finally {
             cleanupJDBC(null, updateStatement);

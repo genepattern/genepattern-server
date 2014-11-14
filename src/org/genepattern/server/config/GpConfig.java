@@ -67,6 +67,22 @@ public class GpConfig {
     }
     
     /**
+     * Get the current version of GenePattern, (e.g. '3.9.1'). 
+     * Automatic schema update is based on the difference between this value (as defined by the GP installation)
+     * and the entry in the database.
+     * 
+     */
+    protected String initGenePatternVersion(GpContext gpContext) {
+        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.1");
+        //for junit testing, if the property is not in ServerProperties, check System properties
+        if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
+            log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
+            gpVersion="3.9.1";
+        }
+        return gpVersion;
+    }
+    
+    /**
      * Initialize the GenePatternURL from System.property
      * @return
      */
@@ -143,15 +159,11 @@ public class GpConfig {
             this.gpWorkingDir=in.gpWorkingDir;
         }
         this.serverProperties=in.serverProperties;
-        if (in.genePatternVersion != null) {
-            this.genePatternVersion=in.genePatternVersion;
-        }
-        else if (this.serverProperties != null) {
-            this.genePatternVersion=this.serverProperties.getProperty("GenePatternVersion");
+        if (in.genePatternVersion==null || in.genePatternVersion.equals("$GENEPATTERN_VERSION$")) {
+            this.genePatternVersion=initGenePatternVersion(gpContext);
         }
         else {
-            log.error("GenePatternVersion not set");
-            this.genePatternVersion="";
+            this.genePatternVersion=in.genePatternVersion;
         }
         if (in.genePatternURL!=null) {
             this.genePatternURL=in.genePatternURL;
