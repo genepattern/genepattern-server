@@ -71,6 +71,9 @@ public class StartupServlet extends HttpServlet {
     public String getServletInfo() {
         return "GenePatternStartupServlet";
     }
+
+    // initialize this on ServletStartup
+    protected String databaseVendor="HSQL";
     
     /**
      * Initialize the 'working directory' from which to resolve relative file paths.
@@ -202,11 +205,20 @@ public class StartupServlet extends HttpServlet {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
         String gpVersion=gpConfig.getGenePatternVersion();
+        String schemaPrefix=null;
         
-        String dbVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
-        if (dbVendor.equals("HSQL") || dbVendor.equals("hypersonic")) {
-            // special-case, convert to hypersonic for DDL file listing
-            dbVendor="hypersonic";
+        Properties dbProperties=HibernateUtil.initDbProperties(gpConfig, gpContext);
+        if (dbProperties != null) {
+            this.databaseVendor=dbProperties.getProperty("database.vendor", "HSQL");
+            // override default schemaPrefix in database properties file
+            schemaPrefix=dbProperties.getProperty("schemaPrefix");
+        }
+        else {
+            databaseVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
+        }
+        
+        if (databaseVendor.equals("HSQL")) {
+            schemaPrefix="analysis_hypersonic";
             try {
                 String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
@@ -217,14 +229,8 @@ public class StartupServlet extends HttpServlet {
                 return;
             }
         }
-        
-        final String schemaPrefix="analysis_"+dbVendor.toLowerCase();
-        try {
-            getLog().info("\trunning database DDL scripts ..., schemaPrefix="+schemaPrefix);
-            HsqlDbUtil.updateSchema(resourcesDir, schemaPrefix, gpVersion);
-        }
-        catch (Throwable t) {
-            getLog().error("Error initializing DB schema", t);
+        else {
+            schemaPrefix="analysis_"+databaseVendor.toLowerCase();
         }
         
         getLog().info("\tchecking database connection...");
@@ -244,6 +250,15 @@ public class StartupServlet extends HttpServlet {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+
+        try {
+            getLog().info("\tinitializing database schema ...");
+            HsqlDbUtil.updateSchema(resourcesDir, schemaPrefix, gpVersion);
+        }
+        catch (Throwable t) {
+            getLog().error("Error initializing DB schema", t);
+        }
+        
         
         //load the configuration file
         try {
@@ -409,8 +424,7 @@ public class StartupServlet extends HttpServlet {
             getLog().error("Error stopping job queue: " + t.getLocalizedMessage(), t);
         }
 
-        String dbVendor = System.getProperty("database.vendor", "HSQL");
-        if (dbVendor.equals("HSQL")) {
+        if (this.databaseVendor.equals("HSQL")) {
             try {
                 getLog().info("stopping HSQLDB ...");
                 HsqlDbUtil.shutdownDatabase();

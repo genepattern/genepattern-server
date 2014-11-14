@@ -44,22 +44,48 @@ public class HibernateUtil {
         return instance;
     }
 
-    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+    /**
+     * Get the 'hibernate.connection.url' to the HSQL Database.
+     * This is derived from the 'HSQL_port' property.
+     * 
+     * @param gpConfig
+     * @param gpContext
+     * @return
+     */
+    public static String initJdbcUrl(GpConfig gpConfig, GpContext gpContext) {
+        Integer hsqlPort=gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001);
+        return "jdbc:hsqldb:hsql://127.0.0.1:"+hsqlPort+"/xdb";
+    }
+    
+    /**
+     * Initialize the database properties from the resources directory.
+     * Load properties from 'resources/database_default.properties', if present.
+     * Load additional properties from 'resources/database_custom.properties', if present.
+     * The custom properties take precedence.
+     * 
+     * When 'database.vendor=HSQL', attempt to set the jdbcUrl based on the value of the HSQL_port property.
+     * 
+     * If neither file is present, log an error and return null.
+     * 
+     * @param gpConfig
+     * @return 
+     */
+    public static Properties initDbProperties(GpConfig gpConfig, GpContext gpContext) {
         Properties hibProps=null;
-        File hibPropsDefault=new File(gpConfig.getResourcesDir(), "hibernate_default.properties");        
+        File hibPropsDefault=new File(gpConfig.getResourcesDir(), "database_default.properties");
         
         if (hibPropsDefault.exists()) {
             if (!hibPropsDefault.canRead()) {
-                log.error("Can't read 'hibernate_default.properties' file="+hibPropsDefault);
+                log.error("Can't read 'database_default.properties' file="+hibPropsDefault);
             }
             else {
                 hibProps=GpServerProperties.loadProps(hibPropsDefault);
             }
         }
-        File hibPropsCustom=new File(gpConfig.getResourcesDir(), "hibernate_custom.properties");
+        File hibPropsCustom=new File(gpConfig.getResourcesDir(), "database_custom.properties");
         if (hibPropsCustom.exists()) {
             if (!hibPropsCustom.canRead()) {
-                log.error("Can't read 'hibernate_custom.properties' file="+hibPropsCustom);
+                log.error("Can't read 'database_custom.properties' file="+hibPropsCustom);
             }
             else {
                 if (hibProps==null) {
@@ -68,6 +94,29 @@ public class HibernateUtil {
                 GpServerProperties.loadProps(hibProps, hibPropsCustom);
             }
         }
+        
+        if (hibProps==null) {
+            log.error("Error, missing required configuration file 'database_default.properties'");
+            return hibProps;
+        }
+        
+        //special-case for default database.vendor=HSQL
+        if ("hsql".equalsIgnoreCase(hibProps.getProperty("database.vendor"))) {
+            final String PROP_HSQL_PORT="HSQL_port";
+            final String PROP_HIBERNATE_CONNECTION_URL="hibernate.connection.url";
+            Integer hsqlPort=gpConfig.getGPIntegerProperty(gpContext, PROP_HSQL_PORT, 9001);
+            if (!hibProps.containsKey(PROP_HIBERNATE_CONNECTION_URL)) {
+                String jdbcUrl="jdbc:hsqldb:hsql://127.0.0.1:"+hsqlPort+"/xdb";
+                hibProps.setProperty(PROP_HIBERNATE_CONNECTION_URL, jdbcUrl);
+                log.debug("setting "+PROP_HIBERNATE_CONNECTION_URL+"="+jdbcUrl);
+            }
+        }
+        
+        return hibProps;
+    }
+    
+    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+        Properties hibProps=initDbProperties(gpConfig, gpContext);
         if (hibProps != null) {
             return new HibernateSessionManager(hibProps);
         }
