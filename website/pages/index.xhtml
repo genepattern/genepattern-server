@@ -21,18 +21,18 @@
 </ui:define>
 
 <ui:define name="headText">
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/introjs.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery.tagsinput.css" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/comments/jquery.comment.css"/>
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/jMenu.jquery.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/introjs.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery.tagsinput.css" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/comments/jquery.comment.css"/>
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
+        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
     </c:when>
     <c:otherwise>
-        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css?version=#{aboutBean.buildTag}" />
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform.css?version=#{aboutBean.buildTag}" />
     </c:otherwise>
 </c:choose>
 
