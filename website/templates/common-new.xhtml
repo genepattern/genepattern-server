@@ -37,6 +37,9 @@
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/new-layout.css?version=#{aboutBean.buildTag}" />
             <link rel="shortcut icon" href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" />
 
+            <!-- Must load the skin CSS file last -->
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
+
             <script type="text/javascript" language="javascript">
                 var contextRoot = '#{facesContext.externalContext.requestContextPath}';
                 var createTaskAllowed = #{authorizationBean.createModuleAllowed};

@@ -35,6 +35,9 @@
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/glyphicon/glyphicon.css?version=#{aboutBean.buildTag}" />
             <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" rel="shortcut icon" />
 
+            <!-- Must load the skin CSS file last -->
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
+
             <script type="text/javascript" language="javascript">
                 var contextRoot = '#{facesContext.externalContext.requestContextPath}';
                 var createTaskAllowed = #{authorizationBean.createModuleAllowed};
