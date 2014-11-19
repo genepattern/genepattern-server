@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -25,7 +27,6 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.domain.Props;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -93,30 +94,7 @@ public class HsqlDbUtil {
         String hsqlArgs=" -port "+hsqlPort+"  -database.0 file:"+hsqlDbFile+" -dbname.0 xdb";
         return tokenizeHsqlArgs( hsqlArgs );
     }
-    
 
-    /**
-     * Get the current version of GenePattern, (e.g. '3.9.1'). 
-     * Automatic schema update is based on the difference between this value (as defined by the GP installation)
-     * and the entry in the database.
-     * 
-     */
-    public static String initExpectedSchemaVersion() {
-        final String expectedSchemaVersion;
-        
-        final String gpVersion = ServerConfigurationFactory.instance().getGenePatternVersion();
-        //for junit testing, if the property is not in ServerProperties, check System properties
-        if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
-            log.info("gpVersion="+gpVersion+" (from ServerProperties)");
-            expectedSchemaVersion = System.getProperty("GenePatternVersion", gpVersion);
-            log.info("expectedSchemaVersion="+expectedSchemaVersion+" (from System.getProperty)");
-        }
-        else {
-            expectedSchemaVersion=gpVersion;
-        }
-        return expectedSchemaVersion;
-    }
-    
     /**
      * Start the database, initializing the DB schema if necessary.
      * 
@@ -148,14 +126,13 @@ public class HsqlDbUtil {
      * @param expectedSchemaVersion
      * @throws Throwable
      */
-    public static void updateSchema(final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
+    public static void updateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
         try {
             // 1) ...
-            // HibernateUtil.init();
             HibernateUtil.beginTransaction();
             try {
                 // 2) ...
-                innerUpdateSchema(schemaPrefix, expectedSchemaVersion);
+                innerUpdateSchema(resourceDir, schemaPrefix, expectedSchemaVersion);
                 HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
@@ -228,68 +205,81 @@ public class HsqlDbUtil {
         }
     }
 
-    private static void innerUpdateSchema(final String schemaPrefix, final String expectedSchemaVersion) 
+    private static void innerUpdateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
     throws Exception 
     {
+        final String dbSchemaVersion=getDbSchemaVersion();
+        boolean upToDate = false;
+        if (!Strings.isNullOrEmpty(dbSchemaVersion)) {
+            upToDate = (expectedSchemaVersion.compareTo(dbSchemaVersion) <= 0);
+        }
+        log.info("schema up-to-date: " + upToDate + ": " + expectedSchemaVersion + " required, " + dbSchemaVersion + " current");
+        if (upToDate) {
+            return;
+        }
+
+        // run all new DDL scripts to bring the DB up to date with the GP version
         log.debug("Updating schema...");
-        if (!checkSchema(expectedSchemaVersion)) {
-            createSchema(schemaPrefix, expectedSchemaVersion);
-            if (!checkSchema(expectedSchemaVersion)) {
-                log.error("schema didn't have correct version after creating");
-                //throw new IOException("Unable to successfully update database tables.");
-            }
+        createSchema(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
+
+        // validate that the DB version is up to date
+        final String updatedSchemaVersion=getDbSchemaVersion();
+        if (!Strings.isNullOrEmpty(updatedSchemaVersion)) {
+            upToDate = (expectedSchemaVersion.compareTo(updatedSchemaVersion) <= 0);
+        }
+        if (!upToDate) {
+            log.error("schema didn't have correct version after creating");
         }
         log.debug("Updating schema...Done!");
     }
 
-    /**
-     * 
-     * @param resourceDir
-     * @param props
-     * @return
-     */
-    private static boolean checkSchema(final String requiredSchemaVersion) throws Exception {
-        boolean upToDate = false;
-        String dbSchemaVersion = "";
-
-        // check schemaVersion
+    protected static boolean tableExists(String tableName) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
-            dbSchemaVersion=Props.selectValue("schemaVersion");
-            if (!Strings.isNullOrEmpty(dbSchemaVersion)) {
-                upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
-            } 
+            DatabaseMetaData md = HibernateUtil.getSession().connection().getMetaData();
+            ResultSet rs=md.getTables(null, null, tableName, null);
+            if (rs.next()) {
+                return true;
+            }
         }
-        catch (Exception e) {
-            log.info("Database tables not found.  Create new database");
-            dbSchemaVersion = "";
+        catch (Throwable t) {
+            log.error("Unexpected error checking if tableExists for tableName="+tableName, t);
         }
-
-        System.setProperty("dbSchemaVersion", dbSchemaVersion);
-        log.info("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, " + dbSchemaVersion + " current");
-        return upToDate;
-    }
-
-    /**
-     * @return the resources directory, or null if there are configuration errors
-     */
-    private static File getResourceDir() {
-        String resourceDirProp = System.getProperty("resources");
-        if (resourceDirProp == null || resourceDirProp.trim().length() == 0) {
-            log.error("Missing required System property, 'resources': "+resourceDirProp);
-            //TODO: throw exception
-            return null;
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
-        File resourceDir = new File(resourceDirProp);
-        if (!resourceDir.canRead()) {
-            log.error("Configuration error: Can't read resources directory: "+resourceDir.getPath());
-            //TODO: throw exception
-            return null;
-        }
-        return resourceDir;
+        return false;
     }
     
-    private static void createSchema(final String schemaPrefix, final String expectedSchemaVersion) {
-        File resourceDir = getResourceDir();
+    /**
+     * Query the database for the current schema version recorded in the database.
+     * @return
+     */
+    protected static String getDbSchemaVersion() {
+        boolean e=tableExists("PROPS");
+        if (!e) {
+            return "";
+        }
+        
+        String dbSchemaVersion;
+        try {
+            dbSchemaVersion=Props.selectValue("schemaVersion");
+        }
+        catch (Throwable t) {
+            log.info("Database tables not found.  Create new database");
+            dbSchemaVersion="";
+        }
+        log.info("Current dbSchemaVersion: "+dbSchemaVersion);
+        return dbSchemaVersion;
+    }
+
+    /**
+     * 
+     * @throws exception
+     */
+    private static void createSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
         FilenameFilter schemaFilenameFilter = new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
@@ -306,7 +296,6 @@ public class HsqlDbUtil {
                 return version1.compareToIgnoreCase(version2);
             }
         });
-        String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
@@ -353,8 +342,14 @@ public class HsqlDbUtil {
             }
             sql = sql.trim();
             log.info("apply SQL-> " + sql);
-            BaseDAO dao = new BaseDAO();
-            dao.executeUpdate(sql);
+            try {
+                BaseDAO dao = new BaseDAO();
+                dao.executeUpdate(sql);
+            }
+            catch (Throwable t) {
+                log.error("Error processing SQL in schemaFile="+schemaFile);
+                log.error("sql: "+sql, t);
+            }
         }
         log.debug("updating database from schema ... Done!");
     }

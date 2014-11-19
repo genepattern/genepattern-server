@@ -13,6 +13,6 @@ create table BATCH_ANALYSIS (
     ANALYSIS_JOB integer not null references ANALYSIS_JOB (JOB_NO) on delete cascade);
 
 -- update schema version
-INSERT INTO PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.3.0', '3.3.0');
+UPDATE PROPS SET VALUE = '3.3.0' where `KEY` = 'schemaVersion';
 
 COMMIT;

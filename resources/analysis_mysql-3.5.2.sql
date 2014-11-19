@@ -28,6 +28,6 @@ create table JOB_RESULT (
 create index IDX_JOB_RESULT_JOB_ID on JOB_RESULT (job_id);
 
 -- update schema version
-insert into PROPS (`KEY`, VALUE) VALUES ('registeredVersion3.5.2', '3.5.2');
+UPDATE PROPS SET VALUE = '3.5.2' where `KEY` = 'schemaVersion';
 
 commit;

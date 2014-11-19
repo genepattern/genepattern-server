@@ -13,5 +13,6 @@ create index idx_eula_record_lsid on eula_record (lsid);
 create index idx_eula_record_user_id on eula_record (user_id); 
 
 -- update schema version
-insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.4.2', '3.4.2');
+UPDATE PROPS SET VALUE = '3.4.2' where KEY = 'schemaVersion';
+
 commit;

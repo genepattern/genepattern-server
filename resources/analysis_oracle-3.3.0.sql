@@ -24,6 +24,6 @@ CREATE SEQUENCE BATCH_JOB_SEQ
   NOORDER;
 
 -- update schema version
-INSERT INTO PROPS (KEY, VALUE) VALUES ('registeredVersion3.3.0', '3.3.0');
+UPDATE PROPS SET VALUE = '3.3.0' where KEY = 'schemaVersion';
 
 COMMIT;

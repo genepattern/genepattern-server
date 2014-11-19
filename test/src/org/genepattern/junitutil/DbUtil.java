@@ -103,7 +103,7 @@ public class DbUtil {
             try {
                 isDbInitialized = true;
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                HsqlDbUtil.updateSchema("analysis_hypersonic-", gpVersion);
+                HsqlDbUtil.updateSchema(new File(pathToResourceDir), "analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...

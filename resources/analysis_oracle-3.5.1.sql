@@ -1,5 +1,5 @@
 -- update schema version
-insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.5.1', '3.5.1');
+UPDATE PROPS SET VALUE = '3.5.1' where KEY = 'schemaVersion';
 
 commit;
 
