@@ -101,6 +101,17 @@ public class HibernateUtil {
             return hibProps;
         }
         
+        initHsqlConnectionUrl(gpConfig, gpContext, hibProps);
+        return hibProps;
+    }
+
+    /**
+     * Special-case for default database.vendor=HSQL, set the 'hibernate.connection.url' from the 'HSQL_port'.
+     * @param gpConfig
+     * @param gpContext
+     * @param hibProps
+     */
+    private static void initHsqlConnectionUrl(GpConfig gpConfig, GpContext gpContext, Properties hibProps) {
         //special-case for default database.vendor=HSQL
         if ("hsql".equalsIgnoreCase(hibProps.getProperty("database.vendor"))) {
             final String PROP_HSQL_PORT="HSQL_port";
@@ -112,21 +123,43 @@ public class HibernateUtil {
                 log.debug("setting "+PROP_HIBERNATE_CONNECTION_URL+"="+jdbcUrl);
             }
         }
-        
-        return hibProps;
     }
     
     protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
         Properties hibProps=initDbProperties(gpConfig, gpContext);
-        if (hibProps != null) {
-            return new HibernateSessionManager(hibProps);
-        }
         
-        // fallback to pre 3.9.0 implementation
-        log.debug("falling back to pre-3.9.0 implementation");
-        final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
-        final String jdbcUrl=null;
-        return new HibernateSessionManager(hibernateConfigurationFile, jdbcUrl);
+        if (hibProps==null) {
+            final String legacyConfigFile = System.getProperty("hibernate.configuration.file");
+            
+            if (legacyConfigFile==null) {
+                log.warn("Using hard-coded database properties");
+                // use hard-coded DB properties
+                hibProps=new Properties();
+                hibProps.setProperty("database.vendor","HSQL");
+                hibProps.setProperty("HSQL_port","9001");
+                hibProps.setProperty("hibernate.current_session_context_class","thread");
+                hibProps.setProperty("hibernate.transaction.factory_class","org.hibernate.transaction.JDBCTransactionFactory");
+                hibProps.setProperty("hibernate.connection.provider_class","org.hibernate.connection.C3P0ConnectionProvider");
+                hibProps.setProperty("hibernate.jdbc.batch_size","20");
+                hibProps.setProperty("hibernate.statement_cache.size","0");
+                hibProps.setProperty("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
+                hibProps.setProperty("hibernate.username","sa");
+                hibProps.setProperty("hibernate.password","");
+                hibProps.setProperty("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
+                hibProps.setProperty("hibernate.default_schema","PUBLIC");
+                initHsqlConnectionUrl(gpConfig, gpContext, hibProps);
+            }
+            
+            if (legacyConfigFile != null) {
+                // fallback to pre 3.9.0 implementation
+                log.warn("Using deprecated (pre-3.9.0) database configuration");
+                final String jdbcUrl=null;
+                return new HibernateSessionManager(legacyConfigFile, jdbcUrl);
+            }
+
+        }
+
+        return new HibernateSessionManager(hibProps);
     }
 
     public static final Session getSession() {
