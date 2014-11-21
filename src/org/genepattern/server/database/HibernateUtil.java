@@ -36,6 +36,7 @@ public class HibernateUtil {
     
     private static synchronized HibernateSessionManager instance() {
         if (instance==null) {
+            log.debug("initializing hibernate session ...");
             GpContext serverContext=GpContext.getServerContext();
             GpConfig gpConfig=ServerConfigurationFactory.instance();
             instance=initFromConfig(gpConfig, serverContext);
@@ -122,6 +123,7 @@ public class HibernateUtil {
         }
         
         // fallback to pre 3.9.0 implementation
+        log.debug("falling back to pre-3.9.0 implementation");
         final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
         final String jdbcUrl=null;
         return new HibernateSessionManager(hibernateConfigurationFile, jdbcUrl);

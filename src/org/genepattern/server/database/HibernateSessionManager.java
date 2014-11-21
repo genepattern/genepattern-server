@@ -31,10 +31,16 @@ public final class HibernateSessionManager {
 
     private final SessionFactory sessionFactory;
     public HibernateSessionManager(String hibernateConfigurationFile, String connectionUrl) {
+        if (log.isDebugEnabled()) {
+            log.debug("initializing session factory from configFile="+hibernateConfigurationFile+", connectionUrl="+connectionUrl);
+        }
         sessionFactory = createSessionFactory(hibernateConfigurationFile, connectionUrl);
     }
     
     public HibernateSessionManager(Properties hibernateProperties) {
+        if (log.isDebugEnabled()) {
+            log.debug("initializing session factory from hibernate properties="+hibernateProperties);
+        }
         sessionFactory = createSessionFactory(hibernateProperties);
     }
     
@@ -174,7 +180,7 @@ public final class HibernateSessionManager {
         AnnotationConfiguration config = preInitAnnotationConfiguration();
         config.addProperties(hibernateProperties);
         mergeSystemProperties(config);
-        log.info(""+config.getProperty("hibernate.connection.url"));
+        log.info("hibernate.connection.url="+config.getProperty("hibernate.connection.url"));
         return config.buildSessionFactory();
     }
 
@@ -192,7 +198,7 @@ public final class HibernateSessionManager {
         if (connectionUrl != null) {
             config.setProperty("hibernate.connection.url", connectionUrl);
         }        
-        log.info(""+config.getProperty("hibernate.connection.url"));
+        log.info("hibernate.connection.url="+config.getProperty("hibernate.connection.url"));
         return config.buildSessionFactory();
     }
 
