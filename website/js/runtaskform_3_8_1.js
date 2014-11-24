@@ -245,6 +245,14 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     }
                 });
 
+
+                $(".tagsContent").find("input").last().keyup(function()
+                {
+                    var value = $(this).val();
+
+                    $(this).val(value.toLowerCase());
+                });
+
                 // Update the history & title
                 document.title = "GenePattern - " + run_task_info.name
                 if (reloadId) {
