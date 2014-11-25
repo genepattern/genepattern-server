@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.genomespace.TreeJSON.TreeComparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
