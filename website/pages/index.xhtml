@@ -279,7 +279,7 @@ function showFileInput(id) {
     <ui:include src="/pages/serverFileDialog.xhtml" />
     <ui:include src="/pages/uploads/uploadToDirectoryDialog.xhtml" />
 
-    <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
         <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
     </h:outputText>
 
