@@ -15,6 +15,7 @@ import java.util.SortedSet;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.ExternalFile;
@@ -82,10 +83,11 @@ public class GenomeSpaceReceiveBean {
         if (filesString != null) {
             filesString = filesString.replaceAll("%2520", "%20");
             String[] fileParams = filesString.split(",");
+            HttpSession session = request.getSession();
             for (String param : fileParams) {
                 try {
                     GpFilePath file = null;
-                    if (param.contains("genomespace.org")) file = genomeSpaceBean.getFile(param);
+                    if (param.contains("genomespace.org")) file = GenomeSpaceManager.getFile(session, param);
                     else file = new ExternalFile(param);
                         
                     if (file != null) received.add(file);
@@ -137,8 +139,9 @@ public class GenomeSpaceReceiveBean {
     }
     
     private void blankCurrentTaskInfo() {
-        GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-        genomeSpaceBean.setSelectedModule("");
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String user = UIBeanHelper.getUserId();
+        GenomeSpaceManager.setSelectedModule(request, user, "");
     }
     
     public List<GpFilePath> getReceivedFiles() {
@@ -272,9 +275,11 @@ public class GenomeSpaceReceiveBean {
             UIBeanHelper.setErrorMessage("Unable to get the selected directory to save file");
             return null;
         }
-        
-        GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-        genomeSpaceBean.saveFileToUploads(fileUrl, directoryPath);
+
+        initUploadBean();
+        HttpSession session = UIBeanHelper.getSession();
+        String gpUser = UIBeanHelper.getUserId();
+        GenomeSpaceManager.saveFileToUploads(session, uploadBean, gpUser, fileUrl, directoryPath);
 
         return "home";
     }

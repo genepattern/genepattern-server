@@ -49,8 +49,8 @@ public class GenomeSpaceLoginManager {
         
         GpContext context = GpContext.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
-        
-        GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
+
+        GenomeSpaceLogin login = GenomeSpaceClientFactory.instance().submitLogin(genomeSpaceEnvironment, token);
         if (login == null) return false;
         
         // Get the correct username because in the CDK as it stands now GsSession.getCachedUsernameForSSO() is sometimes stale
@@ -77,14 +77,14 @@ public class GenomeSpaceLoginManager {
             // Check for GS token expiration and redirect to GenomeSpace login if expired or about to expire
             if (tokenExpiring(gp_username)) {
                 GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-                genomeSpaceBean.flagTokenExpired();
+                GenomeSpaceManager.setTokenExpired(httpSession, true);
                 httpSession.setAttribute(REDIRECT_KEY, GS_LOGIN_PAGE);
                 return false;
             }
 
             String token = GenomeSpaceDatabaseManager.getGSToken(gp_username);
             try {
-                GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
+                GenomeSpaceLogin login = GenomeSpaceClientFactory.instance().submitLogin(genomeSpaceEnvironment, token);
                 if (login == null) return false;
                 
                 // Get the correct username because in the CDK as it stands now GsSession.getCachedUsernameForSSO() is sometimes stale
@@ -114,7 +114,7 @@ public class GenomeSpaceLoginManager {
      * @throws GenomeSpaceException
      */
     public static boolean loginFromUsername(String env, String genomeSpaceUsername, String genomeSpacePassword, HttpSession httpSession) throws GenomeSpaceException {
-        GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(env, genomeSpaceUsername, genomeSpacePassword);
+        GenomeSpaceLogin login = GenomeSpaceClientFactory.instance().submitLogin(env, genomeSpaceUsername, genomeSpacePassword);
         if (login == null) return false;
         setSessionAttributes(login, httpSession);
         return true;

@@ -17,7 +17,7 @@ public class GenomeSpaceDatabaseManager {
     
     /**
      * Return the GenomeSpace token associated with the given GenePattern username
-     * @param gpUserId
+     * @param gpUsername
      * @return
      */
     public static String getGSToken(String gpUsername) {

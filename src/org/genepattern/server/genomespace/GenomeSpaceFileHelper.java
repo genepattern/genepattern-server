@@ -4,20 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Set;
 
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger;
 import org.genepattern.util.SemanticUtil;
 
-public class GenomeSpaceFileManager {
-    private static Logger log = Logger.getLogger(GenomeSpaceFileManager.class);
+public class GenomeSpaceFileHelper {
+    private static Logger log = Logger.getLogger(GenomeSpaceFileHelper.class);
     
     /**
      * Determines whether a given URL is a GenomeSpace URL or not
@@ -104,7 +100,7 @@ public class GenomeSpaceFileManager {
             // Obtain the metadata if necessary
             if (metadata == null) {
                 try {
-                    metadata = GenomeSpaceClientFactory.getGenomeSpaceClient().obtainMetadata(gsSession, url);
+                    metadata = GenomeSpaceClientFactory.instance().obtainMetadata(gsSession, url);
                 }
                 catch (Exception e) {
                     log.error("Error obtaining metadata for: " + url);
@@ -119,9 +115,9 @@ public class GenomeSpaceFileManager {
             file.setConverted(converted);
             
             if (metadata != null) {
-                Date lastModified = GenomeSpaceClientFactory.getGenomeSpaceClient().getModifiedFromMetadata(metadata);
-                Long length = GenomeSpaceClientFactory.getGenomeSpaceClient().getSizeFromMetadata(metadata);
-                Set<String> conversions = GenomeSpaceClientFactory.getGenomeSpaceClient().getAvailableFormats(metadata);
+                Date lastModified = GenomeSpaceClientFactory.instance().getModifiedFromMetadata(metadata);
+                Long length = GenomeSpaceClientFactory.instance().getSizeFromMetadata(metadata);
+                Set<String> conversions = GenomeSpaceClientFactory.instance().getAvailableFormats(metadata);
                 
                 file.setLastModified(lastModified);
                 file.setFileLength(length);

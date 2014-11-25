@@ -35,8 +35,8 @@
             <div style="display: none;">
                 <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" styleClass="left-nav-genomespace-refresh-real"/>
             </div>
-            <a4j:commandButton action="#{genomeSpaceBean.blankFileCache}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" />
-            <t:div rendered="#{not genomeSpaceBean.loading}">
+            <a4j:commandButton action="#{genomeSpaceBean.forceFileRefresh}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" />
+            <t:div>
                 <div id="genomeSpaceFileTree"></div>
                 <script type="text/javascript">
                     jq("#genomeSpaceFileTree").jstree({

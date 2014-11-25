@@ -24,6 +24,8 @@ import java.util.Map;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -34,6 +36,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
+import org.genepattern.server.genomespace.GenomeSpaceManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -285,15 +288,20 @@ public class RunTaskBean {
     public void setTask(String taskNameOrLsid) {
         JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
         UploadFilesBean ufb = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");
-        GenomeSpaceBean gsb = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+
+        HttpSession session = UIBeanHelper.getSession();
+        Boolean isGSLoggedIn = GenomeSpaceManager.getLoggedIn(session);
+
         if (jobBean != null) {
             jobBean.setSelectedModule(taskNameOrLsid);
         }
         if (ufb != null) {
             ufb.setCurrentTaskLsid(taskNameOrLsid);
         }
-        if (gsb != null){
-            gsb.setSelectedModule(taskNameOrLsid);
+        if (isGSLoggedIn){
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            String user = UIBeanHelper.getUserId();
+            GenomeSpaceManager.setSelectedModule(request, user, taskNameOrLsid);
         }
         UIBeanHelper.getRequest().getSession().setAttribute(GPConstants.LSID, taskNameOrLsid);
         
@@ -327,7 +335,7 @@ public class RunTaskBean {
         String fileFormat = (String) UIBeanHelper.getRequest().getAttribute("format");
 
         String gsUrl = null;
-        if ((gsb != null) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
+        if ((isGSLoggedIn) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
             gsUrl = downloadPath;
         } 
         
@@ -344,7 +352,7 @@ public class RunTaskBean {
         if (matchOutputFileSource.equalsIgnoreCase("genomespace")) {
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
                if (taskParameters != null) {
-                   URL convertUrl = gsb.getConvertedFileUrl(gsUrl, fileFormat);
+                   URL convertUrl = GenomeSpaceManager.getConvertedFileUrl(session, gsUrl, fileFormat);
                    String gsType = fileFormat;
                    System.out.println("GS File is a " + gsType);
                
