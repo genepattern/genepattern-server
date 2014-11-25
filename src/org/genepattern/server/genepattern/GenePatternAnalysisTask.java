@@ -152,7 +152,7 @@ import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
@@ -1222,8 +1222,8 @@ public class GenePatternAnalysisTask {
                                 
                                 // Handle getting the InputStream for GenomeSpace
                                 if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
-                                    if (GenomeSpaceFileManager.isGenomeSpaceFile(url)) {
+                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
+                                    if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
                                         try {
                                             is = gsClient.getInputStream(jobInfo.getUserId(), url);
                                             name = getGSDownloadFileName(url.openConnection(), url);
