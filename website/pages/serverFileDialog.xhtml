@@ -18,7 +18,7 @@
                 .serverFileTreeSelected {
                     background-color: #9999CC;
                 }
-				
+
 				.urlInput {
 					width: 320px;
 					margin-left: 20px;
@@ -34,7 +34,7 @@
 					if (jq("#dialogUrlDiv").children().length > 1) {
 						jq("#dialogUrlDiv").children().first().remove();
 					}
-					
+
 					jq("#serverFileTreeDialog").parent().find("button").button();
 					var enableSelectButton = function()
                     {
@@ -84,7 +84,7 @@
                     });
                 }
 
-                function handleServerFileClick(node) {
+                function handleServerFileClick(event, node) {
                     var canSelectMultiple =  run_task_info.params[selectedInput].allowMultiple
                             || run_task_info.params[selectedInput].isBatch;
 
@@ -154,100 +154,100 @@
             </script>
         </ui:define>
 
-        <div id="serverFileTreeDialog" style="max-height:500px;overflow-y:scroll;">
-			<div id="dialogUrlDiv"></div>
-			<h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
-				<br /><strong>Or select a file from the file system...</strong><hr />
-            	<div id="serverFileTree"></div>
-	            <script type="text/javascript">
-	                jq("#serverFileTree").jstree({
-	                    core:{
-	                        "html_titles":true
-	                    },
-	
-	                    "json_data":{
-	                        "ajax":{
-	                            "url":function (node) {
-	                                if (node === -1) {
-	                                    return "/gp/ServerFileBrowser/tree";
-	                                }
-	                                var path = jq(node).find("a").attr("href");
-	                                return "/gp/ServerFileBrowser/tree?dir=" + encodeURIComponent(path);
-	                            },
-	                            "data":function (node) {
-	                                return {
-	                                    id:node.attr ? node.attr("id") : 0
-	                                };
-	                            }
-	                        }
-	                    },
-						"cookies":{
-                            "save_opened":"serverFileDialog"
-                        },
-	                    plugins:[ "themes", "json_data", "cookies" ]
-	                });
-	                jq("#serverFileTree").bind("load_node.jstree", function (event, data) {
-	                    var iterate = null;
-	
-	                    // Handle the case of the initial load
-	                    if (data["args"][0] === -1) {
-	                        iterate = jq(this).find("li");
-	                    }
-	                    else {
-	                        iterate = jq(data["args"][0]).find("li");
-	                    }
-	
-	                    iterate.each(function (index) {
-	
-	                        var node = iterate.get(index);
-	                        var name = jq(node).find("a:first").attr("name");
-	
-	                        // Add the id to the node
-	                        jq(node).attr("id", name);
-	
-	                        // Check for the case of empty directories
-	                        var link = jq(node).find("a:first").attr("href");
-	                        if (link === "#") return;
-	                    });
-	
-	                    jq("#serverFileTreeDialog").parent().find(".ui-button:first").button("disable");
-	                });
-	            </script>
-			</h:outputText>
-        </div>
+<div id="serverFileTreeDialog" style="max-height:500px;overflow-y:scroll;">
+    <div id="dialogUrlDiv"></div>
+    <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
+        <br /><strong>Or select a file from the file system...</strong><hr />
+        <div id="serverFileTree"></div>
         <script type="text/javascript">
-            jq("#serverFileTreeDialog").dialog({
-                width:550,
-				zIndex: 9000,
-				position: ["center", 100],
-                autoOpen:false,
-                title:"Select URL or File Path as Input",
-                buttons:[
-                    {
-                        text:"Select",
-                        click:function () {
-                            jq.trim(jq("#dialogUrlDiv").find(".urlInput").each(function()
-                            {
-                                var selectedUrl = $(this).val();
-                                if (selectedUrl === "") {
-                                    return;
-                                }	// Prevent submitting if no file is selected
+            jq("#serverFileTree").jstree({
+                core:{
+                    "html_titles":true
+                },
 
-                                var groupId = jq("#dialogUrlDiv").data("groupId");
-                                setParameter(selectedInput, selectedUrl, groupId);
-                            }));
-
-                            jq("#serverFileTreeDialog").dialog("close"); 			// Close the dialog
-                        }
-                    },
-                    {
-                        text:"Cancel",
-                        click:function () {
-                            jq("#serverFileTreeDialog").dialog("close");
+                "json_data":{
+                    "ajax":{
+                        "url":function (node) {
+                            if (node === -1) {
+                                return "/gp/ServerFileBrowser/tree";
+                            }
+                            var path = jq(node).find("a").attr("href");
+                            return "/gp/ServerFileBrowser/tree?dir=" + encodeURIComponent(path);
+                        },
+                        "data":function (node) {
+                            return {
+                                id:node.attr ? node.attr("id") : 0
+                            };
                         }
                     }
-                ]
+                },
+                "cookies":{
+                    "save_opened":"serverFileDialog"
+                },
+                plugins:[ "themes", "json_data", "cookies" ]
+            });
+            jq("#serverFileTree").bind("load_node.jstree", function (event, data) {
+                var iterate = null;
+
+                // Handle the case of the initial load
+                if (data["args"][0] === -1) {
+                    iterate = jq(this).find("li");
+                }
+                else {
+                    iterate = jq(data["args"][0]).find("li");
+                }
+
+                iterate.each(function (index) {
+
+                    var node = iterate.get(index);
+                    var name = jq(node).find("a:first").attr("name");
+
+                    // Add the id to the node
+                    jq(node).attr("id", name);
+
+                    // Check for the case of empty directories
+                    var link = jq(node).find("a:first").attr("href");
+                    if (link === "#") return;
+                });
+
+                jq("#serverFileTreeDialog").parent().find(".ui-button:first").button("disable");
             });
         </script>
-    </ui:composition>
+    </h:outputText>
+</div>
+<script type="text/javascript">
+    jq("#serverFileTreeDialog").dialog({
+        width:550,
+        zIndex: 9000,
+        position: ["center", 100],
+        autoOpen:false,
+        title:"Select URL or File Path as Input",
+        buttons:[
+            {
+                text:"Select",
+                click:function () {
+                    jq.trim(jq("#dialogUrlDiv").find(".urlInput").each(function()
+                    {
+                        var selectedUrl = $(this).val();
+                        if (selectedUrl === "") {
+                            return;
+                        }	// Prevent submitting if no file is selected
+
+                        var groupId = jq("#dialogUrlDiv").data("groupId");
+                        setParameter(selectedInput, selectedUrl, groupId);
+                    }));
+
+                    jq("#serverFileTreeDialog").dialog("close"); 			// Close the dialog
+                }
+            },
+            {
+                text:"Cancel",
+                click:function () {
+                    jq("#serverFileTreeDialog").dialog("close");
+                }
+            }
+        ]
+    });
+</script>
+</ui:composition>
 </html>

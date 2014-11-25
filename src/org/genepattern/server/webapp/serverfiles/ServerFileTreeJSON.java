@@ -92,14 +92,14 @@ public class ServerFileTreeJSON extends JSONArray {
             }
 
             data.put(TITLE, title);
-        } 
-        
+        }
+
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
-        if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(this); return false;"); }
-        else { attr.put("onclick", "JavaScript:handleServerFileClick(this); return false;"); }
+        if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
+        else { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
         attr.put("name", file.getName());
-        
+
         data.put(ATTR, attr);
         
         if (file.isDirectory()) {

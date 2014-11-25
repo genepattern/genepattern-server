@@ -1037,7 +1037,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
             delBtn.button().click(function()
             {
-                $(this).parent(".urlEntry").find(".urlInput").val("");
+                //$(this).parent(".urlEntry").find(".urlInput").val("");
                 $(this).parent(".urlEntry").find(".urlInput").trigger("change");
 
                 //just empty the value if this is the first in the list of url entries
