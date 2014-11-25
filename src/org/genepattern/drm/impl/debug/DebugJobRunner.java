@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -99,6 +101,42 @@ public class DebugJobRunner implements JobRunner {
             .exitCode(0)
             .endTime(new Date())
             .build();
+    }
+    
+    /**
+     * This example method shows how to initialize a DrmJobStatus instance. 
+     * You don't need to set each value, we use reasonable defaults if they are not yet set (e.g. endTime()) 
+     * or not known (e.g. maxThreads()). 
+     * 
+     * @return
+     */
+    protected DrmJobStatus demoGetStatus() {
+        return new DrmJobStatus.Builder()
+            // the external job id
+            .extJobId("EXT_01")
+            // the name of the job queue
+            .queueId("job_queue_id")
+            // the date the job was submitted to the queue (Don't set this if the job has not been submitted)
+            .submitTime(new Date())
+            // the date the job started running on the queue (Don't set this if the job has not yet started)
+            .startTime(new Date())
+            // the date the job completed running (Don't set this if the job has not yet completed)
+            .endTime(new Date())
+            // the status code
+            .jobState(DrmJobState.DONE)
+            // the exit code of the job, '0' indicates success
+            .exitCode(0)
+            // the max memory usage in bytes (can also pass in a string such as "2 Gb")
+            .memory(2000L)
+            // the max swap space used by the job, can accept numBytes or a String (see above)
+            .maxSwap("2 Gb")
+            // the CPU usage of the job
+            .cpuTime(new CpuTime(1000L, TimeUnit.MILLISECONDS))
+            // the max number of threads used by the job (Don't call this if not known)
+            .maxThreads(1)
+            // the max number of processes used by the job (Don't call this if not known)
+            .maxProcesses(1)
+        .build();
     }
 
     @Override

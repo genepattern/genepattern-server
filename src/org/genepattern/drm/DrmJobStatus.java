@@ -184,7 +184,7 @@ public class DrmJobStatus {
     
     /**
      * Optionally, for completed jobs, get the terminating signal.
-     * @return the terminating signal or null if the job has not terminating signal
+     * @return the terminating signal or null if the job has no terminating signal
      */
     public String getTerminatingSignal() {
         return terminatingSignal;
@@ -193,6 +193,8 @@ public class DrmJobStatus {
     /**
      * Get the resource usage data, for example 'CPU time' and 'Max memory' are reported by LSF jobs.
      * If this isn't available the map may be empty or null.
+     * 
+     * @deprecated - use one of the existing options such as memory, maxThreads to indicate resource usage.
      * 
      * @return the jobs resource usage data if available in the form of an ImmutableMap. You should not
      *     make any changes to this value.
