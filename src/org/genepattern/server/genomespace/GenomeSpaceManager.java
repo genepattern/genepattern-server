@@ -162,6 +162,16 @@ public class GenomeSpaceManager {
     }
 
     /**
+     * If the GenomeSpace file tree has changed this method should be called to tell the bean that
+     * it should rebuild the tree the next time it loads.
+     */
+    public static void forceFileRefresh(HttpSession session) {
+        GenomeSpaceManager.setAllFiles(session, null);
+        GenomeSpaceManager.setAllDirectories(session, null);
+        GenomeSpaceManager.setFileTree(session, null);
+    }
+
+    /**
      * Initialize the current TaskInfo from the current task LSID.
      * Used when viewing the RunTaskForm for a module.
      */

@@ -88,19 +88,7 @@ public class GenomeSpaceBean {
         HttpSession session = UIBeanHelper.getSession();
         return GenomeSpaceManager.isTokenExpired(session);
     }
-    
-    /**
-     * If the GenomeSpace file tree has changed this method should be called to tell the bean that
-     * it should rebuild the tree the next time it loads.
-     */
-    public void forceFileRefresh() {
-        HttpSession session = UIBeanHelper.getSession();
 
-        GenomeSpaceManager.setAllFiles(session, null);
-        GenomeSpaceManager.setAllDirectories(session, null);
-        GenomeSpaceManager.setFileTree(session, null);
-    }
-    
     /**
      * Returns the set of child files for the given directory URL 
      * (passed into the request as the "directory" parameter)
@@ -387,7 +375,7 @@ public class GenomeSpaceBean {
         
         try { 
             boolean success = GenomeSpaceClientFactory.instance().deleteFile(gsSessionObject, file);
-            forceFileRefresh(); // force a refresh
+            GenomeSpaceManager.forceFileRefresh(session); // force a refresh
             if (success) { 
                 setMessageToUser("Deleted from GenomeSpace " + file.getName());
             }
@@ -438,7 +426,7 @@ public class GenomeSpaceBean {
         
         try { 
             GenomeSpaceClientFactory.instance().createDirectory(gsSessionObject, dirName, parentDir);
-            forceFileRefresh(); // force a refresh
+            GenomeSpaceManager.forceFileRefresh(session); // force a refresh
             setMessageToUser("Created directory " + dirName);
         }
         catch (GenomeSpaceException e) {

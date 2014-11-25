@@ -18,7 +18,16 @@
 
                 $(document).ready(function() {
                     $("#left-nav-genomespace-refresh").click(function() {
-                        $(".left-nav-genomespace-refresh-real").trigger("click");
+                        $.ajax({
+                            url: "/gp/rest/v1/genomespace/refresh",
+                            type: "PUT",
+                            success: function() {
+                                refreshGenomeSpaceTree();
+                            },
+                            error: function(xhr, status) {
+                                showErrorMessage("Could not refresh GenomeSpace file tree: " + status);
+                            }
+                        });
                     });
                 });
 
@@ -32,10 +41,6 @@
         </div>
 
         <h:form styleClass="left-nav-genomespace-files">
-            <div style="display: none;">
-                <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" styleClass="left-nav-genomespace-refresh-real"/>
-            </div>
-            <a4j:commandButton action="#{genomeSpaceBean.forceFileRefresh}" style="display:none;" value="Refresh Menus" reRender="genomeSpaceMenus" />
             <t:div>
                 <div id="genomeSpaceFileTree"></div>
                 <script type="text/javascript">
