@@ -22,7 +22,7 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.LSID;
@@ -660,7 +660,7 @@ public class ParamListHelper {
         URL externalUrl = JobInputHelper.initExternalUrl(value);
 
         // Handle GenomeSpace URLs
-        if (externalUrl != null && GenomeSpaceFileManager.isGenomeSpaceFile(externalUrl)) {
+        if (externalUrl != null && GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
             GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
             return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
         }
@@ -796,7 +796,7 @@ public class ParamListHelper {
     public static void forFileListCopyExternalUrlToUserUploads(final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
         // for GP-5153
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-            if (GenomeSpaceFileManager.isGenomeSpaceFile(url)) {
+            if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
                 final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
                 log.debug(message+", url="+url);
                 throw new Exception(message);
@@ -839,7 +839,7 @@ public class ParamListHelper {
     public static void fileListGenomeSpaceToUploads(GpContext jobContext, GpFilePath gpPath, URL url) throws Exception {
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
             // Make sure the user is logged into GenomeSpace
-            GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
+            GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
 
             final File parentDir = gpPath.getServerFile().getParentFile();
             if (!parentDir.exists()) {

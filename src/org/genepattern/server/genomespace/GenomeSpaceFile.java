@@ -89,14 +89,9 @@ public class GenomeSpaceFile extends GpFilePath {
             if (gsSession == null) {
                 log.error("ERROR: Null gsSession found in getChildFiles()");
             }
-            try {
-                GenomeSpaceFile file = GenomeSpaceClientFactory.getGenomeSpaceClient().buildDirectory(gsSession, metadata);
-                childFiles = file.getChildFilesNoLoad();
-            }
-            catch (GenomeSpaceException e) {
-                log.error("Exception getting child files in getChildFiles(): " + this.getName());
-                childFiles = new HashSet<GenomeSpaceFile>();
-            }
+
+            GenomeSpaceFile file = GenomeSpaceClientFactory.instance().buildDirectory(gsSession, metadata);
+            childFiles = file.getChildFilesNoLoad();
         }
         
         return childFiles;
@@ -225,7 +220,7 @@ public class GenomeSpaceFile extends GpFilePath {
                 url = this.getUrl();
             }
             else {
-                url = GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSession, this, format);
+                url = GenomeSpaceClientFactory.instance().getConvertedURL(gsSession, this, format);
             }
             urlString = url.toString();
         }
@@ -306,7 +301,7 @@ public class GenomeSpaceFile extends GpFilePath {
         }
         if (path == null) {
 
-            path = GenomeSpaceFileManager.urlToPath(gsUrl);
+            path = GenomeSpaceFileHelper.urlToPath(gsUrl);
         }
         return path;
     }
@@ -363,7 +358,7 @@ public class GenomeSpaceFile extends GpFilePath {
             return toReturn;
         }
         
-        return GenomeSpaceClientFactory.getGenomeSpaceClient().getAvailableFormats(metadata);
+        return GenomeSpaceClientFactory.instance().getAvailableFormats(metadata);
     }
     
     /**

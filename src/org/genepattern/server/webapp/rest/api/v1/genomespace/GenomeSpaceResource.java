@@ -32,10 +32,10 @@ public class GenomeSpaceResource {
         Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         if (gsSession == null) {
             log.error("ERROR: Null gsSession found in GenomeSpaceBean.getFile()");
-            gsSession = GenomeSpaceBean.forceGsSession(httpSession);
+            gsSession = GenomeSpaceManager.forceGsSession(httpSession);
         }
         url = encodeURLIfNecessary(url);
-        return GenomeSpaceFileManager.createFile(gsSession, url);
+        return GenomeSpaceFileHelper.createFile(gsSession, url);
     }
 
     public GenomeSpaceFile getFile(String url, HttpSession httpSession) {
@@ -90,7 +90,7 @@ public class GenomeSpaceResource {
             GenomeSpaceFile file = getFile(url, request.getSession());
             Object gsSessionObject = request.getSession().getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
 
-            boolean success = GenomeSpaceClientFactory.getGenomeSpaceClient().deleteFile(gsSessionObject, file);
+            boolean success = GenomeSpaceClientFactory.instance().deleteFile(gsSessionObject, file);
             if (success) {
                 return Response.ok().entity("Deleted from GenomeSpace " + file.getName()).build();
             }
@@ -126,7 +126,7 @@ public class GenomeSpaceResource {
 
         try {
             GenomeSpaceFile file = getFile(url, request.getSession());
-            URL redirectUrl = GenomeSpaceClientFactory.getGenomeSpaceClient().getSendToToolUrl(gsSessionObject, file, tool);
+            URL redirectUrl = GenomeSpaceClientFactory.instance().getSendToToolUrl(gsSessionObject, file, tool);
             URI redirectUri = new URI(redirectUrl.toString());
             //response.sendRedirect(redirectUrl.toString());
             return Response.temporaryRedirect(redirectUri).build(); //.ok().entity("Deleted from GenomeSpace " + file.getName()).build();
@@ -161,7 +161,7 @@ public class GenomeSpaceResource {
         Object gsSessionObject = request.getSession().getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
 
         try {
-            GenomeSpaceClientFactory.getGenomeSpaceClient().createDirectory(gsSessionObject, name, parentDir);
+            GenomeSpaceClientFactory.instance().createDirectory(gsSessionObject, name, parentDir);
             return Response.ok().entity("Created directory " + name).build();
         }
         catch (GenomeSpaceException e) {
