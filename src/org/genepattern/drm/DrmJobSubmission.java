@@ -27,9 +27,10 @@ import com.google.inject.internal.ImmutableMap;
  * when submitting jobs to the queue. See http://slurm.schedmd.com/rosetta.pdf, 'a Rosetta Stone of Workload Managers',
  * for a table of common job specification parameters.
  * 
- * @see JobRunner for a list of common properties.
- * 
  * To ensure that this class is immutable, use the DrmJobSubmission.Builder class to create a new instance. 
+ * 
+ * @see JobRunner JobRunner class for a list of common properties.
+ * 
  * 
  * @author pcarr
  *
