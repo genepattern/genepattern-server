@@ -159,6 +159,10 @@ public class GenomeSpaceBean {
             return LOGIN_FAIL_NAVIGATION_KEY;
         }
     }
+
+    public boolean isAutoCreateEnabled() {
+        return ServerConfigurationFactory.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "genomeSpaceAutoCreate", true);
+    }
     
     /**
      * Determine whether the user is logged into GenomeSpace
