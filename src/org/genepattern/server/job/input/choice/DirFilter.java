@@ -1,5 +1,7 @@
 package org.genepattern.server.job.input.choice;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -18,11 +20,20 @@ import org.genepattern.webservice.ParameterInfo;
 public class DirFilter {
     private static Logger log = Logger.getLogger(DirFilter.class);
 
+    /**
+     * Indicate the type of file to accept.
+     * @author pcarr
+     *
+     */
     public static enum Type {
+        /** the filter should accept entries of type 'file'. */
         file,
+        /** the filter should accept entries of type 'dir'. */
         dir,
+        /** the filter accepts 'file' and 'dir' types. */
         any
     }
+    
     protected DirFilter.Type type=Type.file;
     final protected String choiceDirFilter;
     final protected FindFileFilter globs=new FindFileFilter();
@@ -41,12 +52,7 @@ public class DirFilter {
     }
 
     // should only call this once, from the constructor
-    private boolean inited=false;
     private void _init() {
-        if (inited) {
-            log.error("Must call this method once and only once, from the constructor");
-        }
-        inited=true;
         if (!ChoiceInfoHelper.isSet(choiceDirFilter)) {
             //by default, ignore '*.md5' and 'readme.*' files
             globs.addGlob("!*.md5");
@@ -76,5 +82,47 @@ public class DirFilter {
                 }
             }
         }
+    }
+    
+    /**
+     * Get the type of the filter, one of 'file', '', or ''.
+     * @return
+     */
+    public Type getType() {
+        return type;
+    }
+    
+    /**
+     * Get the FileFilter, for filtering by file name.
+     * @return
+     */
+    public FileFilter getFileFilter() {
+        return globs;
+    }
+    
+    /**
+     * @return true, if this filter accepts a file entry.
+     */
+    public boolean acceptsFile() {
+        return type==Type.any || type==Type.file;
+    }
+
+    /**
+     * @return true, if this filter accepts a directory entry.
+     */
+    public boolean acceptsDir() {
+        return type==Type.any || type==Type.dir;
+    }
+
+    /**
+     * @param name, the file name
+     * @return true, if this filter accepts a file with the given name.
+     */
+    public boolean acceptsName(final String name) {
+        //check for glob patterns
+        if (globs==null) {
+            return true;
+        }
+        return globs.accept(new File(name));
     }
 }
