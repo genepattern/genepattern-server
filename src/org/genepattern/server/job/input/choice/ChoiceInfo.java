@@ -242,7 +242,7 @@ public class ChoiceInfo {
     /**
      * Check the manifest for an optional ftp passive mode flag.
      * By default and when not set return true.
-     * Return false only if choiceDirFtpPassMode=false
+     * Return false only if choiceDirFtpPassiveMode=false
      * 
      * @param param
      * @return
