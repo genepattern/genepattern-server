@@ -3,17 +3,15 @@ package org.genepattern.server.job.input.choice;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
-import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
+import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
+import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 import org.genepattern.webservice.ParameterInfo;
-
 
 /**
  * Initialize the list of choices for a given parameter from a remote ftp server.
@@ -142,7 +140,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
      * @param ftpDir
      * @return
      */
-    private ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
+    protected ChoiceInfo initChoicesFromFtp(final ParameterInfo param, final String ftpDir) throws ChoiceInfoException {
         final ChoiceInfo choiceInfo=new ChoiceInfo(param.getName());
         choiceInfo.setChoiceDir(ftpDir);
         
@@ -162,12 +160,28 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             }
             return choiceInfo;
         }
+        
+        initChoiceInfoEntriesFromFtp(param, ftpDir, choiceInfo, choiceDirFilter);
 
-        FTPFile[] files=null;
+        // must set the status flag
+        if (choiceInfo.getChoices().size()==0) {
+            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
+        }
+        else {
+            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
+            choiceInfo.setStatus(Flag.OK, statusMessage);
+        }
+        
+        return choiceInfo;
+    }
+    
+    private ChoiceInfo initChoiceInfoEntriesFromFtp(final ParameterInfo param, final String ftpDir, final ChoiceInfo choiceInfo, final String choiceDirFilter) {
+        FtpDirLister ftpDirLister=CachedFtpDir.initDirListerFromConfig(gpConfig, jobContext);
+        DirFilter filter=new DirFilter(choiceDirFilter);
+        
+        List<FtpEntry> ftpEntries=null;
         try {
-            final boolean passiveMode=ChoiceInfo.getFtpPassiveMode(param);
-            RemoteDirLister<FTPFile, ListFtpDirException> remoteLister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext, passiveMode);
-            files=remoteLister.listFiles(ftpDir);
+            ftpEntries=ftpDirLister.listFiles(ftpDir, filter);
         }
         catch (ListFtpDirException e) {
             log.debug("dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, e);
@@ -179,40 +193,67 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             choiceInfo.setStatus(Flag.ERROR, t.getLocalizedMessage());
             return choiceInfo;
         }
-        if (files==null) {
+        if (ftpEntries==null) {
             final String errorMessage="Error listing files from "+ftpDir;
             log.error(errorMessage);
             choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
         
-        //optionally filter
-        final FTPFileFilter ftpDirFilter = new FtpDirFilter(choiceDirFilter);
-        for(FTPFile ftpFile : files) {
-            if (!ftpDirFilter.accept(ftpFile)) {
-                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
-            }
-            else {
-                final String name=ftpFile.getName();
-                final String encodedName=UrlUtil.encodeURIcomponent(name);
-                final String value;
-                if (ftpDir.endsWith("/")) {
-                    value=ftpDir + encodedName;
-                }
-                else {
-                    value=ftpDir + "/" + encodedName;
-                }
-                final Choice choice=new Choice(name, value, ftpFile.isDirectory());
-                choiceInfo.add(choice);
-            }
+        // add entries to choiceInfo
+        for(final FtpEntry ftpEntry : ftpEntries) {
+            final Choice choice=new Choice(ftpEntry.getName(), ftpEntry.getValue(), ftpEntry.isDir());
+            choiceInfo.add(choice);
         }
-        if (choiceInfo.getChoices().size()==0) {
-            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
-        }
-        else {
-            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
-            choiceInfo.setStatus(Flag.OK, statusMessage);
-        }
+        
+        
         return choiceInfo;
     }
+
+//    private ChoiceInfo initChoiceInfoEntriesFromFtp_hardCoded_CommonsNet(final ParameterInfo param, final String ftpDir, final ChoiceInfo choiceInfo, final String choiceDirFilter) {
+//        FTPFile[] files=null;
+//        try {
+//            final boolean passiveMode=ChoiceInfo.getFtpPassiveMode(param);
+//            RemoteDirLister<FTPFile, ListFtpDirException> remoteLister=CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext, passiveMode);
+//            files=remoteLister.listFiles(ftpDir);
+//        }
+//        catch (ListFtpDirException e) {
+//            log.debug("dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, e);
+//            choiceInfo.setStatus(Flag.ERROR, e.getLocalizedMessage());
+//            return choiceInfo;
+//        }
+//        catch (Throwable t) {
+//            log.error("Unexpected dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, t);
+//            choiceInfo.setStatus(Flag.ERROR, t.getLocalizedMessage());
+//            return choiceInfo;
+//        }
+//        if (files==null) {
+//            final String errorMessage="Error listing files from "+ftpDir;
+//            log.error(errorMessage);
+//            choiceInfo.setStatus(Flag.ERROR, errorMessage);
+//            return choiceInfo;
+//        }
+//        
+//        //optionally filter
+//        final FTPFileFilter ftpDirFilter = new FtpDirFilter(choiceDirFilter);
+//        for(FTPFile ftpFile : files) {
+//            if (!ftpDirFilter.accept(ftpFile)) {
+//                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
+//            }
+//            else {
+//                final String name=ftpFile.getName();
+//                final String encodedName=UrlUtil.encodeURIcomponent(name);
+//                final String value;
+//                if (ftpDir.endsWith("/")) {
+//                    value=ftpDir + encodedName;
+//                }
+//                else {
+//                    value=ftpDir + "/" + encodedName;
+//                }
+//                final Choice choice=new Choice(name, value, ftpFile.isDirectory());
+//                choiceInfo.add(choice);
+//            }
+//        }
+//        return choiceInfo;
+//    }
 }

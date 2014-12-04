@@ -185,7 +185,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
 
             if (response["module"] !== undefined &&
                 response["module"] !== null
-                && response["parameters"] != undefined
+                && response["parameters"] !== undefined
                 && response["parameters"] !== undefined) {
 
                 run_task_info.reloadJobId = reloadId;
@@ -774,9 +774,9 @@ function addSendToParam(parameterInfo) {
             run_task_info.sendTo[format].push(parameterInfo.name);
         }
     }
-    else if(type != undefined && type != null && type.toLowerCase() == directoryType)
+    else if(type !== undefined && type !== null && type.toLowerCase() == directoryType)
     {
-        if(run_task_info.sendTo[directoryType] == undefined)
+        if(run_task_info.sendTo[directoryType] === undefined)
         {
             run_task_info.sendTo["directory"] = [];
         }
@@ -2178,7 +2178,7 @@ function drop(evt) {
             }
 
             if (entry && entry.isDirectory) {
-                //do to continur if any directories are found
+                //do to continue if any directories are found
                 alert("Directory uploads are not allowed.");
                 return;
             }
@@ -2190,7 +2190,7 @@ function drop(evt) {
 
     var target = $(evt.target);
     var paramName = target.parents(".pRow").first().data("pname");
-    if (paramName == undefined) {
+    if (paramName === undefined) {
         console.log("Error: Could not find the parameter this file belongs to.");
         return;
     }
@@ -2202,12 +2202,62 @@ function drop(evt) {
         handleFiles(files, paramName, target);
     }
     else {
-        if (evt.dataTransfer.getData('Text') != null
+        if (evt.dataTransfer.getData('Text') !== null
             && evt.dataTransfer.getData('Text') !== undefined
             && evt.dataTransfer.getData('Text') != "") {
-            //This must be a url and not a file
+            // This must be a url and not a file
+
             var groupId = getGroupId(target);
             var fileObjListings = getFilesForGroup(groupId, paramName);
+
+            // If file list and directory dropped, expand
+            var dirUrl = evt.dataTransfer.getData('Text');
+            var sourceNode = evt.dataTransfer.mozSourceNode || $("a[href='" + dirUrl + "']");
+            if (sourceNode) { // Only expand directory if we can figure out the source node
+                var paramDetails = run_task_info.params[paramName];
+                var isFileList = paramDetails.allowMultiple;
+                var isDirectory = $(sourceNode).data("directory") || $(sourceNode).data("kind") === "directory";
+                if (isFileList && isDirectory) {
+                    var isGenomeSpace = $(sourceNode).closest(".jstree").attr("id") === "genomeSpaceFileTree";
+                    var isUploadFile = $(sourceNode).closest(".jstree").attr("id") === "uploadTree";
+
+                    if (isGenomeSpace || isUploadFile) {
+                        // Get the directory's children
+                        var servletUrl = isGenomeSpace ? "/gp/GenomeSpace/tree?dir=" : isUploadFile ? "/gp/UploadFileTree/tree?dir=" : null;
+                        var fileDiv = $(this).closest(".fileDiv");
+
+                        $.ajax({
+                            url: servletUrl + dirUrl,
+                            type: "GET",
+                            dataType: "json",
+                            success: function(data) {
+                                // Populate the parameter with the child files
+                                console.log(data);
+
+                                var totalFileLength = fileObjListings.length + data.length;
+                                validateMaxFiles(paramName, totalFileLength);
+
+                                $.each(data, function(index, file) {
+                                    var fileObj = {
+                                        name: file.data.attr.href,
+                                        id: fileId++
+                                    };
+                                    fileObjListings.push(fileObj);
+                                });
+
+                                updateFilesForGroup(groupId, paramName, fileObjListings);
+                                updateParamFileTable(paramName, fileDiv);
+                                toggleFileButtons(paramName);
+                            },
+                            error: function() {
+                                showErrorMessage("Unable to expand directory for file list parameter.");
+                            }
+                        });
+
+                        return;
+                    }
+                }
+            }
 
             var totalFileLength = fileObjListings.length + 1;
             validateMaxFiles(paramName, totalFileLength);
