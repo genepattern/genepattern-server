@@ -111,6 +111,32 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("cpuUsage", 0, jobStatus.getCpuTime().getTime());
         assertEquals("memUsage", 0, jobStatus.getMemory().getNumBytes());
     }
+
+    /** 
+     * A pending job was stopped with the 'bstop' command.
+     * @throws InterruptedException
+     */
+    @Test
+    public void parseSuspendedJob_PSUSP() throws InterruptedException  {
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
+                "1843877 gpdev   PSUSP genepattern gpint01        -        69295      10/31-11:23:02 gpdev      000:00:00.00 0      0       -  -  - ");
+        assertEquals("jobState.is(IS_QUEUED)", true, jobStatus.getJobState().is(DrmJobState.IS_QUEUED));
+        assertEquals("jobState.is(STARTED)", false, jobStatus.getJobState().is(DrmJobState.STARTED));
+        assertEquals("jobState", DrmJobState.QUEUED_HELD, jobStatus.getJobState());
+    }
+
+    /**
+     * A running job was stopped with the 'bstop' command.
+     * @throws InterruptedException
+     */
+    @Test
+    public void parseSuspendedJob_USUSP() throws InterruptedException {
+        DrmJobStatus jobStatus=LsfBjobsParser.parseAsJobStatus(
+                "1843862 gpdev   USUSP genepattern gpint01     node1450    69294      10/31-11:22:26 gpdev      000:00:02.00 33     2550   28416,28418,28420 10/31-11:22:29 - ");
+        assertEquals("jobState.is(SUSPENDED)", true, jobStatus.getJobState().is(DrmJobState.SUSPENDED));
+        assertEquals("jobState.is(STARTED)", true, jobStatus.getJobState().is(DrmJobState.STARTED));
+        assertEquals("jobState", DrmJobState.SUSPENDED, jobStatus.getJobState());
+    }
     
     @Test
     public void parseCancelledPendingJob() throws InterruptedException  {
