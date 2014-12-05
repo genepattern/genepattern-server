@@ -92,8 +92,6 @@ abstract public class CachedFtpFile implements CachedFile {
             interruptionService.shutdownNow();
         }
         
-        private Type defaultType=Type.JAVA_6;
-
         public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final String urlString) {
             GpContext serverContext=GpContext.getServerContext();
             String str=gpConfig.getGPProperty(serverContext, Type.PROP_FTP_DOWNLOADER_TYPE, Type.EDT_FTP_J.name());
@@ -103,7 +101,7 @@ abstract public class CachedFtpFile implements CachedFile {
             }
             catch (Throwable t) {
                 log.error(t);
-                type=defaultType;
+                type=Type.EDT_FTP_J;
             }
             return newCachedFtpFile(type, gpConfig, urlString);
         }
@@ -111,7 +109,7 @@ abstract public class CachedFtpFile implements CachedFile {
         public CachedFtpFile newCachedFtpFile(final Type type, final GpConfig gpConfig, final String urlString) {
             if (type==null) {
                 log.error("type==null");
-                return defaultType.newCachedFtpFile(gpConfig, urlString);
+                return Type.EDT_FTP_J.newCachedFtpFile(gpConfig, urlString);
             }
             return type.newCachedFtpFile(gpConfig, urlString);
         }

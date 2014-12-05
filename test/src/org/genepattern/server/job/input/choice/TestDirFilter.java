@@ -8,12 +8,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * junit tests for the LocalDirFilter class, also tests most of the functionality in the parent class.
+ * junit tests for the DirFilter class.
  * 
  * @author pcarr
  *
  */
-public class TestLocalDirFilter {
+public class TestDirFilter {
     private static File parentDir;
     
     @BeforeClass
@@ -26,7 +26,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testDefaultFilter() {
-        final LocalDirFilter filter=new LocalDirFilter(null);
+        final DirFilter filter=new DirFilter();
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(inputFile)", filter.accept(inputFile));
         Assert.assertFalse("accept(parentDir)", filter.accept(parentDir));
@@ -37,7 +37,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testTypeIsAny() {
-        final LocalDirFilter filter=new LocalDirFilter("type=any");
+        final DirFilter filter=new DirFilter("type=any");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(inputFile)", filter.accept(inputFile));
         Assert.assertTrue("accept(parentDir)", filter.accept(parentDir));
@@ -48,7 +48,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testTypeIsFile() {
-        final LocalDirFilter filter=new LocalDirFilter("type=file");
+        final DirFilter filter=new DirFilter("type=file");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(inputFile)", filter.accept(inputFile));
         Assert.assertFalse("accept(parentDir)", filter.accept(parentDir));
@@ -59,7 +59,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testTypeIsDir() {
-        final LocalDirFilter filter=new LocalDirFilter("type=dir");
+        final DirFilter filter=new DirFilter("type=dir");
         Assert.assertEquals("accept(parentDir)", true, filter.accept(parentDir));        
         Assert.assertEquals("accept(parentDir)", false, filter.accept(new File(parentDir, "all_aml_test.gct")));        
     }
@@ -69,7 +69,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testFilterFileByGct() {
-        final LocalDirFilter filter=new LocalDirFilter("*.gct");
+        final DirFilter filter=new DirFilter("*.gct");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertFalse("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));
@@ -80,7 +80,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testNotGct() {
-        final LocalDirFilter filter=new LocalDirFilter("!*.gct");
+        final DirFilter filter=new DirFilter("!*.gct");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertFalse("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertTrue("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));
@@ -91,7 +91,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testMulti() {
-        final LocalDirFilter filter=new LocalDirFilter("*.gct;*.cls");
+        final DirFilter filter=new DirFilter("*.gct;*.cls");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertTrue("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));
@@ -104,7 +104,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testMultiWithDir() {
-        final LocalDirFilter filter=new LocalDirFilter("type=dir;*all_aml*");
+        final DirFilter filter=new DirFilter("type=dir;*all_aml*");
         Assert.assertTrue("accept(all_aml/)", filter.accept(parentDir));
         Assert.assertFalse("accept(sub/)", filter.accept(new File(parentDir,"sub")));
         Assert.assertFalse("accept(all_aml_test.gct)", filter.accept(new File(parentDir, "all_aml_test.gct")));
@@ -118,7 +118,7 @@ public class TestLocalDirFilter {
      */
     @Test
     public void testMultiAnti() {
-        final LocalDirFilter filter=new LocalDirFilter("!*.gct;!*.cls");
+        final DirFilter filter=new DirFilter("!*.gct;!*.cls");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertFalse("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertFalse("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));
@@ -128,7 +128,7 @@ public class TestLocalDirFilter {
     
     @Test
     public void testTrimOuterWhitespace() {
-        final LocalDirFilter filter=new LocalDirFilter(" *.gct ");
+        final DirFilter filter=new DirFilter(" *.gct ");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertFalse("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));
@@ -136,7 +136,7 @@ public class TestLocalDirFilter {
     
     @Test
     public void testTrimInnerWhitespace() {
-        final LocalDirFilter filter=new LocalDirFilter(" type=file ; *.gct ; *.cls ");
+        final DirFilter filter=new DirFilter(" type=file ; *.gct ; *.cls ");
         final File inputFile=new File(parentDir, "all_aml_test.gct");
         Assert.assertTrue("accept(all_aml_test.gct)", filter.accept(inputFile));
         Assert.assertTrue("accept(all_aml_test.cls)", filter.accept(new File(parentDir, "all_aml_test.cls")));

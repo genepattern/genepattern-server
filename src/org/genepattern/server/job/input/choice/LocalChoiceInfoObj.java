@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input.choice;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +82,8 @@ public class LocalChoiceInfoObj {
     /** the initial choiceDir */
     private final String choiceDir;
     /** optional choiceDirFilter */
-    private final String choiceDirFilter;
+    //private final String choiceDirFilter;
+    private final DirFilter dirFilter;
     /** help class which maintains the mapping between external urls and local file paths */
     private final MapLocalEntry mapLocalEntry;
     /** the local directory (if it exists) which maps to the choiceDir url for the param. */
@@ -97,9 +99,10 @@ public class LocalChoiceInfoObj {
      * @param choiceDir
      * @param choiceDirFilter
      */
-    public LocalChoiceInfoObj(final String choiceDir, final String choiceDirFilter) {
+    public LocalChoiceInfoObj(final String choiceDir, final DirFilter dirFilter) {
         this.choiceDir=choiceDir;
-        this.choiceDirFilter=choiceDirFilter;
+        //this.choiceDirFilter=choiceDirFilter;
+        this.dirFilter=dirFilter;
         if (choiceDir==null || choiceDir.length()==0) {
             mapLocalEntry=null;
         }
@@ -126,8 +129,12 @@ public class LocalChoiceInfoObj {
         if (!localChoiceDir.canRead()) {
             throw new IllegalArgumentException("can't read localChoiceDir: "+localChoiceDir);
         }
-        final LocalDirFilter filter=new LocalDirFilter(choiceDirFilter);
-        final File[] localFiles=localChoiceDir.listFiles(filter);
+        final File[] localFiles=localChoiceDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return dirFilter.acceptName(pathname.getName());
+            }
+        });
         if (localFiles.length == 0) {
             return Collections.emptyList();
         }
