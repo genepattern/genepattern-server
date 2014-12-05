@@ -114,46 +114,33 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
         }        
     }
 
+    protected FtpEntry initFtpEntry(final String ftpParentDir, final FTPFile ftpFile) {
+        final String name=ftpFile.getName();
+        final String encodedName=UrlUtil.encodeURIcomponent(name);
+        final String value;
+        if (ftpParentDir.endsWith("/")) {
+            value=ftpParentDir + encodedName;
+        }
+        else {
+            value=ftpParentDir + "/" + encodedName;
+        }
+        FtpEntry ftpEntry = new FtpEntry(ftpFile.getName(), value, ftpFile.isDir());
+        return ftpEntry;
+    }
+    
     protected List<FtpEntry> asFilesToDownload(final DirFilter filter, final String ftpDir, final FTPFile[] files) {
         final List<FtpEntry> filesToDownload=new ArrayList<FtpEntry>();
         // filter
         for(FTPFile ftpFile : files) {
-            if (!accept(filter, ftpFile)) {
+            final FtpEntry ftpEntry=initFtpEntry(ftpDir, ftpFile);
+            if (!filter.accept(ftpEntry)) {
                 log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
             }
             else {
-                final String name=ftpFile.getName();
-                final String encodedName=UrlUtil.encodeURIcomponent(name);
-                final String value;
-                if (ftpDir.endsWith("/")) {
-                    value=ftpDir + encodedName;
-                }
-                else {
-                    value=ftpDir + "/" + encodedName;
-                }
-                filesToDownload.add(new FtpEntry(ftpFile.getName(), value, ftpFile.isDir()));
+                filesToDownload.add(ftpEntry);
             }
         }
         return filesToDownload;
-    }
-    
-    protected boolean accept(final DirFilter dirFilter, final FTPFile ftpFile) {
-        if (ftpFile.isFile()) {
-            if (!dirFilter.acceptsFile()) {
-                return false;
-            }
-        }
-        else if (ftpFile.isDir()) {
-            if (!dirFilter.acceptsDir()) {
-                return false;
-            }
-        }
-        else {
-            log.warn("unknown type of ftpFile="+ftpFile);
-            return false;
-        }
-        
-        return dirFilter.acceptsName(ftpFile.getName());
     }
 
 }

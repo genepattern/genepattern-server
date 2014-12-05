@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
@@ -17,7 +16,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.choice.DirFilter;
-import org.genepattern.server.job.input.choice.FtpDirFilter;
 
 /**
  * Remote ftp directory listing implemented with the apache commons FTP client.
@@ -198,7 +196,7 @@ public class FtpDirListerCommonsNet_3_3 implements FtpDirLister {
 
             log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
             files = ftpClient.listFiles();
-            return asFilesToDownload(ftpDir, files);
+            return asFilesToDownload(filter, ftpDir, files);
         }
         catch (IOException e) {
             String errorMessage="Error listing files from "+ftpDir+": "+e.getLocalizedMessage();
@@ -222,26 +220,31 @@ public class FtpDirListerCommonsNet_3_3 implements FtpDirLister {
             }
         }
     }
+
+    protected FtpEntry initFtpEntry(final String ftpParentDir, final FTPFile ftpFile) {
+        final String name=ftpFile.getName();
+        final String encodedName=UrlUtil.encodeURIcomponent(name);
+        final String value;
+        if (ftpParentDir.endsWith("/")) {
+            value=ftpParentDir + encodedName;
+        }
+        else {
+            value=ftpParentDir + "/" + encodedName;
+        }
+        FtpEntry ftpEntry = new FtpEntry(ftpFile.getName(), value, ftpFile.isDirectory());
+        return ftpEntry;
+    }
     
-    protected List<FtpEntry> asFilesToDownload(final String ftpDir, final FTPFile[] files) {
+    protected List<FtpEntry> asFilesToDownload(final DirFilter filter, final String ftpDir, final FTPFile[] files) {
         final List<FtpEntry> filesToDownload=new ArrayList<FtpEntry>();
         // filter
-        final FTPFileFilter ftpDirFilter = new FtpDirFilter();
         for(FTPFile ftpFile : files) {
-            if (!ftpDirFilter.accept(ftpFile)) {
+            final FtpEntry ftpEntry=initFtpEntry(ftpDir, ftpFile);
+            if (!filter.accept(ftpEntry)) {
                 log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
             }
             else {
-                final String name=ftpFile.getName();
-                final String encodedName=UrlUtil.encodeURIcomponent(name);
-                final String value;
-                if (ftpDir.endsWith("/")) {
-                    value=ftpDir + encodedName;
-                }
-                else {
-                    value=ftpDir + "/" + encodedName;
-                }
-                filesToDownload.add(new FtpEntry(ftpFile.getName(), value, ftpFile.isDirectory()));
+                filesToDownload.add(ftpEntry);
             }
         }
         return filesToDownload;
