@@ -250,7 +250,6 @@ public class CachedFtpDir implements CachedFile {
     }
     
     public List<FtpEntry> getFilesToDownload() throws DownloadException, ListFtpDirException {
-        //FtpDirLister dirLister = FtpDirListerCommonsNet_3_3.createFromConfig(gpConfig, jobContext);
         FtpDirLister dirLister = initDirListerFromConfig(gpConfig, jobContext);
         final String ftpDir=url.toExternalForm();
         DirFilter filter=new DirFilter();
