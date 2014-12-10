@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
-import java.net.URI;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -11,17 +10,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
-
-import org.apache.log4j.Logger;
 
 /**
  * Filter to enable cross-origin resource sharing (CORS) of GP data files with 3rd party Javascript libraries
  * such as the Javascript Heatmap Viewer, (https://github.com/jheatmap/jheatmap). 
  * 
- * @see http://enable-cors.org
- * @see http://www.w3.org/wiki/CORS
- * @see http://www.w3.org/TR/cors/
+ * @see <a href="http://enable-cors.org/">http://enable-cors.org/</a>
+ * @see <a href="http://www.w3.org/wiki/CORS">http://www.w3.org/wiki/CORS</a>
+ * @see <a href="http://www.w3.org/TR/cors/">http://www.w3.org/TR/cors/</a>
  * @author pcarr
  * 
  * Curl templates to validate CORS requests,
@@ -51,7 +47,6 @@ import org.apache.log4j.Logger;
  *
  */
 public class CorsFilter implements Filter {
-    private static Logger log = Logger.getLogger(CorsFilter.class);
     
     /**
      * proposed CorsFilter implementation
