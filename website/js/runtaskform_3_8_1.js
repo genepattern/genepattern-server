@@ -1426,7 +1426,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
         var pGroupName = parameterGroups[i].name;
 
-        if (pGroupName === undefined && pGroupName === null) {
+        if (pGroupName === undefined || pGroupName === null) {
             pGroupName = "  ";
         }
 
