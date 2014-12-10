@@ -239,6 +239,7 @@
             version="true"
             use="true"
             windowtitle="GenePattern API"
+            classpathref="library.classpath"
         >
             <doctitle><![CDATA[<h1>GenePattern API</h1>]]></doctitle>
             <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
@@ -250,12 +251,12 @@
 
         <javadoc destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
             sourcepath="src"
-            excludepackagenames="com.dummy.test.doc-files.*"
             defaultexcludes="yes"
             author="true"
             version="true"
             use="true"
             windowtitle="JobRunner API"
+            classpathref="library.classpath"
         >
             <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
             <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
