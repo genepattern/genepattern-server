@@ -1217,7 +1217,7 @@ function initParams(parameterGroups, parameters, batchParams) {
 
 function getNextGroupId(parameterName) {
     var paramGroupInfo = parameter_and_val_groups[parameterName];
-    if (paramGroupInfo === null) {
+    if (paramGroupInfo === null || paramGroupInfo === undefined) {
         paramGroupInfo = {};
         paramGroupInfo.groupCountIncrementer = 0;
         parameter_and_val_groups[parameterName] = paramGroupInfo;
@@ -1304,8 +1304,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
     var groupingEnabled = false;
 
     var groupInfo = run_task_info.params[parameterName].groupInfo;
-    if (groupInfo !== null && (groupInfo.maxValue === null || groupInfo.maxValue === undefined
-        || groupInfo.maxValue > 1)) {
+    if (groupInfo !== null && groupInfo !== undefined && (groupInfo.maxValue === null || groupInfo.maxValue === undefined || groupInfo.maxValue > 1)) {
         groupingEnabled = true;
 
         //do not allow batch if grouping is enabled
@@ -1426,7 +1425,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
         var pGroupName = parameterGroups[i].name;
 
-        if (pGroupName === undefined && pGroupName === null) {
+        if (pGroupName === undefined || pGroupName === null) {
             pGroupName = "  ";
         }
 
@@ -1564,7 +1563,7 @@ function createParamTable(parameterNames, initialValues) {
         }
         //check if grouping is enabled
         var groupInfo = run_task_info.params[parameterName].groupInfo;
-        if (groupInfo !== null && (groupInfo.maxValue === null || groupInfo.maxValue === undefined
+        if (groupInfo !== null && groupInfo !== undefined && (groupInfo.maxValue === null || groupInfo.maxValue === undefined
             || groupInfo.maxValue > 1)) {
             var groupColumnLabel = groupInfo.groupColumnLabel;
             if (groupColumnLabel === undefined && groupColumnLabel === null) {
