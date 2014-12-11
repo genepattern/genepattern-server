@@ -258,6 +258,7 @@ public class GenePatternAnalysisTask {
     public enum JOB_TYPE {
         JOB,
         VISUALIZER,
+        JAVASCRIPT,
         PIPELINE,
         IGV
     };
@@ -709,6 +710,9 @@ public class GenePatternAnalysisTask {
         JOB_TYPE jobType = JOB_TYPE.JOB;
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             jobType = JOB_TYPE.VISUALIZER;
+        }
+        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.JAVASCRIPT;
         }
         else if (taskInfo.isPipeline()) {
             jobType = JOB_TYPE.PIPELINE;
@@ -1489,7 +1493,18 @@ public class GenePatternAnalysisTask {
             }
             return;
         }
-        
+
+        //special-case for visualizer
+        if (jobType == JOB_TYPE.JAVASCRIPT) {
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
+            }
+            catch (Exception e) {
+                throw new JobDispatchException("Error handling visualizer", e);
+            }
+            return;
+        }
+
         //special-case, for -Xmx flag
         try {
             final Memory memoryFlag;
@@ -2179,7 +2194,7 @@ public class GenePatternAnalysisTask {
             commandPrefix = prefixes.getProperty(commandPrefixName);
         }
 
-        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER)) {
+        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER) && !(jobType == JOB_TYPE.JAVASCRIPT)) {
             // check for default prefix, unless it's a visualizer
             commandPrefix = prefixes.getProperty("default", null);
         }

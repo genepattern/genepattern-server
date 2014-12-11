@@ -14,7 +14,8 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JobSubmitInfo
 {
     String lsid;
-	String params;
+    Boolean isJsViewer;
+    String params;
 	List<String> batchParams;
     String comment;
     List<String> tags;

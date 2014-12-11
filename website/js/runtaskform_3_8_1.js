@@ -11,7 +11,8 @@ var run_task_info = {
     name: null, //name of the module
     params: {}, //contains parameter info necessary to build the job submit form, see the initParam() function for details
     sendTo: {},
-    param_group_ids: {} //contains map of parameter group name to id
+    param_group_ids: {}, //contains map of parameter group name to id
+    is_js_viewer: false
 };
 
 //contains json object with parameter to value pairing
@@ -654,6 +655,12 @@ function loadModuleInfo(module) {
         });
 
         $("#source_info").prepend("Source: ");
+    }
+
+    if(module["categories"] != undefined && module["categories"] != null &&
+        module["categories"].indexOf("JsViewer") != -1)
+    {
+        run_task_info.is_js_viewer = true;
     }
 }
 
@@ -1678,186 +1685,187 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
         $("#protocols").show();
         return;
     }
-    else {
+    else
+    {
         loadModule(lsid, reloadJob, sendFromKind, sendFromUrl);
-    }
 
-    $("#submitJob input[type='file']").live("change", function () {
-        var paramName = $(this).data("pname");
+        $("#submitJob input[type='file']").live("change", function () {
+            var paramName = $(this).data("pname");
 
-        var groupId = getGroupId($(this));
-        var fileObjListings = getFilesForGroup(groupId, paramName);
+            var groupId = getGroupId($(this));
+            var fileObjListings = getFilesForGroup(groupId, paramName);
 
-        //create a copy of files so that the input file field
-        //can be reset so that files with the same name can be reuploaded
-        var uploadedFiles = [];
-        for (var t = 0; t < this.files.length; t++) {
-            uploadedFiles.push(this.files[t]);
-        }
+            //create a copy of files so that the input file field
+            //can be reset so that files with the same name can be reuploaded
+            var uploadedFiles = [];
+            for (var t = 0; t < this.files.length; t++) {
+                uploadedFiles.push(this.files[t]);
+            }
 
-        //Reset the value of the file input to work around
-        //feature in Chrome where uploading the same file sequentially
-        //does not trigger a change event
-        $(this).val(null);
+            //Reset the value of the file input to work around
+            //feature in Chrome where uploading the same file sequentially
+            //does not trigger a change event
+            $(this).val(null);
 
-        checkFileSizes(uploadedFiles);
+            checkFileSizes(uploadedFiles);
 
-        var totalFileLength = fileObjListings.length + uploadedFiles.length;
-        validateMaxFiles(paramName, totalFileLength);
+            var totalFileLength = fileObjListings.length + uploadedFiles.length;
+            validateMaxFiles(paramName, totalFileLength);
 
-        //add newly selected files to table of file listing
-        for (var f = 0; f < uploadedFiles.length; f++) {
-            var fileObj = {
-                name: uploadedFiles[f].name,
-                object: uploadedFiles[f],
-                id: fileId++
-            };
-            fileObjListings.push(fileObj);
-        }
+            //add newly selected files to table of file listing
+            for (var f = 0; f < uploadedFiles.length; f++) {
+                var fileObj = {
+                    name: uploadedFiles[f].name,
+                    object: uploadedFiles[f],
+                    id: fileId++
+                };
+                fileObjListings.push(fileObj);
+            }
 
-        // add to file listing for the specified parameter
-        updateFilesForGroup(groupId, paramName, fileObjListings);
-        updateParamFileTable(paramName, $(this).closest(".fileDiv"));
-        toggleFileButtons(paramName);
-    });
+            // add to file listing for the specified parameter
+            updateFilesForGroup(groupId, paramName, fileObjListings);
+            updateParamFileTable(paramName, $(this).closest(".fileDiv"));
+            toggleFileButtons(paramName);
+        });
 
-    /* begin other options menu code*/
-    var selected = function (event, ui) {
-        $(this).popup("close");
-    };
+        /* begin other options menu code*/
+        var selected = function (event, ui) {
+            $(this).popup("close");
+        };
 
-    $("button.Reset").click(function () {
-        reset();
-    });
+        $("button.Reset").click(function () {
+            reset();
+        });
 
-    $("button.Run").click(function () {
-        //Submit this job to the server
-        runJob();
-    });
+        $("button.Run").click(function () {
+            //Submit this job to the server
+            runJob();
+        });
 
-    //disable default browser behavior of opening files using drag and drop
-    $(document).bind({
-        dragenter: function (e) {
-            e.stopPropagation();
+        //disable default browser behavior of opening files using drag and drop
+        $(document).bind({
+            dragenter: function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                var dt = e.originalEvent.dataTransfer;
+                dt.effectAllowed = dt.dropEffect = 'none';
+            },
+            dragover: function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                var dt = e.originalEvent.dataTransfer;
+                dt.effectAllowed = dt.dropEffect = 'none';
+            }
+        });
+
+        $(document).bind('drop dragover', function (e) {
             e.preventDefault();
-            var dt = e.originalEvent.dataTransfer;
-            dt.effectAllowed = dt.dropEffect = 'none';
-        },
-        dragover: function (e) {
-            e.stopPropagation();
+        });
+
+        document.body.addEventListener('drop', function (e) {
             e.preventDefault();
-            var dt = e.originalEvent.dataTransfer;
-            dt.effectAllowed = dt.dropEffect = 'none';
-        }
-    });
+        }, false);
 
-    $(document).bind('drop dragover', function (e) {
-        e.preventDefault();
-    });
-
-    document.body.addEventListener('drop', function (e) {
-        e.preventDefault();
-    }, false);
-
-    //add action for when cancel upload button is clicked
-    $("#cancelUpload").hide();
-    $("#cancelUpload").button().click(function () {
-        for (var y = 0; y < fileUploadRequests.length; y++) {
-            fileUploadRequests[y].abort();
-        }
-
+        //add action for when cancel upload button is clicked
         $("#cancelUpload").hide();
+        $("#cancelUpload").button().click(function () {
+            for (var y = 0; y < fileUploadRequests.length; y++) {
+                fileUploadRequests[y].abort();
+            }
 
-        //Change text of blocking div
-        $('#runTaskSettingsDiv').unblock();
-        $("#fileUploadDiv").empty();
-    });
+            $("#cancelUpload").hide();
 
-    $("#javaCode").data("language", "Java");
-    $("#matlabCode").data("language", "MATLAB");
-    $("#rCode").data("language", "R");
+            //Change text of blocking div
+            $('#runTaskSettingsDiv').unblock();
+            $("#fileUploadDiv").empty();
+        });
 
-    $("#removeViewCode").button().click(function () {
+        $("#javaCode").data("language", "Java");
+        $("#matlabCode").data("language", "MATLAB");
+        $("#rCode").data("language", "R");
+
+        $("#removeViewCode").button().click(function () {
+            $("#viewCodeDiv").hide();
+        });
+
+        /*add action for when one of the view code languages is selected */
         $("#viewCodeDiv").hide();
-    });
+        $(".viewCode").click(function () {
+            var language = $(this).data("language");
+            $("#viewCodeDiv").children().each(function () {
+                //if this is not the delete button then remove it
+                if ($(this).attr("id") != "removeViewCode") {
+                    $(this).remove();
+                }
+            });
 
-    /*add action for when one of the view code languages is selected */
-    $("#viewCodeDiv").hide();
-    $(".viewCode").click(function () {
-        var language = $(this).data("language");
-        $("#viewCodeDiv").children().each(function () {
-            //if this is not the delete button then remove it
-            if ($(this).attr("id") != "removeViewCode") {
-                $(this).remove();
-            }
-        });
+            $("#viewCodeDiv").append("<p id='viewCodeHeader'>" + language + " code to call " + run_task_info.name + ":</p>");
+            $("#viewCodeDiv").show();
 
-        $("#viewCodeDiv").append("<p id='viewCodeHeader'>" + language + " code to call " + run_task_info.name + ":</p>");
-        $("#viewCodeDiv").show();
+            var url = window.location.href;
+            var getParameters = url.slice(url.indexOf('?') + 1);
+            var queryString = "?" + getParameters;
 
-        var url = window.location.href;
-        var getParameters = url.slice(url.indexOf('?') + 1);
-        var queryString = "?" + getParameters;
-
-        //add parameters and their values to the query string
-        var paramNames = Object.keys(parameter_and_val_groups);
-        for (var t = 0; t < paramNames.length; t++) {
-            var groupNames = Object.keys(parameter_and_val_groups[paramNames[t]].groups);
-            for (var g = 0; g < groupNames.length; g++) {
-                var valuesList = parameter_and_val_groups[paramNames[t]].groups[groupNames[g]].values;
-                if (valuesList != undefined && valuesList != null && valuesList.length > 0) {
-                    queryString += "&" + paramNames[t] + "=" + valuesList[0];
+            //add parameters and their values to the query string
+            var paramNames = Object.keys(parameter_and_val_groups);
+            for (var t = 0; t < paramNames.length; t++) {
+                var groupNames = Object.keys(parameter_and_val_groups[paramNames[t]].groups);
+                for (var g = 0; g < groupNames.length; g++) {
+                    var valuesList = parameter_and_val_groups[paramNames[t]].groups[groupNames[g]].values;
+                    if (valuesList != undefined && valuesList != null && valuesList.length > 0) {
+                        queryString += "&" + paramNames[t] + "=" + valuesList[0];
+                    }
                 }
             }
-        }
 
-        $.ajax({
-            type: "GET",
-            url: "/gp/rest/RunTask/viewCode" + queryString,
-            cache: false,
-            data: { "lsid": run_task_info.lsid,
-                "reloadJob": run_task_info.reloadJobId,
-                "language": language},
-            success: function (response) {
+            $.ajax({
+                type: "GET",
+                url: "/gp/rest/RunTask/viewCode" + queryString,
+                cache: false,
+                data: { "lsid": run_task_info.lsid,
+                    "reloadJob": run_task_info.reloadJobId,
+                    "language": language},
+                success: function (response) {
 
-                if (response["code"] == undefined || response["code"] == null) {
-                    $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
-                }
-                else {
-                    $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
-                    //add a link to the appropriate programmers guide
-                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase() + "'> " +
-                        "Using GenePattern from " + language + "</a></span>");
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
-                console.log(thrownError);
+                    if (response["code"] == undefined || response["code"] == null) {
+                        $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
+                    }
+                    else {
+                        $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
+                        //add a link to the appropriate programmers guide
+                        $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase() + "'> " +
+                            "Using GenePattern from " + language + "</a></span>");
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+                    console.log(thrownError);
 
-                $("#viewCodeDiv").append("<p>An error occurred while retrieving the code.</p>");
-            },
-            dataType: "json"
+                    $("#viewCodeDiv").append("<p>An error occurred while retrieving the code.</p>");
+                },
+                dataType: "json"
+            });
         });
-    });
 
-    $("#otherOptions").click(function (event) {
-        var menu = $("#otherOptionsMenu");
-        menu.menu();
+        $("#otherOptions").click(function (event) {
+            var menu = $("#otherOptionsMenu");
+            menu.menu();
 
-        var top = $(this).position().top + 22;
-        var left = $(this).position().left - menu.width() + $(this).width() + 22;
+            var top = $(this).position().top + 22;
+            var left = $(this).position().left - menu.width() + $(this).width() + 22;
 
-        menu.css("position", "absolute");
-        menu.css("top", top);
-        menu.css("left", left);
-        menu.show();
+            menu.css("position", "absolute");
+            menu.css("top", top);
+            menu.css("left", left);
+            menu.show();
 
-        event.stopPropagation();
+            event.stopPropagation();
 
-        $(document).click(function () {
-            $("#otherOptionsMenu").hide();
+            $(document).click(function () {
+                $("#otherOptionsMenu").hide();
+            });
         });
-    });
+    }
 }
 
 $("#optionsMenu").blur(function () {
@@ -2040,6 +2048,31 @@ function buildBatchList() {
     return batchParams;
 }
 
+function openJsViewer(taskName, jsLink) {
+    $.window.prepare({
+        dock: 'right',
+        minWinLong: 120
+    });
+
+    var myWindow = $("#content").window({
+        title: taskName,
+        url: jsLink,
+        checkBoundary: true,
+        bookmarkable: false,
+        scrollable: true,
+        onMaximize: function () {
+            $("#left-nav").hide();
+        },
+        onMinimize: function () {
+            $("#left-nav").show();
+        },
+        onCascade: function () {
+            $("#left-nav").show();
+        }
+    });
+    myWindow.maximize();
+}
+
 function submitTask() {
     setAllFileParamValues();
 
@@ -2087,7 +2120,7 @@ function submitTask() {
     {
         "lsid": run_task_info.lsid,
         "params": JSON.stringify(param_values_by_group),
-        "batchParams": buildBatchList()
+        "batchParams": buildBatchList(),
     };
 
     if($("#jobComment").val() != undefined && $("#jobComment").val() != null
@@ -2110,6 +2143,8 @@ function submitTask() {
         timeout: 60000,  //timeout added to specifically to handle cases of file choice ftp listing taking too long
         success: function (response) {
 
+            $('#runTaskSettingsDiv').unblock();
+
             var message = response["MESSAGE"];
 
             if (message !== undefined && message !== null) {
@@ -2118,6 +2153,16 @@ function submitTask() {
 
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
+            }
+            else if (run_task_info.is_js_viewer) {
+                if (response.jsLink)
+                {
+                    openJsViewer(run_task_info.name, response.jsLink);
+                }
+                else
+                {
+                    alert("Could not open viewer: " + run_task_info.name);
+                }
             }
             else if (response.jobId != undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
