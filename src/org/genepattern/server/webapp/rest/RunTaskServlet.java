@@ -19,16 +19,14 @@ import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
+import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
-import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
@@ -62,8 +60,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.jersey.ddpi.client.ClientResponse;
-import com.sun.oersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 /**
@@ -512,17 +510,17 @@ public class RunTaskServlet extends HttpServlet
 
             //check if this is a javascript visualizer and return the url to launch it
             TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
-            JobInfo jobInfo = new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
-
-            try
+            if(taskInfo != null && TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
             {
-                String jsLink = generateLaunchURL(taskInfo, jobInfo);
+                JobInfo jobInfo = new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
 
-                result.addChild("jsLink", jsLink);
-            }
-            catch (Exception e)
-            {
-                log.error("No js link found");
+                try {
+                    String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
+
+                    result.addChild("launchUrl", launchUrl);
+                } catch (Exception e) {
+                    log.error("No launch url found for Javascript visualizer: " + taskInfo.getName());
+                }
             }
 
             int gpJobNo = Integer.parseInt(jobId);
@@ -565,39 +563,6 @@ public class RunTaskServlet extends HttpServlet
             log.error(message, t);
             return handleError(message);
         }
-    }
-
-    public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
-        String jsLink = null;
-        TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-        if(tia.get(GPConstants.CATEGORIES).contains("JsViewer")) {
-            String mainFile = (String)taskInfo.getAttributes().get("commandLine");
-            mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
-            jsLink = ServerConfigurationFactory.instance().getGenePatternURL() + "getFile.jsp?task="
-                    + taskInfo.getLsid() + "&file=" + mainFile;
-            ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            for (ParameterInfo parameterInfo : parameterInfos)
-            {
-                try {
-                    String value=parameterInfo.getValue();
-
-                    if (parameterInfo.getValue().endsWith(".list.txt")) {
-                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(parameterInfo.getValue()).getServerFile());
-
-                        for (String file : fileList) {
-                            GpFilePath gpPath = new ServerFilePath(new File(file));
-                            value = gpPath.getUrl().toExternalForm();
-                        }
-                    }
-
-                    jsLink += "&" + parameterInfo.getName() + "=" + value;
-
-                } catch (Exception io) {
-                    log.error(io);
-                }
-            }
-        }
-        return jsLink;
     }
 
     private Response handleError(final String errorMessage) throws WebApplicationException {
@@ -839,7 +804,7 @@ public class RunTaskServlet extends HttpServlet
         return moduleVersions;
     }
 
-    private static TaskInfo getTaskInfo(String taskLSID, String username) throws WebServiceException
+    private TaskInfo getTaskInfo(String taskLSID, String username) throws WebServiceException
     {
         return new LocalAdminClient(username).getTask(taskLSID);
     }

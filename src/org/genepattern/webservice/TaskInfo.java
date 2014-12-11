@@ -381,7 +381,7 @@ public class TaskInfo implements Serializable {
             return false;
         }
 
-        return (tia.get(GPConstants.CATEGORIES).contains("JsViewer"));
+        return (tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER));
     }
 
 }

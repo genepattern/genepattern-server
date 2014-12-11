@@ -2048,30 +2048,6 @@ function buildBatchList() {
     return batchParams;
 }
 
-function openJsViewer(taskName, jsLink) {
-    $.window.prepare({
-        dock: 'right',
-        minWinLong: 120
-    });
-
-    var myWindow = $("#content").window({
-        title: taskName,
-        url: jsLink,
-        checkBoundary: true,
-        bookmarkable: false,
-        scrollable: true,
-        onMaximize: function () {
-            $("#left-nav").hide();
-        },
-        onMinimize: function () {
-            $("#left-nav").show();
-        },
-        onCascade: function () {
-            $("#left-nav").show();
-        }
-    });
-    myWindow.maximize();
-}
 
 function submitTask() {
     setAllFileParamValues();
@@ -2155,9 +2131,9 @@ function submitTask() {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
             else if (run_task_info.is_js_viewer) {
-                if (response.jsLink)
+                if (response.launchUrl)
                 {
-                    openJsViewer(run_task_info.name, response.jsLink);
+                    openJsViewer(run_task_info.name, response.launchUrl);
                 }
                 else
                 {
