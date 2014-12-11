@@ -1,0 +1,86 @@
+<project name="gp-custom-lsf-executor" default="describe">
+    <target name="describe">
+        <echo>
+            Compile Slurm job runner into a jar file for deployment to a GenePattern Server.
+        </echo>
+    </target>
+
+    <!-- path to the gp library, required for CommandExecutorService and related classes. -->
+    <!-- configured for both a dev environment (from svn co of gp server source code), or a server install -->
+    <property name="gp.classes" location="../build"/>
+    <property name="gp.server.lib" location="../website/WEB-INF/lib"/>
+
+    <!-- property name="client.lib.dir" location="gplib" / -->
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <path id="gp.server.classpath">
+        <!-- include GenePattern jar files -->
+        <fileset dir="${gp.server.lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="gp.dev.classpath">
+        <pathelement location="${gp.classes}"/>
+    </path>
+
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}"/>
+        <path refid="gp.server.classpath"/>
+        <path refid="gp.dev.classpath"/>
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="echo-classpath" depends="init">
+        <pathconvert property="expanded.classpath" refid="compile.classpath"/>
+        <echo message="${expanded.classpath}" />
+    </target>
+
+    <target name="compile" depends="init">
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor"/>
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath"/>
+        <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath"/>
+
+        <!-- copy non-java resource files to the output directory -->
+        <copy todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="jar" depends="compile">
+        <property name="jar.file" location="${dist.dir}/gp-slurm-job-runner.jar"/>
+        <jar destfile="${jar.file}" basedir="${build.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean-all" depends="clean">
+        <description>
+            Deletes everything, including the extracted client library and the downloaded client library zip file.
+        </description>
+        <delete file="gp-slurm.zip"/>
+    </target>
+
+    <target name="dist" depends="clean-all">
+        <description>
+            Package up this ant project for distribution.
+        </description>
+        <zip basedir=".." destfile="gp-slurm.zip"
+             includes="gp-slurm-queue/**/*"
+             excludes="gp-slurm-queue/build.xml, gp-slurm-queue/src"/>
+    </target>
+
+</project>

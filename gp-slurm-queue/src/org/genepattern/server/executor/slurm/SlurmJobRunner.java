@@ -37,17 +37,17 @@ public class SlurmJobRunner implements JobRunner {
      * @author pcarr
      */
     private void logCommandLine(DrmJobSubmission drmJobSubmission) {
-        if (drmJobSubmission.getLogFile()==null) {
+        if (drmJobSubmission.getLogFile() == null) {
             // a null logfile means "don't write the log file"
             return;
         }
         final File commandLogFile;
         if (!drmJobSubmission.getLogFile().isAbsolute()) {
             //relative path is relative to the working directory for the job
-            commandLogFile=new File(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile().getPath());
+            commandLogFile = new File(drmJobSubmission.getWorkingDir(), drmJobSubmission.getLogFile().getPath());
         }
         else {
-            commandLogFile=drmJobSubmission.getLogFile();
+            commandLogFile = drmJobSubmission.getLogFile();
         }
         log.debug("saving command line to log file ...");
         String commandLineStr = "";
@@ -62,7 +62,7 @@ public class SlurmJobRunner implements JobRunner {
             }
         }
         if (commandLogFile.exists()) {
-            log.error("log file already exists: "+commandLogFile.getAbsolutePath());
+            log.error("log file already exists: " + commandLogFile.getAbsolutePath());
             return;
         }
         BufferedWriter bw = null;
@@ -73,18 +73,18 @@ public class SlurmJobRunner implements JobRunner {
             bw.newLine();
             int i=0;
             for(final String arg : drmJobSubmission.getCommandLine()) {
-                bw.write(" arg["+i+"]: '"+arg+"'");
+                bw.write(" arg[" + i + "]: '" + arg + "'");
                 bw.newLine();
                 ++i;
             }
             bw.close();
         }
         catch (IOException e) {
-            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), e);
+            log.error("error writing log file: " + commandLogFile.getAbsolutePath(), e);
             return;
         }
         catch (Throwable t) {
-            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), t);
+            log.error("error writing log file: " + commandLogFile.getAbsolutePath(), t);
             log.error(t);
         }
         finally {
