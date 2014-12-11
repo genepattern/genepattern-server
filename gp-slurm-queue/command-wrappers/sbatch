@@ -1,0 +1,8 @@
+#!/bin/bash
+
+remote_script="sbatch $*"
+
+ssh thorin@stampede.tacc.utexas.edu $remote_script << 'ENDSSH'
+#echo $* > out.txt
+ENDSSH
+exit 0
