@@ -83,7 +83,7 @@ import com.sun.jersey.api.client.ClientResponse;
  *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  * 
- * <p>Optionally set the 'groupId' for modules which accect file group parameters.
+ * <p>Optionally set the 'groupId' for modules which accept file group parameters.
  * <pre>
    {
      "lsid":<actualLsid>,
@@ -103,7 +103,7 @@ import com.sun.jersey.api.client.ClientResponse;
  * <pre>
  * 
  * 
- * <p>To add a batch of job to the server, use the 'batchParam' property.</p>
+ * <p>To add a batch of jobs to the server, use the 'batchParam' property.</p>
  * <pre>
    {
      "lsid":<actualLsid>,

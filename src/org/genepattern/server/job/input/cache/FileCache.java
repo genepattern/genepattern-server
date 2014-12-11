@@ -14,14 +14,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.job.input.choice.RemoteDirLister;
-import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
-import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -45,20 +40,6 @@ public class FileCache {
      */
     public static final String CACHE_USER_ID=".cache";
     
-    public static final RemoteDirLister<FTPFile, ListFtpDirException> initDirLister() {
-        return initDirLister(null, null);
-    }
-
-    public static final RemoteDirLister<FTPFile, ListFtpDirException> initDirLister(GpConfig gpConfig, GpContext jobContext) {
-        if (gpConfig==null) {
-            gpConfig=ServerConfigurationFactory.instance();
-        }
-        if (jobContext==null) {
-            jobContext=GpContext.getServerContext();
-        }
-        return CommonsNet_3_3_DirLister.createFromConfig(gpConfig, jobContext);
-    }
-
     private static final FileCache instance=new FileCache();
     public static FileCache instance() {
         return instance;

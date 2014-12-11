@@ -3,6 +3,8 @@ package org.genepattern.server.job.input.choice.ftp;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -12,25 +14,17 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.job.input.choice.RemoteDirLister;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.job.input.choice.DirFilter;
 
 /**
  * Remote ftp directory listing implemented with the apache commons FTP client.
  * @author pcarr
  *
  */
-public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtpDirException> {
-    private static Logger log = Logger.getLogger(CommonsNet_3_3_DirLister.class);
+public class FtpDirListerCommonsNet_3_3 implements FtpDirLister {
+    private static Logger log = Logger.getLogger(FtpDirListerCommonsNet_3_3.class);
     
-    public static final String PROP_FTP_SOCKET_TIMEOUT="gp.server.choice.ftp_socketTimeout";
-    public static final String PROP_FTP_DATA_TIMEOUT="gp.server.choice.ftp_dataTimeout";
-    public static final String PROP_FTP_USERNAME="gp.server.choice.ftp_username";
-    public static final String PROP_FTP_PASSWORD="gp.server.choice.ftp_password";
-    
-    public static RemoteDirLister<FTPFile,ListFtpDirException> createDefault() {
-        return new CommonsNet_3_3_DirLister();
-    }
-
     /**
      * Initialize an ftp directory lister using the default ftp client settings.
      * The default values can be configured in the config_yaml file for the server.
@@ -44,12 +38,11 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
      * 
      * @param gpConfig
      * @param gpContext
+     * @param passiveModeFromModuleParam, this should be null in all cases with the exception of an override
+     *     which is declared in the manifest file for the module, e.g. 'p0_choiceDirFtpPassiveMode='false'
      * @return
      */
-    public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
-        return createFromConfig(gpConfig, gpContext, true);
-    }
-    public static RemoteDirLister<FTPFile, ListFtpDirException> createFromConfig(GpConfig gpConfig, final GpContext gpContext, final boolean passiveMode) {
+    public static FtpDirListerCommonsNet_3_3 createFromConfig(GpConfig gpConfig, final GpContext gpContext, boolean passiveMode) {
         if (gpConfig==null) {
             gpConfig=ServerConfigurationFactory.instance();
         }
@@ -59,7 +52,6 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
         String webmaster=gpConfig.getGPProperty(gpContext, "webmaster", "gp-help@broadinstitute.org");
         String username=gpConfig.getGPProperty(gpContext, PROP_FTP_USERNAME, "anonymous");
         String password=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, webmaster);
-        
         return new Builder()
             .socketTimeout(socketTimeout)
             .dataTimeout(dataTimeout)
@@ -68,7 +60,6 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
             .passive(passiveMode)
             .build();
     }
-    
 
     private final int defaultTimeout_ms; //=15*1000; //15 seconds
     private final int socketTimeout_ms; //=15*1000; //15 seconds
@@ -78,7 +69,7 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
     //toggle passive mode
     private final boolean passive;
     
-    private CommonsNet_3_3_DirLister() {
+    public FtpDirListerCommonsNet_3_3() {
         this.defaultTimeout_ms=15*1000; //15 seconds
         this.socketTimeout_ms=15*1000; //15 seconds
         // anonymous login
@@ -87,7 +78,7 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
         // by default, use passive mode FTP transfer
         this.passive=true;
     }
-    private CommonsNet_3_3_DirLister(Builder in) {
+    private FtpDirListerCommonsNet_3_3(Builder in) {
         this.defaultTimeout_ms=in.dataTimeout_ms;
         this.socketTimeout_ms=in.socketTimeout_ms;
         this.ftpUsername=in.ftpUsername;
@@ -124,14 +115,13 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
             return this;
         }
         
-        public CommonsNet_3_3_DirLister build() {
-            return new CommonsNet_3_3_DirLister(this);
+        public FtpDirListerCommonsNet_3_3 build() {
+            return new FtpDirListerCommonsNet_3_3(this);
         }
-
     }
 
     @Override
-    public FTPFile[] listFiles(final String ftpDir) throws ListFtpDirException {
+    public List<FtpEntry> listFiles(String ftpDir, DirFilter filter) throws ListFtpDirException {
         final URL ftpUrl;
         try {
             ftpUrl=new URL(ftpDir);
@@ -206,7 +196,7 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
 
             log.debug("listing files from directory: "+ftpClient.printWorkingDirectory());
             files = ftpClient.listFiles();
-            return files;
+            return asFilesToDownload(filter, ftpDir, files);
         }
         catch (IOException e) {
             String errorMessage="Error listing files from "+ftpDir+": "+e.getLocalizedMessage();
@@ -229,6 +219,35 @@ public class CommonsNet_3_3_DirLister implements RemoteDirLister<FTPFile,ListFtp
                 }
             }
         }
+    }
+
+    protected FtpEntry initFtpEntry(final String ftpParentDir, final FTPFile ftpFile) {
+        final String name=ftpFile.getName();
+        final String encodedName=UrlUtil.encodeURIcomponent(name);
+        final String value;
+        if (ftpParentDir.endsWith("/")) {
+            value=ftpParentDir + encodedName;
+        }
+        else {
+            value=ftpParentDir + "/" + encodedName;
+        }
+        FtpEntry ftpEntry = new FtpEntry(ftpFile.getName(), value, ftpFile.isDirectory());
+        return ftpEntry;
+    }
+    
+    protected List<FtpEntry> asFilesToDownload(final DirFilter filter, final String ftpDir, final FTPFile[] files) {
+        final List<FtpEntry> filesToDownload=new ArrayList<FtpEntry>();
+        // filter
+        for(FTPFile ftpFile : files) {
+            final FtpEntry ftpEntry=initFtpEntry(ftpDir, ftpFile);
+            if (!filter.accept(ftpEntry)) {
+                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
+            }
+            else {
+                filesToDownload.add(ftpEntry);
+            }
+        }
+        return filesToDownload;
     }
 
 }

@@ -144,7 +144,7 @@
                                 success:function (data, textStatus, jqXHR) {
                                     $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
                                     showSuccessMessage(data);
-                                    $(".left-nav-genomespace-refresh-real").trigger("click");
+                                    refreshGenomeSpaceTree();
                                 },
                                 error:function (data, textStatus, jqXHR) {
                                     $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
@@ -153,7 +153,7 @@
                                     if (data.statusText.indexOf("403") > -1) {
                                         if (directory.indexOf("GenomeSpacePublic") > -1) {
                                             showSuccessMessage("Saved to Google Drive");
-                                            $(".left-nav-genomespace-refresh-real").trigger("click");
+                                            refreshGenomeSpaceTree();
                                         }
                                         else {
                                             showErrorMessage("You do not have permission to save to this directory. Please select a directory for which you have write access.");

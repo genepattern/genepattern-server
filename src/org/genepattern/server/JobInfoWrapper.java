@@ -358,14 +358,17 @@ public class JobInfoWrapper implements Serializable {
 
             //Set the size and lastModified properties for each output file
             //for debugging, disable file system queries
-            if (displayFileInfo && exists) {
-                setSize(outputFile.length());
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(outputFile.lastModified());
-                setLastModified(cal.getTime());
-            }
-            else {
-                log.error("Outputfile not found on server: "+outputFile.getAbsolutePath());
+            if (displayFileInfo) {
+                if (exists) {
+                    setSize(outputFile.length());
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(outputFile.lastModified());
+                    setLastModified(cal.getTime());
+                }
+                else {
+                    String errorMessage="Outputfile not found on server: "+outputFile.getAbsolutePath();
+                    log.warn(new Exception(errorMessage));
+                }
             }
 
             //map from ParameterInfo.name to URL for downloading the output file from the server

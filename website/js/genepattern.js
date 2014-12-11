@@ -1241,7 +1241,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                 success: function(data) {
                                     showSuccessMessage(data);
 
-                                    $(".left-nav-genomespace-refresh-real").trigger("click");
+                                    refreshGenomeSpaceTree();
                                 },
                                 error: function(data) {
                                     if (typeof data === 'object') {
@@ -1269,7 +1269,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                         success: function(data) {
                                             showSuccessMessage(data);
 
-                                            $(".left-nav-genomespace-refresh-real").trigger("click");
+                                            refreshGenomeSpaceTree();
                                         },
                                         error: function(data) {
                                             if (typeof data === 'object') {
@@ -1533,6 +1533,14 @@ function refreshUploadTree() {
     uploadTree.jstree("refresh");
 
     $("#uploadDirectoryTree").jstree("refresh");
+}
+
+function refreshGenomeSpaceTree() {
+    var gsTree = $("#genomeSpaceFileTree");
+    gsTree.data("dndReady", {});
+    gsTree.jstree("refresh");
+
+    $("#saveTree").jstree("refresh");
 }
 
 function createFileWidget(linkElement, appendTo) {

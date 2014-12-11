@@ -27,9 +27,10 @@ import com.google.inject.internal.ImmutableMap;
  * when submitting jobs to the queue. See http://slurm.schedmd.com/rosetta.pdf, 'a Rosetta Stone of Workload Managers',
  * for a table of common job specification parameters.
  * 
- * @see JobRunner for a list of common properties.
- * 
  * To ensure that this class is immutable, use the DrmJobSubmission.Builder class to create a new instance. 
+ * 
+ * @see JobRunner JobRunner class for a list of common properties.
+ * 
  * 
  * @author pcarr
  *
@@ -163,7 +164,17 @@ public class DrmJobSubmission {
      * @return 
      */
     public String getQueue() {
-        return gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE);
+        return getQueue(null);
+    }
+
+    /**
+     * The name of the queue, with default value specified.
+     *
+     * @param defaultValue
+     * @return
+     */
+    public String getQueue(String defaultValue) {
+        return gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE, defaultValue);
     }
     
     /**
@@ -180,11 +191,22 @@ public class DrmJobSubmission {
     }
 
     /**
-     * 
+     * Get the maximum amount of time a job is allowed to run
+     *
      * @return the optional walltime setting, default is null.
      */
     public Walltime getWalltime() {
-        final String walltimeStr=gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME);
+        return getWalltime(null);
+    }
+
+    /**
+     * Get the maximum amount of time a job is allowed to run, default is specified
+     *
+     * @param defaultValue
+     * @return
+     */
+    public Walltime getWalltime(String defaultValue) {
+        final String walltimeStr = gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, defaultValue);
         if (walltimeStr==null) {
             return null;
         }
@@ -266,7 +288,7 @@ public class DrmJobSubmission {
      * Get the runtime setting for the given configuration property. This is a helper method which 
      * uses the GenePattern configuration system to get the value for a property.
      * 
-     * @param propName
+     * @param key
      * @return
      */
     public String getProperty(final String key) {

@@ -121,7 +121,7 @@
             <fileset dir="installer-2014/GP_server_Build_Output/" includes="**/*" />
             <fileset dir="installer-2014/server_Build_Output/" includes="**/*" />
             <fileset dir="installer-2014/" includes=".buildinstaller*.tmp/**" />
-            </delete>
+        </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
         </delete>
@@ -229,7 +229,39 @@
             </fileset>
         </javadoc>
     </target>
+    
+    <target name="javadoc-all" depends="compile" unless="skipdoc"
+        description="Builds the javadoc for all classes in the GP project">
+        <javadoc destdir="build/javadoc/all" packagenames="org.genepattern.*"
+            sourcepath="src"
+            defaultexcludes="yes"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="GenePattern API"
+            classpathref="library.classpath"
+        >
+            <doctitle><![CDATA[<h1>GenePattern API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+          </javadoc>
+    </target>
 
+    <target name="javadoc-jobrunner" depends="compile" unless="skipdoc"
+        description="Builds the javadoc for the JobRunner API">
+
+        <javadoc destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
+            sourcepath="src"
+            defaultexcludes="yes"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="JobRunner API"
+            classpathref="library.classpath"
+        >
+            <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+          </javadoc>
+    </target>
 
     <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
         <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">

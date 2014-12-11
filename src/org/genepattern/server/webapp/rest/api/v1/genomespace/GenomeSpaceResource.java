@@ -168,4 +168,17 @@ public class GenomeSpaceResource {
             return Response.status(500).entity(e.getLocalizedMessage()).build();
         }
     }
+
+    /**
+     * Refresh the cached GenomeSpace file tree
+     *
+     * @return - A response whether the refresh was successful
+     */
+    @PUT
+    @Path("/refresh")
+    public Response refresh(@Context HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        GenomeSpaceManager.forceFileRefresh(session);
+        return Response.ok().entity("GenomeSpace file cache has been reset.").build();
+    }
 }

@@ -13,7 +13,8 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.TestLoadModuleHelper;
-import org.genepattern.server.job.input.choice.ftp.CommonsNet_3_3_DirLister;
+import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -203,7 +204,7 @@ public class TestDynamicChoiceInfoParser {
     }
 
     @Test
-    public void testFtpFileDropdown() {
+    public void testFtpFileDropdown_defaultClient() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
         
@@ -221,6 +222,73 @@ public class TestDynamicChoiceInfoParser {
         listCompare("drop-down items", expected, choiceInfo.getChoices());
         Assert.assertEquals("selected", new Choice("", ""), choiceInfo.getSelected());
     }
+    
+    
+    @Test
+    public void testFtpFileDropdown_edtFtpJClient() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        
+        GpServerProperties serverProperties=new GpServerProperties.Builder()
+            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
+            .build();
+        GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .build();
+        
+        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
+
+        
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""),
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", new Choice("", ""), choiceInfo.getSelected());
+    }
+
+    @Test
+    public void testFtpFileDropdown_commonsNetClient() {
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
+        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        
+        // , 
+        //        // set custom.properties to use a 30 second timeout 
+        GpServerProperties serverProperties=new GpServerProperties.Builder()
+            //.addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
+            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.COMMONS_NET_3_3.name())
+            //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
+            //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
+            .build();
+        GpConfig gpConfig=new GpConfig.Builder()
+            .serverProperties(serverProperties)
+            .build();
+        
+        choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
+
+        
+        final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
+        
+        Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
+        final List<Choice> expected=Arrays.asList(new Choice[] {
+                new Choice("", ""),
+                makeChoice(choiceDir, "a.txt", false), 
+                makeChoice(choiceDir, "b.txt", false), 
+                makeChoice(choiceDir, "c.txt", false), 
+                makeChoice(choiceDir, "d.txt", false), 
+        });
+        
+        listCompare("drop-down items", expected, choiceInfo.getChoices());
+        Assert.assertEquals("selected", new Choice("", ""), choiceInfo.getSelected());
+    }
+
     
     /**
      * test case: don't do a remote listing
@@ -253,8 +321,8 @@ public class TestDynamicChoiceInfoParser {
 
         // set custom.properties to use a 30 second timeout 
         GpServerProperties serverProperties=new GpServerProperties.Builder()
-            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
-            .addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
+            .addCustomProperty(FtpDirLister.PROP_FTP_DATA_TIMEOUT, "30000")
+            .addCustomProperty(FtpDirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
             .build();
         GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
