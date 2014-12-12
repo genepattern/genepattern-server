@@ -34,7 +34,6 @@ public class SlurmJobRunner implements JobRunner {
      * rte.logfile: .rte.out
      * </pre>
      *
-     * @author pcarr
      */
     private void logCommandLine(DrmJobSubmission drmJobSubmission) {
         if (drmJobSubmission.getLogFile() == null) {
@@ -81,7 +80,6 @@ public class SlurmJobRunner implements JobRunner {
         }
         catch (IOException e) {
             log.error("error writing log file: " + commandLogFile.getAbsolutePath(), e);
-            return;
         }
         catch (Throwable t) {
             log.error("error writing log file: " + commandLogFile.getAbsolutePath(), t);
@@ -111,7 +109,7 @@ public class SlurmJobRunner implements JobRunner {
      * Cancel the Slurm job
      *
      * @param drmJobRecord, contains a record of the job
-     * @return
+     * @return - Return whether the job was successfully cancelled or not
      * @throws Exception
      */
     @Override
@@ -132,8 +130,8 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Extract the Slurm ID from the job submission output
      *
-     * @param output
-     * @return
+     * @param output - The output from the Slurm terminal command
+     * @return - Return the job ID in Slurm
      */
     private String extractExternalID(List<String> output) throws Exception {
         int lines = output.size();
@@ -165,13 +163,13 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Build the shell script necessary to initiate the Slurm job
      *
-     * @param gpJobId
-     * @param workDirPath
-     * @param commandLine
-     * @param queue
-     * @param account
-     * @param maxTime
-     * @return
+     * @param gpJobId - GenePattern job ID
+     * @param workDirPath - Path to the working directory
+     * @param commandLine - Command line string
+     * @param queue - Name of the queue to execute under
+     * @param account - The account to charge processing to
+     * @param maxTime - The maximum compute time (see doc for max allowable times on compute system)
+     * @return - Return the path to the submission script
      * @throws CommandExecutorException
      */
     String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String queue, String account, String maxTime) throws CommandExecutorException {
@@ -183,16 +181,12 @@ public class SlurmJobRunner implements JobRunner {
                             "#SBATCH -o stdout.txt\n" +
                             "#SBATCH -e stderr.txt\n" +
 
-                            // TODO: Remove this from the final version
-                            "#SBATCH --mail-user tabor@broadinstitute.org\n" +
-                            "#SBATCH --mail-type=ALL\n" +
-
                             "#SBATCH -t " + maxTime + "\n" +
                             "#SBATCH -A " + account + "\n" +
                             "#\n" +
                             "#SBATCH -p " + queue + " -n 1\n" +
                             " \n" +
-                            "srun " + commandLine + "\n";
+                            "ibrun " + commandLine + "\n";
 
         // Test working directory before writing
         if (!workingDirectory.exists()) throw new CommandExecutorException("Working directory does not exist!");
@@ -203,7 +197,11 @@ public class SlurmJobRunner implements JobRunner {
         // Write script to working directory
         FileOutputStream writeScript = null;
         try {
-            if (!jobScript.exists()) jobScript.createNewFile();
+            if (!jobScript.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                jobScript.createNewFile();
+            }
+
             writeScript = new FileOutputStream(jobScript);
             writeScript.write(scriptText.getBytes());
         }
@@ -231,8 +229,8 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Submit a Slurm job
      *
-     * @param drmJobSubmission
-     * @return
+     * @param drmJobSubmission - DrmJobSubmission object
+     * @return - Return the Slurm job ID
      * @throws CommandExecutorException
      */
     @Override
@@ -258,24 +256,6 @@ public class SlurmJobRunner implements JobRunner {
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
         try {
-//            // TODO: Testing
-//            output = Arrays.asList("-----------------------------------------------------------------\n",
-//                    "              Welcome to the Stampede Supercomputer              \n",
-//                    "-----------------------------------------------------------------\n",
-//                    "\n",
-//                    "--> Verifying valid submit host (login4)...OK\n",
-//                    "--> Verifying valid jobname...OK\n",
-//                    "--> Enforcing max jobs per user...OK\n",
-//                    "--> Verifying availability of your home dir (/home1/03271/thorin)...OK\n",
-//                    "--> Verifying availability of your work dir (/work/03271/thorin)...OK\n",
-//                    "--> Verifying availability of your scratch dir (/scratch/03271/thorin)...OK\n",
-//                    "--> Verifying valid ssh keys...OK\n",
-//                    "--> Verifying access to desired queue (development)...OK\n",
-//                    "--> Verifying job request is within current queue limits...OK\n",
-//                    "--> Checking available allocation (TACC-GenePattern)...OK\n",
-//                    "Submitted batch job 4563819");
-
-//            // TODO: This is the real code
             output = commandRunner.runCmd(Arrays.asList("sbatch", scriptPath));
         }
         catch (Throwable e) {
@@ -303,10 +283,10 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Extract the Slurm status from the squeue output text
      *
-     * @param extJobId
-     * @param stderr
-     * @param output
-     * @return
+     * @param extJobId - The SLurm job ID
+     * @param stderr - Standard error
+     * @param output - Standard out
+     * @return - The status of the Slurm job
      * @throws Exception
      */
     private DrmJobStatus extractSlurmStatus(String extJobId, File stderr, List<String> output) throws Exception {
@@ -380,26 +360,22 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Check the status of a Slurm job
      *
-     * @param drmJobRecord
-     * @return
+     * @param drmJobRecord - DrmJobRecord object
+     * @return - Return the status of the Slurm job
      */
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
         String extJobId = drmJobRecord.getExtJobId();
-        String gpJobId = drmJobRecord.getGpJobNo().toString();
         File stderr = drmJobRecord.getStderrFile();
 
         // Run the command line to get status
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
         try {
-//            // TODO: Testing
-//            output = Arrays.asList("Wed Dec 10 10:32:28 2014\n",
-//                    "             JOBID   PARTITION     NAME     USER    STATE       TIME TIMELIMIT  NODES NODELIST(REASON)\n",
-//                    "           4563860         vis vncserve    sujin  RUNNING       8:31   4:00:00      1 c444-902");
-//
-//            // TODO: This is the real code
-            output = commandRunner.runCmd(Arrays.asList("squeue", "-l", "--job=" + extJobId));
+            output = commandRunner.runCmd(Arrays.asList("squeue",
+                                                        "-l",
+                                                        "-t 'PENDING,RUNNING,SUSPENDED,CANCELLED,COMPLETING,COMPLETED,CONFIGURING,FAILED,TIMEOUT,PREEMPTED,NODE_FAIL'",
+                                                        "-j " + extJobId));
         }
         catch (Throwable e) {
             log.error("Error getting status for slurm job: " + e.getMessage());
