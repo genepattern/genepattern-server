@@ -139,12 +139,27 @@ public class SlurmJobRunner implements JobRunner {
         int lines = output.size();
         if (lines > 0) {
             String lastLine = output.get(lines - 1);
-            String[] parts = lastLine.split(" ");
-            return parts[parts.length - 1];
+
+            // Check for error messages in the output
+            for (String line : output) {
+                if (line.toLowerCase().contains("error")) {
+                    throw new CommandExecutorException("Error message found in output: " + line);
+                }
+            }
+
+            // Find the correct line with the job number
+            for (String line : output) {
+                if (line.contains("Submitted batch job")) {
+                    // Extract the job number
+                    String[] parts = lastLine.split(" ");
+                    // Return the job number
+                    return parts[parts.length - 1];
+                }
+            }
         }
-        else {
-            throw new CommandExecutorException("Cannot extract Slurm ID");
-        }
+
+        // If we weren't able to get the job number or had no lines of output, throw an error
+        throw new CommandExecutorException("Cannot extract Slurm ID");
     }
 
     /**
@@ -259,7 +274,7 @@ public class SlurmJobRunner implements JobRunner {
 //                    "--> Verifying job request is within current queue limits...OK\n",
 //                    "--> Checking available allocation (TACC-GenePattern)...OK\n",
 //                    "Submitted batch job 4563819");
-//
+
 //            // TODO: This is the real code
             output = commandRunner.runCmd(Arrays.asList("sbatch", scriptPath));
         }
