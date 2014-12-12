@@ -1430,6 +1430,31 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
         throw new Error("Error initializating parameter groups");
     }
 
+    $(".pHeaderTitleDiv").live("click", function () {
+        $(this).next().toggle();
+
+        var toggleImg = $(this).find(".paramSectionToggle");
+
+        if (toggleImg === null) {
+            //toggle image not found
+            // just log error and return
+            console.log("Could not find toggle image for hiding and showing parameter groups sections");
+
+            return;
+        }
+
+        //change the toggle image to indicate hide or show
+        var imageSrc = toggleImg.attr("src");
+        if (imageSrc.indexOf('collapse') !== -1) {
+            imageSrc = imageSrc.replace("collapse", "expand");
+        }
+        else {
+            imageSrc = imageSrc.replace("expand", "collapse");
+        }
+
+        toggleImg.attr("src", imageSrc);
+    });
+
     for (var i = 0; i < run_task_info.parameterGroups.length; i++) {
         //check if any parameters were found in the group
         //if so then do nothing and continue
@@ -1459,31 +1484,6 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
                 var headerTitleDiv = $("<div class='pHeaderTitleDiv'/>");
                 var toggleImg = $("<img src ='/gp/images/toggle_collapse.png' width='19' height='19' class='paramSectionToggle'/>");
-
-                $(".pHeaderTitleDiv").live("click", function () {
-                    $(this).next().toggle();
-
-                    var toggleImg = $(this).find(".paramSectionToggle");
-
-                    if (toggleImg === null) {
-                        //toggle image not found
-                        // just log error and return
-                        console.log("Could not find toggle image for hiding and showing parameter groups sections");
-
-                        return;
-                    }
-
-                    //change the toggle image to indicate hide or show
-                    var imageSrc = toggleImg.attr("src");
-                    if (imageSrc.indexOf('collapse') !== -1) {
-                        imageSrc = imageSrc.replace("collapse", "expand");
-                    }
-                    else {
-                        imageSrc = imageSrc.replace("expand", "collapse");
-                    }
-
-                    toggleImg.attr("src", imageSrc);
-                });
 
                 if (parameterGroups.length > 1) {
                     //only provide hide/show toggle for a group with a name
