@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,62 +23,114 @@ import org.mockito.Mockito;
 public class TestStartupServlet {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
-    
+
+    private StartupServlet startupServlet;
+    private ServletContext servletContext;
     private ServletConfig servletConfig;
 
+    private File workingDir;
     private File expectedGpHomeDir;
     
     @Before
     public void setUp() {
+        workingDir=new File(System.getProperty("user.dir"));
         expectedGpHomeDir=tmp.newFolder("gp_home");
+        servletContext=Mockito.mock(ServletContext.class);
         servletConfig=Mockito.mock(StartupServlet.class);
+        startupServlet=new StartupServlet();
     }
+    
+    @Test
+    public void initGpWorkingDir() {
+        File gpInstallDir=tmp.newFolder("GenePatternServer");
+        File tomcatDir=new File(gpInstallDir, "Tomcat"); // mock location for <GenePatternServer>/Tomcat directory
+        tomcatDir.mkdirs();
+        File webappsDir=new File(tomcatDir, "webapps");
+        webappsDir.mkdirs();
+        File webappDir=new File(webappsDir, "gp");
+        webappDir.mkdirs();
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
+        when(servletContext.getRealPath("../../")).thenReturn(tomcatDir.getAbsolutePath());
+        
+        File gpWorkingDir=startupServlet.initGpWorkingDir(servletConfig);
+        assertEquals(tomcatDir, gpWorkingDir);
+    }
+    
+    @Test
+    public void initGpWorkingDir_fromSystemProp() {
+        File customGpWorkingDir=tmp.newFolder("customWorkingDir");
+        File gpWorkingDir=startupServlet.initGpWorkingDir(customGpWorkingDir.getAbsolutePath(), servletConfig);
+        assertEquals(customGpWorkingDir, gpWorkingDir);
+    }
+    
+    @Test
+    public void initGpWorkingDir_gpHomeIsSet() {
+        //assume GENEPATTERN_HOME is set
+        startupServlet.setGpHomeDir(expectedGpHomeDir);
+        File gpWorkingDir=startupServlet.initGpWorkingDir(servletConfig);
+        assertNull("Expecting null gpWorkingDir when gpHomeDir is set", gpWorkingDir);
+    }
+    
     
     @Test
     public void initGpHomeDir_fromServletConfig() {
         when(servletConfig.getInitParameter("GENEPATTERN_HOME")).thenReturn(expectedGpHomeDir.getAbsolutePath());
-        File gpHomeDir=new StartupServlet().initGpHomeDir(servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
+        startupServlet.setGpHomeDir(gpHomeDir);
         assertEquals(expectedGpHomeDir, gpHomeDir);
+        
+        assertEquals(expectedGpHomeDir, startupServlet.getGpHomeDir());
     }
     
     @Test
     public void initGpHomeDir_fromServletConfig_altSpelling() {
         when(servletConfig.getInitParameter("gp.home")).thenReturn(expectedGpHomeDir.getAbsolutePath());
-        File gpHomeDir=new StartupServlet().initGpHomeDir(servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
         assertEquals(expectedGpHomeDir, gpHomeDir);
     }
     
     @Test
     public void initGpHomeDir_notSet() {
-        File gpHomeDir=new StartupServlet().initGpHomeDir(servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
         assertNull("by default GENEPATTERN_HOME is not set", gpHomeDir);
     }
 
     @Test
     public void initGpHomeDir_fromSystemProp() {
-        File gpHomeDir=new StartupServlet().initGpHomeDir(expectedGpHomeDir.getAbsolutePath(), servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(expectedGpHomeDir.getAbsolutePath(), servletConfig);
         assertEquals(expectedGpHomeDir.getAbsolutePath(), gpHomeDir.getAbsolutePath());
     }
 
     @Test
     public void initGpHomeDir_fromSystemProp_emptyString() {
         String gpHomeProp="";
-        File gpHomeDir=new StartupServlet().initGpHomeDir(gpHomeProp, servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(gpHomeProp, servletConfig);
         assertNull("by default GENEPATTERN_HOME is not set", gpHomeDir);
     }
     
     @Test
     public void initGpHomeDir_fromSystemProp_relativePath() {
         String gpHomeProp="gp_home";
-        File gpHomeDir=new StartupServlet().initGpHomeDir(gpHomeProp, servletConfig);
+        File gpHomeDir=startupServlet.initGpHomeDir(gpHomeProp, servletConfig);
         File expected=new File(System.getProperty("user.dir"), gpHomeProp);
         assertEquals(expected, gpHomeDir);
     }
     
-//    @Test
-//    public void initResourcesDir() {
-//        //assume GENEPATTERN_HOME is set
-//        new StartupServlet().initResourcesDir(gpWorkingDir);
-//    }
+    @Test
+    public void initResourcesDir_from_gpHomeDir() {
+        //assume GENEPATTERN_HOME is set
+        startupServlet.setGpHomeDir(expectedGpHomeDir);
+        File resourcesDir=startupServlet.initResourcesDir(workingDir);
+        startupServlet.setGpResourcesDir(resourcesDir);
+        File expectedResourcesDir=new File(expectedGpHomeDir, "resources");
+        assertEquals(expectedResourcesDir, resourcesDir);
+        assertEquals(expectedResourcesDir, startupServlet.getGpResourcesDir());
+    }
     
+//    //TODO: test cases for loadProperties
+//    @Test
+//    public void loadProperties_gpHomeDir_isNull() throws ServletException {
+//        startupServlet.loadProperties(servletConfig, workingDir);
+//    }
+   
 }

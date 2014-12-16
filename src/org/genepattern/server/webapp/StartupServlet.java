@@ -66,12 +66,40 @@ public class StartupServlet extends HttpServlet {
         }
         return this.log;
     }
+    
+    private File gpWorkingDir=null;
+    private File gpHomeDir=null;
+    private File gpResourcesDir=null;
 
     public StartupServlet() {
     }
     
     public String getServletInfo() {
         return "GenePatternStartupServlet";
+    }
+    
+    protected void setGpWorkingDir(final File gpWorkingDir) {
+        this.gpWorkingDir=gpWorkingDir;
+    }
+    
+    protected File getGpWorkingDir() {
+        return this.gpWorkingDir;
+    }
+    
+    protected void setGpHomeDir(final File gpHomeDir) {
+        this.gpHomeDir=gpHomeDir;
+    }
+
+    public File getGpHomeDir() {
+        return gpHomeDir;
+    }
+    
+    protected void setGpResourcesDir(final File gpResourcesDir) {
+        this.gpResourcesDir=gpResourcesDir;
+    }
+    
+    protected File getGpResourcesDir() {
+        return this.gpResourcesDir;
     }
 
     // initialize this on ServletStartup
@@ -92,11 +120,20 @@ public class StartupServlet extends HttpServlet {
      * For debugging/developing, you can override the default settings with a system property, 
      *     -DGENEPATTERN_WORKING_DIR=/fully/qualified/path
      */
-    protected File initWorkingDir(final ServletConfig servletConfig) {
-        String gpWorkingDir=System.getProperty("GENEPATTERN_WORKING_DIR");
-        if (gpWorkingDir==null) {
-            gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
+    protected File initGpWorkingDir(final ServletConfig servletConfig) {
+        return initGpWorkingDir(System.getProperty("GENEPATTERN_WORKING_DIR"), servletConfig);
+    }
+    
+    protected File initGpWorkingDir(final String gpWorkingDirProp, final ServletConfig servletConfig) {
+        if (!Strings.isNullOrEmpty(gpWorkingDirProp)) {
+            return new File(gpWorkingDirProp);
         }
+        
+        if (this.gpHomeDir != null) {
+            return null;
+        }
+        
+        String gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
         return new File(gpWorkingDir);
     }
     
@@ -164,11 +201,17 @@ public class StartupServlet extends HttpServlet {
      * @return
      */
     protected File initResourcesDir(final File gpWorkingDir) {
-        File resourcesDir=new File(gpWorkingDir, "../resources");
-        if (!resourcesDir.exists()) {
-            // check for a path relative to working dir
-            resourcesDir=new File("../resources");
-        } 
+        File resourcesDir;
+        if (this.gpHomeDir != null) {
+            resourcesDir=new File(gpHomeDir, "resources");
+        }
+        else {
+            resourcesDir=new File(gpWorkingDir, "../resources");
+            if (!resourcesDir.exists()) {
+                // check for a path relative to working dir
+                resourcesDir=new File("../resources");
+            }
+        }
         return new File(GpConfig.normalizePath(resourcesDir.getPath())).getAbsoluteFile();
     }
     
@@ -198,19 +241,24 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        final File workingDir=initWorkingDir(servletConfig);
-        ServerConfigurationFactory.setGpWorkingDir(workingDir);
+        this.gpHomeDir=initGpHomeDir(servletConfig);
+
+        this.gpWorkingDir=initGpWorkingDir(servletConfig);
+        ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
         
         // must init resourcesDir ...
-        File resourcesDir=initResourcesDir(workingDir);
-        ServerConfigurationFactory.setResourcesDir(resourcesDir);
+        this.gpResourcesDir=initResourcesDir(gpWorkingDir);
+        ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
         // ...  before initializing logDir 
-        initLogDir(workingDir, resourcesDir);
+        initLogDir(gpWorkingDir, gpResourcesDir);
 
         // must initialize logger before calling any methods which output to the log
         announceStartup();
 
         getLog().info("\tinitializing properties...");
+        getLog().info("\tGENEPATTERN_HOME="+gpHomeDir);
+        getLog().info("\tgpWorkingDir="+gpWorkingDir);
+        getLog().info("\tresources="+gpResourcesDir);
         ServletContext application = servletConfig.getServletContext();
         String genepatternProperties = servletConfig.getInitParameter("genepattern.properties");
         application.setAttribute("genepattern.properties", genepatternProperties);
@@ -219,7 +267,7 @@ public class StartupServlet extends HttpServlet {
             customProperties = genepatternProperties;
         }
         application.setAttribute("custom.properties", customProperties);
-        loadProperties(servletConfig, workingDir);
+        loadProperties(servletConfig, gpWorkingDir);
         setServerURLs(servletConfig);
 
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -273,7 +321,7 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            HsqlDbUtil.updateSchema(resourcesDir, schemaPrefix, gpVersion);
+            HsqlDbUtil.updateSchema(gpResourcesDir, schemaPrefix, gpVersion);
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
