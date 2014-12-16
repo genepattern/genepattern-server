@@ -17,7 +17,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandExecutorException;
 
 /**
- * Implementation of the JobRunner interface for SLURM
+ * Implementation of the JobRunner interface for Slurm
  *
  * @author Thorin Tabor
  */
@@ -57,7 +57,7 @@ public class SlurmJobRunner implements JobRunner {
                 first = false;
             }
             else {
-                commandLineStr += (" "+arg);
+                commandLineStr += (" " + arg);
             }
         }
         if (commandLogFile.exists()) {
@@ -70,7 +70,7 @@ public class SlurmJobRunner implements JobRunner {
             bw = new BufferedWriter(fw);
             bw.write(commandLineStr);
             bw.newLine();
-            int i=0;
+            int i = 0;
             for(final String arg : drmJobSubmission.getCommandLine()) {
                 bw.write(" arg[" + i + "]: '" + arg + "'");
                 bw.newLine();
@@ -220,7 +220,8 @@ public class SlurmJobRunner implements JobRunner {
 
         try {
             return jobScript.getCanonicalPath();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error("Error getting Canonical Path, falling back to Absolute Path: " + jobScript.getAbsolutePath());
             return jobScript.getAbsolutePath();
         }
@@ -283,7 +284,7 @@ public class SlurmJobRunner implements JobRunner {
     /**
      * Extract the Slurm status from the squeue output text
      *
-     * @param extJobId - The SLurm job ID
+     * @param extJobId - The Slurm job ID
      * @param stderr - Standard error
      * @param output - Standard out
      * @return - The status of the Slurm job
