@@ -47,6 +47,8 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
 
+import com.google.common.base.Strings;
+
 /*
  * GenePattern startup servlet
  * 
@@ -99,7 +101,8 @@ public class StartupServlet extends HttpServlet {
     }
     
     /**
-     * Figure out the value of GENEPATTERN_HOME for the web application.
+     * Initialize the path to the GENEPATTERN_HOME directory for the web application.
+     * 
      * If it's set as a system property, then use that value.
      * If it's not already set as a system property then ...
      *     Check the config.initParmater
@@ -111,16 +114,33 @@ public class StartupServlet extends HttpServlet {
      */
     protected File initGpHomeDir(ServletConfig config) {
         String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
-        if (gpHome==null) {
+        return initGpHomeDir(gpHome, config);
+    }
+
+    protected File initGpHomeDir(final String gpHomeProp, final ServletConfig config) {
+        String gpHome=gpHomeProp;
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
             gpHome = config.getInitParameter("GENEPATTERN_HOME");
         }
-        if (gpHome==null) {
+        if (Strings.isNullOrEmpty(gpHome)) {
             gpHome = config.getInitParameter("gp.home");
         }
-        if (gpHome==null) {
-            //legacy, assume it's relative to the web application
-            gpHome=config.getServletContext().getRealPath("../../../");
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
+            return null;
         }
+
+//        if (Strings.isNullOrEmpty(gpHome)) {
+//            //legacy, assume it's relative to the web application
+//            gpHome=config.getServletContext().getRealPath("../../../");
+//        }
+//        
+//        if (Strings.isNullOrEmpty(gpHome)) {
+//            //ERROR: unexpected, default to working directory
+//            gpHome=System.getProperty("user.dir");
+//        }
+        
         //normalize
         gpHome=GpConfig.normalizePath(gpHome);
         
