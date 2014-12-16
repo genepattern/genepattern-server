@@ -533,16 +533,17 @@ public class JobInfoManager {
                 try {
                     String value=parameterInfo.getValue();
 
-                    if (parameterInfo.getValue().endsWith(".list.txt")) {
-                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(parameterInfo.getValue()).getServerFile());
+                    if (value.endsWith(".list.txt")) {
+                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
 
-                        for (String file : fileList) {
-                            GpFilePath gpPath = new ServerFilePath(new File(file));
-                            value = gpPath.getUrl().toExternalForm();
+                        for (String fileUrl : fileList) {
+                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
                         }
                     }
-
-                    launchUrl += "&" + parameterInfo.getName() + "=" + value;
+                    else
+                    {
+                        launchUrl += "&" + parameterInfo.getName() + "=" + value;
+                    }
 
                 } catch (Exception io) {
                     log.error(io);

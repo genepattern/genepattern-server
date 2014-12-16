@@ -1326,6 +1326,11 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
         enableBatch = false;
     }
 
+    if(run_task_info.is_js_viewer)
+    {
+        enableBatch = false;
+    }
+
     var initialValues = null;
     var groupid = null;
     if (initialValuesObj !== undefined && initialValuesObj !== null) {
@@ -2109,9 +2114,15 @@ function submitTask() {
         taskJsonObj["tags"] = $("#jobTags").val().split(",");
     }
 
+    var RUN_PATH = "/gp/rest/RunTask/addJob";
+    if(run_task_info.is_js_viewer)
+    {
+        RUN_PATH = "/gp/rest/RunTask/launchJsViewer";
+    }
+
     $.ajax({
         type: "POST",
-        url: "/gp/rest/RunTask/addJob",
+        url: RUN_PATH,
         contentType: 'application/json',
         data: JSON.stringify(taskJsonObj),
         timeout: 60000,  //timeout added to specifically to handle cases of file choice ftp listing taking too long

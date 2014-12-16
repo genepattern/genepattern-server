@@ -18,6 +18,9 @@ function openJsViewer(taskName, launchUrl) {
         },
         onCascade: function () {
             $("#left-nav").show();
+        },
+        onClose: function () {
+            $("#left-nav").show();
         }
     });
     myWindow.maximize();
