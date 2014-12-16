@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
@@ -21,6 +22,7 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,7 +48,9 @@ public class TestIsCreateFilelist {
     private static Map<String,ParameterInfoRecord> paramInfoMap;
     private static GpContext jobContext;
 
-    final static private String userId="test";
+    final static private String userId = "test";
+    private String otherUser = "other";
+
     final static private String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00006:0.7";
     final static private String ftpFile="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
 
@@ -57,9 +61,15 @@ public class TestIsCreateFilelist {
         taskInfo = taskLoader.getTaskInfo(lsid);
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         jobContext=GpContext.getContextForUser(userId);
-
     }
-    
+
+    @Before
+    public void setUp() throws Exception
+    {
+        DbUtil.initDb();
+        otherUser = DbUtil.addUserToDb("otherUser");
+    }
+
     @Test
     public void testRequiredFile() {
         final String paramName="requiredFile";
@@ -179,7 +189,7 @@ public class TestIsCreateFilelist {
         final String paramName="file.list.file";
         final ParameterInfoRecord record=paramInfoMap.get(paramName);
 
-        final String internalURL="users/test/filename_test/all_aml_test.cls";
+        final String internalURL="users/"+ otherUser + "/filename_test/all_aml_test.cls";
         final String genomeSpaceURL = "https://dm.genomespace.org/datamanager/file/Home/nazaire/all_aml_train.gct";
         final JobInput jobInput = new JobInput();
         jobInput.addValue(paramName, ftpFile);
