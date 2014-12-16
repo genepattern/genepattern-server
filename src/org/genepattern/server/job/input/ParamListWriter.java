@@ -17,6 +17,7 @@ import org.genepattern.server.dm.GpFilePath;
  *
  */
 public interface ParamListWriter {
+    void writeParamList(GpFilePath toFile, List<GpFilePath> values, boolean urlMode) throws Exception;
     void writeParamList(GpFilePath toFile, List<GpFilePath> values) throws Exception;
     
     /**
@@ -28,25 +29,42 @@ public interface ParamListWriter {
     public static class Default implements ParamListWriter {
         private final String COL_DELIM="\t";
         private boolean writeTimestamp=false;
-        
+
         /**
          * Write a new parameter list file from the list of values.
-         * 
+         *
          */
         @Override
         public void writeParamList(GpFilePath toFile, List<GpFilePath> values) throws Exception {
+            writeParamList(toFile, values, false);
+        }
+
+            /**
+             * Write a new parameter list file from the list of values.
+             *
+             */
+        @Override
+        public void writeParamList(GpFilePath toFile, List<GpFilePath> values, boolean urlMode) throws Exception {
             FileWriter writer = null;
             BufferedWriter out = null;
             try {
                 writer = new FileWriter(toFile.getServerFile());
                 out = new BufferedWriter(writer);
                 for(GpFilePath filePath : values) {
-                    File file = filePath.getServerFile();
-                    out.write(file.getAbsolutePath());
-                    if (writeTimestamp) {
-                        out.write(COL_DELIM); out.write("timestamp="+file.lastModified());
-                        out.write(COL_DELIM); out.write(" date="+new Date(file.lastModified())+" ");
+                    if(urlMode)
+                    {
+                        out.write(filePath.getUrl().toExternalForm());
                     }
+                    else
+                    {
+                        File file = filePath.getServerFile();
+                        out.write(file.getAbsolutePath());
+                        if (writeTimestamp) {
+                            out.write(COL_DELIM); out.write("timestamp="+file.lastModified());
+                            out.write(COL_DELIM); out.write(" date="+new Date(file.lastModified())+" ");
+                        }
+                    }
+
                     out.newLine();
                 }
             }
