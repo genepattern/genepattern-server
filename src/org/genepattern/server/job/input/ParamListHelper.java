@@ -685,7 +685,7 @@ public class ParamListHelper {
 
     public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception
     {
-        return initFromValue(jobContext, pval, false);
+        return initFromValue(jobContext, pval, true);
     }
 
     public static Record initFromValue(final GpContext jobContext, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
