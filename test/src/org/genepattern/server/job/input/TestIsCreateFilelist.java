@@ -170,7 +170,7 @@ public class TestIsCreateFilelist {
         final TaskLoader taskLoader=new TaskLoader();
         taskLoader.addTask(TestJobInputHelper.class, "TestPassByReference_v0.1.zip");
 
-        final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00010:999999999";
+        final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00010:0.1";
 
         taskInfo = taskLoader.getTaskInfo(lsid);
         Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
