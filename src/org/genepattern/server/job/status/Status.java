@@ -479,6 +479,9 @@ public class Status {
                 if (jobStatusRecord.getMaxSwap() != null) {
                     status.maxSwap=Memory.fromSizeInBytes(jobStatusRecord.getMaxSwap());
                 }
+                if (jobStatusRecord.getExitCode() != null && jobStatusRecord.getExitCode() != 0) {
+                    status.hasError = true;
+                }
                 
                 status.maxProcesses=jobStatusRecord.getMaxProcesses();
                 status.maxThreads=jobStatusRecord.getMaxThreads();
