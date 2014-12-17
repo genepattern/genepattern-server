@@ -1,9 +1,10 @@
 package org.genepattern.server.webapp;
 
 import static junit.framework.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.Vector;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -13,7 +14,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 /**
  * jUnit tests for the StartupServlet.
@@ -35,8 +35,10 @@ public class TestStartupServlet {
     public void setUp() {
         workingDir=new File(System.getProperty("user.dir"));
         expectedGpHomeDir=tmp.newFolder("gp_home");
-        servletContext=Mockito.mock(ServletContext.class);
-        servletConfig=Mockito.mock(StartupServlet.class);
+        servletContext=mock(ServletContext.class);
+        servletConfig=mock(StartupServlet.class);
+        when(servletConfig.getInitParameterNames()).thenReturn(new Vector<String>().elements());
+
         startupServlet=new StartupServlet();
     }
     
@@ -127,10 +129,10 @@ public class TestStartupServlet {
         assertEquals(expectedResourcesDir, startupServlet.getGpResourcesDir());
     }
     
-//    //TODO: test cases for loadProperties
-//    @Test
-//    public void loadProperties_gpHomeDir_isNull() throws ServletException {
-//        startupServlet.loadProperties(servletConfig, workingDir);
-//    }
+    //test cases for loadProperties
+    @Test
+    public void loadProperties_gpHomeDir_isNull() throws ServletException {
+        startupServlet.loadProperties(servletConfig);
+    }
    
 }
