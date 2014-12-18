@@ -82,6 +82,9 @@
                                 </f:verbatim>
                                 <f:param name="login" value="Login" />
                             </h:commandLink>
+                            <h:outputText rendered="#{not genomeSpaceBean.autoCreateEnabled}">
+                                <a href="/gp/pages/registerUser.jsf" target="_blank">Register for a GenePattern account</a>
+                            </h:outputText>
                         </h:form></td>
                     </tr>
                 </table>
