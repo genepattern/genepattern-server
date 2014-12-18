@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -154,7 +155,8 @@ public class AuthorizationManager implements IAuthorizationManager {
         InputStream is = null;
         org.jdom.Document document = null;
 
-        File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"), "actionPermissionMap.xml");
+        File actionPermissionMapFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "actionPermissionMap.xml");
+        
         if (!actionPermissionMapFile.exists())
             return;
 
