@@ -201,7 +201,7 @@ public class AuthorizationManager implements IAuthorizationManager {
         InputStream is = null;
         org.jdom.Document document = null;
 
-        File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
+        File permissionMapFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "permissionMap.xml");
         if (!permissionMapFile.exists())
             return;
         is = new FileInputStream(permissionMapFile);
