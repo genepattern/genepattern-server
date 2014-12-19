@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The contents of this file will be loaded for each web application -->
+<!-- The contents of this file will be loaded for each web application,
+    See: http://tomcat.apache.org/tomcat-5.5-doc/config/context.html
+ -->
 <Context>
+    <Parameter name="GENEPATTERN_HOME" value="" 
+        description="The fully qualified path to the GenePattern home directory. When not set it defaults to the startup directory for the application server." 
+        override="false" />
+
     <!-- Default set of monitored resources -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
     
