@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
@@ -176,16 +175,6 @@ public class StartupServlet extends HttpServlet {
         if (Strings.isNullOrEmpty(gpHome)) {
             return null;
         }
-
-//        if (Strings.isNullOrEmpty(gpHome)) {
-//            //legacy, assume it's relative to the web application
-//            gpHome=config.getServletContext().getRealPath("../../../");
-//        }
-//        
-//        if (Strings.isNullOrEmpty(gpHome)) {
-//            //ERROR: unexpected, default to working directory
-//            gpHome=System.getProperty("user.dir");
-//        }
         
         //normalize
         gpHome=GpConfig.normalizePath(gpHome);
@@ -264,17 +253,6 @@ public class StartupServlet extends HttpServlet {
         }
     }
     
-//    protected File initJobResultsDir(final ServletConfig config) {
-//        return initJobResultsDir(System.getProperty(GpConfig.PROP_JOBS, "../jobResults"), config);
-//    }
-//    
-//    protected File initJobResultsDir(final String jobsProp, final ServletConfig config) {
-//        if (this.gpHomeDir != null) {
-//            return new File(gpHomeDir, "jobResults");
-//        }
-//        
-//    }
-    
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
         this.gpHomeDir=initGpHomeDir(servletConfig);
@@ -295,17 +273,11 @@ public class StartupServlet extends HttpServlet {
         getLog().info("\tGENEPATTERN_HOME="+gpHomeDir);
         getLog().info("\tgpWorkingDir="+gpWorkingDir);
         getLog().info("\tresources="+gpResourcesDir);
-        ServletContext application = servletConfig.getServletContext();
-        String genepatternProperties = servletConfig.getInitParameter("genepattern.properties");
-        application.setAttribute("genepattern.properties", genepatternProperties);
-        String customProperties = servletConfig.getInitParameter("custom.properties");
-        if (customProperties == null) {
-            customProperties = genepatternProperties;
-        }
-        application.setAttribute("custom.properties", customProperties);
+
         loadProperties(servletConfig); // assumes this.gpResourcesDir and this.gpWorkingDir are initialized
         setServerURLs(servletConfig);
 
+        ServerConfigurationFactory.reloadConfiguration();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
         String gpVersion=gpConfig.getGenePatternVersion();
