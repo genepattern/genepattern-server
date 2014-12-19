@@ -178,6 +178,14 @@ public class TestMemory {
     }
 
     @Test
+    public void format_forPbsJobRunner() {
+        Memory mem=Memory.fromString("16 Gb");
+        String expected="16gb";
+        String actual=((long)Math.ceil(mem.numGb()))+"gb";
+        Assert.assertEquals(expected, actual);
+    }
+    
+    @Test
     public void testGpNoSeparator() {
         final String spec="8gb";
         Memory actual=Memory.fromString(spec);
