@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
@@ -47,6 +46,8 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
 
+import com.google.common.base.Strings;
+
 /*
  * GenePattern startup servlet
  * 
@@ -64,12 +65,49 @@ public class StartupServlet extends HttpServlet {
         }
         return this.log;
     }
+    
+    private File gpWorkingDir=null;
+    private File gpHomeDir=null;
+    private File gpResourcesDir=null;
+    private File gpJobResultsDir=null;
 
     public StartupServlet() {
     }
     
     public String getServletInfo() {
         return "GenePatternStartupServlet";
+    }
+    
+    protected void setGpWorkingDir(final File gpWorkingDir) {
+        this.gpWorkingDir=gpWorkingDir;
+    }
+    
+    protected File getGpWorkingDir() {
+        return this.gpWorkingDir;
+    }
+    
+    protected void setGpHomeDir(final File gpHomeDir) {
+        this.gpHomeDir=gpHomeDir;
+    }
+
+    public File getGpHomeDir() {
+        return gpHomeDir;
+    }
+    
+    protected void setGpResourcesDir(final File gpResourcesDir) {
+        this.gpResourcesDir=gpResourcesDir;
+    }
+    
+    protected File getGpResourcesDir() {
+        return this.gpResourcesDir;
+    }
+    
+    protected void setGpJobResultsDir(final File gpJobResultsDir) {
+        this.gpJobResultsDir=gpJobResultsDir;
+    }
+    
+    protected File getGpJobResultsDir() {
+        return this.gpJobResultsDir;
     }
 
     // initialize this on ServletStartup
@@ -90,16 +128,26 @@ public class StartupServlet extends HttpServlet {
      * For debugging/developing, you can override the default settings with a system property, 
      *     -DGENEPATTERN_WORKING_DIR=/fully/qualified/path
      */
-    protected File initWorkingDir(final ServletConfig servletConfig) {
-        String gpWorkingDir=System.getProperty("GENEPATTERN_WORKING_DIR");
-        if (gpWorkingDir==null) {
-            gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
+    protected File initGpWorkingDir(final ServletConfig servletConfig) {
+        return initGpWorkingDir(System.getProperty("GENEPATTERN_WORKING_DIR"), servletConfig);
+    }
+    
+    protected File initGpWorkingDir(final String gpWorkingDirProp, final ServletConfig servletConfig) {
+        if (!Strings.isNullOrEmpty(gpWorkingDirProp)) {
+            return new File(gpWorkingDirProp);
         }
+        
+        if (this.gpHomeDir != null) {
+            return null;
+        }
+        
+        String gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
         return new File(gpWorkingDir);
     }
     
     /**
-     * Figure out the value of GENEPATTERN_HOME for the web application.
+     * Initialize the path to the GENEPATTERN_HOME directory for the web application.
+     * 
      * If it's set as a system property, then use that value.
      * If it's not already set as a system property then ...
      *     Check the config.initParmater
@@ -111,16 +159,23 @@ public class StartupServlet extends HttpServlet {
      */
     protected File initGpHomeDir(ServletConfig config) {
         String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
-        if (gpHome==null) {
+        return initGpHomeDir(gpHome, config);
+    }
+
+    protected File initGpHomeDir(final String gpHomeProp, final ServletConfig config) {
+        String gpHome=gpHomeProp;
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
             gpHome = config.getInitParameter("GENEPATTERN_HOME");
         }
-        if (gpHome==null) {
+        if (Strings.isNullOrEmpty(gpHome)) {
             gpHome = config.getInitParameter("gp.home");
         }
-        if (gpHome==null) {
-            //legacy, assume it's relative to the web application
-            gpHome=config.getServletContext().getRealPath("../../../");
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
+            return null;
         }
+        
         //normalize
         gpHome=GpConfig.normalizePath(gpHome);
         
@@ -144,18 +199,40 @@ public class StartupServlet extends HttpServlet {
      * @return
      */
     protected File initResourcesDir(final File gpWorkingDir) {
-        File resourcesDir=new File(gpWorkingDir, "../resources");
-        if (!resourcesDir.exists()) {
-            // check for a path relative to working dir
-            resourcesDir=new File("../resources");
-        } 
+        File resourcesDir;
+        if (this.gpHomeDir != null) {
+            resourcesDir=new File(gpHomeDir, "resources");
+        }
+        else {
+            resourcesDir=new File(gpWorkingDir, "../resources");
+            if (!resourcesDir.exists()) {
+                // check for a path relative to working dir
+                resourcesDir=new File("../resources");
+            }
+        }
         return new File(GpConfig.normalizePath(resourcesDir.getPath())).getAbsoluteFile();
     }
-    
-    protected void initLogDir(final File workingDir, final File resourcesDir) {
-        // By default, logDir is '<gpWorkingDir>../logs'
+
+    /**
+     * Initialize the path to the Log4J logging directory.
+     */
+    protected void initLogDir() {
+        File logDir=null;
+        // By default, logDir is '<gpHomeDir>/logs'
+        if (this.gpHomeDir != null) {
+            logDir=new File(this.gpHomeDir, "logs");
+        }
+        // On older version of GP (which don't define a gpHomeDir) the logDir is '<gpWorkingDir>../logs'
+        else if (this.gpWorkingDir != null) {
+            logDir=new File(this.gpWorkingDir, "../logs");
+        }
+        else {
+            System.err.println("gpHomeDir and gpWorkingDir are not defined, setting log dir relative to 'user.dir'");
+            logDir=new File(System.getProperty("user.dir"), "logs");
+        }
+        
         try {
-            File logDir=new File(workingDir, "../logs");
+            //File logDir=new File(this.gpWorkingDir, "../logs");
             logDir=new File(GpConfig.normalizePath(logDir.getPath()));
             if (!logDir.exists()) {
                 boolean success=logDir.mkdirs();
@@ -165,7 +242,7 @@ public class StartupServlet extends HttpServlet {
             }
             System.setProperty("gp.log", logDir.getAbsolutePath());
 
-            File log4jProps=new File(GpConfig.normalizePath(new File(resourcesDir, "log4j.properties").getPath()));
+            File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
             PropertyConfigurator.configure(log4jProps.getAbsolutePath());
             this.log=Logger.getLogger(StartupServlet.class);
             ServerConfigurationFactory.setLogDir(logDir);
@@ -178,30 +255,29 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        final File workingDir=initWorkingDir(servletConfig);
-        ServerConfigurationFactory.setGpWorkingDir(workingDir);
+        this.gpHomeDir=initGpHomeDir(servletConfig);
+
+        this.gpWorkingDir=initGpWorkingDir(servletConfig);
+        ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
         
         // must init resourcesDir ...
-        File resourcesDir=initResourcesDir(workingDir);
-        ServerConfigurationFactory.setResourcesDir(resourcesDir);
+        this.gpResourcesDir=initResourcesDir(gpWorkingDir);
+        ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
         // ...  before initializing logDir 
-        initLogDir(workingDir, resourcesDir);
+        initLogDir();
 
         // must initialize logger before calling any methods which output to the log
         announceStartup();
 
         getLog().info("\tinitializing properties...");
-        ServletContext application = servletConfig.getServletContext();
-        String genepatternProperties = servletConfig.getInitParameter("genepattern.properties");
-        application.setAttribute("genepattern.properties", genepatternProperties);
-        String customProperties = servletConfig.getInitParameter("custom.properties");
-        if (customProperties == null) {
-            customProperties = genepatternProperties;
-        }
-        application.setAttribute("custom.properties", customProperties);
-        loadProperties(servletConfig, workingDir);
+        getLog().info("\tGENEPATTERN_HOME="+gpHomeDir);
+        getLog().info("\tgpWorkingDir="+gpWorkingDir);
+        getLog().info("\tresources="+gpResourcesDir);
+
+        loadProperties(servletConfig); // assumes this.gpResourcesDir and this.gpWorkingDir are initialized
         setServerURLs(servletConfig);
 
+        ServerConfigurationFactory.reloadConfiguration();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
         String gpVersion=gpConfig.getGenePatternVersion();
@@ -253,7 +329,7 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            HsqlDbUtil.updateSchema(resourcesDir, schemaPrefix, gpVersion);
+            HsqlDbUtil.updateSchema(gpResourcesDir, schemaPrefix, gpVersion);
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
@@ -468,7 +544,7 @@ public class StartupServlet extends HttpServlet {
      * 
      * @throws ServletException
      */
-    protected void loadProperties(final ServletConfig config, final File workingDir) throws ServletException {
+    protected void loadProperties(final ServletConfig config) throws ServletException {
         File propFile = null;
         File customPropFile = null;
         FileInputStream fis = null;
@@ -478,21 +554,25 @@ public class StartupServlet extends HttpServlet {
                 String propName = eConfigProps.nextElement();
                 String propValue = config.getInitParameter(propName);
                 if (propValue.startsWith(".")) {
-                    //propValue = new File(propValue).getCanonicalPath();
-                    propValue = new File(workingDir, propValue).getAbsolutePath();
+                    propValue = new File(this.gpWorkingDir, propValue).getAbsolutePath();
                     propValue=GpConfig.normalizePath(propValue);
                 }
                 System.setProperty(propName, propValue);
             }
             Properties sysProps = System.getProperties();
-            String dir = sysProps.getProperty("genepattern.properties");
-            propFile = new File(dir, "genepattern.properties");
-            customPropFile = new File(dir, "custom.properties");
+            //String dir = sysProps.getProperty("genepattern.properties");
+            propFile = new File(this.gpResourcesDir, "genepattern.properties");
+            customPropFile = new File(this.gpResourcesDir, "custom.properties");
             Properties props = new Properties();
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-            getLog().info("\tloaded GP properties from " + propFile.getCanonicalPath());
-
+            
+            if (propFile.exists()) {
+                fis = new FileInputStream(propFile);
+                props.load(fis);
+                getLog().info("\tloaded GP properties from " + propFile.getCanonicalPath());
+            }
+            else {
+                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+            }
             if (customPropFile.exists()) {
                 customFis = new FileInputStream(customPropFile);
                 props.load(customFis);
@@ -506,18 +586,27 @@ public class StartupServlet extends HttpServlet {
                 if (val.startsWith(".")) {
                     //HACK: don't rewrite my value
                     if (! key.equals(JobResultsFilenameFilter.KEY)) {
-                        val = new File(workingDir, val).getAbsolutePath();
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
                         val=GpConfig.normalizePath(val);
                     }
                 }
                 sysProps.setProperty(key, val);
             }
 
-            propFile = new File(dir, "build.properties");
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-            fis.close();
-            fis = null;
+            if (propFile.exists()) {
+                propFile = new File(this.gpResourcesDir, "build.properties");
+                fis = new FileInputStream(propFile);
+                props.load(fis);
+                getLog().info("\tloaded build.properties from " + propFile.getCanonicalPath());
+            }
+            else {
+                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+            }
+            if (fis != null) {
+                fis.close();
+                fis = null;
+            }
+
             // copy all of the new properties to System properties
             for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
                 String key = (String) iter.next();
@@ -525,21 +614,21 @@ public class StartupServlet extends HttpServlet {
                 if (key.equals("HSQL.args")) {
                     //special-case for default path to the HSQL database
                     //   replace 'file:../resources/GenePatternDB' with 'file:<workingDir>/resources/GenePatternDB'
-                    String dbPath=new File(workingDir,"../resources/GenePatternDB").getAbsolutePath();
+                    String dbPath=new File(this.gpWorkingDir,"../resources/GenePatternDB").getAbsolutePath();
                     dbPath=GpConfig.normalizePath(dbPath);
                     val = val.replace("file:../resources/GenePatternDB", "file:"+dbPath);
                 }
                 else if (val.startsWith(".")) {
                     //HACK: don't rewrite my value
                     if (! key.equals(JobResultsFilenameFilter.KEY)) {
-                        val = new File(workingDir, val).getAbsolutePath();
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
                         val=GpConfig.normalizePath(val);
                     }
                 }
                 sysProps.setProperty(key, val);
             }
 
-            System.setProperty("serverInfo", config.getServletContext().getServerInfo());
+            //System.setProperty("serverInfo", config.getServletContext().getServerInfo());
 	    
             TreeMap tmProps = new TreeMap(sysProps);
             for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {

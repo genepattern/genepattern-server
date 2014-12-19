@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -35,7 +36,7 @@ public class XmlGroupMembership extends DefaultGroupMembership {
     public XmlGroupMembership(File userGroupsXmlFile) {
         super();
         if (userGroupsXmlFile == null) {
-            userGroupsXmlFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+            userGroupsXmlFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "userGroups.xml");
         }
         try {
             initUserGroupMap(userGroupsXmlFile);

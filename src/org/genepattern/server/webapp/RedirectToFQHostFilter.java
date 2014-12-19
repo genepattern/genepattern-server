@@ -1,10 +1,8 @@
 package org.genepattern.server.webapp;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -16,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * This filter optionally redirects all requests to the fully qualified hostname.
@@ -29,33 +30,23 @@ public class RedirectToFQHostFilter implements Filter {
     private boolean redirectToFqHostName = false;
     private String fqHostName = "";
 
-    private Properties loadGenePatternProperties(String resourceDir) {
-        File genepatternProperties = new File(resourceDir, "genepattern.properties");
-        File customProperties = new File(resourceDir, "custom.properties");
-        Properties props = new Properties();
-
-        if (genepatternProperties.exists()) {
-            AuthenticationFilter.loadProperties(props, genepatternProperties);
-        }
-
-        if (customProperties.exists()) {
-            AuthenticationFilter.loadProperties(props, customProperties);
-        }
-        return props;
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // initialize lazily in call to doFilter so that we can ensure that the GpConfig is initialized
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException {
-        //Initialize settings from web.xml file, but the settings can be overridden in genepattern.properties
-        String resourceDir = filterConfig.getInitParameter("genepattern.properties");
-        Properties props = loadGenePatternProperties(resourceDir);
-
-        //if not set in genepattern.properties, use value from web.xml
-        String redirectProp = filterConfig.getInitParameter("redirect.to.fq.host").trim();
-        redirectProp = props.getProperty("redirect.to.fq.host", redirectProp);
-        redirectToFqHostName = Boolean.valueOf(redirectProp);
-
-        fqHostName = filterConfig.getInitParameter("fqHostName");
-        fqHostName = props.getProperty("fqHostName", fqHostName);
+    boolean inited=false;
+    protected void lazyInit() {
+        if (inited) {
+            return;
+        }
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        GpContext gpContext=GpContext.getServerContext();
+        initFromConfig(gpConfig, gpContext);
+        inited=true;
+    }
+    protected synchronized void initFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
+        this.redirectToFqHostName=gpConfig.getGPBooleanProperty(gpContext, "redirect.to.fq.host");
+        this.fqHostName=gpConfig.getGPProperty(gpContext, "fqHostName");
         fqHostName = fqHostName.trim();
         if ("".equals(fqHostName)) {
             try {
@@ -85,6 +76,7 @@ public class RedirectToFQHostFilter implements Filter {
             redirectToHostName( "127.0.0.1", (HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
             return;
         }
+        lazyInit();
         if (redirectToFqHostName) { 
             serverName = servletRequest.getServerName();
             if (!fqHostName.equalsIgnoreCase(serverName)) {
