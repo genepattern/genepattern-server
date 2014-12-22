@@ -198,7 +198,10 @@ public class UserUploadDao extends BaseDAO {
 
         try {
             HibernateUtil.beginTransaction();
-            final String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu where uu.userId != :cacheUserId GROUP BY uu.userId";
+            final String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName()
+                    + " uu where uu.userId != :cacheUserId "
+                    + "and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' "
+                    + "GROUP BY uu.userId";
             final Query query = HibernateUtil.getSession().createQuery(hql);
             query.setString("cacheUserId", FileCache.CACHE_USER_ID);
             query.setReadOnly(true);
