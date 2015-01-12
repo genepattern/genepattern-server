@@ -290,10 +290,12 @@ public class StartupServlet extends HttpServlet {
             schemaPrefix=dbProperties.getProperty("schemaPrefix");
         }
         else {
-            databaseVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
+            this.databaseVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
         }
+        // HACK: fix for GP-5489
+        System.setProperty("database.vendor", this.databaseVendor);
         
-        if (databaseVendor.equals("HSQL")) {
+        if (this.databaseVendor.equals("HSQL")) {
             schemaPrefix="analysis_hypersonic";
             try {
                 String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
@@ -306,7 +308,7 @@ public class StartupServlet extends HttpServlet {
             }
         }
         else {
-            schemaPrefix="analysis_"+databaseVendor.toLowerCase();
+            schemaPrefix="analysis_"+this.databaseVendor.toLowerCase();
         }
         
         getLog().info("\tchecking database connection...");
