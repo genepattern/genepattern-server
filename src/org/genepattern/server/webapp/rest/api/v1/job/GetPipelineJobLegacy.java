@@ -208,14 +208,15 @@ public class GetPipelineJobLegacy implements GetJob {
 
             try {
                 TaskInfo taskInfo = JobInfoManager.getTaskInfo(jobInfo);
-                if(taskInfo != null && TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
+                if(taskInfo != null && taskInfo.getTaskInfoAttributes() != null
+                        &&TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
                 {
                     job.put("launchUrl", JobInfoManager.generateLaunchURL(taskInfo, jobInfo));
                 }
             }
             catch (Exception e)
             {
-                log.error("Error getting launch Url");
+                log.error("Error getting launch Url", e);
             }
 
             //access permissions
