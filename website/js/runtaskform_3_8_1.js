@@ -2280,7 +2280,10 @@ function drop(evt) {
                                         name: file.data.attr.href,
                                         id: fileId++
                                     };
-                                    fileObjListings.push(fileObj);
+                                    var isFile = !file.data.attr["data-directory"];
+                                    if (isFile) {
+                                        fileObjListings.push(fileObj);
+                                    }
                                 });
 
                                 updateFilesForGroup(groupId, paramName, fileObjListings);
