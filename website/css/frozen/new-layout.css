@@ -220,7 +220,7 @@
     top: 40px;
     bottom: 0px;
     position: absolute;
-    overflow: auto;
+    overflow: visible;
     padding-left: 20px;
 }
 
