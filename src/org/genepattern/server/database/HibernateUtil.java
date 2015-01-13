@@ -158,8 +158,22 @@ public class HibernateUtil {
         return instance().isInTransaction();
     }
 
+    /**
+     * @deprecated - no longer rely on System properties for DB configuration.
+     * @param sequenceName
+     * @return
+     */
     public static int getNextSequenceValue(String sequenceName) {
         String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
+        return getNextSequenceValue(dbVendor, sequenceName);
+    }
+    
+    public static int getNextSequenceValue(GpConfig gpConfig, String sequenceName) {
+        final String dbVendor=gpConfig.getDbVendor();
+        return getNextSequenceValue(dbVendor, sequenceName);
+    }
+    
+    public static int getNextSequenceValue(final String dbVendor, final String sequenceName) {
         if (dbVendor.equals("ORACLE")) {
             return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
                     .uniqueResult()).intValue();
