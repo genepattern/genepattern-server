@@ -1282,7 +1282,14 @@ function getFileGroupIdByIndex(paramName, index) {
     var groupIds = Object.keys(parameter_and_val_groups[paramName].groups);
     //check if index is out of range
     if (index < groupIds.length) {
-        return groupIds[index];
+        var groupId = parseInt(groupIds[index]);
+
+        if(isNaN(groupId))
+        {
+            javascript_abort("Error retrieving group: invalid group id " + groupIds[index]);
+        }
+
+        return groupId;
     }
 
     javascript_abort("Error retrieving group: index out of range " + index);
