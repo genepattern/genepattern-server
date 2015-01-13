@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -24,6 +25,12 @@ import com.google.common.collect.ImmutableList;
 
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
+
+    /**
+     * The version of the database for saving GP session data, default value is 'HSQL'. Other supported
+     * options include 'ORACLE' and 'MYSQL'.
+     */
+    public static final String PROP_DATABASE_VENDOR="database.vendor";
 
     /**
      * When true, display the 'Estimated Queue Time' details for the Congestion Indicator.
@@ -137,6 +144,8 @@ public class GpConfig {
     private final GpServerProperties serverProperties;
     private final ConfigYamlProperties yamlProperties;
     private final File configFile;
+    private final Properties dbProperties;
+    private final String dbVendor;
     // config helper method
     private final ValueLookup valueLookup;
 
@@ -192,6 +201,95 @@ public class GpConfig {
         this.userRootDir=initUserRootDir();
         this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
         this.gpTmpDir=initGpTmpDir(gpContext);
+        this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
+        this.dbVendor=initDbVendor(gpContext);
+    }
+    
+    /**
+     * Initialize the database properties from the resources directory.
+     * Load properties from 'resources/database_default.properties', if present.
+     * Load additional properties from 'resources/database_custom.properties', if present.
+     * The custom properties take precedence.
+     * 
+     * When 'database.vendor=HSQL', attempt to set the jdbcUrl based on the value of the HSQL_port property.
+     * 
+     * If neither file is present, log an error and return null.
+     * 
+     * @param gpConfig
+     * @return 
+     */
+    protected Properties initDbProperties(final GpContext gpContext, final File resourcesDir) {
+        Properties hibProps=null;
+        File hibPropsDefault=new File(resourcesDir, "database_default.properties");
+        
+        if (hibPropsDefault.exists()) {
+            if (!hibPropsDefault.canRead()) {
+                log.error("Can't read 'database_default.properties' file="+hibPropsDefault);
+            }
+            else {
+                hibProps=GpServerProperties.loadProps(hibPropsDefault);
+            }
+        }
+        File hibPropsCustom=new File(resourcesDir, "database_custom.properties");
+        if (hibPropsCustom.exists()) {
+            if (!hibPropsCustom.canRead()) {
+                log.error("Can't read 'database_custom.properties' file="+hibPropsCustom);
+            }
+            else {
+                if (hibProps==null) {
+                    hibProps=new Properties();
+                }
+                GpServerProperties.loadProps(hibProps, hibPropsCustom);
+            }
+        }
+        
+        if (hibProps==null) {
+            log.error("Error, missing required configuration file 'database_default.properties'");
+            return hibProps;
+        }
+        
+        initHsqlConnectionUrl(gpContext, hibProps);
+        return hibProps;
+    }
+
+    protected String initDbVendor(final GpContext gpContext) {
+        if (dbProperties != null) {
+            return dbProperties.getProperty(PROP_DATABASE_VENDOR, "HSQL");
+        }
+        else {
+            return getGPProperty(gpContext, PROP_DATABASE_VENDOR, "HSQL");
+        }
+    }
+    
+    /**
+     * Special-case for default database.vendor=HSQL, set the 'hibernate.connection.url' from the 'HSQL_port'.
+     * @param gpConfig
+     * @param gpContext
+     * @param hibProps
+     */
+    private void initHsqlConnectionUrl(GpContext gpContext, Properties hibProps) {
+        //special-case for default database.vendor=HSQL
+        if ("hsql".equalsIgnoreCase(hibProps.getProperty(PROP_DATABASE_VENDOR))) {
+            Integer hsqlPort=null;
+            final String PROP_HSQL_PORT="HSQL_port";
+            if (hibProps.containsKey(PROP_HSQL_PORT)) {
+                try {
+                    hsqlPort=Integer.parseInt( hibProps.getProperty(PROP_HSQL_PORT) );
+                }
+                catch (Throwable t) {
+                    log.error("Error in config file, expecting an Integer value for "+PROP_HSQL_PORT+"="+hibProps.getProperty(PROP_HSQL_PORT), t);
+                }
+            }
+            if (hsqlPort==null) {
+                hsqlPort=getGPIntegerProperty(gpContext, PROP_HSQL_PORT, 9001);
+            }
+            final String PROP_HIBERNATE_CONNECTION_URL="hibernate.connection.url";
+            if (!hibProps.containsKey(PROP_HIBERNATE_CONNECTION_URL)) {
+                String jdbcUrl="jdbc:hsqldb:hsql://127.0.0.1:"+hsqlPort+"/xdb";
+                hibProps.setProperty(PROP_HIBERNATE_CONNECTION_URL, jdbcUrl);
+                log.debug("setting "+PROP_HIBERNATE_CONNECTION_URL+"="+jdbcUrl);
+            }
+        }
     }
     
     /**
@@ -331,6 +429,39 @@ public class GpConfig {
     }
     public File getResourcesDir() {
         return resourcesDir;
+    }
+
+    /**
+     * Get the database configuration properties loaded from the <resources>/database_default.properties and
+     * optionally from the <resources>/database_custom.properties files.
+     * @return
+     */
+    public Properties getDbProperties() {
+        return dbProperties;
+    }
+
+    /**
+     * Get the database vendor which can be one of 'HSQL', 'ORACLE', or 'MYSQL'.
+     * @return
+     */
+    public String getDbVendor() {
+        return dbVendor;
+    }
+
+    /**
+     * Get the database schema prefix, a prefix pattern (e.g. 'analysis_hypersonic', 'analysis_oracle') 
+     * which is used to get a listing of the DDL scripts for automatic initialization of the database after
+     * installing or updating the genepattern server.
+     * 
+     * @return
+     */
+    public String getDbSchemaPrefix() {
+        if (this.dbVendor.equals("HSQL")) {
+            return "analysis_hypersonic";
+        }
+        else {
+            return "analysis_"+dbVendor.toLowerCase();
+        }
     }
 
     public Value getValue(final GpContext context, final String key) {
