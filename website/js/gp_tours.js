@@ -267,7 +267,7 @@ $(function()
 
 function newTourCleanup()
 {
-    $(".tour_congestion_image").remove();
+    $(".tour_main_image").remove();
     $("#main-pane").children(".wasVisibleBefore").show();
     $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
 

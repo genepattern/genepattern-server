@@ -28,6 +28,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -886,7 +888,8 @@ public class AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
-	return HibernateUtil.getNextSequenceValue("lsid_suite_identifier_seq");
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_suite_identifier_seq");
     }
 
     /**
@@ -925,7 +928,8 @@ public class AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextTaskLSIDIdentifier() {
-	return HibernateUtil.getNextSequenceValue("lsid_identifier_seq");
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_identifier_seq");
     };
 
     /**

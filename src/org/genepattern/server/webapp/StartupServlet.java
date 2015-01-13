@@ -109,9 +109,6 @@ public class StartupServlet extends HttpServlet {
     protected File getGpJobResultsDir() {
         return this.gpJobResultsDir;
     }
-
-    // initialize this on ServletStartup
-    protected String databaseVendor="HSQL";
     
     /**
      * Initialize the 'working directory' from which to resolve relative file paths.
@@ -281,20 +278,9 @@ public class StartupServlet extends HttpServlet {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
         String gpVersion=gpConfig.getGenePatternVersion();
-        String schemaPrefix=null;
-        
-        Properties dbProperties=HibernateUtil.initDbProperties(gpConfig, gpContext);
-        if (dbProperties != null) {
-            this.databaseVendor=dbProperties.getProperty("database.vendor", "HSQL");
-            // override default schemaPrefix in database properties file
-            schemaPrefix=dbProperties.getProperty("schemaPrefix");
-        }
-        else {
-            databaseVendor=gpConfig.getGPProperty(gpContext, "database.vendor", "HSQL");
-        }
-        
-        if (databaseVendor.equals("HSQL")) {
-            schemaPrefix="analysis_hypersonic";
+
+        if ("HSQL".equals(gpConfig.getDbVendor())) {
+            // automatically start the DB
             try {
                 String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
                 getLog().info("\tstarting HSQL database...");
@@ -304,9 +290,6 @@ public class StartupServlet extends HttpServlet {
                 getLog().error("Unable to start HSQL Database!", t);
                 return;
             }
-        }
-        else {
-            schemaPrefix="analysis_"+databaseVendor.toLowerCase();
         }
         
         getLog().info("\tchecking database connection...");
@@ -329,7 +312,7 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            HsqlDbUtil.updateSchema(gpResourcesDir, schemaPrefix, gpVersion);
+            HsqlDbUtil.updateSchema(gpResourcesDir, gpConfig.getDbSchemaPrefix(), gpVersion);
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
@@ -500,7 +483,7 @@ public class StartupServlet extends HttpServlet {
             getLog().error("Error stopping job queue: " + t.getLocalizedMessage(), t);
         }
 
-        if (this.databaseVendor.equals("HSQL")) {
+        if ("HSQL".equals(ServerConfigurationFactory.instance().getDbVendor())) {
             try {
                 getLog().info("stopping HSQLDB ...");
                 HsqlDbUtil.shutdownDatabase();
