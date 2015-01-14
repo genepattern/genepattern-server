@@ -99,7 +99,10 @@ default.properties:
     # the mail server for sending messages from the GenePattern server
     smtp.server: smtp.broadinstitute.org
     # the email address for sending help requests via the 'contact us' link
-    contact.us.email: gp-help@broadinstitute.org 
+    contact.us.email: gp-help@broadinstitute.org
+
+    # Change the skin GenePattern uses
+    display.skin: frozen
     
 
 # a list of command executors
