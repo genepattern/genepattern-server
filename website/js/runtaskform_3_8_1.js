@@ -2150,6 +2150,7 @@ function submitTask() {
                 if (response.launchUrl)
                 {
                     openJsViewer(run_task_info.name, response.launchUrl);
+                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
                 }
                 else
                 {
