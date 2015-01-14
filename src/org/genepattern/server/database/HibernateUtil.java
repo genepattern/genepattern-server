@@ -56,7 +56,7 @@ public class HibernateUtil {
             
             if (legacyConfigFile != null) {
                 // fallback to pre 3.9.0 implementation
-                log.warn("Using deprecated (pre-3.9.0) database configuration");
+                log.warn("Using deprecated (pre-3.9.0) database configuration, hibernate.configuration.file="+legacyConfigFile);
                 final String jdbcUrl=null;
                 return new HibernateSessionManager(legacyConfigFile, jdbcUrl);
             }
