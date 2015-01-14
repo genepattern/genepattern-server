@@ -127,11 +127,11 @@ public class HibernateUtil {
     }
     
     public static int getNextSequenceValue(final String dbVendor, final String sequenceName) {
-        if (dbVendor.equals("ORACLE")) {
+        if (dbVendor.equalsIgnoreCase("ORACLE")) {
             return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
                     .uniqueResult()).intValue();
         } 
-        else if (dbVendor.equals("HSQL")) {
+        else if (dbVendor.equalsIgnoreCase("HSQL")) {
             return (Integer) getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
         } 
         else {
@@ -147,7 +147,7 @@ public class HibernateUtil {
      * The method is synchronized to prevent the same sequence number to be handed out to multiple callers (from
      * different threads. For the same reason a new session and transaction is created and closed prior to exit.
      */
-    private static synchronized int getNextSequenceValueGeneric(String sequenceName) {
+    protected static synchronized int getNextSequenceValueGeneric(final String sequenceName) {
         StatelessSession session = null;
         try {
             // Open a new session and transaction. 
