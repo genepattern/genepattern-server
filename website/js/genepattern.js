@@ -1634,13 +1634,6 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "<span class='glyphicon glyphicon-share' style='-webkit-transform:rotateY(180deg); -moz-transform:rotateY(180deg); -o-transform:rotateY(180deg); -ms-transform:rotateY(180deg);' ></span>",
                 "documentation": "", "categories": [], "suites": [], "tags": []
             });
-
-            data.push({
-                "lsid": "",
-                "name": "View in IGV",
-                "description": "View data in IGV",
-                "version": "<span class='glyphicon glyphicon-road' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
-            });
         }
 
         return data;
@@ -1690,7 +1683,6 @@ function createFileWidget(linkElement, appendTo) {
                     var moveAction = actionClicked.indexOf("Move") === 0;
                     var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") === 0;
 
-                    var openIGVAction = actionClicked.indexOf("View in IGV") === 0;
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
                     var path = uploadPathFromUrl(url);
@@ -1704,57 +1696,6 @@ function createFileWidget(linkElement, appendTo) {
                         }
 
                         $(".search-widget:visible").searchslider("hide");
-                    }
-                    else if(openIGVAction)
-                    {
-                        /*var myMainDiv = $("<div id='myDiv'/>");
-                        $("#main-pane").before(myMainDiv);
-                        $("#main-pane").hide();
-                        var div = $("#myDiv")[0],
-                            options = {
-                                genome: "hg19",
-                                locus: "chr1:155,172,193-155,172,564",
-                                tracks: [
-                                    {
-                                        url: '//www.broadinstitute.org/igvdata/1KG/b37/data/NA06984/alignment/NA06984.mapped.ILLUMINA.bwa.CEU.low_coverage.20120522.bam',
-                                        label: 'NA06984'
-                                    }
-                                ]
-                            };
-
-                        igv.createBrowser(div, options);
-                        */
-                        //var myMainDiv = $("<iframe src='/gp/igv_web_test.html' height='100%' width='100%'/>");
-                        //$("#main-pane").empty();
-                        //$("#main-pane").prepend(myMainDiv);
-                        $("#main-pane").children().hide();
-                        //alert("height: " + $("#main-pane").height());
-                        //alert("width: " + $("#main-pane").width());
-
-                        $(".search-widget:visible").searchslider("hide");
-
-                        $.window.prepare({
-                            dock: 'right',
-                            minWinLong: 120
-                        });
-
-                        //var myWindow = $("#main-pane").window({
-                        var myWindow = $("#content").window({
-                            title: "IGV",
-                            url: "/gp/igv_web_test.html",
-                            checkBoundary: true,
-                            bookmarkable: false,
-                            onMaximize: function()
-                            {
-                                $("#left-nav").hide();
-                            },
-                            onMinimize: function()
-                            {
-                                $("#left-nav").show();
-                            }
-                        });
-                        myWindow.maximize();
-                        myWindow.setUrl("/gp/igv_web_test.html");
                     }
                     else if (openAction) {
                         window.open(url);
