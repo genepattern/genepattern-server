@@ -2110,7 +2110,7 @@ function submitTask() {
     };
 
     if($("#jobComment").val() !== undefined && $("#jobComment").val() !== null
-        && $("#jobComment").val().length > 0)
+        && $("#jobComment").val().length > 0 && $("#jobComment").val() != $("#jobComment").attr('placeHolder'))
     {
         taskJsonObj["comment"] = $("#jobComment").val();
     }
