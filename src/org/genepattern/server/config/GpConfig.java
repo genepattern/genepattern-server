@@ -245,9 +245,35 @@ public class GpConfig {
         
         if (hibProps==null) {
             log.error("Error, missing required configuration file 'database_default.properties'");
-            return hibProps;
+            return null;
         }
         
+        initHsqlConnectionUrl(gpContext, hibProps);
+        return hibProps;
+    }
+    
+    /**
+     * Generate hard-coded database properties.
+     * @param gpContext
+     * @return
+     */
+    public Properties getDbPropertiesDefault(GpContext gpContext) {
+        log.warn("Using hard-coded database properties");
+        // use hard-coded DB properties
+        Properties hibProps=new Properties();
+        hibProps=new Properties();
+        hibProps.setProperty("database.vendor","HSQL");
+        hibProps.setProperty("HSQL_port","9001");
+        hibProps.setProperty("hibernate.current_session_context_class","thread");
+        hibProps.setProperty("hibernate.transaction.factory_class","org.hibernate.transaction.JDBCTransactionFactory");
+        hibProps.setProperty("hibernate.connection.provider_class","org.hibernate.connection.C3P0ConnectionProvider");
+        hibProps.setProperty("hibernate.jdbc.batch_size","20");
+        hibProps.setProperty("hibernate.statement_cache.size","0");
+        hibProps.setProperty("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
+        hibProps.setProperty("hibernate.username","sa");
+        hibProps.setProperty("hibernate.password","");
+        hibProps.setProperty("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
+        hibProps.setProperty("hibernate.default_schema","PUBLIC");
         initHsqlConnectionUrl(gpContext, hibProps);
         return hibProps;
     }
