@@ -1,11 +1,13 @@
 package org.genepattern.server.database;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -22,7 +24,7 @@ public class TestHsqlDbUtil {
     private GpConfig gpConfig;
     private GpContext gpContext;
     private File workingDir=new File(System.getProperty("user.dir"));
-    private File resourcesDir=new File(workingDir.getParent(), "resources");
+    private File resourcesDir=new File(workingDir, "resources");
     private Value defaultValue;
     private Value defaultValues;
     private String[] defaultExpected=new String[] {
@@ -129,6 +131,29 @@ public class TestHsqlDbUtil {
     public void intHsqlArgsFromConfig_noResourcesDir() {
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         assertThat(actual, is(defaultExpected));
+    }
+    
+    @Test
+    public void listSchemaFiles_nullDbSchemaVersion() {
+        final String schemaPrefix="analysis_hypersonic-";
+        final String dbSchemaVersion=null;
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.1", 38, schemaFiles.size());
+    }
+
+    @Test
+    public void listSchemaFiles_emptyDbSchemaVersion() {
+        final String schemaPrefix="analysis_hypersonic-";
+        final String dbSchemaVersion="";
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.1", 38, schemaFiles.size());
+    }
+    
+    @Test
+    public void listSchemaFiles_update() {
+        final String schemaPrefix="analysis_hypersonic-";
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", "3.9.0");
+        assertEquals("num schema files, updated install of 3.9.1", 1, schemaFiles.size());
     }
 
 }

@@ -280,6 +280,20 @@ public class HsqlDbUtil {
      * @throws exception
      */
     private static void createSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
+        List<File> schemaFiles=listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
+        for(final File schemaFile : schemaFiles) {
+            processSchemaFile(schemaFile);
+        }
+        log.debug("createSchema ... Done!");
+    }
+
+    /**
+     * Get the list of schema files to process for the given schemaPrefix, e
+     * @return
+     */
+    protected static List<File> listSchemaFiles(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
+        log.debug("listing schema files ... ");
+        List<File> rval=new ArrayList<File>();
         FilenameFilter schemaFilenameFilter = new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
@@ -300,15 +314,16 @@ public class HsqlDbUtil {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
             String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
-            if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
-                log.info("processing" + name + " (" + version + ")");
-                processSchemaFile(schemaFile);
+            if (dbSchemaVersion==null || version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
+                log.info("adding" + name + " (" + version + ")");
+                rval.add(schemaFile);
             }
             else {
                 log.info("skipping " + name + " (" + version + ")");
             }
         }
-        log.debug("createSchema ... Done!");
+        log.debug("listing schema files ... Done!");
+        return rval;
     }
 
     private static void processSchemaFile(File schemaFile) {
