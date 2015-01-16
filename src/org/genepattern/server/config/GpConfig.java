@@ -482,11 +482,11 @@ public class GpConfig {
      * @return
      */
     public String getDbSchemaPrefix() {
-        if (this.dbVendor.equals("HSQL")) {
-            return "analysis_hypersonic";
+        if (this.dbVendor.equalsIgnoreCase("HSQL")) {
+            return "analysis_hypersonic-";
         }
         else {
-            return "analysis_"+dbVendor.toLowerCase();
+            return "analysis_"+dbVendor.toLowerCase()+"-";
         }
     }
 
