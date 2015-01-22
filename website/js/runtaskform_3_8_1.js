@@ -545,19 +545,6 @@ function loadModuleInfo(module) {
 
     });
 
-    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
-    if (isPipeline) {
-        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
-    }
-
-    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
-
-    if (module["taskType"] === "pipeline") {
-        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
-    }
-
-    $("#properties").attr("href", propertiesLink);
-
     var hasDescription = false;
     if (module["description"] !== undefined
         && module["description"] !== "") {
