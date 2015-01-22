@@ -665,3 +665,9 @@ div.tagsinput span.tag a
 {
     color: #3333CC;
 }
+
+.properties-label {
+    font-weight: bold;
+    padding-right: 20px;
+    width: 120px;
+}

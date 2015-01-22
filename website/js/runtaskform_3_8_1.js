@@ -688,9 +688,16 @@ function loadModuleInfo(module) {
             var childBlock = $("<div></div>")
                 .append(
                     $("<div></div>")
-                        .addClass("barhead-other")
+                        .addClass("pHeaderTitleDiv background")
                         .css("margin-top", "10px")
-                        .text((i+1) + ". " + child["name"])
+                        .append(
+                            $("<img/>")
+                                .addClass("paramSectionToggle")
+                                .attr("height", 19)
+                                .attr("width", 19)
+                                .attr("src", "/gp/images/toggle_expand.png")
+                        )
+                        .append((i+1) + ". " + child["name"])
                         .append(
                         $("<div></div>")
                             .css("float", "right")
@@ -701,18 +708,22 @@ function loadModuleInfo(module) {
                 );
 
             if (child["NOT_FOUND"]) {
-                childBlock.append(
-                    $("<div></div>")
-                        .css("color", "red")
-                        .text("This module version is not present on this server!")
-                );
+                var underBlock = $("<div></div>")
+                    .addClass("paramGroupSection dotted-border")
+                    .css("display", "block")
+                    .css("color", "red")
+                    .text("This module version is not present on this server!");
+                childBlock.append(underBlock);
+                childBlock.find("img").attr("src", "/gp/images/toggle_collapse.png");
             }
             else {
-                childBlock.append(
-                    $("<div></div>").text(child["description"])
-                );
-                var inputTable = $("<table></table>");
-                console.log(child["params"]);
+                var underBlock = $("<div></div>")
+                    .addClass("paramGroupSection dotted-border")
+                    .css("display", "none")
+                    .text(child["description"])
+                childBlock.append(underBlock);
+                var inputTable = $("<table></table>")
+                    .addClass("paramGroupSection dotted-border");
                 for (var j = 0; j < child["params"].length; j++) {
                     var cParam = child["params"][j];
                     inputTable.append(
@@ -728,7 +739,7 @@ function loadModuleInfo(module) {
                             )
                     )
                 }
-                childBlock.append(inputTable);
+                underBlock.append(inputTable);
             }
 
             $(".properties-children").append(childBlock);
