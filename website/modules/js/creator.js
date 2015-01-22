@@ -23,6 +23,7 @@ var module_editor = {
     currentUploadedFiles: [],
     licensefile: "",
     documentationfile: "",
+    moduleCategories: [],
     otherModAttrs: {},
     promptForTaskDoc: false
 };
@@ -201,7 +202,27 @@ function saveModule()
     var language = $('select[name="language"] option:selected').val();
     var lang_version = $('input[name="lang_version"]').val();
     var os = $('input[name=os]:checked').val();
-    var tasktype = $("select[name='category'] option:selected").val();
+
+    var categories = $("select[name='category']").val();
+
+    //check if this is a pipeline
+    var taskType = "";
+
+    //check if this is a visualizer
+    if($.inArray("visualizer",categories) !== -1)
+    {
+        taskType = "visualizer";
+    }
+    else
+    {
+        //do not allow pipeline to be added as a taskType for a module
+        if(categories[0] !== "pipeline")
+        {
+            taskType = categories[0];
+        }
+    }
+
+
     var cpu = $("select[name='cpu'] option:selected").val();
     var commandLine = $('textarea[name="cmdtext"]').val();
     var fileFormats = $('select[name="mod_fileformat"]').val();
@@ -231,7 +252,7 @@ function saveModule()
     var json = {};
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
-        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
+        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "categories": categories, "taskType": taskType, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
@@ -1360,11 +1381,18 @@ function updatemodulecategories()
                 var result = categories.split(", ");
                 var mcat = $("select[name='category']");
 
-                for(i=0;i < result.length;i++)
+                for(var i=0;i < result.length;i++)
                 {
+                    if(mcat)
                     mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
                 }
                 mcat.multiselect("refresh");
+
+                if(module_editor.moduleCategories.length > 0)
+                {
+                    mcat.val(module_editor.moduleCategories);
+                    mcat.multiselect("refresh");
+                }
             }
         },
         dataType: "json"
@@ -1606,7 +1634,11 @@ function loadModuleInfo(module)
         $('input[name=os]').val(module["os"]);
     }
 
-    if(module["taskType"] !== undefined)
+    if(module["categories"] !== undefined)
+    {
+        module_editor.moduleCategories = module["categories"].split(";");
+    }
+    else if(module["taskType"] !== undefined)
     {
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
@@ -1699,7 +1731,7 @@ function loadModuleInfo(module)
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
-            && keyName != "supportFiles" && keyName != "taskType"
+            && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
@@ -2347,8 +2379,11 @@ jQuery(document).ready(function() {
                 var category = $("#newcategoryname").val();
                 var newcategory = $("<option>" +category + "</option>");
                 $("select[name='category']").append(newcategory);
-                $("select[name='category']").val(category);
+                var categories = $("select[name='category']").val();
+                categories.push(category);
+                $("select[name='category']").val(categories);
                 $("select[name='category']").multiselect("refresh");
+                $("#newcategoryname").val("");
                 $( this ).dialog( "close" );
             },
             "Cancel": function() {
@@ -2640,16 +2675,21 @@ jQuery(document).ready(function() {
         selectedList: 4 // 0-based index
     });
 
-    $("select[name='category'], select[name='privacy'], select[name='quality'], " +
+    $("select[name='category']").multiselect({
+        header: false,
+        selectedList: 1
+    });
+
+    $("select[name='privacy'], select[name='quality'], " +
         "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
         multiple: false,
         header: false,
         selectedList: 1
     });
 
-    $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
+    /*$( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
         this.buttonlabel.html( value );
-    };
+    };*/
 
     $("#helpbtn").button().click(function()
     {
