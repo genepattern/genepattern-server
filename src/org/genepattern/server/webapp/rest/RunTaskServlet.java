@@ -15,11 +15,14 @@ import javax.ws.rs.core.*;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -91,7 +94,8 @@ public class RunTaskServlet extends HttpServlet
             @QueryParam("reloadJob") String reloadJobId, 
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
-            final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint,
+            @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint,
+            @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             @Context HttpServletRequest request)
     {
         try
@@ -310,6 +314,31 @@ public class RunTaskServlet extends HttpServlet
                 for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
                     JSONObject jsonObj=RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
                     parametersArray.put(jsonObj);
+                }
+            }
+
+            // Add children
+            if (includeChildren) {
+                TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+                String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
+                if (serializedModel != null && serializedModel.length() > 0) {
+                    PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+
+                    JSONArray children = new JSONArray();
+                    for (JobSubmission js : model.getTasks()) {
+                        try {
+                            TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
+                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true);
+                            children.put(childObject);
+                        }
+                        catch (TaskLSIDNotFoundException e) {
+                            // Task is not installed
+                            JSONObject childObject = TasksResource.createTaskNotFoundObject(js);
+                            children.put(childObject);
+                        }
+                    }
+
+                    moduleObject.put("children", children);
                 }
             }
 

@@ -19,17 +19,16 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
@@ -37,6 +36,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfoParser;
@@ -48,12 +48,9 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoCache;
-import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -548,7 +545,7 @@ public class TasksResource {
         return array;
     }
 
-    private String getDocLink(final HttpServletRequest request, final TaskInfo taskInfo) {
+    private static String getDocLink(final HttpServletRequest request, final TaskInfo taskInfo) {
         String cp=request.getContextPath();
         List<String> docs = TaskInfoCache.instance().getDocFilenames(taskInfo.getID(), taskInfo.getLsid());
         if (docs.size() > 0) {
@@ -573,7 +570,9 @@ public class TasksResource {
     public Response getTask(
             final @Context UriInfo uriInfo,
             final @PathParam("taskNameOrLsid") String taskNameOrLsid,
-            final @Context HttpServletRequest request
+            final @Context HttpServletRequest request,
+            @DefaultValue("true") @QueryParam("includeProperties") boolean includeProperties,
+            @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren
             ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
@@ -592,44 +591,8 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj=new JSONObject();
-            String href=getTaskInfoPath(request, taskInfo);
-            jsonObj.put("href", href);
-            jsonObj.put("name", taskInfo.getName());
-            jsonObj.put("description", taskInfo.getDescription());
-            try {
-                final LSID lsid=new LSID(taskInfo.getLsid());
-                jsonObj.put("version", lsid.getVersion());
-            }
-            catch (MalformedURLException e) {
-                log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
-            }
-            jsonObj.put("documentation", getDocLink(request, taskInfo));
-            jsonObj.put("lsid", taskInfo.getLsid());
-            JSONArray paramsJson=new JSONArray();
-            for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-                final JSONObject attributesJson = new JSONObject();
-                for(final Object key : pinfo.getAttributes().keySet()) {
-                    final Object value = pinfo.getAttributes().get(key);
-                    if (value != null) {
-                        attributesJson.put(key.toString(), value.toString());
-                    }
-                }
-                final JSONObject attrObj = new JSONObject();
-                attrObj.put("attributes", attributesJson);
-                attrObj.put("description", pinfo.getDescription());
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren);
 
-                if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
-                    ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
-                    attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
-                }
-
-                final JSONObject paramJson = new JSONObject();
-                paramJson.put(pinfo.getName(), attrObj);
-                paramsJson.put(paramJson);
-            }
-            jsonObj.put("params", paramsJson);
-            
             final boolean prettyPrint=true;
             if (prettyPrint) {
                 final int indentFactor=2;
@@ -645,6 +608,114 @@ public class TasksResource {
             return Response.serverError().entity(errorMessage).build();
         }
         return Response.ok().entity(jsonStr).build();        
+    }
+
+    public static JSONObject createTaskNotFoundObject(JobSubmission js) throws JSONException {
+        JSONObject toReturn = new JSONObject();
+        toReturn.put("NOT_FOUND", true);
+        toReturn.put("name", js.getName());
+        toReturn.put("lsid", js.getLSID());
+        try {
+            LSID lsid = new LSID(js.getLSID());
+            toReturn.put("version", lsid.getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error("Error getting lsid for task.name=" + js.getName(), e);
+        }
+
+        return toReturn;
+    }
+
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren) throws Exception {
+        JSONObject jsonObj=new JSONObject();
+        String href=getTaskInfoPath(request, taskInfo);
+        jsonObj.put("href", href);
+        jsonObj.put("name", taskInfo.getName());
+        jsonObj.put("description", taskInfo.getDescription());
+
+        if (includeProperties) {
+            TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+
+            // Author
+            jsonObj.put("author", tia.get(GPConstants.AUTHOR));
+            // Privacy
+            jsonObj.put("privacy", tia.get(GPConstants.PRIVACY));
+            // Quality level
+            jsonObj.put("quality", tia.get(GPConstants.QUALITY));
+            // Command line
+            jsonObj.put("command_line", tia.get(GPConstants.COMMAND_LINE));
+            // Categories
+            jsonObj.put("categories", tia.get(GPConstants.TASK_TYPE));
+            // CPU type
+            jsonObj.put("cpu", tia.get(GPConstants.CPU_TYPE));
+            // OS
+            jsonObj.put("os", tia.get(GPConstants.OS));
+            // Language
+            jsonObj.put("language", tia.get(GPConstants.LANGUAGE));
+            // Version comment
+            jsonObj.put("version_comment", tia.get(GPConstants.VERSION));
+            // File formats
+            jsonObj.put("file_formats", tia.get(GPConstants.FILE_FORMAT));
+        }
+
+        if (includeChildren) {
+            TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+            String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
+            if (serializedModel != null && serializedModel.length() > 0) {
+                PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+
+                JSONArray children = new JSONArray();
+                for (JobSubmission js : model.getTasks()) {
+                    try {
+                        TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren);
+                        children.put(childObject);
+                    }
+                    catch (TaskLSIDNotFoundException e) {
+                        // Task is not installed
+                        JSONObject childObject = createTaskNotFoundObject(js);
+                        children.put(childObject);
+                    }
+                }
+
+                jsonObj.put("children", children);
+            }
+        }
+
+        try {
+            final LSID lsid=new LSID(taskInfo.getLsid());
+            jsonObj.put("version", lsid.getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
+        }
+        jsonObj.put("documentation", getDocLink(request, taskInfo));
+        jsonObj.put("lsid", taskInfo.getLsid());
+        JSONArray paramsJson=new JSONArray();
+        for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
+            final JSONObject attributesJson = new JSONObject();
+            for(final Object key : pinfo.getAttributes().keySet()) {
+                final Object value = pinfo.getAttributes().get(key);
+                if (value != null) {
+                    attributesJson.put(key.toString(), value.toString());
+                }
+            }
+            final JSONObject attrObj = new JSONObject();
+            attrObj.put("attributes", attributesJson);
+            attrObj.put("description", pinfo.getDescription());
+
+            if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
+                ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
+                attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
+            }
+
+            final JSONObject paramJson = new JSONObject();
+            paramJson.put(pinfo.getName(), attrObj);
+            paramsJson.put(paramJson);
+        }
+        jsonObj.put("params", paramsJson);
+
+        return jsonObj;
     }
     
 
