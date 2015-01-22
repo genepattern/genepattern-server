@@ -679,7 +679,6 @@ function loadModuleInfo(module) {
     $(".properties-language").text(module["language"]);
     $(".properties-versioncomment").text(module["version"]);
     $(".properties-formats").text(module["fileFormat"]);
-    $(".properties-support").text(module["supportFiles"]);
 
     // Display pipeline properties
     if (module["children"]) {

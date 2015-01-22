@@ -5,17 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -669,6 +660,7 @@ public class TasksResource {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
                         JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren);
+                        applyJobSubmission(childObject, js);
                         children.put(childObject);
                     }
                     catch (TaskLSIDNotFoundException e) {
@@ -717,7 +709,33 @@ public class TasksResource {
 
         return jsonObj;
     }
-    
+
+    public static void applyJobSubmission(JSONObject taskObject, JobSubmission js) throws JSONException {
+        JSONArray params = taskObject.getJSONArray("params");
+        boolean[] pwrs = js.getRuntimePrompt();
+        Vector pias = js.getParameters();
+
+        // For every parameter
+        for (int i = 0; i < params.length(); i++) {
+            // Find the correct value
+            String value = null;
+            if (pwrs[i] == true) {
+                value = "Prompt When Run";
+            }
+            else {
+                ParameterInfo pInfo = (ParameterInfo) pias.get(i);
+                value = pInfo.getValue();
+            }
+
+            // Get the value object
+            JSONObject paramObj = params.getJSONObject(i);
+            String key = (String) paramObj.keys().next();
+            JSONObject valObject = paramObj.getJSONObject(key);
+
+            // Attach the value
+            valObject.put("value", value);
+        }
+    }
 
     /**
      * Get the JSON representation of the choices for a given module input parameter.

@@ -329,6 +329,7 @@ public class RunTaskServlet extends HttpServlet
                         try {
                             TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
                             JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true);
+                            TasksResource.applyJobSubmission(childObject, js);
                             children.put(childObject);
                         }
                         catch (TaskLSIDNotFoundException e) {
