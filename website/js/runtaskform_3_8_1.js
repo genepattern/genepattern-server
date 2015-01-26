@@ -545,19 +545,6 @@ function loadModuleInfo(module) {
 
     });
 
-    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
-    if (isPipeline) {
-        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
-    }
-
-    var propertiesLink = "/gp/addTask.jsp?name=" + run_task_info.lsid + "&view=1";
-
-    if (module["taskType"] === "pipeline") {
-        propertiesLink = "/gp/viewPipeline.jsp?name=" + run_task_info.lsid;
-    }
-
-    $("#properties").attr("href", propertiesLink);
-
     var hasDescription = false;
     if (module["description"] !== undefined
         && module["description"] !== "") {
@@ -661,6 +648,88 @@ function loadModuleInfo(module) {
         module["categories"].indexOf("JsViewer") != -1)
     {
         run_task_info.is_js_viewer = true;
+    }
+
+    // Display properties
+    $(".properties-name").text(module["name"]);
+    $(".properties-lsid").text(module["LSID"]);
+    $(".properties-description").text(module["description"]);
+    $(".properties-author").text(module["author"]);
+    $(".properties-privacy").text(module["privacy"]);
+    $(".properties-license").text(module["eula"] ? "License Acceptance Required" : "None");
+    $(".properties-quality").text(module["quality"]);
+    $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
+    $(".properties-commandline").text(module["commandLine"]);
+    $(".properties-tasktype").text(module["taskType"]);
+    $(".properties-cpu").text(module["cpuType"]);
+    $(".properties-os").text(module["os"]);
+    $(".properties-language").text(module["language"]);
+    $(".properties-versioncomment").text(module["version"]);
+    $(".properties-formats").text(module["fileFormat"]);
+
+    // Display pipeline properties
+    if (module["children"]) {
+        for (var i = 0; i < module["children"].length; i++) {
+            var child = module["children"][i];
+            var childBlock = $("<div></div>")
+                .append(
+                    $("<div></div>")
+                        .addClass("pHeaderTitleDiv background")
+                        .css("margin-top", "10px")
+                        .append(
+                            $("<img/>")
+                                .addClass("paramSectionToggle")
+                                .attr("height", 19)
+                                .attr("width", 19)
+                                .attr("src", "/gp/images/toggle_expand.png")
+                        )
+                        .append((i+1) + ". " + child["name"])
+                        .append(
+                        $("<div></div>")
+                            .css("float", "right")
+                            .css("font-size", "0.75em")
+                            .css("padding-right", "5px")
+                            .text("Version " + child["version"])
+                    )
+                );
+
+            if (child["NOT_FOUND"]) {
+                var underBlock = $("<div></div>")
+                    .addClass("paramGroupSection dotted-border")
+                    .css("display", "block")
+                    .css("color", "red")
+                    .text("This module version is not present on this server!");
+                childBlock.append(underBlock);
+                childBlock.find("img").attr("src", "/gp/images/toggle_collapse.png");
+            }
+            else {
+                var underBlock = $("<div></div>")
+                    .addClass("paramGroupSection dotted-border")
+                    .css("display", "none")
+                    .text(child["description"])
+                childBlock.append(underBlock);
+                var inputTable = $("<table></table>")
+                    .addClass("paramGroupSection dotted-border");
+                for (var j = 0; j < child["params"].length; j++) {
+                    var cParam = child["params"][j];
+                    inputTable.append(
+                        $("<tr></tr>")
+                            .append(
+                                $("<td></td>")
+                                    .css("padding-right", "30px")
+                                    .css("font-weight", "bold")
+                                    .text(Object.keys(cParam)[0])
+                            )
+                            .append(
+                                $("<td></td>").text(cParam[Object.keys(cParam)[0]]["value"])
+                            )
+                    )
+                }
+                underBlock.append(inputTable);
+            }
+
+            $(".properties-children").append(childBlock);
+        }
     }
 }
 

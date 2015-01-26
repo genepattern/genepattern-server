@@ -44,6 +44,7 @@ import org.apache.commons.httpclient.methods.MultipartPostMethod;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.EulaInfo;
@@ -89,7 +90,7 @@ public class ModuleQueryServlet extends HttpServlet {
 		// Route to the appropriate action, returning an error if unknown
 		if (MODULE_CATEGORIES.equals(action))
         {
-            getModuleCategories(response);
+            getModuleCategories(request, response);
         }
         if (OUTPUT_FILE_FORMATS.equals(action))
         {
@@ -216,7 +217,7 @@ public class ModuleQueryServlet extends HttpServlet {
         }
     }
 
-    public SortedSet<String> getAllCategories() {
+    public SortedSet<String> getAllCategories(GpContext userContext) {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
             // sort categories alphabetically, ignoring case
             public int compare(String arg0, String arg1) {
@@ -231,23 +232,27 @@ public class ModuleQueryServlet extends HttpServlet {
         });
 
         for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
-            String taskType = ti.getTaskInfoAttributes().get("taskType");
-            if (taskType == null || taskType.trim().length() == 0) {
-                //ignore null and blank
-            }
-            else {
-                categories.add(taskType);
-            }
+
+            final CategoryUtil cu=new CategoryUtil();
+            final List<String> taskTypes=cu.getCategoriesForTask(userContext, ti);
+            categories.addAll(taskTypes);
         }
         return Collections.unmodifiableSortedSet(categories);
     }
 
-    public void getModuleCategories(HttpServletResponse response)
+    public void getModuleCategories(HttpServletRequest request, HttpServletResponse response)
     {
+        String username = (String) request.getSession().getAttribute("userid");
+        if (username == null) {
+            sendError(response, "No GenePattern session found.  Please log in.");
+            return;
+        }
+        GpContext userContext = GpContext.getContextForUser(username);
+
         SortedSet<String> categories = null;
         try
         {
-            categories = getAllCategories();
+            categories = getAllCategories(userContext);
         }
         catch (Throwable t)
         {
@@ -522,13 +527,18 @@ public class ModuleQueryServlet extends HttpServlet {
                 //omit module name, description, license, and support files from taskinfoattributes
                 if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
                         && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE)
-                        && !key.equals(ModuleJSON.FILEFORMAT))
+                        && !key.equals(ModuleJSON.FILEFORMAT) && !key.equals(ModuleJSON.CATEGORIES))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
             }
 
             tia.put(GPConstants.FILE_FORMAT, moduleObject.getFileFormats());
+
+            if(moduleObject.has(GPConstants.CATEGORIES))
+            {
+                tia.put(GPConstants.CATEGORIES, moduleObject.getCategories());
+            }
 
             //parse out privacy info
             int privacy = GPConstants.ACCESS_PRIVATE;

@@ -86,7 +86,7 @@ function deleteTag(tag)
 $(function() {
     jobTagsInput = $('#statusJobTags').tagsInput(
     {
-        defaultText:'Add tags...',
+        defaultText:'Add tag and press enter...',
         width: '98%',
         height: '40px',
         interactive: true,

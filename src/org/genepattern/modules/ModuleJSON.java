@@ -37,7 +37,8 @@ public class ModuleJSON extends JSONObject {
     public static final String QUALITY = "quality";
     public static final String VERSION_COMMENT = "version";
     public static final String LSID = "LSID";
-    public static final String CATEGORY = "taskType";
+    public static final String TASK_TYPE = "taskType";
+    public static final String CATEGORIES = "categories";
     public static final String LANGUAGE = "language";
     public static final String JVM_LEVEL = "JVMLevel";        
     public static final String CPU = "cpuType";
@@ -53,6 +54,7 @@ public class ModuleJSON extends JSONObject {
 
     private String[] supportFiles;
     private String fileFormats;
+    private String categories;
 
     //list of files that were in previous version of module that
     // were deleted in this updated version
@@ -66,7 +68,7 @@ public class ModuleJSON extends JSONObject {
             this.put(AUTHOR, object.get(AUTHOR));
             this.put(PRIVACY, object.get(PRIVACY));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
-            this.put(CATEGORY, object.get(CATEGORY));
+            this.put(TASK_TYPE, object.get(TASK_TYPE));
             this.put(QUALITY, object.get(QUALITY));
             this.put(LANGUAGE, object.get(LANGUAGE));
             this.put(JVM_LEVEL, object.get(JVM_LEVEL));
@@ -105,7 +107,8 @@ public class ModuleJSON extends JSONObject {
             this.put(AUTHOR, tia.get(GPConstants.AUTHOR));
             this.put(PRIVACY, tia.get(GPConstants.PRIVACY));
             this.put(VERSION_COMMENT, tia.get(GPConstants.VERSION));
-            this.put(CATEGORY, tia.get(GPConstants.TASK_TYPE));
+            this.put(TASK_TYPE, tia.get(GPConstants.TASK_TYPE));
+            this.put(CATEGORIES, tia.get(GPConstants.CATEGORIES));
             this.put(QUALITY, tia.get(GPConstants.QUALITY));
             this.put(LANGUAGE, tia.get(GPConstants.LANGUAGE));
             this.put(FILEFORMAT, tia.get(GPConstants.FILE_FORMAT));
@@ -192,6 +195,27 @@ public class ModuleJSON extends JSONObject {
 
     public void setName(String name) throws JSONException {
         this.put(NAME, name);
+    }
+
+    public String getCategories()throws JSONException
+    {
+        if(categories == null)
+        {
+            categories = "";
+            JSONArray categoriesArray = (JSONArray)this.get(CATEGORIES);
+            if(categoriesArray != null)
+            {
+                for(int i=0; i < categoriesArray.length();i++)
+                {
+                    categories += (String)categoriesArray.get(i);
+                    if(i+1 < categoriesArray.length())
+                    {
+                        categories += GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+                    }
+                }
+            }
+        }
+        return categories;
     }
 
     public String getFileFormats()throws JSONException
