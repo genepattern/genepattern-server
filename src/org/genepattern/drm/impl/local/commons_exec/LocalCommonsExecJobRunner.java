@@ -1,8 +1,10 @@
 package org.genepattern.drm.impl.local.commons_exec;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,6 +51,8 @@ import org.genepattern.server.executor.CommandProperties;
 public class LocalCommonsExecJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(LocalCommonsExecJobRunner.class);
 
+    private String defaultLogFile=null;
+    
     private long getPendingInterval() {
         return 0L;
         // for debugging, keep jobs in the pending state for a little while
@@ -59,10 +63,11 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     
     public void setCommandProperties(CommandProperties properties) {
         log.debug("setCommandProperties");
-        String numThreadsProp=null;
-        if (properties != null) {
-            numThreadsProp=properties.getProperty("num.threads");
+        if (properties==null) {
+            log.debug("commandProperties==null");
+            return;
         }
+        String numThreadsProp=properties.getProperty("num.threads");
         if (numThreadsProp != null) {
             try {
                 this.numThreads = Integer.parseInt(numThreadsProp);
@@ -72,6 +77,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
                 log.error("Error parsing num.threads="+numThreadsProp);
             }
         }
+        defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
 
     public void start() {
@@ -165,6 +171,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     @Override
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
         try {
+            logCommandLine(gpJob);
             initStatus(gpJob);
             final long pending_interval_ms=getPendingInterval();
             if (pending_interval_ms > 0L) {
@@ -329,6 +336,94 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
         exec.execute(cl, resultHandler);
         resultHandler.waitFor();
+    }
+    
+    /**
+     * When 'job.logFile' is set, write the command line into a log file in the working directory for the job.
+     * <pre>
+           # the name of the log file, relative to the working directory for the job
+           job.logfile: .rte.out
+     * </pre>
+     * 
+     * @author pcarr
+     */
+    private void logCommandLine(final DrmJobSubmission job) {
+        final File jobLogFile=job.getLogFile(); 
+        final File commandLogFile;
+        if (jobLogFile==null && defaultLogFile==null) {
+            // a null 'job.logFile' means "don't write the log file"
+            return;
+        }
+        else if (jobLogFile==null) {
+            commandLogFile=new File(job.getWorkingDir(), defaultLogFile);
+        }
+        else if (!jobLogFile.isAbsolute()) {
+            commandLogFile=new File(job.getWorkingDir(), jobLogFile.getPath());
+        }
+        else {
+            commandLogFile=jobLogFile;
+        }
+        
+        logCommandLine(commandLogFile, job);
+    }
+    
+    private void logCommandLine(final File logFile, final DrmJobSubmission job) { 
+        logCommandLine(logFile, job.getCommandLine());
+    }
+
+    private void logCommandLine(final File logFile, final List<String> args) { 
+        log.debug("saving command line to log file ...");
+        String commandLineStr = "";
+        boolean first = true;
+        for(final String arg : args) {
+            if (first) {
+                commandLineStr = arg;
+                first = false;
+            }
+            else {
+                commandLineStr += (" "+arg);
+            }
+        }
+
+        if (logFile.exists()) {
+            log.error("log file already exists: "+logFile.getAbsolutePath());
+            return;
+        }
+
+        final boolean append=true;
+        BufferedWriter bw = null;
+        try {
+            FileWriter fw = new FileWriter(logFile, append);
+            bw = new BufferedWriter(fw);
+            bw.write("job command line: ");
+            bw.write(commandLineStr);
+            bw.newLine();
+            int i=0;
+            for(final String arg : args) {
+                bw.write("    arg["+i+"]: '"+arg+"'");
+                bw.newLine();
+                ++i;
+            }
+            bw.close();
+        }
+        catch (IOException e) {
+            log.error("error writing log file: "+logFile.getAbsolutePath(), e);
+            return;
+        }
+        catch (Throwable t) {
+            log.error("error writing log file: "+logFile.getAbsolutePath(), t);
+            log.error(t);
+        }
+        finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                }
+                catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
     }
 
 }

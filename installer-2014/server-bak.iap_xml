@@ -13873,64 +13873,6 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 										</object>
 										<object refID="4e2d83ca878d"/>
-										<object class="com.zerog.ia.installer.actions.InstallFile" objectID="4e2d83cb878d">
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[log4j.properties]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../src/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[log4j.properties]]></string>
-											</property>
-											<property name="fileSize">
-												<long>1640</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="4e2e7e2d878f">
-											<property name="targetAction">
-												<object refID="4e2d83cb878d"/>
-											</property>
-											<property name="useInstalledFile">
-												<boolean>true</boolean>
-											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$classes$/$]]></string>
-											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>false</boolean>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
 										<object class="com.zerog.ia.installer.actions.DeleteFolderAction" objectID="dc3fd6c7878a">
 											<property name="useInstalledFile">
 												<boolean>false</boolean>
@@ -16926,10 +16868,8 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 								<object refID="b6743a958795"/>
 								<object refID="ba7b38c68790"/>
 								<object refID="89cabc63abbe"/>
-								<object refID="4e2d83cb878d"/>
 								<object refID="4e2d83ca878d"/>
 								<object refID="4e2ce2bf878c"/>
-								<object refID="4e2e7e2d878f"/>
 								<object refID="127cdc33934c"/>
 								<object refID="07909bbe998f"/>
 								<object refID="0790f90b9992"/>

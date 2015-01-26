@@ -838,7 +838,7 @@ public class PipelineQueryServlet extends HttpServlet {
                     doc = "";
                 }
                 model.setDocumentation(doc);
-                model.setGenePatternVersion(System.getProperty("genepattern.version", "unknown"));
+                model.setGenePatternVersion(ServerConfigurationFactory.instance().getGenePatternVersion());
                 model.setCreationDate(new Date());
                 
                 setPipelineInfo(model, pipelineObject);

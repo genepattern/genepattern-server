@@ -20,6 +20,7 @@ import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.webapp.jsf.ContactUsBean;
 import org.genepattern.webservice.JobInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -184,6 +185,13 @@ public class CommandManagerFactoryTest {
         assertEquals("checking job properties: job.logFile", ".lsf.out", jobProperties.getProperty("job.logFile"));
         //assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
         //assertNull("checking job properties: lsf.extra.bsub.args", jobProperties.getProperty("lsf.extra.bsub.args"));
+        
+        assertEquals("'contact.us.email", 
+                ContactUsBean.DEFAULT_CONTACT_EMAIL, 
+                jobProperties.getProperty(ContactUsBean.PROP_CONTACT_EMAIL));
+        assertEquals("'smtp.server", 
+                ContactUsBean.DEFAULT_SMTP_SERVER, 
+                jobProperties.getProperty(ContactUsBean.PROP_SMTP_SERVER));
     }
 
     /**

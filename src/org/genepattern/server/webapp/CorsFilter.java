@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
-import java.net.URI;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -12,15 +11,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 /**
  * Filter to enable cross-origin resource sharing (CORS) of GP data files with 3rd party Javascript libraries
  * such as the Javascript Heatmap Viewer, (https://github.com/jheatmap/jheatmap). 
  * 
- * @see http://enable-cors.org
- * @see http://www.w3.org/wiki/CORS
- * @see http://www.w3.org/TR/cors/
+ * @see <a href="http://enable-cors.org/">http://enable-cors.org/</a>
+ * @see <a href="http://www.w3.org/wiki/CORS">http://www.w3.org/wiki/CORS</a>
+ * @see <a href="http://www.w3.org/TR/cors/">http://www.w3.org/TR/cors/</a>
  * @author pcarr
  * 
  * Curl templates to validate CORS requests,
@@ -50,29 +47,26 @@ import org.apache.log4j.Logger;
  *
  */
 public class CorsFilter implements Filter {
-    private static Logger log = Logger.getLogger(CorsFilter.class);
     
     /**
      * proposed CorsFilter implementation
      */
     public static final void applyCorsHeaders(final HttpServletRequest request, final HttpServletResponse response) {
-        final String origin = request.getHeader("origin");
+        String origin = request.getHeader("Origin");
         if (origin != null) {
-            try {
-                final URI uri=new URI(origin);
-                final String originResponse=uri.toString();
-                //allow all clients
-                response.setHeader("Access-Control-Allow-Origin", originResponse);
-                if (log.isDebugEnabled()) {
-                    log.debug("setting 'Access-Control-Allow-Origin'="+originResponse);
-                }
-            }
-            catch (Throwable t) {
-                log.error("Invalid value for request header 'origin'="+origin, t);
-            }
+            response.setHeader("Access-Control-Allow-Origin", origin);
         }
-        // 'read-only' access
-        response.setHeader("Access-Control-Allow-Methods", "GET");
+        else {
+            response.setHeader("Access-Control-Allow-Origin", "*");
+        }
+
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+        String reqHead = request.getHeader("Access-Control-Request-Headers");
+
+        if(null != reqHead && !reqHead.equals("")){
+            response.setHeader("Access-Control-Allow-Headers", reqHead);
+        }
         // allow HTTP Basic Authentication
         response.setHeader("Access-Control-Allow-Credentials", "true");
     }

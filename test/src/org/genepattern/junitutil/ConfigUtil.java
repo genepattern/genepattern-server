@@ -3,6 +3,8 @@ package org.genepattern.junitutil;
 import java.io.File;
 
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -36,11 +38,6 @@ public class ConfigUtil {
         if (configFile==null) {
             return;
         }
-        //if (configFile==null) {
-        //    System.getProperties().remove("config.file");
-        //    ServerConfigurationFactory.reloadConfiguration();
-        //    return;
-        //}
         if (!configFile.canRead()) {
             Assert.fail("jUnit initialization error, can't read configFile="+configFile.getAbsolutePath());
             return;
@@ -49,7 +46,8 @@ public class ConfigUtil {
         System.setProperty("config.file", configFilepath);
         System.setProperty("resources", configFile.getParentFile().getAbsolutePath());
         System.setProperty("genepattern.properties", configFile.getParentFile().getAbsolutePath());
-        ServerConfigurationFactory.reloadConfiguration(configFilepath);
+        GpConfig gpConfig=GpConfigLoader.createFromConfigFilepath(configFilepath);
+        ServerConfigurationFactory.setGpConfig(gpConfig);
     }
     
     static public void setUserGroups(Class<?> clazz, String filename) {

@@ -133,7 +133,7 @@ public class BasicAuthUtil {
         try {
             final GpContext serverContext = GpContext.getServerContext();
             final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
-            final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
+            final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
             final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));
             final String gpUserId=GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
             return gpUserId;

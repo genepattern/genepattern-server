@@ -1,6 +1,7 @@
 package org.genepattern.server.config;
 
-import org.apache.log4j.Logger;
+import java.io.File;
+
 import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
 
 /**
@@ -18,27 +19,44 @@ import org.genepattern.server.repository.ConfigRepositoryInfoLoader;
  * @author pcarr
  */
 public class ServerConfigurationFactory {
-    private static Logger log = Logger.getLogger(ServerConfigurationFactory.class);
     
     public static final String PROP_CONFIG_FILE = "config.file";
     //for compatibility with GP 3.2.3 and GP 3.2.4
     public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
 
-    private static GpConfig gpConfigSingleton=GpConfigLoader.createFromSystemProps();
+    private static GpConfig gpConfigSingleton=null;
     
+    private static File gpWorkingDir=null;
+    public static void setGpWorkingDir(final File gpWorkingDir) {
+       ServerConfigurationFactory.gpWorkingDir=gpWorkingDir;
+    }
+    private static File resourcesDir=null;
+    public static void setResourcesDir(final File resourcesDir) {
+        ServerConfigurationFactory.resourcesDir=resourcesDir;
+    }
+    
+    private static File logDir=null;
+    public static void setLogDir(final File logDir) {
+        ServerConfigurationFactory.logDir=logDir;
+    }
+
+    public static void setGpConfig(final GpConfig gpConfig) {
+        gpConfigSingleton=gpConfig;
+        ConfigRepositoryInfoLoader.clearCache();
+    }
+
     private ServerConfigurationFactory() {
     }
     
     synchronized public static void reloadConfiguration() {
-        gpConfigSingleton=GpConfigLoader.createFromSystemProps();
-        ConfigRepositoryInfoLoader.clearCache();
+        setGpConfig(GpConfigLoader.createFromSystemProps(gpWorkingDir, resourcesDir, logDir));
     }
-    synchronized public static void reloadConfiguration(final String configFilepath) {
-        gpConfigSingleton=GpConfigLoader.createFromConfigFilepath(configFilepath);
-        ConfigRepositoryInfoLoader.clearCache();
-    }
-    
+
     public static GpConfig instance() {
+        // lazy init
+        if (gpConfigSingleton==null) {
+            setGpConfig(GpConfigLoader.createFromSystemProps(gpWorkingDir, resourcesDir, logDir));
+        }
         return gpConfigSingleton;
     }
 

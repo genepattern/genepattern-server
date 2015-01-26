@@ -596,6 +596,15 @@ public class TasksResource {
             String href=getTaskInfoPath(request, taskInfo);
             jsonObj.put("href", href);
             jsonObj.put("name", taskInfo.getName());
+            jsonObj.put("description", taskInfo.getDescription());
+            try {
+                final LSID lsid=new LSID(taskInfo.getLsid());
+                jsonObj.put("version", lsid.getVersion());
+            }
+            catch (MalformedURLException e) {
+                log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
+            }
+            jsonObj.put("documentation", getDocLink(request, taskInfo));
             jsonObj.put("lsid", taskInfo.getLsid());
             JSONArray paramsJson=new JSONArray();
             for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
@@ -611,17 +620,8 @@ public class TasksResource {
                 attrObj.put("description", pinfo.getDescription());
 
                 if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
-                    final JSONObject choicesObj = new JSONObject();
-                    for(final Object key : pinfo.getChoices().keySet()) {
-                        final Object value = pinfo.getChoices().get(key);
-                        if (value != null) {
-                            choicesObj.put(key.toString(), value.toString());
-                        }
-                        else {
-                            choicesObj.put(key.toString(), key.toString());
-                        }
-                    }
-                    attrObj.put("choices", choicesObj);
+                    ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
+                    attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
                 }
 
                 final JSONObject paramJson = new JSONObject();

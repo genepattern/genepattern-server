@@ -217,11 +217,10 @@
 }
 
 .search-inner {
-    top: 40px;
-    bottom: 0px;
-    position: absolute;
+    height: 100%;
     overflow: auto;
     padding-left: 20px;
+    padding-top: 40px;
 }
 
 .slider-close-block {

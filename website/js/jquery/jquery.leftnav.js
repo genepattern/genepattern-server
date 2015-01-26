@@ -612,7 +612,7 @@ $.widget("gp.searchslider", {
         $(this.options.lists).each(function(index, list) {
             if (firstList) {
                 var title = $(list).find(".module-list-title");
-                titlebar.find(".module-list-title").text(title.text());
+                titlebar.find(".module-list-title").html(title.html());
                 title.hide();
                 firstList = false;
             }

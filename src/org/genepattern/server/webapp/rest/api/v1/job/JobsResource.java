@@ -19,9 +19,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.DbException;
@@ -43,7 +46,6 @@ import org.genepattern.server.rest.JobInputApiFactory;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
-import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
@@ -60,6 +62,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.sun.jersey.api.client.ClientResponse;
 
 /**
  * RESTful implementation of the /jobs resource.
@@ -79,7 +83,7 @@ import org.json.JSONObject;
  *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  * 
- * <p>Optionally set the 'groupId' for modules which accect file group parameters.
+ * <p>Optionally set the 'groupId' for modules which accept file group parameters.
  * <pre>
    {
      "lsid":<actualLsid>,
@@ -99,7 +103,7 @@ import org.json.JSONObject;
  * <pre>
  * 
  * 
- * <p>To add a batch of job to the server, use the 'batchParam' property.</p>
+ * <p>To add a batch of jobs to the server, use the 'batchParam' property.</p>
  * <pre>
    {
      "lsid":<actualLsid>,
@@ -214,7 +218,7 @@ public class JobsResource {
     /////////////////////////////////////
 
     /**
-     * Job search API.
+     * Job search API, default GET response for this resource.
      * Template:
        <pre>
        curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
@@ -245,7 +249,6 @@ public class JobsResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/")
     public Response getJobSearchResults(
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,

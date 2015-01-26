@@ -343,7 +343,7 @@
  <servlet>
   <servlet-name>Faces Servlet</servlet-name>
   <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
+  <load-on-startup>10</load-on-startup>
  </servlet>
  <servlet>
   <servlet-name>StartupServlet</servlet-name>
@@ -381,7 +381,7 @@
   <display-name>AjaxServlet</display-name>
   <servlet-name>AjaxServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.jsf.AjaxServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
+  <load-on-startup>11</load-on-startup>
  </servlet>
  <servlet-mapping>
   <servlet-name>AjaxServlet</servlet-name>
@@ -420,7 +420,7 @@
   <display-name>Login Servlet</display-name>
   <servlet-name>LoginServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.LoginServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
+  <load-on-startup>12</load-on-startup>
  </servlet>
  <servlet-mapping>
   <servlet-name>LoginServlet</servlet-name>
@@ -431,7 +431,7 @@
   <display-name>ModuleDocServlet</display-name>
   <servlet-name>ModuleDocServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.ModuleDocServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
+  <load-on-startup>13</load-on-startup>
  </servlet>
  <servlet-mapping>
   <servlet-name>ModuleDocServlet</servlet-name>
@@ -559,7 +559,7 @@
         <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
         <param-value>true</param-value>
     </init-param>                     
-     <load-on-startup>1</load-on-startup>
+    <load-on-startup>14</load-on-startup>
 </servlet >
 
 <servlet-mapping>

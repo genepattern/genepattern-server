@@ -184,7 +184,7 @@ public class DrmJobStatus {
     
     /**
      * Optionally, for completed jobs, get the terminating signal.
-     * @return the terminating signal or null if the job has not terminating signal
+     * @return the terminating signal or null if the job has no terminating signal
      */
     public String getTerminatingSignal() {
         return terminatingSignal;
@@ -193,6 +193,8 @@ public class DrmJobStatus {
     /**
      * Get the resource usage data, for example 'CPU time' and 'Max memory' are reported by LSF jobs.
      * If this isn't available the map may be empty or null.
+     * 
+     * @deprecated - use one of the existing options such as memory, maxThreads to indicate resource usage.
      * 
      * @return the jobs resource usage data if available in the form of an ImmutableMap. You should not
      *     make any changes to this value.
@@ -265,6 +267,11 @@ public class DrmJobStatus {
             return this;
         }
         
+        /**
+         * The time the job was submitted to the queue.
+         * @param submitTime
+         * @return
+         */
         public Builder submitTime(final Date submitTime) {
             if (submitTime==null) {
                 this.submitTime=null;
@@ -274,7 +281,12 @@ public class DrmJobStatus {
             }
             return this;
         }
-        
+
+        /**
+         * The time the job started running on the queue.
+         * @param startTime
+         * @return
+         */
         public Builder startTime(final Date startTime) {
             if (startTime==null) {
                 this.startTime=null;
@@ -284,7 +296,12 @@ public class DrmJobStatus {
             }
             return this;
         }
-        
+
+        /**
+         * The time the job completed running on the queue.
+         * @param endTime
+         * @return
+         */
         public Builder endTime(final Date endTime) {
             if (endTime==null) {
                 this.endTime=null;
@@ -294,57 +311,123 @@ public class DrmJobStatus {
             }
             return this;
         }
-        
+
+        /**
+         * The current CPU usage for the job.
+         * 
+         * @param cpuTime
+         * @return
+         */
         public Builder cpuTime(final CpuTime cpuTime) {
             this.cpuTime=cpuTime;
             return this;
         }
 
+        /**
+         * The current memory usage for the job.
+         * 
+         * @param sizeInBytes
+         * @return
+         */
         public Builder memory(final long sizeInBytes) {
             this.memory=Memory.fromSizeInBytes(sizeInBytes);
             return this;
         }
 
+        /**
+         * The current memory usage for the job as a String, for example "2 Gb".
+         * 
+         * @param memSpec
+         * @return
+         */
         public Builder memory(final String memSpec) {
             this.memory=Memory.fromString(memSpec);
             return this;
         }
-        
+
+        /**
+         * The current memory usage for the job.
+         * 
+         * @param memory
+         * @return
+         */
         public Builder memory(final Memory memory) {
             this.memory=memory;
             return this;
         }
-        
+
+        /**
+         * The peak amount of swap memory used by the job.
+         * 
+         * @param sizeInBytes
+         * @return
+         */
         public Builder maxSwap(final long sizeInBytes) {
             this.maxSwap=Memory.fromSizeInBytes(sizeInBytes);
             return this;
         }
-        
+
+        /**
+         * The peak amount of swap memory used by the job as a String, for example "2 Gb".
+         * @param memSpec
+         * @return
+         */
         public Builder maxSwap(final String memSpec) {
             this.maxSwap=Memory.fromString(memSpec);
             return this;
         }
-        
+
+        /**
+         * The peak amount of swap memory used by the job.
+         * 
+         * @param maxSwap
+         * @return
+         */
         public Builder maxSwap(final Memory maxSwap) {
             this.maxSwap=maxSwap;
             return this;
         } 
-        
+
+        /**
+         * The peak number of processes used by the job.
+         * 
+         * @param maxProcesses
+         * @return
+         */
         public Builder maxProcesses(final Integer maxProcesses) {
             this.maxProcesses=maxProcesses;
             return this;
         }
-        
+
+        /**
+         * The peak number of threads used by the job.
+         * 
+         * @param maxThreads
+         * @return
+         */
         public Builder maxThreads(final Integer maxThreads) {
             this.maxThreads=maxThreads;
             return this;
         }
         
+        
+        /**
+         * A status message to be displayed on the Show details section of the job status page.
+         * 
+         * @param jobStatusMessage
+         * @return
+         */
         public Builder jobStatusMessage(final String jobStatusMessage) {
             this.jobStatusMessage=jobStatusMessage;
             return this;
         }
-        
+
+        /**
+         * The exitCode from the job, zero means success, non-zero means error.
+         * 
+         * @param exitCode
+         * @return
+         */
         public Builder exitCode(final Integer exitCode) {
             this.exitCode=exitCode;
             return this;

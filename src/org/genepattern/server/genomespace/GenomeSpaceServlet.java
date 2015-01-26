@@ -9,8 +9,11 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.util.FacesUtil;
 
 /**
@@ -56,7 +59,6 @@ public class GenomeSpaceServlet extends HttpServlet {
     }
 
     private void saveFile(HttpServletRequest request, HttpServletResponse response) {
-        GenomeSpaceBean bean = getGSBean(request, response);
         String directoryURL = request.getParameter("directory");
         String fileURL = request.getParameter("file");
 
@@ -66,79 +68,70 @@ public class GenomeSpaceServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED, "Error: No file or directory provided when saving file to GenomeSpace");
             }
 
-            String statusText = bean.sendFileToGenomeSpace(directoryURL, fileURL);
+            GenomeSpaceFile directory = GenomeSpaceManager.getDirectory(request.getSession(), directoryURL);
+            GpFilePath file = GpFileObjFactory.getRequestedGpFileObj(fileURL);
 
-            if (statusText.contains("Error")) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, statusText);
-            }
-            else {
-                this.write(response, statusText);
-            }
+            HttpSession httpSession = request.getSession();
+            Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+            GenomeSpaceClientFactory.instance().saveFileToGenomeSpace(gsSession, file, directory);
+            String statusText = "File uploaded to GenomeSpace " + file.getName();
+
+            this.write(response, statusText);
         }
-        catch (IOException e) {
+        catch (Exception e) {
             log.error("IOError sending error in GenomeSpaceServlet");
+            try {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Error saving file to GenomeSpace");
+            } catch (IOException e1) {
+                log.error("Error sending error to GenomeSpace");
+            }
         }
     }
 
     private void loadSaveLevel(HttpServletRequest request, HttpServletResponse response) {
-        GenomeSpaceBean bean = getGSBean(request, response);
+        HttpSession session = request.getSession();
         String url = request.getParameter("dir");
 
         List<GenomeSpaceFile> tree = null;
         if (url == null) {
-            tree = bean.getFileTree();
-//            tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
-//            for (GenomeSpaceFile file : tree) {
-//                if (file.getName().equals(bean.getUsername())) {
-//                    tree = new ArrayList<GenomeSpaceFile>();
-//                    tree.add(file);
-//                    break;
-//                }
-//            }
+            tree = GenomeSpaceManager.getFileTreeLazy(session);
         }
         else {
-            tree = new ArrayList<GenomeSpaceFile>(bean.getDirectory(url).getChildFiles());
+            tree = new ArrayList<GenomeSpaceFile>(GenomeSpaceManager.getDirectory(session, url).getChildFiles());
         }
 
-        TreeJSON json = null;
+        GenomeSpaceTreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new TreeJSON(tree, TreeJSON.SAVE_TREE, bean);
+            json = new GenomeSpaceTreeJSON(session, tree, GenomeSpaceTreeJSON.SAVE_TREE);
         }
         else {
-            json = new TreeJSON(new ArrayList<GenomeSpaceFile>(), TreeJSON.SAVE_TREE, bean);
+            json = new GenomeSpaceTreeJSON(session, new ArrayList<GenomeSpaceFile>(), GenomeSpaceTreeJSON.SAVE_TREE);
         }
         this.write(response, json);
     }
 
     private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
-        GenomeSpaceBean bean = getGSBean(request, response);
+        HttpSession session = request.getSession();
         String url = request.getParameter("dir");
 
         List<GenomeSpaceFile> tree = null;
         if (url == null) {
-            tree = bean.getFileTree();
+            tree = GenomeSpaceManager.getFileTreeLazy(session);
             tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
         }
         else {
-            GenomeSpaceFile dir = bean.getDirectory(url);
+            GenomeSpaceFile dir = GenomeSpaceManager.getDirectory(session, url);
             tree = new ArrayList<GenomeSpaceFile>(dir.getChildFiles());
         }
 
-        TreeJSON json = null;
+        GenomeSpaceTreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new TreeJSON(tree, bean);
+            json = new GenomeSpaceTreeJSON(session, tree);
         }
         else {
-            json = new TreeJSON(null, TreeJSON.EMPTY, bean);
+            json = new GenomeSpaceTreeJSON(session, null, GenomeSpaceTreeJSON.EMPTY);
         }
         this.write(response, json);
-    }
-
-    @SuppressWarnings("deprecation")
-    private GenomeSpaceBean getGSBean(HttpServletRequest request, HttpServletResponse response) {
-        // Get the FacesContext inside HttpServlet.
-        FacesContext facesContext = FacesUtil.getFacesContext(request, response);
-        return (GenomeSpaceBean) facesContext.getApplication().createValueBinding("#{genomeSpaceBean}").getValue(facesContext);
     }
 
     private void write(HttpServletResponse response, Object content) {

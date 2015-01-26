@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.FileUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -288,6 +289,10 @@ public class UserUploadManager {
      * @return
      */
     static public GpDirectoryNode getFileTree(final GpContext userContext) throws Exception { 
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return getFileTree(gpConfig, userContext);
+    }
+    static public GpDirectoryNode getFileTree(final GpConfig gpConfig, final GpContext userContext) throws Exception { 
         final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
         final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
@@ -297,8 +302,10 @@ public class UserUploadManager {
         //initialize the list of GpFilePath objects
         final SortedMap<String,GpDirectoryNode> allDirs = new TreeMap<String,GpDirectoryNode>();
         final SortedMap<String,GpFilePath> allFiles = new TreeMap<String,GpFilePath>();
+        
+        final File userUploadDir = gpConfig.getUserUploadDir(userContext);
         for(UserUpload userUpload : all) {
-            GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(userUpload.getPath()));
+            GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, userUploadDir, new File(userUpload.getPath()));
             initMetadata(uploadFilePath, userUpload);
             if (UserUpload.isDirectory(userUpload)) {
                 GpDirectoryNode gpDirectory = new GpDirectoryNode(uploadFilePath);

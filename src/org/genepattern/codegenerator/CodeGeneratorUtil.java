@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.util.GPConstants;
@@ -90,8 +91,8 @@ public class CodeGeneratorUtil {
                     String name = getJobResultFileName(jobInfo, i);
                     int jobNumber = getJobCreationJobNumber(jobInfo, i);
                     try {
-                        String url = job.getServer() + 
-                            System.getProperty("GP_Path") + "jobResults/" + jobNumber + "/" + java.net.URLEncoder.encode(name, "UTF-8");
+                        String url = 
+                                ServerConfigurationFactory.instance().getGpUrl() + "jobResults/" + jobNumber + "/" + java.net.URLEncoder.encode(name, "UTF-8");
                         parameterInfoList.add(new ParameterInfo(params[i].getName(), url, ""));
                     } 
                     catch (UnsupportedEncodingException x) {

@@ -179,6 +179,8 @@ public class TestBroadCoreLsfRunner {
     public void walltime_7days() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("7-00:00:00");
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("7-00:00:00");
+
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.walltime",
@@ -190,6 +192,7 @@ public class TestBroadCoreLsfRunner {
     public void walltime_2hours45min() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("02:45:00");
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("02:45:00");
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.walltime",
@@ -201,6 +204,7 @@ public class TestBroadCoreLsfRunner {
     public void walltime_45min() {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("00:45:00");
+        when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("00:45:00");
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.walltime",

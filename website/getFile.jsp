@@ -6,6 +6,7 @@
                 org.genepattern.util.GPConstants,
                 java.io.BufferedInputStream,
                 java.io.File,
+                org.genepattern.server.config.GpConfig,
                 org.genepattern.server.config.GpContext,
                 org.genepattern.server.config.ServerConfigurationFactory,
                 org.genepattern.server.webapp.jsf.UIBeanHelper,
@@ -21,6 +22,8 @@
   --%>
 
 <%
+    GpContext gpContext = GpContext.getServerContext();
+    GpConfig gpConfig = ServerConfigurationFactory.instance();
     String taskName = request.getParameter("task");
     if (taskName == null) {
         taskName = "";
@@ -63,7 +66,7 @@
         } else {
             String prefix = userID + "_";
             // look in temp for pipelines run without saving
-            in = new File(System.getProperty("java.io.tmpdir"), filename);
+            in = new File(gpConfig.getTempDir(gpContext), filename);
 
             // look for file among the user uploaded files
             if (!in.exists()) {
@@ -78,7 +81,7 @@
 
             //special case for Axis
             if (!in.exists()) {
-                File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                File soapAttachmentDir = gpConfig.getSoapAttDir(gpContext);
                 in = new File(soapAttachmentDir, filename);
                 if (in.exists()) {
                     //authorization check

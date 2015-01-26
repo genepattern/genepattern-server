@@ -19,6 +19,7 @@ import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
+import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -26,6 +27,7 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.GroupId;
@@ -50,14 +52,10 @@ import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.webservice.AnalysisJob;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoCache;
-import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -422,6 +420,156 @@ public class RunTaskServlet extends HttpServlet
     {
         final GpContext userContext = Util.getUserContext(request);
 
+        if (checkDiskQuota(userContext))
+            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+
+        return addJob(userContext, jobSubmitInfo, request);
+    }
+
+    @POST
+    @Path("/launchJsViewer")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response launchJsViewer(
+            JobSubmitInfo jobSubmitInfo,
+            @Context HttpServletRequest request)
+    {
+        final GpContext userContext = Util.getUserContext(request);
+
+        if (checkDiskQuota(userContext))
+            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+
+        return launchJsViewer(userContext, jobSubmitInfo, request);
+    }
+
+    /**
+     * Added this in 3.8.1 release to enable additional job configuration input parameters.
+     * @param jobSubmitInfo
+     * @param request
+     * @return
+     */
+    private Response launchJsViewer(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
+            return handleError("No lsid received");
+        }
+        try {
+            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
+            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+
+            for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
+                final String parameterName = (String) iter.next();
+                boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
+
+                //batch is not allowed for javascript visualizers
+                if(isBatch)
+                {
+                    throw new Exception("Batching of javascript visualizers is not supported");
+                }
+
+                //verify this is a javascript visualizer
+                if(taskInfo == null || !TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
+                {
+                    throw new Exception("Error: The selected task" + taskInfo.getName()
+                            + " is not a Javascript visualizer.");
+                }
+
+                JSONArray valueList;
+                final JSONArray groupInfos = parameters.getJSONArray(parameterName);
+                for (int i = 0; i < groupInfos.length(); i++) {
+                    final JSONObject groupInfo = groupInfos.getJSONObject(i);
+                    final String groupName = groupInfo.getString("name");
+                    final GroupId groupId;
+                    if (groupName == null || groupName.length() == 0) {
+                        groupId = GroupId.EMPTY;
+                    } else {
+                        groupId = new GroupId(groupName);
+                    }
+                    final Object values = groupInfo.get("values");
+                    if (values instanceof JSONArray) {
+                        valueList = (JSONArray) values;
+                    } else {
+                        valueList = new JSONArray((String) parameters.get(parameterName));
+                    }
+                    for (int v = 0; v < valueList.length(); v++) {
+                        final String value = valueList.getString(v);
+                        if (isBatch) {
+                            //TODO: implement support for groupId with batch values
+                            jobInputHelper.addBatchValue(parameterName, value);
+                        } else {
+                            jobInputHelper.addValue(parameterName, value, groupId);
+                        }
+                    }
+                }
+            }
+
+            final List<JobInput> batchInputs;
+            batchInputs = jobInputHelper.prepareBatch();
+            final JobReceipt receipt = jobInputHelper.submitBatch(batchInputs);
+
+            //TODO: if necessary, add batch details to the JSON representation
+            final ResponseJSON result = new ResponseJSON();
+            final String jobId;
+            if (receipt.getJobIds().size() > 0) {
+                jobId = receipt.getJobIds().get(0);
+            } else {
+                jobId = "-1";
+            }
+            result.addChild("jobId", jobId);
+
+            try {
+                JobInfo jobInfo = new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
+                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
+                result.addChild("launchUrl", launchUrl);
+            }
+            catch (Exception e) {
+                log.error(e);
+                throw new Exception("Could not generate launch url found for Javascript visualizer: " + taskInfo.getName()
+                + e.getMessage());
+            }
+
+            int gpJobNo = Integer.parseInt(jobId);
+            //check if there was a comment specified for job and add it to database
+            if(jobSubmitInfo.getComment() != null && jobSubmitInfo.getComment().length() > 0)
+            {
+                JobComment jobComment = new JobComment();
+                jobComment.setUserId(userContext.getUserId());
+                jobComment.setComment(jobSubmitInfo.getComment());
+                jobComment.setGpJobNo(gpJobNo);
+                jobComment.setPostedDate(new Date());
+                JobCommentManager.addJobComment(jobComment);
+            }
+
+            //check if there were tags specified for this job and add it to database
+            List<String> tags = jobSubmitInfo.getTags();
+            if(tags != null && tags.size() > 0)
+            {
+                Date date = new Date();
+                for(String tag: tags)
+                {
+                    JobTagManager.addTag(userContext.getUserId(), gpJobNo, tag, date, false);
+                }
+            }
+
+            return Response.ok(result.toString()).build();
+        }
+        catch (GpServerException e) {
+            String message = "An error occurred while submitting the job";
+            if(e.getMessage() != null) {
+                message = message + ": " + e.getMessage();
+            }
+            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+        }
+        catch(Throwable t) {
+            String message = "An error occurred while submitting the job";
+            if(t.getMessage() != null) {
+                message = message + ": " + t.getMessage();
+            }
+            log.error(message, t);
+            return handleError(message);
+        }
+    }
+
+    private boolean checkDiskQuota(GpContext userContext) {
         try
         {
             //check if the user is above their disk quota
@@ -431,7 +579,7 @@ public class RunTaskServlet extends HttpServlet
             if(diskInfo.isAboveQuota())
             {
                 //disk usage exceeded so do not allow user to run a job
-                return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+                return true;
             }
         }
         catch(DbException db)
@@ -442,8 +590,7 @@ public class RunTaskServlet extends HttpServlet
                             .build()
             );
         }
-
-        return addJob(userContext, jobSubmitInfo, request);
+        return false;
     }
 
     /**
@@ -457,38 +604,35 @@ public class RunTaskServlet extends HttpServlet
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
-            for(final Iterator<?> iter=parameters.keys(); iter.hasNext();) {
+            for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
                 final String parameterName = (String) iter.next();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
                 JSONArray valueList;
                 final JSONArray groupInfos = parameters.getJSONArray(parameterName);
-                for(int i=0;i<groupInfos.length();i++) {
+                for (int i = 0; i < groupInfos.length(); i++) {
                     final JSONObject groupInfo = groupInfos.getJSONObject(i);
                     final String groupName = groupInfo.getString("name");
                     final GroupId groupId;
-                    if (groupName == null || groupName.length()==0) {
-                        groupId=GroupId.EMPTY;
-                    }
-                    else {
-                        groupId=new GroupId(groupName);
+                    if (groupName == null || groupName.length() == 0) {
+                        groupId = GroupId.EMPTY;
+                    } else {
+                        groupId = new GroupId(groupName);
                     }
                     final Object values = groupInfo.get("values");
                     if (values instanceof JSONArray) {
-                        valueList=(JSONArray) values;
+                        valueList = (JSONArray) values;
+                    } else {
+                        valueList = new JSONArray((String) parameters.get(parameterName));
                     }
-                    else {
-                        valueList = new JSONArray((String)parameters.get(parameterName));
-                    }
-                    for(int v=0; v<valueList.length();v++) {
-                        final String value=valueList.getString(v);
+                    for (int v = 0; v < valueList.length(); v++) {
+                        final String value = valueList.getString(v);
                         if (isBatch) {
                             //TODO: implement support for groupId with batch values
                             jobInputHelper.addBatchValue(parameterName, value);
-                        }
-                        else {
+                        } else {
                             jobInputHelper.addValue(parameterName, value, groupId);
                         }
                     }
@@ -496,20 +640,19 @@ public class RunTaskServlet extends HttpServlet
             }
 
             final List<JobInput> batchInputs;
-            batchInputs=jobInputHelper.prepareBatch();
-            final JobReceipt receipt=jobInputHelper.submitBatch(batchInputs);
-            
+            batchInputs = jobInputHelper.prepareBatch();
+            final JobReceipt receipt = jobInputHelper.submitBatch(batchInputs);
+
             //TODO: if necessary, add batch details to the JSON representation
             final ResponseJSON result = new ResponseJSON();
             final String jobId;
-            if (receipt.getJobIds().size()>0) {
-                jobId=receipt.getJobIds().get(0);
-            }
-            else {
-                jobId="-1";
+            if (receipt.getJobIds().size() > 0) {
+                jobId = receipt.getJobIds().get(0);
+            } else {
+                jobId = "-1";
             }
             result.addChild("jobId", jobId);
-            if (receipt.getBatchId() != null && receipt.getBatchId().length()>0) {
+            if (receipt.getBatchId() != null && receipt.getBatchId().length() > 0) {
                 result.addChild("batchId", receipt.getBatchId());
                 request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
             }
@@ -555,7 +698,7 @@ public class RunTaskServlet extends HttpServlet
             return handleError(message);
         }
     }
-    
+
     private Response handleError(final String errorMessage) throws WebApplicationException {
         throw new WebApplicationException(
                 Response.status(Response.Status.INTERNAL_SERVER_ERROR)

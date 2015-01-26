@@ -21,30 +21,24 @@
 </ui:define>
 
 <ui:define name="headText">
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jMenu.jquery.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/introjs.css?version=#{aboutBean.buildTag}" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery.tagsinput.css" />
-<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/comments/jquery.comment.css"/>
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/jMenu.jquery.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/introjs.css?version=#{aboutBean.buildTag}" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery.tagsinput.css" />
+<link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/comments/jquery.comment.css"/>
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
+        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
     </c:when>
     <c:otherwise>
-        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/runtaskform.css?version=#{aboutBean.buildTag}" />
+        <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform.css?version=#{aboutBean.buildTag}" />
     </c:otherwise>
 </c:choose>
 
-<!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-<script src="http://code.jquery.com/jquery-migrate-1.1.1.min.js"></script>
-<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.min.js"></script>
-
-<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script> -->
-
-<script src="../js/jquery/comments/jquery.timeago.js"></script>
-<script src="../js/jquery/comments/jquery.autogrow-textarea.js"></script>
-<script src="../js/jquery/comments/jquery.comment.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/comments/jquery.timeago.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/comments/jquery.autogrow-textarea.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/comments/jquery.comment.js"></script>
 
 
 <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js?version=#{aboutBean.buildTag}"></script>
@@ -279,7 +273,7 @@ function showFileInput(id) {
     <ui:include src="/pages/serverFileDialog.xhtml" />
     <ui:include src="/pages/uploads/uploadToDirectoryDialog.xhtml" />
 
-    <h:outputText rendered="#{genomeSpaceBean.loggedIn and not genomeSpaceBean.loading}">
+    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
         <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
     </h:outputText>
 

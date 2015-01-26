@@ -14,99 +14,80 @@ package org.genepattern.server.database;
 
 import java.math.BigDecimal;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Sequence;
 import org.genepattern.webservice.OmnigeneException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.cfg.Configuration;
+
 
 public class HibernateUtil {
-    private static Logger log = Logger.getLogger(HibernateUtil.class);
-    private static ConcurrentMap<String,SessionFactory> sessionFactoryMap = new ConcurrentHashMap<String,SessionFactory>();
+    private static final Logger log = Logger.getLogger(HibernateUtil.class);
+    private static HibernateSessionManager instance;
     
-    static {
-        final String hibernateConfigurationFile = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
-        final String connectionUrl=null;
-        init(hibernateConfigurationFile, connectionUrl);
-    }
-
-    public static void init(final String hibernateConfigurationFile, final String connectionUrl) {
-        //create the default session factory
-        try {
-            SessionFactory sessionFactory = createSessionFactory(hibernateConfigurationFile, connectionUrl);
-            sessionFactoryMap.put("default", sessionFactory);
+    private static synchronized HibernateSessionManager instance() {
+        if (instance==null) {
+            log.debug("initializing hibernate session ...");
+            GpContext serverContext=GpContext.getServerContext();
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            instance=initFromConfig(gpConfig, serverContext);
         }
-        catch (Throwable ex) {
-            log.error("Error initializing SessionFactory from '"+hibernateConfigurationFile+"': "+ex);
-            log.debug("", ex);
-        }
+        
+        return instance;
     }
-
-    public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
-        AnnotationConfiguration config = new AnnotationConfiguration();
-        config.configure(configResource);
-        mergeSystemProperties(config);
-        if (connectionUrl != null) {
-            config.setProperty("hibernate.connection.url", connectionUrl);
-        }
-        return config.buildSessionFactory();
-    }
-
-    private static void mergeSystemProperties(Configuration config) {
-        Properties props = System.getProperties();
-        for (Object key : props.keySet()) {
-            String name = (String) key;
-            if (name.startsWith("hibernate.")) {
-                config.setProperty(name, (String) props.get(name));
+    
+    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+        Properties hibProps=gpConfig.getDbProperties();
+        
+        if (hibProps==null) {
+            final String legacyConfigFile = gpConfig.getGPProperty(gpContext, "hibernate.configuration.file");
+            
+            if (legacyConfigFile==null) {
+                log.warn("Using hard-coded database properties");
+                // use hard-coded DB properties
+                hibProps=gpConfig.getDbPropertiesDefault(gpContext);
             }
+            
+            if (legacyConfigFile != null) {
+                // fallback to pre 3.9.0 implementation
+                log.warn("Using deprecated (pre-3.9.0) database configuration, hibernate.configuration.file="+legacyConfigFile);
+                final String jdbcUrl=null;
+                return new HibernateSessionManager(legacyConfigFile, jdbcUrl);
+            }
+
         }
+
+        return new HibernateSessionManager(hibProps);
     }
 
-    public static void setSessionFactory(final String key, SessionFactory sessionFactory) {
-        sessionFactoryMap.put(key, sessionFactory);
+    public static final Session getSession() {
+        return instance().getSession();
     }
     
-    public static SessionFactory getSessionFactory() {
-        return sessionFactoryMap.get("default");
+    public static final SessionFactory getSessionFactory() {
+        return instance().getSessionFactory();
     }
- 
-    public static Session getSession() {
-        SessionFactory sessionFactory = getSessionFactory();
-        if (sessionFactory != null) {
-            return sessionFactory.getCurrentSession();
-        }
-        throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
-    }
+    
     
     /**
      * Close the current session, if open.
      * 
      */
     public static void closeCurrentSession() {
-        Session session = getSession();
-        if (session != null && session.isOpen()) {
-            session.close();
-        }
+        instance().closeCurrentSession();
     }
 
     /**
      * If the current session has an open transaction commit it and close the current session, otherwise do nothing.
      */
     public static void commitTransaction() {
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (tx.isActive()) {
-            tx.commit();
-            closeCurrentSession();
-        }
+        instance().commitTransaction();
     }
 
     /**
@@ -114,12 +95,7 @@ public class HibernateUtil {
      * 
      */
     public static void rollbackTransaction() {
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (tx.isActive()) {
-            tx.rollback();
-            closeCurrentSession();
-        }
+        instance().rollbackTransaction();
     }
 
     /**
@@ -128,29 +104,34 @@ public class HibernateUtil {
      * @return
      */
     public static void beginTransaction() {
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (!tx.isActive()) {
-            session.beginTransaction();
-        }
+        instance().beginTransaction();
     }
 
     public static boolean isInTransaction() {
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (!tx.isActive()) {
-            return false;
-        }
-        return true;
+        return instance().isInTransaction();
     }
 
+    /**
+     * @deprecated - no longer rely on System properties for DB configuration.
+     * @param sequenceName
+     * @return
+     */
     public static int getNextSequenceValue(String sequenceName) {
         String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
-        if (dbVendor.equals("ORACLE")) {
+        return getNextSequenceValue(dbVendor, sequenceName);
+    }
+    
+    public static int getNextSequenceValue(GpConfig gpConfig, String sequenceName) {
+        final String dbVendor=gpConfig.getDbVendor();
+        return getNextSequenceValue(dbVendor, sequenceName);
+    }
+    
+    public static int getNextSequenceValue(final String dbVendor, final String sequenceName) {
+        if (dbVendor.equalsIgnoreCase("ORACLE")) {
             return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
                     .uniqueResult()).intValue();
         } 
-        else if (dbVendor.equals("HSQL")) {
+        else if (dbVendor.equalsIgnoreCase("HSQL")) {
             return (Integer) getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
         } 
         else {
@@ -166,7 +147,7 @@ public class HibernateUtil {
      * The method is synchronized to prevent the same sequence number to be handed out to multiple callers (from
      * different threads. For the same reason a new session and transaction is created and closed prior to exit.
      */
-    private static synchronized int getNextSequenceValueGeneric(String sequenceName) {
+    protected static synchronized int getNextSequenceValueGeneric(final String sequenceName) {
         StatelessSession session = null;
         try {
             // Open a new session and transaction. 

@@ -477,19 +477,17 @@ function jobStatusPoll() {
     }
 }
 
-function diskQuotaCheckPlus(diskInfo, fileSize)
-{
+function diskQuotaCheckPlus(diskInfo, fileSize) {
     var exceeded = false;
-    if(diskInfo != undefined && diskInfo != null)
-    {
+    if(diskInfo !== undefined && diskInfo !== null) {
         //this is to check if adding the specified amount of bytes to
         //the disk usage will cause the disk usage to be exceed
-        if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab
-            && diskInfo.diskUsageFilesTab.numBytes != undefined
-            && diskInfo.diskUsageFilesTab.numBytes != null
-            && diskInfo.diskQuota != undefined && diskInfo.diskQuota != null
-            && diskInfo.diskQuota.numBytes != undefined
-            && diskInfo.diskQuota.numBytes != null)
+        if(diskInfo.diskUsageFilesTab !== undefined && diskInfo.diskUsageFilesTab
+            && diskInfo.diskUsageFilesTab.numBytes !== undefined
+            && diskInfo.diskUsageFilesTab.numBytes !== null
+            && diskInfo.diskQuota !== undefined && diskInfo.diskQuota !== null
+            && diskInfo.diskQuota.numBytes !== undefined
+            && diskInfo.diskQuota.numBytes !== null)
         {
             var diskUsagePlus = diskInfo.diskUsageFilesTab.numBytes + fileSize;
             exceeded = diskUsagePlus > diskInfo.diskQuota.numBytes;
@@ -504,15 +502,14 @@ function validateDiskQuota(diskInfo, fileSize)
     var validateObj = {
         error: true,
         message: null
-    }
+    };
 
     //error if disk quota was already exceeded before
     //uploading this file
     var exceeded = false;
     var willBeExceeded = false;
 
-    if(diskInfo != undefined && diskInfo != null)
-    {
+    if(diskInfo !== undefined && diskInfo !== null) {
         //first check if disk quota was already exceeded
         exceeded = diskInfo.aboveQuota;
         willBeExceeded = diskQuotaCheckPlus(diskInfo, fileSize);
@@ -625,7 +622,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         checkDiskQuota(function(diskInfo)
         {
             var validateObj = validateDiskQuota(diskInfo, file.size);
-            if(validateObj.error == false)
+            if(validateObj.error === false)
             {
                 createUploadPath();
             }
@@ -815,7 +812,7 @@ function warnSpecialChars(filelist, directory) {
 }
 
 function dirPromptIfNecessary (filelist, directory) {
-    if (directory == undefined || directory == null || directory.length == 0) {
+    if (directory === undefined || directory === null || directory.length === 0) {
         openUploadDirectoryDialog(filelist);
     }
     else {
@@ -933,8 +930,7 @@ function uploadAfterDialog(filelist, directory) {
     checkDiskQuota(function(diskInfo)
     {
         var validateObj = validateDiskQuota(diskInfo, totalSize);
-        if(validateObj.error == false)
-        {
+        if(validateObj.error === false) {
             // Do each upload
             for (var i = 0; i < filelist.length; i++) {
                 // Create the done indicator
@@ -1225,9 +1221,9 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                 droppable: false,
                 draggable: false,
                 click: function(event) {
-                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") == 0;
-                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") == 0;
+                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") === 0;
+                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") === 0;
+                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") === 0;
 
                     var listObject = $(event.target).closest(".search-widget");
                     var url = listObject.attr("name");
@@ -1245,7 +1241,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                 success: function(data) {
                                     showSuccessMessage(data);
 
-                                    $(".left-nav-genomespace-refresh-real").trigger("click");
+                                    refreshGenomeSpaceTree();
                                 },
                                 error: function(data) {
                                     if (typeof data === 'object') {
@@ -1273,7 +1269,7 @@ function createGenomeSpaceWidget(linkElement, appendTo) {
                                         success: function(data) {
                                             showSuccessMessage(data);
 
-                                            $(".left-nav-genomespace-refresh-real").trigger("click");
+                                            refreshGenomeSpaceTree();
                                         },
                                         error: function(data) {
                                             if (typeof data === 'object') {
@@ -1498,7 +1494,7 @@ function createInputFileWidget(linkElement, appendTo) {
                 droppable: false,
                 draggable: false,
                 click: function(event) {
-                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") == 0;
+                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") === 0;
 
                     if (openAction) {
                         window.open(url);
@@ -1537,6 +1533,14 @@ function refreshUploadTree() {
     uploadTree.jstree("refresh");
 
     $("#uploadDirectoryTree").jstree("refresh");
+}
+
+function refreshGenomeSpaceTree() {
+    var gsTree = $("#genomeSpaceFileTree");
+    gsTree.data("dndReady", {});
+    gsTree.jstree("refresh");
+
+    $("#saveTree").jstree("refresh");
 }
 
 function createFileWidget(linkElement, appendTo) {
@@ -1668,16 +1672,16 @@ function createFileWidget(linkElement, appendTo) {
                 click: function(event) {
                     var actionClicked = $(event.target).closest(".module-listing").find(".module-name").text().trim();
 
-                    var saveAction = actionClicked.indexOf("Save File") == 0 || actionClicked.indexOf("Save Directory") == 0;
-                    var deleteAction = actionClicked.indexOf("Delete") == 0;
-                    var subdirAction = actionClicked.indexOf("Create Subdirectory") == 0;
-                    var uploadAction = actionClicked.indexOf("Upload") == 0;
-                    var pipelineAction = actionClicked.indexOf("Create Pipeline") == 0;
-                    var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") == 0;
-                    var renameAction = actionClicked.indexOf("Rename") == 0;
-                    var jobCopyAction = actionClicked.indexOf("Copy to Files") == 0;
-                    var moveAction = actionClicked.indexOf("Move") == 0;
-                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") == 0;
+                    var saveAction = actionClicked.indexOf("Save File") === 0 || actionClicked.indexOf("Save Directory") === 0;
+                    var deleteAction = actionClicked.indexOf("Delete") === 0;
+                    var subdirAction = actionClicked.indexOf("Create Subdirectory") === 0;
+                    var uploadAction = actionClicked.indexOf("Upload") === 0;
+                    var pipelineAction = actionClicked.indexOf("Create Pipeline") === 0;
+                    var genomeSpaceAction = actionClicked.indexOf("Save to Genomespace") === 0;
+                    var renameAction = actionClicked.indexOf("Rename") === 0;
+                    var jobCopyAction = actionClicked.indexOf("Copy to Files") === 0;
+                    var moveAction = actionClicked.indexOf("Move") === 0;
+                    var openAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Open") === 0;
 
                     var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                     var url = listObject.attr("data-url");
@@ -1693,7 +1697,6 @@ function createFileWidget(linkElement, appendTo) {
 
                         $(".search-widget:visible").searchslider("hide");
                     }
-
                     else if (openAction) {
                         window.open(url);
                         $(".search-widget:visible").searchslider("hide");
@@ -1707,7 +1710,7 @@ function createFileWidget(linkElement, appendTo) {
                             var exceeded = false;
                             var willBeExceeded = false;
 
-                            if(diskInfo != undefined && diskInfo != null)
+                            if(diskInfo !== undefined && diskInfo !== null)
                             {
                                 //first check if disk quota was already exceeded
                                 exceeded = diskInfo.aboveQuota;
@@ -2252,6 +2255,15 @@ function createJobWidget(job) {
         });
     }
 
+    if (job.launchUrl != undefined && job.launchUrl != null) {
+        actionData.push({
+            "lsid": "",
+            "name": "Relaunch",
+            "description": "Launch the viewer using the same input.",
+            "version": "<span class='glyphicon glyphicon-off' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+        });
+    }
+
     var actionList = $("<div></div>")
         .attr("class", "job-widget-actions")
         .modulelist({
@@ -2260,11 +2272,12 @@ function createJobWidget(job) {
             droppable: false,
             draggable: false,
             click: function(event) {
-                var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Job Status") == 0;
-                var downloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Download") == 0;
-                var reloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Reload") == 0;
-                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") == 0;
-                var terminateAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Terminate") == 0;
+                var statusAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Job Status") === 0;
+                var downloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Download") === 0;
+                var reloadAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Reload") === 0;
+                var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") === 0;
+                var terminateAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Terminate") === 0;
+                var relaunchAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Relaunch") === 0;
 
                 var listObject = $(event.target).closest(".search-widget").find(".send-to-param-list");
                 var url = listObject.attr("data-url");
@@ -2325,7 +2338,11 @@ function createJobWidget(job) {
 
                     $(".search-widget:visible").searchslider("hide");
                 }
-
+                else if (relaunchAction)
+                {
+                    openJsViewer(job.taskName, job.launchUrl);
+                    $(".search-widget:visible").searchslider("hide");
+                }
                 else {
                     console.log("ERROR: Executing click function for Job " + job.jobId);
                     $(".search-widget:visible").searchslider("hide");
@@ -2362,9 +2379,9 @@ function createJobWidget(job) {
             droppable: false,
             draggable: false,
             click: function(event) {
-                var javaAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Java") == 0;
-                var matlabAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View MATLAB") == 0;
-                var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") == 0;
+                var javaAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Java") === 0;
+                var matlabAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View MATLAB") === 0;
+                var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") === 0;
 
                 if (javaAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java");
@@ -3259,16 +3276,16 @@ function updateDiskUsageBox(diskInfo)
     var percentUsed = 0;
 
     //diskInfo = null;
-    if(diskInfo != undefined && diskInfo != null)
+    if(diskInfo !== undefined && diskInfo !== null)
     {
-        if(diskInfo.diskUsageFilesTab != undefined && diskInfo.diskUsageFilesTab != null)
+        if(diskInfo.diskUsageFilesTab !== undefined && diskInfo.diskUsageFilesTab !== null)
         {
             diskUsedBytes = diskInfo.diskUsageFilesTab.numBytes;
             diskUsedDisplay = diskInfo.diskUsageFilesTab.displayValue;
             diskUsedDisplay = diskUsedDisplay.toUpperCase();
         }
 
-        if(diskInfo.diskQuota != undefined && diskInfo.diskQuota != null)
+        if(diskInfo.diskQuota !== undefined && diskInfo.diskQuota !== null)
         {
             diskQuotaBytes = diskInfo.diskQuota.numBytes;
             diskQuotaDisplay = diskInfo.diskQuota.displayValue;
@@ -3291,13 +3308,13 @@ function updateDiskUsageBox(diskInfo)
 
             var diskAndQuotaLabel = null;
             var title = "Disk Usage and Quota";
-            if(diskUsedDisplay == null)
+            if(diskUsedDisplay === null)
             {
                 //disk usage is not available
                 //so stop and do not display anything
                 return;
             }
-            else if(diskQuotaDisplay == null)
+            else if(diskQuotaDisplay === null)
             {
                 diskAndQuotaLabel = diskUsedDisplay;
                 title = "Disk Usage";
@@ -3327,10 +3344,10 @@ function updateDiskUsageBox(diskInfo)
 
             var jqQuotaTooltip = $("#disk-quota-tooltip");
 
-            quotaInfoTable.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>")
+            quotaInfoTable.append("<tr><td><em>Files tab:</em></td><td>" + diskUsedDisplay +"</td></tr>");
 
             //only display quota information if it is available
-            if(diskQuotaDisplay != null)
+            if(diskQuotaDisplay !== null)
             {
                 quotaInfoTable.append("<tr><td><em>Quota:</em></td><td>" + diskQuotaDisplay +"</td></tr>")
             }
@@ -3355,12 +3372,10 @@ function initStatusBox()
         type: "GET",
         url: "/gp/rest/v1/disk",
         cache: false,
-        success: function (response)
-        {
+        success: function (response) {
             console.log(response);
 
-            if(response != null)
-            {
+            if (response !== null) {
                 updateDiskUsageBox(response);
             }
         },

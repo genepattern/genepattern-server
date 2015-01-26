@@ -33,6 +33,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -241,7 +242,7 @@ public class RunTaskHelper {
     }
 
     private void setParameterValues(HttpServletRequest request) throws IOException {
-        String server = System.getProperty("GenePatternURL");
+        String server = ServerConfigurationFactory.instance().getGpUrl();
         if (server == null || server.trim().length() == 0) {
             String portStr = System.getProperty("GENEPATTERN_PORT", "");
             portStr = portStr.trim();

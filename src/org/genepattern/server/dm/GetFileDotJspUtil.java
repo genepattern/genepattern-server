@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.dm.webupload.WebUploadPath;
 import org.genepattern.webservice.TaskInfo;
@@ -33,13 +34,8 @@ public class GetFileDotJspUtil {
 
     //helper methods for getting GpFilePath instances from legacy 'getFile.jsp' urls
     static public GpFilePath getRequestedGpFileObjFromGetFileDotJsp(String urlStr) throws Exception {
-        //TODO: put all of the GenePatternURL code into a single utility class
-        String genePatternUrl = System.getProperty("GenePatternURL");
-        if (genePatternUrl == null) {
-            throw new Exception("Missing required system property, GenePatternURL");
-        }
-        //GP_Path=/gp
-        String gpPath = System.getProperty("GP_Path", "/gp");
+        String genePatternUrl = ServerConfigurationFactory.instance().getGpUrl();
+        String gpPath=ServerConfigurationFactory.instance().getGpPath();
         //1) handle '<GenePatternURL>' literal
         if (urlStr.startsWith("<GenePatternURL>")) {
             urlStr = urlStr.replace("<GenePatternURL>", genePatternUrl);

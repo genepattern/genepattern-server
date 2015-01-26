@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The contents of this file will be loaded for each web application -->
+<!-- The contents of this file will be loaded for each web application,
+    See: http://tomcat.apache.org/tomcat-5.5-doc/config/context.html
+ -->
 <Context>
+    <Parameter name="GENEPATTERN_HOME" value="" 
+        description="The fully qualified path to the GenePattern home directory. When not set it defaults to the startup directory for the application server." 
+        override="false" />
+
     <!-- Default set of monitored resources -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
     
@@ -10,16 +16,13 @@
     -->
 
     <!-- Configure JNDI DataSource -->
-    <!--  
-        To use a different datasource, edit the Hibernate configuration file, ./WEB-INF/classes/hibernate.cfg.xml.
-        The default entry,
-            hibernate.connection.datasource=java:comp/env/jdbc/gp/hsql
-        uses the ResourceLink name="jdbc/gp/hsql" defined in this file.
-        
-        Note: the user and password properties are set here, and they must not be set in the hibernate.cfg.xml file.
-    -->
+    <!--  Example configuration, by default the database connection is set in the ./resources/database_default.properties file -->
+    <!--     It can be customized by editing the ./resources/database_custom.properties file -->
+    
+    <!--  These example data sources were in GP <= 3.9.0 -->
     
     <!--  default configuration, using HSQLDB -->
+    <!--  
     <Resource name="jdbc/gp/hsql"
         description="hsqldb using c3p0 connection pool"
         auth="Application"
@@ -38,8 +41,10 @@
         automaticTestTable="CONNECTION_TEST"
     />
     <ResourceLink name="jdbc/gp/hsql" type="com.mchange.v2.c3p0.ComboPooledDataSource" />
-
+    -->
+    
     <!--  example configuration, using Oracle with c3p0 connection pool -->
+    <!-- 
     <Resource name="jdbc/gp/oracle_c3p0"
         description="GP Oracle DB and c3p0 connection pool"
         auth="Application"
@@ -59,5 +64,6 @@
         automaticTestTable="CONNECTION_TEST"
     />
     <ResourceLink name="jdbc/gp/oracle_c3p0" type="com.mchange.v2.c3p0.ComboPooledDataSource" />
+    -->
     
 </Context>

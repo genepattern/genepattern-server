@@ -71,7 +71,7 @@ public class JobCommentDao
         try {
             HibernateUtil.beginTransaction();
 
-            String hql = "from "+JobComment.class.getName()+" jc where jc.gpJobNo = :gpJobNo ";
+            String hql = "from "+JobComment.class.getName()+" jc where jc.gpJobNo = :gpJobNo order by jc.postedDate desc";
 
             Query query = HibernateUtil.getSession().createQuery( hql );
             query.setInteger("gpJobNo", gpJobNo);

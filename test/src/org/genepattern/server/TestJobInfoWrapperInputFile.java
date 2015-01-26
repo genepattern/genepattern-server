@@ -18,7 +18,6 @@ public class TestJobInfoWrapperInputFile {
 
     @Before
     public void setUp() {
-        System.setProperty("soap.attachment.dir", "../temp/attachments");
         taskInfo=null;
         jobInfo=new JobInfo();
         jobInfo.setJobNumber(jobNumber);

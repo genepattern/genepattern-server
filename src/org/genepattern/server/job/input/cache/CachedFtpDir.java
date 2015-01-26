@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,17 +12,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.choice.FtpDirFilter;
-import org.genepattern.server.job.input.choice.RemoteDirLister;
+import org.genepattern.server.job.input.choice.DirFilter;
+import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
+import org.genepattern.server.job.input.choice.ftp.FtpDirListerCommonsNet_3_3;
+import org.genepattern.server.job.input.choice.ftp.FtpDirListerEdtFtpJ;
+import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
 /**
@@ -36,6 +35,58 @@ import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 public class CachedFtpDir implements CachedFile {
     private static Logger log = Logger.getLogger(CachedFtpDir.class);
 
+    /**
+     * Initialize an ftp directory lister. 
+     * Customization options can be set in the config_yaml file.
+     * 
+     * <pre>
+    # By default use EDT_FTP_J client, optionally revert to COMMONS_NET_3_3 client.
+    ftpDownloader.type: EDT_FTP_J | COMMONS_NET_3_3
+    gp.server.choice.ftp_username: "anonymous"
+    gp.server.choice.ftp_password: "gp-help@broadinstitute.org"
+    # amount of time in milliseconds
+    gp.server.choice.ftp_socketTimeout: 15000
+    # only for COMMONS_NET_3_3 client
+    gp.server.choice.ftp_dataTimeout: 15000
+     * </pre>
+     * 
+     * @param gpConfig
+     * @param gpContext
+     * @return
+     */
+    public static FtpDirLister initDirListerFromConfig(GpConfig gpConfig, GpContext gpContext) {
+        if (gpConfig==null) {
+            gpConfig=ServerConfigurationFactory.instance();
+        }
+        // special-case, initialize default passiveMode from gpConfig
+        boolean passiveMode=gpConfig.getGPBooleanProperty(gpContext, FtpDirLister.PROP_FTP_PASV, true);
+        return initDirListerFromConfig(gpConfig, gpContext, passiveMode);
+    }
+
+    public static FtpDirLister initDirListerFromConfig(GpConfig gpConfig, GpContext gpContext, final boolean passiveMode) {
+        if (gpConfig==null) {
+            gpConfig=ServerConfigurationFactory.instance();
+        }
+        final String clientType=gpConfig.getGPProperty(gpContext, CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name());
+        if (log.isDebugEnabled()) {
+            log.debug("Initializing ftpDirLister from clientType="+clientType);
+        }
+        if (clientType.startsWith("EDT_FTP_J")) {
+            if (log.isDebugEnabled()) {
+                log.debug("initializing EDT_FTP_J directory lister");
+            }
+            // use EDT_FTP_J directory lister
+            return FtpDirListerEdtFtpJ.createFromConfig(gpConfig, gpContext, passiveMode);
+        }
+        else {
+            if (log.isDebugEnabled()) {
+                log.debug("initializing CommonsNet directory lister");
+            }
+            FtpDirLister dirLister = FtpDirListerCommonsNet_3_3.createFromConfig(gpConfig, gpContext, passiveMode);
+            return dirLister;
+        }
+    }
+    
     /**
      * Utility method for creating a new file with the given message as it's content.
      * @param message
@@ -131,19 +182,22 @@ public class CachedFtpDir implements CachedFile {
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+        catch (ListFtpDirException e) {
+            log.error(e);
+            throw new DownloadException(e);
+        }
         return localPath;
     }
 
-    private GpFilePath doDownload() throws DownloadException, InterruptedException {
+    private GpFilePath doDownload() throws ListFtpDirException, DownloadException, InterruptedException {
         setStatusToDownloading();
         
-        final List<String> filesToDownload = getFilesToDownload();
+        final List<FtpEntry> ftpEntries = getFilesToDownload();
         // loop through all of the files and start downloading ...
         try {
-            final boolean isDir=false;
-            for(final String fileToDownload : filesToDownload) {
+            for(final FtpEntry ftpEntry : ftpEntries) {
                 try {
-                    final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, fileToDownload, isDir);
+                    final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
                     f.get(100, TimeUnit.MILLISECONDS);
                 }
                 catch (TimeoutException e) {
@@ -152,8 +206,8 @@ public class CachedFtpDir implements CachedFile {
                 Thread.yield();
             }
             // now loop through all of the files and wait for each download to complete
-            for(final String fileToDownload : filesToDownload) {
-                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, fileToDownload, isDir);
+            for(final FtpEntry ftpEntry : ftpEntries) {
+                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
                 f.get();
             }
         }
@@ -194,44 +248,11 @@ public class CachedFtpDir implements CachedFile {
         //create a file in the tmpDir called "complete"
         writeToFile("Finished", new File(tmpDir.getServerFile(), "complete"));
     }
-
-    public List<String> getFilesToDownload() throws DownloadException {
+    
+    public List<FtpEntry> getFilesToDownload() throws DownloadException, ListFtpDirException {
+        FtpDirLister dirLister = initDirListerFromConfig(gpConfig, jobContext);
         final String ftpDir=url.toExternalForm();
-        //1) get the listing of data files
-        FTPFile[] files=null;
-        try {
-            RemoteDirLister<FTPFile, ListFtpDirException> lister=FileCache.initDirLister(gpConfig, jobContext);
-            files=lister.listFiles(ftpDir);
-        }
-        catch (ListFtpDirException e) {
-            log.error(e);
-            throw new DownloadException("Error listing files from :"+ftpDir, e);
-        }
-        catch (Throwable t) {
-            files=new FTPFile[0];
-        }
-        
-        final List<String> filesToDownload=new ArrayList<String>();
-        // filter
-        final FTPFileFilter ftpDirFilter = new FtpDirFilter();
-        for(FTPFile ftpFile : files) {
-            if (!ftpDirFilter.accept(ftpFile)) {
-                log.debug("Skipping '"+ftpFile.getName()+ "' from ftpDir="+ftpDir);
-            }
-            else {
-                final String name=ftpFile.getName();
-                final String encodedName=UrlUtil.encodeURIcomponent(name);
-                final String value;
-                if (ftpDir.endsWith("/")) {
-                    value=ftpDir + encodedName;
-                }
-                else {
-                    value=ftpDir + "/" + encodedName;
-                }
-                filesToDownload.add(value);
-            }
-        }
-        return filesToDownload;
+        DirFilter filter=new DirFilter();
+        return dirLister.listFiles(ftpDir, filter);
     }
-
 }

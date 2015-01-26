@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 
 /**
@@ -28,7 +29,7 @@ public class WebUploadPath extends GpFilePath {
         this.jobId = jobId;
         super.setOwner(userid);
         this.filepath = filepath;
-        String str = System.getProperty("java.io.tmpdir");
+        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
         File rootWebUploadDir = new File(str);
         
         this.relativeFile = new File(filepath);

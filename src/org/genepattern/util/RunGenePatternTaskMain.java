@@ -298,8 +298,6 @@ class GenePatternNetworkClassLoader extends ClassLoader {
 
 	private URL makeURL(String className) throws MalformedURLException,
 			UnsupportedEncodingException {
-		// TODO: use System.getProperty("GenePatternURL");
-		//String utf8 = "UTF-8";
 		String GPAddress = "http://" + host + ":" + port + GP_URI
 				+ "?taskName=" + URLEncoder.encode(taskName, "UTF-8")
 				+ "&className=" + URLEncoder.encode(className, "UTF-8")

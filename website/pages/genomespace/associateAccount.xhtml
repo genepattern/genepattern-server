@@ -40,9 +40,7 @@
                 <div>You have successfully logged in through GenomeSpace, but
                     in order to use GenePattern you need to associate this account with a
                     GenePattern account. You'll only need to do this once, then the
-                    accounts will be associated hereafter. If you have an existing
-                    GenePattern account please log in. Otherwise we can automatically
-                    create a GenePattern account for you.<br /><br /></div>
+                    accounts will be associated hereafter.<br /><br /></div>
                 <table cols="2">
                     <tr>
                         <td width="400" valign="top"><h:form
@@ -76,7 +74,7 @@
                         </h:form></td>
 
                         <td width="400" valign="top"><h:form id="gsLoginForm">
-                            <h:commandLink action="#{genomeSpaceBean.autoCreateAccount}">
+                            <h:commandLink action="#{genomeSpaceBean.autoCreateAccount}" rendered="#{genomeSpaceBean.autoCreateEnabled}">
                                 <h:graphicImage url="/images/GP-logo.gif" />
                                 <f:verbatim>
                                     <br />
@@ -84,6 +82,9 @@
                                 </f:verbatim>
                                 <f:param name="login" value="Login" />
                             </h:commandLink>
+                            <h:outputText rendered="#{not genomeSpaceBean.autoCreateEnabled}">
+                                <a href="/gp/pages/registerUser.jsf" target="_blank">Register for a GenePattern account</a>
+                            </h:outputText>
                         </h:form></td>
                     </tr>
                 </table>

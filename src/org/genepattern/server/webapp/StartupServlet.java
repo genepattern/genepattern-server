@@ -28,11 +28,12 @@ import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -45,6 +46,8 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
 
+import com.google.common.base.Strings;
+
 /*
  * GenePattern startup servlet
  * 
@@ -52,85 +55,286 @@ import org.genepattern.webservice.TaskInfoCache;
  * @author Jim Lerner
  */
 public class StartupServlet extends HttpServlet {
-    private static Logger log = Logger.getLogger(StartupServlet.class);
 
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
+    private Logger log=null;
+    private Logger getLog() {
+        if (this.log==null) {
+            return Logger.getLogger(StartupServlet.class);
+        }
+        return this.log;
+    }
+    
+    private File gpWorkingDir=null;
+    private File gpHomeDir=null;
+    private File gpResourcesDir=null;
+    private File gpJobResultsDir=null;
+
     public StartupServlet() {
-        announceStartup();
     }
     
     public String getServletInfo() {
         return "GenePatternStartupServlet";
     }
+    
+    protected void setGpWorkingDir(final File gpWorkingDir) {
+        this.gpWorkingDir=gpWorkingDir;
+    }
+    
+    protected File getGpWorkingDir() {
+        return this.gpWorkingDir;
+    }
+    
+    protected void setGpHomeDir(final File gpHomeDir) {
+        this.gpHomeDir=gpHomeDir;
+    }
 
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        
-        //this is for debugging only
-        //System.setProperty("hibernate.jdbc.factory_class", "org.hibernate.jdbc.NonBatchingBatcherFactory");
-
-        log.info("\tinitializing properties...");
-        ServletContext application = config.getServletContext();
-        String genepatternProperties = config.getInitParameter("genepattern.properties");
-        application.setAttribute("genepattern.properties", genepatternProperties);
-        String customProperties = config.getInitParameter("custom.properties");
-        if (customProperties == null) {
-            customProperties = genepatternProperties;
+    public File getGpHomeDir() {
+        return gpHomeDir;
+    }
+    
+    protected void setGpResourcesDir(final File gpResourcesDir) {
+        this.gpResourcesDir=gpResourcesDir;
+    }
+    
+    protected File getGpResourcesDir() {
+        return this.gpResourcesDir;
+    }
+    
+    protected void setGpJobResultsDir(final File gpJobResultsDir) {
+        this.gpJobResultsDir=gpJobResultsDir;
+    }
+    
+    protected File getGpJobResultsDir() {
+        return this.gpJobResultsDir;
+    }
+    
+    /**
+     * Initialize the 'working directory' from which to resolve relative file paths.
+     * In previous versions (GP <= 3.9.0) relative paths were resolved relative to the working directory
+     * from which the GenePattern Server (or application server) is launched.
+     *     <pre>System.getProperty("user.dir");</pre>
+     * 
+     * In GP >=3.9.1, the default location is computed from the webappDir.
+     * E.g.
+     *     webappDir=<GenePatternServer>/Tomcat/webapps/gp
+     *     workingDir=<GenePatternServer>/Tomcat
+     *     <pre></pre>
+     *     
+     * For debugging/developing, you can override the default settings with a system property, 
+     *     -DGENEPATTERN_WORKING_DIR=/fully/qualified/path
+     */
+    protected File initGpWorkingDir(final ServletConfig servletConfig) {
+        return initGpWorkingDir(System.getProperty("GENEPATTERN_WORKING_DIR"), servletConfig);
+    }
+    
+    protected File initGpWorkingDir(final String gpWorkingDirProp, final ServletConfig servletConfig) {
+        if (!Strings.isNullOrEmpty(gpWorkingDirProp)) {
+            return new File(gpWorkingDirProp);
         }
-        application.setAttribute("custom.properties", customProperties);
-        loadProperties(config);
-        setServerURLs(config);
+        
+        if (this.gpHomeDir != null) {
+            return null;
+        }
+        
+        String gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
+        return new File(gpWorkingDir);
+    }
+    
+    /**
+     * Initialize the path to the GENEPATTERN_HOME directory for the web application.
+     * 
+     * If it's set as a system property, then use that value.
+     * If it's not already set as a system property then ...
+     *     Check the config.initParmater
+     * If it's not set as an initParameter then ...
+     *     Assume it's relative to the web application directory.
+     *     
+     * @param config
+     * @return
+     */
+    protected File initGpHomeDir(ServletConfig config) {
+        String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
+        return initGpHomeDir(gpHome, config);
+    }
 
-        final String expectedSchemaVersion=HsqlDbUtil.initExpectedSchemaVersion();
-        final String dbVendor = System.getProperty("database.vendor", "HSQL");
-        if (dbVendor.equals("HSQL")) {
+    protected File initGpHomeDir(final String gpHomeProp, final ServletConfig config) {
+        String gpHome=gpHomeProp;
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
+            gpHome = config.getInitParameter("GENEPATTERN_HOME");
+        }
+        if (Strings.isNullOrEmpty(gpHome)) {
+            gpHome = config.getInitParameter("gp.home");
+        }
+        
+        if (Strings.isNullOrEmpty(gpHome)) {
+            return null;
+        }
+        
+        //normalize
+        gpHome=GpConfig.normalizePath(gpHome);
+        
+        File gpHomeDir=new File(gpHome);
+        if (gpHomeDir.isAbsolute()) {
+            return gpHomeDir;
+        }
+        else { 
+            // special-case: handle relative path
+            System.err.println("GENEPATTERN_HOME='"+gpHome+"': Should not be a relative path");
+            gpHomeDir=new File(config.getServletContext().getRealPath("../../../"), gpHome).getAbsoluteFile();
+            System.err.println("Setting GENEPATTERN_HOME="+gpHomeDir);
+            return new File(gpHome);
+        } 
+    }
+    
+    /**
+     * Get the path to the 'resources' directory for the web application.
+     * 
+     * @param gpWorkingDir, the working director for the GenePattern Server.
+     * @return
+     */
+    protected File initResourcesDir(final File gpWorkingDir) {
+        File resourcesDir;
+        if (this.gpHomeDir != null) {
+            resourcesDir=new File(gpHomeDir, "resources");
+        }
+        else {
+            resourcesDir=new File(gpWorkingDir, "../resources");
+            if (!resourcesDir.exists()) {
+                // check for a path relative to working dir
+                resourcesDir=new File("../resources");
+            }
+        }
+        return new File(GpConfig.normalizePath(resourcesDir.getPath())).getAbsoluteFile();
+    }
+
+    /**
+     * Initialize the path to the Log4J logging directory.
+     */
+    protected void initLogDir() {
+        File logDir=null;
+        // By default, logDir is '<gpHomeDir>/logs'
+        if (this.gpHomeDir != null) {
+            logDir=new File(this.gpHomeDir, "logs");
+        }
+        // On older version of GP (which don't define a gpHomeDir) the logDir is '<gpWorkingDir>../logs'
+        else if (this.gpWorkingDir != null) {
+            logDir=new File(this.gpWorkingDir, "../logs");
+        }
+        else {
+            System.err.println("gpHomeDir and gpWorkingDir are not defined, setting log dir relative to 'user.dir'");
+            logDir=new File(System.getProperty("user.dir"), "logs");
+        }
+        
+        try {
+            //File logDir=new File(this.gpWorkingDir, "../logs");
+            logDir=new File(GpConfig.normalizePath(logDir.getPath()));
+            if (!logDir.exists()) {
+                boolean success=logDir.mkdirs();
+                if (success) {
+                    System.out.println("Created log directory: "+logDir);
+                }
+            }
+            System.setProperty("gp.log", logDir.getAbsolutePath());
+
+            File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
+            PropertyConfigurator.configure(log4jProps.getAbsolutePath());
+            this.log=Logger.getLogger(StartupServlet.class);
+            ServerConfigurationFactory.setLogDir(logDir);
+        }
+        catch (Throwable t) {
+            System.err.println("Error initializing logger");
+            t.printStackTrace();
+        }
+    }
+    
+    public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        this.gpHomeDir=initGpHomeDir(servletConfig);
+
+        this.gpWorkingDir=initGpWorkingDir(servletConfig);
+        ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
+        
+        // must init resourcesDir ...
+        this.gpResourcesDir=initResourcesDir(gpWorkingDir);
+        ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
+        // ...  before initializing logDir 
+        initLogDir();
+
+        // must initialize logger before calling any methods which output to the log
+        announceStartup();
+
+        getLog().info("\tinitializing properties...");
+        getLog().info("\tGENEPATTERN_HOME="+gpHomeDir);
+        getLog().info("\tgpWorkingDir="+gpWorkingDir);
+        getLog().info("\tresources="+gpResourcesDir);
+
+        loadProperties(servletConfig); // assumes this.gpResourcesDir and this.gpWorkingDir are initialized
+        setServerURLs(servletConfig);
+
+        ServerConfigurationFactory.reloadConfiguration();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        GpContext gpContext=GpContext.getServerContext();
+        String gpVersion=gpConfig.getGenePatternVersion();
+
+        if ("HSQL".equals(gpConfig.getDbVendor())) {
+            // automatically start the DB
             try {
-                String hsqlArgs = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-
-                log.info("\tstarting HSQL database...");
-                HsqlDbUtil.startDatabase(hsqlArgs, expectedSchemaVersion);
+                String[] hsqlArgs=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext); 
+                getLog().info("\tstarting HSQL database...");
+                HsqlDbUtil.startDatabase(hsqlArgs);
             }
             catch (Throwable t) {
-                log.error("Unable to start HSQL Database!", t);
+                getLog().error("Unable to start HSQL Database!", t);
                 return;
             }
         }
         
-        log.info("\tchecking database connection...");
+        getLog().info("\tchecking database connection...");
         try {
             HibernateUtil.beginTransaction();
         }
         catch (Throwable t) {
-            log.debug("Error connecting to the database", t);
+            getLog().debug("Error connecting to the database", t);
             Throwable cause = t.getCause();
             if (cause == null) {
                 cause = t;
             }
-            log.error("Error connecting to the database: "+cause);
-            log.error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            getLog().error("Error connecting to the database: " + cause);
+            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
             throw new ServletException(t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+
+        try {
+            getLog().info("\tinitializing database schema ...");
+            HsqlDbUtil.updateSchema(gpResourcesDir, gpConfig.getDbSchemaPrefix(), gpVersion);
+        }
+        catch (Throwable t) {
+            getLog().error("Error initializing DB schema", t);
+        }
+        
         
         //load the configuration file
         try {
-            log.info("\tinitializing ServerConfiguration...");
+            getLog().info("\tinitializing ServerConfiguration...");
             String configFilepath = ServerConfigurationFactory.instance().getConfigFilepath();
         }
         catch (Throwable t) {
-            log.error("error initializing ServerConfiguration", t);
+            getLog().error("error initializing ServerConfiguration", t);
         }
         
         //initialize the taskInfoCache
         try {
-            log.info("\tinitializing TaskInfoCache...");
+            getLog().info("\tinitializing TaskInfoCache...");
             TaskInfoCache.instance();
         }
         catch (Throwable t) {
-            log.error("error initializing taskInfo cache", t);
+            getLog().error("error initializing taskInfo cache", t);
         }
         
         CommandManagerFactory.startJobQueue();
@@ -139,30 +343,30 @@ public class StartupServlet extends HttpServlet {
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
         //clear system alert messages
-        log.info("\tinitializing system messages...");
+        getLog().info("\tinitializing system messages...");
         try {
             SystemAlertFactory.getSystemAlert().deleteOnRestart();
         }
         catch (Exception e) {
-            log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
+            getLog().error("Error clearing system messages on restart: " + e.getLocalizedMessage(), e);
         }
         
         //attempt to migrate user upload files from GP 3.3.2 to GP 3.3.3
         try {
-            log.info("\tinitializing user upload directories ...");
+            getLog().info("\tinitializing user upload directories ...");
             MigrationTool.migrateUserUploads();
         }
         catch (Throwable t) {
-            log.error("Error initializing user upload directories: "+t.getLocalizedMessage(), t);
+            getLog().error("Error initializing user upload directories: " + t.getLocalizedMessage(), t);
         }
         
         //attempt to migrate job upload files from GP 3.3.2 (and earlier) to GP 3.3.3
         try {
-            log.info("\tmigrating job upload directories ...");
+            getLog().info("\tmigrating job upload directories ...");
             MigrationTool.migrateJobUploads();
         }
         catch (Throwable t) {
-            log.error("Error migrating job upload directories: "+t.getLocalizedMessage(), t);
+            getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
         }
         
         //start the JobPurger
@@ -197,7 +401,7 @@ public class StartupServlet extends HttpServlet {
         String genePatternURL = System.getProperty("GenePatternURL", "");
         if (genePatternURL == null || genePatternURL.trim().length() == 0) {
             try {
-                log.error("Error, GenePatternURL not set, initializing from canonical host name ... ");
+                getLog().error("Error, GenePatternURL not set, initializing from canonical host name ... ");
                 InetAddress addr = InetAddress.getLocalHost();
                 String host_address = addr.getCanonicalHostName();
                 String portStr = System.getProperty("GENEPATTERN_PORT", "");
@@ -208,7 +412,7 @@ public class StartupServlet extends HttpServlet {
                 contextPath = System.getProperty("GP_Path", "/gp");
                 String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
                 System.setProperty("GenePatternURL", genePatternServerURL);
-                log.error("setting GenePatternURL to "+genePatternServerURL);
+                getLog().error("setting GenePatternURL to " + genePatternServerURL);
             } 
             catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -222,7 +426,7 @@ public class StartupServlet extends HttpServlet {
         StringBuffer startupMessage = new StringBuffer();
         startupMessage.append(NL + STARS + NL);
         startupMessage.append("Starting GenePatternServer ... ");
-        log.info(startupMessage);
+        getLog().info(startupMessage);
     }
  
     protected void announceReady() {
@@ -232,8 +436,9 @@ public class StartupServlet extends HttpServlet {
             " built " + about.getDate() + " is ready.";
 
         String defaultRootJobDir = "";
+        GpContext serverContext = GpContext.getServerContext();
+
         try {
-            GpContext serverContext = GpContext.getServerContext();
             File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(serverContext);
             defaultRootJobDir = rootJobDir.getAbsolutePath();
         }
@@ -241,6 +446,7 @@ public class StartupServlet extends HttpServlet {
             defaultRootJobDir = "Server configuration error: "+t.getLocalizedMessage();
         }
 
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
@@ -248,43 +454,43 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tGenePatternURL: " + System.getProperty("GenePatternURL") + NL );
-        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
-        startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
-        startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
-        startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
-        startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
-        startupMessage.append("\tconfig.file: "+ServerConfigurationFactory.instance().getConfigFilepath() + NL);
+        startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
+        startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
+        startupMessage.append("\ttasklib: " + System.getProperty("tasklib") + NL);
+        startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
+        startupMessage.append("\tjava.io.tmpdir: " + System.getProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
+        startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
+        startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);
         startupMessage.append(stars);
-        
-        log.info(startupMessage);
+
+        getLog().info(startupMessage);
     }
 
     public void destroy() {
-        log.info("StartupServlet: destroy called");
+        getLog().info("StartupServlet: destroy called");
         
         //stop the job purger
         PurgerFactory.instance().stop();
 
         try {
-            log.info("stopping job queue ...");
+            getLog().info("stopping job queue ...");
             CommandManagerFactory.stopJobQueue();
-            log.info("done!");
+            getLog().info("done!");
         }
         catch (Throwable t) {
-            log.error("Error stopping job queue: "+t.getLocalizedMessage(), t);
+            getLog().error("Error stopping job queue: " + t.getLocalizedMessage(), t);
         }
 
-        String dbVendor = System.getProperty("database.vendor", "HSQL");
-        if (dbVendor.equals("HSQL")) {
+        if ("HSQL".equals(ServerConfigurationFactory.instance().getDbVendor())) {
             try {
-                log.info("stopping HSQLDB ...");
+                getLog().info("stopping HSQLDB ...");
                 HsqlDbUtil.shutdownDatabase();
-                log.info("done!");
+                getLog().info("done!");
             }
             catch (Throwable t) {
-                log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
+                getLog().error("Error stopoping HSQLDB: " + t.getLocalizedMessage(), t);
             }
         }
 
@@ -292,22 +498,22 @@ public class StartupServlet extends HttpServlet {
             Thread t = eThreads.nextElement();
             try {
                 if (t.isAlive()) {
-                    log.info("Interrupting " + t.getName());
+                    getLog().info("Interrupting " + t.getName());
                     t.interrupt();
                     t.setPriority(Thread.NORM_PRIORITY);
                     t.join();
-                    log.info(t.getName() + " exited");
+                    getLog().info(t.getName() + " exited");
                 }
             } 
             catch (Throwable e) {
-                log.error(e);
+                getLog().error(e);
             }
         }
         vThreads.removeAllElements();
 
-        log.info("StartupServlet: destroy, calling dumpThreads...");
+        getLog().info("StartupServlet: destroy, calling dumpThreads...");
         dumpThreads();
-        log.info("StartupServlet: destroy done");
+        getLog().info("StartupServlet: destroy done");
     }
 
     /**
@@ -317,9 +523,11 @@ public class StartupServlet extends HttpServlet {
      * resources/build.properties
      * 
      * @param config
+     * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
+     * 
      * @throws ServletException
      */
-    protected void loadProperties(ServletConfig config) throws ServletException {
+    protected void loadProperties(final ServletConfig config) throws ServletException {
         File propFile = null;
         File customPropFile = null;
         FileInputStream fis = null;
@@ -329,23 +537,29 @@ public class StartupServlet extends HttpServlet {
                 String propName = eConfigProps.nextElement();
                 String propValue = config.getInitParameter(propName);
                 if (propValue.startsWith(".")) {
-                    propValue = new File(propValue).getCanonicalPath();
+                    propValue = new File(this.gpWorkingDir, propValue).getAbsolutePath();
+                    propValue=GpConfig.normalizePath(propValue);
                 }
                 System.setProperty(propName, propValue);
             }
             Properties sysProps = System.getProperties();
-            String dir = sysProps.getProperty("genepattern.properties");
-            propFile = new File(dir, "genepattern.properties");
-            customPropFile = new File(dir, "custom.properties");
+            //String dir = sysProps.getProperty("genepattern.properties");
+            propFile = new File(this.gpResourcesDir, "genepattern.properties");
+            customPropFile = new File(this.gpResourcesDir, "custom.properties");
             Properties props = new Properties();
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-            log.info("\tloaded GP properties from " + propFile.getCanonicalPath());
-
+            
+            if (propFile.exists()) {
+                fis = new FileInputStream(propFile);
+                props.load(fis);
+                getLog().info("\tloaded GP properties from " + propFile.getCanonicalPath());
+            }
+            else {
+                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+            }
             if (customPropFile.exists()) {
                 customFis = new FileInputStream(customPropFile);
                 props.load(customFis);
-                log.info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
+                getLog().info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
             }
 
             // copy all of the new properties to System properties
@@ -355,39 +569,55 @@ public class StartupServlet extends HttpServlet {
                 if (val.startsWith(".")) {
                     //HACK: don't rewrite my value
                     if (! key.equals(JobResultsFilenameFilter.KEY)) {
-                        // why? why  is this here? -- PJC
-                        val = new File(val).getAbsolutePath();
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
+                        val=GpConfig.normalizePath(val);
                     }
                 }
                 sysProps.setProperty(key, val);
             }
 
-            propFile = new File(dir, "build.properties");
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-            fis.close();
-            fis = null;
+            if (propFile.exists()) {
+                propFile = new File(this.gpResourcesDir, "build.properties");
+                fis = new FileInputStream(propFile);
+                props.load(fis);
+                getLog().info("\tloaded build.properties from " + propFile.getCanonicalPath());
+            }
+            else {
+                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+            }
+            if (fis != null) {
+                fis.close();
+                fis = null;
+            }
+
             // copy all of the new properties to System properties
             for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
                 String key = (String) iter.next();
                 String val = props.getProperty(key);
-                if (val.startsWith(".")) {
+                if (key.equals("HSQL.args")) {
+                    //special-case for default path to the HSQL database
+                    //   replace 'file:../resources/GenePatternDB' with 'file:<workingDir>/resources/GenePatternDB'
+                    String dbPath=new File(this.gpWorkingDir,"../resources/GenePatternDB").getAbsolutePath();
+                    dbPath=GpConfig.normalizePath(dbPath);
+                    val = val.replace("file:../resources/GenePatternDB", "file:"+dbPath);
+                }
+                else if (val.startsWith(".")) {
                     //HACK: don't rewrite my value
                     if (! key.equals(JobResultsFilenameFilter.KEY)) {
-                        // why? why  is this here? -- PJC
-                        val = new File(val).getAbsolutePath();
+                        val = new File(this.gpWorkingDir, val).getAbsolutePath();
+                        val=GpConfig.normalizePath(val);
                     }
                 }
                 sysProps.setProperty(key, val);
             }
 
-            System.setProperty("serverInfo", config.getServletContext().getServerInfo());
+            //System.setProperty("serverInfo", config.getServletContext().getServerInfo());
 	    
             TreeMap tmProps = new TreeMap(sysProps);
             for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
                 String propName = (String) iProps.next();
                 String propValue = (String) tmProps.get(propName);
-                log.debug(propName + "=" + propValue);
+                getLog().debug(propName + "=" + propValue);
             }
         } 
         catch (IOException ioe) {
@@ -411,7 +641,7 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void dumpThreads() {
-        log.info("StartupServlet.dumpThreads: what's still running...");
+        getLog().info("StartupServlet.dumpThreads: what's still running...");
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
         while (tg.getParent() != null) {
             tg = tg.getParent();
@@ -428,37 +658,40 @@ public class StartupServlet extends HttpServlet {
             if (!t.isAlive()) {
                 continue;
             }
-            log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
+            getLog().info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
                     + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
 
             //for debugging            
             //if (t.getName().startsWith("Thread-")) {
-            //    log.info("what is this thread?");
+            //    getLog().info("what is this thread?");
             //    t.dumpStack();
             //    
             //    for(StackTraceElement e : t.getStackTrace()) {
             //        String m = ""+e.getClassName()+"."+e.getMethodName();
             //        String f = ""+e.getFileName()+":"+ e.getLineNumber();
-            //        log.info(""+m+", "+f);
+            //        getLog().info(""+m+", "+f);
             //    }
             //
-            //    log.info("calling Thread.stop()...");
+            //    getLog().info("calling Thread.stop()...");
             //    t.stop();
             //}
             
         }
         if (numThreads == MAX_THREADS) {
-            log.info("Possibly more than " + MAX_THREADS + " are running.");
+            getLog().info("Possibly more than " + MAX_THREADS + " are running.");
         }
     }
 }
 
 class LaunchThread extends Thread {
-    private static Logger log = Logger.getLogger(LaunchThread.class);
-
     Method mainMethod;
     String[] args;
     StartupServlet parent;
+
+    private static Logger getLog()
+    {
+        return Logger.getLogger(LaunchThread.class);
+    }
 
     public LaunchThread(String taskName, Method mainMethod, String[] args, StartupServlet parent) {
         super(taskName);
@@ -470,22 +703,22 @@ class LaunchThread extends Thread {
 
     public void run() {
         try {
-            log.debug("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
+            getLog().debug("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
             mainMethod.invoke(null, new Object[] { args });
             parent.log(getName() + " " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName()
                     + " returned from execution");
         } 
         catch (IllegalAccessException iae) {
-            log.error("Can't invoke main in " + getName(), iae);
+            getLog().error("Can't invoke main in " + getName(), iae);
         } 
         catch (IllegalArgumentException iae2) {
-            log.error("Bad args for " + getName(), iae2);
+            getLog().error("Bad args for " + getName(), iae2);
         } 
         catch (InvocationTargetException ite) {
-            log.error("InvocationTargetException for " + getName(), ite.getTargetException());
+            getLog().error("InvocationTargetException for " + getName(), ite.getTargetException());
         } 
         catch (Exception e) {
-            log.error("Exception for " + getName(), e);
+            getLog().error("Exception for " + getName(), e);
         }
     }
 }

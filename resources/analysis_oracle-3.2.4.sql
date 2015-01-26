@@ -22,7 +22,7 @@ INSERT INTO JOB_STATUS VALUES(0,'Waiting');
 --);
 
 -- update schema version
-INSERT INTO PROPS (KEY, VALUE) VALUES ('registeredVersion3.2.4', '3.2.4');
+UPDATE PROPS SET VALUE = '3.2.4' where KEY = 'schemaVersion';
 
 COMMIT;
 

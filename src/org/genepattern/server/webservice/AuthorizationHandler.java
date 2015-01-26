@@ -12,57 +12,22 @@
 
 package org.genepattern.server.webservice;
 
-import java.lang.reflect.Method;
-import java.util.Vector;
-
-import javax.xml.namespace.QName;
-
 import org.apache.axis.AxisFault;
-import org.apache.axis.Handler;
-import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
-import org.apache.axis.description.OperationDesc;
-import org.apache.axis.description.ServiceDesc;
-import org.apache.axis.handlers.soap.SOAPService;
-import org.apache.axis.i18n.Messages;
-import org.apache.axis.message.MessageElement;
-import org.apache.axis.message.SOAPEnvelope;
 import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 
 public class AuthorizationHandler extends GenePatternHandlerBase {
-    private IAuthorizationManager authManager = null;
 
-    public void init() {
-        super.init();
-        String gpprops = (String) getOption("genepattern.properties");
-        System.setProperty("genepattern.properties", gpprops);
-        String className = (String) getOption("org.genepattern.AuthorizationManager");
-        System.setProperty("org.genepattern.AuthorizationManager", className);
-        authManager = AuthorizationManagerFactory.getAuthorizationManager();
-    }
-
-    public void invoke(MessageContext msgContext) throws AxisFault {
-        Message requestMessage = msgContext.getCurrentMessage();
-
+    public void invoke(final MessageContext msgContext) throws AxisFault {
         String username = msgContext.getUsername();
-        if (username == null)
+        if (username == null) {
             username = "";
-        Handler serviceHandler = msgContext.getService();
-        String serviceName = serviceHandler.getName();
+        }
+        final String methodSig = getOperation(msgContext);
 
-        
-        String methodSig = getOperation(msgContext);
-
-        boolean allowed = authManager.isAllowed(methodSig, username);
-
-        // System.out.println("\n\t AH handler: " + methodSig + " called by " +
-        // username + " ok==>" + allowed);
-
+        final boolean allowed = AuthorizationManagerFactory.getAuthorizationManager().isAllowed(methodSig, username);
         if (!allowed) {
             throw new AxisFault("User " + username + " does not have permission to execute " + methodSig);
-
         }
-
     }
 }

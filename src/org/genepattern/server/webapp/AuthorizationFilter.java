@@ -12,10 +12,8 @@
 
 package org.genepattern.server.webapp;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -36,10 +33,7 @@ import org.genepattern.util.GPConstants;
  *
  */
 public class AuthorizationFilter implements Filter {
-    private IAuthorizationManager authManager = null;
-
     public void destroy() {
-        authManager = null;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
@@ -63,7 +57,7 @@ public class AuthorizationFilter implements Filter {
         uri = uri.substring(idx + 1);
 
         // check permission
-        boolean allowed = authManager.isAllowed(uri, userId);
+        boolean allowed = AuthorizationManagerFactory.getAuthorizationManager().isAllowed(uri, userId);
 
         if (!allowed) { 
             redirectToNotPermittedPage((HttpServletRequest) request, (HttpServletResponse) response);
@@ -76,27 +70,6 @@ public class AuthorizationFilter implements Filter {
     }
 
     public void init(FilterConfig filterconfig) throws ServletException {
-        try {
-            String dir = filterconfig.getInitParameter("genepattern.properties");
-            System.setProperty("genepattern.properties", dir);
-
-            File propFile = new File(dir, "genepattern.properties");
-            File customPropFile = new File(dir, "custom.properties");
-            Properties props = new Properties();
-
-            if (propFile.exists()) {
-                AuthenticationFilter.loadProperties(props, propFile);
-            }
-
-            if (customPropFile.exists()) {
-                AuthenticationFilter.loadProperties(props, customPropFile);
-            }
-
-            authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        } 
-        catch (Exception e) {
-            throw new ServletException(e);
-        }
     }
 
     public void redirectToNotPermittedPage(HttpServletRequest request, HttpServletResponse response) throws IOException {

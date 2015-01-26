@@ -1,22 +1,15 @@
 package org.genepattern.server.genomespace;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -24,27 +17,13 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.dm.ExternalFile;
-import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webapp.uploads.UploadFilesBean;
-import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.richfaces.component.UITree;
-import org.richfaces.component.html.HtmlTree;
-import org.richfaces.component.state.TreeState;
-import org.richfaces.event.NodeExpandedEvent;
-import org.richfaces.model.TreeRowKey;
 
 /**
  * This bean handles the information necessary for logging into GenomeSpace
@@ -60,21 +39,6 @@ public class GenomeSpaceBean {
     
     public static final String GENOMESPACE_REQUEST = "/gp/pages/genomespace/receiveFile.jsf";
     public static final String GENOMESPACE_OPENID = "/gp/GenomeSpaceOpenID";
-    
-    private boolean genomeSpaceEnabled = true;
-    private Boolean loggedIn = null;
-    private Boolean loading = null;
-    private boolean loginFailed = false;
-    private boolean tokenExpired = false;
-    private String genomeSpaceUsername = null;
-    private Map<String, List<TaskInfo>> kindToModules = null;
-    private String currentTaskLsid = null;
-    private TaskInfo currentTaskInfo = null;
-    private List<GenomeSpaceFile> fileTree = null;
-    private List<GenomeSpaceFile> allFiles = null;
-    private List<GenomeSpaceFile> allDirectories = null;
-    private Map<String, Set<String>> kindToTools = null;
-    private Map<String, Boolean> treeNodesExpanded = new HashMap<String, Boolean>();
 
     /**
      * Determine whether GenomeSpace is enabled when the bean is created.  This makes sure that GenomeSpace
@@ -82,52 +46,33 @@ public class GenomeSpaceBean {
      * config.yaml file then the user will need to log out and log back in before the GenomeSpace options are visible.
      */
     public GenomeSpaceBean() {
-        genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(UIBeanHelper.getUserContext());
-        log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId());
+        HttpSession session = UIBeanHelper.getSession();
+        boolean enabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(UIBeanHelper.getUserContext());
+        GenomeSpaceManager.setGenomeSpaceEnabled(session, enabled);
     }
-    
-    public synchronized void blankFileCache() {
-        allFiles = null;
-        allDirectories = null;
-    }
-    
-    /**
-     * Clears all the GenomeSpace session parameters kept in memory by the bean.
-     * Called when the user logs out of GenomeSpace.
-     */
-    public void clearSessionParameters() {
-        loginFailed = false;
-        genomeSpaceUsername = null;
-        kindToModules = null;
-        currentTaskLsid = null;
-        currentTaskInfo = null;
-        fileTree = null;
-        allFiles = null;
-        allDirectories = null;
-        kindToTools = null;
-    }
-    
+
     /**
      * Clears all errors after a page has been displayed that will show the errors.
      * Returns a String so that call can be embeded in a JSF page.
      * @return
      */
     public String getClearErrors() {
-        clearSessionParameters();
+        HttpSession session = UIBeanHelper.getSession();
+        GenomeSpaceManager.clearSessionParameters(session);
         return "";
     }
-    
+
     public String getReferAndForward() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
         HttpServletResponse response = UIBeanHelper.getResponse();
-        
+
         String referrer = LoginManager.getReferrer(request);
         if (referrer != null) {
             // LoginManager#getReferrer removes the 'origin' attribute from the session
             // calling that method from this bean should not do that, so put it back
             request.getSession().setAttribute("origin", referrer);
         }
-        
+
         if (referrer != null && referrer.contains(GENOMESPACE_REQUEST)){
             response.sendRedirect(GENOMESPACE_OPENID);
         }
@@ -136,73 +81,28 @@ public class GenomeSpaceBean {
     }
     
     /**
-     * Lets the GenomeSpace bean know that the token is expired
-     */
-    public void flagTokenExpired() {
-        tokenExpired = true;
-    }
-    
-    /**
      * Returns whether the GenomeSpace token has expired
      * @return
      */
     public boolean getTokenExpired() {
-        return tokenExpired;
+        HttpSession session = UIBeanHelper.getSession();
+        return GenomeSpaceManager.isTokenExpired(session);
     }
-    
-    /**
-     * If the GenomeSpace file tree has changed this method should be called to tell the bean that
-     * it should rebuild the tree the next time it loads.
-     */
-    public void forceFileRefresh() {
-        fileTree = null;
-        allFiles = null;
-        allDirectories = null;
-    }
-    
-    /**
-     * Used to determine if the file tree is still loading
-     * @return
-     */
-    public boolean getLoading() {
-        if (loading == null) {
-            setLoading(false);
-        }
-//            final HttpSession httpSession = UIBeanHelper.getSession();
-//            setLoading(true);
-//            new Thread() {
-//                public void run() {
-//                    try {
-//                        getFileTree(httpSession);
-//                    }
-//                    catch (Throwable t) {
-//                        log.error("ERROR: " + t.getMessage());
-//                    }
-//                    setLoading(false);
-//                }
-//            }.start();
-//        }
-        
-        return loading;
-    }
-    
-    private synchronized void setLoading(Boolean loaded) {
-        this.loading = loaded;
-    }
-    
+
     /**
      * Returns the set of child files for the given directory URL 
      * (passed into the request as the "directory" parameter)
      * @return Child files of the requested directory
      */
-    public Set<GenomeSpaceFile> getFilesRequested() {
+    public Set<GenomeSpaceFile> getFilesRequested() {HttpSession session = UIBeanHelper.getSession();
+
         String dirUrl = UIBeanHelper.getRequest().getParameter("directory");
         GenomeSpaceFile directory = null;
         if (dirUrl != null) {
-            directory = getDirectory(dirUrl);
+            directory = GenomeSpaceManager.getDirectory(session, dirUrl);
         }
         else {
-            directory = getFileTree().get(0);
+            directory = GenomeSpaceManager.getFileTreeLazy(session).get(0);
         }
         
         return directory.getChildFiles();
@@ -213,6 +113,10 @@ public class GenomeSpaceBean {
      * @return The JSF page navigation rule to go to next
      */
     public String submitLogin() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+        String genomeSpaceUsername = GenomeSpaceManager.getGenomeSpaceUsername(session);
+
         if (!genomeSpaceEnabled) {
             log.error("GenomeSpace is not enabled at GenomeSpace login");
             return HOME_NAVIGATION_KEY;
@@ -228,31 +132,36 @@ public class GenomeSpaceBean {
         if (env == null || genomeSpaceUsername == null || genomeSpacePassword == null) {
             log.error("Error getting login criteria for GenomeSpace. Username: " + genomeSpaceUsername + " Password: " + genomeSpacePassword + " Environment: " + env);
             this.setMessageToUser("Error logging into GenomeSpace");
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoggedIn(session, true);
             return LOGIN_FAIL_NAVIGATION_KEY;
         }
         
         try {
-            loggedIn = GenomeSpaceLoginManager.loginFromUsername(env, genomeSpaceUsername, genomeSpacePassword, UIBeanHelper.getSession());
+            boolean loggedIn = GenomeSpaceLoginManager.loginFromUsername(env, genomeSpaceUsername, genomeSpacePassword, UIBeanHelper.getSession());
+            GenomeSpaceManager.setLoggedIn(session, loggedIn);
             
             if (loggedIn) {
                 this.setMessageToUser("Signed in to GenomeSpace as " + genomeSpaceUsername);
-                loginFailed = false;
-                tokenExpired = false;
+                GenomeSpaceManager.setLoginFailed(session, false);
+                GenomeSpaceManager.setTokenExpired(session, false);
                 return HOME_NAVIGATION_KEY;
             }
             else {
                 log.error("GenomeSpaceLogin was null loging into GenomeSpace");
-                this.loginFailed = true;
+                GenomeSpaceManager.setLoginFailed(session, true);
                 this.setMessageToUser("Error logging into GenomeSpace");
                 return LOGIN_FAIL_NAVIGATION_KEY;
             }
         } 
         catch (Throwable e) {
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
             this.setMessageToUser(e.getMessage());
             return LOGIN_FAIL_NAVIGATION_KEY;
         }
+    }
+
+    public boolean isAutoCreateEnabled() {
+        return ServerConfigurationFactory.instance().getGPBooleanProperty(UIBeanHelper.getUserContext(), "genomeSpaceAutoCreate", true);
     }
     
     /**
@@ -260,6 +169,10 @@ public class GenomeSpaceBean {
      * @return
      */
     public boolean isLoggedIn() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+        Boolean loggedIn = GenomeSpaceManager.getLoggedIn(session);
+
         if (!genomeSpaceEnabled) {
             return false;
         }
@@ -275,7 +188,8 @@ public class GenomeSpaceBean {
                 return false;
             }
             else {
-                loggedIn = GenomeSpaceClientFactory.getGenomeSpaceClient().isLoggedIn(gsSessionObj);
+                loggedIn = GenomeSpaceClientFactory.instance().isLoggedIn(gsSessionObj);
+                GenomeSpaceManager.setLoggedIn(session, loggedIn);
             }
         }
 
@@ -288,6 +202,9 @@ public class GenomeSpaceBean {
      * @return
      */
     public String submitLogout() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+
         if (!genomeSpaceEnabled) {
             log.error("GenomeSpace is not enabled");
             return HOME_NAVIGATION_KEY;
@@ -295,11 +212,11 @@ public class GenomeSpaceBean {
         
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        GenomeSpaceClientFactory.getGenomeSpaceClient().logout(gsSession);
+        GenomeSpaceClientFactory.instance().logout(gsSession);
         httpSession.setAttribute(GenomeSpaceLoginManager.GS_USER_KEY, null);
         httpSession.setAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY, null);
-        clearSessionParameters();
-        loggedIn = null;
+        GenomeSpaceManager.clearSessionParameters(httpSession);
+        GenomeSpaceManager.setLoggedIn(session, null);
         setMessageToUser("Logged out of GenomeSpace.");
        
         return HOME_NAVIGATION_KEY;
@@ -313,13 +230,18 @@ public class GenomeSpaceBean {
      */
     @Deprecated
     public String submitRegistration() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+
         if (!genomeSpaceEnabled) {
             UIBeanHelper.setErrorMessage("GenomeSpace is not enabled");
             log.error("GenomeSpace is not enabled");
             return REG_FAIL_NAVIGATION_KEY;
         }
         
-        genomeSpaceUsername = UIBeanHelper.getRequest().getParameter("username");
+        String genomeSpaceUsername = UIBeanHelper.getRequest().getParameter("username");
+        GenomeSpaceManager.setGenomeSpaceUsername(session, genomeSpaceUsername);
+
         String genomeSpacePassword = UIBeanHelper.getRequest().getParameter("password");
         String regPassword = UIBeanHelper.getRequest().getParameter("regPassword");
         String regEmail = UIBeanHelper.getRequest().getParameter("email");
@@ -328,60 +250,36 @@ public class GenomeSpaceBean {
             log.error("Field null when trying to register for GenomeSpace " + genomeSpaceUsername + " " + genomeSpacePassword + 
                     " " + regPassword + " " + regEmail + " " + env);
             this.setMessageToUser("Error Registering With GenomeSpace");
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
             return REG_FAIL_NAVIGATION_KEY;
         }
         
         if (genomeSpaceUsername == null) {
             this.setMessageToUser("GenomeSpace username is blank");
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
             return REG_FAIL_NAVIGATION_KEY;
         }
         if (! regPassword.equals(genomeSpacePassword)) {
             UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
             return REG_FAIL_NAVIGATION_KEY;
         }
     
         try {
-            GenomeSpaceClientFactory.getGenomeSpaceClient().registerUser(env, genomeSpaceUsername, genomeSpacePassword, regEmail);
-            this.loginFailed = false;
+            GenomeSpaceClientFactory.instance().registerUser(env, genomeSpaceUsername, genomeSpacePassword, regEmail);
+            GenomeSpaceManager.setLoginFailed(session, false);
             submitLogin();
         }
         catch (GenomeSpaceException e) {
             log.error(e);
             setMessageToUser(e.getLocalizedMessage());
-            this.loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
             return REG_FAIL_NAVIGATION_KEY;
         }
       
         return HOME_NAVIGATION_KEY;
     }
-    
-    /**
-     * Initialize the current TaskInfo from the current task LSID.
-     * Used when viewing the RunTaskForm for a module.
-     */
-    public void initCurrentLsid() {
-        String currentUser = UIBeanHelper.getUserId();
-        AdminDAO adminDao = new AdminDAO();
-        this.currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
-    }
-    
-    /**
-     * Set the current task LSID.  Used when viewing the RunTaskForm for a module.
-     * @param selectedModule
-     */
-    public void setSelectedModule(String selectedModule) {
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        
-        // Ignore AJAX requests
-        if (request.getParameter("AJAXREQUEST") != null) { return; }
-        
-        this.currentTaskLsid = selectedModule;
-        initCurrentLsid();
-    }
-    
+
     /**
      * Send an info message to the user when is displayed when the next page loads.
      * @param messageToUser
@@ -396,12 +294,15 @@ public class GenomeSpaceBean {
      * @return
      */
     public Map<String, List<TaskInfo>> getKindToModules() {
+        HttpSession session = UIBeanHelper.getSession();
+        Map<String, List<TaskInfo>> kindToModules = GenomeSpaceManager.getKindToModules(session);
+
         if (kindToModules == null) {
             // Attain a copy of the kindToModules map
             TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
             List<TaskInfo> allModules = Arrays.asList(moduleArray);
             Map<String, Set<TaskInfo>> baseMap = SemanticUtil.getKindToModulesMap(allModules);
-            kindToModules = new HashMap<String, List<TaskInfo>>();
+            GenomeSpaceManager.setKindToModules(session, kindToModules);
             
             for (Map.Entry<String, Set<TaskInfo>> i : baseMap.entrySet()) {
                 List<TaskInfo> list = new ArrayList<TaskInfo>();
@@ -423,7 +324,8 @@ public class GenomeSpaceBean {
      * @return
      */
     public boolean isGenomeSpaceEnabled() {
-        return genomeSpaceEnabled;
+        HttpSession session = UIBeanHelper.getSession();
+        return GenomeSpaceManager.isGenomeSpaceEnabled(session);
     }
     
     /**
@@ -431,9 +333,14 @@ public class GenomeSpaceBean {
      * @return
      */
     public String getUsername() {
+        HttpSession session = UIBeanHelper.getSession();
+        String genomeSpaceUsername = GenomeSpaceManager.getGenomeSpaceUsername(session);
+
         if (genomeSpaceUsername == null) {
             // Lazily initialize
             genomeSpaceUsername = (String) UIBeanHelper.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+            GenomeSpaceManager.setGenomeSpaceUsername(session, genomeSpaceUsername);
+
         }
         return genomeSpaceUsername;
     }
@@ -444,343 +351,18 @@ public class GenomeSpaceBean {
      * @return
      */
     public boolean isLoginFailed() {
-        return loginFailed;
-    }
-    
-    /**
-     * Determines whether the file tree should be expanded by default
-     */
-    public boolean openTreeNode(UITree tree) {
-        Object key = tree.getRowKey();
-        Boolean expanded = treeNodesExpanded.get(key.toString());
-        if (expanded == null) {
-            expanded = false;
-        }
-        return expanded;
-    }
-    
-    /**
-     * Event to call when a node of the file tree is expanded or collapsed
-     * @param event
-     */
-    @SuppressWarnings("rawtypes")
-    public void updateExpand(NodeExpandedEvent event) {
-        Object source = event.getSource();
-        if (source instanceof HtmlTree) {
-            UITree tree = (HtmlTree) source;
-            
-            Object rowKey = tree.getRowKey();
-            TreeState state = (TreeState) tree.getComponentState();      
-            treeNodesExpanded.put(rowKey.toString(), state.isExpanded((TreeRowKey) rowKey));
-            
-            getAllDirectories();
-        }
-    }
-    
-    /**
-     * Recursively constructs a list of all GenomeSpace files in or in subdirectories of a provided directory.
-     * Adds these files to the provided list and then returns that list.
-     * @param list
-     * @param dir
-     * @return
-     */
-    private List<GenomeSpaceFile> buildFilesList(List<GenomeSpaceFile> list, GenomeSpaceFile dir) {
-        if (!dir.isDirectory()) {
-            log.error("buildFilesList() was given a non-directory: " + dir.getName());
-            return list;
-        }
-        
-        for (GenomeSpaceFile i : dir.getChildFilesNoLoad()) {
-            if (i.isDirectory()) {
-                buildFilesList(list, i);
-            }
-            else {
-                list.add(i);
-            }
-        }
-        
-        return list;
-    }
-    
-    /**
-     * Returns a flat list of all GenomeSpace files.
-     * Constructs the list of files if necessary
-     * @return
-     */
-    public synchronized List<GenomeSpaceFile> getAllFiles() {
-        if (isLoggedIn() && allFiles == null) {
-            allFiles = new ArrayList<GenomeSpaceFile>();
-            // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
-            // Since this is of type Set you cannot just get the first child, you have it iterate over the set
-            for (GenomeSpaceFile i : getFileTree()) {
-                allFiles = buildFilesList(new ArrayList<GenomeSpaceFile>(), i);
-                break;
-            }
-            
-        }
-        
-        return allFiles;
-    }
-    
-    /**
-     * Recursively builds a list of all GenomeSpace directories  given a parent directory.  Adds these directories
-     * to a provided list and then returns that list.
-     * @param list
-     * @param dir
-     * @return
-     */
-    private List<GenomeSpaceFile> buildDirectoriesList(List<GenomeSpaceFile> list, GenomeSpaceFile dir) {
-        if (!dir.isDirectory()) {
-            log.error("buildDirectoriesList() was given a non-directory: " + dir.getName());
-            return list;
-        }
-        
-        list.add(dir);
-        for (GenomeSpaceFile i : dir.getChildFilesNoLoad()) {
-            if (i.isDirectory()) {
-                buildDirectoriesList(list, i);
-      
-            }
-        }
-        
-        return list;
-    }
-    
-    /**
-     * Returns a flat list of all GenomeSpace directories
-     * Constructs the list of directories if necessary
-     * @return
-     */
-    public synchronized List<GenomeSpaceFile> getAllDirectories() {
-        if (isLoggedIn() && allDirectories == null) {
-            // Get the children of the dummy node, which should contain only one child: the GenomeSpace root directory
-            // Since this is of type Set you cannot just get the first child, you have it iterate over the set
-            for (GenomeSpaceFile i : getFileTree()) {
-                allDirectories = buildDirectoriesList(new ArrayList<GenomeSpaceFile>(), i);
-                break;
-            }
-        }
-        
-        return allDirectories;
-    }
-    
-    /*
-     * Get a list of SelectItem objects corresponding to the GenomeSpace directories
-     */
-    public List<SelectItem> getAllDirectorySelects() throws Exception {
-        if (allDirectories == null) {
-            getAllDirectories();
-        }    
-        List<SelectItem> selectItems = new ArrayList<SelectItem>();
-
-        for (GenomeSpaceFile dir : allDirectories) {
-            SelectItem item = new SelectItem();
-            item.setLabel(dir.getRelativePath());
-            item.setValue(dir.getUrl().toString());
-            selectItems.add(item);
-        }
-        return selectItems;
-    }
-    
-    /**
-     * Determines whether the GenomeSpace file free is empty
-     * @return
-     */
-    public boolean isEmptyTree() {
-        if (fileTree == null) return true;
-        GenomeSpaceFile file = fileTree.get(0);
-        if (file == null) return true;
-        Set<GenomeSpaceFile> children = file.getChildFilesNoLoad();
-        if (children == null) return true;
-        if (children.size() == 0) return true;
-        return false;
-    }
-    
-    /**
-     * Constructs the GenomeSpace file tree for display in the JSF.  Included in this construction is
-     * a dummy node which serves as the root node.  This dummy node is necessary because when the file
-     * tree is displayed using the JSF tree component the root node is always hidden in the display.  This
-     * allows the user to interact with the root GenomeSpace directory, since the dummy node is hidden, leaving
-     * the root GenomeSpace directory the most fundamental displayed node.
-     * @return
-     */
-    private List<GenomeSpaceFile> constructFileTree(HttpSession httpSession) {
-        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        if (gsSessionObject == null) {
-            log.error("ERROR: Null gsSession found in constructFileTree()");
-            gsSessionObject = GenomeSpaceBean.forceGsSession(httpSession);
-        }
-        GenomeSpaceFile data = GenomeSpaceClientFactory.getGenomeSpaceClient().buildFileTree(gsSessionObject);
-        List<GenomeSpaceFile> rootList = new ArrayList<GenomeSpaceFile>();
-        rootList.add(data);
-        
-        return rootList;
-    }
-    
-    /**
-     * Called to force the GenomeSpace Session to be attached to the GenePattern Session
-     */
-    public static Object forceGsSession(HttpSession gpSession) {
-        String username = (String) gpSession.getAttribute(GPConstants.USERID);
-        boolean loggedIn = false;
-        try {
-            loggedIn = GenomeSpaceLoginManager.loginFromDatabase(username, gpSession);
-        }
-        catch (GenomeSpaceException e) {
-            loggedIn = false;
-            log.error("ERROR: Exception forcing a login to GenomeSpace");
-        }
-        if (loggedIn) {
-            Object gsSession = gpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-            if (gsSession == null) {
-                log.error("ERROR: GenomeSpace session is still null");
-            }
-            return gsSession;
-        }
-        else {
-            log.error("ERROR: Unable to force GenomeSpace login");
-            return null;
-        }
-    }
-    
-    /**
-     * Returns a copy of the GenomeSpace file tree, initializing it lazily if it has not already been built.
-     * @return
-     */
-    public List<GenomeSpaceFile> getFileTree(HttpSession httpSession) {
-        if (fileTree == null) {
-            fileTree = constructFileTree(httpSession);
-        }
-        return fileTree;
-    }
-    
-    public List<GenomeSpaceFile> getFileTree() {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        return getFileTree(httpSession);
-    }
-    
-    /**
-     * If the URL has spaces that need encoded, encode them and return
-     * @param url
-     * @return
-     */
-    private URL encodeURLIfNecessary(URL url) {
-        // If this is true, encoding is not needed
-        if (url.toString().indexOf(" ") < 0) {
-            return url;
-        }
-        
-        // Do the encoding here
-        URI uri;
-        try {
-            uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), null);
-            return uri.toURL();
-        }
-        catch (Exception e) {
-            log.error("Error trying to encode a URL: " + url);
-            return url;
-        } 
-    }
-    
-    /**
-     * Iterates over the GenomeSpace file list--initializing lazily if necessary--and returns the first file found
-     * with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
-     * @param url
-     * @return
-     */
-    public GenomeSpaceFile getFile(URL url) {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        if (gsSession == null) {
-            log.error("ERROR: Null gsSession found in GenomeSpaceBean.getFile()");
-            gsSession = GenomeSpaceBean.forceGsSession(httpSession);
-        }
-        url = encodeURLIfNecessary(url);
-        return GenomeSpaceFileManager.createFile(gsSession, url);
-    }
-    
-    /**
-     * Iterates over the GenomeSpace file list--initializing lazily if necessary--and returns the first file found
-     * with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
-     * Takes the URL as a string and then converts to a URL object.
-     * @param url
-     * @return
-     */
-    public GenomeSpaceFile getFile(String url) {
-        try {
-            return getFile(new URL(url));
-        }
-        catch (MalformedURLException e) {
-            log.error("Error trying to get a URL object in getFile() for " + url);
-            return null;
-        }
+        HttpSession session = UIBeanHelper.getSession();
+        return GenomeSpaceManager.isLoginFailed(session);
     }
 
-    public String getTreeJSON() {
-        List<GenomeSpaceFile> tree = null;
-        tree = getFileTree();
-        tree = new ArrayList<GenomeSpaceFile>(tree.get(0).getChildFiles());
-
-        TreeJSON json = new TreeJSON(tree, this);
-        return json.toString();
-    }
-    
-    /**
-     * Iterates over the GenomeSpace directory list--initializing lazily if necessary--and returns the first 
-     * directory found with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
-     * @param url
-     * @return
-     */
-    public GenomeSpaceFile getDirectory(URL url) {
-        // First trial, if the directory is already in the cached list
-        // Second trial, clear the cached list, rebuild and try again
-        int ran = 0;
-        while (ran < 2) {
-            for (GenomeSpaceFile i : getAllDirectories()) {
-                URL iUrl;
-                try {
-                    iUrl = i.getUrl();
-                }
-                catch (Exception e) {
-                    log.error("Error getting url in getDirectory() from " + i.getName());
-                    continue;
-                }
-                if (url.toString().equals(iUrl.toString())) {
-                    return i;
-                }
-            }
-            ran++;
-            if (ran == 1) {
-                allDirectories = null;
-            }
-        }
-
-        log.info("Unable to find the GenomeSpace directory in the directory list: " + url);
-        return null;
-    }
-    
-    /**
-     * Iterates over the GenomeSpace directory list--initializing lazily if necessary--and returns the first 
-     * directory found with a matching GenomeSpace URL.  (In theory these URLs should be unique.)
-     * Takes the URL as a string and then converts to a URL object.
-     * @param url
-     * @return
-     */
-    public GenomeSpaceFile getDirectory(String url) {
-        try {
-            return getDirectory(new URL(url));
-        }
-        catch (MalformedURLException e) {
-            log.error("Error trying to get a URL object in getDirectory() for " + url);
-            return null;
-        }
-    }
-    
     /**
      * Handles submission from a GenomeSpace file menu to delete a GenomeSpace file.
      * Then signals the bean to rebuild the file tree next load, since the tree has changed.
      */
     public void deleteFile() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+
         if (!genomeSpaceEnabled) {
             this.setMessageToUser("GenomeSpace is not enabled");
             return;
@@ -788,16 +370,16 @@ public class GenomeSpaceBean {
         
         String url = UIBeanHelper.getRequest().getParameter("url");
         
-        GenomeSpaceFile file = getFile(url);
+        GenomeSpaceFile file = GenomeSpaceManager.getFile(session, url);
         if (file == null) {
-            file = getDirectory(url);
+            file = GenomeSpaceManager.getDirectory(session, url);
         }
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         
         try { 
-            boolean success = GenomeSpaceClientFactory.getGenomeSpaceClient().deleteFile(gsSessionObject, file);
-            forceFileRefresh(); // force a refresh
+            boolean success = GenomeSpaceClientFactory.instance().deleteFile(gsSessionObject, file);
+            GenomeSpaceManager.forceFileRefresh(session); // force a refresh
             if (success) { 
                 setMessageToUser("Deleted from GenomeSpace " + file.getName());
             }
@@ -815,6 +397,9 @@ public class GenomeSpaceBean {
      * Then signals the bean to rebuild the file tree next load, since the tree has changed.
      */
     public void createDirectory() {
+        HttpSession session = UIBeanHelper.getSession();
+        boolean genomeSpaceEnabled = GenomeSpaceManager.isGenomeSpaceEnabled(session);
+
         if (!genomeSpaceEnabled) {
             this.setMessageToUser("GenomeSpace is not enabled");
             return;
@@ -838,14 +423,14 @@ public class GenomeSpaceBean {
         
         // Get the parent directory
         String url = UIBeanHelper.getRequest().getParameter("parentUrl");
-        GenomeSpaceFile parentDir = getDirectory(url);
+        GenomeSpaceFile parentDir = GenomeSpaceManager.getDirectory(session, url);
         
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         
         try { 
-            GenomeSpaceClientFactory.getGenomeSpaceClient().createDirectory(gsSessionObject, dirName, parentDir);
-            forceFileRefresh(); // force a refresh
+            GenomeSpaceClientFactory.instance().createDirectory(gsSessionObject, dirName, parentDir);
+            GenomeSpaceManager.forceFileRefresh(session); // force a refresh
             setMessageToUser("Created directory " + dirName);
         }
         catch (GenomeSpaceException e) {
@@ -857,10 +442,11 @@ public class GenomeSpaceBean {
      * Handles submission from the GenomeSpace file menu to save a GenomeSpace file locally.
      */
     public void saveFile() {
+        HttpSession session = UIBeanHelper.getSession();
         String url = UIBeanHelper.getRequest().getParameter("url");
         
         try {
-            GenomeSpaceFile file = getFile(url);
+            GenomeSpaceFile file = GenomeSpaceManager.getFile(session, url);
             HttpServletResponse response = UIBeanHelper.getResponse();
             response.sendRedirect(file.getUrl().toString());
          
@@ -876,6 +462,9 @@ public class GenomeSpaceBean {
      * @return
      */
     public Map<String, List<ParameterInfoWrapper>> getSendToParameters() {
+        HttpSession session = UIBeanHelper.getSession();
+        TaskInfo currentTaskInfo = GenomeSpaceManager.getCurrentTaskInfo(session);
+
         if (currentTaskInfo != null) {
             return currentTaskInfo._getKindToParameterInfoMap();
         }
@@ -883,64 +472,13 @@ public class GenomeSpaceBean {
             return null;
         }
     }
-    
-    /**
-     * Handle form submission from an upload file menu to send a file local to GenePattern to GenomeSpace
-     * and puts it in the GenomeSpace directory selected.
-     * 
-     * Note: Currently assumes a user upload file.  May want to make this more generic in the future.
-     * @return - Message to return to the user
-     */
-    public String sendFileToGenomeSpace(String directoryURL, String fileURL) {
-        if (fileURL == null || directoryURL == null) {
-            log.error("Error saving a file to GenomeSpace: " + fileURL + " " + directoryURL);
-            return "Error Sending File to GenomeSpace";
-        }
-        
-        try {
-            GenomeSpaceFile directory = getDirectory(directoryURL);
-            GpFilePath file = GpFileObjFactory.getRequestedGpFileObj(fileURL);
-                //UserUploadManager.getUploadFileObj(UIBeanHelper.getUserContext(), new File(fileToSend), false);
-            
-            HttpSession httpSession = UIBeanHelper.getSession();
-            Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-            GenomeSpaceClientFactory.getGenomeSpaceClient().saveFileToGenomeSpace(gsSession, file, directory); 
-            setMessageToUser("File uploaded to GenomeSpace " + file.getName());
-            forceFileRefresh();
 
-            return "Successfully sent " + file.getName() + " to GenomeSpace";
-        }
-        catch (Throwable e) {
-            UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
-            log.error(e.getLocalizedMessage(), e);
-            return "Error: " + e.getLocalizedMessage();
-        }
-    }
-    
-    /**
-     * Returns a map of file kinds to a set of GenomeSpace tools (Cytoscape, Galaxy, GenePattern, etc.) that are 
-     * listed as accepting files of that kind.  This set is iterated over to display send to tools.
-     * @return
-     */
-    public Map<String, Set<String>> getKindToTools() {
-        // Protect against GenomeSpace not being enabled
-        if (!genomeSpaceEnabled) return null;
-        
-        if (kindToTools == null) {
-            HttpSession httpSession = UIBeanHelper.getSession();
-            Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-            if (gsSessionObject == null) return null;
-            kindToTools = GenomeSpaceClientFactory.getGenomeSpaceClient().getKindToTools(gsSessionObject);
-        }
-        
-        return kindToTools;
-    }
-    
     /**
      * Handles form submission for sending a GenomeSpace file to a GenomeSpace tool (Cytoscape, IGV, etc.).  Then 
      * forwards the user to the URL necessary to send the selected file to the selected tool.
      */
     public void forwardToTool() {
+        HttpSession session = UIBeanHelper.getSession();
         String filePath = UIBeanHelper.getRequest().getParameter("file");
         String tool = UIBeanHelper.getRequest().getParameter("tool");
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -951,8 +489,8 @@ public class GenomeSpaceBean {
         }
 
         try {
-            GenomeSpaceFile file = getFile(filePath);
-            URL url = GenomeSpaceClientFactory.getGenomeSpaceClient().getSendToToolUrl(gsSessionObject, file, tool);
+            GenomeSpaceFile file = GenomeSpaceManager.getFile(session, filePath);
+            URL url = GenomeSpaceClientFactory.instance().getSendToToolUrl(gsSessionObject, file, tool);
             HttpServletResponse response = UIBeanHelper.getResponse();
             response.sendRedirect(url.toString());
         }
@@ -960,106 +498,7 @@ public class GenomeSpaceBean {
             log.error("Error forwarding to the GenomeSpace tool URL: " + e.getMessage());
         }
     }
-    
-    /**
-     * Handles transferring a GenomeSpace file from GenomeSpace to the GenePattern server
-     * @param url
-     * @param destinationFile
-     * @throws IOException
-     * @throws GenomeSpaceException
-     */
-    private void downloadGenomeSpaceFile(URL url, File destinationFile) throws IOException, GenomeSpaceException {
-        InputStream is = null;
-        FileOutputStream fos = null;
-        try {
-            String gpUsername = UIBeanHelper.getUserId();
-            is = GenomeSpaceClientFactory.getGenomeSpaceClient().getInputStream(gpUsername, url);
-            fos = new FileOutputStream(destinationFile);
-            byte[] buf = new byte[100000];
-            int j;
-            while ((j = is.read(buf, 0, buf.length)) > 0) {
-                fos.write(buf, 0, j);
-            }
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-            if (fos != null) {
-                fos.close();
-            }
-        }
-    }
-    
-    /**
-     * Saves the given GenomeSpace file to the given user upload directory
-     * @param fileUrl
-     * @param directoryPath
-     */
-    public void saveFileToUploads(String fileUrl, String directoryPath) {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        if (gsSessionObject == null) {
-            log.error("ERROR: Null gsSession found in saveFileToUploads()");
-            gsSessionObject = GenomeSpaceBean.forceGsSession(httpSession);
-        }
-        
-        GpFilePath directory = null;
-        UploadFilesBean uploadBean = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");
-        for (DirectoryInfoWrapper i : uploadBean.getDirectories()) {
-            if (i.getPath().equals(directoryPath)) {
-                directory = i.getFile();
-                break;
-            }
-        }
-        
-        GpFilePath file = null;
-        String name = null;
-        if (fileUrl.contains("genomespace.org")) {
-            file = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(gsSessionObject, fileUrl);
 
-            
-            
-            // Append a new file extension on if the downloaded kind of different than the base
-            name = file.getName();
-            if (((GenomeSpaceFile) file).converted) {
-                name += "." + file.getKind();
-            }
-        }
-        else {
-            file = new ExternalFile(fileUrl);
-            name = file.getName();
-        }
-        
-        if (file == null || directory == null) {
-            UIBeanHelper.setErrorMessage("Unable to save GenomeSpace file to uploads directory");
-            log.error("Unable to get directory or file to save GenomeSpace file to uploads: " + file + " " + directory);
-            return;
-        }
-        
-        // Download the file
-        File serverFile = new File(directory.getServerFile(), name);
-        try {
-            downloadGenomeSpaceFile(file.getUrl(), serverFile);
-        }
-        catch (Exception e) {
-            log.error("Error downloading GenomeSpaceFile to input directory: " + e.getMessage());
-            return;
-        }
-
-        // Update Database
-        try {
-            GpContext context = UIBeanHelper.getUserContext();
-            File relativeFile = new File(directory.getRelativeFile(), name);
-            GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(context, relativeFile, true);
-            UserUploadManager.createUploadFile(context, asUploadFile, 1, true);
-            UserUploadManager.updateUploadFile(context, asUploadFile, 1, 1);
-        }
-        catch (Exception e) {
-            UIBeanHelper.setErrorMessage("Unable to update database to include new file");
-            log.error("Unable to update database to include new file " + e.getMessage());
-        }
-    }
-    
     /**
      * Associates a GenomeSpace account with a GenePattern account upon successful authentication with
      * the GenePattern account.  Then redirects to the GenePattern index page if successful.
@@ -1101,11 +540,11 @@ public class GenomeSpaceBean {
             response.sendRedirect(referrer); 
         }
         catch (AuthenticationException e) {
-            loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
         }
         catch (GenomeSpaceException e) {
             log.error("GenomeSpaceException in associateAccounts(): " + e.getMessage());
-            loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
         }
     }
     
@@ -1147,7 +586,7 @@ public class GenomeSpaceBean {
         }
         catch (GenomeSpaceException e) {
             log.error("GenomeSpaceException in autoCreateAccount(): " + e.getMessage());
-            loginFailed = true;
+            GenomeSpaceManager.setLoginFailed(session, true);
         }
     }
     
@@ -1160,19 +599,5 @@ public class GenomeSpaceBean {
         Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
         if (openID == null) openID = false;
         return openID;
-    }
-    
-    public URL getConvertedFileUrl(String fileUrl, String fileType) {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
-        GenomeSpaceFile file = getFile(fileUrl); 
-        try {
-            return GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSessionObject, file, fileType);
-        }
-        catch (GenomeSpaceException e) {
-            log.error("GenomeSpaceException in getConvertedFileUrl(): " + e.getMessage());
-            UIBeanHelper.setErrorMessage("Unable to send file to module: " + file.getName());
-            return null;
-        }
     }
 }

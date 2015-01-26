@@ -376,4 +376,14 @@ public class TaskInfo implements Serializable {
         return GPConstants.TASK_TYPE_VISUALIZER.equalsIgnoreCase(tia.get(GPConstants.TASK_TYPE));
     }
 
+    public static boolean isJavascript(TaskInfoAttributes tia)
+    {
+        if (tia != null && tia.get(GPConstants.CATEGORIES) != null)
+        {
+            return (tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER));
+        }
+
+        return false;
+    }
+
 }

@@ -3,23 +3,23 @@ package org.genepattern.drm;
 import org.genepattern.server.executor.CommandExecutorException;
 
 /**
- * Service provider interface for integrating a queuing system, aka job runner, into GenePattern, for example for PBS/Torque.
+ * Interface for integrating an external queuing system with a GenePattern installation.
  * 
- * The GenePattern Server will call startJob for each new GP job. It will poll for completion status by calling the
- * getStatus method, until the returned status indicates job completion.
+ * The GenePattern Server will call {@link #startJob(DrmJobSubmission)} for each new GP job. 
+ * It will poll for completion status by calling {@link #getStatus(DrmJobRecord)} until the returned status indicates job completion.
  * 
- * The GP server maintains a lookup table of drm jobId to GenePattern jobId.
+ * The server maintains a lookup table of external jobId to GenePattern jobId.
  * 
- * In GenePattern version <= 3.8.3, additional methods can be invoked, if they are defined.
+ * In GenePattern version >= 3.9.0, additional methods can be invoked, if they are defined.
  * <p>
  * If your JobRunner declares a 'setCommandProperties' method, it will be invoked on system startup before any jobs are submitted.
  * The CommandProperties argument is loaded from the 'configuration.properties' of the yaml file for the given JobRunner.
  * <pre>
-     public void setCommandProperties(CommandProperties properties);
+ public void setCommandProperties(CommandProperties properties);
  * </pre>
  * If your JobRunner declares a 'start' method, it will be invoked on system startup before any jobs are submitted.
  * <pre>
-   public void start();
+public void start();
  * </pre>
  * 
  * The JobExecutor uses reflection to check for this additional methods, so that older implementations of the JobRunner
@@ -47,14 +47,17 @@ public interface JobRunner {
     public static final String PROP_MEMORY="job.memory";
     public static final String PROP_JAVA_XMX="job.javaXmx";
     /**
-     * The 'job.walltime' runtime limit for the job in d-hh:mm:ss format, e.g.
+     * The 'job.walltime' runtime limit for the job in d-hh:mm:ss format.
+     * i.e.
      * <pre>
-     *     job.walltime: 1-00:00:00
+     * <code>job.walltime: 1-00:00:00</code>
      * </pre>
      */
     public static final String PROP_WALLTIME="job.walltime";
     public static final String PROP_NODE_COUNT="job.nodeCount";
+    /** 'job.cpuCount', the number of cpus requested for the given job  */
     public static final String PROP_CPU_COUNT="job.cpuCount";
+    /** 'job.extraArgs', additional command line arguments passed to the queuing system when submitting a job. */
     public static final String PROP_EXTRA_ARGS="job.extraArgs";
     /** The optional 'job.project' property specifies a queuing system specific project name for the job, for example the '-P' arg to the LSF bsub command. */
     public static final String PROP_PROJECT="job.project";

@@ -39,10 +39,11 @@ import org.jdom.input.SAXBuilder;
 
 public class AuthorizationManager implements IAuthorizationManager {
 
-    public AuthorizationManager() {
+    public AuthorizationManager(final File resourcesDir) {
         try {
-            init();
-        } catch (Exception e) {
+            init(resourcesDir);
+        } 
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -132,14 +133,14 @@ public class AuthorizationManager implements IAuthorizationManager {
         }
     }
 
-    public void init() throws IOException {
+    public void init(final File resourcesDir) throws IOException {
         try {
             //
             // read from the gp resources directory the following files
             // permissionMap.xml, actionPermissionMap.xml
             //
-            initPermissionMap();
-            initActionPermissionMap();
+            initPermissionMap(resourcesDir);
+            initActionPermissionMap(resourcesDir);
         } 
         catch (IOException ioe) {
             ioe.printStackTrace();
@@ -150,11 +151,12 @@ public class AuthorizationManager implements IAuthorizationManager {
         }
     }
 
-    public void initActionPermissionMap() throws IOException, JDOMException {
+    public void initActionPermissionMap(final File resourcesDir) throws IOException, JDOMException {
         InputStream is = null;
         org.jdom.Document document = null;
 
-        File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"), "actionPermissionMap.xml");
+        File actionPermissionMapFile = new File(resourcesDir, "actionPermissionMap.xml");
+        
         if (!actionPermissionMapFile.exists())
             return;
 
@@ -195,11 +197,11 @@ public class AuthorizationManager implements IAuthorizationManager {
         is.close();
     }
 
-    public void initPermissionMap() throws IOException, JDOMException {
+    public void initPermissionMap(final File resourcesDir) throws IOException, JDOMException {
         InputStream is = null;
         org.jdom.Document document = null;
 
-        File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
+        File permissionMapFile = new File(resourcesDir, "permissionMap.xml");
         if (!permissionMapFile.exists())
             return;
         is = new FileInputStream(permissionMapFile);

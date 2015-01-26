@@ -2,8 +2,9 @@ package org.genepattern.server.job.input.choice.ftp;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.commons.net.ftp.FTPFile;
-import org.genepattern.server.job.input.choice.RemoteDirLister;
+import java.util.List;
+
+import org.genepattern.server.job.input.choice.DirFilter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,22 +15,45 @@ import org.junit.Test;
  */
 public class TestCommonsNet_3_3_DirLister {
     final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
-    
-    private RemoteDirLister<FTPFile,ListFtpDirException> dirLister;
+    private FtpDirLister dirLister;
     
     @Before
     public void setUp() {
-        dirLister=CommonsNet_3_3_DirLister.createDefault();
+        dirLister = new FtpDirListerCommonsNet_3_3();
     }
     
     @Test
     public void listContents() throws ListFtpDirException {
-        FTPFile[] files=dirLister.listFiles(dirUrl);
-        assertEquals("num files", 4, files.length);
-        assertEquals("files[0].name", "01.txt", files[0].getName());
-        assertEquals("files[1].name", "02.txt", files[1].getName());
-        assertEquals("files[2].name", "03.txt", files[2].getName());
-        assertEquals("files[3].name", "04.txt", files[3].getName());
+        List<FtpEntry> files=dirLister.listFiles(dirUrl, new DirFilter());
+        
+        assertEquals("num files", 4, files.size());
+        assertEquals("files[0].name", "01.txt", files.get(0).getName());
+        assertEquals("files[1].name", "02.txt", files.get(1).getName());
+        assertEquals("files[2].name", "03.txt", files.get(2).getName());
+        assertEquals("files[3].name", "04.txt", files.get(3).getName());
+    }
+    
+    @Test
+    public void listContents_ofTypeDirectory() throws ListFtpDirException {
+        DirFilter dirFilter=new DirFilter(DirFilter.Type.dir);
+        List<FtpEntry> files=dirLister.listFiles(dirUrl, dirFilter);
+        assertEquals("num files", 0, files.size());
+    }
+    
+    @Test
+    public void listContents_filterByName() throws ListFtpDirException {
+        DirFilter dirFilter=new DirFilter(DirFilter.Type.dir, "!*.txt");
+        List<FtpEntry> files=dirLister.listFiles(dirUrl, dirFilter);
+        assertEquals("num files", 0, files.size()); 
+    }
+
+    @Test
+    public void listContents_filterByNames() throws ListFtpDirException {
+        DirFilter dirFilter=new DirFilter(DirFilter.Type.file, "01.txt", "02.txt");
+        List<FtpEntry> files=dirLister.listFiles(dirUrl, dirFilter);
+        assertEquals("num files", 2, files.size()); 
+        assertEquals("files[0].name", "01.txt", files.get(0).getName());
+        assertEquals("files[1].name", "02.txt", files.get(1).getName());
     }
 
 }

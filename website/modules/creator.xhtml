@@ -17,15 +17,18 @@
 
 	<title>Create GenePattern Module</title>
 
-	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/layout-default-latest.css" />
-    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/jquery.multiselect.css" />
-    <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
-    <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css" rel="stylesheet" type="text/css" media="screen" />
-    <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/header_style.css"  />
-    <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css"  />
-    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/creator.css" />
+	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/layout-default-latest.css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css" />
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.all.css" rel="stylesheet" type="text/css" media="screen" />
+    <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/header_style.css"  />
+    <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/frozen/style.css"  />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/creator.css" />
     <link href="../skin/favicon.ico" rel="shortcut icon" />
-    <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/menu.css" type="text/css" rel="stylesheet" />
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/menu.css" type="text/css" rel="stylesheet" />
+
+    <!-- Must load the skin CSS file last -->
+    <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
 
     <script src="/gp/js/jquery/jquery-1.8.3.js" type="text/javascript" />
     <script src="/gp/js/jquery/jquery-ui-1.9.2.js" type="text/javascript" />
@@ -83,8 +86,8 @@
     <!-- Footer -->
     <div class="ui-layout-south">
         <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
-        &copy;2003-2014&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
-        <a href="http://www.broadinstitute.org" target="_blank"><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
+        &copy;2003-2015&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+        <a href="http://www.broadinstitute.org" target="_blank"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
         </a>
     </div>
 
@@ -190,7 +193,7 @@
             <span>
                 Name*: <input type="text" id="modtitle" name="title" size="50"/>
                 <a href='createhelp.jsp#Name' target='help'>
-                    <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                    <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                 </a>
             </span>
             <span id="modversion">
@@ -204,9 +207,9 @@
             	<br /><a id="whatIsGparc" href="#">What is GParc?</a>
             </div>
             <span id="modcontrols">
-                <button id="helpbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon"/>Help</button>
-                <button id="savebtn"><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
-                <button id="saveRunbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Save &amp; Run</button> 
+                <button id="helpbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon"/>Help</button>
+                <button id="savebtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
+                <button id="saveRunbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Save &amp; Run</button>
             </span>
         </div>
     </div>
@@ -227,7 +230,7 @@
                     <td colspan="3">
                         <textarea class="det_textarea" cols="1" rows="2" name="description"></textarea>
                         <a href='createhelp.jsp#Description' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -239,12 +242,12 @@
                         <div id="mainDocumentationDiv">
                             <span id="documentationSpan">
                                 <span class="btn btn-success fileinput-button">
-                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add Documentation File</span>
+                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add Documentation File</span>
                                     <input  name="documentationfile" type="file" class="documentationfile"/>
                                 </span>
                             </span>
                             <a href='createhelp.jsp#Documentation' target='help'>
-                                <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                                <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                             </a>
                         </div>
                     </td>
@@ -256,7 +259,7 @@
                     <td colspan="3">
                         <input type="text" name="author" size="70"/>
                         <a href='createhelp.jsp#Author' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -276,13 +279,13 @@
                         <div id="mainLicenseDiv">
                             <div id="licenseDiv">
                                 <span class="btn btn-success fileinput-button">
-                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add License File</span>
+                                    <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add License File</span>
                                     <input  name="licensefile" type="file" class="licensefile"/>
                                 </span>
                             </div>
                         </div>
                         <a href='createhelp.jsp#License' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -293,7 +296,7 @@
                     <td colspan="3">
                         <input type="text" name="comment" size="100"/>
                         <a href='createhelp.jsp#VersionComment' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -312,7 +315,7 @@
                                 <td>
                                     <button id="addcategory">New</button>
                                     <a href='createhelp.jsp#TaskType' target='help'>
-                                        <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                                        <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                                     </a>
                                 </td>
                             </tr>
@@ -330,7 +333,7 @@
                             <option value="public">public</option>
                         </select>
                         <a href='createhelp.jsp#Privacy' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                     <td>
@@ -343,7 +346,7 @@
                             <option value="production">production</option>
                         </select>
                         <a href='createhelp.jsp#Quality' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -360,7 +363,7 @@
                             <option value="Sparc">Sparc</option>
                         </select>
                         <a href='createhelp.jsp#cpu' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                     <td>
@@ -380,7 +383,7 @@
                         <label for="os3">Windows</label>
 
                         <a href='createhelp.jsp#os' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -400,7 +403,7 @@
                             <option value="R">R</option>
                         </select>
                         <a href='createhelp.jsp#Language' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                     <td>
@@ -409,7 +412,7 @@
                     <td>
                         <input type="text" name="lang_version" size="20"/>
                         <a href='createhelp.jsp#MinLanguage' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
@@ -425,7 +428,7 @@
                                 <td>
                                     <button id="addfileformat">New</button>
                                     <a href='createhelp.jsp#OutputDescription' target='help'>
-                                        <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                                        <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                                     </a>
                                 </td>
                             </tr>
@@ -441,11 +444,11 @@
                 <div>
                     <!-- The fileinput-button span is used to style the file input field as button -->
                     <span class="btn btn-success fileinput-button">
-                        <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add files...</span>
+                        <span><i class="icon-plus"></i><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/file_add.gif" width="16" height="16" alt="help" class="helpbutton" />Add files...</span>
                         <input type="file" name="supportfile[]" multiple="multiple" class="supportfile" />
                     </span>
                     <a href='createhelp.jsp#SupportFiles' target='help'>
-                        <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                        <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                     </a>
                 </div>
             </div>
@@ -476,7 +479,7 @@
                     </td>
                     <td>
                         <button id="viewparameter">
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/open.gif" width="16" height="16" alt="help" class="buttonIcon" />View Argument List</button>
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/open.gif" width="16" height="16" alt="help" class="buttonIcon" />View Argument List</button>
                     </td>
                 </tr>
             </table>
@@ -485,7 +488,7 @@
                 <div id='commandtextarea'>
                     <textarea rows='2' cols ='1' name='cmdtext'></textarea>
                     <a href='createhelp.jsp#Command' target='help'>
-                        <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="14" height="14" alt="help" class="buttonIcon" />
+                        <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="14" height="14" alt="help" class="buttonIcon" />
                     </a>
                 </div>
             </div>
@@ -503,7 +506,7 @@
                     <button id="addmultiple">Add Parameter</button>
                 </span>
                 <a href='createhelp.jsp#inputParameters' target='help'>
-                    <img src="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                    <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                 </a>
             </div>
             <div id="parameters"></div>

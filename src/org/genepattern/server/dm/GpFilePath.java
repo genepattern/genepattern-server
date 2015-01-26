@@ -1,7 +1,6 @@
 package org.genepattern.server.dm;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.util.SemanticUtil;
 
 /**
@@ -22,42 +22,6 @@ import org.genepattern.util.SemanticUtil;
  */
 abstract public class GpFilePath implements Comparable<GpFilePath> {
     private static Logger log = Logger.getLogger(GpFilePath.class);
-    private static URL gpUrl = null;
-    /**
-     * Get the GenePatternURL. For example,
-     * <pre>
-       http://127.0.0.1:8080/gp
-     * </pre>
-     * This should never include the trailing slash.
-     * 
-     * TODO: refactor into a Utility class.
-     * 
-     * @see org.genepattern.server.webapp.StartupServlet#setServerURLs, which initializes the GenePatternURL.
-     */
-    static public URL getGenePatternUrl() {
-        final String defaultGpUrlProp = "http://127.0.0.1:8080/gp";
-        if (gpUrl == null) {
-            log.info("Initializing GenePatternURL ...");
-            String gpUrlProp = System.getProperty("GenePatternURL", defaultGpUrlProp);
-            if (gpUrlProp.endsWith("/")) {
-                gpUrlProp = gpUrlProp.substring(0, gpUrlProp.length() - 1);
-            }
-            try {
-                gpUrl = new URL(gpUrlProp);
-            }
-            catch (MalformedURLException e) {
-                log.error("Invalid System.property, GenePatternURL="+gpUrlProp);
-                try {
-                    gpUrl = new URL(defaultGpUrlProp);
-                }
-                catch (MalformedURLException e2) {
-                    //ignore
-                }
-            }
-            log.info("GenePatternURL="+gpUrl.toExternalForm());
-        }
-        return gpUrl;
-    }
     
     /**
      * replace all separators with the forward slash ('/').
@@ -111,7 +75,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      */
     public URL getUrl() throws Exception {
         String str="";
-        final URL gpUrl = getGenePatternUrl();
+        final URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
         if (gpUrl==null) {
             log.error("GenePatternURL is null");
         }
@@ -126,13 +90,32 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
             log.debug("known error: uri is null");
         }
         else {
-            str += relativeUri.toString();
+            //str += relativeUri.toString();
+            str = glue(str, relativeUri.toString());
         }
         if (isDirectory() && !str.endsWith("/")) {
             str = str + "/";
         }
         URL url = new URL(str);
         return url;
+    }
+    
+    /** append the gpUrl to the relative uri, making sure to not duplicate the '/' character. */
+    protected String glue(String prefix, String suffix) {
+        if (prefix.endsWith("/")) {
+            if (suffix.startsWith("/")) {
+                return prefix + suffix.substring(1);
+            }
+            else {
+                return prefix + "/" + suffix;
+            }
+        }
+        if (suffix.startsWith("/")) {
+            return prefix + suffix;
+        }
+        else {
+            return prefix + "/" + suffix;
+        }
     }
 
     /**
@@ -294,8 +277,6 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
 
     /**
      * Get the read access permission flag for this file path.
-     * 
-     * TODO: implement isAdmin in the ServerConfiguration Context class.
      * 
      * @param isAdmin, true if the current user has admin privileges.
      * @param userContext

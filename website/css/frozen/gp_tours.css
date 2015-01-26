@@ -1,11 +1,12 @@
 .tourStyle
 {
-    background-color: #FFFF99 !important;
+    background-color: #FFFF99  !important;
+    font-size: 11px;
 }
 
 .tour-header
 {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
     border-bottom: 1px solid #CFCFCF;
     margin-bottom: 7px;

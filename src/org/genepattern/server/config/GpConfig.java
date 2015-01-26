@@ -2,10 +2,14 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -23,10 +27,68 @@ public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
 
     /**
+     * The version of the database for saving GP session data, default value is 'HSQL'. Other supported
+     * options include 'ORACLE' and 'MYSQL'.
+     */
+    public static final String PROP_DATABASE_VENDOR="database.vendor";
+
+    /**
      * When true, display the 'Estimated Queue Time' details for the Congestion Indicator.
      */
     public static final String PROP_SHOW_ESTIMATED_QUEUETIME="gp.showEstimatedQueuetime";
 
+    /**
+     * The directory to write temporary files to
+     */
+    public static final String PROP_GP_TMPDIR="gp.tmpdir";
+
+    /**
+     * The directory to write files uploaded from SOAP
+     */
+    public static final String PROP_SOAP_ATT_DIR="soap.attachment.dir";
+    
+    /**
+     * The location for job results files. 
+     * Each job runs in a new working directory, by default it is created in the 'jobs' folder,
+     *     mkdir <jobs>/<jobId>, e.g.
+     *     mkdir /Applications/GenePatternServer/jobResults/1
+     */
+    public static final String PROP_JOBS="jobs";
+
+    public static String normalizePath(String pathStr) {
+        if (pathStr==null) {
+            return pathStr;
+        }
+        try {
+            Path thePath=Paths.get(pathStr);
+            thePath=thePath.normalize();
+            URI uri=thePath.toUri();
+            String rval=uri.getPath();
+            return rval;
+        }
+        catch (Throwable t) {
+            System.err.print("Error intializing path from String="+pathStr);
+            t.printStackTrace();
+            return pathStr;
+        }
+    }
+    
+    /**
+     * Get the current version of GenePattern, (e.g. '3.9.1'). 
+     * Automatic schema update is based on the difference between this value (as defined by the GP installation)
+     * and the entry in the database.
+     * 
+     */
+    protected String initGenePatternVersion(GpContext gpContext) {
+        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.1");
+        //for junit testing, if the property is not in ServerProperties, check System properties
+        if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
+            log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
+            gpVersion="3.9.1";
+        }
+        return gpVersion;
+    }
+    
     /**
      * Initialize the GenePatternURL from System.property
      * @return
@@ -66,28 +128,51 @@ public class GpConfig {
     }
 
     private final URL genePatternURL;
+    private final String gpUrl;
     private final String genePatternVersion;
+    private final File logDir;
+    private final File gpLogFile;
+    private final File webserverLogFile;
     private final File resourcesDir;
+    private final File gpWorkingDir;
+    private final File jobsDir;
+    private final File userRootDir;
+    private final File soapAttachmentDir;
+    private final File gpTmpDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
     private final ConfigYamlProperties yamlProperties;
     private final File configFile;
+    private final Properties dbProperties;
+    private final String dbVendor;
     // config helper method
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
-        this.resourcesDir=in.resourcesDir;
-        this.serverProperties=in.serverProperties;
-        if (in.genePatternVersion != null) {
-            this.genePatternVersion=in.genePatternVersion;
-        }
-        else if (this.serverProperties != null) {
-            this.genePatternVersion=this.serverProperties.getProperty("GenePatternVersion");
+        GpContext gpContext=GpContext.getServerContext();
+        if (in.logDir!=null) {
+            this.logDir=in.logDir;
         }
         else {
-            log.error("GenePatternVersion not set");
-            this.genePatternVersion="";
+            this.logDir=initLogDir();
+        }
+        this.gpLogFile=new File(logDir, "genepattern.log");
+        this.webserverLogFile=new File(logDir, "webserver.log");
+        this.resourcesDir=in.resourcesDir;
+        if (in.gpWorkingDir==null) {
+            // legacy server, assume startup in <GenePatternServer>/Tomcat folder.
+            this.gpWorkingDir=new File("").getAbsoluteFile();
+        }
+        else {
+            this.gpWorkingDir=in.gpWorkingDir;
+        }
+        this.serverProperties=in.serverProperties;
+        if (in.genePatternVersion==null || in.genePatternVersion.equals("$GENEPATTERN_VERSION$")) {
+            this.genePatternVersion=initGenePatternVersion(gpContext);
+        }
+        else {
+            this.genePatternVersion=in.genePatternVersion;
         }
         if (in.genePatternURL!=null) {
             this.genePatternURL=in.genePatternURL;
@@ -95,6 +180,7 @@ public class GpConfig {
         else {
             this.genePatternURL=initGpUrl(this.serverProperties);
         }
+        this.gpUrl=this.genePatternURL.toExternalForm();
         if (in.configFromYaml != null && in.configFromYaml.getConfigYamlProperties() != null) {
             this.yamlProperties=in.configFromYaml.getConfigYamlProperties();
         }
@@ -111,6 +197,212 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
+        this.jobsDir=initJobsDir(gpContext);
+        this.userRootDir=initUserRootDir();
+        this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
+        this.gpTmpDir=initGpTmpDir(gpContext);
+        this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
+        this.dbVendor=initDbVendor(gpContext);
+    }
+    
+    /**
+     * Initialize the database properties from the resources directory.
+     * Load properties from 'resources/database_default.properties', if present.
+     * Load additional properties from 'resources/database_custom.properties', if present.
+     * The custom properties take precedence.
+     * 
+     * When 'database.vendor=HSQL', attempt to set the jdbcUrl based on the value of the HSQL_port property.
+     * 
+     * If neither file is present, log an error and return null.
+     * 
+     * @param gpConfig
+     * @return 
+     */
+    protected Properties initDbProperties(final GpContext gpContext, final File resourcesDir) {
+        Properties hibProps=null;
+        File hibPropsDefault=new File(resourcesDir, "database_default.properties");
+        
+        if (hibPropsDefault.exists()) {
+            if (!hibPropsDefault.canRead()) {
+                log.error("Can't read 'database_default.properties' file="+hibPropsDefault);
+            }
+            else {
+                hibProps=GpServerProperties.loadProps(hibPropsDefault);
+            }
+        }
+        File hibPropsCustom=new File(resourcesDir, "database_custom.properties");
+        if (hibPropsCustom.exists()) {
+            if (!hibPropsCustom.canRead()) {
+                log.error("Can't read 'database_custom.properties' file="+hibPropsCustom);
+            }
+            else {
+                if (hibProps==null) {
+                    hibProps=new Properties();
+                }
+                GpServerProperties.loadProps(hibProps, hibPropsCustom);
+            }
+        }
+        
+        if (hibProps==null) {
+            log.error("Error, missing required configuration file 'database_default.properties'");
+            return null;
+        }
+        
+        initHsqlConnectionUrl(gpContext, hibProps);
+        return hibProps;
+    }
+    
+    /**
+     * Generate hard-coded database properties.
+     * @param gpContext
+     * @return
+     */
+    public Properties getDbPropertiesDefault(GpContext gpContext) {
+        log.warn("Using hard-coded database properties");
+        // use hard-coded DB properties
+        Properties hibProps=new Properties();
+        hibProps=new Properties();
+        hibProps.setProperty("database.vendor","HSQL");
+        hibProps.setProperty("HSQL_port","9001");
+        hibProps.setProperty("hibernate.current_session_context_class","thread");
+        hibProps.setProperty("hibernate.transaction.factory_class","org.hibernate.transaction.JDBCTransactionFactory");
+        hibProps.setProperty("hibernate.connection.provider_class","org.hibernate.connection.C3P0ConnectionProvider");
+        hibProps.setProperty("hibernate.jdbc.batch_size","20");
+        hibProps.setProperty("hibernate.statement_cache.size","0");
+        hibProps.setProperty("hibernate.connection.driver_class","org.hsqldb.jdbcDriver");
+        hibProps.setProperty("hibernate.username","sa");
+        hibProps.setProperty("hibernate.password","");
+        hibProps.setProperty("hibernate.dialect","org.hibernate.dialect.HSQLDialect");
+        hibProps.setProperty("hibernate.default_schema","PUBLIC");
+        initHsqlConnectionUrl(gpContext, hibProps);
+        return hibProps;
+    }
+
+    protected String initDbVendor(final GpContext gpContext) {
+        if (dbProperties != null) {
+            return dbProperties.getProperty(PROP_DATABASE_VENDOR, "HSQL");
+        }
+        else {
+            return getGPProperty(gpContext, PROP_DATABASE_VENDOR, "HSQL");
+        }
+    }
+    
+    /**
+     * Special-case for default database.vendor=HSQL, set the 'hibernate.connection.url' from the 'HSQL_port'.
+     * @param gpConfig
+     * @param gpContext
+     * @param hibProps
+     */
+    private void initHsqlConnectionUrl(GpContext gpContext, Properties hibProps) {
+        //special-case for default database.vendor=HSQL
+        if ("hsql".equalsIgnoreCase(hibProps.getProperty(PROP_DATABASE_VENDOR))) {
+            Integer hsqlPort=null;
+            final String PROP_HSQL_PORT="HSQL_port";
+            if (hibProps.containsKey(PROP_HSQL_PORT)) {
+                try {
+                    hsqlPort=Integer.parseInt( hibProps.getProperty(PROP_HSQL_PORT) );
+                }
+                catch (Throwable t) {
+                    log.error("Error in config file, expecting an Integer value for "+PROP_HSQL_PORT+"="+hibProps.getProperty(PROP_HSQL_PORT), t);
+                }
+            }
+            if (hsqlPort==null) {
+                hsqlPort=getGPIntegerProperty(gpContext, PROP_HSQL_PORT, 9001);
+            }
+            final String PROP_HIBERNATE_CONNECTION_URL="hibernate.connection.url";
+            if (!hibProps.containsKey(PROP_HIBERNATE_CONNECTION_URL)) {
+                String jdbcUrl="jdbc:hsqldb:hsql://127.0.0.1:"+hsqlPort+"/xdb";
+                hibProps.setProperty(PROP_HIBERNATE_CONNECTION_URL, jdbcUrl);
+                log.debug("setting "+PROP_HIBERNATE_CONNECTION_URL+"="+jdbcUrl);
+            }
+        }
+    }
+    
+    /**
+     * Initialize root 'jobs' directory, the globally set path to the jobResults directory.
+     * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
+     * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
+     * 
+     * @param gpHomeDir
+     * @param valueLookup
+     * @return
+     */
+    private File initJobsDir(final GpContext gpContext) { 
+        File jobsDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_JOBS, "../jobResults"));
+        jobsDir=new File(normalizePath(jobsDir.getPath()));
+        if (!jobsDir.exists()) {
+            boolean success=jobsDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_JOBS+"' directory="+jobsDir);
+            }
+        }
+        return jobsDir;
+    }
+
+    public static File relativize(final File rootDir, final String pathStr) {
+        File path=new File(pathStr);
+        if (path.isAbsolute()) {
+            return path;
+        }
+        else if (rootDir != null) {
+            return new File(rootDir, pathStr);
+        }
+        else {
+            return path.getAbsoluteFile();
+        }
+    }
+    
+    protected File initUserRootDir() {
+        String userRootDirProp=getGPProperty(GpContext.getServerContext(), "user.root.dir");
+        File userRootDir;
+        if (userRootDirProp != null) {
+            userRootDir=relativize(gpWorkingDir, userRootDirProp);
+        }
+        else {
+            userRootDir=relativize(gpWorkingDir, "../users");
+        }
+        userRootDir=new File(normalizePath(userRootDir.getPath()));
+        if (!userRootDir.exists()) {
+            boolean success=userRootDir.mkdirs();
+            if (success) {
+                log.info("created 'user.root.dir' directory="+userRootDir);
+            }
+        }
+        return userRootDir;
+    }
+    
+    protected File initSoapAttachmentDir(final GpContext gpContext) {
+        File soapAttDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "../temp/attachments"));
+        soapAttDir=new File(normalizePath(soapAttDir.getPath()));
+        if (!soapAttDir.exists()) {
+            boolean success=soapAttDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_SOAP_ATT_DIR+"' directory="+soapAttDir);
+            }
+        }
+        return soapAttDir;
+    }
+    
+    /**
+     * Initialize the global path to the temp directory.
+     * If 'gp.tmpdir' is defined use that value, otherwise fall back to use 'java.io.tmpdir'.
+     * Relative paths are relative to the gpWorkingDir.
+     * 
+     * @see PROP_GP_TMPDIR
+     * 
+     * @param gpContext
+     * @return
+     */
+    protected File initGpTmpDir(final GpContext gpContext) {
+        File gpTmpDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_GP_TMPDIR, System.getProperty("java.io.tmpdir")));
+        gpTmpDir=new File(normalizePath(gpTmpDir.getPath())); 
+        if (!gpTmpDir.exists()) {
+            boolean success=gpTmpDir.mkdirs();
+            if (success) {
+                log.info("created '"+PROP_GP_TMPDIR+"' directory="+gpTmpDir);
+            }
+        }
+        return gpTmpDir;
     }
 
     /**
@@ -122,14 +414,31 @@ public class GpConfig {
         return genePatternURL;
     }
 
+    /**
+     * Get the String representation of the <GenePatternURL>, including the trailing slash.
+     * @return
+     */
+    public String getGpUrl() {
+        return gpUrl;
+    }
+    
+    /**
+     * Get the servlet path.
+     * Note: replaces <pre>System.getProperty("GP_Path", "/gp");</pre>
+     * @return
+     */
+    public String getGpPath() {
+        return System.getProperty("GP_Path", "/gp");
+    }
+
     public String getGenePatternVersion() {
         return genePatternVersion;
     }
-    
+
     public File getConfigFile() {
         return configFile;
     }
-    
+
     public String getConfigFilepath() {
         if (configFile != null) {
             return configFile.getAbsolutePath();
@@ -140,12 +449,45 @@ public class GpConfig {
     public boolean hasInitErrors() {
         return initErrors != null && initErrors.size()>0;
     }
-    
+
     public List<Throwable> getInitializationErrors() {
         return initErrors;
     }
     public File getResourcesDir() {
         return resourcesDir;
+    }
+
+    /**
+     * Get the database configuration properties loaded from the <resources>/database_default.properties and
+     * optionally from the <resources>/database_custom.properties files.
+     * @return
+     */
+    public Properties getDbProperties() {
+        return dbProperties;
+    }
+
+    /**
+     * Get the database vendor which can be one of 'HSQL', 'ORACLE', or 'MYSQL'.
+     * @return
+     */
+    public String getDbVendor() {
+        return dbVendor;
+    }
+
+    /**
+     * Get the database schema prefix, a prefix pattern (e.g. 'analysis_hypersonic', 'analysis_oracle') 
+     * which is used to get a listing of the DDL scripts for automatic initialization of the database after
+     * installing or updating the genepattern server.
+     * 
+     * @return
+     */
+    public String getDbSchemaPrefix() {
+        if (this.dbVendor.equalsIgnoreCase("HSQL")) {
+            return "analysis_hypersonic-";
+        }
+        else {
+            return "analysis_"+dbVendor.toLowerCase()+"-";
+        }
     }
 
     public Value getValue(final GpContext context, final String key) {
@@ -162,7 +504,7 @@ public class GpConfig {
         }
         return value;
     }
-    
+
     /**
      * @deprecated, use getValue instead, which supports lists.
      * @param context
@@ -179,7 +521,7 @@ public class GpConfig {
         }
         return value.getValue();
     }
-    
+
     public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
         final Value value = getValue(context, key);
         if (value == null) {
@@ -190,12 +532,12 @@ public class GpConfig {
         }
         return value.getValue();
     }
-    
+
     /**
      * Utility method for parsing properties as a boolean.
-     * The current implementation uses Boolean.parseBoolean, 
+     * The current implementation uses Boolean.parseBoolean,
      * which returns true iff the property is set and equalsIgnoreCase 'true'.
-     * 
+     *
      * @param key
      * @return
      */
@@ -211,14 +553,14 @@ public class GpConfig {
         }
         return Boolean.parseBoolean(prop);
     }
-    
+
     /**
      * Utility method for parsing a property as an Integer. If there is no property set
      * return null.
-     * 
+     *
      * When a non integer value is set in the config file, return null.
      * Errors are logged, but exceptions are not thrown.
-     * 
+     *
      * @param context
      * @param key
      * @return
@@ -226,16 +568,16 @@ public class GpConfig {
     public Integer getGPIntegerProperty(final GpContext context, final String key) {
         return getGPIntegerProperty(context, key, null);
     }
-    
+
     /**
      * Utility method for parsing a property as an Integer.
-     * 
+     *
      * When a non integer value is set in the config file, the default value is returned.
      * Errors are logged, but exceptions are not thrown.
-     * 
+     *
      * @param key
      * @param defaultValue
-     * 
+     *
      * @return the int value for the property, or the default value, can return null.
      */
     public Integer getGPIntegerProperty(final GpContext context, final String key, final Integer defaultValue) {
@@ -265,7 +607,7 @@ public class GpConfig {
             return defaultValue;
         }
     }
-    
+
     public Memory getGPMemoryProperty(final GpContext gpContext, final String key) {
         return getGPMemoryProperty(gpContext, key, null);
 
@@ -289,14 +631,14 @@ public class GpConfig {
      * Helper method for getting the queueId for a job. In most cases this is equivalent to the 'job.queue' property.
      * When the 'job.virtualQueue' is set, then that value is used.
      * The default value is the empty string when neither property is set.
-     * 
+     *
      * @param gpContext
      * @return
      */
     public String getQueueId(final GpContext gpContext) {
         return getQueueId(gpContext, "");
     }
-    
+
     public String getQueueId(final GpContext gpContext, final String defaultValue) {
         String queueId=getGPProperty(gpContext, JobRunner.PROP_VIRTUAL_QUEUE);
         if (queueId!=null) {
@@ -312,14 +654,13 @@ public class GpConfig {
     //helper methods for locating server files and folders
     /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
-     * Home directories are created in the  in the "../users" directory.
-     * The default location can be changed with the 'user.root.dir' configuration property. 
-     * The 'gp.user.dir' property can be set on a per user basis to change from the standard location.
-     * 
-     * Note: The 'gp.user.dir' property is an untested feature. If an admin sets a non-standard user dir,
-     *     they need to take measures (undocumented and unsupported, @see gp-help) to deal with 
-     *     pre-existing files and file entries in the DB.
-     * 
+     * By default, user home directories are created in the <user.root.dir> directory.
+     * The 'gp.user.dir' property can be set on a per user basis to change the default location.
+     *
+     * Note: If an admin sets a custom 'gp.user.dir' for an existing user, they must manually migrate pre-existing files.
+     *     (1) Move existing files into the correct 'gp.user.dir'
+     *     (2) Resync Files from the Adminstration -> Server Settings -> Uploaded Files page
+     *
      * @param context
      * @return
      */
@@ -331,80 +672,49 @@ public class GpConfig {
             throw new IllegalArgumentException("context.userId is null");
         }
         String userDirPath = getGPProperty(context, "gp.user.dir");
-        if (userDirPath == null) {
-            String userRootDirPath = getGPProperty(context, "user.root.dir", "../users");
-            File p_for_parent = new File(userRootDirPath);
-            File f_for_file = new File(p_for_parent,context.getUserId());
-            userDirPath = f_for_file.getPath();
+        File gpUserDir;
+        if (userDirPath != null) {
+            gpUserDir=new File(userDirPath);
         }
-        
-        File userDir = new File(userDirPath);
-        if (userDir.exists()) {
-            return userDir;
+        else {
+            gpUserDir=new File(userRootDir, context.getUserId());
         }
-        boolean success = userDir.mkdirs();
+        if (gpUserDir.exists()) {
+            return gpUserDir;
+        }
+        boolean success = gpUserDir.mkdirs();
         if (!success) {
-            throw new IllegalArgumentException("Unable to create home directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
+            throw new IllegalArgumentException("Unable to create home directory for user "+context.getUserId()+", userDir="+gpUserDir.getAbsolutePath());
         }
-        return userDir;
+        return gpUserDir;
     }
-    
+
     /**
-     * Get the jobs directory for the given user. Each job runs in a new working directory. 
+     * Get the job results directory for the server. This is a global server property.
+     * In GP > 3.9.0, the default location is the GenePattern installation directory,
+     *     <GenePatternServer>/jobResults
      * 
-     * circa, GP 3.2.4 and earlier, the working directory is created in the root job dir for the server,
-     *     which defaults to './webapps/gp/jobResults'.
-     * Edit the 'jobs' property to customize this location. The server configuration system enables setting
-     * this property on a per user, group, executor or module basis.
+     * In GP <= 3.9.0 and earlier, the default location is the web application directory,
+     *     <GenePatternServer>/Tomcat/webapps/gp/jobResults
+     *
+     * The 'jobs' property sets an alternate location. For best results set this to a global path in the 
+     * 'default' section of the config_yaml file.
      * 
-     * coming soon, job directories, by default, will be created in ../users/<user.id>/jobs/
-     * To test this feature, remove the 'jobs' property from genepattern.properties and the configuration file.
-     * 
+     * Note: Custom settings are not enabled.
+     *
      * @return the parent directory in which to create the new working directory for a job.
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
-        //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
-        String jobsDirPath = getGPProperty(context, "jobs");
-        if (jobsDirPath != null) {
-            return new File(jobsDirPath);
-        }
-
-        //prototype behavior, circa GP 3.3.1 and later, default location in ../users/<user.id>/jobs/
-        boolean invalidContext = false;
-        if (context == null) {
-            invalidContext = true;
-            log.error("context == null");
-        }
-        else if (context.getUserId() == null) {
-            log.error("context.userId == null");
-            invalidContext = true;
-        }
-        if (invalidContext) {
-            log.error("Missing required configuration property, 'jobs', using default location");
-            jobsDirPath = "./webapps/gp/jobResults";
-            return new File(jobsDirPath);
-        }
-        
-        File userDir = getUserDir(context);
-        if (userDir != null) {
-            File root = new File(userDir, "jobs");
-            jobsDirPath = root.getPath();
-        }
-
-        if (jobsDirPath == null) {
-            throw new ServerConfigurationException("Missing required propery, 'jobs'");
-        }
-        File rootJobDir = new File(jobsDirPath);
-        return rootJobDir;
+        return jobsDir;
     }
 
     /**
      * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
      * By default, user uploads are stored in ../users/<user.id>/uploads/
-     * 
+     *
      * The default location can be overridden with the 'user.upload.dir' property.
      * If there is no 'user.upload.dir' or 'gp.user.dir' set, then 'java.io.tempdir' is returned.
-     * 
+     *
      * @param context
      * @return
      * @throws IllegalArgumentException if a directory is not found for the userId.
@@ -421,9 +731,9 @@ public class GpConfig {
             //throw new IllegalArgumentException("context.userId is null");
             log.error("context.userId is null");
         }
-        
+
         if (configError) {
-            return getTempDir();
+            return getTempDir(null);
         }
 
         String userUploadPath = getGPProperty(context, "user.upload.dir");
@@ -435,7 +745,7 @@ public class GpConfig {
                 userUploadPath = f.getPath();
             }
         }
-            
+
         File userUploadDir = new File(userUploadPath);
         if (userUploadDir.exists()) {
             return userUploadDir;
@@ -443,16 +753,65 @@ public class GpConfig {
         boolean success = userUploadDir.mkdirs();
         if (success) {
             return userUploadDir;
-        } 
-        
+        }
+
         //otherwise, use the web upload dir
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
-        return getTempDir();
-    } 
+        return getTempDir(null);
+    }
 
-    public File getTempDir() {
-        String str = System.getProperty("java.io.tmpdir");
-        return new File(str);
+    public File getGPFileProperty(final GpContext gpContext, final String key) {
+        return getGPFileProperty(gpContext, key, null);
+    }
+
+    public File getGPFileProperty(final GpContext gpContext, final String key, final File defaultValue)
+    {
+        Value val = getValue(gpContext, key);
+
+        if (val == null) {
+            return defaultValue;
+        }
+
+        try {
+            return new File(val.getValue());
+        }
+        catch (Throwable t) {
+            log.error("Error parsing memory value for property, "+key+"="+val, t);
+            return defaultValue;
+        }
+    }
+
+    public File getSoapAttDir(GpContext gpContext) {
+        return this.soapAttachmentDir;
+    }
+
+    public File getTempDir(GpContext gpContext) {
+        return gpTmpDir;
+    }
+
+    private File initLogDir() 
+    {
+        File logDir = null;
+        if(System.getProperty("GENEPATTERN_HOME") != null)
+        {
+            logDir = new File(System.getProperty("GENEPATTERN_HOME"), "logs");
+        }
+        else
+        {
+            logDir = new File("../logs");
+        }
+
+        return logDir;
+    }
+
+    public File getGPLogFile(GpContext gpContext)
+    {
+        return gpLogFile;
+    }
+
+    public File getWsLogFile(GpContext gpContext)
+    {
+        return webserverLogFile;
     }
 
     public boolean getAllowInputFilePaths(final GpContext context) {
@@ -465,7 +824,7 @@ public class GpConfig {
             throw new Exception("userid not set");
         }
 
-        File serverTempDir = getTempDir();
+        File serverTempDir = getTempDir(null);
         // prefix is used to restrict access to input files based on username
         String prefix = username + "_";
         File tempDir = File.createTempFile(prefix + "run", null, serverTempDir);
@@ -497,7 +856,7 @@ public class GpConfig {
         }
         return yamlProperties.getJobConfiguration();
     }
-    
+
     public String getExecutorId(final GpContext gpContext) {
         //special-case for pipelines
         if (gpContext != null && gpContext.getTaskInfo() != null) {
@@ -517,7 +876,7 @@ public class GpConfig {
     public String getCommandExecutorId(final JobInfo jobInfo) {
         if (yamlProperties == null) {
             return null;
-        }        
+        }
         return yamlProperties.getCommandExecutorId(jobInfo);
     }
 
@@ -532,17 +891,22 @@ public class GpConfig {
         }
         return yamlProperties.getCommandProperties(jobInfo);
     }
-    
+
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
+        private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
+        private File gpWorkingDir=null;
         private GpServerProperties.Builder serverPropertiesBuilder=null;
         private GpServerProperties serverProperties=null;
         private ConfigFromYaml configFromYaml=null;
         private IGroupMembershipPlugin groupInfo=null;
         private List<Throwable> initErrors=null;
+
+        public Builder() {
+        }
 
         public Builder genePatternURL(final URL gpUrl) {
             this.genePatternURL=gpUrl;
@@ -555,9 +919,19 @@ public class GpConfig {
             initErrors.add(t);
             return this;
         }
-        
+
         public Builder serverProperties(final GpServerProperties serverProperties) {
             this.serverProperties=serverProperties;
+            return this;
+        }
+
+        public Builder gpWorkingDir(final File gpWorkingDir) {
+            this.gpWorkingDir=gpWorkingDir;
+            return this;
+        }
+        
+        public Builder logDir(final File logDir) {
+            this.logDir=logDir;
             return this;
         }
 
@@ -570,12 +944,12 @@ public class GpConfig {
             this.configFile=configFile;
             return this;
         }
-        
+
         public Builder groupInfo(final IGroupMembershipPlugin groupInfo) {
             this.groupInfo=groupInfo;
             return this;
         }
-        
+
         public Builder addProperty(String key, String value) {
             if (serverPropertiesBuilder==null) {
                 serverPropertiesBuilder=new GpServerProperties.Builder();
@@ -584,7 +958,7 @@ public class GpConfig {
             return this;
         }
 
-        public GpConfig build() { 
+        public GpConfig build() {
             //parse the config file here
             if (configFile != null) {
                 try {
@@ -604,7 +978,7 @@ public class GpConfig {
                     resourcesDir=serverProperties.getResourcesDir();
                 }
             }
-            
+
             if (serverProperties==null && serverPropertiesBuilder != null) {
                 serverProperties=serverPropertiesBuilder.build();
             }

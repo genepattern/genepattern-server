@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
@@ -23,7 +24,13 @@ import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.serverfile.ServerFilePath;
+import org.genepattern.server.dm.tasklib.TasklibPath;
+import org.genepattern.server.dm.webupload.WebUploadPath;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.UserDAO;
@@ -432,7 +439,7 @@ public class JobInfoManager {
         writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
         writer.write("\n# Job: " + jobInfoWrapper.getJobNumber());
 
-        String GP_URL = System.getProperty("GenePatternURL");
+        String GP_URL = ServerConfigurationFactory.instance().getGpUrl();
         if (GP_URL != null) {
             writer.write("    server:  ");
             writer.write(GP_URL);
@@ -512,4 +519,37 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
+    public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
+        String launchUrl = null;
+        TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+        if(tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER)) {
+            String mainFile = (String)taskInfo.getAttributes().get("commandLine");
+            mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
+            TasklibPath tasklibPath = new TasklibPath(taskInfo, mainFile);
+            launchUrl = ServerConfigurationFactory.instance().getGenePatternURL() + tasklibPath.getRelativeUri().toString();
+            ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
+            for (ParameterInfo parameterInfo : parameterInfos)
+            {
+                try {
+                    String value=parameterInfo.getValue();
+
+                    if (value.endsWith(".list.txt")) {
+                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+
+                        for (String fileUrl : fileList) {
+                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                        }
+                    }
+                    else
+                    {
+                        launchUrl += "&" + parameterInfo.getName() + "=" + value;
+                    }
+
+                } catch (Exception io) {
+                    log.error(io);
+                }
+            }
+        }
+        return launchUrl;
+    }
 }

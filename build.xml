@@ -8,6 +8,8 @@
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.7" />
     <property name="java.source" value="1.7" />
+    <property name="java.visualizer.target" value="1.7" /> <!-- was 1.1 -->
+    <property name="java.visualizer.source" value="1.7" /> <!-- was 1.2 -->
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
 
@@ -119,7 +121,7 @@
             <fileset dir="installer-2014/GP_server_Build_Output/" includes="**/*" />
             <fileset dir="installer-2014/server_Build_Output/" includes="**/*" />
             <fileset dir="installer-2014/" includes=".buildinstaller*.tmp/**" />
-            </delete>
+        </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
         </delete>
@@ -227,7 +229,39 @@
             </fileset>
         </javadoc>
     </target>
+    
+    <target name="javadoc-all" depends="compile" unless="skipdoc"
+        description="Builds the javadoc for all classes in the GP project">
+        <javadoc destdir="build/javadoc/all" packagenames="org.genepattern.*"
+            sourcepath="src"
+            defaultexcludes="yes"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="GenePattern API"
+            classpathref="library.classpath"
+        >
+            <doctitle><![CDATA[<h1>GenePattern API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+          </javadoc>
+    </target>
 
+    <target name="javadoc-jobrunner" depends="compile" unless="skipdoc"
+        description="Builds the javadoc for the JobRunner API">
+
+        <javadoc destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
+            sourcepath="src"
+            defaultexcludes="yes"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="JobRunner API"
+            classpathref="library.classpath"
+        >
+            <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+          </javadoc>
+    </target>
 
     <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
         <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
@@ -266,8 +300,13 @@
     </target>
 
     <target depends="init" name="runtask">
-        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
-
+        <javac debug="true" 
+            classpathref="library.classpath" 
+            destdir="${genepattern.build}" 
+            srcdir="${src}" 
+            source="${java.source}" 
+            target="${java.target}" 
+            includes="org/genepattern/util/RunGenePatternTaskMain.java" />
 
         <!-- Makes runMain.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class" jarfile="${genepattern.build}/${runtask-jarname}">
@@ -344,7 +383,13 @@
     <target name="build-visualizer-applet" depends="sign-visualizer-applet" />
     <target name="compile-visualizer-applet" depends="init">
         <mkdir dir="applet-build" />
-        <javac debug="true" destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
+        <javac debug="true" 
+            destdir="applet-build" 
+            srcdir="src" 
+            classpathref="library.classpath" 
+            includes="org/genepattern/visualizer/*.java" 
+            target="${java.visualizer.target}" 
+            source="${java.visualizer.source}" />
     </target>
 
     <target name="jar-visualizer-applet" depends="compile-visualizer-applet">
@@ -429,7 +474,10 @@
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
 
         <mkdir dir="${genepattern.website}/WEB-INF/classes" />
-        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <javac debug="true" 
+            destdir="${genepattern.build}/website/classes" 
+            srcdir="${genepattern.website}/WEB-INF/classes" 
+            classpathref="library.classpath" />
 
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
@@ -465,7 +513,10 @@
 
     <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes" />
-        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <javac debug="true" 
+            destdir="${genepattern.build}/website/classes" 
+            srcdir="${genepattern.website}/WEB-INF/classes" 
+            classpathref="library.classpath" />
         <!-- Now call any custom post-compilation people want to do -->
         <antcall target="post-compile" />
     </target>

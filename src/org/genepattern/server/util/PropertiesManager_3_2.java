@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 
 public class PropertiesManager_3_2 {
@@ -172,8 +173,7 @@ public class PropertiesManager_3_2 {
         FileInputStream fis = null;
 
         try {
-            String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "custom.properties");
+            File propFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "custom.properties");
 
             propFile.createNewFile();
 
@@ -195,8 +195,7 @@ public class PropertiesManager_3_2 {
         FileInputStream fis = null;
 
         try {
-            String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "genepattern.properties.default");
+            File propFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "genepattern.properties.default");
             fis = new FileInputStream(propFile);
             props.load(fis);
 
@@ -214,8 +213,7 @@ public class PropertiesManager_3_2 {
         FileInputStream fis = null;
 
         try {
-            String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "genepattern.properties");
+            File propFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "genepattern.properties");
             fis = new FileInputStream(propFile);
             props.load(fis);
 
@@ -240,7 +238,7 @@ public class PropertiesManager_3_2 {
     }
 
     public static String getPropsDir() {
-        return System.getProperty("genepattern.properties"); // props dir
+        return ServerConfigurationFactory.instance().getResourcesDir().toString();
     }
 
     public static boolean removeArrayPropertyAndStore(String key, String val, String delimiter, boolean caseSensitive) {
@@ -370,8 +368,7 @@ public class PropertiesManager_3_2 {
     protected static void storeCustomProperties(Properties props, String comment) throws IOException {
         FileOutputStream fos = null;
         try {
-            String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "custom.properties");
+            File propFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "custom.properties");
             fos = new FileOutputStream(propFile);
             props.store(fos, comment);
 
@@ -385,8 +382,7 @@ public class PropertiesManager_3_2 {
     protected static void storeGenePatternProperties(Properties props, String comment) throws IOException {
         FileOutputStream fos = null;
         try {
-            String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "genepattern.properties");
+            File propFile = new File(ServerConfigurationFactory.instance().getResourcesDir(), "genepattern.properties");
             fos = new FileOutputStream(propFile);
             props.store(fos, comment);
 

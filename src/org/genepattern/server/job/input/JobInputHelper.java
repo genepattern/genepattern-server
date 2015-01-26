@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.ParamId;
@@ -59,7 +59,7 @@ public class JobInputHelper {
             log.debug("it's a substition for the gp url");
             return null;
         }
-        if (value.startsWith(GpFilePath.getGenePatternUrl().toExternalForm())) {
+        if (value.startsWith(ServerConfigurationFactory.instance().getGpUrl())) {
             log.debug("it's a gp url");
             return null;
         }

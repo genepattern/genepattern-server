@@ -20,6 +20,25 @@
             </tr>
         </table>
         <br /><br />
+
+        <table width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td width="33%">GenePatternURL:</td>
+                <td width="57%">
+                    <h:inputText size="50" value="#{serverSettingsBean.genepatternURL}" />
+                </td>
+                <td width="10%">
+                    <h:commandLink value="save setting" actionListener="#{serverSettingsBean.saveGenePatternURL}" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">The default URL for GenePattern.</td>
+            </tr>
+            <tr class="settingperameter">
+                <td colspan="4"></td>
+            </tr>
+        </table>
+        <br /><br /><br /><br />
         <table width="100%" border="0" cellpadding="5" cellspacing="0">
             <tr valign="top">
                 Add New Custom Settings:
@@ -29,7 +48,7 @@
                 <td width="21%">
                     <h:inputText size="20" value="#{serverSettingsBean.newCSKey}" />
                 </td>
-                <td width="5%">content:</td>
+                <td width="5%">value:</td>
                 <td width="57%">
                     <h:inputText size="50" value="#{serverSettingsBean.newCSValue}" />
                 </td>
@@ -45,7 +64,7 @@
         <table width="100%" border="0" cellpadding="5" cellspacing="0">
             <tr valign="top" class="tableheader-row2">
                 <td width="33%"> name</td>
-                <td width="57%"> content</td>
+                <td width="57%"> value</td>
                 <td width="10%"></td>
             </tr>
             <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
@@ -54,7 +73,7 @@
                         <h:outputText id="key" value="#{aCustomSetting.key}" />
                     </td>
                     <td width="57%">
-                        <h:inputText id="value" value="#{aCustomSetting.value}" />
+                        <h:outputText id="value"> #{aCustomSetting.value} </h:outputText>
                     </td>
                     <td width="10%">
                         <h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">

@@ -28,6 +28,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -382,26 +384,35 @@ public class AnalysisDAO extends BaseDAO {
      * @param jobID
      */
     public void deleteJob(int jobID) {
-	// recursively delete the job directory
-	File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));
-	Delete del = new Delete();
-	del.setDir(jobDir);
-	del.setIncludeEmptyDirs(true);
-	del.setProject(new Project());
-	del.execute();
-	AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
-	getSession().delete(aJob);
+        // recursively delete the job directory
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));	
+        deleteJobDir(jobDir);
+        AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
+        getSession().delete(aJob);
     }
     
     public void deleteJob(AnalysisJob aJob) {
         // recursively delete the job directory
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
-        Delete del = new Delete();
-        del.setDir(jobDir);
-        del.setIncludeEmptyDirs(true);
-        del.setProject(new Project());
-        del.execute();
+        deleteJobDir(jobDir);
         getSession().delete(aJob);
+    }
+
+    /**
+     * Recursively delete the job directory
+     * @param jobDir
+     */
+    protected void deleteJobDir(File jobDir) {
+        try {
+            Delete del = new Delete();
+            del.setDir(jobDir);
+            del.setIncludeEmptyDirs(true);
+            del.setProject(new Project());
+            del.execute();
+        }
+        catch (Throwable t) {
+            log.error("Error deleting job directory, name="+jobDir.getName()+", path="+jobDir.getPath(), t);
+        }
     }
 
     /**
@@ -877,7 +888,8 @@ public class AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
-	return HibernateUtil.getNextSequenceValue("lsid_suite_identifier_seq");
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_suite_identifier_seq");
     }
 
     /**
@@ -916,7 +928,8 @@ public class AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextTaskLSIDIdentifier() {
-	return HibernateUtil.getNextSequenceValue("lsid_identifier_seq");
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_identifier_seq");
     };
 
     /**

@@ -83,7 +83,10 @@ gp.tasks = function(pObj) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT + includeHidden,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Create the new _tasks list and iterate over returned JSON list, creating Task objects
@@ -125,6 +128,7 @@ gp.task = function(pObj) {
     if (!pObj) throw "gp.task() parameter either null or undefined";
     if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "gp.task() parameter does not contain lsid or name";
     if (typeof pObj !== 'string' && typeof pObj !== 'object') throw "gp.task() parameter must be either object or string";
+    if (gp._tasks === null) throw "gp task list has not been initialized";
 
     var identifier = typeof pObj === 'string'? pObj : null;
 
@@ -196,7 +200,10 @@ gp.jobs = function(pObj) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Create the new _jobs list and iterate over returned JSON list, creating Job objects
@@ -223,28 +230,61 @@ gp.jobs = function(pObj) {
 
 
 /**
- * Returns a cached Job() object matching the provided job number
+ * Returns a Job object either from the cache or from a server query
  *
  * @param pObj - An object specifying this property:
  *                  jobNumber: the job number of the job
- *               Alternately, will accept a job number directly
+ *                  force: do not use cache, force a new query
+ *                  success: callback function for a done() event,
+ *                          expects response and a Job object as arguments
+ *                  error: callback function for an fail() event, expects exception as argument
  *
- * @returns {gp.Job|null} - The Job object from the cache
+ * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+ *      See http://api.jquery.com/jquery.deferred/ for details.
  */
 gp.job = function(pObj) {
-    // Ensure the job number is defined
-    if (!pObj) throw "gp.job() parameter either null or undefined";
-    if (typeof pObj === 'object' && !pObj.jobNumber) throw "gp.job() parameter does not contain jobNumber";
-    if (typeof pObj !== 'string' && typeof pObj !== 'object' && typeof pObj !== 'number') throw "gp.job() parameter must be object, string or number";
+    var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+    var jobNumber = pObj.jobNumber;
 
-    var identifier = typeof pObj === 'object'? pObj.jobNumber : pObj;
-
-    for (var i = 0; i < gp._jobs.length; i++) {
-        var job = gp._jobs[i];
-        if (job.jobNumber().toString() === identifier.toString()) return job;
+    // Try to find the job in the cache
+    if (!forceRefresh && gp._jobs) {
+        for (var i = 0; i < gp._jobs.length; i++) {
+            var job = gp._jobs[i];
+            if (job.jobNumber() === jobNumber) {
+                return new $.Deferred()
+                    .done(function() {
+                        if (pObj && pObj.success) {
+                            pObj.success("Job cached", job);
+                        }
+                    })
+                    .resolve();
+            }
+        }
     }
 
-    return null;
+    // Otherwise, if not cached or refreshed forced
+    var REST_ENDPOINT = "/rest/v1/jobs/";
+    return $.ajax({
+            url: gp.server() + REST_ENDPOINT + jobNumber,
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
+        .done(function(response) {
+            // Create the new _jobs list and iterate over returned JSON list, creating Job objects
+            var loadedJob = new gp.Job(response);
+
+            if (pObj && pObj.success) {
+                pObj.success(response, loadedJob);
+            }
+        })
+        .fail(function(exception) {
+            if (pObj && pObj.error) {
+                pObj.error(exception);
+            }
+        });
 };
 
 
@@ -272,6 +312,9 @@ gp.upload = function(pObj) {
             dataType: "text",
             processData: false,
             data: pObj.file,
+            xhrFields: {
+                withCredentials: true
+            },
             headers: {
                 "Content-Length": pObj.file.size
             },
@@ -365,7 +408,10 @@ gp.Task = function(taskJson) {
             return $.ajax({
                     url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
                     type: 'GET',
-                    dataType: 'json'
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
                 })
                 .done(function(response) {
                     // Add params to Task object
@@ -521,7 +567,10 @@ gp.Job = function(jobJson) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
             })
             .done(function(response) {
                 // Add params to Job object
@@ -751,6 +800,9 @@ gp.JobInput = function(task) {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
+                },
+                xhrFields: {
+                    withCredentials: true
                 }
             })
             .done(function(response) {
@@ -796,7 +848,7 @@ gp.Param = function(paramJson) {
             if (paramJson) {
                 this._name = Object.keys(paramJson)[0];
                 this._description = paramJson[this._name]['description'];
-                this._choices = paramJson[this._name]['choices'] ? paramJson[this._name]['choices'] : null;
+                this._choices = paramJson[this._name]['choiceInfo'] ? this._parseChoices(paramJson[this._name]['choiceInfo']) : null;
                 this._values = null;
                 this._batchParam = false;
                 this._groupId = null;
@@ -807,7 +859,28 @@ gp.Param = function(paramJson) {
             }
         }
     };
-    this._init_();
+
+    /**
+     * Parses the choice info JSON returned by the server into the expected format
+     *
+     * @param choiceInfo - The choice info JSON
+     * @returns {*}
+     * @private
+     */
+    this._parseChoices = function(choiceInfo) {
+        if (choiceInfo['choices']) {
+            var choices = {};
+            for (var i = 0; i < choiceInfo['choices'].length; i++) {
+                var choice = choiceInfo['choices'][i];
+                choices[choice['label']] = choice['value'];
+            }
+            return choices;
+        }
+        else {
+            console.log("No choices in choice info. Dynamic choices not yet supported.");
+            return null;
+        }
+    };
 
     /**
      * Return a clone of this param
@@ -976,4 +1049,7 @@ gp.Param = function(paramJson) {
             return this._type;
         }
     };
+
+    // Init the object
+    this._init_();
 };

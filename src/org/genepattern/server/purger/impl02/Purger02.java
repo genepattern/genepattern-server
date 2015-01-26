@@ -79,7 +79,7 @@ public class Purger02 extends TimerTask {
 
             if (serverCutoff != null) {
                 log.debug("purging soap attachments ...");
-                final File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                final File soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(GpContext.getServerContext());
                 log.debug("    soapAttachmentDir="+soapAttachmentDir);
                 final File[] userDirs = soapAttachmentDir.listFiles();
                 if (userDirs != null) {
@@ -111,7 +111,7 @@ public class Purger02 extends TimerTask {
      * @param dateCutoff
      */
     private void purgeLegacyWebUploadsFromTmpdir(final long dateCutoff) {
-        File webUploadDir = new File(System.getProperty("java.io.tmpdir"));
+        File webUploadDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 

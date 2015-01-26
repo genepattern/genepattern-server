@@ -24,16 +24,19 @@
             <title>
                 <ui:insert name="pageTitle">GenePattern </ui:insert>
             </title>
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jquery-ui-1.9.2.css?version=#{aboutBean.buildTag}" type="text/css" rel="stylesheet" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/themes/base/jquery.ui.all.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" media="screen" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/jobSharing.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/protocols.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/style-jobresults.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/popupMenu.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
-            <link href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/menu.css?version=#{aboutBean.buildTag}" type="text/css" rel="stylesheet" />
-            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}/glyphicon/glyphicon.css?version=#{aboutBean.buildTag}" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery-ui-1.9.2.css?version=#{aboutBean.buildTag}" type="text/css" rel="stylesheet" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/style.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.all.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" media="screen" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jobSharing.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/protocols.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/style-jobresults.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/popupMenu.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+            <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/menu.css?version=#{aboutBean.buildTag}" type="text/css" rel="stylesheet" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/glyphicon/glyphicon.css?version=#{aboutBean.buildTag}" />
             <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" rel="shortcut icon" />
+
+            <!-- Must load the skin CSS file last -->
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
 
             <script type="text/javascript" language="javascript">
                 var contextRoot = '#{facesContext.externalContext.requestContextPath}';
@@ -299,7 +302,7 @@
                                         <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
                                     </td>
                                     <td>
-                                        <div align="right">&#169;2003-2014&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
+                                        <div align="right">&#169;2003-2015&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
                                         </div>
                                     </td>
                                     <td width="10">&#160;</td>

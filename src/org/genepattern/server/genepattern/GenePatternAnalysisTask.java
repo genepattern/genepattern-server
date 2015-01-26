@@ -107,8 +107,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import javax.servlet.ServletContext;
-
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
@@ -154,7 +152,7 @@ import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
@@ -260,6 +258,7 @@ public class GenePatternAnalysisTask {
     public enum JOB_TYPE {
         JOB,
         VISUALIZER,
+        JAVASCRIPT,
         PIPELINE,
         IGV
     };
@@ -315,15 +314,14 @@ public class GenePatternAnalysisTask {
         String gpHost = null;
         String hostAddress = null;
         try {
-            if (System.getProperty("GenePatternURL") != null) {
-                URL gpUrl = new URL(System.getProperty("GenePatternURL"));
-                gpHost = gpUrl.getHost();
-                hostAddress = InetAddress.getLocalHost().getHostAddress();
-            }
-        } 
-        catch (MalformedURLException mfe) {
+            URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
+            gpHost = gpUrl.getHost();
+            hostAddress = InetAddress.getLocalHost().getHostAddress();
         } 
         catch (UnknownHostException uhe) {
+        }
+        catch (Throwable t) {
+            log.error(t);
         }
 
         String requestedHost = url.getHost();
@@ -433,7 +431,8 @@ public class GenePatternAnalysisTask {
             }
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
-                File in = new File(System.getProperty("java.io.tmpdir"), filename);
+                File parentTempdir = ServerConfigurationFactory.instance().getTempDir(jobContext);
+                File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
                     //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
@@ -463,7 +462,7 @@ public class GenePatternAnalysisTask {
                 }
 
                 //special case: Axis
-                in = new File(System.getProperty("soap.attachment.dir"), filename);
+                in = new File(ServerConfigurationFactory.instance().getSoapAttDir(jobContext), filename);
                 if (in.exists()) {
                     //TODO: permissions check for SOAP upload, see *similar* code in getFile.jsp
                     return in;
@@ -712,6 +711,9 @@ public class GenePatternAnalysisTask {
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             jobType = JOB_TYPE.VISUALIZER;
         }
+        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.JAVASCRIPT;
+        }
         else if (taskInfo.isPipeline()) {
             jobType = JOB_TYPE.PIPELINE;
         }
@@ -902,7 +904,7 @@ public class GenePatternAnalysisTask {
                             }
                         }
                         String webUploadDirectory = null;
-                        String tmpDir = System.getProperty("java.io.tmpdir");
+                        String tmpDir = gpConfig.getTempDir(jobContext).getAbsolutePath();
                         if (tmpDir != null) {
                             try {
                                 webUploadDirectory = new File(tmpDir).getCanonicalPath();
@@ -913,7 +915,7 @@ public class GenePatternAnalysisTask {
                         }
                         isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);	                    
                         if (!isWebUpload) {
-                            String soapAttachmentDir = System.getProperty("soap.attachment.dir");
+                            String soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(jobContext).getAbsolutePath();
                             if (soapAttachmentDir != null) {
                                 soapAttachmentDir = soapAttachmentDir + File.separator + jobInfo.getUserId();
                                 try {
@@ -1142,14 +1144,15 @@ public class GenePatternAnalysisTask {
 
                                     //special case: uploaded file from web client
                                     //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                    String webUploadDirectory = gpConfig.getTempDir(null).getCanonicalPath();
                                     boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
                                     isAllowed = isWebUpload;
 
                                     //special case: uploaded file from SOAP client
                                     //                <soap.attachment.dir>/<user_id>/<filename>
                                     if (!isAllowed) {
-                                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+                                        String soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(jobContext).getCanonicalPath();
+                                        soapAttachmentDir =new File(soapAttachmentDir + File.separator + jobInfo.getUserId()).getCanonicalPath();
                                         boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
                                         isAllowed = isSoapUpload;
                                     }
@@ -1223,8 +1226,8 @@ public class GenePatternAnalysisTask {
                                 
                                 // Handle getting the InputStream for GenomeSpace
                                 if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
-                                    if (GenomeSpaceFileManager.isGenomeSpaceFile(url)) {
+                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
+                                    if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
                                         try {
                                             is = gsClient.getInputStream(jobInfo.getUserId(), url);
                                             name = getGSDownloadFileName(url.openConnection(), url);
@@ -1490,7 +1493,18 @@ public class GenePatternAnalysisTask {
             }
             return;
         }
-        
+
+        //special-case for visualizer
+        if (jobType == JOB_TYPE.JAVASCRIPT) {
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
+            }
+            catch (Exception e) {
+                throw new JobDispatchException("Error handling visualizer", e);
+            }
+            return;
+        }
+
         //special-case, for -Xmx flag
         try {
             final Memory memoryFlag;
@@ -2180,7 +2194,7 @@ public class GenePatternAnalysisTask {
             commandPrefix = prefixes.getProperty(commandPrefixName);
         }
 
-        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER)) {
+        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER) && !(jobType == JOB_TYPE.JAVASCRIPT)) {
             // check for default prefix, unless it's a visualizer
             commandPrefix = prefixes.getProperty("default", null);
         }
@@ -3579,10 +3593,11 @@ public class GenePatternAnalysisTask {
                 }
                 // if we get here, the zip file contains only other zip files recursively install them
                 String firstLSID = null;
+                final File tempDir=ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
                 for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
                     zipEntry = (ZipEntry) eEntries.nextElement();
                     is = zipFile.getInputStream(zipEntry);
-                    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
+                    outFile = new File(tempDir, zipEntry.getName());
                     outFile.deleteOnExit();
                     os = new FileOutputStream(outFile);
                     fileLength = zipEntry.getSize();
@@ -4315,36 +4330,6 @@ public class GenePatternAnalysisTask {
     // implements FilenameFilter, but static
     public static boolean accept(File dir, String name) {
 	return isDocFile(name);
-    }
-
-    public static Properties loadGenePatternProperties(ServletContext application, String filename) throws IOException {
-	return appendProperties(application, filename, new Properties());
-    }
-
-    public static Properties appendProperties(ServletContext application, String filename, Properties props) throws IOException {
-	// append build.properties to the genepattern properties
-	return appendProperties((String) application.getAttribute("genepattern.properties"), filename, props);
-    }
-
-    public static Properties appendProperties(String propsDir, String filename, Properties props) throws IOException {
-	// append build.properties to the genepattern properties
-	File propFile = new File(propsDir + File.separatorChar + filename);
-	FileInputStream fis = null;
-	try {
-	    fis = new FileInputStream(propFile);
-	    props.load(fis);
-	} catch (IOException ioe) {
-	    throw new IOException(propFile.getAbsolutePath() + " cannot be loaded, reason: " + ioe.getMessage());
-	} finally {
-	    try {
-		if (fis != null) {
-		    fis.close();
-		}
-		fis = null;
-	    } catch (IOException ioe) {
-	    }
-	}
-	return props;
     }
 
     /* TODO: put all of this stuff in database and look it up when requested */

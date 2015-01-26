@@ -93,6 +93,15 @@ public class GpFileObjFactory {
      * @throws Exception
      */
     static public GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) throws Exception {
+        if (gpConfig == null) {
+            log.error("gpConfig==null, using ServerConfigurationFactory.instance");
+            gpConfig=ServerConfigurationFactory.instance();
+        }
+        File userUploadDir = gpConfig.getUserUploadDir(userContext);
+        return getUserUploadFile(userContext, userUploadDir, uploadFile);
+    }
+
+    static public GpFilePath getUserUploadFile(final GpContext userContext, final File userUploadDir, final File uploadFile) throws Exception {
         if (uploadFile == null) {
             throw new IllegalArgumentException("uploadFile must not be null");
         }
@@ -113,17 +122,12 @@ public class GpFileObjFactory {
         if (userContext.getUserId() == null) {
             throw new IllegalArgumentException("A valid userId is required, userId=null");
         }
-        if (gpConfig == null) {
-            log.error("gpConfig==null, using ServerConfigurationFactory.instance");
-            gpConfig=ServerConfigurationFactory.instance();
-        }
         
         //Note: see UserAccountManager class. If the system is running as expected, the user's home directory is created
         //    before the account is created, therefore we can assume the userId is a valid directory name
         if (userContext.getUserId().contains("/") || userContext.getUserId().contains(File.pathSeparator)) {
             throw new IllegalArgumentException("A valid userId is required, userId='"+userContext.getUserId()+"'. Your userId contains a pathSeparator character ('/').");
         }
-        File userUploadDir = gpConfig.getUserUploadDir(userContext);
 
         //relativize the path by manually removing './'
         String relativePath = uploadFile.getPath();
@@ -137,6 +141,7 @@ public class GpFileObjFactory {
         //2) construct a URI from the file, to get the relative uri path
         //   e.g. uriPath=/users/<user_id>[/relativeParentDir]/filename
         //Note: creating a File obj so that we can use UrlUtil methods to encode the path
+        //Note: Java 7 Path.toUri may work
         File tmp = new File("/users/"+userContext.getUserId()+"/"+FileUtil.getPathForwardSlashed(new File(relativePath)));
 
         String tmpPath = UrlUtil.encodeFilePath(tmp);
@@ -318,7 +323,7 @@ public class GpFileObjFactory {
     static private String[] splitUri(URI uri) {
         String servletPathPlus = uri.getPath();
         //1) chop off the servlet context (e.g. '/gp')
-        String gpPath = System.getProperty("GP_Path", "/gp");
+        String gpPath=ServerConfigurationFactory.instance().getGpPath();
         if (servletPathPlus.startsWith(gpPath)) {
             servletPathPlus = servletPathPlus.substring( gpPath.length() );
         }

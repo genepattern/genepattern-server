@@ -22,6 +22,8 @@ package org.genepattern.server.util;
 import java.util.*;
 import java.io.*;
 
+import org.genepattern.server.config.ServerConfigurationFactory;
+
 /**
  * class to handle reading and giving messages that may need to be customized 
  * at some future point and are stored in skin/message.properties
@@ -32,8 +34,7 @@ public class MessageUtils extends Properties {
 
 	public MessageUtils(){
 		super();
-		String dir = System.getProperty("genepattern.properties");
-		_init(new File(dir, "messages.properties"));
+		_init(new File(ServerConfigurationFactory.instance().getResourcesDir(), "messages.properties"));
 	}
 
 

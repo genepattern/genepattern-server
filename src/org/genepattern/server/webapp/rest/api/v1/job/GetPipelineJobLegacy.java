@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
@@ -19,9 +20,11 @@ import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
+import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,7 +205,20 @@ public class GetPipelineJobLegacy implements GetJob {
 
             //job owner
             job.put("userId", jobInfo.getUserId());
-            
+
+            try {
+                TaskInfo taskInfo = JobInfoManager.getTaskInfo(jobInfo);
+                if(taskInfo != null && taskInfo.getTaskInfoAttributes() != null
+                        &&TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
+                {
+                    job.put("launchUrl", JobInfoManager.generateLaunchURL(taskInfo, jobInfo));
+                }
+            }
+            catch (Exception e)
+            {
+                log.error("Error getting launch Url", e);
+            }
+
             //access permissions
             //TODO: improve group permissions query
             /*

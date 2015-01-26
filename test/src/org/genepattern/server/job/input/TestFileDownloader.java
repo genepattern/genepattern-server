@@ -18,6 +18,8 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
 import org.genepattern.server.job.input.cache.DownloadException;
+import org.genepattern.server.job.input.choice.ftp.FtpEntry;
+import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,10 +59,10 @@ public class TestFileDownloader {
         gpConfig=new GpConfig.Builder()
             .addProperty("user.root.dir", userDir.getAbsolutePath())  // <---- the root directory into which user files are saved
             // for reference, the following properties are FTP client settings 
-            //.addProperty("gp.server.choice.ftp_socketTimeout", "15000")
-            //.addProperty("gp.server.choice.ftp_dataTimeout", "15000")
-            //.addProperty("gp.server.choice.ftp_username", "anonymous")
-            //.addProperty("gp.server.choice.ftp_password", "gp-help@broadinstitute.org")
+            //.addProperty("ftpDownloader.ftp_socketTimeout", "15000")
+            //.addProperty("ftpDownloader.ftp_dataTimeout", "15000")
+            //.addProperty("ftpDownloader.ftp_username", "anonymous")
+            //.addProperty("ftpDownloader.ftp_password", "gp-help@broadinstitute.org")
         .build();
         gpContext=GpContext.getServerContext();
     }
@@ -266,16 +268,16 @@ public class TestFileDownloader {
     }
 
     @Test
-    public void testCachedFtpDir_getFilesToDownload() throws DownloadException {
+    public void testCachedFtpDir_getFilesToDownload() throws DownloadException, ListFtpDirException {
         final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
         final CachedFtpDir cachedFtpDir=new CachedFtpDir(gpConfig, gpContext, dirUrl);
-        final List<String> files=cachedFtpDir.getFilesToDownload();
+        final List<FtpEntry> files=cachedFtpDir.getFilesToDownload();
         
-        final List<String> expected=new ArrayList<String>();
-        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt");
-        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/02.txt");
-        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/03.txt");
-        expected.add("ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/04.txt");
+        final List<FtpEntry> expected=new ArrayList<FtpEntry>();
+        expected.add(new FtpEntry("01.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt"));
+        expected.add(new FtpEntry("02.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/02.txt"));
+        expected.add(new FtpEntry("03.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/03.txt"));
+        expected.add(new FtpEntry("04.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/04.txt"));
         
         Assert.assertEquals("filesToDownload", expected, files);
     }

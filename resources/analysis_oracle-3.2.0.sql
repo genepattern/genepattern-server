@@ -53,7 +53,7 @@ JOB_NO
 ;
 
 -- update schema version
-INSERT INTO PROPS (KEY, VALUE) VALUES ('registeredVersion3.2.0', '3.2.0');
+UPDATE PROPS SET VALUE = '3.2.0' where KEY = 'schemaVersion';
 
 COMMIT;
 

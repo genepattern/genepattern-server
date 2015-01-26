@@ -13,11 +13,13 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
+import org.genepattern.server.domain.Props;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
 /**
@@ -50,66 +52,17 @@ public class MigrationTool {
 
         //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
         final String KEY = "sync.job.uploads.complete";
-        boolean keyExists=false;  //need this to know whether to insert or to update
-        try {
-            String VAL = null;
-            HibernateUtil.beginTransaction();
-            String sql = "select value from PROPS where key = :key";
-            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
-            query.setString("key", KEY);
-            List<String> rval = query.list();
-            if (rval != null && rval.size() > 0) {
-                VAL = rval.get(0);
-                log.debug(KEY+"="+VAL);
-            }
-            if (VAL != null && VAL.length() > 0) {
-                keyExists=true;
-                //if the flag is already set, exit
-                if (gpVersion.equals(VAL)) {
-                    log.debug("job upload files already migrated for gpVersion="+gpVersion);
-                    return;
-                }
-            }
-        }
-        catch (Throwable t) {
-            log.error("Server error: "+t.getLocalizedMessage(), t);
+        Props row=Props.selectRow(KEY);
+        if (row != null && gpVersion.equals(row.getValue())) {
+            //if the flag is already set, exit
+            log.debug("job upload files already migrated for gpVersion="+gpVersion);
             return;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
         }
         
         migrateJobUploadDirs();
 
         //finally) set the flag in the DB
-        try {
-            HibernateUtil.beginTransaction();
-            final String sql;
-            if (keyExists) {
-                sql = "update PROPS set value = :value where key = :key";
-            }
-            else {
-                sql = "insert into PROPS ( key, value ) values ( :key, :value )";
-            }
-            final SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
-            query.setString("key", KEY);
-            query.setString("value", gpVersion);
-            final int num = query.executeUpdate();
-            if (num != 1) {
-                String message = "Error updating db, expecting 1 result but received "+num+". \n"+
-                        "\t insert into PROPS ( key, value ) values ( '"+KEY+"', 'true')";
-                log.error(message);
-                HibernateUtil.rollbackTransaction();
-            }
-            HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
-            log.error(t);
-            HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
+        Props.saveProp(KEY, gpVersion);        
     }
     
     private static void migrateJobUploadDirs() {
@@ -133,7 +86,7 @@ public class MigrationTool {
             return;
         }
         
-        String str = System.getProperty("java.io.tmpdir");
+        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
         File webUploadDir = new File(str);
         if (!webUploadDir.canRead()) {
             log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());
@@ -173,26 +126,42 @@ public class MigrationTool {
     }
 
     /**
+     * Check for a flag in the DB indicating whether 
+     * user uploads have already been migrated to the new format.
+     * 
+     * @return true if 'sync.user.uploads.complete' is set to true for this version of GenePattern;
+     *     also return true if there was some kind of DB connection error.
+     */
+    protected static boolean checkDbForSyncUserUploadsComplete() {
+        try {
+            HibernateUtil.beginTransaction();
+            String hql = "select props.value from "+Props.class.getName()+" props where props.key = :key";
+            Query query=HibernateUtil.getSession().createQuery(hql);
+            query.setString("key", "sync.user.uploads.complete");
+            List<String> rval = query.list();
+            if (rval != null && rval.size() > 0) {
+                log.debug("sync.user.uploads.complete="+rval.get(0));
+                return true;
+            }
+        }
+        catch (Throwable t) {
+            log.error("Server error: "+t.getLocalizedMessage(), t);
+            return true;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        return false;
+    }
+    
+    /**
      * Migrate all user upload files from GP 3.3.2 format to GP 3.3.3 format.
      * Store a record of this in the DB so that we only do this once.
      * This should be called from the StartupServlet after the DB is initialized.
      */
     public static void migrateUserUploads() {
-        try {
-            HibernateUtil.beginTransaction();
-            String sql = "select value from PROPS where key = :key";
-            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
-            query.setString("key", "sync.user.uploads.complete");
-            List<String> rval = query.list();
-            if (rval != null && rval.size() > 0) {
-                log.debug("sync.user.uploads.complete="+rval.get(0));
-                return;
-            }
-            HibernateUtil.closeCurrentSession();
-        }
-        catch (Throwable t) {
-            log.error("Server error: "+t.getLocalizedMessage(), t);
-            HibernateUtil.closeCurrentSession();
+        boolean dbcheck=checkDbForSyncUserUploadsComplete();
+        if (dbcheck) {
             return;
         }
         
@@ -214,26 +183,8 @@ public class MigrationTool {
         updatePrevJobInputParams();
         
         //6) finally, update the flag in the DB, so that we don't do this again
-        try {
-            HibernateUtil.beginTransaction();
-            //insert into props ( key, value ) values ('sync.user.uploads.complete', 'true')
-            final String sql = "insert into PROPS ( key, value ) values ( :key, :value )";
-            final SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
-            query.setString("key", "sync.user.uploads.complete");
-            query.setString("value", "true");
-            int num = query.executeUpdate();
-            if (num != 1) {
-                String message = "Error updating db, expecting 1 result but received "+num+". \n"+
-                        "\t insert into PROPS ( key, value ) values ( 'sync.user.uploads.complete', 'true')";
-                log.error(message);
-                HibernateUtil.rollbackTransaction();
-            }
-            HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
-            log.error(t);
-            HibernateUtil.rollbackTransaction();
-        } 
+        boolean success=Props.saveProp("sync.user.uploads.complete", "true");
+        log.info("migrated="+success);
     }
 
     /**

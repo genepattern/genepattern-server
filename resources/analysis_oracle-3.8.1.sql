@@ -21,6 +21,6 @@ alter table eula_remote_queue
     on delete cascade;
 
 -- update schema version
-update props set value='3.8.1' where key='schemaVersion';
+UPDATE PROPS SET VALUE = '3.8.1' where KEY = 'schemaVersion';
 
 commit;

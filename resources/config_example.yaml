@@ -23,7 +23,9 @@
 #     arg.list.error: [ 4, 3.14, 1.32e6, true, false ] 
 
 # apply these properties to all jobs
-default.properties: 
+default.properties:
+    #the path to the genepattern.log and webserver.log files
+    #gp.log: log
     executor: RuntimeExec
     java_flags: -Xmx512m
     # the number of milliseconds to wait before canceling a job submission (default to 5 minutes)
@@ -93,6 +95,15 @@ default.properties:
     #ftpDownloader.type: JAVA_6
     #ftpDownloader.type: COMMONS_NET_3_3
     #ftpDownloader.type: EDT_FTP_J_SIMPLE
+    
+    # the mail server for sending messages from the GenePattern server
+    smtp.server: smtp.broadinstitute.org
+    # the email address for sending help requests via the 'contact us' link
+    contact.us.email: gp-help@broadinstitute.org
+
+    # Change the skin GenePattern uses
+    display.skin: frozen
+    
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.

@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.genomespace.TreeJSON.TreeComparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,14 +92,14 @@ public class ServerFileTreeJSON extends JSONArray {
             }
 
             data.put(TITLE, title);
-        } 
-        
+        }
+
         JSONObject attr = new JSONObject();
         attr.put("href", file.getUrl());
-        if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(this); return false;"); }
-        else { attr.put("onclick", "JavaScript:handleServerFileClick(this); return false;"); }
+        if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
+        else { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
         attr.put("name", file.getName());
-        
+
         data.put(ATTR, attr);
         
         if (file.isDirectory()) {
