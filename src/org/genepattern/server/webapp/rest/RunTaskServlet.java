@@ -85,13 +85,13 @@ public class RunTaskServlet extends HttpServlet
 	 */
 	@Context
     UriInfo uriInfo;
-	
+
     @GET
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadModule(
-            @QueryParam("lsid") String lsid, 
-            @QueryParam("reloadJob") String reloadJobId, 
+            @QueryParam("lsid") String lsid,
+            @QueryParam("reloadJob") String reloadJobId,
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
             @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint,
@@ -113,7 +113,7 @@ public class RunTaskServlet extends HttpServlet
             final boolean initIsAdmin=true;
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
-            
+
             JobInput reloadJobInput = null;
 
             if(reloadJobId != null && !reloadJobId.equals(""))
@@ -158,7 +158,7 @@ public class RunTaskServlet extends HttpServlet
                         "for user " + userId);
             }
             userContext.setTaskInfo(taskInfo);
-            
+
             final ModuleJSON moduleObject = new ModuleJSON(taskInfo, null);
             //check for EULA
             JSONObject eulaObject=TasksResource.getPendingEulaForModuleJson(request, userContext, taskInfo);
@@ -199,7 +199,7 @@ public class RunTaskServlet extends HttpServlet
             final boolean isPipeline=taskInfo.isPipeline();
             if (isPipeline) {
                 // check for missing dependencies
-                // hint, all of the work is done in the constructor, including initialization of the 
+                // hint, all of the work is done in the constructor, including initialization of the
                 //    dependent tasks and missing task lsids
                 GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
                 if (getDependentTasks.getMissingTaskLsids().size()>0) {
@@ -212,9 +212,9 @@ public class RunTaskServlet extends HttpServlet
                     }
                 }
                 else {
-                    moduleObject.put("missing_tasks", false); 
+                    moduleObject.put("missing_tasks", false);
                 }
-                
+
                 final Set<TaskInfo> privateTasks=getDependentTasks.getPrivateTasks();
                 if (privateTasks != null && privateTasks.size()>0) {
                     log.debug("current user, '"+userContext.getUserId()+"', doesn't have permission to run one of the dependent tasks");
@@ -283,7 +283,7 @@ public class RunTaskServlet extends HttpServlet
                     _fileParam,
                     _formatParam,
                     parameterMap);
-            
+
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
@@ -392,14 +392,14 @@ public class RunTaskServlet extends HttpServlet
         @FormDataParam("ifile") InputStream uploadedInputStream,
         @FormDataParam("ifile") FormDataContentDisposition fileDetail,
         @FormDataParam("paramName") final String paramName,
-        @FormDataParam("index") final int index,        
+        @FormDataParam("index") final int index,
         @Context HttpServletRequest request)
     {
         try
         {
             String username = (String) request.getSession().getAttribute("userid");
             if (username == null)
-            {         
+            {
                 throw new Exception("User not logged in");
             }
 
@@ -687,16 +687,22 @@ public class RunTaskServlet extends HttpServlet
                 request.getSession().setAttribute(JobBean.DISPLAY_BATCH, receipt.getBatchId());
             }
 
-            int gpJobNo = Integer.parseInt(jobId);
+            List<String> jobIds = receipt.getJobIds();
+
             //check if there was a comment specified for job and add it to database
             if(jobSubmitInfo.getComment() != null && jobSubmitInfo.getComment().length() > 0)
             {
-                JobComment jobComment = new JobComment();
-                jobComment.setUserId(userContext.getUserId());
-                jobComment.setComment(jobSubmitInfo.getComment());
-                jobComment.setGpJobNo(gpJobNo);
-                jobComment.setPostedDate(new Date());
-                JobCommentManager.addJobComment(jobComment);
+                for(String gpJobId : jobIds)
+                {
+                    int gpJobNo = Integer.parseInt(gpJobId);
+
+                    JobComment jobComment = new JobComment();
+                    jobComment.setUserId(userContext.getUserId());
+                    jobComment.setComment(jobSubmitInfo.getComment());
+                    jobComment.setGpJobNo(gpJobNo);
+                    jobComment.setPostedDate(new Date());
+                    JobCommentManager.addJobComment(jobComment);
+                }
             }
 
             //check if there were tags specified for this job and add it to database
@@ -704,9 +710,13 @@ public class RunTaskServlet extends HttpServlet
             if(tags != null && tags.size() > 0)
             {
                 Date date = new Date();
-                for(String tag: tags)
-                {
-                    JobTagManager.addTag(userContext.getUserId(), gpJobNo, tag, date, false);
+
+                for(String gpJobId : jobIds) {
+                    int gpJobNo = Integer.parseInt(gpJobId);
+
+                    for (String tag : tags) {
+                        JobTagManager.addTag(userContext.getUserId(), gpJobNo, tag, date, false);
+                    }
                 }
             }
 
@@ -718,7 +728,7 @@ public class RunTaskServlet extends HttpServlet
                 message = message + ": " + e.getMessage();
             }
             return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
-        }        
+        }
         catch(Throwable t) {
             String message = "An error occurred while submitting the job";
             if(t.getMessage() != null) {
@@ -752,7 +762,7 @@ public class RunTaskServlet extends HttpServlet
      * Get the GP client code for the given task, copied from JobBean#getTaskCode().
      * Requires a logged in user, and valid 'lsid' query parameter or a valid 'reloadJob' query parameter.
      * The lsid can be the full lsid or the name of a module.
-     * 
+     *
      * To test from curl,
      * <pre>
        curl -u <username:password> <GenePatternURL>/rest/RunTask/viewCode?
@@ -761,34 +771,34 @@ public class RunTaskServlet extends HttpServlet
            language=[ 'Java' | 'R' | 'MATLAB' ], if not set, default to 'Java',
            <pname>=<pvalue>
      * </pre>
-     * 
+     *
      * Example 1: get Java code for ComparativeMarkerSelection (v.9)
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9" 
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9"
      * </pre>
      * Example 2: by taskName
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=ComparativeMarkerSelection" 
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=ComparativeMarkerSelection"
      * </pre>
      * Example 3: initialize the input.filename
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
      * </pre>
      * Example 4: from a reloaded job
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&reloadJob=9948" 
-     * </pre> 
-     * 
+       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&reloadJob=9948"
+     * </pre>
+     *
      * Note: I had to wrap the uri in double-quotes to deal with the '&' character.
-     * 
+     *
      * Note: If you prefer to use use cookie-based authentication. This command logs in and
      * saves the session cookie to the file 'cookies.txt'
      * <pre>
        curl -c cookies.txt "<GenePatternURL>/login?username=<username>&password=<password>"
        </pre>
      *
-     * Use the '-b cookies.txt' on subsequent calls.       
-     * 
+     * Use the '-b cookies.txt' on subsequent calls.
+     *
      * @param lsid, the full lsid or taskName of the module or pipeline
      * @param language, the programming language client, e.g. 'Java', 'R', or 'MATLAB'
      * @return
@@ -799,7 +809,7 @@ public class RunTaskServlet extends HttpServlet
     public Response viewCode(
             @QueryParam("language") String language,
             @QueryParam("lsid") String lsid,
-            final @QueryParam("reloadJob") String reloadJob, 
+            final @QueryParam("reloadJob") String reloadJob,
             final @QueryParam("_file") String _fileParam,
             final @QueryParam("_format") String _formatParam,
             final @Context HttpServletRequest request
@@ -824,7 +834,7 @@ public class RunTaskServlet extends HttpServlet
                 lsid=reloadJobInput.getLsid();
             }
         }
-        if (lsid==null || lsid.length()==0) { 
+        if (lsid==null || lsid.length()==0) {
             //400, Bad Request
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing required request parameter, 'lsid'").build();
         }
@@ -836,13 +846,13 @@ public class RunTaskServlet extends HttpServlet
         try {
             IAdminClient adminClient = new LocalAdminClient(userId);
             TaskInfo taskInfo = adminClient.getTask(lsid);
-            if (taskInfo == null) { 
+            if (taskInfo == null) {
                 return Response.status(Response.Status.NOT_FOUND).entity("Module not found, lsid="+lsid).build();
             }
-            
+
             ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
-            
-            
+
+
             ParameterInfo[] jobParameters=null;
             if (parameters != null) {
                 //JobInput initialValues= ParamListHelper.getInitialValues(
@@ -851,7 +861,7 @@ public class RunTaskServlet extends HttpServlet
                 JobInput initialValues=loadModuleHelper.getInitialValues(
                         lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
 
-                
+
                 jobParameters = new ParameterInfo[parameters.length];
                 int i=0;
                 for(ParameterInfo pinfo : parameters) {
@@ -919,7 +929,7 @@ public class RunTaskServlet extends HttpServlet
 
     }
 
-    private JSONArray getParameterList(final HttpServletRequest request, final TaskInfo taskInfo) 
+    private JSONArray getParameterList(final HttpServletRequest request, final TaskInfo taskInfo)
     {
         final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
         final JSONArray parametersObject = new JSONArray();
@@ -932,7 +942,7 @@ public class RunTaskServlet extends HttpServlet
 
     private static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
         // don't initialize the drop-down menu; instead wait for the web client to make a callback
-        final boolean initDropdown=false; 
+        final boolean initDropdown=false;
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
         parameter.addGroupInfo(pinfo);
@@ -944,7 +954,7 @@ public class RunTaskServlet extends HttpServlet
      * Get the set of LSID for all versions of this task which are installed on the server.
      * The LSID are ordered by the natural ordering as implemented in the LSID class,
      * which is in reverse order of the LSID version.
-     * 
+     *
      * @param userContext, must have valid userId, and should have isAdmin set
      * @param taskInfo
      * @return
@@ -955,7 +965,7 @@ public class RunTaskServlet extends HttpServlet
         final LSID taskLSID = new LSID(taskInfo.getLsid());
         final String taskNoLSIDVersion = taskLSID.toStringNoVersion();
         final SortedSet<LSID> moduleVersions = new TreeSet<LSID>();
-        
+
         final List<TaskInfo> allVersions=TaskInfoCache.instance().getAllVersions(userContext, taskLSID);
         for(final TaskInfo version : allVersions) {
             final LSID lsid=new LSID(version.getLsid());
@@ -972,7 +982,7 @@ public class RunTaskServlet extends HttpServlet
     {
         return new LocalAdminClient(username).getTask(taskLSID);
     }
-    
+
     /**
      * Check if the user is allowed to edit the module or pipeline.
      * @param userContext
@@ -1000,7 +1010,7 @@ public class RunTaskServlet extends HttpServlet
         final boolean isAuthorityMine = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
         if (!isAuthorityMine) {
             return false;
-        } 
+        }
         final boolean isPipeline=taskInfo.isPipeline();
         if (!isPipeline) {
             final boolean createModuleAllowed = AuthorizationHelper.createModule(userContext.getUserId());
