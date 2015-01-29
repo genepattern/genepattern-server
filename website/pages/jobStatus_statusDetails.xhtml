@@ -28,6 +28,7 @@
                         <table class="summary" style="width: 100%; margin: auto;" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
                             <tr><th colspan="2">Status</th></tr>
                             <tr><td colspan="2">#{jobStatus.statusMessage}</td></tr>
+                            <tr><td style="white-space: nowrap">Queue</td><td style="width: 99%"><h:outputText value="#{jobStatus.queueId}"  /></td></tr>
                             <h:outputText rendered="#{jobStatus.isFinished and jobStatus.exitCode != 0}" escape="false">
                             <tr><td style="white-space: nowrap">Exit Code</td><td style="width: 99%">#{jobStatus.exitCode}</td></tr>
                             </h:outputText>
