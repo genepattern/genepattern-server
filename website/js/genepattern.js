@@ -553,7 +553,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     var reader = new FileReader();
 
     var path = directory + encodeURIComponent(file.name); // The full url of the uploaded file
-    var step = 1024*1024;                               // The chunk size
+    var step = 1024*1024*100;                           // The chunk size
     var total = file.size;                              // The total file size
     var totalChunks = Math.ceil(total / step);          // Total number of chunks in file
     var nextChunk = 0;                                  // Index of the next chunk
