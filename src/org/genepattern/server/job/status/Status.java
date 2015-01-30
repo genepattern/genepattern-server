@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Representation of the status of a GenePattern job, used to generate the 'status.json' representation
@@ -72,6 +73,7 @@ public class Status {
     private Integer maxThreads=null;
     private String queueId = "";
     private List<GpLink> links=null;
+    private List<ResourceRequirement> resourceRequirements=null;
     
     private void addLink(GpLink link) {
         if (links==null) {
@@ -240,6 +242,45 @@ public class Status {
     }
     
     /**
+     * A resource requirement for a job submitted to the external queuing system.
+     * For example, the requested amount of memory or the maximum wall clock time.
+     * Add these to the Status object so they can be displayed on the Job Status page.
+     * 
+     * @author pcarr
+     */
+    public static class ResourceRequirement {
+        private String key;  // e.g. 'job.memory'
+        private String value; // e.g. '16 Gb'
+        private String displayValue; // optional, defaults to '<key>=<value>'
+        
+        public ResourceRequirement(final String key, final String value, final String displayValue) {
+            this.key=key;
+            this.value=value;
+            this.displayValue=displayValue;
+        }
+        
+        public String getKey() {
+            return key;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+        
+        public String getDisplayValue() {
+            return displayValue;
+        }
+        
+        public JSONObject toJsonObj() throws JSONException {
+            final JSONObject eventObj=new JSONObject();
+            eventObj.put("key", key);
+            eventObj.put("value", value);
+            eventObj.put("displayValue", displayValue);
+            return eventObj;
+        } 
+    }
+    
+    /**
      * Get the string formatted JSON representation.
      * @return
      * @throws JSONException
@@ -320,6 +361,14 @@ public class Status {
         List<JobEvent> jobEvents=getJobEvents();
         JSONArray eventLog=JobEvent.toJsonObj(jobEvents);
         jobStatus.put("eventLog", eventLog);
+
+        if (resourceRequirements != null) {
+            JSONArray arr=new JSONArray();
+            for(ResourceRequirement r : resourceRequirements) {
+                arr.put(r.toJsonObj());
+            }
+            jobStatus.put("resourceRequirements", arr);
+        }
         return jobStatus;
     }
     
@@ -356,6 +405,7 @@ public class Status {
         private String stderrLocation=null;
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
+        private List<ResourceRequirement> resourceRequirements=null;
         
         public Builder gpJobNo(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
@@ -427,6 +477,26 @@ public class Status {
             return this;
         }
         
+        /**
+         * Add 'resource request' to status
+         * @return
+         */
+        public Builder addResourceRequirement(final String key, final String value) {
+            return addResourceRequirement(key, value, value);
+        }
+        
+        public Builder addResourceRequirement(final String key, final String value, final String displayValue) {
+            return addResourceRequirement(new ResourceRequirement(key, value, displayValue));
+        }
+
+        public Builder addResourceRequirement(ResourceRequirement r) {
+            if (resourceRequirements==null) {
+                resourceRequirements=new ArrayList<ResourceRequirement>();
+            }
+            resourceRequirements.add(r);
+            return this;
+        }
+
         public Status build() {
             Status status = new Status();
             status.gpJobNo=gpJobNo;
@@ -491,6 +561,14 @@ public class Status {
             // when jobInfo != null, only set the isFinished flag after the 
             // output files have been recorded to the DB
             initIsFinished(status);
+            
+            if (this.resourceRequirements == null || this.resourceRequirements.size()==0) {
+                status.resourceRequirements=Collections.emptyList();
+            }
+            else {
+                status.resourceRequirements=ImmutableList.copyOf(this.resourceRequirements);
+            }
+
             return status;
         }
         

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
@@ -646,5 +647,28 @@ public class TestJobStatus {
         
         Status status=new Status.Builder().jobInfo(jobInfo).jobStatusRecord(jobRunnerJob).build();
         assertEquals("isFinished", false, status.getIsFinished());
+    }
+    
+    /**
+     * Expecting a list of job resource requirements in the JSON representation, e.g.
+<pre>
+  "resourceRequirements": [
+     { "key": "job.memory", "value": "4 Gb" },
+     { "key": "job.cpuSlots", "value": "1" }
+  ]
+</pre>
+     * @throws JSONException
+     */
+    @Test
+    public void resourceRequirements() throws JSONException {
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobRunnerJob)
+            .addResourceRequirement(JobRunner.PROP_MEMORY, "16 Gb")
+        .build();
+        final JSONObject statusObj=status.toJsonObj();
+        assertEquals(JobRunner.PROP_MEMORY, 
+                statusObj.getJSONArray("resourceRequirements").getJSONObject(0).get("key"));
+        assertEquals("16 Gb", 
+                statusObj.getJSONArray("resourceRequirements").getJSONObject(0).get("value"));
     }
 }
