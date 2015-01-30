@@ -1,0 +1,118 @@
+<project name="gp-custom-lsf-executor" default="describe">
+    <target name="describe">
+        <echo>
+            Create the GenePattern Mac App
+        </echo>
+    </target>
+
+    <!-- SET PROPERTIES -->
+
+    <property name="gp.classes" location="../build"/>
+    <property name="gp.server.lib" location="../website/WEB-INF/lib"/>
+
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+
+    <path id="gp.server.classpath">
+        <!-- include GenePattern jar files -->
+        <fileset dir="${gp.server.lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="gp.dev.classpath">
+        <pathelement location="${gp.classes}"/>
+    </path>
+
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}"/>
+        <path refid="gp.server.classpath"/>
+        <path refid="gp.dev.classpath"/>
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- INITIALIZATION TARGETS -->
+
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean-all" depends="clean">
+        <description>
+            Deletes everything, including the extracted client library and the downloaded client library zip file.
+        </description>
+        <delete file="gp-slurm.zip"/>
+    </target>
+
+    <!-- RESOURCE COPY TARGETS -->
+
+    <target name="echo-classpath" depends="init">
+        <pathconvert property="expanded.classpath" refid="compile.classpath"/>
+        <echo message="${expanded.classpath}" />
+    </target>
+
+    <target name="copy-base" depends="init">
+        <copydir src="resources/GenePattern.app" dest="${dist.dir}/GenePattern.app" />
+    </target>
+
+    <target name="copy-tomcat" depends="init, copy-base">
+        <copydir src="../installer-2014/gpdist/Tomcat" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat" />
+    </target>
+
+    <target name="copy-resources" depends="init, copy-base">
+        <copydir src="../resources" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/resources" />
+    </target>
+
+    <target name="copy-website" depends="init, copy-base, copy-tomcat">
+        <copydir src="../website" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp" />
+    </target>
+
+    <target name="create-empty-dirs" depends="init, copy-base">
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/jobResults" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/logs" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/patches" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/taskLib" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/temp" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/users" />
+    </target>
+
+    <!-- COMPILATION TARGETS -->
+
+    <target name="compile" depends="init">
+        <!--<available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor"/>-->
+        <!--<fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath"/>-->
+        <!--<javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath"/>-->
+
+        <!--&lt;!&ndash; copy non-java resource files to the output directory &ndash;&gt;-->
+        <!--<copy todir="${build.dir}">-->
+            <!--<fileset dir="src">-->
+                <!--<exclude name="**/*.java"/>-->
+            <!--</fileset>-->
+        <!--</copy>-->
+    </target>
+
+    <target name="jar" depends="compile">
+        <!--<property name="jar.file" location="${dist.dir}/gp-slurm-job-runner.jar"/>-->
+        <!--<jar destfile="${jar.file}" basedir="${build.dir}"/>-->
+    </target>
+
+    <!-- DISTRIBUTION TARGETS -->
+
+    <target name="dist" depends="clean-all">
+        <description>
+            Package the Mac App up for distribution
+        </description>
+        <zip basedir=".." destfile="gp-slurm.zip"
+             includes="gp-slurm-queue/**/*"
+             excludes="gp-slurm-queue/build.xml, gp-slurm-queue/src"/>
+    </target>
+
+</project>
