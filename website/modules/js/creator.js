@@ -216,7 +216,8 @@ function saveModule()
     else
     {
         //do not allow pipeline to be added as a taskType for a module
-        if(categories[0] !== "pipeline")
+        if(categories[0] !== undefined && categories[0] !== null
+            && categories.length > 0 && categories[0] !== "pipeline")
         {
             taskType = categories[0];
         }
@@ -478,6 +479,25 @@ function addparameter()
         }
 
         changeParameterType(tSelect);
+    });
+
+    $("input[name='p_optional']").live("click", function()
+    {
+        //if parameter is not optional then minimum number of files should be at least 1
+        var minNumFile = $(this).parents(".parameter").find("input[name='minNumFile']");
+        if(minNumFile.length > 0) {
+            if ($(this).is(":checked"))
+            {
+                minNumFile.spinner("value", 0);
+            }
+            else
+            {
+                if (minNumFile.val() < 1)
+                {
+                    minNumFile.spinner("value", 1);
+                }
+            }
+        }
     });
 
     $('#parameters').append(paramDiv);
@@ -1362,6 +1382,48 @@ function changeParameterType(element)
     });
 
     typeDetailsTable.append(specifyChoicesRow);
+
+    if(value == "Input File")
+    {
+        var specifyMinFilesRow = $("<tr/>");
+        var specifyMinFilesTd = $("<td/>");
+        specifyMinFilesTd.append('Minimum number of files:<br/>');
+        var minFiles = $('<input name="minNumFile" value="0"/>');
+        specifyMinFilesTd.append(minFiles);
+        minFiles.spinner({
+            min: 0,
+            incremental: true
+        });
+        specifyMinFilesRow.append(specifyMinFilesTd);
+        typeDetailsTable.append(specifyMinFilesRow);
+
+        var specifyMaxFilesRow = $("<tr/>");
+        var specifyMaxFilesTd = $("<td/>");
+        specifyMaxFilesTd.append('Maximum number of files:<br/>');
+        var maxFiles = $('<input name="maxNumFile" value="1"/>');
+
+        specifyMaxFilesTd.append(maxFiles);
+        maxFiles.spinner({
+            min: 1,
+            incremental: true
+        });
+        var unlimitedFiles = $('<input name="unlimitedNumFile" type="checkbox" />');
+        unlimitedFiles.click(function()
+        {
+            if($(this).is(":checked"))
+            {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner( "disable" );
+            }
+            else
+            {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner( "enable" );
+            }
+        });
+        specifyMaxFilesTd.append(unlimitedFiles);
+        specifyMaxFilesTd.append("unlimited");
+        specifyMaxFilesRow.append(specifyMaxFilesTd);
+        typeDetailsTable.append(specifyMaxFilesRow);
+    }
 }
 
 function updatemodulecategories()
@@ -1391,6 +1453,11 @@ function updatemodulecategories()
                 if(module_editor.moduleCategories.length > 0)
                 {
                     mcat.val(module_editor.moduleCategories);
+                    mcat.multiselect("refresh");
+                }
+                else
+                {
+                    mcat.val(["Uncategorized"]);
                     mcat.multiselect("refresh");
                 }
             }
@@ -1912,6 +1979,21 @@ function loadParameterInfo(parameters)
             }
         }
 
+        if(parameters[i].minValue != undefined && parameters[i].minValue != null)
+        {
+            newParameter.find('input[name="minNumFile"]').spinner( "value", parameters[i].minValue);
+        }
+
+        if(parameters[i].maxValue != undefined && parameters[i].maxValue != null && parameters[i].maxValue != -1)
+        {
+            newParameter.find('input[name="maxNumFile"]').spinner("value", parameters[i].maxValue);
+        }
+        else
+        {
+            newParameter.find('input[name="maxNumFile"]').spinner( "disable" );
+            newParameter.find('input[name="unlimitedNumFile"]').prop('checked', true);
+        }
+
         var allAttrs = {};
         $.each(parameters[i], function(keyName, value) {
             allAttrs[keyName] = parameters[i][keyName];
@@ -2007,11 +2089,30 @@ function getParametersJSON()
             saveError("A parameter name must be specified for parameter number " + pnum);
             throw("A parameter name is missing");
         }
+
+        var parameter = {};
         //this is an input file type
         if(type === "Input File")
         {
             mode = "IN";
             type = "FILE";
+
+            var minValue = $(this).find('input[name="minNumFile"]').val();
+            var maxValue = $(this).find('input[name="maxNumFile"]').val();
+            if($(this).find('input[name="maxNumFile"]').is(':disabled'))
+            {
+                maxValue = -1;
+            }
+
+            if(maxValue != -1 && minValue > maxValue)
+            {
+                saveError("Maximum number of files must be greater than minimum number of " +
+                    "files for parameter " + pname);
+                throw("Maximum number of files must be greater than minimum number of files for parameter " + pname);
+            }
+
+            parameter.minValue = minValue;
+            parameter.maxValue = maxValue;
         }
         else
         {
@@ -2043,11 +2144,11 @@ function getParametersJSON()
             prefix = $(this).find('input[name="p_flag"]').val();
         }
 
-        var parameter = {
-            "name": pname, "description": description, "TYPE": type,
+        $.extend(parameter,
+            {"name": pname, "description": description, "TYPE": type,
             "default_value": default_val, "optional": optional,
             "fileFormat": fileformatlist, "MODE": mode, "prefix": prefix, "flag": flag
-        };
+        });
 
         parameter["value"] = "";
 
@@ -2080,7 +2181,7 @@ function getParametersJSON()
             $.each(allAttrs, function(keyName, value) {
                 if($.inArray(keyName, Object.keys(parameter)) == -1
                     && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
-                    && keyName != "choiceDir" && keyName != "choiceDirFilter")
+                    && keyName != "choiceDir" && keyName != "choiceDirFilter" || keyName != "numValues")
                 {
                     parameter[keyName] = allAttrs[keyName];
                     console.log("\nsaving unknown parameter attributes: " + keyName + "=" + allAttrs[keyName]);
