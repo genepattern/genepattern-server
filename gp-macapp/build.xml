@@ -104,15 +104,23 @@
         <!--<jar destfile="${jar.file}" basedir="${build.dir}"/>-->
     </target>
 
+    <target name="copy-gp-full" depends="init, copy-base, copy-tomcat">
+        <copy file="../build/gp-full.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/lib" />
+    </target>
+
+    <target name="make-executable">
+        <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
+    </target>
+
     <!-- DISTRIBUTION TARGETS -->
 
-    <target name="dist" depends="clean-all">
-        <description>
-            Package the Mac App up for distribution
-        </description>
-        <zip basedir=".." destfile="gp-slurm.zip"
-             includes="gp-slurm-queue/**/*"
-             excludes="gp-slurm-queue/build.xml, gp-slurm-queue/src"/>
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, make-executable">
+        <!--<description>-->
+            <!--Package the Mac App up for distribution-->
+        <!--</description>-->
+        <!--<zip basedir=".." destfile="gp-slurm.zip"-->
+             <!--includes="gp-slurm-queue/**/*"-->
+             <!--excludes="gp-slurm-queue/build.xml, gp-slurm-queue/src"/>-->
     </target>
 
 </project>
