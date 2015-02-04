@@ -28,9 +28,6 @@
         <pathelement location="${build.dir}"/>
         <path refid="gp.server.classpath"/>
         <path refid="gp.dev.classpath"/>
-        <fileset dir="lib">
-            <include name="**/*.jar"/>
-        </fileset>
     </path>
 
     <!-- INITIALIZATION TARGETS -->
@@ -87,16 +84,16 @@
     <!-- COMPILATION TARGETS -->
 
     <target name="compile" depends="init">
-        <!--<available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor"/>-->
-        <!--<fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath"/>-->
-        <!--<javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath"/>-->
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor"/>
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath"/>
+        <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath"/>
 
-        <!--&lt;!&ndash; copy non-java resource files to the output directory &ndash;&gt;-->
-        <!--<copy todir="${build.dir}">-->
-            <!--<fileset dir="src">-->
-                <!--<exclude name="**/*.java"/>-->
-            <!--</fileset>-->
-        <!--</copy>-->
+        <!-- copy non-java resource files to the output directory -->
+        <copy todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="jar" depends="compile">
@@ -108,7 +105,7 @@
         <copy file="../build/gp-full.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/lib" />
     </target>
 
-    <target name="make-executable">
+    <target name="make-executable" depends="init, copy-base, copy-tomcat">
         <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/digest.sh" perm="ugo+rx"/>
@@ -119,9 +116,16 @@
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/version.sh" perm="ugo+rx"/>
     </target>
 
+    <target name="update-properties" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, compile">
+        <java classname="org.genepattern.startapp.PropertiesWriter">
+            <arg value="-h"/>
+            <classpath refid="compile.classpath" />
+        </java>
+    </target>
+
     <!-- DISTRIBUTION TARGETS -->
 
-    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, make-executable">
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, update-properties, make-executable">
         <!--<description>-->
             <!--Package the Mac App up for distribution-->
         <!--</description>-->
