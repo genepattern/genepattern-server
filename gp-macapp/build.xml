@@ -110,6 +110,13 @@
 
     <target name="make-executable">
         <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/digest.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/setclasspath.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/shutdown.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/startup.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/tool-wrapper.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/version.sh" perm="ugo+rx"/>
     </target>
 
     <!-- DISTRIBUTION TARGETS -->
