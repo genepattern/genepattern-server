@@ -314,7 +314,7 @@ public class HsqlDbUtil {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
             String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
-            if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0) {
+            if (expectedSchemaVersion==null || (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0)) {
                 log.info("adding" + name + " (" + version + ")");
                 rval.add(schemaFile);
             }
