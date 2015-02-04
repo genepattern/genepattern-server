@@ -31,6 +31,10 @@ public class HibernateUtil {
     private static final Logger log = Logger.getLogger(HibernateUtil.class);
     private static HibernateSessionManager instance;
     
+    public static synchronized void setInstance(HibernateSessionManager mgr) {
+        instance=mgr;
+    }
+    
     private static synchronized HibernateSessionManager instance() {
         if (instance==null) {
             log.debug("initializing hibernate session ...");
