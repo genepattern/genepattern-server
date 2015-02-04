@@ -95,7 +95,7 @@ public class Walltime {
      * @param val
      * @return
      */
-    static Walltime fromString(final String in) throws Exception {
+    public static Walltime fromString(final String in) throws Exception {
         if (in==null) {
             //null in, null out
             return null;

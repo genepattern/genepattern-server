@@ -38,7 +38,7 @@ import com.google.inject.internal.ImmutableMap;
 public class DrmJobSubmission { 
     private static final Logger log = Logger.getLogger(DrmJobSubmission.class);
 
-    private final GpConfig gpConfig;
+    private final GpConfig _gpConfig;
     private final GpContext jobContext;
     private final List<String> commandLine;
     private final Map<String, String> environmentVariables;
@@ -49,12 +49,19 @@ public class DrmJobSubmission {
     private final File stdinFile;
     private final File logFile;
     
+    private final String queue;
+    private final Memory memory;
+    private final String walltimeStr;
+    private final Integer nodeCount;
+    private final Integer cpuCount;
+    private final Value extraArgs;
+    
     private DrmJobSubmission(Builder builder) {
         if (builder.gpConfig!=null) {
-            this.gpConfig=builder.gpConfig;
+            this._gpConfig=builder.gpConfig;
         }
         else {
-            this.gpConfig=ServerConfigurationFactory.instance();
+            this._gpConfig=ServerConfigurationFactory.instance();
         }
         if (builder.jobContext!=null) {
             this.jobContext=builder.jobContext;
@@ -84,6 +91,13 @@ public class DrmJobSubmission {
         this.stderrFile=builder.stderrFile;
         this.stdinFile=builder.stdinFile;
         this.logFile=builder.logFile;
+        
+        this.queue=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE);
+        this.memory=this._gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        this.walltimeStr=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME);
+        this.nodeCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT);
+        this.cpuCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
+        this.extraArgs=this._gpConfig.getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
     }
     
     /**
@@ -164,7 +178,7 @@ public class DrmJobSubmission {
      * @return 
      */
     public String getQueue() {
-        return getQueue(null);
+        return queue;
     }
 
     /**
@@ -174,7 +188,10 @@ public class DrmJobSubmission {
      * @return
      */
     public String getQueue(String defaultValue) {
-        return gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE, defaultValue);
+        if (queue==null) {
+            return defaultValue;
+        }
+        return queue;
     }
     
     /**
@@ -187,7 +204,7 @@ public class DrmJobSubmission {
      * @return the optional Memory setting, default is null.
      */
     public Memory getMemory() {
-        return gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        return memory;
     }
 
     /**
@@ -206,12 +223,13 @@ public class DrmJobSubmission {
      * @return
      */
     public Walltime getWalltime(String defaultValue) {
-        final String walltimeStr = gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, defaultValue);
-        if (walltimeStr==null) {
-            return null;
-        }
         try {
-            return Walltime.fromString(walltimeStr);
+            if (walltimeStr!=null) {
+                return Walltime.fromString(walltimeStr);
+            }
+            else if (defaultValue!=null) {
+                return Walltime.fromString(defaultValue);
+            }
         }
         catch (Throwable t) {
             log.error(t);
@@ -224,7 +242,7 @@ public class DrmJobSubmission {
      * @return the optional nodeCount setting, default is null.
      */
     public Integer getNodeCount() {
-        return gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT);
+        return nodeCount;
     }
 
     /**
@@ -232,7 +250,7 @@ public class DrmJobSubmission {
      * @return the optional cpuCount setting, default is null.
      */
     public Integer getCpuCount() {
-        return gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
+        return cpuCount;
     }
 
     /**
@@ -240,7 +258,6 @@ public class DrmJobSubmission {
      * @return the list of additional JobRunner command line args, default is an empty list.
      */
     public List<String> getExtraArgs() {
-        Value extraArgs=gpConfig.getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
         if (extraArgs != null) {
             return extraArgs.getValues();
         }
@@ -273,7 +290,7 @@ public class DrmJobSubmission {
     
     
     public GpConfig getGpConfig() {
-        return gpConfig;
+        return _gpConfig;
     }
     
     public GpContext getJobContext() {
@@ -292,11 +309,11 @@ public class DrmJobSubmission {
      * @return
      */
     public String getProperty(final String key) {
-        return gpConfig.getGPProperty(jobContext, key);
+        return _gpConfig.getGPProperty(jobContext, key);
     }
     
     public Value getValue(final String key) {
-        return gpConfig.getValue(jobContext, key);
+        return _gpConfig.getValue(jobContext, key);
     }
     
     public static final class Builder {

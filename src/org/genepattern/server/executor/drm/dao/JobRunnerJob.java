@@ -119,6 +119,21 @@ public class JobRunnerJob {
     @Column(name="ext_job_id", nullable=true, length=255)
     private String extJobId;
     
+    @Column(name="req_mem", nullable=true)
+    private Long reqMem=null;
+    
+    @Column(name="req_cpu_count", nullable=true)
+    private Integer reqCpuCount=null;
+            
+    @Column(name="req_node_count", nullable=true)
+    private Integer reqNodeCount=null;
+    
+    @Column(name="req_walltime", nullable=true, length=15)
+    private String reqWalltime=null;
+    
+    @Column(name="req_queue", nullable=true, length=255)
+    private String reqQueue=null;
+
     @Column(name="queue_id", nullable=true, length=511)
     private String queueId;
 
@@ -238,6 +253,12 @@ public class JobRunnerJob {
         this.maxSwap=builder.maxSwap;
         this.maxProcesses=builder.maxProcesses;
         this.maxThreads=builder.maxThreads;
+        
+        this.reqMem=builder.reqMem;
+        this.reqCpuCount=builder.reqCpuCount;
+        this.reqNodeCount=builder.reqNodeCount;
+        this.reqWalltime=builder.reqWalltime;
+        this.reqQueue=builder.reqQueue;
     }
 
     public static final class Builder {
@@ -267,6 +288,12 @@ public class JobRunnerJob {
         private Integer maxThreads=null;
         private Integer maxProcesses=null;
         
+        private Long reqMem=null;
+        private Integer reqCpuCount=null;
+        private Integer reqNodeCount=null;
+        private String reqWalltime=null;
+        private String reqQueue=null;
+        
         public Builder(final String jobRunnerClassname, final DrmJobSubmission in) {
             this.gpJobNo=in.getGpJobNo();
             this.lsid=in.getJobContext().getLsid();
@@ -276,6 +303,16 @@ public class JobRunnerJob {
             this.stderrFile=fileAsString(in.getStderrFile());
             this.stdinFile=fileAsString(in.getStdinFile());
             this.logFile=fileAsString(in.getLogFile());
+            
+            if (in.getMemory() != null) {
+                this.reqMem=in.getMemory().getNumBytes();
+            }
+            this.reqCpuCount=in.getCpuCount();
+            this.reqNodeCount=in.getNodeCount();
+            if (in.getWalltime() != null) {
+                this.reqWalltime=in.getWalltime().toString();
+            }
+            this.reqQueue=in.getQueue();
         }
         
         /**
@@ -323,6 +360,7 @@ public class JobRunnerJob {
             this.maxSwap=in.maxSwap;
             this.maxProcesses=in.maxProcesses;
             this.maxThreads=in.maxThreads;
+            this.reqMem=in.reqMem;
         }
         
         public Builder drmJobStatus(final DrmJobStatus updated) {
@@ -484,6 +522,11 @@ public class JobRunnerJob {
             this.maxThreads=maxThreads;
             return this;
         }
+        
+        public Builder requestedMemory(final Memory requestedMemory) {
+            this.reqMem=requestedMemory.getNumBytes();
+            return this;
+        }
 
         public JobRunnerJob build() {
             return new JobRunnerJob(this);
@@ -585,97 +628,165 @@ public class JobRunnerJob {
     public Integer getMaxThreads() {
         return maxThreads;
     }
+    
+    public Long getRequestedMemory() {
+        return reqMem;
+    }
+    
+    public Integer getRequestedCpuCount() {
+        return reqCpuCount;
+    }
+    
+    public Integer getRequestedNodeCount() {
+        return reqNodeCount;
+    }
+    
+    public String getRequestedWalltime() {
+        return reqWalltime;
+    }
+    
+    public String getRequestedQueue() {
+        return reqQueue;
+    }
 
     //private no-arg constructor for hibernate
     private JobRunnerJob() {
     }
     
     //private setters for hibernate, making this class 'kind-of' immutable 
+    @SuppressWarnings("unused")
     private void setGpJobNo(final Integer gpJobNo) {
         this.gpJobNo = gpJobNo;
     }
     
+    @SuppressWarnings("unused")
     private void setLsid(final String lsid) {
         this.lsid = lsid;
     }
 
+    @SuppressWarnings("unused")
     private void setJobRunnerClassname(final String jobRunnerClassname) {
         this.jobRunnerClassname = jobRunnerClassname;
     }
 
+    @SuppressWarnings("unused")
     private void setJobRunnerName(final String jobRunnerName) {
         this.jobRunnerName = jobRunnerName;
     }
 
+    @SuppressWarnings("unused")
     private void setExtJobId(final String extJobId) {
         this.extJobId = extJobId;
     }
     
+    @SuppressWarnings("unused")
     private void setQueueId(final String queueId) {
         this.queueId=queueId;
     }
     
+    @SuppressWarnings("unused")
     private void setExitCode(final Integer exitCode) {
         this.exitCode = exitCode;
     }
     
+    @SuppressWarnings("unused")
     private void setTerminatingSignal(final String terminatingSignal) {
         this.terminatingSignal = terminatingSignal;
     }
 
+    @SuppressWarnings("unused")
     private void setJobState(final String jobState) {
         this.jobState = jobState;
     }
 
+    @SuppressWarnings("unused")
     private void setStatusMessage(final String extJobStatusMessage) {
         this.statusMessage = extJobStatusMessage;
     }
 
+    @SuppressWarnings("unused")
     private void setStatusDate(final Date timestamp) {
         this.statusDate = timestamp;
     }
 
+    @SuppressWarnings("unused")
     private void setWorkingDir(final String workingDir) {
         this.workingDir = workingDir;
     }
     
+    @SuppressWarnings("unused")
     private void setStdinFile(final String stdinFile) {
         this.stdinFile = stdinFile;
     }
 
+    @SuppressWarnings("unused")
     private void setStdoutFile(final String stdoutFile) {
         this.stdoutFile = stdoutFile;
     }
     
+    @SuppressWarnings("unused")
     private void setLogFile(final String logFile) {
         this.logFile = logFile;
     }
 
+    @SuppressWarnings("unused")
     private void setSubmitTime(Date submitTime) {
         this.submitTime = submitTime;
     }
 
+    @SuppressWarnings("unused")
     private void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
+    @SuppressWarnings("unused")
     private void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
 
+    @SuppressWarnings("unused")
     private void setCpuTime(Long cpuTime) {
         this.cpuTime = cpuTime;
     }
 
+    @SuppressWarnings("unused")
     private void setMaxMem(Long maxMem) {
         this.maxMem = maxMem;
     }
 
+    @SuppressWarnings("unused")
     private void setMaxProcesses(Integer maxProcesses) {
         this.maxProcesses = maxProcesses;
     }
 
+    @SuppressWarnings("unused")
     private void setMaxThreads(Integer maxThreads) {
         this.maxThreads = maxThreads;
     }
+    
+    @SuppressWarnings("unused")
+    private void setReqMem(Long reqMem) {
+        this.reqMem=reqMem;
+    }
+    
+    @SuppressWarnings("unused")
+    private void setReqCpuCount(Integer reqCpuCount) {
+        this.reqCpuCount=reqCpuCount;
+    }
+    
+    @SuppressWarnings("unused")
+    private void setReqNodeCount(Integer reqNodeCount) {
+        this.reqNodeCount=reqNodeCount;
+    }
+    
+    @SuppressWarnings("unused")
+    private void setReqWalltime(String reqWalltime) {
+        this.reqWalltime=reqWalltime;
+    }
+    
+    @SuppressWarnings("unused")
+    private void setReqQueue(String reqQueue) {
+        this.reqQueue=reqQueue;
+    }
+
 }
