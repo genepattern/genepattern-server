@@ -51,6 +51,7 @@ import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -564,15 +565,12 @@ public class ModuleQueryServlet extends HttpServlet {
             ParametersJSON[] parameters = ParametersJSON.extract(moduleJSON);
             ParameterInfo[] pInfo = new ParameterInfo[parameters.length];
 
-            for(int i =0; i< parameters.length;i++)
-            {
-                ParametersJSON  parameterJSON = parameters[i];
+            for(int i =0; i< parameters.length;i++) {
+                ParametersJSON parameterJSON = parameters[i];
                 ParameterInfo parameter = new ParameterInfo();
                 String pName = parameterJSON.getName();
-                if(pName != null && pName.length() > 0 )
-                {
-                    if(Character.isDigit(pName.charAt(0)))
-                    {
+                if (pName != null && pName.length() > 0) {
+                    if (Character.isDigit(pName.charAt(0))) {
                         sendError(response, "Parameter names cannot start with an integer: " + pName);
                     }
                 }
@@ -583,45 +581,30 @@ public class ModuleQueryServlet extends HttpServlet {
                 attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], parameterJSON.getDefaultValue());
 
 
-                if(parameterJSON.getType().equalsIgnoreCase("file"))
-                {
+                if (parameterJSON.getType().equalsIgnoreCase("file")) {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
                     attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
                     attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
 
-                    if(parameterJSON.getFileFormats() != null)
-                    {
+                    if (parameterJSON.getFileFormats() != null) {
                         attributes.put(GPConstants.FILE_FORMAT, parameterJSON.getFileFormats());
                     }
-                }
-                else if(parameterJSON.getType().equalsIgnoreCase("integer"))
-                {
+                } else if (parameterJSON.getType().equalsIgnoreCase("integer")) {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_INTEGER);
-                }
-                else if(parameterJSON.getType().equalsIgnoreCase("floating point"))
-                {
+                } else if (parameterJSON.getType().equalsIgnoreCase("floating point")) {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_FLOAT);
-                }
-                else if(parameterJSON.getType().equalsIgnoreCase("password"))
-                {
+                } else if (parameterJSON.getType().equalsIgnoreCase("password")) {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_PASSWORD);
-                }
-                else if(parameterJSON.getType().equalsIgnoreCase("directory"))
-                {
+                } else if (parameterJSON.getType().equalsIgnoreCase("directory")) {
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_DIR);
-                }
-                else
-                {
+                } else {
                     //then this must be a text input
                     attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
                 }
 
-                if(parameterJSON.isOptional())
-                {
+                if (parameterJSON.isOptional()) {
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "on");
-                }
-                else
-                {
+                } else {
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "");
                 }
 
@@ -634,17 +617,31 @@ public class ModuleQueryServlet extends HttpServlet {
                 attributes.put(ParametersJSON.VALUE, parameterJSON.getValue());
                 parameter.setValue(parameterJSON.getValue());
                 Iterator<String> paramKeys = parameterJSON.keys();
-                while(paramKeys.hasNext())
-                {
+                while (paramKeys.hasNext()) {
                     String key = paramKeys.next();
 
                     //add remaining parameter attributes
-                    if(!attributes.containsKey(key))
-                    {
+                    if (!attributes.containsKey(key) && !key.equals(ParametersJSON.MIN_NUM_VALUE)
+                            && !key.equals(ParametersJSON.MAX_NUM_VALUE)) {
                         attributes.put(key, parameterJSON.get(key));
                     }
                 }
 
+                //add the number of groups
+                if (parameterJSON.getMinNumValue() != -1)
+                {
+                    String numValuesString = String.valueOf(parameterJSON.getMinNumValue());
+
+                    if (parameterJSON.getMaxNumValue() != -1)
+                    {
+                        numValuesString += ".." + String.valueOf(parameterJSON.getMaxNumValue());
+                    }
+                    else
+                    {
+                        numValuesString += "+";
+                    }
+                    attributes.put(NumValues.PROP_NUM_VALUES, numValuesString);
+                }
                 parameter.setAttributes(attributes);
                 pInfo[i] = parameter;
             }
