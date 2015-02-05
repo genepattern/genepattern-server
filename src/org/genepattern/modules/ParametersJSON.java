@@ -50,6 +50,8 @@ public class ParametersJSON extends JSONObject {
     public static final String FILEFORMAT = "fileFormat";
     public static final String MIN_NUM_VALUE = "minValue";
     public static final String MAX_NUM_VALUE = "maxValue";
+    public static final String MIN_NUM_GROUPS = "minNumGroups";
+    public static final String MAX_NUM_GROUPS = "maxNumGroups";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";
@@ -109,6 +111,18 @@ public class ParametersJSON extends JSONObject {
             this.put(VALUE, pInfo.getValue());
 
             final NumValues numValues = ParamListHelper.initNumValues(pInfo);
+
+            if(numValues != null)
+            {
+                if (numValues.getMin() != null)
+                {
+                    this.put(MIN_NUM_VALUE, numValues.getMin());
+                }
+                if (numValues.getMax() != null)
+                {
+                    this.put(MAX_NUM_VALUE, numValues.getMax());
+                }
+            }
 
             if(numValues != null)
             {
@@ -221,6 +235,25 @@ public class ParametersJSON extends JSONObject {
 
     public long getMaxNumValue() throws JSONException {
         return this.getLong(MAX_NUM_VALUE);
+    }
+
+    public long getMinGroups() throws JSONException
+    {
+        if(this.has(MIN_NUM_GROUPS))
+        {
+            return this.getLong(MIN_NUM_GROUPS);
+        }
+
+        return 0;
+    }
+
+    public long getMaxGroups() throws JSONException {
+        if(this.has(MAX_NUM_GROUPS))
+        {
+            return this.getLong(MAX_NUM_GROUPS);
+        }
+
+        return 0;
     }
 
     public String getValue() throws JSONException {
