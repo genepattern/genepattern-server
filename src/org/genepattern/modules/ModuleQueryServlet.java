@@ -51,6 +51,7 @@ import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -622,12 +623,14 @@ public class ModuleQueryServlet extends HttpServlet {
 
                     //add remaining parameter attributes
                     if (!attributes.containsKey(key) && !key.equals(ParametersJSON.MIN_NUM_VALUE)
-                            && !key.equals(ParametersJSON.MAX_NUM_VALUE)) {
+                            && !key.equals(ParametersJSON.MAX_NUM_VALUE)
+                            && !key.equals(ParametersJSON.MIN_NUM_GROUPS)
+                            && !key.equals(ParametersJSON.MAX_NUM_GROUPS)) {
                         attributes.put(key, parameterJSON.get(key));
                     }
                 }
 
-                //add the number of groups
+                //add the number of files
                 if (parameterJSON.getMinNumValue() != -1)
                 {
                     String numValuesString = String.valueOf(parameterJSON.getMinNumValue());
@@ -642,6 +645,23 @@ public class ModuleQueryServlet extends HttpServlet {
                     }
                     attributes.put(NumValues.PROP_NUM_VALUES, numValuesString);
                 }
+
+                //add the number of groups
+                if (parameterJSON.getMinGroups() != 0)
+                {
+                    String numGroupsString = String.valueOf(parameterJSON.getMinGroups());
+
+                    if (parameterJSON.getMaxGroups() > parameterJSON.getMinGroups() && parameterJSON.getMaxGroups() != -1)
+                    {
+                        numGroupsString += ".." + String.valueOf(parameterJSON.getMaxGroups());
+                    }
+                    else
+                    {
+                        numGroupsString += "+";
+                    }
+                    attributes.put(GroupInfo.PROP_NUM_GROUPS, numGroupsString);
+                }
+
                 parameter.setAttributes(attributes);
                 pInfo[i] = parameter;
             }
@@ -797,6 +817,7 @@ public class ModuleQueryServlet extends HttpServlet {
         for(int i =0;i < pArray.length;i++)
         {
             ParametersJSON parameter = new ParametersJSON(pArray[i]);
+            parameter.addGroupInfo(pArray[i]);
             parametersObject.put(parameter);
         }
 
