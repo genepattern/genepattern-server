@@ -680,6 +680,7 @@ public class JobExecutor implements CommandExecutor2 {
         final String logFilename=gpConfig.getGPProperty(jobContext, JobRunner.PROP_LOGFILE);
         final String queueId=gpConfig.getQueueId(jobContext);
         DrmJobSubmission.Builder builder=new DrmJobSubmission.Builder(runDir)
+            .gpConfig(gpConfig)
             .jobContext(jobContext)
             .commandLine(commandLine)
             .environmentVariables(environmentVariables)

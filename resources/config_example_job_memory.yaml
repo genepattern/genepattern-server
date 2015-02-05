@@ -1,0 +1,18 @@
+#
+# Example GenePattern configuration file for the 'job.memory' flag.
+#
+#
+default.properties:
+    executor: LSF
+
+executors:
+    #
+    # Lsf integration via the JobRunner API
+    #
+    LSF:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner
+            jobRunnerName: CmdLineLsfRunner
+        default.properties:
+            job.memory: "2 Gb"

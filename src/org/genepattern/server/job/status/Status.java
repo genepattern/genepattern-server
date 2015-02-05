@@ -9,7 +9,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -21,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Representation of the status of a GenePattern job, used to generate the 'status.json' representation
@@ -72,6 +75,14 @@ public class Status {
     private Integer maxThreads=null;
     private String queueId = "";
     private List<GpLink> links=null;
+    private List<ResourceRequirement> resourceRequirements=null;
+    
+    //hard-coded resource requirements
+    private Memory requestedMemory=null;
+    private Integer requestedCpuCount=null;
+    private Integer requestedNodeCount=null;
+    private Walltime requestedWalltime=null;
+    private String requestedQueue=null;
     
     private void addLink(GpLink link) {
         if (links==null) {
@@ -238,6 +249,69 @@ public class Status {
         eventLog.add(new JobEvent("Completed in GenePattern", dateCompletedInGp));
         return Collections.unmodifiableList(eventLog);
     }
+
+    public Memory getRequestedMemory() {
+        return this.requestedMemory;
+    }
+    
+    public Integer getRequestedCpuCount() {
+        return this.requestedCpuCount;
+    }
+    
+    public Integer getRequestedNodeCount() {
+        return this.requestedNodeCount;
+    }
+    
+    public Walltime getRequestedWalltime() {
+        return this.requestedWalltime;
+    }
+    
+    public String getRequestedQueue() {
+        return this.requestedQueue;
+    }
+
+    public List<ResourceRequirement> getResourceRequirements() {
+        return resourceRequirements;
+    }
+    
+    /**
+     * A resource requirement for a job submitted to the external queuing system.
+     * For example, the requested amount of memory or the maximum wall clock time.
+     * Add these to the Status object so they can be displayed on the Job Status page.
+     * 
+     * @author pcarr
+     */
+    public static class ResourceRequirement {
+        private String key;  // e.g. 'job.memory'
+        private String value; // e.g. '16 Gb'
+        private String displayValue; // optional, defaults to '<key>=<value>'
+        
+        public ResourceRequirement(final String key, final String value, final String displayValue) {
+            this.key=key;
+            this.value=value;
+            this.displayValue=displayValue;
+        }
+        
+        public String getKey() {
+            return key;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+        
+        public String getDisplayValue() {
+            return displayValue;
+        }
+        
+        public JSONObject toJsonObj() throws JSONException {
+            final JSONObject eventObj=new JSONObject();
+            eventObj.put("key", key);
+            eventObj.put("value", value);
+            eventObj.put("displayValue", displayValue);
+            return eventObj;
+        } 
+    }
     
     /**
      * Get the string formatted JSON representation.
@@ -320,6 +394,14 @@ public class Status {
         List<JobEvent> jobEvents=getJobEvents();
         JSONArray eventLog=JobEvent.toJsonObj(jobEvents);
         jobStatus.put("eventLog", eventLog);
+
+        if (resourceRequirements != null) {
+            JSONArray arr=new JSONArray();
+            for(ResourceRequirement r : resourceRequirements) {
+                arr.put(r.toJsonObj());
+            }
+            jobStatus.put("resourceRequirements", arr);
+        }
         return jobStatus;
     }
     
@@ -356,6 +438,7 @@ public class Status {
         private String stderrLocation=null;
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
+        private List<ResourceRequirement> resourceRequirements=null;
         
         public Builder gpJobNo(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
@@ -427,6 +510,26 @@ public class Status {
             return this;
         }
         
+        /**
+         * Add 'resource request' to status
+         * @return
+         */
+        public Builder addResourceRequirement(final String key, final String value) {
+            return addResourceRequirement(key, value, value);
+        }
+        
+        public Builder addResourceRequirement(final String key, final String value, final String displayValue) {
+            return addResourceRequirement(new ResourceRequirement(key, value, displayValue));
+        }
+
+        public Builder addResourceRequirement(ResourceRequirement r) {
+            if (resourceRequirements==null) {
+                resourceRequirements=new ArrayList<ResourceRequirement>();
+            }
+            resourceRequirements.add(r);
+            return this;
+        }
+
         public Status build() {
             Status status = new Status();
             status.gpJobNo=gpJobNo;
@@ -486,12 +589,58 @@ public class Status {
                 status.maxProcesses=jobStatusRecord.getMaxProcesses();
                 status.maxThreads=jobStatusRecord.getMaxThreads();
                 status.queueId=jobStatusRecord.getQueueId();
+                
+                //initialize resource requirements
+                if (jobStatusRecord.getRequestedMemory() != null) {
+                    status.requestedMemory=Memory.fromSizeInBytes(jobStatusRecord.getRequestedMemory());
+                    this.addResourceRequirement(JobRunner.PROP_MEMORY, status.requestedMemory.getDisplayValue());
+                }
+                status.requestedCpuCount=jobStatusRecord.getRequestedCpuCount();
+                if (status.requestedCpuCount != null) {
+                    this.addResourceRequirement(JobRunner.PROP_CPU_COUNT, ""+jobStatusRecord.getRequestedCpuCount());
+                }
+                status.requestedNodeCount=jobStatusRecord.getRequestedNodeCount();
+                if (status.requestedNodeCount != null) {
+                    this.addResourceRequirement(JobRunner.PROP_NODE_COUNT, ""+jobStatusRecord.getRequestedNodeCount());
+                }
+                status.requestedWalltime=initWalltime(jobStatusRecord);
+                if (status.requestedWalltime != null) {
+                    this.addResourceRequirement(JobRunner.PROP_WALLTIME, status.requestedWalltime.toString());
+                }
+                status.requestedQueue=jobStatusRecord.getRequestedQueue();
+                if (status.requestedQueue != null) {
+                    this.addResourceRequirement(JobRunner.PROP_QUEUE, jobStatusRecord.getRequestedQueue());
+                }
             }
             
             // when jobInfo != null, only set the isFinished flag after the 
             // output files have been recorded to the DB
             initIsFinished(status);
+            
+            if (this.resourceRequirements == null || this.resourceRequirements.size()==0) {
+                status.resourceRequirements=Collections.emptyList();
+            }
+            else {
+                status.resourceRequirements=ImmutableList.copyOf(this.resourceRequirements);
+            }
+
             return status;
+        }
+        
+        protected Walltime initWalltime(JobRunnerJob jrj) {
+            String wtSpec=jrj.getRequestedWalltime();
+            if (wtSpec == null) {
+                log.debug("wtSpec is null");
+                return null;
+            }
+            try {
+                Walltime wt=Walltime.fromString(wtSpec);
+                return wt;
+            }
+            catch (Throwable t) {
+                log.error("Invalid wtSpec="+wtSpec, t);
+                return null;
+            }
         }
         
         private boolean initIsFinished(Status status) {

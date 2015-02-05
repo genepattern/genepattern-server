@@ -1,5 +1,7 @@
 package org.genepattern.drm;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
@@ -101,9 +103,16 @@ public class TestWalltime {
     
     @Test
     public void formatHoursAndMinutes_45min() throws Exception {
-        Assert.assertEquals("00:45:00 in 'mm' format", 
+        assertEquals("00:45:00 in 'mm' format", 
                 "00:45",
                 Walltime.fromString("00:45:00").formatHoursAndMinutes());
+    }
+    
+    @Test
+    public void testEquals() throws Exception {
+        Walltime arg0=Walltime.fromString("12:00:00");
+        Walltime arg1=Walltime.fromString("12:00:00");
+        assertEquals(arg0, arg1);
     }
 
     //parse errors
