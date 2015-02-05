@@ -1,13 +1,13 @@
 package org.genepattern.server.config;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
 
 import org.genepattern.drm.JobRunner;
-import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;

@@ -8,12 +8,16 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
+import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * Test cases for initializing and launching the in-memory HSQL database.
@@ -137,23 +141,56 @@ public class TestHsqlDbUtil {
     public void listSchemaFiles_nullDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion=null;
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.1", 38, schemaFiles.size());
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
     }
 
     @Test
     public void listSchemaFiles_emptyDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion="";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.1", 38, schemaFiles.size());
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
     }
     
     @Test
     public void listSchemaFiles_update() {
         final String schemaPrefix="analysis_hypersonic-";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.1", "3.9.0");
-        assertEquals("num schema files, updated install of 3.9.1", 1, schemaFiles.size());
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", "3.9.1");
+        assertEquals("num schema files, updated install of 3.9.2", 1, schemaFiles.size());
     }
+    
+    @Test
+    public void listSchemaFiles_default() {
+        final String schemaPrefix="analysis_hypersonic-";
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, null, null);
+        assertEquals("num schema files, latest version", 39, schemaFiles.size());
+    }
+    
+    @Ignore @Test
+    public void initDbSchemaMysql() throws Throwable {
+        
+        Properties p=new Properties();
+        ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
+
+        //loadProperties(mysqlProperties, new File("resources/database_default.properties"));
+        p.setProperty("database.vendor", "MySQL");
+        p.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
+        p.setProperty("hibernate.connection.url", "jdbc:mysql://127.0.0.1:3306/gpdev");
+        p.setProperty("hibernate.connection.username", "gpdev");
+        p.setProperty("hibernate.connection.password", "gpdev");
+        p.setProperty("hibernate.default_schema", "genepattern");
+        p.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+
+        
+        GpConfig gpConfig=Mockito.mock(GpConfig.class);
+        Mockito.when(gpConfig.getDbProperties()).thenReturn(p);
+        HibernateSessionManager mgr=HibernateUtil.initFromConfig(gpConfig, gpContext);
+        HibernateUtil.setInstance(mgr);
+        
+        HsqlDbUtil.updateSchema(resourcesDir, "analysis_mysql", "3.9.2");
+    }
+    
+    
 
 }
