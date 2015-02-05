@@ -9,7 +9,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobState;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -74,6 +76,13 @@ public class Status {
     private String queueId = "";
     private List<GpLink> links=null;
     private List<ResourceRequirement> resourceRequirements=null;
+    
+    //hard-coded resource requirements
+    private Memory requestedMemory=null;
+    private Integer requestedCpuCount=null;
+    private Integer requestedNodeCount=null;
+    private Walltime requestedWalltime=null;
+    private String requestedQueue=null;
     
     private void addLink(GpLink link) {
         if (links==null) {
@@ -239,6 +248,30 @@ public class Status {
         eventLog.add(new JobEvent("Finished running", endTime));
         eventLog.add(new JobEvent("Completed in GenePattern", dateCompletedInGp));
         return Collections.unmodifiableList(eventLog);
+    }
+
+    public Memory getRequestedMemory() {
+        return this.requestedMemory;
+    }
+    
+    public Integer getRequestedCpuCount() {
+        return this.requestedCpuCount;
+    }
+    
+    public Integer getRequestedNodeCount() {
+        return this.requestedNodeCount;
+    }
+    
+    public Walltime getRequestedWalltime() {
+        return this.requestedWalltime;
+    }
+    
+    public String getRequestedQueue() {
+        return this.requestedQueue;
+    }
+
+    public List<ResourceRequirement> getResourceRequirements() {
+        return resourceRequirements;
     }
     
     /**
@@ -556,6 +589,28 @@ public class Status {
                 status.maxProcesses=jobStatusRecord.getMaxProcesses();
                 status.maxThreads=jobStatusRecord.getMaxThreads();
                 status.queueId=jobStatusRecord.getQueueId();
+                
+                //initialize resource requirements
+                if (jobStatusRecord.getRequestedMemory() != null) {
+                    status.requestedMemory=Memory.fromSizeInBytes(jobStatusRecord.getRequestedMemory());
+                    this.addResourceRequirement(JobRunner.PROP_MEMORY, status.requestedMemory.getDisplayValue());
+                }
+                status.requestedCpuCount=jobStatusRecord.getRequestedCpuCount();
+                if (status.requestedCpuCount != null) {
+                    this.addResourceRequirement(JobRunner.PROP_CPU_COUNT, ""+jobStatusRecord.getRequestedCpuCount());
+                }
+                status.requestedNodeCount=jobStatusRecord.getRequestedNodeCount();
+                if (status.requestedNodeCount != null) {
+                    this.addResourceRequirement(JobRunner.PROP_NODE_COUNT, ""+jobStatusRecord.getRequestedNodeCount());
+                }
+                status.requestedWalltime=initWalltime(jobStatusRecord);
+                if (status.requestedWalltime != null) {
+                    this.addResourceRequirement(JobRunner.PROP_WALLTIME, status.requestedWalltime.toString());
+                }
+                status.requestedQueue=jobStatusRecord.getRequestedQueue();
+                if (status.requestedQueue != null) {
+                    this.addResourceRequirement(JobRunner.PROP_QUEUE, jobStatusRecord.getRequestedQueue());
+                }
             }
             
             // when jobInfo != null, only set the isFinished flag after the 
@@ -570,6 +625,22 @@ public class Status {
             }
 
             return status;
+        }
+        
+        protected Walltime initWalltime(JobRunnerJob jrj) {
+            String wtSpec=jrj.getRequestedWalltime();
+            if (wtSpec == null) {
+                log.debug("wtSpec is null");
+                return null;
+            }
+            try {
+                Walltime wt=Walltime.fromString(wtSpec);
+                return wt;
+            }
+            catch (Throwable t) {
+                log.error("Invalid wtSpec="+wtSpec, t);
+                return null;
+            }
         }
         
         private boolean initIsFinished(Status status) {

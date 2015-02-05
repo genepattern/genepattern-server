@@ -13,6 +13,7 @@ import java.util.List;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
@@ -660,7 +661,7 @@ public class TestJobStatus {
      * @throws JSONException
      */
     @Test
-    public void resourceRequirements() throws JSONException {
+    public void addResourceRequirements() throws JSONException {
         Status status=new Status.Builder()
             .jobStatusRecord(jobRunnerJob)
             .addResourceRequirement(JobRunner.PROP_MEMORY, "16 Gb")
@@ -670,5 +671,32 @@ public class TestJobStatus {
                 statusObj.getJSONArray("resourceRequirements").getJSONObject(0).get("key"));
         assertEquals("16 Gb", 
                 statusObj.getJSONArray("resourceRequirements").getJSONObject(0).get("value"));
+    }
+    
+    @Test
+    public void resourceRequirementsFromJobRunnerJob() throws Exception {
+        final Memory reqMem=Memory.fromString("8 Gb");
+        final Walltime reqWalltime=Walltime.fromString("7-00:00:00");
+        when(jobRunnerJob.getRequestedMemory()).thenReturn(reqMem.getNumBytes());
+        when(jobRunnerJob.getRequestedCpuCount()).thenReturn(4);
+        when(jobRunnerJob.getRequestedNodeCount()).thenReturn(5);
+        when(jobRunnerJob.getRequestedWalltime()).thenReturn(reqWalltime.toString());
+        when(jobRunnerJob.getRequestedQueue()).thenReturn("my_queue");
+        Status status=new Status.Builder()
+            .jobStatusRecord(jobRunnerJob)
+        .build();
+
+        assertEquals("requestedMemory", "8 GB", status.getRequestedMemory().getDisplayValue());
+        assertEquals("requestedCpuCount", (Integer)4, status.getRequestedCpuCount());
+        assertEquals("requestedNodeCount", (Integer)5, status.getRequestedNodeCount());
+        assertEquals("requestedWalltime", reqWalltime, status.getRequestedWalltime());
+        assertEquals("requestedQueue", "my_queue", status.getRequestedQueue());
+        
+        assertEquals("resourceRequirements.size", 5, status.getResourceRequirements().size());
+        assertEquals("resourceRequirements[0].key", "job.memory", status.getResourceRequirements().get(0).getKey());
+        assertEquals("resourceRequirements[1].key", "job.cpuCount", status.getResourceRequirements().get(1).getKey());
+        assertEquals("resourceRequirements[2].key", "job.nodeCount", status.getResourceRequirements().get(2).getKey());
+        assertEquals("resourceRequirements[3].key", "job.walltime", status.getResourceRequirements().get(3).getKey());
+        assertEquals("resourceRequirements[4].key", "job.queue", status.getResourceRequirements().get(4).getKey());
     }
 }
