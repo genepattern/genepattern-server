@@ -1463,8 +1463,8 @@ function changeParameterType(element)
 
             editFileGroupDialog.dialog({
                 autoOpen: true,
-                height: 320,
-                width: 590,
+                height: 330,
+                width: 600,
                 title: "Specify File Groups",
                 create: function(event){
                     var table = $("<table>" +
@@ -1492,7 +1492,7 @@ function changeParameterType(element)
                                 $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("disable");
                                 $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", true);
                                 $(this).parents("table").find("input[name='fileColumnLabel']").prop("disabled", true);
-                                $(this).parents("table").find("input[name='fileGroupsMatch']").prop("disabled", true);
+                                $(this).parents("table").find("select[name='fileGroupsMatch']").prop("disabled", true);
                             }
                             else
                             {
@@ -1500,6 +1500,12 @@ function changeParameterType(element)
                                 $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", false);
                                 $(this).parents("table").find("input[name='fileColumnLabel']").prop("disabled", false);
                                 $(this).parents("table").find("select[name='fileGroupsMatch']").prop("disabled", false);
+                            }
+
+                            var maxNumFileGroups = $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("value");
+                            if(ui.value > maxNumFileGroups)
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("value", ui.value);
                             }
                         }
                     });
@@ -1525,11 +1531,12 @@ function changeParameterType(element)
                     {
                         header: false,
                         multiple: false,
-                        selectedList: 1
+                        selectedList: 1,
+                        minWidth: 145
                     });
 
                     var minNumGroups = element.parents(".parameter").data("minNumGroups");
-                    if(minNumGroups !== undefined && minNumGroups !== null)
+                    if(parseInt(minNumGroups) !== 0 && minNumGroups !== undefined && minNumGroups !== null)
                     {
                         table.find("input[name='minNumFileGroups']").spinner("value", minNumGroups);
 
@@ -1588,8 +1595,18 @@ function changeParameterType(element)
                             element.parents(".parameter").data("fileColumnLabel", fileColumnLabel);
                             element.parents(".parameter").data("fileGroupsMatch", fileGroupsMatch);
 
-
-                            element.parents(".parameter").find(".fileGroupsLink").text("edit file groups");
+                            if(parseInt(minNumGroups) === 0)
+                            {
+                                element.parents(".parameter").find(".fileGroupsLink").text("add file groups");
+                                element.parents(".parameter").removeData("maxNumGroups");
+                                element.parents(".parameter").removeData("groupColumnLabel");
+                                element.parents(".parameter").removeData("fileColumnLabel");
+                                element.parents(".parameter").removeData("fileGroupsMatch");
+                            }
+                            else
+                            {
+                                element.parents(".parameter").find(".fileGroupsLink").text("edit file groups");
+                            }
 
                             $(this).dialog("destroy");
                         }
@@ -2331,32 +2348,28 @@ function getParametersJSON()
             var fileColumnLabel = $(this).data("fileColumnLabel");
 
 
-            if(minNumGroups !== undefined && minNumGroups !== null)
+            if(minNumGroups !== undefined && minNumGroups !== null && minNumGroups !== 0)
             {
                 parameter.minNumGroups = minNumGroups;
-            }
 
-            if(maxNumGroups != -1 && minNumGroups > maxNumGroups)
-            {
-                saveError("Maximum number of file groups must be greater than minimum number of " +
-                    "file groups for parameter " + pname);
-                throw("Maximum number of file groups must be greater than minimum number of file groups for parameter " + pname);
-            }
-            parameter.maxNumGroups = maxNumGroups;
+                if (maxNumGroups != -1 && minNumGroups > maxNumGroups) {
+                    saveError("Maximum number of file groups must be greater than minimum number of " +
+                        "file groups for parameter " + pname);
+                    throw("Maximum number of file groups must be greater than minimum number of file groups for parameter " + pname);
+                }
+                parameter.maxNumGroups = maxNumGroups;
 
-            if(groupColumnLabel !== undefined && groupColumnLabel !== null)
-            {
-                parameter.groupColumnLabel = groupColumnLabel;
-            }
+                if (groupColumnLabel !== undefined && groupColumnLabel !== null) {
+                    parameter.groupColumnLabel = groupColumnLabel;
+                }
 
-            if(fileColumnLabel !== undefined && fileColumnLabel !== null)
-            {
-                parameter.fileColumnLabel = fileColumnLabel;
-            }
+                if (fileColumnLabel !== undefined && fileColumnLabel !== null) {
+                    parameter.fileColumnLabel = fileColumnLabel;
+                }
 
-            if(fileGroupsMatch !== undefined && fileGroupsMatch !== null)
-            {
-                parameter.groupNumValuesMustMatch = fileGroupsMatch.toString();
+                if (fileGroupsMatch !== undefined && fileGroupsMatch !== null) {
+                    parameter.groupNumValuesMustMatch = fileGroupsMatch.toString();
+                }
             }
         }
         else

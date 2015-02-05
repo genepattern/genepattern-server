@@ -818,6 +818,16 @@ table.deloptions
     margin-left: 1px;
 }
 
+.editFileGroupDialog table
+{
+    font-size: 13px;
+}
+
+.editFileGroupDialog table tr td
+{
+    padding: 5px;
+}
+
 .editFileGroupDialog label
 {
     display: inline;
