@@ -628,8 +628,11 @@ public class GpConfig {
     }
 
     /**
-     * Helper method for getting the queueId for a job. In most cases this is equivalent to the 'job.queue' property.
-     * When the 'job.virtualQueue' is set, then that value is used.
+     * Get the queueId for a job, this is the value which should be logged into the 'job_runner_job' table in the GP database.
+     * This method was added to support the 'job.virtualQueue' feature.
+     * 
+     * Use the getGPProperty(gpContext, JobRunner.PROP_QUEUE) method to get the actual queue name to be submitted to an external queuing system.
+     * 
      * The default value is the empty string when neither property is set.
      *
      * @param gpContext
