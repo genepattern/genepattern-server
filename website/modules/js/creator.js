@@ -113,6 +113,26 @@ function bytesToSize(bytes)
 }
 
 
+function createErrorMsg(title, message)
+{
+    var errorDiv = $("<div/>");
+    var errorContents = $('<p> <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>'
+        + '<strong>Error: </strong></p>');
+    errorContents.append(message);
+    errorDiv.append(errorContents);
+
+    errorDiv.dialog({
+        title: title,
+        width: 480,
+        buttons: {
+            "OK": function()
+            {
+                $(this).dialog("close");
+            }
+        }
+    });
+}
+
 function saveError(errorMessage)
 {
     $("#savingDialog").empty();
@@ -447,6 +467,7 @@ function addparameter()
         </td></tr>\
         </table>\
         <div class='editChoicesDialog'/> \
+        <div class='editChoicesDialog editFileGroupDialog'/> \
     </div>");
 
     paramDiv.find("select[name='p_type']").multiselect({
@@ -1378,13 +1399,11 @@ function changeParameterType(element)
                 $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
             }
         }
-
     });
 
     typeDetailsTable.append(specifyChoicesRow);
 
-    if(value == "Input File")
-    {
+    if(value == "Input File") {
         var specifyMinFilesRow = $("<tr/>");
         var specifyMinFilesTd = $("<td/>");
         specifyMinFilesTd.append('Minimum number of files:<br/>');
@@ -1408,21 +1427,154 @@ function changeParameterType(element)
             incremental: true
         });
         var unlimitedFiles = $('<input name="unlimitedNumFile" type="checkbox" />');
-        unlimitedFiles.click(function()
-        {
-            if($(this).is(":checked"))
-            {
-                $(this).parent("td").find("input[name='maxNumFile']").spinner( "disable" );
+        unlimitedFiles.click(function () {
+            if ($(this).is(":checked")) {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner("disable");
             }
-            else
-            {
-                $(this).parent("td").find("input[name='maxNumFile']").spinner( "enable" );
+            else {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner("enable");
             }
         });
         specifyMaxFilesTd.append(unlimitedFiles);
         specifyMaxFilesTd.append("unlimited");
         specifyMaxFilesRow.append(specifyMaxFilesTd);
         typeDetailsTable.append(specifyMaxFilesRow);
+
+        //specify file grouping
+        var specifyGroupsRow = $("<tr class='fileGroups'/>");
+
+        var editFileGroupLink = $("<a href='#' class='fileGroupsLink'>add file groups</a>");
+
+        editFileGroupLink.click(function (event) {
+            event.preventDefault();
+
+            var editFileGroupDialog = $(this).parents(".parameter").find(".editFileGroupDialog");
+
+            editFileGroupDialog.empty();
+
+            editFileGroupDialog.dialog({
+                autoOpen: true,
+                height: 270,
+                width: 450,
+                title: "Specify File Groups",
+                create: function(event){
+                    var table = $("<table>" +
+                        "<tr><td>Minimum number of groups </td>" +
+                        "<td> <input type='text' name='minNumFileGroups' value='1'/> </td></tr>" +
+                        "<tr><td>Maximum number of groups </td>" +
+                        "<td> <input type='text' name='maxNumFileGroups' value='1'/> </td>"+
+                        "<td> <input type='checkbox' name='unlimitedFileGroups'/> </td></tr>" +
+                        "<tr><td>Group label </td>" +
+                        "<td> <input type='text' name='groupColumnLabel'/> </td></tr>" +
+                        "<tr><td>Number files per group must match </td>" +
+                        "<td> <input type='checkbox' name='fileGroupsMatch'/> </td></tr>" +
+                        "</table>");
+
+                    table.find("input[name='minNumFileGroups']").spinner({
+                        min: 0,
+                        spin: function(event, ui)
+                        {
+                            if(ui.value == 0)
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("disable");
+                                $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", true);
+                                $(this).parents("table").find("input[name='fileGroupsMatch']").prop("disabled", true);
+                            }
+                            else
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("enable");
+                                $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", false);
+                                $(this).parents("table").find("input[name='fileGroupsMatch']").prop("disabled", false);
+                            }
+                        }
+                    });
+
+                    table.find("input[name='maxNumFileGroups']").spinner({
+                        min: 1
+                    });
+
+                    table.find("input[name='unlimitedFileGroups']").click(function()
+                    {
+                        //disable the maximum file group
+                        if($(this).is(":checked"))
+                        {
+                            $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("disable");
+                        }
+                        else
+                        {
+                            $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("enable");
+                        }
+                    });
+
+                    var minNumGroups = element.parents(".parameter").data("minNumGroups");
+                    if(minNumGroups !== undefined && minNumGroups !== null)
+                    {
+                        table.find("input[name='minNumFileGroups']").spinner("value", minNumGroups);
+
+                        var maxNumGroups = element.parents(".parameter").data("maxNumGroups");
+                        var groupColumnLabel = element.parents(".parameter").data("groupColumnLabel");
+                        var fileGroupsMatch = element.parents(".parameter").data("fileGroupsMatch");
+
+                        if(maxNumGroups !== undefined && maxNumGroups !== null) {
+                            table.find("input[name='maxNumFileGroups']").spinner("value", maxNumGroups);
+                        }
+                        else
+                        {
+                            table.find("input[name='unlimitedFileGroups']").prop('checked', true);
+                        }
+
+                        if(groupColumnLabel !== undefined && groupColumnLabel !== null) {
+                            table.find("input[name='groupColumnLabel']").val(groupColumnLabel);
+                        }
+
+                        if(fileGroupsMatch !== undefined && fileGroupsMatch !== null && fileGroupsMatch == true) {
+                            table.find("input[name='fileGroupsMatch']").prop('checked', true);
+                        }
+                    }
+
+                    $(this).append(table);
+                },
+                buttons: {
+                    "OK": function ()
+                    {
+                        var minNumGroups = $(this).find("input[name='minNumFileGroups']").val();
+                        var maxNumGroups = $(this).find("input[name='maxNumFileGroups']").val();
+                        var groupColumnLabel = $(this).find("input[name='groupColumnLabel']").val();
+                        var fileGroupsMatch = $(this).find("input[name='fileGroupsMatch']").is(":checked");
+
+                        if(groupColumnLabel === "")
+                        {
+                            createErrorMsg("File Group Error", "A group column label must be specified");
+                        }
+                        else
+                        {
+                            //check if number of groups is unlimited
+                            if($(this).find("input[name='unlimitedFileGroups']").is(":checked"))
+                            {
+                                maxNumGroups = -1;
+                            }
+
+                            element.parents(".parameter").data("minNumGroups", minNumGroups);
+                            element.parents(".parameter").data("maxNumGroups", maxNumGroups);
+                            element.parents(".parameter").data("groupColumnLabel", groupColumnLabel);
+                            element.parents(".parameter").data("fileGroupsMatch", fileGroupsMatch);
+
+
+                            element.parents(".parameter").find(".fileGroupsLink").text("edit file groups");
+
+                            $(this).dialog("destroy");
+                        }
+                    },
+                    "Cancel": function () {
+                        $(this).dialog("destroy");
+                    }
+                }
+            });
+        });
+
+        $("<td/>").append(editFileGroupLink).appendTo(specifyGroupsRow);
+
+        typeDetailsTable.append(specifyGroupsRow);
     }
 }
 
@@ -1994,6 +2146,26 @@ function loadParameterInfo(parameters)
             newParameter.find('input[name="unlimitedNumFile"]').prop('checked', true);
         }
 
+        if(parameters[i].groupInfo != undefined && parameters[i].groupInfo !== null)
+        {
+            var groupInfo = parameters[i].groupInfo;
+            if (groupInfo.minNumGroups != undefined && groupInfo.minNumGroups != null) {
+                newParameter.data("minNumGroups", groupInfo.minNumGroups);
+            }
+            if (groupInfo.maxNumGroups != undefined && groupInfo.maxNumGroups != null) {
+                newParameter.data("maxNumGroups", groupInfo.maxNumGroups);
+            }
+            if (groupInfo.groupColumnLabel != undefined && groupInfo.groupColumnLabel != null) {
+                newParameter.data("groupColumnLabel", groupInfo.groupColumnLabel);
+            }
+
+            if (groupInfo.numValuesMustMatch != undefined && groupInfo.numValuesMustMatch != null) {
+                newParameter.data("fileGroupsMatch", groupInfo.numValuesMustMatch);
+            }
+
+            newParameter.find(".fileGroupsLink").text("edit file groups");
+        }
+
         var allAttrs = {};
         $.each(parameters[i], function(keyName, value) {
             allAttrs[keyName] = parameters[i][keyName];
@@ -2113,6 +2285,35 @@ function getParametersJSON()
 
             parameter.minValue = minValue;
             parameter.maxValue = maxValue;
+
+            //add file group info if available
+            var minNumGroups = $(this).data("minNumGroups");
+            var maxNumGroups = $(this).data("maxNumGroups");
+            var fileGroupsMatch = $(this).data("fileGroupsMatch");
+            var groupColumnLabel = $(this).data("groupColumnLabel");
+
+            if(minNumGroups !== undefined && minNumGroups !== null)
+            {
+                parameter.minNumGroups = minNumGroups;
+            }
+
+            if(maxNumGroups != -1 && minNumGroups > maxNumGroups)
+            {
+                saveError("Maximum number of file groups must be greater than minimum number of " +
+                    "file groups for parameter " + pname);
+                throw("Maximum number of file groups must be greater than minimum number of file groups for parameter " + pname);
+            }
+            parameter.maxNumGroups = maxNumGroups;
+
+            if(groupColumnLabel !== undefined && groupColumnLabel !== null)
+            {
+                parameter.groupColumnLabel = groupColumnLabel;
+            }
+
+            if(fileGroupsMatch !== undefined && fileGroupsMatch !== null)
+            {
+                parameter.groupNumValuesMustMatch = fileGroupsMatch.toString();
+            }
         }
         else
         {
@@ -2181,7 +2382,9 @@ function getParametersJSON()
             $.each(allAttrs, function(keyName, value) {
                 if($.inArray(keyName, Object.keys(parameter)) == -1
                     && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
-                    && keyName != "choiceDir" && keyName != "choiceDirFilter" || keyName != "numValues")
+                    && keyName != "choiceDir" && keyName != "choiceDirFilter" && keyName != "numValues"
+                    && keyName != "numGroups" && keyName != "groupInfo" && keyName != "groupColumnLabel"
+                    && keyName != "groupNumValuesMustMatch")
                 {
                     parameter[keyName] = allAttrs[keyName];
                     console.log("\nsaving unknown parameter attributes: " + keyName + "=" + allAttrs[keyName]);
