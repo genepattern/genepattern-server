@@ -80,7 +80,7 @@ public class GpConfig {
      * 
      */
     protected String initGenePatternVersion(GpContext gpContext) {
-        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.1");
+        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.2");
         //for junit testing, if the property is not in ServerProperties, check System properties
         if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
             log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
@@ -168,19 +168,6 @@ public class GpConfig {
             this.gpWorkingDir=in.gpWorkingDir;
         }
         this.serverProperties=in.serverProperties;
-        if (in.genePatternVersion==null || in.genePatternVersion.equals("$GENEPATTERN_VERSION$")) {
-            this.genePatternVersion=initGenePatternVersion(gpContext);
-        }
-        else {
-            this.genePatternVersion=in.genePatternVersion;
-        }
-        if (in.genePatternURL!=null) {
-            this.genePatternURL=in.genePatternURL;
-        }
-        else {
-            this.genePatternURL=initGpUrl(this.serverProperties);
-        }
-        this.gpUrl=this.genePatternURL.toExternalForm();
         if (in.configFromYaml != null && in.configFromYaml.getConfigYamlProperties() != null) {
             this.yamlProperties=in.configFromYaml.getConfigYamlProperties();
         }
@@ -189,6 +176,19 @@ public class GpConfig {
         }
         this.valueLookup=new ValueLookupFromConfigYaml(this.serverProperties, this.yamlProperties);
 
+        if (in.genePatternURL!=null) {
+            this.genePatternURL=in.genePatternURL;
+        }
+        else {
+            this.genePatternURL=initGpUrl(this.serverProperties);
+        }
+        this.gpUrl=this.genePatternURL.toExternalForm();
+        if (in.genePatternVersion==null || in.genePatternVersion.equals("$GENEPATTERN_VERSION$")) {
+            this.genePatternVersion=initGenePatternVersion(gpContext);
+        }
+        else {
+            this.genePatternVersion=in.genePatternVersion;
+        }
         if (in.initErrors==null) {
             this.initErrors=Collections.emptyList();
         }
