@@ -1421,6 +1421,11 @@ function changeParameterType(element)
         specifyMinFilesRow.append(specifyMinFilesTd);
         typeDetailsTable.append(specifyMinFilesRow);
 
+        var helpImgSrc = $(".helpbutton").first().attr("src");
+        specifyMinFilesTd.append("<a href='createhelp.jsp#fileList' target='help'> " +
+            " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
+            + "</a>");
+
         var specifyMaxFilesRow = $("<tr/>");
         var specifyMaxFilesTd = $("<td/>");
         specifyMaxFilesTd.append('Maximum number of files:<br/>');
@@ -1624,8 +1629,13 @@ function changeParameterType(element)
         });
 
         $("<td/>").append(editFileGroupLink).appendTo(specifyGroupsRow);
-
         typeDetailsTable.append(specifyGroupsRow);
+
+        var helpImgSrc = $(".helpbutton").first().attr("src");
+        editFileGroupLink.parent().append("<a href='createhelp.jsp#fileGroup' target='help'> " +
+            " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
+            + "</a>");
+
     }
 }
 
