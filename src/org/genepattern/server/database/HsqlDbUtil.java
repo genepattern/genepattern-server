@@ -189,16 +189,16 @@ public class HsqlDbUtil {
 
     public static void shutdownDatabase() {
         try {
+            log.info("Shutting down HSQL database ...");
             HibernateUtil.beginTransaction();
-            log.info("Checkpointing database");
+            log.info("Checkpointing database ...");
             AnalysisDAO dao = new AnalysisDAO();
             dao.executeUpdate("CHECKPOINT");
             log.info("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
         }  
         catch (Throwable t) {
-            t.printStackTrace();
-            log.info("checkpoint database in StartupServlet.destroy", t);
+            log.error("Error shutting down database: "+t.getLocalizedMessage(), t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -219,7 +219,7 @@ public class HsqlDbUtil {
         }
 
         // run all new DDL scripts to bring the DB up to date with the GP version
-        log.debug("Updating schema...");
+        log.info("Updating schema...");
         createSchema(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
 
         // validate that the DB version is up to date
@@ -230,7 +230,7 @@ public class HsqlDbUtil {
         if (!upToDate) {
             log.error("schema didn't have correct version after creating");
         }
-        log.debug("Updating schema...Done!");
+        log.info("Updating schema...Done!");
     }
 
     protected static boolean tableExists(String tableName) {
@@ -284,7 +284,6 @@ public class HsqlDbUtil {
         for(final File schemaFile : schemaFiles) {
             processSchemaFile(schemaFile);
         }
-        log.debug("createSchema ... Done!");
     }
 
     /**
@@ -315,11 +314,11 @@ public class HsqlDbUtil {
             String name = schemaFile.getName();
             String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
             if (expectedSchemaVersion==null || (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0)) {
-                log.info("adding" + name + " (" + version + ")");
+                log.debug("adding " + name + " (" + version + ")");
                 rval.add(schemaFile);
             }
             else {
-                log.info("skipping " + name + " (" + version + ")");
+                log.debug("skipping " + name + " (" + version + ")");
             }
         }
         log.debug("listing schema files ... Done!");
