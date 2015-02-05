@@ -50,6 +50,7 @@ public class DrmJobSubmission {
     private final File logFile;
     
     private final String queue;
+    private final String queueId; // <---- needed for job.virtualQueue feature
     private final Memory memory;
     private final String walltimeStr;
     private final Integer nodeCount;
@@ -93,6 +94,7 @@ public class DrmJobSubmission {
         this.logFile=builder.logFile;
         
         this.queue=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE);
+        this.queueId=this._gpConfig.getQueueId(jobContext);
         this.memory=this._gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
         this.walltimeStr=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME);
         this.nodeCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT);
@@ -192,6 +194,15 @@ public class DrmJobSubmission {
             return defaultValue;
         }
         return queue;
+    }
+
+    /**
+     * This is the [optional] queueId, in support of the job.virtualQueue feature.
+     * When job.virtualQueue is not set, return the job.queue value.
+     * @return
+     */
+    public String getQueueId() {
+        return queueId;
     }
     
     /**
