@@ -1,8 +1,10 @@
 package org.genepattern.startapp;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by tabor on 2/5/15.
@@ -101,5 +103,30 @@ public class GenerateLsid {
 
         return hostname + "." +  localAddress;
 
+    }
+
+    public static Properties getProperties(File propFile) {
+        // Ensure the file exists
+        if (!propFile.exists()) {
+            try {
+                propFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new FileReader(propFile));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        Properties properties = new Properties();
+        try {
+            properties.load(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties;
     }
 }

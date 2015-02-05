@@ -1,0 +1,92 @@
+package org.genepattern.startapp;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * Created by tabor on 2/5/15.
+ */
+public class Bootstrap {
+    public static void main(String[] args) {
+        // Pass in the working directory
+        File workingDir = getWorkingDirectory(args[0]);
+
+        // Generate LSID
+        String lsid = GenerateLsid.lsid();
+
+        PropertiesWriter pw = new PropertiesWriter();
+        pw.setLsid(lsid);
+
+        File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        File propFile = new File(resourcesDir, "genepattern.properties");
+        try {
+            pw.writeInstallTime(propFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Create the setup flag
+        File resources = new File(workingDir.getParent(), "Resources");
+        File readyFlag = new File(resources, "ready");
+        try {
+            readyFlag.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static File getWorkingDirectory(String workingDirString) {
+        return new File(workingDirString);
+    }
+
+    public static void startTomcat(String command) {
+        //String command = "run";
+
+        File catalinaPath = new File("bin/catalina.sh");
+
+        List<String> processList = new ArrayList<String>();
+        processList.add(catalinaPath.getPath());
+
+        if ("stop".equals(command)) {
+            processList.add("stop");
+        }
+        else {
+            processList.add("run");
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(processList);
+
+        // This is where you set the root folder for the executable to run in
+        File workingDir = getWorkingDirectory("XXX");
+
+        builder.directory(workingDir);
+
+        builder.redirectErrorStream(true);
+        Process process = null;
+        try {
+            process = builder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Scanner s = new Scanner(process.getInputStream());
+        StringBuilder text = new StringBuilder();
+        while (s.hasNextLine()) {
+            text.append(s.nextLine());
+            text.append("\n");
+        }
+        s.close();
+
+        int result = 0;
+        try {
+            result = process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print( "Process exited with result " + result + " and output " + text );
+    }
+}

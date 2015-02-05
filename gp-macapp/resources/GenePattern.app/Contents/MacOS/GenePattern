@@ -1,5 +1,14 @@
 #!/bin/bash
 DIR=$(cd "$(dirname "$0")"; pwd)
-$DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run &
-sleep 5
-open http://127.0.0.1:8080/gp
+
+if [ -f "$DIR/../Resources/ready" ]
+then
+    $DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run &
+    sleep 3
+    open http://127.0.0.1:8080/gp
+else
+    java -jar $DIR/../Resources/bootstrap.jar $DIR
+    $DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run &
+    sleep 3
+    open http://127.0.0.1:8080/gp
+fi

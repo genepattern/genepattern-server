@@ -18,5 +18,7 @@
 		<string>GenePattern, © 2015 Broad Institute of MIT and Harvard</string>
 		<key>CFBundleIconFile</key>
 		<string>GenePattern.icns</string>
+		<key>WorkingDirectory</key>
+        <string>$APP_PACKAGE/Contents/Resources</string>
 	</dict>
 </plist>
