@@ -6,6 +6,8 @@ import java.util.Date;
 
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
+import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +77,61 @@ public class TestJobRunnerJob {
         
         JobRunnerJob update = new JobRunnerJob.Builder(existing).drmJobStatus(jobStatus).build();
         assertEquals("expected endTime", endTime, update.getEndTime());
+    }
+    
+    @Test
+    public void preserveRequestedMemory() {
+        final Memory requestedMemory=Memory.fromString("2 Gb");
+        final JobRunnerJob existing=new JobRunnerJob.Builder()
+            .requestedMemory(requestedMemory)
+        .build();
+        
+        final JobRunnerJob update = new JobRunnerJob.Builder(existing).build();
+        assertEquals("requestedMemory", (Long) requestedMemory.getNumBytes(), update.getRequestedMemory());
+    }
+    
+    @Test
+    public void preserveRequestedCpuCount() {
+        final Integer cpuCount=4;
+        final JobRunnerJob existing=new JobRunnerJob.Builder()
+            .requestedCpuCount(cpuCount)
+        .build();
+        
+        final JobRunnerJob update = new JobRunnerJob.Builder(existing).build();
+        assertEquals("requestedCpuCount", cpuCount, update.getRequestedCpuCount());
+    }
+
+    @Test
+    public void preserveRequestedNodeCount() {
+        final Integer nodeCount=4;
+        final JobRunnerJob existing=new JobRunnerJob.Builder()
+            .requestedNodeCount(nodeCount)
+        .build();
+        
+        final JobRunnerJob update = new JobRunnerJob.Builder(existing).build();
+        assertEquals("requestedNodeCount", nodeCount, update.getRequestedNodeCount());
+    }
+
+    @Test
+    public void preserveRequestedWalltime() {
+        final String walltimeStr="7-00:00:00";
+        final JobRunnerJob existing=new JobRunnerJob.Builder()
+            .requestedWalltime(walltimeStr)
+        .build();
+        
+        final JobRunnerJob update = new JobRunnerJob.Builder(existing).build();
+        assertEquals("requestedWalltime", walltimeStr, update.getRequestedWalltime());
+    }
+    
+    @Test
+    public void preserveRequestedQueue() {
+        final String queue="my_queue";
+        final JobRunnerJob existing=new JobRunnerJob.Builder()
+            .requestedQueue(queue)
+        .build();
+        
+        final JobRunnerJob update = new JobRunnerJob.Builder(existing).build();
+        assertEquals("requestedQueue", queue, update.getRequestedQueue());
     }
 
 }

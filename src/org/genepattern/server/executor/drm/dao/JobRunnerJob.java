@@ -55,7 +55,7 @@ public class JobRunnerJob {
         return in.substring(0, MAX);
     }
     
-        private static File asFile(final File parent, final String path) {
+    private static File asFile(final File parent, final String path) {
         File rel=asFile(path);
         if (rel==null) {
             return null;
@@ -361,6 +361,10 @@ public class JobRunnerJob {
             this.maxProcesses=in.maxProcesses;
             this.maxThreads=in.maxThreads;
             this.reqMem=in.reqMem;
+            this.reqCpuCount=in.reqCpuCount;
+            this.reqNodeCount=in.reqNodeCount;
+            this.reqWalltime=in.reqWalltime;
+            this.reqQueue=in.reqQueue;
         }
         
         public Builder drmJobStatus(final DrmJobStatus updated) {
@@ -525,6 +529,26 @@ public class JobRunnerJob {
         
         public Builder requestedMemory(final Memory requestedMemory) {
             this.reqMem=requestedMemory.getNumBytes();
+            return this;
+        }
+        
+        public Builder requestedCpuCount(final Integer requestedCpuCount) {
+            this.reqCpuCount=requestedCpuCount;
+            return this;
+        }
+        
+        public Builder requestedNodeCount(final Integer requestedNodeCount) {
+            this.reqNodeCount=requestedNodeCount;
+            return this;
+        }
+        
+        public Builder requestedWalltime(final String requestedWalltime) {
+            this.reqWalltime=requestedWalltime;
+            return this;
+        }
+        
+        public Builder requestedQueue(final String requestedQueue) {
+            this.reqQueue=requestedQueue;
             return this;
         }
 
