@@ -49,7 +49,10 @@ public class TestBroadCoreLsfRunner {
             .thenReturn(null);
         when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
             .thenReturn(null);
-        
+        initGpJob();
+    }
+    
+    protected void initGpJob() {
         gpJob = new DrmJobSubmission.Builder(jobDir)
             .gpConfig(gpConfig)
             .jobContext(jobContext)
@@ -58,7 +61,12 @@ public class TestBroadCoreLsfRunner {
     
     @Test
     public void jobMemory() {
-        when(gpJob.getMemory()).thenReturn(Memory.fromString("12Gb"));
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("12Gb"));
+        gpJob = new DrmJobSubmission.Builder(jobDir)
+            .gpConfig(gpConfig)
+            .jobContext(jobContext)
+            .build();   
+
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.memory:  12Gb",
@@ -113,7 +121,11 @@ public class TestBroadCoreLsfRunner {
     
     @Test
     public void jobNodeCount() { 
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT)).thenReturn(6);
+        when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT)).thenReturn(6);
+        gpJob = new DrmJobSubmission.Builder(jobDir)
+            .gpConfig(gpConfig)
+            .jobContext(jobContext)
+            .build();   
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.nodeCount: 6",
@@ -124,7 +136,8 @@ public class TestBroadCoreLsfRunner {
 
     @Test
     public void jobCpuCount() { 
-        Mockito.when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT)).thenReturn(6);
+        when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT)).thenReturn(6);
+        initGpJob();
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.cpuCount",
@@ -136,6 +149,7 @@ public class TestBroadCoreLsfRunner {
     public void lsfCpuSlots() {        
         when(gpConfig.getGPIntegerProperty(jobContext, "lsf.cpu.slots"))
             .thenReturn(6);
+        initGpJob();
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "lsf.cpu.slots",
@@ -147,6 +161,7 @@ public class TestBroadCoreLsfRunner {
     public void jobCpuSlots() {        
         when(gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT))
             .thenReturn(6);
+        initGpJob();
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.cpuCount",
@@ -180,6 +195,7 @@ public class TestBroadCoreLsfRunner {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("7-00:00:00");
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("7-00:00:00");
+        initGpJob();
 
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
@@ -193,6 +209,8 @@ public class TestBroadCoreLsfRunner {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("02:45:00");
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("02:45:00");
+        initGpJob();
+
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.walltime",
@@ -205,6 +223,8 @@ public class TestBroadCoreLsfRunner {
         // 7 days limit
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME)).thenReturn("00:45:00");
         when(gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME, null)).thenReturn("00:45:00");
+        initGpJob();
+
         LsfJob lsfJob = lsfRunner.initLsfJob(gpJob);
         Assert.assertEquals(
             "job.walltime",
@@ -232,7 +252,6 @@ public class TestBroadCoreLsfRunner {
             "job.extaArgs",
             Arrays.asList(new String[]{"-R", "rusage[mem=2]", "-M", "2", "-g", "/genepattern/gpprod/long", "-m", "node1448 node1449" }),
             lsfJob.getExtraBsubArgs());
-        
     }
     
 }
