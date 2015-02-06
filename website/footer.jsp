@@ -6,12 +6,14 @@
   ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   --%>
 
+<%@ page import="org.genepattern.server.webapp.jsf.AboutBean" %>
+<% AboutBean aboutBean = new AboutBean(); %>
 </td></tr>
 <tr>
     <td colspan="4" class="footer">
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
-                <td><a href="<%=request.getContextPath()%>/pages/about.jsf">About GenePattern</a>&nbsp;|&nbsp;<a href="<%=request.getContextPath()%>/pages/contactUs.jsf">Contact Us</a>
+                <td><a href="<%=request.getContextPath()%>/pages/about.jsf">About GenePattern</a>&nbsp;|&nbsp;<a href="<%=aboutBean.getContactUs()%>">Contact Us</a>
                     <br />
                 </td>
 

@@ -103,6 +103,9 @@ default.properties:
 
     # Change the skin GenePattern uses
     display.skin: frozen
+
+    # The following property can be set to override the "Contact Us" links
+    # contact.link: /gp/pages/contactUs.jsf
     
 
 # a list of command executors
