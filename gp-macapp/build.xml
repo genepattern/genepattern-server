@@ -96,11 +96,6 @@
         </copy>
     </target>
 
-    <target name="jar" depends="compile">
-        <!--<property name="jar.file" location="${dist.dir}/gp-slurm-job-runner.jar"/>-->
-        <!--<jar destfile="${jar.file}" basedir="${build.dir}"/>-->
-    </target>
-
     <target name="copy-gp-full" depends="init, copy-base, copy-tomcat">
         <copy file="../build/gp-full.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/lib" />
     </target>
@@ -114,6 +109,7 @@
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/startup.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/tool-wrapper.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/version.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" perm="ugo+rx"/>
     </target>
 
     <target name="update-properties" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, compile">
@@ -133,7 +129,17 @@
         <echo message="${build}" />
     </target>
 
-    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, update-properties, make-executable">
+    <target name="jar" depends="compile">
+        <property name="jar.file" location="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" />
+        <jar destfile="${jar.file}" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="org.genepattern.startapp.Bootstrap" />
+                <attribute name="Class-Path" value="." />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, update-properties, jar, make-executable">
         <!-- Should call: ant dist -Dversion=XXX -Dbuild=YYY -->
     </target>
 

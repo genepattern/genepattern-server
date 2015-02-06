@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by tabor on 1/30/15.
+ * Write the necessary config to the correct files
+ * Used to write to genepattern.properties and server.xml
+ *
+ * @author Thorin Tabor
  */
 public class PropertiesWriter {
     private String webserverPort = "8080";               // Assumed
@@ -28,6 +31,11 @@ public class PropertiesWriter {
     private String gpVersion = "";                       // Build parameter
     private String buildTag = "";                        // Build parameter
 
+    /**
+     * This method is called by the ant task at build time
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         PropertiesWriter pw = new PropertiesWriter();
 
@@ -58,6 +66,12 @@ public class PropertiesWriter {
         }
     }
 
+    /**
+     * Used to write necessary options selected by the user
+     *
+     * @param propFile
+     * @throws IOException
+     */
     public void writeUserTime(File propFile) throws IOException {
         List<String> lines = new ArrayList<String>();
 
@@ -102,6 +116,12 @@ public class PropertiesWriter {
         out.close();
     }
 
+    /**
+     * Used to write the LSID authority at runtime
+     *
+     * @param propFile
+     * @throws IOException
+     */
     public void writeInstallTime(File propFile) throws IOException {
         List<String> lines = new ArrayList<String>();
 
@@ -125,6 +145,12 @@ public class PropertiesWriter {
         out.close();
     }
 
+    /**
+     * Used to write correct properties at build time
+     *
+     * @param propFile
+     * @throws IOException
+     */
     public void writeBuildTime(File propFile) throws IOException {
         List<String> lines = new ArrayList<String>();
 

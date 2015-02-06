@@ -2,15 +2,21 @@ package org.genepattern.startapp;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by tabor on 2/5/15.
+ * Class for correctly generating the LSID authority in the Mac app
+ *
+ * Much of this code was copies from the old LSID code called by InstallAnywhere.
+ *
+ * @author Thorin Tabor
  */
 public class GenerateLsid {
 
+    /**
+     * Generate the LSID
+     * @return return the LSID
+     */
     public static String lsid() {
         String host_address = null;
         try {
@@ -33,12 +39,22 @@ public class GenerateLsid {
         }
     }
 
+    /**
+     * Check if the address is a loopback address
+     * @param addr
+     * @return
+     */
     public static boolean isLoopbackAddress(InetAddress addr) {
  		/* 127.x.x.x */
         byte[] byteAddr = addr.getAddress();
         return byteAddr[0] == 127;
     }
 
+    /**
+     * Check if the address is a local address
+     * @param addr
+     * @return
+     */
     public static boolean isSiteLocalAddress(InetAddress addr) {
         // refer to RFC 1918
         // 10/8 prefix
@@ -64,7 +80,6 @@ public class GenerateLsid {
      * IP address, then if that fails, simply create a UID and append it to the
      * non-unique address to make it unique
      */
-
     public static String getNonLocalAddress(String localAddress) throws UnknownHostException {
         String hostname = InetAddress.getLocalHost().getHostName();
 
@@ -103,30 +118,5 @@ public class GenerateLsid {
 
         return hostname + "." +  localAddress;
 
-    }
-
-    public static Properties getProperties(File propFile) {
-        // Ensure the file exists
-        if (!propFile.exists()) {
-            try {
-                propFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new FileReader(propFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Properties properties = new Properties();
-        try {
-            properties.load(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return properties;
     }
 }

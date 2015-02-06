@@ -7,9 +7,17 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Created by tabor on 2/5/15.
+ * Class charged with bootstrapping GenePattern in the Mac app
+ *
+ * @author Thorin Tabor
  */
 public class Bootstrap {
+
+    /**
+     * Main method for the executable bootstrap.jar
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         // Pass in the working directory
         File workingDir = getWorkingDirectory(args[0]);
@@ -45,6 +53,12 @@ public class Bootstrap {
         return new File(workingDirString);
     }
 
+    /**
+     * Run the shell script to launch GenePattern
+     * Used after the config app has saved its data
+     *
+     * @param workingDirectory
+     */
     public static void runShellScript(String workingDirectory) {
         File workingDir = new File(workingDirectory);
 

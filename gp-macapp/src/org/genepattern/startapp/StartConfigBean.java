@@ -1,10 +1,15 @@
 package org.genepattern.startapp;
 
+/**
+ * Bean used to back the form found in the Config app
+ *
+ * @author Thorin Tabor
+ */
 public class StartConfigBean {
     private String email;
     private String daysPurge;
     private String timePurge;
-    private String hsqlPort = "9999";
+    private String hsqlPort;
     private String perl;
     private String r;
     private String r25;
