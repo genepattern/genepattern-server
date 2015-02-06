@@ -28,6 +28,9 @@ public class Bootstrap {
             e.printStackTrace();
         }
 
+        // Prompt the user for config
+        ConfigApp.main(new String[] {args[0]});
+
         // Create the setup flag
         File resources = new File(workingDir.getParent(), "Resources");
         File readyFlag = new File(resources, "ready");
@@ -42,26 +45,17 @@ public class Bootstrap {
         return new File(workingDirString);
     }
 
-    public static void startTomcat(String command) {
-        //String command = "run";
+    public static void runShellScript(String workingDirectory) {
+        File workingDir = new File(workingDirectory);
 
-        File catalinaPath = new File("bin/catalina.sh");
+        File catalinaPath = new File(workingDir.getParent(), "MacOS/GenePattern");
 
         List<String> processList = new ArrayList<String>();
         processList.add(catalinaPath.getPath());
 
-        if ("stop".equals(command)) {
-            processList.add("stop");
-        }
-        else {
-            processList.add("run");
-        }
-
         ProcessBuilder builder = new ProcessBuilder(processList);
 
         // This is where you set the root folder for the executable to run in
-        File workingDir = getWorkingDirectory("XXX");
-
         builder.directory(workingDir);
 
         builder.redirectErrorStream(true);
