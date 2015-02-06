@@ -1459,6 +1459,9 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
             //remove this group from the hash
             delete parameter_and_val_groups[paramName].groups[groupId];
             $(this).parents(".valueEntryDiv").remove();
+
+            //enable the add group button if it was previously disabled
+            $(this).parents(".paramValueTd").find('addGroupButton').prop("disabled", false);
         });
 
         //check that this is group 2 or greater before adding a delete button
@@ -1666,7 +1669,7 @@ function createParamTable(parameterNames, initialValues) {
                 groupColumnLabel = "file group";
             }
 
-            var addGroupButton = $("<button>Add Another " + groupColumnLabel + "</button>");
+            var addGroupButton = $("<button class='addGroupButton'>Add Another " + groupColumnLabel + "</button>");
             addGroupButton.button().click(function (event) {
                 event.preventDefault();
 
@@ -1674,9 +1677,22 @@ function createParamTable(parameterNames, initialValues) {
                 $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").last().after(createParamValueEntryDiv(parameterName, null));
                 //TODO: Add another of these input fields
 
+                var numGroupsCreated = $(this).parents(".pRow").first().find(".paramValueTd").find(".valueEntryDiv").length;
+                var maxGroupsAllowed = run_task_info.params[parameterName].groupInfo.maxNumGroups;
+                if(maxGroupsAllowed !== undefined && maxGroupsAllowed !== null &&
+                    maxGroupsAllowed !== -1 && maxGroupsAllowed === numGroupsCreated)
+                {
+                    $(this).prop("disabled", true);
+                    $(this).parents(".pRow").first().find(".paramValueTd").find(".groupLimitText").text("(Group Limit Reached, Maximum Groups Allowed=" + run_task_info.params[parameterName].groupInfo.maxNumGroups + ")");
+                }
             });
 
-            $("<div class='fileGroup'/>").append(addGroupButton).appendTo(valueTd);
+            var maxGroupsAllowed = groupInfo.maxNumGroups;
+            if( maxGroupsAllowed === undefined || maxGroupsAllowed === null || maxGroupsAllowed === -1)
+            {
+                maxGroupsAllowed = "Unlimited";
+            }
+            $("<div class='fileGroup'/>").append(addGroupButton).append("<div class='groupLimitText'> (Maximum Groups Allowed="+ maxGroupsAllowed +") </div>").appendTo(valueTd);
 
             //auto create the minimum of groups specified for this parameter
             //if no initial values where specified
