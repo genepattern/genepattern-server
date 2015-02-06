@@ -12,6 +12,9 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
+
 /**
  * Display information about this GenePattern Server by reading System properties loaded from the build.properties file.
  * 
@@ -77,6 +80,12 @@ public class AboutBean {
             javaVersion = "";
         }
         return javaVersion;
+    }
+
+    public String getContactUs() {
+        GpContext context = UIBeanHelper.getUserContext();
+        String link = ServerConfigurationFactory.instance().getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
+        return link;
     }
 
 }

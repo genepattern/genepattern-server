@@ -89,7 +89,7 @@
 
     <!-- Footer -->
     <div class="ui-layout-south">
-        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
+        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="#{aboutBean.contactUs}">Contact Us</a>&#160;|&#160;
         &copy;2003-2015&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
         <a href="http://www.broadinstitute.org" target="_blank"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
         </a>
@@ -147,8 +147,8 @@
                 <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
                     <ul>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
-                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
-                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
+                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                     </ul>
                 </li>
                 <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>

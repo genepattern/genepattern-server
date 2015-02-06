@@ -267,8 +267,8 @@
 		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
 		                    <ul>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
-		                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
-		                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+		                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
+		                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                                 <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
@@ -435,7 +435,7 @@
             	<table width="100%" border="0" cellspacing="0" cellpadding="0">
 	                <tr>
 	                    <td>
-	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
+	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{aboutBean.contactUs}">Contact Us</h:outputLink>
 	                    </td>
 	                    <td>
 	                        <div align="right">&#169;2003-2015&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
