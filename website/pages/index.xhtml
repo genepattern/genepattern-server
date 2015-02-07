@@ -264,6 +264,13 @@ function showFileInput(id) {
 }
 /* ]]> */
 </script>
+
+<c:if test="#{aboutBean.googleAnalyticsEnabled}">
+    <ui:include src="gaTracking.xhtml" >
+      <ui:param name="googleAnalyticsTrackingId" value="#{aboutBean.googleAnalyticsTrackingId}" />
+    </ui:include>
+</c:if>
+
 </ui:define>
 
 <ui:define name="body">

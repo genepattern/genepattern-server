@@ -69,6 +69,12 @@ default.properties:
     #
     gparcUploadURL: http://www.gparc.org/server_upload.php
     gparcSubmitURL: http://www.gparc.org/uniqid
+
+    #
+    # Google Analytics, available in 3.9.2+
+    #
+    #googleAnalytics.enabled: true
+    #googleAnalytics.trackingId: ""
     
     # 
     # for per-module End-user license agreements (EULA)

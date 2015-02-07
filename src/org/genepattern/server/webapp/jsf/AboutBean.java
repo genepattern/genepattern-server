@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
@@ -86,6 +87,29 @@ public class AboutBean {
         GpContext context = UIBeanHelper.getUserContext();
         String link = ServerConfigurationFactory.instance().getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
         return link;
+    }
+    
+    private final GpContext serverContext=GpContext.getServerContext();
+    /**
+     * Configurable Google Analytics so that we don't have to manually edit the index.xhtml file after each GP server update.
+     * Documentation is in the GpConfig file and in the config_default.yaml file.
+     * Example config_yaml entry:
+     * <pre>
+    googleAnalytics.enabled: true
+    googleAnalytics.trackingId: "UA-****9150-1"  <---- not a real value
+     * </pre>
+     * 
+     * When enabled, the ./pages/gaTracking.xhtml file is included in the head of the index.xhtml page.
+     * You can make edits to that file directly to customize.
+     * @return
+     */
+    public boolean isGoogleAnalyticsEnabled() {
+        boolean rval=ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, GpConfig.PROP_GA_ENABLED, false);
+        return rval;
+    }
+
+    public String getGoogleAnalyticsTrackingId() {
+        return ServerConfigurationFactory.instance().getGPProperty(serverContext, GpConfig.PROP_GA_TRACKING_ID, "");
     }
 
 }

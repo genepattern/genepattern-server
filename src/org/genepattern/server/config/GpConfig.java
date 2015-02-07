@@ -54,6 +54,23 @@ public class GpConfig {
      *     mkdir /Applications/GenePatternServer/jobResults/1
      */
     public static final String PROP_JOBS="jobs";
+    
+    /**
+     * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
+     * When 'true' the ./pages/gpTracking.xhtml file is loaded into the header page for the GP server.
+     * You must also set the 'googleAnalytics.trackingId' property in the config yaml file.
+     * 
+     * For full customization, edit to the gpTracking.xhtml to include whatever code snippet suggested
+     * by Google Analytics.
+     * 
+     */
+    public static final String PROP_GA_ENABLED="googleAnalytics.enabled";
+
+    /**
+     * Set the 'googleAnalytics.trackingId' for the server.
+     * @see PROP_GA_ENABLED
+     */
+    public static final String PROP_GA_TRACKING_ID="googleAnalytics.trackingId";
 
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
