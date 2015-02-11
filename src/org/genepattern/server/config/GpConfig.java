@@ -144,6 +144,7 @@ public class GpConfig {
             .build();
     }
 
+    private final File gpHomeDir;
     private final URL genePatternURL;
     private final String gpUrl;
     private final String genePatternVersion;
@@ -168,6 +169,7 @@ public class GpConfig {
 
     public GpConfig(final Builder in) {
         GpContext gpContext=GpContext.getServerContext();
+        this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
         }
@@ -340,7 +342,6 @@ public class GpConfig {
      * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
      * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
      * 
-     * @param gpHomeDir
      * @param valueLookup
      * @return
      */
@@ -915,6 +916,7 @@ public class GpConfig {
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
+        private File gpHomeDir=null;
         private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
@@ -942,6 +944,11 @@ public class GpConfig {
 
         public Builder serverProperties(final GpServerProperties serverProperties) {
             this.serverProperties=serverProperties;
+            return this;
+        }
+        
+        public Builder gpHomeDir(final File gpHomeDir) {
+            this.gpHomeDir=gpHomeDir;
             return this;
         }
 
