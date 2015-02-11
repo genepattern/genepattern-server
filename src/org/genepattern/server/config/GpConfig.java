@@ -56,6 +56,11 @@ public class GpConfig {
     public static final String PROP_JOBS="jobs";
     
     /**
+     * The location for installed patches (aka plugins).
+     */
+    public static final String PROP_PLUGIN_DIR="patches";
+    
+    /**
      * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
      * When 'true' the ./pages/gpTracking.xhtml file is loaded into the header page for the GP server.
      * You must also set the 'googleAnalytics.trackingId' property in the config yaml file.
@@ -779,6 +784,32 @@ public class GpConfig {
         //otherwise, use the web upload dir
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
         return getTempDir(null);
+    }
+    
+    /**
+     * Get the globally configured location for installing plugins (aka patches). In GP <= 3.9.1 
+     * this is defined in the 'genepattern.properties' file via the template:
+     * <pre>
+$USER_INSTALL_DIR$/patches
+     * </pre>
+     * In newer installations it should not be declared in the properties or config file. 
+     * It is defined relative to GENEPATTERN_HOME:
+     * <pre>
+$GENEPATTERN_HOME$/patches
+     * </pre>
+     * @param serverContext
+     * @return
+     */
+    public File getRootPluginDir(GpContext serverContext) {
+        // (1) first check for an entry in the properties files
+        File rval=getGPFileProperty(serverContext, PROP_PLUGIN_DIR);
+        if (rval!=null) {
+            return rval;
+        }
+        if (gpHomeDir != null) {
+            return new File(gpHomeDir, "patches");
+        }
+        return null;
     }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
