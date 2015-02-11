@@ -36,6 +36,10 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ConfigurationException;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -122,9 +126,20 @@ public class PluginManagerLegacy {
         installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
     
-    protected static File getPatchDirectory(final String patchName) {
-        File patchDirectory = new File(System.getProperty("patches"), patchName);
-        return patchDirectory;
+    protected static File getPatchDirectory(final String patchName) 
+    throws ConfigurationException
+    {
+        return getPatchDirectory(ServerConfigurationFactory.instance(), GpContext.getServerContext(), patchName);
+    }
+
+    protected static File getPatchDirectory(final GpConfig gpConfig, final GpContext gpContext, final String patchName) 
+    throws ConfigurationException
+    {
+        File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
+        if (rootPluginDir==null) {
+            throw new ConfigurationException("Configuration error: Unable to get patch directory");
+        }
+        return new File(rootPluginDir, patchName);
     }
 
     /**
@@ -196,7 +211,14 @@ public class PluginManagerLegacy {
             throw new JobDispatchException(errorMessage, e);
         }
         String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
-        File patchDirectory = getPatchDirectory(patchName);
+        File patchDirectory; 
+        try {
+            patchDirectory = getPatchDirectory(patchName);
+        }
+        catch (Throwable t) {
+            throw new JobDispatchException(t.getLocalizedMessage(), t);
+        }
+        
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
         }
