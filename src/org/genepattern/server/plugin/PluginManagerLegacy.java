@@ -121,6 +121,11 @@ public class PluginManagerLegacy {
         }
         installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
+    
+    protected static File getPatchDirectory(final String patchName) {
+        File patchDirectory = new File(System.getProperty("patches"), patchName);
+        return patchDirectory;
+    }
 
     /**
      * Install a specific patch, downloading a zip file with a manifest containing a command line, 
@@ -191,7 +196,7 @@ public class PluginManagerLegacy {
             throw new JobDispatchException(errorMessage, e);
         }
         String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
-        File patchDirectory = new File(System.getProperty("patches"), patchName);
+        File patchDirectory = getPatchDirectory(patchName);
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
         }
