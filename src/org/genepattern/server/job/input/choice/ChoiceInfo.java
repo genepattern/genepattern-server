@@ -11,6 +11,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.webservice.ParameterInfo;
 
+import com.google.inject.internal.Objects;
+
 /**
  * JavaBean representation of a module drop-down menu for a given input parameter.
  * Initialized by parsing the parameter info attributes from the manifest file.
@@ -200,6 +202,47 @@ public class ChoiceInfo {
     }
     
     /**
+     * Get the display value for a drop-down parameter. This is called when building up the job status page or execution log,
+     * starting with the actual parameter value, do a reverse-lookup of the display name for the parameter.
+     * 
+     * This only returns a value for static drop-down parameters.
+     * 
+     * @param actualValue, the value that is passed along as an arg on the module command line
+     * @param formalParam, the formal ParameterInfo (does not necessary have the actual value)
+     * @return the displayValue or null if this does not match the existing drop-down menu item
+     * 
+     */
+    public static final String getDisplayValueForActualValue(final String actualValue, final ParameterInfo formalParam) {
+        if (ChoiceInfo.hasDynamicChoiceInfo(formalParam)) {
+            if (log.isDebugEnabled()) { log.debug("skipping dynamic drop-down, pname="+formalParam.getName()); }
+            return null;
+        }
+        if (!ChoiceInfo.hasStaticChoiceInfo(formalParam)) {
+            if (log.isDebugEnabled()) { log.debug("skipping static drop-down, pname="+formalParam.getName()); }
+            return null;
+        }
+        int numMatches=0;
+        String displayValue=null;
+        List<Choice> choices=ChoiceInfo.getStaticChoices(formalParam);
+        for(final Choice choice : choices) {
+            if (Objects.equal(choice.getValue(), actualValue)) {
+                ++numMatches;
+                displayValue=choice.getLabel();
+            }
+        }
+        if (numMatches==1) {
+            return displayValue;
+        }
+        else if (numMatches > 1) {
+            log.error("numMatches="+numMatches+" for param.name="+formalParam.getName()+", param.value="+actualValue);
+            return null;
+        }
+        else {
+            return null;
+        }
+    }
+    
+    /**
      * Get the list of choices declared directly in the manifest with the newer 'choices' attribute.
      * 
      * @param param
@@ -213,6 +256,28 @@ public class ChoiceInfo {
             return ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
         }
         return Collections.emptyList();
+    }
+    
+    /**
+     * Get the list of choices declared directly in the manifest with either the newer 'choices' attribute
+     * or the older (<=3.6.1) manifest format.
+     * 
+     * @param param
+     * @return
+     */
+    public static final List<Choice> getStaticChoices(final ParameterInfo param) {
+        //the new way (>= 3.7.0), check for 'choice' attribute in manifest
+        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
+        if (declaredChoicesStr != null) {
+            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
+            return ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
+        }
+        else {
+            //the old way (<= 3.6.1, based on 'values' attribute in manifest)
+            log.debug("Initializing choices from value attribute");
+            final String choicesString=param.getValue();
+            return ChoiceInfoHelper.initChoicesFromManifestEntry(choicesString);
+        }
     }
 
     /**
