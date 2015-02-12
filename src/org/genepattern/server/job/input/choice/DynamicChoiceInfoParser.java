@@ -80,21 +80,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             }
         }
 
-        //the new way (>= 3.7.0), check for 'choice' attribute in manifest
-        final String declaredChoicesStr= (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE);
-        if (declaredChoicesStr != null) {
-            log.debug("Initializing "+ChoiceInfo.PROP_CHOICE+" entry from manifest for parm="+param.getName());
-            //choices=ParameterInfo._initChoicesFromString(declaredChoicesStr);
-            choiceList=ChoiceInfoHelper.initChoicesFromManifestEntry(declaredChoicesStr);
-        }
-        else {
-            //the old way (<= 3.6.1, based on 'values' attribute in manifest)
-            //choices=param.getChoices();
-            final String choicesString=param.getValue();
-            choiceList=ChoiceInfoHelper.initChoicesFromManifestEntry(choicesString);
-            log.debug("Initialized choices from value attribute");
-        }
-
+        choiceList=ChoiceInfo.getStaticChoices(param);
         if (choiceList==null) {
             log.debug("choiceList is null, param="+param.getName());
             return null;
