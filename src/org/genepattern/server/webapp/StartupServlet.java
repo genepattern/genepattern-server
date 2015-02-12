@@ -253,6 +253,7 @@ public class StartupServlet extends HttpServlet {
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
         this.gpHomeDir=initGpHomeDir(servletConfig);
+        ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
 
         this.gpWorkingDir=initGpWorkingDir(servletConfig);
         ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
@@ -271,7 +272,7 @@ public class StartupServlet extends HttpServlet {
         getLog().info("\tgpWorkingDir="+gpWorkingDir);
         getLog().info("\tresources="+gpResourcesDir);
 
-        loadProperties(servletConfig); // assumes this.gpResourcesDir and this.gpWorkingDir are initialized
+        loadProperties(servletConfig); // assumes this.gpHomeDir, this.gpResourcesDir, and this.gpWorkingDir are initialized
         setServerURLs(servletConfig);
 
         ServerConfigurationFactory.reloadConfiguration();

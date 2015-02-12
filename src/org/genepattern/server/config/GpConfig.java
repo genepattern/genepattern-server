@@ -54,6 +54,28 @@ public class GpConfig {
      *     mkdir /Applications/GenePatternServer/jobResults/1
      */
     public static final String PROP_JOBS="jobs";
+    
+    /**
+     * The location for installed patches (aka plugins).
+     */
+    public static final String PROP_PLUGIN_DIR="patches";
+    
+    /**
+     * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
+     * When 'true' the ./pages/gpTracking.xhtml file is loaded into the header page for the GP server.
+     * You must also set the 'googleAnalytics.trackingId' property in the config yaml file.
+     * 
+     * For full customization, edit to the gpTracking.xhtml to include whatever code snippet suggested
+     * by Google Analytics.
+     * 
+     */
+    public static final String PROP_GA_ENABLED="googleAnalytics.enabled";
+
+    /**
+     * Set the 'googleAnalytics.trackingId' for the server.
+     * @see PROP_GA_ENABLED
+     */
+    public static final String PROP_GA_TRACKING_ID="googleAnalytics.trackingId";
 
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
@@ -127,6 +149,7 @@ public class GpConfig {
             .build();
     }
 
+    private final File gpHomeDir;
     private final URL genePatternURL;
     private final String gpUrl;
     private final String genePatternVersion;
@@ -151,6 +174,7 @@ public class GpConfig {
 
     public GpConfig(final Builder in) {
         GpContext gpContext=GpContext.getServerContext();
+        this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
         }
@@ -323,7 +347,6 @@ public class GpConfig {
      * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
      * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
      * 
-     * @param gpHomeDir
      * @param valueLookup
      * @return
      */
@@ -762,6 +785,32 @@ public class GpConfig {
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
         return getTempDir(null);
     }
+    
+    /**
+     * Get the globally configured location for installing plugins (aka patches). In GP <= 3.9.1 
+     * this is defined in the 'genepattern.properties' file via the template:
+     * <pre>
+$USER_INSTALL_DIR$/patches
+     * </pre>
+     * In newer installations it should not be declared in the properties or config file. 
+     * It is defined relative to GENEPATTERN_HOME:
+     * <pre>
+$GENEPATTERN_HOME$/patches
+     * </pre>
+     * @param serverContext
+     * @return
+     */
+    public File getRootPluginDir(GpContext serverContext) {
+        // (1) first check for an entry in the properties files
+        File rval=getGPFileProperty(serverContext, PROP_PLUGIN_DIR);
+        if (rval!=null) {
+            return rval;
+        }
+        if (gpHomeDir != null) {
+            return new File(gpHomeDir, "patches");
+        }
+        return null;
+    }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
         return getGPFileProperty(gpContext, key, null);
@@ -898,6 +947,7 @@ public class GpConfig {
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
+        private File gpHomeDir=null;
         private File logDir=null;
         private File resourcesDir=null;
         private File configFile=null;
@@ -925,6 +975,11 @@ public class GpConfig {
 
         public Builder serverProperties(final GpServerProperties serverProperties) {
             this.serverProperties=serverProperties;
+            return this;
+        }
+        
+        public Builder gpHomeDir(final File gpHomeDir) {
+            this.gpHomeDir=gpHomeDir;
             return this;
         }
 
