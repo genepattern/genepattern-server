@@ -252,18 +252,8 @@ public class PluginManagerLegacy {
         if (cmdLine == null || cmdLine.length() == 0) {
             throw new JobDispatchException("No command line defined in " + MANIFEST_FILENAME);
         }
-        Properties systemProps = new Properties();
-        //copy into from System.getProperties, TODO: should use new configuration system
-        for(Object keyObj : System.getProperties().keySet()) {
-            String key = keyObj.toString();
-            String val = System.getProperty(key);
-            systemProps.setProperty(key, val);
-        }
-        ParameterInfo[] formalParameters = new ParameterInfo[0];
-        List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);        
+        String[] cmdLineArray=initCmdLineArray(cmdLine);
         try {
-            String[] cmdLineArray = new String[0];
-            cmdLineArray = cmdLineArgs.toArray(cmdLineArray);
             exitValue = "" + executePatch(cmdLineArray, patchDirectory, taskIntegrator);
         }
         catch (IOException e) {
@@ -274,6 +264,9 @@ public class PluginManagerLegacy {
         catch (InterruptedException e2) {
             Thread.currentThread().interrupt();
             throw new JobDispatchException("Patch install interrupted", e2);
+        }
+        catch (Throwable t) {
+            throw new JobDispatchException("Unexpected error while installing patch, lsid="+requiredPatchLSID+": "+t.getLocalizedMessage(), t);
         }
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
@@ -329,6 +322,24 @@ public class PluginManagerLegacy {
             patchDirectory.delete();
             throw new JobDispatchException("Could not install required patch: " + props.get("name") + "  " + props.get("LSID"));
         }
+    }
+    
+    protected static String[] initCmdLineArray(final String cmdLine) {
+        final ParameterInfo[] formalParameters = new ParameterInfo[0];
+        Properties systemProps = new Properties();
+        //copy into from System.getProperties, TODO: should use new configuration system
+        for(Object keyObj : System.getProperties().keySet()) {
+            String key = keyObj.toString();
+            String val = System.getProperty(key);
+            systemProps.setProperty(key, val);
+        }
+        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);        
+        //final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        //final GpContext gpContext=GpContext.getServerContext(); //TODO: <==== create a context for the patch
+        //final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, formalParameters);        
+        String[] cmdLineArray = new String[0];
+        cmdLineArray = cmdLineArgs.toArray(cmdLineArray);
+        return cmdLineArray;
     }
 
     // download the patch zip file from a URL
