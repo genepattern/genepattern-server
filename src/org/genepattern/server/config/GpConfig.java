@@ -61,6 +61,11 @@ public class GpConfig {
     public static final String PROP_PLUGIN_DIR="patches";
     
     /**
+     * The location for installed tasks (aka modules and pipelines)
+     */
+    public static final String PROP_TASKLIB_DIR="tasklib";
+    
+    /**
      * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
      * When 'true' the ./pages/gpTracking.xhtml file is loaded into the header page for the GP server.
      * You must also set the 'googleAnalytics.trackingId' property in the config yaml file.
@@ -373,6 +378,62 @@ public class GpConfig {
         else {
             return path.getAbsoluteFile();
         }
+    }
+    
+    /**
+     * Convert the given file path into an absolute path if necessary.
+     * If GP_HOME is set, assume the path is relative to GP_HOME,
+     * else if GP_WORKING_DIR is set, assume the path is relative to GP_WORKING_DIR,
+     * else assume the path is relative to the current working dir, System.getProperty("user.dir").
+     * 
+     * @param gpContext
+     * @param pathOrRelativePath
+     * @return
+     */
+    protected File initAbsolutePath(final GpContext gpContext, final String pathOrRelativePath) { 
+        final File rootDir;
+        if (this.gpHomeDir != null) {
+            rootDir=this.gpHomeDir;
+        }
+        else if (this.gpWorkingDir != null) {
+            rootDir=this.gpWorkingDir;
+        }
+        else {
+            rootDir=new File(System.getProperty("user.dir"));
+        }
+        File f = relativize(rootDir, pathOrRelativePath);
+        f = new File(normalizePath(f.getPath()));
+        return f;
+    }
+    
+    /**
+     * Helper method for initializing an absolute path to a data file directory, for example for the 'patches' or 'taskLib'.
+     * This takes care of legacy support where data file paths were declared in the genepattern.properties file as relative
+     * paths to the working directory for the application server, e.g.
+     *     patches=../patches
+     *     tasklib=../taskLib
+     * 
+     * When GENEPATTERN_HOME is defined, default paths are in the GENEPATTERN_HOME directory.
+     * When not defined, default paths are one level up from the GENEPATTERN_WORKING_DIRECTORY.
+     * 
+     * @param serverContext, a valid server context
+     * @param propName, the name of the property (optionally loaded from the config file)
+     * @param defaultDirName, the default file system name for the data directory.
+     * 
+     * @return
+     */
+    protected File initRootDir(final GpContext serverContext, String propName, String defaultDirName) {
+        String dirProp=getGPProperty(serverContext, propName);
+        if (dirProp == null) {
+            if (gpHomeDir != null) {
+                dirProp=defaultDirName;
+            }
+            else if (gpWorkingDir != null) {
+                dirProp="../"+defaultDirName;
+            }
+        }
+        File f=initAbsolutePath(serverContext, dirProp);
+        return f;
     }
     
     protected File initUserRootDir() {
@@ -801,15 +862,29 @@ $GENEPATTERN_HOME$/patches
      * @return
      */
     public File getRootPluginDir(GpContext serverContext) {
-        // (1) first check for an entry in the properties files
-        File rval=getGPFileProperty(serverContext, PROP_PLUGIN_DIR);
-        if (rval!=null) {
-            return rval;
-        }
-        if (gpHomeDir != null) {
-            return new File(gpHomeDir, "patches");
-        }
-        return null;
+        return initRootDir(serverContext, PROP_PLUGIN_DIR, "patches");
+    }
+    
+    /**
+     * Get the globally configured location for installing modules and pipelines.
+     * In GP <= 3.9.1 this is defined in the 'genepattern.properties' file via the template:
+     * <pre>
+tasklib=$USER_INSTALL_DIR$/taskLib
+     * </pre>
+     * In newer versions of GP, the default location is relative to GENEPATTERN_HOME:
+     * <pre>
+$GENEPATTERN_HOME$/tasklib
+     * </pre>
+     * The 'tasklib' property can be overwritten in the config_yaml file.
+     * <pre>
+    tasklib: /fully/qualified/path/to/tasklib
+     * </pre>
+     * 
+     * @param serverContext
+     * @return
+     */
+    public File getRootTasklibDir(GpContext serverContext) {
+        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib");
     }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
