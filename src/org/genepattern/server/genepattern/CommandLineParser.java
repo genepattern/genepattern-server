@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.ParameterInfo;
 
 /**
@@ -39,6 +41,11 @@ public class CommandLineParser {
         }
         Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
         return resolveValue(cmdLine, env, parameterInfoMap, 0);
+    }
+    
+    public static List<String> createCmdLine(GpConfig gpConfig, GpContext gpContext, String cmdLine, ParameterInfo[] formalParameters) { 
+        Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
+        return resolveValue(gpConfig, gpContext, cmdLine, parameterInfoMap, 0);
     }
     
     private static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
@@ -198,6 +205,51 @@ public class CommandLineParser {
         return rval;
     }
     
+    private static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
+        if (value == null) {
+            //TODO: decide to throw exception or return null or return list containing one null item
+            throw new IllegalArgumentException("value is null");
+        }
+        List<String> rval = new ArrayList<String>();
+        
+        List<String> variables = getSubstitutionParameters(value);
+        //case 1: if value contains no substitutions, return a one-item list, containing the value
+        if (variables == null || variables.size() == 0) {
+            rval.add( value );
+            return rval;
+        }
+        
+        //otherwise, tokenize and return
+        List<String> tokens = getTokens(value);
+        for(String token : tokens) {
+            List<String> substitution = substituteValue(gpConfig, gpContext, token, parameterInfoMap);
+            
+            if (substitution == null || substitution.size() == 0) {
+                //remove empty substitutions
+            }
+            else if (substitution.size() == 1) {
+                String singleValue = substitution.get(0);
+                if (singleValue == null) {
+                    //ignore
+                }
+                else if (token.equals(singleValue)) {
+                    rval.add( token );
+                }
+                else {
+                    List<String> resolvedList = resolveValue(gpConfig, gpContext, singleValue, parameterInfoMap, 1+depth );
+                    rval.addAll( resolvedList );
+                }
+            }
+            else {
+                for(String sub : substitution) {
+                    List<String> resolvedSub = resolveValue(gpConfig, gpContext, sub, parameterInfoMap, 1+depth);
+                    rval.addAll( resolvedSub );
+                }
+            }
+        }
+        return rval;
+    }
+
     private static List<String> substituteValue(final String arg, final Map<String,String> dict, final Map<String,ParameterInfo> parameterInfoMap) {
         List<String> rval = new ArrayList<String>();
         List<String> subs = getSubstitutionParameters(arg);
@@ -223,6 +275,70 @@ public class CommandLineParser {
                 value = new File(value).getAbsolutePath();
             }
 
+            ParameterInfo paramInfo = parameterInfoMap.get(paramName);
+            if (paramInfo != null) {
+                isOptional = paramInfo.isOptional();
+                String optionalPrefix = paramInfo._getOptionalPrefix();
+                if (value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                    if (optionalPrefix.endsWith("\\ ")) {
+                        //special-case: if optionalPrefix ends with an escaped space, don't split into two args
+                        value = optionalPrefix.substring(0, optionalPrefix.length()-3) + value;
+                    }
+                    else if (optionalPrefix.endsWith(" ")) {
+                        //special-case: GP-2866, if optionalPrefix ends with a space, split into two args 
+                        rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));
+                    }
+                    else {
+                        //otherwise, append the prefix to the value
+                        value = optionalPrefix + value;
+                    }
+                }
+            }
+            
+            if (value == null && isOptional == false) {
+                //TODO: throw exception
+                log.error("missing substitution value for '"+sub+"' in expression: "+arg);
+                value = sub;
+            }
+            else if (value == null &&  isOptional == true) {
+                value = "";
+            }
+            substitutedValue = substitutedValue.replace(sub, value);
+        }
+        if (substitutedValue.length() == 0 && isOptional) {
+            //return an empty list
+        }
+        else {
+            rval.add(substitutedValue);
+        }
+        return rval;
+    }
+
+    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfo> parameterInfoMap) {
+        List<String> rval = new ArrayList<String>();
+        List<String> subs = getSubstitutionParameters(arg);
+        if (subs == null || subs.size() == 0) {
+            rval.add(arg);
+            return rval;
+        }
+        String substitutedValue = arg;
+        boolean isOptional = true;
+        for(String sub : subs) {
+            String paramName = sub.substring(1, sub.length()-1);
+            String value=null;
+            //special-case for <resources>
+            if ("resources".equals(paramName)) {
+                File f=gpConfig.getResourcesDir();
+                if (f!=null) {
+                    value = f.getAbsolutePath();
+                }
+                else {
+                    value = gpConfig.getGPProperty(gpContext, paramName);
+                }
+            }
+            else {
+                value = gpConfig.getGPProperty(gpContext, paramName);
+            }
             ParameterInfo paramInfo = parameterInfoMap.get(paramName);
             if (paramInfo != null) {
                 isOptional = paramInfo.isOptional();

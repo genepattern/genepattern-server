@@ -252,7 +252,9 @@ public class PluginManagerLegacy {
         if (cmdLine == null || cmdLine.length() == 0) {
             throw new JobDispatchException("No command line defined in " + MANIFEST_FILENAME);
         }
-        String[] cmdLineArray=initCmdLineArray(cmdLine);
+        List<String> cmdLineArgs=initCmdLineArray(cmdLine);
+        String[] cmdLineArray = new String[0];
+        cmdLineArray = cmdLineArgs.toArray(cmdLineArray);
         try {
             exitValue = "" + executePatch(cmdLineArray, patchDirectory, taskIntegrator);
         }
@@ -324,22 +326,39 @@ public class PluginManagerLegacy {
         }
     }
     
-    protected static String[] initCmdLineArray(final String cmdLine) {
+    protected static List<String> initCmdLineArray(final String cmdLine) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext gpContext=GpContext.getServerContext(); //TODO: <==== create a context for the patch
+        return initCmdLineArray(gpConfig, gpContext, cmdLine);
+    }
+
+    protected static List<String> initCmdLineArray(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine) {
         final ParameterInfo[] formalParameters = new ParameterInfo[0];
+        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, formalParameters);        
+        return cmdLineArgs;
+    }
+    
+    /**
+     * @deprecated, should use newer GpConfig system
+     */
+    protected static List<String> initCmdLineArrayFromSystemProps(final String cmdLine) {
         Properties systemProps = new Properties();
-        //copy into from System.getProperties, TODO: should use new configuration system
+        //copy into from System.getProperties
         for(Object keyObj : System.getProperties().keySet()) {
             String key = keyObj.toString();
             String val = System.getProperty(key);
             systemProps.setProperty(key, val);
         }
-        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);        
-        //final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        //final GpContext gpContext=GpContext.getServerContext(); //TODO: <==== create a context for the patch
-        //final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, formalParameters);        
-        String[] cmdLineArray = new String[0];
-        cmdLineArray = cmdLineArgs.toArray(cmdLineArray);
-        return cmdLineArray;
+        return initCmdLineArray(systemProps, cmdLine);
+    }
+
+    /**
+     * @deprecated, should use newer GpConfig system
+     */
+    protected static List<String> initCmdLineArray(final Properties systemProps, final String cmdLine) {
+        final ParameterInfo[] formalParameters = new ParameterInfo[0];
+        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);
+        return cmdLineArgs;
     }
 
     // download the patch zip file from a URL

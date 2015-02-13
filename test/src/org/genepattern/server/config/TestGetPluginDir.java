@@ -137,5 +137,16 @@ public class TestGetPluginDir {
         .build();
         assertEquals(patchesDir, gpConfig.getRootPluginDir(serverContext));
     }
+    
+    @Test
+    public void getPatchesSubstitution() {
+        GpConfig gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
+        .build();
+        
+        assertEquals("getGPProperty('patches')", 
+                new File(gpHomeDir, "patches").getAbsolutePath(), 
+                gpConfig.getGPProperty(serverContext, GpConfig.PROP_PLUGIN_DIR));
+    }
 
 }
