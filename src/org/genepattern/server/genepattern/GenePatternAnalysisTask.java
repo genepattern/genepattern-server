@@ -2710,6 +2710,12 @@ public class GenePatternAnalysisTask {
                 taskLibDir = f.getPath() + System.getProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
+            
+            // explicitly add the '<patches>' substitution parameter
+            File pluginDir=ServerConfigurationFactory.instance().getRootPluginDir(GpContext.getServerContext());
+            if (pluginDir!=null) {
+                props.put(GpConfig.PROP_PLUGIN_DIR, pluginDir.getPath());
+            }
 
             // set the java flags if they have been overridden in the java_flags.properties file
             PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
