@@ -25,9 +25,9 @@ public class TestPluginManagerLegacy {
     private File pluginDir;
     private File resourcesDir;
     
-    private final String ant_val="java -cp ./tools.jar -jar ./ant-launcher.jar -Dant.home=./ -lib ./";
+    private final String ant_val="<java> -cp <tomcatCommonLib>/tools.jar -jar <tomcatCommonLib>/ant-launcher.jar -Dant.home=<tomcatCommonLib> -lib <tomcatCommonLib>";
     private final String java_val="java";
-    private final String tomcatCommonLib_val="./";
+    private final String tomcatCommonLib_val=".";
 
     private Properties systemProps;
     private final String cmdLine="<ant> -f installAnt.xml -Dresources=<resources> -Dplugin.dir=<patches> -Dant-1.8_HOME=<ant-1.8_HOME>";
@@ -56,7 +56,7 @@ public class TestPluginManagerLegacy {
         gpContext=GpContext.getServerContext();
         
         expected=Arrays.asList(
-            ant_val, "-f", "installAnt.xml", "-Dresources="+resourcesDir.getAbsolutePath(), "-Dplugin.dir="+pluginDir.getAbsolutePath(), "-Dant-1.8_HOME=");
+            java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val, "-f", "installAnt.xml", "-Dresources="+resourcesDir.getAbsolutePath(), "-Dplugin.dir="+pluginDir.getAbsolutePath(), "-Dant-1.8_HOME=");
     }
 
     @Test
