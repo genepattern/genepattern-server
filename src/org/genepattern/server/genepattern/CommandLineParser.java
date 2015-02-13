@@ -314,7 +314,7 @@ public class CommandLineParser {
         return rval;
     }
 
-    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfo> parameterInfoMap) {
+    protected static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfo> parameterInfoMap) {
         List<String> rval = new ArrayList<String>();
         List<String> subs = getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
@@ -339,7 +339,8 @@ public class CommandLineParser {
             else {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
-            ParameterInfo paramInfo = parameterInfoMap.get(paramName);
+            ParameterInfo paramInfo = parameterInfoMap == null ? null :
+                parameterInfoMap.get(paramName);
             if (paramInfo != null) {
                 isOptional = paramInfo.isOptional();
                 String optionalPrefix = paramInfo._getOptionalPrefix();
@@ -360,7 +361,6 @@ public class CommandLineParser {
             }
             
             if (value == null && isOptional == false) {
-                //TODO: throw exception
                 log.error("missing substitution value for '"+sub+"' in expression: "+arg);
                 value = sub;
             }
