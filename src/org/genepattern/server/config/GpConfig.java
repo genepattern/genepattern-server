@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -167,6 +169,7 @@ public class GpConfig {
     private final File userRootDir;
     private final File soapAttachmentDir;
     private final File gpTmpDir;
+    private final File gpPluginDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -174,7 +177,12 @@ public class GpConfig {
     private final File configFile;
     private final Properties dbProperties;
     private final String dbVendor;
-    // config helper method
+    /**
+     *  Special-case, some properties can be set by convention rather than declared in a config file.
+     *  For example,  patches=$GENEPATTERN_HOME$/patches
+     *  When this is the case, save the lookup into the subsitutionParams map when initializing the config.
+     */
+    private final Map<String,String> substitutionParams=new HashMap<String,String>();
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
@@ -232,6 +240,7 @@ public class GpConfig {
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
+        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches");
     }
     
     /**
@@ -424,7 +433,9 @@ public class GpConfig {
      */
     protected File initRootDir(final GpContext serverContext, String propName, String defaultDirName) {
         String dirProp=getGPProperty(serverContext, propName);
+        boolean isSubstitutionParam=false;
         if (dirProp == null) {
+            isSubstitutionParam=true;
             if (gpHomeDir != null) {
                 dirProp=defaultDirName;
             }
@@ -433,6 +444,9 @@ public class GpConfig {
             }
         }
         File f=initAbsolutePath(serverContext, dirProp);
+        if (isSubstitutionParam) {
+            this.substitutionParams.put(propName, ""+f);
+        }
         return f;
     }
     
@@ -598,7 +612,7 @@ public class GpConfig {
     public String getGPProperty(final GpContext context, final String key) {
         final Value value = getValue(context, key);
         if (value == null) {
-            return null;
+            return this.substitutionParams.get(key);
         }
         if (value.getNumValues() > 1) {
             log.error("returning first item of a "+value.getNumValues()+" item list");
@@ -862,7 +876,7 @@ $GENEPATTERN_HOME$/patches
      * @return
      */
     public File getRootPluginDir(GpContext serverContext) {
-        return initRootDir(serverContext, PROP_PLUGIN_DIR, "patches");
+        return gpPluginDir;
     }
     
     /**
@@ -1083,6 +1097,14 @@ $GENEPATTERN_HOME$/tasklib
             return this;
         }
 
+        public Builder addProperties(Properties props) {
+            for(final Object keyObj : props.keySet()) {
+                String key = keyObj.toString();
+                addProperty(key, props.getProperty(key));
+            }
+            return this;
+        }
+        
         public Builder addProperty(String key, String value) {
             if (serverPropertiesBuilder==null) {
                 serverPropertiesBuilder=new GpServerProperties.Builder();
@@ -1109,6 +1131,9 @@ $GENEPATTERN_HOME$/tasklib
                 }
                 else if (serverProperties != null) {
                     resourcesDir=serverProperties.getResourcesDir();
+                }
+                else if (gpHomeDir != null) {
+                    resourcesDir=new File(gpHomeDir,"resources");
                 }
             }
 
