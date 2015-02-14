@@ -3,6 +3,7 @@ package org.genepattern.server.genepattern;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import clover.retrotranslator.edu.emory.mathcs.backport.java.util.Arrays;
 
 public class TestCommandLineParser {
     private GpConfig gpConfig;
@@ -36,11 +35,8 @@ public class TestCommandLineParser {
     
     @Test
     public void resolveValue_nested() {
-        List<String> expected=Arrays.asList(new String[]{
-            java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val });
-
         assertEquals(
-                expected, 
+                Arrays.asList( java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val ),
                 CommandLineParser.resolveValue(gpConfig, gpContext, "<ant>", parameterInfoMap, 0));
     }
     
@@ -56,7 +52,7 @@ public class TestCommandLineParser {
     public void subsituteValue_nullParameterInfoMap() {
         parameterInfoMap=null;
         Assert.assertEquals(
-                Arrays.asList(new String[]{"literal"}), 
+                Arrays.asList("literal"),
                 CommandLineParser.substituteValue(gpConfig, gpContext, "literal", parameterInfoMap));
     }
     
