@@ -205,7 +205,7 @@ public class CommandLineParser {
         return rval;
     }
     
-    private static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
+    protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
@@ -315,6 +315,9 @@ public class CommandLineParser {
     }
 
     protected static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfo> parameterInfoMap) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig == null");
+        }
         List<String> rval = new ArrayList<String>();
         List<String> subs = getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
@@ -323,11 +326,54 @@ public class CommandLineParser {
         }
         String substitutedValue = arg;
         boolean isOptional = true;
-        for(String sub : subs) {
-            String paramName = sub.substring(1, sub.length()-1);
+        for(final String sub : subs) {
+            final String paramName = sub.substring(1, sub.length()-1);
             String value=null;
+
+            //special-case for <job_id>
+            if ("job_id".equals(paramName)) {
+                if (gpContext.getJobNumber() != null) {
+                    value=""+gpContext.getJobNumber();
+                }
+            }
+            //special-case for <name>
+            else if ("name".equals(paramName)) {
+                if (gpContext.getTaskInfo() != null) {
+                    value=gpContext.getTaskInfo().getName();
+                }
+            }
+            //special-case for <parent_job_id>
+            else if ("parent_job_id".equals(paramName)) {
+                if (gpContext.getJobInfo() != null) {
+                    value=""+gpContext.getJobInfo()._getParentJobNumber();
+                }
+            }
+            //special-case for <userid>
+            else if ("userid".equals(paramName)) {
+                if (gpContext.getJobInfo() != null) {
+                    value=gpContext.getJobInfo().getUserId();
+                }
+            }
+            //special-case for <LSID>
+            else if ("LSID".equals(paramName)) {
+                value=gpContext.getLsid();
+            }
+            //special-case for <libdir>
+            else if ("libdir".equals(paramName)) {
+                File libdir=gpContext.getTaskLibDir();
+                if (libdir != null) {
+                    value=""+libdir;
+                }
+            }
+            //special-case for <patches>
+            else if ("patches".equals(paramName)) {
+                File pluginDir=gpConfig.getRootPluginDir(gpContext);
+                if (pluginDir != null) {
+                    value=""+pluginDir;
+                }
+            }
             //special-case for <resources>
-            if ("resources".equals(paramName)) {
+            else if ("resources".equals(paramName)) {
                 File f=gpConfig.getResourcesDir();
                 if (f!=null) {
                     value = f.getAbsolutePath();
@@ -378,13 +424,13 @@ public class CommandLineParser {
         return rval;
     }
 
-    public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> props) {
+    public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine) {
         final Map<String,ParameterInfo> emptyParameterInfoMap = Collections.emptyMap();
-        return resolveValue(cmdLine, props, emptyParameterInfoMap, 0);
+        return resolveValue(gpConfig, gpContext, cmdLine, emptyParameterInfoMap, 0);
     }
     
-    public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> props, final Map<String,ParameterInfo> parameterInfoMap) {
-        return resolveValue(cmdLine, props, parameterInfoMap, 0);
+    public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine, final Map<String,ParameterInfo> parameterInfoMap) {
+        return resolveValue(gpConfig, gpContext, cmdLine, parameterInfoMap, 0);
     }
 
 }
