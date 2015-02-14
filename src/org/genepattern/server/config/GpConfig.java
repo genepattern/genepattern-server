@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1101,6 +1102,13 @@ $GENEPATTERN_HOME$/tasklib
             for(final Object keyObj : props.keySet()) {
                 String key = keyObj.toString();
                 addProperty(key, props.getProperty(key));
+            }
+            return this;
+        }
+        
+        public Builder addProperties(Map<String,String> map) {
+            for(final Entry<String,String> entry : map.entrySet()) {
+                addProperty(entry.getKey(), entry.getValue());
             }
             return this;
         }
