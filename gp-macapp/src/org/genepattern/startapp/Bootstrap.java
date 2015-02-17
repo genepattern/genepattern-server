@@ -1,5 +1,7 @@
 package org.genepattern.startapp;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,8 +21,14 @@ public class Bootstrap {
      * @param args
      */
     public static void main(String[] args) {
+        // Double check args
+        String workingDirString = "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        if (args.length >= 1) {
+            workingDirString = args[0];
+        }
+
         // Pass in the working directory
-        File workingDir = getWorkingDirectory(args[0]);
+        File workingDir = getWorkingDirectory(workingDirString);
 
         // Generate LSID
         String lsid = GenerateLsid.lsid();
@@ -28,7 +36,16 @@ public class Bootstrap {
         PropertiesWriter pw = new PropertiesWriter();
         pw.setLsid(lsid);
 
-        File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        // Lazily create the GP Home directory
+        try {
+            lazilyCreateGPHome(workingDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        String user = System.getProperty("user.name");
+        File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
         File propFile = new File(resourcesDir, "genepattern.properties");
         try {
             pw.writeInstallTime(propFile);
@@ -38,14 +55,72 @@ public class Bootstrap {
 
         // Prompt the user for config
         ConfigApp.main(new String[] {args[0]});
+    }
 
-        // Create the setup flag
-        File resources = new File(workingDir.getParent(), "Resources");
-        File readyFlag = new File(resources, "ready");
-        try {
-            readyFlag.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
+    /**
+     * Lazily sets up the GP Home directory if needed
+     *
+     * @return - If it had to be lazily set up
+     */
+    public static boolean lazilyCreateGPHome(File workingDir) throws IOException {
+        // Get reference to internal GPServer
+        File gpServer = new File(workingDir.getParent(), "Resources/GenePatternServer");
+
+        // Get user and GP Home
+        String user = System.getProperty("user.name");
+        File gpHome = new File("/Users/" + user + "/.genepattern");
+
+        // Lazily check for GP Home
+        if (!gpHome.exists()) {
+            gpHome.mkdir();
+
+            // Lazily create subdirectories
+            File jobResults = new File(gpHome, "jobResults");
+            if (!jobResults.exists()) {
+                File iJobResults = new File(gpServer, "jobResults");
+                FileUtils.copyDirectory(iJobResults, jobResults);
+            }
+
+            File logs = new File(gpHome, "logs");
+            if (!logs.exists()) {
+                File iLogs = new File(gpServer, "logs");
+                FileUtils.copyDirectory(iLogs, logs);
+            }
+
+            File patches = new File(gpHome, "patches");
+            if (!patches.exists()) {
+                File iPatches = new File(gpServer, "patches");
+                FileUtils.copyDirectory(iPatches, patches);
+            }
+
+            File resources = new File(gpHome, "resources");
+            if (!resources.exists()) {
+                File iResources = new File(gpServer, "resources");
+                FileUtils.copyDirectory(iResources, resources);
+            }
+
+            File taskLib = new File(gpHome, "taskLib");
+            if (!taskLib.exists()) {
+                File iTaskLib = new File(gpServer, "taskLib");
+                FileUtils.copyDirectory(iTaskLib, taskLib);
+            }
+
+            File temp = new File(gpHome, "temp");
+            if (!temp.exists()) {
+                File iTemp = new File(gpServer, "temp");
+                FileUtils.copyDirectory(iTemp, temp);
+            }
+
+            File users = new File(gpHome, "users");
+            if (!users.exists()) {
+                File iUsers = new File(gpServer, "users");
+                FileUtils.copyDirectory(iUsers, users);
+            }
+
+            return true;
+        }
+        else {
+            return false;
         }
     }
 

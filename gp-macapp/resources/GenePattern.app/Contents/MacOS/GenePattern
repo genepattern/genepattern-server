@@ -7,10 +7,10 @@ DIR=$(cd "$(dirname "$0")"; pwd)
 if [ -f "$DIR/../Resources/ready" ]
 then
     # Launch GenePattern and open your browser pointing to it
-    $DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run &
+    $DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run -DGENEPATTERN_HOME=~/genepattern &
     sleep 3
     open http://127.0.0.1:8080/gp
 else
     # Otherwise launch the config app
-    java -cp "$DIR/../Resources/bootstrap.jar:$DIR/../Resources/mail.jar:$DIR/../Resources/jgoodies-forms-1.9.0.jar:$DIR/../Resources/jgoodies-common-1.8.1.jar" org.genepattern.startapp.Bootstrap $DIR
+    java -cp "$DIR/../Resources/bootstrap.jar:$DIR/../Resources/mail.jar:$DIR/../Resources/jgoodies-forms-1.9.0.jar:$DIR/../Resources/jgoodies-common-1.8.1.jar:$DIR/../Resources/commons-io-2.0.1.jar" org.genepattern.startapp.Bootstrap $DIR
 fi

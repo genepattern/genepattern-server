@@ -49,7 +49,7 @@ public class ConfigApp {
         ConfigApp._instance = frame;
 
         // Set the working directory
-        String workingString = "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        String workingString = ""; // "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
         if (args.length >= 1) {
             workingString = args[0];
         }
@@ -91,6 +91,16 @@ public class ConfigApp {
                 // If everything checks out, call properties writer
                 writeConfig();
 
+                // Create the setup flag
+                File resources = new File(workingDir.getParent(), "Resources");
+                File readyFlag = new File(resources, "ready");
+                try {
+                    readyFlag.createNewFile();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Run the shell script
                 Bootstrap.runShellScript(workingDir.getAbsolutePath());
 
                 // Close
@@ -123,7 +133,9 @@ public class ConfigApp {
         pw.setR25(r25Field.getText());
         pw.setRequirePassword(Boolean.toString(yesRadioButton.isSelected()));
 
-        File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        //File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        String user = System.getProperty("user.name");
+        File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
         File propFile = new File(resourcesDir, "genepattern.properties");
         try {
             pw.writeUserTime(propFile);
