@@ -8,7 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -59,6 +62,11 @@ public class GpConfig {
      * The location for installed patches (aka plugins).
      */
     public static final String PROP_PLUGIN_DIR="patches";
+    
+    /**
+     * The location for installed tasks (aka modules and pipelines)
+     */
+    public static final String PROP_TASKLIB_DIR="tasklib";
     
     /**
      * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
@@ -162,6 +170,7 @@ public class GpConfig {
     private final File userRootDir;
     private final File soapAttachmentDir;
     private final File gpTmpDir;
+    private final File gpPluginDir;
     private final List<Throwable> initErrors;
     private final GpRepositoryProperties repoConfig;
     private final GpServerProperties serverProperties;
@@ -169,7 +178,12 @@ public class GpConfig {
     private final File configFile;
     private final Properties dbProperties;
     private final String dbVendor;
-    // config helper method
+    /**
+     *  Special-case, some properties can be set by convention rather than declared in a config file.
+     *  For example,  patches=$GENEPATTERN_HOME$/patches
+     *  When this is the case, save the lookup into the subsitutionParams map when initializing the config.
+     */
+    private final Map<String,String> substitutionParams=new HashMap<String,String>();
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
@@ -227,6 +241,7 @@ public class GpConfig {
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
+        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches");
     }
     
     /**
@@ -373,6 +388,67 @@ public class GpConfig {
         else {
             return path.getAbsoluteFile();
         }
+    }
+    
+    /**
+     * Convert the given file path into an absolute path if necessary.
+     * If GP_HOME is set, assume the path is relative to GP_HOME,
+     * else if GP_WORKING_DIR is set, assume the path is relative to GP_WORKING_DIR,
+     * else assume the path is relative to the current working dir, System.getProperty("user.dir").
+     * 
+     * @param gpContext
+     * @param pathOrRelativePath
+     * @return
+     */
+    protected File initAbsolutePath(final GpContext gpContext, final String pathOrRelativePath) { 
+        final File rootDir;
+        if (this.gpHomeDir != null) {
+            rootDir=this.gpHomeDir;
+        }
+        else if (this.gpWorkingDir != null) {
+            rootDir=this.gpWorkingDir;
+        }
+        else {
+            rootDir=new File(System.getProperty("user.dir"));
+        }
+        File f = relativize(rootDir, pathOrRelativePath);
+        f = new File(normalizePath(f.getPath()));
+        return f;
+    }
+    
+    /**
+     * Helper method for initializing an absolute path to a data file directory, for example for the 'patches' or 'taskLib'.
+     * This takes care of legacy support where data file paths were declared in the genepattern.properties file as relative
+     * paths to the working directory for the application server, e.g.
+     *     patches=../patches
+     *     tasklib=../taskLib
+     * 
+     * When GENEPATTERN_HOME is defined, default paths are in the GENEPATTERN_HOME directory.
+     * When not defined, default paths are one level up from the GENEPATTERN_WORKING_DIRECTORY.
+     * 
+     * @param serverContext, a valid server context
+     * @param propName, the name of the property (optionally loaded from the config file)
+     * @param defaultDirName, the default file system name for the data directory.
+     * 
+     * @return
+     */
+    protected File initRootDir(final GpContext serverContext, String propName, String defaultDirName) {
+        String dirProp=getGPProperty(serverContext, propName);
+        boolean isSubstitutionParam=false;
+        if (dirProp == null) {
+            isSubstitutionParam=true;
+            if (gpHomeDir != null) {
+                dirProp=defaultDirName;
+            }
+            else if (gpWorkingDir != null) {
+                dirProp="../"+defaultDirName;
+            }
+        }
+        File f=initAbsolutePath(serverContext, dirProp);
+        if (isSubstitutionParam) {
+            this.substitutionParams.put(propName, ""+f);
+        }
+        return f;
     }
     
     protected File initUserRootDir() {
@@ -537,7 +613,7 @@ public class GpConfig {
     public String getGPProperty(final GpContext context, final String key) {
         final Value value = getValue(context, key);
         if (value == null) {
-            return null;
+            return this.substitutionParams.get(key);
         }
         if (value.getNumValues() > 1) {
             log.error("returning first item of a "+value.getNumValues()+" item list");
@@ -801,15 +877,29 @@ $GENEPATTERN_HOME$/patches
      * @return
      */
     public File getRootPluginDir(GpContext serverContext) {
-        // (1) first check for an entry in the properties files
-        File rval=getGPFileProperty(serverContext, PROP_PLUGIN_DIR);
-        if (rval!=null) {
-            return rval;
-        }
-        if (gpHomeDir != null) {
-            return new File(gpHomeDir, "patches");
-        }
-        return null;
+        return gpPluginDir;
+    }
+    
+    /**
+     * Get the globally configured location for installing modules and pipelines.
+     * In GP <= 3.9.1 this is defined in the 'genepattern.properties' file via the template:
+     * <pre>
+tasklib=$USER_INSTALL_DIR$/taskLib
+     * </pre>
+     * In newer versions of GP, the default location is relative to GENEPATTERN_HOME:
+     * <pre>
+$GENEPATTERN_HOME$/tasklib
+     * </pre>
+     * The 'tasklib' property can be overwritten in the config_yaml file.
+     * <pre>
+    tasklib: /fully/qualified/path/to/tasklib
+     * </pre>
+     * 
+     * @param serverContext
+     * @return
+     */
+    public File getRootTasklibDir(GpContext serverContext) {
+        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib");
     }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
@@ -1008,6 +1098,21 @@ $GENEPATTERN_HOME$/patches
             return this;
         }
 
+        public Builder addProperties(Properties props) {
+            for(final Object keyObj : props.keySet()) {
+                String key = keyObj.toString();
+                addProperty(key, props.getProperty(key));
+            }
+            return this;
+        }
+        
+        public Builder addProperties(Map<String,String> map) {
+            for(final Entry<String,String> entry : map.entrySet()) {
+                addProperty(entry.getKey(), entry.getValue());
+            }
+            return this;
+        }
+        
         public Builder addProperty(String key, String value) {
             if (serverPropertiesBuilder==null) {
                 serverPropertiesBuilder=new GpServerProperties.Builder();
@@ -1034,6 +1139,9 @@ $GENEPATTERN_HOME$/patches
                 }
                 else if (serverProperties != null) {
                     resourcesDir=serverProperties.getResourcesDir();
+                }
+                else if (gpHomeDir != null) {
+                    resourcesDir=new File(gpHomeDir,"resources");
                 }
             }
 

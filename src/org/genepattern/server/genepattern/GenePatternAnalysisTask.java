@@ -760,9 +760,9 @@ public class GenePatternAnalysisTask {
         }
 
         ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
-        Properties props = null;
+        final Properties propsPre; // <---- initialize properties, needed to compute the originalPath
         try {
-            props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
+            propsPre = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
                     taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
         }
         catch (MalformedURLException e) {
@@ -781,7 +781,7 @@ public class GenePatternAnalysisTask {
                 String mode = (String) attrsCopy.get(ParameterInfo.MODE);
                 String originalPath = pinfo.getValue();
                 // allow parameter value substitutions within file input parameters
-                originalPath = substitute(originalPath, props, paramsCopy);
+                originalPath = substitute(originalPath, propsPre, paramsCopy);
                 boolean isOptional = "on".equals(attrsCopy.get("optional"));
                 // if necessary use the URL value instead of the server file path value
                 final boolean isUrlMode=pinfo._isUrlMode();
@@ -1318,6 +1318,7 @@ public class GenePatternAnalysisTask {
         // build the command line, replacing <variableName> with the same name from the properties
         // (ParameterInfo[], System properties, environment variables, and built-ins merged)
         // build props again, now that downloaded files are set
+        final Properties props;
         try {
             props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
@@ -2710,6 +2711,12 @@ public class GenePatternAnalysisTask {
                 taskLibDir = f.getPath() + System.getProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
+            
+            // explicitly add the '<patches>' substitution parameter
+            File pluginDir=ServerConfigurationFactory.instance().getRootPluginDir(GpContext.getServerContext());
+            if (pluginDir!=null) {
+                props.put(GpConfig.PROP_PLUGIN_DIR, pluginDir.getPath());
+            }
 
             // set the java flags if they have been overridden in the java_flags.properties file
             PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();

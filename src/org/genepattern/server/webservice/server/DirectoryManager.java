@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -253,14 +256,35 @@ public class DirectoryManager {
 
     public static String getLibDir() {
         if (taskLibDir == null) {
-            taskLibDir = System.getProperty("tasklib");
+            log.debug("initializing taskLibDir...");
+            if (log.isDebugEnabled()) {
+                final String tasklibDirProp_orig = System.getProperty("tasklib");
+                log.debug("System.getProperty('tasklib')="+tasklibDirProp_orig);
+            }
+            taskLibDir = getRootTaskLibDir();
             if (taskLibDir == null || !new File(taskLibDir).exists()) {
                 taskLibDir = ".." + File.separator + "taskLib";
+                log.debug("taskLibDir not set, setting taskLibDir="+taskLibDir);
             }
             File f = new File(taskLibDir);
             taskLibDir = f.getAbsolutePath();
+            log.debug("taskLibDir="+taskLibDir);
         }
         return taskLibDir;
+    }
+    
+    protected static String getRootTaskLibDir() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getRootTaskLibDir(gpConfig, serverContext);
+    }
+
+    protected static String getRootTaskLibDir(final GpConfig gpConfig, final GpContext gpContext) {
+        File tasklibDir=gpConfig.getRootTasklibDir(gpContext);
+        if (tasklibDir==null) {
+            return null;
+        }
+        return tasklibDir.getPath();
     }
 
     /**

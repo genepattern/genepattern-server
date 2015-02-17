@@ -10,9 +10,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.util.GPConstants;
 import org.yaml.snakeyaml.Yaml;
@@ -140,7 +143,16 @@ public class CommandLineParserTest extends TestCase {
         }
         
         public void runTest() {
-            List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, env);
+            Properties props=new Properties();
+            for(final Entry<String,String> entry : env.entrySet()) {
+                props.put(entry.getKey(), entry.getValue());
+            }
+            GpConfig gpConfig=new GpConfig.Builder()
+                .addProperties(props)
+            .build();
+            
+            GpContext gpContext=GpContext.getServerContext();
+            List<String> cmdLineArgs = CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
             assertNotNull(name+": cmdLineArgs", cmdLineArgs);
             assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
             //assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.length);
@@ -263,7 +275,10 @@ public class CommandLineParserTest extends TestCase {
                 "-e",
                 "-ayes" };
         
-        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, dict);
+        GpConfig gpConfig=new GpConfig.Builder().addProperties(dict).build();
+        GpContext gpContext=GpContext.getServerContext();
+        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
+        
         assertNotNull(cmdLineArgs);
         assertEquals("cmdLineArgs.size", expected.length, cmdLineArgs.size());
         int i=0;
