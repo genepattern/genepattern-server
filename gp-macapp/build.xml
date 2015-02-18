@@ -44,9 +44,9 @@
 
     <target name="clean-all" depends="clean">
         <description>
-            Deletes everything, including the extracted client library and the downloaded client library zip file.
+            Deletes everything.
         </description>
-        <delete file="gp-slurm.zip"/>
+        <delete file="dist/gp-macapp.zip"/>
     </target>
 
     <!-- RESOURCE COPY TARGETS -->
@@ -141,6 +141,7 @@
 
     <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, update-properties, jar, make-executable">
         <!-- Should call: ant dist -Dversion=XXX -Dbuild=YYY -->
+        <zip basedir="dist" destfile="dist/gp-macapp.zip" />
     </target>
 
 </project>
