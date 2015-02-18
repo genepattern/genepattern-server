@@ -48,7 +48,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
-import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearchLegacy;
+import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearch;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchQuery;
 import org.genepattern.server.webapp.rest.api.v1.job.search.SearchResults;
 import org.genepattern.server.webapp.rest.api.v1.job.tag.JobTagsResource;
@@ -253,7 +253,7 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             /**
-             * optionally, filter all jobs by userId, Note: this is not necessarily the current user.
+             * optionally, show all jobs (*) or for a specific userId, Note: this is not necessarily the current user.
              */
             final @QueryParam("userId") String userId,
             /**
@@ -264,6 +264,14 @@ public class JobsResource {
              * optionally, filter all jobs by batchId
              */
             final @QueryParam("batchId") String batchId,
+            /**
+             * optionally, filter all jobs by tag
+             */
+            final @QueryParam("tag") String tag,
+            /**
+             * optionally, filter all jobs by comment
+             */
+            final @QueryParam("comment") String comment,
             /**
              * optionally, set the page number for paged job results, The first page is page 1.
              */
@@ -315,12 +323,14 @@ public class JobsResource {
                 .userId(userId)
                 .groupId(groupId)
                 .batchId(batchId)
+                .tag(tag)
+                .comment(comment)
                 .pageNum(page)
                 .pageSize(pageSize)
                 .orderBy(orderBy)
                 .orderFilesBy(orderFilesBy)
             .build();
-            final SearchResults searchResults=JobSearchLegacy.doSearch(q);
+            final SearchResults searchResults= JobSearch.doSearch(q);
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
 
             //create JSON representation

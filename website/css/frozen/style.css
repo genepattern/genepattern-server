@@ -1098,3 +1098,29 @@ strong.filtered-number
     z-index: 6001;
     width: 150px;
 }
+
+#jobTableSearch
+{
+    border: 1px solid #d3d3d3;
+    padding: 20px;
+}
+
+#jobTableSearch span
+{
+    margin-left: 70px;
+}
+
+.float-right
+{
+    float: right;
+}
+
+#jobSearchOwner, #jobSearchComment, #jobSearchTag
+{
+    margin-left: 5px;
+}
+
+#jobTags a
+{
+    padding: 1px;
+}

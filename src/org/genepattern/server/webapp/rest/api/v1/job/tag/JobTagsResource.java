@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.rest.api.v1.job.tag;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.tag.Tag;
@@ -72,9 +73,12 @@ public class JobTagsResource
 
             Date date = new Date();
             JobTag jobTag = new JobTag();
-            jobTag.setGpJobNo(jobNo);
             jobTag.setDateTagged(date);
             jobTag.setUserId(userContext.getUserId());
+
+            AnalysisJob analysisJob = new AnalysisJob();
+            analysisJob.setJobNo(jobNo);
+            jobTag.setAnalysisJob(analysisJob);
 
             Tag tag = new Tag();
             tag.setDateAdded(date);

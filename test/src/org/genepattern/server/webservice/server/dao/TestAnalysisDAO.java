@@ -2,6 +2,7 @@ package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
@@ -10,7 +11,13 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.tag.JobTag;
+import org.genepattern.server.job.tag.dao.JobTagDao;
+import org.genepattern.server.tag.Tag;
+import org.genepattern.server.webservice.server.Analysis;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -142,4 +149,49 @@ public class TestAnalysisDAO {
         }
     }
 
+    @Test
+    public void testSearchJobTag()throws Exception
+    {
+        try {
+            int jobToSearch=addJob(-1);
+            HibernateUtil.beginTransaction();
+            AnalysisDAO dao=new AnalysisDAO();
+
+            int pageNum=1;
+            int pageSize=10;
+            Analysis.JobSortOrder jobSortOrder = Analysis.JobSortOrder.JOB_NUMBER;
+            boolean ascending = true;
+            String tagText = "TestSearch";
+
+            Date date = new Date();
+
+            Tag tag = new Tag();
+            tag.setUserId(testUser);
+            tag.setTag(tagText);
+            tag.setDateAdded(date);
+            tag.setPublicTag(false);
+
+            JobTag jobTag = new JobTag();
+            jobTag.setUserId(testUser);
+            jobTag.setTagObj(tag);
+
+            AnalysisJob analysisJob = new AnalysisJob();
+            analysisJob.setJobNo(jobToSearch);
+            analysisJob.setParent(-1);
+            jobTag.setAnalysisJob(analysisJob);
+
+            jobTag.setDateTagged(date);
+
+            //add a tag
+            JobTagDao jobTagDao = new JobTagDao();
+            boolean success = jobTagDao.insertJobTag(jobTag);
+            Assert.assertTrue("jobTagSearch insert", success);
+
+            List<JobInfo> jobInfoList = dao.getPagedJobsWithTag(tagText, null, null, null, pageNum, pageSize,jobSortOrder, ascending);
+            Assert.assertEquals("jobTagSearch", 1, jobInfoList.size());
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
 }
