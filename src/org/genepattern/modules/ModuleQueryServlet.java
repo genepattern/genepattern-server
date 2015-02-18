@@ -11,13 +11,9 @@
 
 package org.genepattern.modules;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,6 +37,7 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpVersion;
 import org.apache.commons.httpclient.methods.MultipartPostMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
@@ -52,6 +49,7 @@ import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.GetEulaAsManifestProperty;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.GroupInfo;
+import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
@@ -68,7 +66,9 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * based on PipelineQueryServer class in the org.genepattern.pipelines class
@@ -85,80 +85,62 @@ public class ModuleQueryServlet extends HttpServlet {
     public static final String GPARC = "/gparc";
 
 
-
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
-		String action = request.getPathInfo();
+        String action = request.getPathInfo();
 
-		// Route to the appropriate action, returning an error if unknown
-		if (MODULE_CATEGORIES.equals(action))
-        {
+        // Route to the appropriate action, returning an error if unknown
+        if (MODULE_CATEGORIES.equals(action)) {
             getModuleCategories(request, response);
         }
-        if (OUTPUT_FILE_FORMATS.equals(action))
-        {
+        if (OUTPUT_FILE_FORMATS.equals(action)) {
             getOutputFileFormats(response);
-        }
-        else if (LOAD.equals(action)) {
-		    loadModule(request, response);
-		}
-        else if (SAVE.equals(action)) {
-		    saveModule(request, response);
-		}
-        else if (UPLOAD.equals(action))
-        {
-		    uploadFile(request, response);
-		}
-        else if (GPARC.equals(action))
-        {
+        } else if (LOAD.equals(action)) {
+            loadModule(request, response);
+        } else if (SAVE.equals(action)) {
+            saveModule(request, response);
+        } else if (UPLOAD.equals(action)) {
+            uploadFile(request, response);
+        } else if (GPARC.equals(action)) {
             gparcSubmit(request, response);
+        } else {
+            sendError(response, "Routing error for " + action);
         }
-        else
-        {
-		    sendError(response, "Routing error for " + action);
-		}
     }
 
     @Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-    {
-		doGet(request, response);
-	}
+    public void doPost(HttpServletRequest request, HttpServletResponse response) {
+        doGet(request, response);
+    }
 
-	@Override
-	public void doPut(HttpServletRequest request, HttpServletResponse response)
-    {
-	    doGet(request, response);
-	}
+    @Override
+    public void doPut(HttpServletRequest request, HttpServletResponse response) {
+        doGet(request, response);
+    }
 
-    private void write(HttpServletResponse response, Object content)
-    {
+    private void write(HttpServletResponse response, Object content) {
         this.write(response, content.toString());
     }
 
-    private void write(HttpServletResponse response, String content)
-    {
+    private void write(HttpServletResponse response, String content) {
         PrintWriter writer = null;
         try {
             writer = response.getWriter();
             writer.println(content);
             writer.flush();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error writing to the response in ModuleQueryServlet: " + content);
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (writer != null) writer.close();
         }
     }
 
-    public void sendError(HttpServletResponse response, String message)
-    {
-	    ResponseJSON error = new ResponseJSON();
-	    error.addError("ERROR: " + message);
-	    this.write(response, error);
-	}
-    
+    public void sendError(HttpServletResponse response, String message) {
+        ResponseJSON error = new ResponseJSON();
+        error.addError("ERROR: " + message);
+        this.write(response, error);
+    }
+
     private File getZipFile(HttpServletRequest request) throws Exception {
         String lsid = request.getParameter("lsid");
         TaskInfo taskInfo = getTaskInfo(lsid);
@@ -166,53 +148,50 @@ public class ModuleQueryServlet extends HttpServlet {
         ZipTask zipTask = new ZipTask();
         return zipTask.packageTask(taskInfo, username);
     }
-    
+
     @SuppressWarnings("deprecation")
     public void gparcSubmit(HttpServletRequest request, HttpServletResponse response) {
         try {
             // Set up the client
             HttpClient client = new HttpClient();
             client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-            
+
             // Set up the file post
             File zipfile = getZipFile(request);
-            
+
             // Get the URL to post to
             GpContext context = GpContext.getContextForUser((String) request.getSession().getAttribute("userid"));
             String gparcUploadURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcUploadURL", "http://www.gparc.org/server_upload.php");
-            
+
             // Set up the post method
             MultipartPostMethod post = new MultipartPostMethod(gparcUploadURL);
             post.addRequestHeader("Content-type", "multipart/form-data");
-            post.addParameter("zipfilename", zipfile.getName(), zipfile); 
-            
+            post.addParameter("zipfilename", zipfile.getName(), zipfile);
+
             // Execute
             int status = client.executeMethod(post);
-            
+
             // Get the token from the response
             if (status == 200) {
                 String tokenJSON = post.getResponseBodyAsString();
                 JSONObject tokenObject = new JSONObject(tokenJSON);
                 String token = tokenObject.getString("token");
-                
+
                 String tokenURL = null;
                 if (token != null) {
                     String gparcSubmitURL = ServerConfigurationFactory.instance().getGPProperty(context, "gparcSubmitURL", "http://www.gparc.org/uniqid");
                     tokenURL = gparcSubmitURL + "?uniqid=" + token;
                     tokenObject.put("token", tokenURL);
-                }
-                else {
+                } else {
                     tokenURL = "{'error': 'ERROR: No token sent, " + tokenObject.getString("error") + "'}";
                 }
-                
+
                 // Write the token back to the UI
-                this.write(response, tokenObject);   
-            }
-            else {
+                this.write(response, tokenObject);
+            } else {
                 this.write(response, "{'error': 'ERROR: Unknown response code " + status + "'}");
-            }         
-        }
-        catch (Exception e) {
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             log.error("Error preparing submit to GParc: " + e.getMessage());
             this.write(response, "ERROR: " + e.getMessage());
@@ -235,15 +214,14 @@ public class ModuleQueryServlet extends HttpServlet {
 
         for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
 
-            final CategoryUtil cu=new CategoryUtil();
-            final List<String> taskTypes=cu.getCategoriesForTask(userContext, ti);
+            final CategoryUtil cu = new CategoryUtil();
+            final List<String> taskTypes = cu.getCategoriesForTask(userContext, ti);
             categories.addAll(taskTypes);
         }
         return Collections.unmodifiableSortedSet(categories);
     }
 
-    public void getModuleCategories(HttpServletRequest request, HttpServletResponse response)
-    {
+    public void getModuleCategories(HttpServletRequest request, HttpServletResponse response) {
         String username = (String) request.getSession().getAttribute("userid");
         if (username == null) {
             sendError(response, "No GenePattern session found.  Please log in.");
@@ -252,30 +230,23 @@ public class ModuleQueryServlet extends HttpServlet {
         GpContext userContext = GpContext.getContextForUser(username);
 
         SortedSet<String> categories = null;
-        try
-        {
+        try {
             categories = getAllCategories(userContext);
-        }
-        catch (Throwable t)
-        {
+        } catch (Throwable t) {
             t.printStackTrace();
-            log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
+            log.error("Error listing categories from TaskInfoCache: " + t.getLocalizedMessage());
         }
 
         ResponseJSON message = new ResponseJSON();
-        if(categories != null)
-        {
+        if (categories != null) {
             message.addChild("categories", categories.toString());
-        }
-        else
-        {
+        } else {
             message.addChild("categories", "");
         }
         this.write(response, message);
     }
 
-    public SortedSet<String> getFileFormats()
-    {
+    public SortedSet<String> getFileFormats() {
         SortedSet<String> fileFormats = new TreeSet<String>(new Comparator<String>() {
             // sort categories alphabetically, ignoring case
             public int compare(String arg0, String arg1) {
@@ -293,26 +264,18 @@ public class ModuleQueryServlet extends HttpServlet {
             String fileFormat = ti.getTaskInfoAttributes().get(GPConstants.FILE_FORMAT);
             if (fileFormat == null || fileFormat.trim().length() == 0) {
                 //ignore null and blank
-            }
-            else
-            {
-                if(fileFormat.indexOf(";") != -1)
-                {
+            } else {
+                if (fileFormat.indexOf(";") != -1) {
                     String[] result = fileFormat.split(";");
-                    for(String f : result)
-                    {
+                    for (String f : result) {
                         f = f.trim();
-                        if(!f.equals("") && !f.equals(" ") && !fileFormats.contains(f))
-                        {
+                        if (!f.equals("") && !f.equals(" ") && !fileFormats.contains(f)) {
                             fileFormats.add(f);
                         }
                     }
-                }
-                else
-                {
+                } else {
                     fileFormat = fileFormat.trim();
-                    if(!fileFormat.equals("") && !fileFormat.equals(" ") && !fileFormats.contains(fileFormat))
-                    {
+                    if (!fileFormat.equals("") && !fileFormat.equals(" ") && !fileFormats.contains(fileFormat)) {
                         fileFormats.add(fileFormat);
                     }
                 }
@@ -320,33 +283,24 @@ public class ModuleQueryServlet extends HttpServlet {
             }
 
             ParameterInfo[] pInfoArray = ti.getParameterInfoArray();
-            if(pInfoArray == null)
-            {
+            if (pInfoArray == null) {
                 continue;
             }
-            for(ParameterInfo pi : pInfoArray)
-            {
-                String pFileFormat = (String)pi.getAttributes().get(GPConstants.FILE_FORMAT);
+            for (ParameterInfo pi : pInfoArray) {
+                String pFileFormat = (String) pi.getAttributes().get(GPConstants.FILE_FORMAT);
 
-                if (!(pFileFormat == null || pFileFormat.trim().length() == 0))
-                {
-                    if(pFileFormat.indexOf(";") != -1)
-                    {
+                if (!(pFileFormat == null || pFileFormat.trim().length() == 0)) {
+                    if (pFileFormat.indexOf(";") != -1) {
                         String[] result = pFileFormat.split(";");
-                        for(String f : result)
-                        {
+                        for (String f : result) {
                             f = f.trim();
-                            if(!f.equals("") && !f.equals(" ") && !fileFormats.contains(f))
-                            {
+                            if (!f.equals("") && !f.equals(" ") && !fileFormats.contains(f)) {
                                 fileFormats.add(f);
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         pFileFormat = pFileFormat.trim();
-                        if(!pFileFormat.equals("") && !pFileFormat.equals(" ") && !fileFormats.contains(pFileFormat))
-                        {
+                        if (!pFileFormat.equals("") && !pFileFormat.equals(" ") && !fileFormats.contains(pFileFormat)) {
                             fileFormats.add(pFileFormat);
                         }
                     }
@@ -356,42 +310,34 @@ public class ModuleQueryServlet extends HttpServlet {
         return Collections.unmodifiableSortedSet(fileFormats);
     }
 
-    public void getOutputFileFormats(HttpServletResponse response)
-    {
+    public void getOutputFileFormats(HttpServletResponse response) {
         SortedSet<String> fileFormats = null;
-        try
-        {
+        try {
             fileFormats = getFileFormats();
-        }
-        catch (Throwable t)
-        {
+        } catch (Throwable t) {
             t.printStackTrace();
-            log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
+            log.error("Error listing categories from TaskInfoCache: " + t.getLocalizedMessage());
         }
 
         ResponseJSON message = new ResponseJSON();
 
-        if(fileFormats != null)
-        {
+        if (fileFormats != null) {
             message.addChild("fileformats", new JSONArray(fileFormats));
-        }
-        else
-        {
+        } else {
             message.addChild("fileformats", "");
         }
         this.write(response, message);
     }
 
-    public void uploadFile(HttpServletRequest request, HttpServletResponse response)
-    {
+    public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
         String username = (String) request.getSession().getAttribute("userid");
         if (username == null) {
-           sendError(response, "No GenePattern session found.  Please log in.");
-           return;
+            sendError(response, "No GenePattern session found.  Please log in.");
+            return;
         }
         GpContext userContext = GpContext.getContextForUser(username);
 
-	    RequestContext reqContext = new ServletRequestContext(request);
+        RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
             FileItemFactory factory = new DiskFileItemFactory();
             ServletFileUpload upload = new ServletFileUpload(factory);
@@ -412,81 +358,66 @@ public class ModuleQueryServlet extends HttpServlet {
                         ResponseJSON message = new ResponseJSON();
                         message.addChild("location", uploadedFile.getCanonicalPath());
                         this.write(response, message);
-                    }
-                    else
-                    {
+                    } else {
                         ResponseJSON message = new ResponseJSON();
                         message.addChild("formfield", "false");
                         this.write(response, message);
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("error", e);
                 String message = "";
-                if(e.getMessage() != null)
-                {
+                if (e.getMessage() != null) {
                     message = e.getMessage();
                 }
                 sendError(response, "Exception retrieving the uploaded file: " + message);
             }
-        }
-        else {
+        } else {
             sendError(response, "Unable to find uploaded file");
         }
-	}
+    }
 
-    private void addLicensePlugin(TaskInfoAttributes tia)
-    {
+    private void addLicensePlugin(TaskInfoAttributes tia) {
         String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
         String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
         //add plugin to check the GP version is >= 3.4.2
 
         //check if there are other plugins defined
-        if(tia.get("requiredPatchLSIDs") != null
+        if (tia.get("requiredPatchLSIDs") != null
                 && !tia.get("requiredPatchLSIDs").equals("")
-           && tia.get("requiredPatchURLs") != null
-                && !tia.get("requiredPatchURLs").equals(""))
-        {
-            if(!tia.get("requiredPatchLSIDs").contains(patchLSID))
-            {
+                && tia.get("requiredPatchURLs") != null
+                && !tia.get("requiredPatchURLs").equals("")) {
+            if (!tia.get("requiredPatchLSIDs").contains(patchLSID)) {
                 tia.put("requiredPatchLSIDs", patchLSID + "," + tia.get("requiredPatchLSIDs"));
             }
-            if(!tia.get("requiredPatchURLs").contains(patchURL))
-            {
+            if (!tia.get("requiredPatchURLs").contains(patchURL)) {
                 tia.put("requiredPatchURLs", patchURL + "," + tia.get("requiredPatchURLs"));
             }
-        }
-        else
-        {
+        } else {
             tia.put("requiredPatchLSIDs", patchLSID);
             tia.put("requiredPatchURLs", patchURL);
         }
     }
 
-    private void removeLicensePlugin(TaskInfoAttributes tia)
-    {
+    private void removeLicensePlugin(TaskInfoAttributes tia) {
         String patchLSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2";
         String patchURL = "http://www.broad.mit.edu/webservices/gpModuleRepository/download/prod/patch/?file=/GenePattern_3_4_2/broad.mit.edu:cancer.software.genepattern.server.patch/GenePattern_3_4_2/2/GenePattern_3_4_2.zip";
 
         //remove plugin to check the GP version is >= 3.4.2
 
-        if(tia.get("requiredPatchLSIDs") != null
+        if (tia.get("requiredPatchLSIDs") != null
                 && !tia.get("requiredPatchLSIDs").equals("")
-           && tia.get("requiredPatchURLs") != null
-                && !tia.get("requiredPatchURLs").equals(""))
-        {
-            if(tia.get("requiredPatchLSIDs").contains(patchLSID))
-            {
+                && tia.get("requiredPatchURLs") != null
+                && !tia.get("requiredPatchURLs").equals("")) {
+            if (tia.get("requiredPatchLSIDs").contains(patchLSID)) {
                 //handle cases where there is one plugin or multiple plugins
                 tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace(patchLSID + ",", ""));
                 tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace("," + patchLSID, ""));
                 tia.put("requiredPatchLSIDs", tia.get("requiredPatchLSIDs").replace(patchLSID, ""));
             }
 
-            if(tia.get("requiredPatchURLs").contains(patchURL))
-            {                
+            if (tia.get("requiredPatchURLs").contains(patchURL)) {
                 //handle cases where there is one plugin or multiple plugins
                 tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace(patchURL + ",", ""));
                 tia.put("requiredPatchURLs", tia.get("requiredPatchURLs").replace("," + patchURL, ""));
@@ -495,25 +426,25 @@ public class ModuleQueryServlet extends HttpServlet {
         }
     }
 
-    public void saveModule(HttpServletRequest request, HttpServletResponse response)
-    {
-	    String username = (String) request.getSession().getAttribute("userid");
-	    if (username == null) {
-	        sendError(response, "No GenePattern session found.  Please log in.");
-	        return;
-	    }
+    public void saveModule(HttpServletRequest request, HttpServletResponse response) {
+        String username = (String) request.getSession().getAttribute("userid");
+        GpContext userContext = GpContext.getContextForUser(username);
+
+        if (username == null) {
+            sendError(response, "No GenePattern session found.  Please log in.");
+            return;
+        }
 
         String bundle = request.getParameter("bundle");
-	    if (bundle == null) {
-	        log.error("Unable to retrieve the saved module");
-	        sendError(response, "Unable to save the module");
-	        return;
-	    }
+        if (bundle == null) {
+            log.error("Unable to retrieve the saved module");
+            sendError(response, "Unable to save the module");
+            return;
+        }
 
-        try
-        {
+        try {
             JSONObject moduleJSON = ModuleJSON.parseBundle(bundle);
-	        ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
+            ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
 
             String name = moduleObject.getName();
             String description = moduleObject.getDescription();
@@ -522,31 +453,27 @@ public class ModuleQueryServlet extends HttpServlet {
             tia.put(GPConstants.USERID, username);
 
             Iterator<String> infoKeys = moduleObject.keys();
-            while(infoKeys.hasNext())
-            {
+            while (infoKeys.hasNext()) {
                 String key = infoKeys.next();
 
                 //omit module name, description, license, and support files from taskinfoattributes
-                if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
+                if (!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
                         && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE)
-                        && !key.equals(ModuleJSON.FILEFORMAT) && !key.equals(ModuleJSON.CATEGORIES))
-                {
+                        && !key.equals(ModuleJSON.FILEFORMAT) && !key.equals(ModuleJSON.CATEGORIES)) {
                     tia.put(key, moduleObject.get(key));
                 }
             }
 
             tia.put(GPConstants.FILE_FORMAT, moduleObject.getFileFormats());
 
-            if(moduleObject.has(GPConstants.CATEGORIES))
-            {
+            if (moduleObject.has(GPConstants.CATEGORIES)) {
                 tia.put(GPConstants.CATEGORIES, moduleObject.getCategories());
             }
 
             //parse out privacy info
             int privacy = GPConstants.ACCESS_PRIVATE;
-            if(moduleObject.get(ModuleJSON.PRIVACY) != null
-                    && !((String)moduleObject.get(ModuleJSON.PRIVACY)).equalsIgnoreCase("private"))
-            {
+            if (moduleObject.get(ModuleJSON.PRIVACY) != null
+                    && !((String) moduleObject.get(ModuleJSON.PRIVACY)).equalsIgnoreCase("private")) {
                 privacy = GPConstants.ACCESS_PUBLIC;
             }
 
@@ -556,8 +483,7 @@ public class ModuleQueryServlet extends HttpServlet {
                     || moduleObject.get(ModuleJSON.LICENSE).equals("")) {
                 tia.remove(GetEulaAsManifestProperty.LICENSE);
                 removeLicensePlugin(tia);
-            }
-            else {
+            } else {
                 tia.put(GetEulaAsManifestProperty.LICENSE, moduleObject.get(ModuleJSON.LICENSE));
                 addLicensePlugin(tia);
             }
@@ -566,7 +492,7 @@ public class ModuleQueryServlet extends HttpServlet {
             ParametersJSON[] parameters = ParametersJSON.extract(moduleJSON);
             ParameterInfo[] pInfo = new ParameterInfo[parameters.length];
 
-            for(int i =0; i< parameters.length;i++) {
+            for (int i = 0; i < parameters.length; i++) {
                 ParametersJSON parameterJSON = parameters[i];
                 ParameterInfo parameter = new ParameterInfo();
                 String pName = parameterJSON.getName();
@@ -631,32 +557,24 @@ public class ModuleQueryServlet extends HttpServlet {
                 }
 
                 //add the number of files
-                if (parameterJSON.getMinNumValue() != -1)
-                {
+                if (parameterJSON.getMinNumValue() != -1) {
                     String numValuesString = String.valueOf(parameterJSON.getMinNumValue());
 
-                    if (parameterJSON.getMaxNumValue() != -1)
-                    {
+                    if (parameterJSON.getMaxNumValue() != -1) {
                         numValuesString += ".." + String.valueOf(parameterJSON.getMaxNumValue());
-                    }
-                    else
-                    {
+                    } else {
                         numValuesString += "+";
                     }
                     attributes.put(NumValues.PROP_NUM_VALUES, numValuesString);
                 }
 
                 //add the number of groups
-                if (parameterJSON.getMinGroups() != 0)
-                {
+                if (parameterJSON.getMinGroups() != 0) {
                     String numGroupsString = String.valueOf(parameterJSON.getMinGroups());
 
-                    if (parameterJSON.getMaxGroups() > parameterJSON.getMinGroups() && parameterJSON.getMaxGroups() != -1)
-                    {
+                    if (parameterJSON.getMaxGroups() > parameterJSON.getMinGroups() && parameterJSON.getMaxGroups() != -1) {
                         numGroupsString += ".." + String.valueOf(parameterJSON.getMaxGroups());
-                    }
-                    else
-                    {
+                    } else {
                         numGroupsString += "+";
                     }
                     attributes.put(GroupInfo.PROP_NUM_GROUPS, numGroupsString);
@@ -666,41 +584,60 @@ public class ModuleQueryServlet extends HttpServlet {
                 pInfo[i] = parameter;
             }
 
-            String newLsid = null;
-            if(moduleObject.getLsid() == null || moduleObject.getLsid().equals(""))
-            {
-                newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
-                    new Status() {
-                        public void beginProgress(String string) {
-                        }
-                        public void continueProgress(int percent) {
-                        }
-                        public void endProgress() {
-                        }
-                        public void statusMessage(String message) {
-                        }
-                },
-                new InstallInfo(InstallInfo.Type.CREATE));
+            //check that the paramgroups.json file, which defines advanced parameters,
+            //if provided is valid
+            String[] moduleSupportFiles = moduleObject.getSupportFiles();
+            for (String filePath : moduleSupportFiles) {
+                File file = new File(filePath);
+
+                final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+
+                try
+                {
+                    JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(pInfo, file);
+                }
+                catch(Exception e)
+                {
+                    log.error("Error while validating " + file.getName() + " file . " + e.getMessage());
+                    throw new Exception("Error while validating " + file.getName() + " file. " + e.getMessage());
+                }
             }
-            else
-            {
+
+            String newLsid = null;
+            if (moduleObject.getLsid() == null || moduleObject.getLsid().equals("")) {
+                newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
+                        new Status() {
+                            public void beginProgress(String string) {
+                            }
+
+                            public void continueProgress(int percent) {
+                            }
+
+                            public void endProgress() {
+                            }
+
+                            public void statusMessage(String message) {
+                            }
+                        },
+                        new InstallInfo(InstallInfo.Type.CREATE));
+            } else {
                 //we are modifying a task
                 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
                 javax.activation.DataHandler[] supportFiles = null;
                 String[] supportFileNames = null;
                 try {
-                      supportFiles = taskIntegratorClient.getSupportFiles(moduleObject.getLsid());
-                      supportFileNames = taskIntegratorClient.getSupportFileNames(moduleObject.getLsid());
-                } catch(WebServiceException wse) {
+                    supportFiles = taskIntegratorClient.getSupportFiles(moduleObject.getLsid());
+                    supportFileNames = taskIntegratorClient.getSupportFileNames(moduleObject.getLsid());
+                } catch (WebServiceException wse) {
                 }
 
                 newLsid = taskIntegratorClient.modifyTask(privacy,
-                    moduleObject.getName(),
-                    moduleObject.getDescription(),
-                    pInfo,
-                    tia,
-                    supportFiles,
-                    supportFileNames);
+                        moduleObject.getName(),
+                        moduleObject.getDescription(),
+                        pInfo,
+                        tia,
+                        supportFiles,
+                        supportFileNames);
             }
             //copy support files from temp to the module taskLib
             String[] filesToDelete = moduleObject.getRemovedFiles();
@@ -710,13 +647,10 @@ public class ModuleQueryServlet extends HttpServlet {
 
             String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo.getName(), newLsid, username);
 
-            if(taskLibDir != null)
-            {
+            if (taskLibDir != null) {
                 deleteRemovedFiles(filesToDelete, new File(taskLibDir));
                 moveSupportFiles(supportFiles, new File(taskLibDir));
-            }
-            else
-            {
+            } else {
                 sendError(response, "Unable to copy support files");
                 return;
             }
@@ -726,19 +660,43 @@ public class ModuleQueryServlet extends HttpServlet {
             message.addChild("lsid", newLsid);
             message.addChild("lsidVersions", new JSONArray(getModuleVersions(newLsid)));
             this.write(response, message);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             log.error(e);
 
             String message = "";
-            if(e.getMessage() != null)
-            {
+            if (e.getMessage() != null) {
                 message = e.getMessage();
             }
             sendError(response, "An error occurred while saving the module. " + message);
         }
+    }
+
+    private boolean validateAdvancedParametersFile(File file) {
+        boolean result = false;
+
+        try
+        {
+            String advancedParametersStr = FileUtils.readFileToString(file);
+            JSONTokener tokener = new JSONTokener( advancedParametersStr);
+            while(tokener.more())
+            {
+                Object value = tokener.nextValue();
+            }
+
+            //if you get here then the file was parsed successfully
+            result = true;
+        }
+        catch(IOException e)
+        {
+            log.error("Could not find file: " + file.getAbsolutePath());
+        }
+        catch(JSONException je)
+        {
+            log.error(je);
+        }
+
+        return result;
     }
 
     private void deleteRemovedFiles(String[] files, File copyTo) throws Exception

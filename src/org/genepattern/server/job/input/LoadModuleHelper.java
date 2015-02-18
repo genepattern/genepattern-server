@@ -500,8 +500,13 @@ public class LoadModuleHelper {
             throw new IllegalArgumentException("paramGroupJsonFile==null");
         }
 
-        JSONArray paramGroupsJson = new JSONArray();
+        return getParameterGroupsJson(taskInfo.getParameterInfoArray(), paramGroupJsonFile);
+    }
 
+    public JSONArray getParameterGroupsJson(ParameterInfo[] pArray, File paramGroupJsonFile) throws Exception
+    {
+
+        JSONArray paramGroupsJson = new JSONArray();
 
         //keep track of parameters without a group
         ArrayList allParameters = new ArrayList();
@@ -541,7 +546,7 @@ public class LoadModuleHelper {
                         }
                     }
 
-                    validateParamGroupsJson(paramGroupsJson, taskInfo.getParameterInfoArray());
+                    validateParamGroupsJson(paramGroupsJson, pArray);
                 }
             }
         }
@@ -552,7 +557,6 @@ public class LoadModuleHelper {
             //create a default parameter group which contains all of the parameters
             JSONObject defaultParamJsonGroup = new JSONObject();
 
-            final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
             JSONArray parameterNameList = new JSONArray();
 
             for(int i =0;i < pArray.length;i++)
@@ -566,7 +570,6 @@ public class LoadModuleHelper {
         else
         {
             //check if any parameters were not grouped
-            final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
             for(int p=0;p<pArray.length;p++)
             {
                 String paramName = pArray[p].getName();
