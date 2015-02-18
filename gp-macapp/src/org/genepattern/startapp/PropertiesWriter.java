@@ -3,6 +3,7 @@ package org.genepattern.startapp;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Write the necessary config to the correct files
@@ -39,16 +40,27 @@ public class PropertiesWriter {
     public static void main(String[] args) {
         PropertiesWriter pw = new PropertiesWriter();
 
-        // Get the version and build from args
-        if (args.length >= 2) {
-            pw.setGpVersion(args[0]);
-            pw.setBuildTag(args[1]);
-        }
-
         // Get the working directory hack
         File fakeDir = new File("Bootstrap");
         File fakeDirAbsolute = new File(fakeDir.getAbsolutePath());
         File workingDir = fakeDirAbsolute.getParentFile();
+
+        // Get the version and build from args
+        if (args.length >= 1) {
+            String version = null;
+            try {
+                version = pw.readGpVersion(workingDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+            pw.setGpVersion(version);
+            pw.setBuildTag(args[0]);
+        }
+        else {
+            // There is an error, return
+            return;
+        }
 
         // Get the genepattern.properties file
         File resourcesDir = new File(workingDir, "dist/GenePattern.app/Contents/Resources/GenePatternServer/resources");
@@ -64,6 +76,24 @@ public class PropertiesWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Reads build.versionNumbers to get the version number
+     *
+     * @return - the version number
+     */
+    public String readGpVersion(File workingDir) throws IOException {
+        File prop = new File(workingDir.getParent(), "build.versionNumbers");
+        if (!prop.exists()) {
+            throw new IOException("build.versionNumbers does not exist");
+        }
+        Properties versionProps = new Properties();
+        FileInputStream in = new FileInputStream(prop);
+        versionProps.load(in);
+        in.close();
+
+        return versionProps.getProperty("genepattern.version");
     }
 
     /**

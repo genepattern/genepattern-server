@@ -44,9 +44,9 @@
 
     <target name="clean-all" depends="clean">
         <description>
-            Deletes everything, including the extracted client library and the downloaded client library zip file.
+            Deletes everything.
         </description>
-        <delete file="gp-slurm.zip"/>
+        <delete file="dist/gp-macapp.zip"/>
     </target>
 
     <!-- RESOURCE COPY TARGETS -->
@@ -114,7 +114,6 @@
 
     <target name="update-properties" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, compile">
         <java classname="org.genepattern.startapp.PropertiesWriter">
-            <arg value="${version}"/>
             <arg value="${build}"/>
             <arg value="-h"/>
             <classpath refid="compile.classpath" />
@@ -124,8 +123,7 @@
     <!-- DISTRIBUTION TARGETS -->
 
     <target name="echo-args">
-        <!-- Must call: ant echo-args -Dversion=XXX -Dbuild=YYY -->
-        <echo message="${version}" />
+        <!-- Must call: ant echo-args -Dbuild=YYY -->
         <echo message="${build}" />
     </target>
 
@@ -140,7 +138,10 @@
     </target>
 
     <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, update-properties, jar, make-executable">
-        <!-- Should call: ant dist -Dversion=XXX -Dbuild=YYY -->
+        <!-- Should call: ant dist -Dbuild=YYY -->
+        <zip basedir="dist" destfile="dist/gp-macapp.zip">
+            <zipfileset filemode="755" dir="dist" includes="GenePattern.app/**/*" />
+        </zip>
     </target>
 
 </project>
