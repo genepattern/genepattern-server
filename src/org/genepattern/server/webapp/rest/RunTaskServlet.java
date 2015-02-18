@@ -28,6 +28,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
+import org.genepattern.server.domain.*;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.JobInfoLoaderDefault;
@@ -59,6 +60,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.*;
+import org.genepattern.webservice.AnalysisJob;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -564,7 +566,11 @@ public class RunTaskServlet extends HttpServlet
                 JobComment jobComment = new JobComment();
                 jobComment.setUserId(userContext.getUserId());
                 jobComment.setComment(jobSubmitInfo.getComment());
-                jobComment.setGpJobNo(gpJobNo);
+
+                org.genepattern.server.domain.AnalysisJob analysisJob = new org.genepattern.server.domain.AnalysisJob();
+                analysisJob.setJobNo(gpJobNo);
+                jobComment.setAnalysisJob(analysisJob);
+
                 jobComment.setPostedDate(new Date());
                 JobCommentManager.addJobComment(jobComment);
             }
@@ -699,7 +705,11 @@ public class RunTaskServlet extends HttpServlet
                     JobComment jobComment = new JobComment();
                     jobComment.setUserId(userContext.getUserId());
                     jobComment.setComment(jobSubmitInfo.getComment());
-                    jobComment.setGpJobNo(gpJobNo);
+
+                    org.genepattern.server.domain.AnalysisJob analysisJob = new org.genepattern.server.domain.AnalysisJob();
+                    analysisJob.setJobNo(gpJobNo);
+                    jobComment.setAnalysisJob(analysisJob);
+
                     jobComment.setPostedDate(new Date());
                     JobCommentManager.addJobComment(jobComment);
                 }

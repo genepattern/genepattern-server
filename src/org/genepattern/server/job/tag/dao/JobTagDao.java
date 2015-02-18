@@ -48,7 +48,7 @@ public class JobTagDao
         }
         catch (Throwable t) {
 
-            log.error("Error adding tag for gpJobNo=" + jobTag.getGpJobNo(), t);
+            log.error("Error adding tag for gpJobNo=" + jobTag.getAnalysisJob().getJobNo(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -66,8 +66,9 @@ public class JobTagDao
         try {
             HibernateUtil.beginTransaction();
 
-            jobTagList = HibernateUtil.getSession().createCriteria(JobTag.class)
-                    .add(Restrictions.eq("gpJobNo", gpJobNo)).list();
+            jobTagList = HibernateUtil.getSession().createCriteria(JobTag.class, "jobTag")
+                    .createAlias("jobTag.analysisJob", "analysisJob")
+                    .add(Restrictions.eq("analysisJob.jobNo", gpJobNo)).list();
         }
         catch (Throwable t) {
             log.error("Error getting tags for gpJobNo="+gpJobNo,t);

@@ -4,7 +4,10 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.job.tag.JobTag;
 import org.hibernate.Query;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ public class JobCommentDao
             }
         }
         catch (Throwable t) {
-            log.error("Error adding comment for gpJobNo="+jobComment.getGpJobNo(), t);
+            log.error("Error adding comment for gpJobNo="+jobComment.getAnalysisJob().getJobNo(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -71,11 +74,9 @@ public class JobCommentDao
         try {
             HibernateUtil.beginTransaction();
 
-            String hql = "from "+JobComment.class.getName()+" jc where jc.gpJobNo = :gpJobNo order by jc.postedDate desc";
-
-            Query query = HibernateUtil.getSession().createQuery( hql );
-            query.setInteger("gpJobNo", gpJobNo);
-            jobCommentList = query.list();
+            jobCommentList = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+                    .createAlias("jobComment.analysisJob", "analysisJob")
+                    .add(Restrictions.eq("analysisJob.jobNo", gpJobNo)).addOrder(Order.desc("postedDate")).list();
         }
         catch (Throwable t) {
             log.error("Error getting comments for gpJobNo="+gpJobNo,t);

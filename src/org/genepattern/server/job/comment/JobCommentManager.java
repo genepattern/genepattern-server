@@ -27,8 +27,8 @@ public class JobCommentManager
 
     static public JobComment addJobComment(JobComment jobComment) throws JSONException
     {
-
-        if(jobComment != null && jobComment.getGpJobNo() >= 0 && jobComment.getComment() != null)
+        if(jobComment != null && jobComment.getAnalysisJob() != null
+                && jobComment.getAnalysisJob().getJobNo() >= 0 && jobComment.getComment() != null)
         {
             JobCommentDao jobCommentDao  = new JobCommentDao();
 
