@@ -2749,13 +2749,31 @@ jQuery(document).ready(function() {
             "OK": function() {
                 var category = $("#newcategoryname").val();
                 var newcategory = $("<option>" +category + "</option>");
-                $("select[name='category']").append(newcategory);
-                var categories = $("select[name='category']").val();
-                categories.push(category);
-                $("select[name='category']").val(categories);
-                $("select[name='category']").multiselect("refresh");
-                $("#newcategoryname").val("");
-                $( this ).dialog( "close" );
+
+                var duplicate = false;
+                $("select[name='category']").children("option").each(function(event)
+                {
+                    if(category == $(this).val())
+                    {
+                        duplicate = true;
+                    }
+
+                });
+
+                if(!duplicate)
+                {
+                    $("select[name='category']").append(newcategory);
+                    var categories = $("select[name='category']").val();
+                    categories.push(category);
+                    $("select[name='category']").val(categories);
+                    $("select[name='category']").multiselect("refresh");
+                    $("#newcategoryname").val("");
+                    $(this).dialog("close");
+                }
+                else
+                {
+                    createErrorMsg("Duplicate Category Error", "The category \"" + category + "\" already exists.");
+                }
             },
             "Cancel": function() {
                 $( this ).dialog( "close" );
