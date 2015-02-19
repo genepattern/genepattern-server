@@ -589,17 +589,15 @@ public class ModuleQueryServlet extends HttpServlet {
             String[] moduleSupportFiles = moduleObject.getSupportFiles();
             for (String filePath : moduleSupportFiles) {
                 File file = new File(filePath);
+                if(file.getName().equals("paramgroups.json")) {
+                    final LoadModuleHelper loadModuleHelper = new LoadModuleHelper(userContext);
 
-                final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-
-                try
-                {
-                    JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(pInfo, file);
-                }
-                catch(Exception e)
-                {
-                    log.error("Error while validating " + file.getName() + " file . " + e.getMessage());
-                    throw new Exception("Error while validating " + file.getName() + " file. " + e.getMessage());
+                    try {
+                        JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(pInfo, file);
+                    } catch (Exception e) {
+                        log.error("Error while validating " + file.getName() + " file . " + e.getMessage());
+                        throw new Exception("Error while validating " + file.getName() + " file. " + e.getMessage());
+                    }
                 }
             }
 
