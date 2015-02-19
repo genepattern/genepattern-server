@@ -225,6 +225,11 @@ function saveModule()
 
     var categories = $("select[name='category']").val();
 
+    if(categories == null || categories == undefined || categories.length == 0)
+    {
+        saveError("Error: Please specify at least one category for the module.");
+    }
+
     //check if this is a pipeline
     var taskType = "";
 
