@@ -238,7 +238,7 @@ public class ModuleQueryServlet extends HttpServlet {
         }
 
         ResponseJSON message = new ResponseJSON();
-        if (categories != null) {
+        if (categories != null && categories.size() > 0) {
             message.addChild("categories", categories.toString());
         } else {
             message.addChild("categories", "");

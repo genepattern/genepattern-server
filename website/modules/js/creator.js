@@ -1658,8 +1658,10 @@ function updatemodulecategories()
 
                 for(var i=0;i < result.length;i++)
                 {
-                    if(mcat)
-                    mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    if(result[i] != "")
+                    {
+                        mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    }
                 }
                 mcat.multiselect("refresh");
 
@@ -2764,6 +2766,12 @@ jQuery(document).ready(function() {
                 {
                     $("select[name='category']").append(newcategory);
                     var categories = $("select[name='category']").val();
+
+                    if(!categories)
+                    {
+                        categories = [];
+                    }
+
                     categories.push(category);
                     $("select[name='category']").val(categories);
                     $("select[name='category']").multiselect("refresh");
