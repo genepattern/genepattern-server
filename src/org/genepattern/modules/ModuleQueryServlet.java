@@ -557,7 +557,7 @@ public class ModuleQueryServlet extends HttpServlet {
                 }
 
                 //add the number of files
-                if (parameterJSON.getMinNumValue() != -1) {
+                if (parameterJSON.getType().equalsIgnoreCase("file") && parameterJSON.getMinNumValue() != -1) {
                     String numValuesString = String.valueOf(parameterJSON.getMinNumValue());
 
                     if (parameterJSON.getMaxNumValue() != -1) {
