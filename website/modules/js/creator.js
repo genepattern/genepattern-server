@@ -1916,12 +1916,14 @@ function loadModuleInfo(module)
         $('input[name=os]').val(module["os"]);
     }
 
-    if(module["categories"] !== undefined)
+    if(module["categories"] !== undefined && module["categories"].length > 0)
     {
         module_editor.moduleCategories = module["categories"].split(";");
     }
     else if(module["taskType"] !== undefined)
     {
+        module_editor.moduleCategories = module["taskType"];
+
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
     }
