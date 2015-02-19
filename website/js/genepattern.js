@@ -3393,6 +3393,9 @@ function buildJobResultsPage() {
             $("body").css("cursor", "default");
 
             var searchTerm = $("#jobSearchText").val();
+            //remove any existing highlights
+            $(this).removeHighlight();
+
             if(searchTerm !== undefined && searchTerm !== null && searchTerm.length > 0)
             {
                 $(this).find("td").each(function()

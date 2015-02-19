@@ -137,7 +137,7 @@ public abstract class JobSearch {
             if (q.isTagFilter())
             {
                 jobCount = new AnalysisDAO().getJobsWithTagCount(
-                        q.getTag(),
+                        q.getTag().toLowerCase(),
                         userId,
                         q.getBatchId(),
                         groupIds);
@@ -146,7 +146,7 @@ public abstract class JobSearch {
             if (q.isCommentFilter())
             {
                 jobCount = new AnalysisDAO().getJobsWithCommentCount(
-                        q.getComment(),
+                        q.getComment().toLowerCase(),
                         userId,
                         q.getBatchId(),
                         groupIds);
@@ -331,7 +331,7 @@ public abstract class JobSearch {
             }
         }
 
-        jobInfos = ds.getPagedJobsWithTag(q.getTag(),
+        jobInfos = ds.getPagedJobsWithTag(q.getTag().toLowerCase(),
                 userId,
                 q.getBatchId(),
                 groupIds,
@@ -367,7 +367,7 @@ public abstract class JobSearch {
         }
 
         jobInfos = ds.getPagedJobsWithComment(
-                q.getComment(),
+                q.getComment().toLowerCase(),
                 userId,
                 q.getBatchId(),
                 groupIds,
