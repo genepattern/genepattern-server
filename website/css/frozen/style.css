@@ -1102,7 +1102,9 @@ strong.filtered-number
 #jobTableSearch
 {
     border: 1px solid #d3d3d3;
-    padding: 20px;
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 #jobTableSearch span
@@ -1110,9 +1112,9 @@ strong.filtered-number
     margin-left: 70px;
 }
 
-.float-right
+.float-left
 {
-    float: right;
+    float: left;
 }
 
 #jobSearchOwner, #jobSearchComment, #jobSearchTag
@@ -1128,4 +1130,20 @@ strong.filtered-number
 #statusJobTags_tag
 {
     min-width: 150px;
+}
+
+#jobTable_length
+{
+    margin-top: 5px;
+    margin-right: 130px;
+}
+
+.inline
+{
+    display:inline-block;
+}
+
+#jobTable_paginate input[type=text]
+{
+    min-width: 45px;
 }
