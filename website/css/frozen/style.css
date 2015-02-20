@@ -1124,3 +1124,8 @@ strong.filtered-number
 {
     padding: 1px;
 }
+
+#statusJobTags_tag
+{
+    min-width: 150px;
+}
