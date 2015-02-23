@@ -152,6 +152,10 @@ public class CommandLineParserTest extends TestCase {
             .build();
             
             GpContext gpContext=GpContext.getServerContext();
+            if (props.containsKey("libdir")) {
+                gpContext.setTaskLibDir(new File(props.getProperty("libdir")));
+            }
+
             List<String> cmdLineArgs = CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
             assertNotNull(name+": cmdLineArgs", cmdLineArgs);
             assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
