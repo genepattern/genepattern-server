@@ -61,6 +61,11 @@ default.properties:
     
     #set the disk quota
     #quota: 20 GB
+    
+    # Set custom location for installed modules and patches.
+    # The default location is $GENEPATTERN_HOME/taskLib
+    # This is a global setting, the taslib must be the same for all users. 
+    tasklib: /Users/GenePattern/taskLib
 
     # PipelineDependencyCache, hidden features in the 3.6.0 release.
     # Set this to true to enable.
