@@ -361,8 +361,15 @@ public class CommandLineParser {
             //special-case for <libdir>
             else if ("libdir".equals(paramName)) {
                 File libdir=gpContext.getTaskLibDir();
+                if (libdir==null) {
+                    log.error("Unexpected null value for gpContext.getTaskLibDir, calling gpConfig.getGPFileProperty instead");
+                    libdir=gpConfig.getGPFileProperty(gpContext, paramName);
+                }
                 if (libdir != null) {
                     value=""+libdir;
+                    if (!value.endsWith(File.separator)) {
+                        value+=File.separator;
+                    }
                 }
             }
             //special-case for <patches>

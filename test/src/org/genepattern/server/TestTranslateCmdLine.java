@@ -1,8 +1,7 @@
 package org.genepattern.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -19,7 +18,9 @@ import org.genepattern.webservice.TaskInfo;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * junit tests for the CommandLineParser#translateCmdLine class.
@@ -32,7 +33,11 @@ public class TestTranslateCmdLine {
     private JobInfo jobInfo;
     private TaskInfo taskInfo;
     private Map<String,ParameterInfo> parameterInfoMap;
-
+    
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+    private File rootTasklibDir;
+    private File libdir;
     
     @Before
     public void setUp() {
@@ -49,6 +54,13 @@ public class TestTranslateCmdLine {
         taskInfo=mock(TaskInfo.class);
         when(gpContext.getTaskInfo()).thenReturn(taskInfo);
         parameterInfoMap=new HashMap<String,ParameterInfo>();
+        
+        rootTasklibDir=tmp.newFolder("taskLib");
+        libdir=new File(rootTasklibDir, "ConvertLineEndings.1.1");
+        boolean success=libdir.mkdirs();
+        if (!success) {
+            fail("failed to create tmp libdir: "+libdir);
+        }
     }
     
     @Test
@@ -103,7 +115,15 @@ public class TestTranslateCmdLine {
         final File libdir=new File("/Applications/GenePatternServer/taskLib/ConvertLineEndings.1.1/");
         when(gpContext.getTaskLibDir()).thenReturn(libdir);
         assertEquals(
-               Arrays.asList("echo", "libdir="+libdir),
+               Arrays.asList("echo", "libdir="+libdir+File.separator),
+               CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo libdir=<libdir>"));
+    }
+
+    @Test
+    public void substitute_libdir_as_file() {
+        when(gpContext.getTaskLibDir()).thenReturn(libdir);
+        assertEquals(
+               Arrays.asList("echo", "libdir="+libdir+File.separator),
                CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo libdir=<libdir>"));
     }
     
