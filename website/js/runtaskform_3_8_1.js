@@ -1516,7 +1516,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
         throw new Error("Error initializating parameter groups");
     }
 
-    $(".pHeaderTitleDiv").live("click", function () {
+    $("#runTaskSettingsDiv").off("click.headerTitle").on("click.headerTitle", ".pHeaderTitleDiv",  function () {
         $(this).next().toggle();
 
         var toggleImg = $(this).find(".paramSectionToggle");
