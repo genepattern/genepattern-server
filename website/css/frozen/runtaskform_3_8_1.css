@@ -519,7 +519,7 @@ hr
     font-size: 11px;
 }
 
-#viewCodeDiv
+#viewCodeDiv, #viewProperties
 {
     border: 2px solid #80a7d0;
     margin: 14px 0 14px 0;
