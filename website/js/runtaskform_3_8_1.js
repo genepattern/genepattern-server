@@ -669,6 +669,18 @@ function loadModuleInfo(module) {
     $(".properties-versioncomment").text(module["version"]);
     $(".properties-formats").text(module["fileFormat"]);
 
+    if (module["allFiles"]) {
+        for (var i = 0; i < module["allFiles"].length; i++) {
+            var file = module["allFiles"][i];
+            $(".properties-files").append(
+                $("<a></a>")
+                    .attr("href", "/gp/getFile.jsp?task=" + encodeURIComponent(module["LSID"]) + "&file=" + encodeURIComponent(file))
+                    .append(file)
+            )
+            .append(", ")
+        }
+    }
+
     // Display pipeline properties
     if (module["children"]) {
         for (var i = 0; i < module["children"].length; i++) {

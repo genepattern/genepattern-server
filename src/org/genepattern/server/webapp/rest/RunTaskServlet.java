@@ -183,9 +183,11 @@ public class RunTaskServlet extends HttpServlet
             boolean hasDoc = true;
 
             File[] docFiles = null;
+            File[] allFiles = null;
             try {
                 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userId);
                 docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+                allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
                 if(docFiles == null || docFiles.length == 0)
                 {
@@ -196,6 +198,17 @@ public class RunTaskServlet extends HttpServlet
                 log.error("Error getting doc files.", e);
             }
             moduleObject.put("hasDoc", hasDoc);
+
+            // Add list of all files
+            JSONArray fileList = new JSONArray();
+
+            if (allFiles != null) {
+                for (File i : allFiles) {
+                    fileList.put(i.getName());
+                }
+            }
+
+            moduleObject.put("allFiles", fileList);
 
             //if this is a pipeline check if there are any missing dependencies
             final boolean isPipeline=taskInfo.isPipeline();
