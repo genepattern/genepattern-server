@@ -685,7 +685,13 @@ function loadModuleInfo(module) {
                                 .attr("width", 19)
                                 .attr("src", "/gp/images/toggle_expand.png")
                         )
-                        .append((i+1) + ". " + child["name"])
+                        .append((i+1) + ". ")
+                        .append(
+                            $("<a></a>")
+                                .attr("href", "/gp/pages/index.jsf?lsid=" + child["lsid"])
+                                .attr("onclick", "event.stopPropagation();")
+                                .append(child["name"])
+                        )
                         .append(
                         $("<div></div>")
                             .css("float", "right")
