@@ -236,9 +236,11 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 //add the tags
                 $('#jobTags').tagsInput(
                 {
-                    'defaultText':'Add tags...',
+                    'defaultText':'Add tag and press enter...',
                     width: '97%',
                     height: '40px',
+                    interactive: true,
+                    placeholderColor: '#CCC',
                     autocomplete_url: '/gp/rest/v1/tags/',
                     autocomplete:{
                         minLength: 0,
@@ -1514,7 +1516,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
         throw new Error("Error initializating parameter groups");
     }
 
-    $(".pHeaderTitleDiv").live("click", function () {
+    $("#runTaskSettingsDiv").off("click.headerTitle").on("click.headerTitle", ".pHeaderTitleDiv",  function () {
         $(this).next().toggle();
 
         var toggleImg = $(this).find(".paramSectionToggle");

@@ -178,7 +178,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             StringBuffer hql = new StringBuffer();
             hql.append("select a from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
-                    + " jt.tagObj.tag like '" + tag + "%' "
+                    + " jt.tagObj.tag like lower('" + tag + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -203,7 +203,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
                     .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
-                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE))
+                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
 
             Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
@@ -261,7 +261,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
                     .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
-                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE));
+                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase());
 
             if (groupIds != null && groupIds.size() > 0)
             {
@@ -340,7 +340,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             StringBuffer hql = new StringBuffer();
             hql.append("select a from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
-                    + " jc.comment like '" + comment + "%' "
+                    + " jc.comment like lower('" + comment + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -365,7 +365,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
                     .createAlias("jobComment.analysisJob", "analysisJob")
-                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE))
+                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
 
             Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
@@ -410,7 +410,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             StringBuffer hql = new StringBuffer();
             hql.append("select count(a) from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
-                    + " jc.comment like '" + comment + "%' "
+                    + " jc.comment like lower('" + comment + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -420,7 +420,7 @@ public class AnalysisDAO extends BaseDAO {
         {
             Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
                     .createAlias("jobComment.analysisJob", "analysisJob")
-                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE));
+                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase());
 
             if (groupIds != null && groupIds.size() > 0)
             {

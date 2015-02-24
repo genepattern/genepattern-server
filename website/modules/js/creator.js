@@ -225,6 +225,11 @@ function saveModule()
 
     var categories = $("select[name='category']").val();
 
+    if(categories == null || categories == undefined || categories.length == 0)
+    {
+        saveError("Error: Please specify at least one category for the module.");
+    }
+
     //check if this is a pipeline
     var taskType = "";
 
@@ -1658,8 +1663,10 @@ function updatemodulecategories()
 
                 for(var i=0;i < result.length;i++)
                 {
-                    if(mcat)
-                    mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    if(result[i] != "")
+                    {
+                        mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    }
                 }
                 mcat.multiselect("refresh");
 
@@ -1914,12 +1921,14 @@ function loadModuleInfo(module)
         $('input[name=os]').val(module["os"]);
     }
 
-    if(module["categories"] !== undefined)
+    if(module["categories"] !== undefined && module["categories"].length > 0)
     {
         module_editor.moduleCategories = module["categories"].split(";");
     }
     else if(module["taskType"] !== undefined)
     {
+        module_editor.moduleCategories = module["taskType"];
+
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
     }
@@ -2749,13 +2758,37 @@ jQuery(document).ready(function() {
             "OK": function() {
                 var category = $("#newcategoryname").val();
                 var newcategory = $("<option>" +category + "</option>");
-                $("select[name='category']").append(newcategory);
-                var categories = $("select[name='category']").val();
-                categories.push(category);
-                $("select[name='category']").val(categories);
-                $("select[name='category']").multiselect("refresh");
-                $("#newcategoryname").val("");
-                $( this ).dialog( "close" );
+
+                var duplicate = false;
+                $("select[name='category']").children("option").each(function(event)
+                {
+                    if(category == $(this).val())
+                    {
+                        duplicate = true;
+                    }
+
+                });
+
+                if(!duplicate)
+                {
+                    $("select[name='category']").append(newcategory);
+                    var categories = $("select[name='category']").val();
+
+                    if(!categories)
+                    {
+                        categories = [];
+                    }
+
+                    categories.push(category);
+                    $("select[name='category']").val(categories);
+                    $("select[name='category']").multiselect("refresh");
+                    $("#newcategoryname").val("");
+                    $(this).dialog("close");
+                }
+                else
+                {
+                    createErrorMsg("Duplicate Category Error", "The category \"" + category + "\" already exists.");
+                }
             },
             "Cancel": function() {
                 $( this ).dialog( "close" );

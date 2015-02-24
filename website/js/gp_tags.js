@@ -90,6 +90,7 @@ $(function() {
         width: '98%',
         height: '40px',
         interactive: true,
+        placeholderColor: '#CCC',
         onAddTag: addTag,
         onRemoveTag: deleteTag,
         autocomplete_url: '/gp/rest/v1/tags/',

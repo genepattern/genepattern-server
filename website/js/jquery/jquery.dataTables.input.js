@@ -64,33 +64,37 @@ $.fn.dataTableExt.oPagination.input = {
         } );
 
         $(nInput).keyup( function (e) {
-            if ( e.which == 38 || e.which == 39 )
-            {
-                this.value++;
-            }
-            else if ( (e.which == 37 || e.which == 40) && this.value > 1 )
-            {
-                this.value--;
-            }
+            var pageNum = this.value;
+            setTimeout(function(){
+                //Disable by Marc-Danie
+                /*if ( e.which == 38 || e.which == 39 )
+                 {
+                 this.value++;
+                 }
+                 else if ( (e.which == 37 || e.which == 40) && this.value > 1 )
+                 {
+                 this.value--;
+                 }*/
 
-            if ( this.value === "" || this.value.match(/[^0-9]/) )
-            {
-                /* Nothing entered or non-numeric character */
-                return;
-            }
+                if ( pageNum === "" || pageNum.match(/[^0-9]/) )
+                {
+                    /* Nothing entered or non-numeric character */
+                    return;
+                }
 
-            var iNewStart = oSettings._iDisplayLength * (this.value - 1);
-            if ( iNewStart > oSettings.fnRecordsDisplay() )
-            {
-                /* Display overrun */
-                oSettings._iDisplayStart = (Math.ceil((oSettings.fnRecordsDisplay()-1) /
-                    oSettings._iDisplayLength)-1) * oSettings._iDisplayLength;
+                var iNewStart = oSettings._iDisplayLength * (pageNum - 1);
+                if ( iNewStart > oSettings.fnRecordsDisplay() )
+                {
+                    /* Display overrun */
+                    oSettings._iDisplayStart = (Math.ceil((oSettings.fnRecordsDisplay()-1) /
+                        oSettings._iDisplayLength)-1) * oSettings._iDisplayLength;
+                    fnCallbackDraw( oSettings );
+                    return;
+                }
+
+                oSettings._iDisplayStart = iNewStart;
                 fnCallbackDraw( oSettings );
-                return;
-            }
-
-            oSettings._iDisplayStart = iNewStart;
-            fnCallbackDraw( oSettings );
+            },500);
         } );
 
         /* Take the brutal approach to cancelling text selection */

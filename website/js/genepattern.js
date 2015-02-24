@@ -3167,24 +3167,9 @@ function buildJobResultsPage() {
         .text("Job Results")
         .appendTo(container);
 
-    //Add the job table filter drop-down
-    /*$("<div ></div>")
-        .addClass("jobresults-navigation float-right")
-        .text("Show: ")
-        .append(
-        $("<select></select>")
-            .attr("id", "jobresults-filter")
-            .attr("name", "show")
-            .change(function() {
-                var filter = $(this).val();
-                setJobFilter(filter);
-                loadJobResults(filter);
-            })
-    ).appendTo(container);*/
-
 
     //Add the job table search controls
-    var searchControls = $("<div></div>").attr("id", "jobTableSearch").addClass("float-right")
+    var searchControls = $("<div></div>").attr("id", "jobTableSearch").addClass("float-left")
         .append($("<input type='search'/>").attr("id", "jobSearchText")
             .before("<label for='jobSearchText'>Search: </label>").on( 'keyup click', function () {
             $("#jobTable").DataTable()
@@ -3383,7 +3368,7 @@ function buildJobResultsPage() {
         "lengthMenu": [10, 20, 50, 100],
         stateSave: true,
         "sPaginationType": "input",
-        "bProcessing": false,
+        "bProcessing": true,
         "preDrawCallback": function(settings)
         {
             $("body").css("cursor", "wait");
@@ -3393,6 +3378,9 @@ function buildJobResultsPage() {
             $("body").css("cursor", "default");
 
             var searchTerm = $("#jobSearchText").val();
+            //remove any existing highlights
+            $(this).removeHighlight();
+
             if(searchTerm !== undefined && searchTerm !== null && searchTerm.length > 0)
             {
                 $(this).find("td").each(function()
@@ -3412,7 +3400,8 @@ function buildJobResultsPage() {
                     }
                 })
             }
-        }
+        },
+        "dom": '<"top"l<"inline"i>p<"clear">>rt<"bottom"ip<"clear">>'
     });
 
     // Append the container to the correct past of the page
