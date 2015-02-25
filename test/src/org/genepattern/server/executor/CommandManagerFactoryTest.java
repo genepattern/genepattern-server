@@ -166,9 +166,10 @@ public class CommandManagerFactoryTest {
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00096:1");
+        boolean isPipeline=false;
         
         try {
-            CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+            CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(gpConfig, jobInfo, isPipeline);
             String canonicalName = cmdExecutor.getClass().getCanonicalName();
             assertEquals("expecting LsfCommandExecutor for SNPFileSorter", "org.genepattern.server.executor.drm.JobExecutor", canonicalName);
             //assertTrue("expecting LsfCommandExecutor for SNPFileSorter but found "+cmdExecutor.getClass().getCanonicalName()+" instead", (cmdExecutor instanceof LsfCommandExecutor));
@@ -315,10 +316,11 @@ public class CommandManagerFactoryTest {
         jobInfo.setUserId(userId);
         jobInfo.setTaskName(taskName);
         jobInfo.setTaskLSID(taskLsid);
-        
+        boolean isPipeline=false;
+
         CommandExecutor cmdExec = null;
         try {
-            cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+            cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo, isPipeline);
             if (expectingException) {
                 fail("Expecting CommandExecutorNotFoundException, but it wasn't thrown");
             }
@@ -408,8 +410,9 @@ public class CommandManagerFactoryTest {
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
         jobInfo.setTaskName("testEchoSleeper");
+        boolean isPipeline=false;
         
-        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo, isPipeline);
         CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         
         assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
@@ -431,8 +434,9 @@ public class CommandManagerFactoryTest {
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("test");
         jobInfo.setTaskName("testEchoSleeper");
+        boolean isPipeline=false;
         
-        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo);
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(gpConfig, jobInfo, isPipeline);
         CommandProperties cmdProps = cmdMgr.getCommandProperties(gpConfig, jobInfo);
         assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("default.properties->debug.mode", "true", cmdProps.getProperty("debug.mode"));
