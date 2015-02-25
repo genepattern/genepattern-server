@@ -88,7 +88,7 @@ public class BasicCommandManager implements CommandManager {
             
             //Note: handle special-case for DISPATCHING jobs
             try {
-                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo, jobInfoWrapper.isPipeline);
                 updatedStatusId = cmdExec.handleRunningJob(jobInfo);
             }
             catch (CommandExecutorNotFoundException e) {
@@ -323,11 +323,16 @@ public class BasicCommandManager implements CommandManager {
     //implement the CommandExecutorMapper interface
     @Override
     public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
+        boolean isPipeline = JobInfoManager.isPipeline(jobInfo);
+        return getCommandExecutor(jobInfo, isPipeline);
+    }
+
+    public CommandExecutor getCommandExecutor(final JobInfo jobInfo, final boolean isPipeline) throws CommandExecutorNotFoundException {
         if (gpConfig != null) {
-            return getCommandExecutor(gpConfig, jobInfo);
+            return getCommandExecutor(gpConfig, jobInfo, isPipeline);
         }
         else {
-            return getCommandExecutor(ServerConfigurationFactory.instance(), jobInfo);
+            return getCommandExecutor(ServerConfigurationFactory.instance(), jobInfo, isPipeline);
         }
     }
 

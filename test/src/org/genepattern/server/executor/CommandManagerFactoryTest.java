@@ -375,8 +375,9 @@ public class CommandManagerFactoryTest {
         jobInfo.setUserId("testuser");
         jobInfo.setTaskName("PreprocessDataset");
         jobInfo.setTaskLSID(null);
+        final boolean isPipeline=false;
         
-        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo, isPipeline);
         CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
         String cmdExecId = cmdMgr.getCommandExecutorId(cmdExec);
 
@@ -387,7 +388,7 @@ public class CommandManagerFactoryTest {
         jobInfo = new JobInfo();
         jobInfo.setUserId("testuser");
         jobInfo.setTaskName("ComparativeMarkerSelection");
-        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo, isPipeline);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
         cmdExecId = cmdMgr.getCommandExecutorId(cmdExec);
         
@@ -444,7 +445,7 @@ public class CommandManagerFactoryTest {
         jobInfo = new JobInfo();
         jobInfo.setUserId("adminuser");
         jobInfo.setTaskName("testEchoSleeper");
-        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo, isPipeline);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
 
         assertEquals("Expecting RuntimeExec", "RuntimeExec", cmdMgr.getCommandExecutorId(cmdExec));
@@ -453,7 +454,7 @@ public class CommandManagerFactoryTest {
         jobInfo = new JobInfo();
         jobInfo.setUserId("testuser");
         jobInfo.setTaskName("testEchoSleeper");
-        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo, isPipeline);
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
         assertEquals("Expecting LSF", "LSF", cmdMgr.getCommandExecutorId(cmdExec));
         assertEquals("Expecting empty string", "", cmdProps.getProperty("debug.mode"));
@@ -688,10 +689,11 @@ public class CommandManagerFactoryTest {
                 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
+        final boolean isPipeline=false;
         
         for(int i=1; i<=6; ++i) {
             jobInfo.setTaskName("mod0"+i);
-            CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+            CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo, isPipeline);
             assertEquals("", "exec0"+i, cmdMgr.getCommandExecutorId(cmdExec));
         }
 
