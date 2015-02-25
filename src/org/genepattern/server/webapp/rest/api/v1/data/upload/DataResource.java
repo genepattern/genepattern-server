@@ -734,7 +734,7 @@ public class DataResource {
         //UIBeanHelper.getResponse().sendRedirect(UIBeanHelper.getRequest().getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid) + message);
     }
     
-    private GpFilePath createJobInputDir(final GpContext userContext, final String filename) 
+    public static GpFilePath createJobInputDir(final GpContext userContext, final String filename) 
     throws Exception
     {
         GpFilePath tmpDir=null;
@@ -769,6 +769,23 @@ public class DataResource {
         public WriteToFileException(Exception e) {
             super(e);
         }
+    }
+    
+    public static GpFilePath moveSoapAttachmentToUserUploads(final GpContext userContext, final File fromFile, final String toFilename) throws Exception {
+        GpFilePath toPath=DataResource.createJobInputDir(userContext, toFilename);
+        boolean success=fromFile.renameTo(toPath.getServerFile());
+        if (!success) {
+            log.error("Failed to rename soap attachment file from "+fromFile+" to "+toPath.getServerFile());
+            //delete the local file
+            boolean deleted=fromFile.delete();
+            if (!deleted) {
+                log.error("Failed to delete original soap_attachment_file "+fromFile);
+            }
+            throw new Exception("Error saving soap attachment file to user upload directory, userId="
+                    +userContext.getUserId()
+                    +", fromFile="+fromFile);
+        }
+        return toPath;
     }
     
     private void writeBytesToFile(final GpContext userContext, final InputStream in, final GpFilePath gpFilePath, final long maxNumBytes) {
