@@ -37,6 +37,8 @@ public class ConfigUtil {
     /**
      * Load a 'config.yaml' file from the given file.
      * @param configFile
+     * 
+     * @deprecated, should create a new GpConfig with the GpConfig.Builder class instead.
      */
     static public void loadConfigFile(final File configFile) {
         if (configFile==null) {
