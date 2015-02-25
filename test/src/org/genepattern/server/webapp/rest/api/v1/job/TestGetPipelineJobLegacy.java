@@ -9,6 +9,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -20,6 +21,10 @@ public class TestGetPipelineJobLegacy {
     private final String GP_URL="http://127.0.0.1:8080/gp";
     private final boolean includeOutputFiles=true;
     private final int jobNumber=0;
+    private final TaskInfo taskInfo=null;
+    private final boolean includeComments=false;
+    private final boolean includeTags=false;
+    private final boolean includeJobRunnerStatus=false;
 
     private JobInfo jobInfo;
     private ParameterInfo executionLog;
@@ -70,9 +75,7 @@ public class TestGetPipelineJobLegacy {
      */
     @Test
     public void testExecutionLog_v_3_8_1() throws GetJobException, JSONException {
-        
-        
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, false, false);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("status.executionLogLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONObject("status").get("executionLogLocation")
@@ -91,7 +94,7 @@ public class TestGetPipelineJobLegacy {
      */
     @Test
     public void testExecutionLog_v_3_8_2() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, false, false);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("logFiles[0].href",
                 GP_URL+"/jobResults/"+jobNumber+"/gp_execution_log.txt",
                 jobObj.getJSONArray("logFiles")
@@ -119,7 +122,7 @@ public class TestGetPipelineJobLegacy {
     
     @Test
     public void testStderrLocation() throws GetJobException, JSONException {
-        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, includeOutputFiles, false, false);
+        final JSONObject jobObj=GetPipelineJobLegacy.initJsonObject(GP_URL, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
         Assert.assertEquals("status.stderrLocation",
                 GP_URL+"/jobResults/"+jobNumber+"/stderr.txt",
                 jobObj.getJSONObject("status")

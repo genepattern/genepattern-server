@@ -11,7 +11,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
-import org.genepattern.server.executor.drm.DbLookup;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
@@ -20,7 +19,6 @@ import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
-import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -191,6 +189,40 @@ public class GetPipelineJobLegacy implements GetJob {
     public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo,
                                             final boolean includeOutputFiles, final boolean includeComments,
                                             final boolean includeTags) throws GetJobException {
+
+        TaskInfo taskInfo = null;
+        try {
+            //TODO: use this instead, taskInfo = TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
+            taskInfo = JobInfoManager.getTaskInfo(jobInfo);
+        }
+        catch (Throwable t)
+        {
+            log.error("Error getting TaskInfo for job, jobId="+jobInfo.getJobNumber()+
+                    ", taskName="+jobInfo.getTaskName()+
+                    ", taskLsid="+jobInfo.getTaskLSID(), t);
+        }
+        final boolean includeJobRunnerStatus=true; // default value
+        return initJsonObject(gpUrl, jobInfo, taskInfo, includeOutputFiles, includeComments, includeTags, includeJobRunnerStatus);
+    }
+
+    public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final TaskInfo taskInfo,
+                                            final boolean includeOutputFiles, final boolean includeComments,
+                                            final boolean includeTags, final boolean includeJobRunnerStatus) throws GetJobException {
+        JobRunnerJob jobStatusRecord=null;
+        if (includeJobRunnerStatus) {
+            try {
+                jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+            }
+            catch (Throwable t) {
+                log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
+            }
+        }
+        return initJsonObject(gpUrl, jobInfo, taskInfo, jobStatusRecord, includeOutputFiles, includeComments, includeTags);
+    }
+
+    public static JSONObject initJsonObject(final String gpUrl, final JobInfo jobInfo, final TaskInfo taskInfo, final JobRunnerJob jobStatusRecord,
+                                            final boolean includeOutputFiles, final boolean includeComments,
+                                            final boolean includeTags) throws GetJobException {
         final JSONObject job = new JSONObject();
         try {
             job.put("jobId", ""+jobInfo.getJobNumber());
@@ -207,7 +239,6 @@ public class GetPipelineJobLegacy implements GetJob {
             job.put("userId", jobInfo.getUserId());
 
             try {
-                TaskInfo taskInfo = JobInfoManager.getTaskInfo(jobInfo);
                 if(taskInfo != null && taskInfo.getTaskInfoAttributes() != null
                         &&TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
                 {
@@ -269,16 +300,6 @@ public class GetPipelineJobLegacy implements GetJob {
                 job.put("outputFiles", outputFiles);
                 job.put("logFiles", logFiles);
 
-                JobRunnerJob jobStatusRecord=null;
-                boolean includeJobRunnerStatus=true;
-                if (includeJobRunnerStatus) {
-                    try {
-                        jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
-                    }
-                    catch (Throwable t) {
-                        log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
-                    }
-                }
                 final JSONObject jobStatus = initJobStatusJson(jobInfo, jobStatusRecord, executionLogLocation, stderrLocation); 
                 job.put("status", jobStatus);
             }
