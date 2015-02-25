@@ -244,10 +244,14 @@ public class BasicCommandManager implements CommandManager {
     }
 
     public CommandExecutor getCommandExecutor(final GpConfig gpConfig, final JobInfo jobInfo) throws CommandExecutorNotFoundException {
+        boolean isPipeline = JobInfoManager.isPipeline(jobInfo);
+        return getCommandExecutor(gpConfig, jobInfo, isPipeline);
+    }
+    
+    public CommandExecutor getCommandExecutor(final GpConfig gpConfig, final JobInfo jobInfo, final boolean isPipeline) throws CommandExecutorNotFoundException {
         CommandExecutor cmdExec = null;
         
         //special case for pipelines ...
-        boolean isPipeline = JobInfoManager.isPipeline(jobInfo);
         if (isPipeline) {
             log.debug("job "+jobInfo.getJobNumber()+" is a pipeline");
             return getPipelineExecutor();
