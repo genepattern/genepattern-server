@@ -4,17 +4,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.cm.CategoryUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.TestEulaInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -24,16 +23,24 @@ import org.mockito.Mockito;
  *
  */
 public class TestCategoryUtil {
-    GpContext userContext=GpContext.getContextForUser("testUser");
+    GpConfig gpConfig;
+    GpContext userContext;
+    GpContext customUserContext;
     private CategoryUtil categoryUtil;
 
-    @BeforeClass
-    public static void beforeClass() {
-        ConfigUtil.loadConfigFile(TestCategoryUtil.class, "config.yaml");
-    }
-
     @Before
-    public void beforeTest() {
+    public void beforeTest() throws Exception {
+        DbUtil.initDb();
+        File configFile=FileUtil.getSourceFile(this.getClass(), "config.yaml");
+        userContext=new GpContext.Builder()
+            .userId("testUser")
+        .build();
+        customUserContext=new GpContext.Builder()
+            .userId("customUser")
+        .build();
+        gpConfig=new GpConfig.Builder()
+            .configFile(configFile)
+        .build();
         categoryUtil=new CategoryUtil();
     }
 
@@ -267,7 +274,6 @@ public class TestCategoryUtil {
      */
     @Test
     public void testCustomCategories_noEntry() {
-        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2
@@ -275,27 +281,24 @@ public class TestCategoryUtil {
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "Test; MIT_701X; ActualA; ActualB ");
 
-        //final List<String> customCategoriesFromDb=new ArrayList<String>();
         final List<String> customCategoriesFromDb=null;
         
-        CategoryUtil real = new CategoryUtil();
-        CategoryUtil spy = Mockito.spy(real);
-        Mockito.when( spy.getCustomCategoriesFromDb(taskInfo) ).thenReturn(customCategoriesFromDb);
+        CategoryUtil spy = Mockito.spy(categoryUtil);
+        // see: http://docs.mockito.googlecode.com/hg/1.9.5/org/mockito/Spy.html for an "Important gotcha when spying on real objects!"
+        Mockito.doReturn(customCategoriesFromDb).when(spy).getCustomCategoriesFromDb(taskInfo);
 
-        List<String> categories=spy.getCategoriesForTask(userContext, taskInfo);
+        List<String> categories=spy.getCategoriesForTask(gpConfig, customUserContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
         Assert.assertEquals("category[0]", "ActualA", categories.get(0));
         Assert.assertEquals("category[1]", "ActualB", categories.get(1));
     }
-
     
     /**
      * Custom category test, custom category in DB.
      */
     @Test
     public void testCustomCategories_from_db() {
-        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2
@@ -303,16 +306,13 @@ public class TestCategoryUtil {
         taskInfo.getTaskInfoAttributes().put(GPConstants.TASK_TYPE, "Test");
         taskInfo.getTaskInfoAttributes().put(GPConstants.CATEGORIES, "Test; MIT_701X; ActualA; ActualB ");
 
-        // an empty list means, this module is in no categories
         final List<String> customCategoriesFromDb=new ArrayList<String>();
         customCategoriesFromDb.add("CustomA");
         customCategoriesFromDb.add("CustomB");
-        
-        CategoryUtil real = new CategoryUtil();
-        CategoryUtil spy = Mockito.spy(real);
-        Mockito.when( spy.getCustomCategoriesFromDb(taskInfo) ).thenReturn(customCategoriesFromDb);
+        CategoryUtil spy = Mockito.spy(categoryUtil);
+        Mockito.doReturn(customCategoriesFromDb).when(spy).getCustomCategoriesFromDb(taskInfo);
 
-        List<String> categories=spy.getCategoriesForTask(userContext, taskInfo);
+        List<String> categories=spy.getCategoriesForTask(gpConfig, customUserContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 2, categories.size());
         Assert.assertEquals("category[0]", "CustomA", categories.get(0));
@@ -324,7 +324,6 @@ public class TestCategoryUtil {
      */
     @Test
     public void testCustomCategories_hidden() {
-        userContext=GpContext.getContextForUser("customUser");
         TaskInfo taskInfo=new TaskInfo();   
         taskInfo.giveTaskInfoAttributes();
         //set the lsid to the same as ConvertLineEndings, v.2
@@ -335,14 +334,12 @@ public class TestCategoryUtil {
         // an empty list means, this module is in no categories
         final List<String> customCategoriesFromDb=new ArrayList<String>();
         
-        CategoryUtil real = new CategoryUtil();
-        CategoryUtil spy = Mockito.spy(real);
-        Mockito.when( spy.getCustomCategoriesFromDb(taskInfo) ).thenReturn(customCategoriesFromDb);
+        CategoryUtil spy = Mockito.spy(categoryUtil);
+        Mockito.doReturn(customCategoriesFromDb).when(spy).getCustomCategoriesFromDb(taskInfo);
 
-        List<String> categories=spy.getCategoriesForTask(userContext, taskInfo);
+        List<String> categories=spy.getCategoriesForTask(gpConfig, customUserContext, taskInfo);
         Assert.assertNotNull("Expecting non-null value from getCategoriesForTask", categories);
         Assert.assertEquals("num categories", 0, categories.size());
     }
-
 
 }
