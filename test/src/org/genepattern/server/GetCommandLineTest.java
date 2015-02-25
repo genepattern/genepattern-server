@@ -39,7 +39,6 @@ public class GetCommandLineTest {
     private static String[] testCaseFiles={ 
         //"debug_test_case.yaml",
         //"test_cases.yaml", 
-        //"rna_seq_test_cases.yaml", 
         //"gptest_generated_test_cases.yaml",
         "gpprod_generated_testcases_0000.yaml",
         "gpprod_generated_testcases_0400.yaml",
