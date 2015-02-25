@@ -1,23 +1,33 @@
 package org.genepattern.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
+import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.util.GPConstants;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -33,49 +43,66 @@ import org.yaml.snakeyaml.Yaml;
  * 
  * @author pcarr
  */
-public class CommandLineParserTest extends TestCase {
-    /**
-     * Helper class which returns the parent File of this source file.
-     * @return
-     */
-    private static File getSourceDir() {
-        String cname = CommandLineParserTest.class.getCanonicalName();
-        int idx = cname.lastIndexOf('.');
-        String dname = cname.substring(0, idx);
-        dname = dname.replace('.', '/');
-        File sourceDir = new File("test/src/" + dname);
-        return sourceDir;
+public class CommandLineParserTest {
+    
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+    private File rootTasklibDir;
+    
+    @Before
+    public void setUp() {
+        rootTasklibDir=tmp.newFolder("taskLib");
     }
 
-    private static final String[][] substitutionsTestCases = {
-        {"", },
-        {"<java> -cp <libdir>test.jar <p1> <p2>",
-            "<java>", "<libdir>", "<p1>", "<p2>" }, 
-        {"\"<java>\" -cp <libdir>test.jar <p1> <p2>",
-            "<java>", "<libdir>", "<p1>", "<p2>" }, 
-        {"<R2.5> <p1> <p2> >> stdout.txt",
-            "<R2.5>", "<p1>", "<p2>" },
-        {"<R2.5> <p1> <p2> >><stdout.file> <<<stdin.file>",
-            "<R2.5>", "<p1>", "<p2>", "<stdout.file>", "<stdin.file>" },  
-        {"<a b>", }, 
-    };
-    
-    public void testGetSubstitutions() {
-        int i=0;
-        for(String[] testCase : substitutionsTestCases) {
-            testGetSubstitutions(i,testCase);
-            ++i;
-        }
+    @Test
+    public void getSubstitutionParams_emptyString() {
+       List<String> actual = CommandLineParser.getSubstitutionParameters(""); 
+       assertEquals(Arrays.asList(), actual);
     }
     
-    private void testGetSubstitutions(int testCaseIdx, String[] testCase) {
-        List<String> rval = CommandLineParser.getSubstitutionParameters(testCase[0]);
-        int numExpected = testCase.length - 1;
-        assertNotNull(rval);
-        assertEquals("testCase["+testCaseIdx+"] num subs", numExpected, rval.size());
-        for(int i=0; i<rval.size(); ++i) {
-            assertEquals("sub["+i+"]", testCase[i+1], rval.get(i));
-        }
+    @Test
+    public void getSubstitutionParams_javaCmd() {
+        assertEquals(
+                // expected
+                Arrays.asList( "<java>", "<libdir>", "<p1>", "<p2>" ),
+                // actual
+                CommandLineParser.getSubstitutionParameters("<java> -cp <libdir>test.jar <p1> <p2>"));
+    }
+
+    @Test
+    public void getSubstitutionParams_javaCmdInQuotes() {
+        assertEquals(
+                // expected
+                Arrays.asList( "<java>", "<libdir>", "<p1>", "<p2>" ),
+                // actual
+                CommandLineParser.getSubstitutionParameters("\"<java>\" -cp <libdir>test.jar <p1> <p2>"));
+    }
+
+    @Test
+    public void getSubstitutionParams_redirectToStdout() {
+        assertEquals(
+                // expected
+                Arrays.asList( "<R2.5>", "<p1>", "<p2>" ),
+                // actual
+                CommandLineParser.getSubstitutionParameters("<R2.5> <p1> <p2> >> stdout.txt"));
+    }
+
+    @Test
+    public void getSubstitutionParams_redirectToStdinAndStdout() {
+        assertEquals(
+                // expected
+                Arrays.asList( "<R2.5>", "<p1>", "<p2>", "<stdout.file>", "<stdin.file>" ),
+                // actual
+                CommandLineParser.getSubstitutionParameters("<R2.5> <p1> <p2> >><stdout.file> <<<stdin.file>"));
+    }
+
+    @Test
+    public void getSubstitutionParams_spaceInParamName() {
+        assertEquals(
+                // expected
+                Arrays.asList( ),
+                // actual
+                CommandLineParser.getSubstitutionParameters("<a b>"));
     }
     
     //command line tests
@@ -171,8 +198,7 @@ public class CommandLineParserTest extends TestCase {
     private List<CmdLineObj> loadTestCases(String filename) throws FileNotFoundException { 
         List<CmdLineObj> testCases = new ArrayList<CmdLineObj>();
 
-        File parentDir = getSourceDir();
-        File configurationFile = new File(parentDir, filename);
+        File configurationFile = FileUtil.getSourceFile(this.getClass(), filename);
         Reader reader = null;
         reader = new FileReader(configurationFile);
 
@@ -208,53 +234,72 @@ public class CommandLineParserTest extends TestCase {
         
     }
 
-    public void testGetCommandLineFromFile() {
+    @Test
+    public void getCommandLineFromFile() {
         String filename = "test_cases.yaml";
         testGetCommandLineFromFile(filename);
     }
     
-    public void testRnaSeqCmdLines() {
-        String filename = "rna_seq_test_cases.yaml";
-        testGetCommandLineFromFile(filename);
+    // not yet implemented
+    @Ignore @Test
+    public void inputFileBasename() {
+        final File libdir=new File(rootTasklibDir, "MockModule.1.1000");
+        final String cmdLine="echo basename=<input.file_basename> -o<input.file_basename>.cvt.<input.file_extension>";
+
+        final GpConfig gpConfig=new GpConfig.Builder()
+            // requires an actual config_yaml file in order to mock loading values from the gpContext.jobInput instance
+            .configFile(new File("resources/config_local_job_runner.yaml"))
+        .build();
+
+        final JobInput jobInput=new JobInput();
+        jobInput.addValue("input.file", "/path/to/test celfiles.zip");
+
+        GpContext gpContext=new GpContext.Builder()
+            .taskLibDir(libdir)
+            .jobInput(jobInput)
+        .build();
+        assertEquals(
+                // expected
+                Arrays.asList("echo", "basename=test celfiles", "-otest celfiles.cvt.zip"), 
+                // actual
+                CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine));
     }
     
-    public void testPathSeqCmdLines() {
-        String filename = "pathseq_test_cases.yaml";
-        testGetCommandLineFromFile(filename);
-    }
-
-    public void testGetCommandLine() throws IOException { 
+    @Test
+    public void getCommandLine() throws IOException { 
+        final File libdir=new File(rootTasklibDir, "ExpressionFileCreator.7.2190");
         //test case for expression file creator
-        String cmdLine="<R2.5> <libdir>expr.R parseCmdLine "+
+        final String cmdLine="<R2.5> <libdir>expr.R parseCmdLine "+
             "-i<input.file> -o<output.file> "+
             "-m<method> -q<quantile.normalization> -b<background.correct> -c<compute.present.absent.calls> "+
             "-n<normalization.method> -l<libdir> -f<clm.file> -v<value.to.scale.to> -e<cdf.file> -a<annotate.probes>";
         
-        Map<String,String> dict = new LinkedHashMap<String,String>();
-        //from genepattern.properties
-        dict.put("R2.5", "<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R2.5_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR");
-        dict.put("java",  "/usr/bin/java");
-        dict.put("r_flags", "--no-save --quiet --slave --no-restore");
-        dict.put("run_r_path", "/Broad/Applications/gp-3.2-dev/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/");
-        dict.put("R2.5_HOME", "/Library/Frameworks/R.framework/Versions/2.5/Resources");
-        dict.put("R.suppress.messages.file", "/Broad/Applications/gp-3.2-dev/GenePatternServer/resources/R_suppress.txt");
-        
-        //set for a particular job
-        dict.put("libdir", "../taskLib/ExpressionFileCreator.7.2190/");
-        dict.put("input.file", "/path/to/test celfiles.zip");
-        dict.put("output.file", "<input.file_basename>");
-        dict.put("method", "RMA");
-        dict.put("quantile.normalization", "yes");
-        dict.put("background.correct", "no");
-        dict.put("compute.present.absent.calls", "yes");
-        dict.put("normalization.method", "median scaling");
-        dict.put("clm.file", "");
-        dict.put("value.to.scale.to", "");
-        dict.put("cdf.file", "");
-        dict.put("annotate.probes", "yes");
-        
-        //initialized by GPAT#setupProps
-        dict.put("input.file" + GPConstants.INPUT_BASENAME, "test celfiles");
+        final GpConfig gpConfig=new GpConfig.Builder()
+            // requires an actual config_yaml file in order to mock loading values from the gpContext.jobInput instance
+            .configFile(new File("resources/config_local_job_runner.yaml"))
+            //from genepattern.properties
+            .addProperty("R2.5", "<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R2.5_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR")
+            .addProperty("java",  "/usr/bin/java")
+            .addProperty("r_flags", "--no-save --quiet --slave --no-restore")
+            .addProperty("run_r_path", "/Broad/Applications/gp-3.2-dev/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/")
+            .addProperty("R2.5_HOME", "/Library/Frameworks/R.framework/Versions/2.5/Resources")
+            .addProperty("R.suppress.messages.file", "/Broad/Applications/gp-3.2-dev/GenePatternServer/resources/R_suppress.txt")
+            //initialized by GPAT#setupProps
+            .addProperty("input.file" + GPConstants.INPUT_BASENAME, "test celfiles")
+        .build();
+
+        final JobInput jobInput=new JobInput();
+        jobInput.addValue("input.file", "/path/to/test celfiles.zip");
+        jobInput.addValue("output.file", "<input.file_basename>");
+        jobInput.addValue("method", "RMA");
+        jobInput.addValue("quantile.normalization", "yes");
+        jobInput.addValue("background.correct", "no");
+        jobInput.addValue("compute.present.absent.calls", "yes");
+        jobInput.addValue("normalization.method", "median scaling");
+        jobInput.addValue("clm.file", "");
+        jobInput.addValue("value.to.scale.to", "");
+        jobInput.addValue("cdf.file", "");
+        jobInput.addValue("annotate.probes", "yes");
 
         String[] expected = {
                 "/usr/bin/java", 
@@ -264,7 +309,7 @@ public class CommandLineParserTest extends TestCase {
                 "-cp", 
                 "/Broad/Applications/gp-3.2-dev/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/", 
                 "RunR",
-                "../taskLib/ExpressionFileCreator.7.2190/expr.R", 
+                new File(libdir,"expr.R").toString(), 
                 "parseCmdLine",
                 "-i/path/to/test celfiles.zip",
                 "-otest celfiles",
@@ -273,14 +318,16 @@ public class CommandLineParserTest extends TestCase {
                 "-bno", 
                 "-cyes",
                 "-nmedian scaling", 
-                "-l../taskLib/ExpressionFileCreator.7.2190/",
+                "-l"+libdir+File.separator,
                 "-f",
                 "-v", 
                 "-e",
                 "-ayes" };
         
-        GpConfig gpConfig=new GpConfig.Builder().addProperties(dict).build();
-        GpContext gpContext=GpContext.getServerContext();
+        GpContext gpContext=new GpContext.Builder()
+            .taskLibDir(libdir)
+            .jobInput(jobInput)
+        .build();
         List<String> cmdLineArgs = CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
         
         assertNotNull(cmdLineArgs);
@@ -290,7 +337,116 @@ public class CommandLineParserTest extends TestCase {
             assertEquals("cmdLineArg["+i+"]", expected[i], arg);
             ++i;
         }
+    }
+
+    @Test
+    public void scriptureCmdLine() {
+        final File libdir=new File(rootTasklibDir, "Scripture.0.1234");
+        final String cmdLine="<perl> <libdir>Scripture_wrapper.pl -gplibdir <libdir> -java <java> -javaflags '<java_flags>' -alignment <alignment.file> -out <output.filename> -sizeFile <chromosome.size.file> -chr <chromosome> -chrSequence <chromosome.sequence.file>"; 
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(new File("resources/config_local_job_runner.yaml"))
+            .addProperty("perl", "/usr/bin/perl")
+            .addProperty("java", "C:\\Program Files\\GenePatternServer\\jre\\bin\\java")
+            .addProperty("java_flags", "-Djava.awt.headless=true")
+        .build();
+
+        final JobInput jobInput=new JobInput();
+        jobInput.addValue("alignment.file", "alignment_file");
+        jobInput.addValue("output.filename", "a.out");
+        jobInput.addValue("chromosome.size.file", "chr.sz.file");
+        jobInput.addValue("chromosome", "chr1");
+        jobInput.addValue("chromosome.sequence.file", "chr.seq.file");
+
+        GpContext gpContext=new GpContext.Builder()
+            .taskLibDir(libdir)
+            .jobInput(jobInput)
+        .build();
+
+        List<String> expected = Arrays.asList(
+                "/usr/bin/perl", new File(libdir,"Scripture_wrapper.pl").toString(), 
+                "-gplibdir", libdir.toString()+File.separator,
+                "-java", "C:\\Program Files\\GenePatternServer\\jre\\bin\\java",
+                "-javaflags", "'-Djava.awt.headless=true'",
+                "-alignment", "alignment_file",
+                "-out", "a.out",
+                "-sizeFile", "chr.sz.file",
+                "-chr", "chr1",
+                "-chrSequence", "chr.seq.file" 
+                );
         
+        List<String> actual=CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void abyssCmdLine() {
+        final File libdir=new File(rootTasklibDir, "AByss.0.1234");
+        final String cmdLine="<perl> <libdir>abyss_wrapper.pl -gplibdir <libdir> -name <output.prefix> -in <input.file> -lib <lib.file> -se <se.file> -k <kmer.size> -n <minimum.pairs> -c <kmer.coverage.threshold> -b <bubble.threshold> -s <min.seed.contig.length> -j <num.threads> -cs <convert.contigs>";
+        
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(new File("resources/config_local_job_runner.yaml"))
+            .addProperty("perl", "/usr/bin/perl")
+        .build();
+
+        final JobInput jobInput=new JobInput();
+        jobInput.addValue("output.prefix", "prefix_");
+        jobInput.addValue("input.file", "a.in");
+        jobInput.addValue("lib.file", "a.lib");
+        jobInput.addValue("se.file", "a.se");
+        jobInput.addValue("kmer.size", "128");
+        jobInput.addValue("minimum.pairs", "128");
+        jobInput.addValue("kmer.coverage.threshold", "-1000");
+        jobInput.addValue("bubble.threshold", "-1000");
+        jobInput.addValue("min.seed.contig.length", "0");
+        jobInput.addValue("num.threads", "8");
+        jobInput.addValue("convert.contigs", "<convert.contigs>");
+
+        final GpContext gpContext=new GpContext.Builder()
+            .taskLibDir(libdir)
+            .jobInput(jobInput)
+        .build();
+
+        final List<String> expected=Arrays.asList(
+                "/usr/bin/perl", new File(libdir,"abyss_wrapper.pl").toString(),
+                "-gplibdir", libdir.toString()+File.separator,
+                "-name", "prefix_", "-in", "a.in",
+                "-lib", "a.lib",
+                "-se", "a.se",
+                "-k", "128",
+                "-n", "128",
+                "-c", "-1000",
+                "-b", "-1000", 
+                "-s", "0",
+                "-j", "8",
+                "-cs", "<convert.contigs>" );
+        
+        List<String> actual=CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void velvetCmdLine() {
+        final String cmdLine="<perl> <velvet.home>/contrib/VelvetOptimiser-2.1.0/VelvetOptimiser.pl -f <reads> -s <min.kmer> -e <max.kmer>";
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .configFile(new File("resources/config_local_job_runner.yaml"))
+            .addProperty("perl", "/usr/bin/perl")
+            .addProperty("velvet.home", "/usr/local/velvet_0.7.61")
+        .build();
+
+        final JobInput jobInput=new JobInput();
+        jobInput.addValue("reads", "/usr/shared_data/example.fa");
+        jobInput.addValue("min.kmer", "17");
+        jobInput.addValue("max.kmer", "21");
+        final GpContext gpContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        
+        final List<String> expected=Arrays.asList(
+                "/usr/bin/perl", "/usr/local/velvet_0.7.61/contrib/VelvetOptimiser-2.1.0/VelvetOptimiser.pl", 
+                "-f", "/usr/shared_data/example.fa", "-s", "17",
+                "-e", "21" );
+        List<String> actual=CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine);
+        assertEquals(expected, actual);
     }
 
 }
