@@ -23,6 +23,7 @@ import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -192,8 +193,7 @@ public class GetPipelineJobLegacy implements GetJob {
 
         TaskInfo taskInfo = null;
         try {
-            //TODO: use this instead, taskInfo = TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
-            taskInfo = JobInfoManager.getTaskInfo(jobInfo);
+            taskInfo = TaskInfoCache.instance().getTask(jobInfo.getTaskID());
         }
         catch (Throwable t)
         {
