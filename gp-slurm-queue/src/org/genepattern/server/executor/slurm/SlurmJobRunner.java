@@ -247,6 +247,8 @@ public class SlurmJobRunner implements JobRunner {
         String replacePath =  config.getGPProperty(context, "tacc.rodeo.path", "/home/rodeo/GenePatternServer");
         String replaceWithPath =  config.getGPProperty(context, "tacc.stampede.path", "/home1/03271/thorin");
 
+        commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
+
         // Build the shell script for submitting the slurm job
         String scriptPath = buildSubmissionScript(gpJobId, workDir, commandLine, queue, account, maxTime, replaceWithPath);
 
