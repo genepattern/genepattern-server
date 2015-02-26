@@ -65,7 +65,7 @@ public class PluginManagerLegacy {
     // check that each patch listed in the TaskInfoAttributes for this task is installed.
     // if not, download and install it.
     // For any problems, throw an exception
-    public static boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
+    public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
         // no patches required?
@@ -106,7 +106,7 @@ public class PluginManagerLegacy {
         return true;
     }
 
-    public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
+    public void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
         String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
         String[] installedPatchLSIDs = new String[0];
         if (installedPatches != null) {
@@ -147,7 +147,7 @@ public class PluginManagerLegacy {
      * running that command line after substitutions, and recording the result 
      * in the genepattern.properties patch registry
      */
-    private static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
+    private void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
         log.debug("installPatch, lsid="+requiredPatchLSID+", url="+requiredPatchURL);
         LSID patchLSID = null;
         try {
