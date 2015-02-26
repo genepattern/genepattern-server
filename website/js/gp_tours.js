@@ -89,20 +89,18 @@ $(function()
                 $( "#left-nav" ).tabs( "option", "active", 2 );
 
                 //add the genome space tab
-                if($("#left-nav-genomespace-tab").length == 0)
+                if($("#left-nav-genomespace-tour-created").length == 0)
                 {
                     $("#left-nav-files-tab").after('<li id="left-nav-genomespace-tour-created">' +
                         '<a href="#left-nav-genomespace">GenomeSpace</a> </li>');
 
-                    $("#left-nav-genomespace-tour-created").parent().after('<li id="left-nav-genomespace-tour-created">' +
-                        '<a href="#left-nav-genomespace">GenomeSpace</a>' +
+                    $("#left-nav-genomespace-tour-created").parent().after(
                         '<div id="left-nav-genomespace" class="left-nav-tab">' +
                         '<div class="left-nav-top">' +
                         '<button id="left-nav-genomespace-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>' +
                         '<a href="http://gsui.genomespace.org" target="_blank"><img id="left-nav-genomespace-logo" src="/gp/pages/genomespace/genomespacelogo.png" /></a>' +
                         '</div>' +
-                        '</div>'+
-                        '</li>');
+                        '</div>');
                     $("#left-nav").tabs("refresh");
                 }
             }

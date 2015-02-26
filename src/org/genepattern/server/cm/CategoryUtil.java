@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
@@ -69,19 +69,18 @@ public class CategoryUtil {
      * @param taskInfo
      * @return
      */
-    public List<String> getCategoriesForTask(final GpContext userContext, final TaskInfo taskInfo) {
+    public List<String> getCategoriesForTask(final GpConfig gpConfig, final GpContext userContext, final TaskInfo taskInfo) {
         final boolean includeHidden=false;
-        return getCategoriesForTask(userContext, taskInfo, includeHidden);
+        return getCategoriesForTask(gpConfig, userContext, taskInfo, includeHidden);
     }
     
-    public List<String> getCategoriesForTask(final GpContext userContext, final TaskInfo taskInfo, final boolean includeHidden) {
+    public List<String> getCategoriesForTask(final GpConfig gpConfig, final GpContext userContext, final TaskInfo taskInfo, final boolean includeHidden) {
         final boolean checkCustomCategories;
-        checkCustomCategories=ServerConfigurationFactory.instance().getGPBooleanProperty(
-                userContext, PROP_CHECK_CUSTOM_CATEGORIES, true);
+        checkCustomCategories=gpConfig.getGPBooleanProperty(userContext, PROP_CHECK_CUSTOM_CATEGORIES, true);
 
         final List<String> hiddenCategories=new ArrayList<String>();
         if (!includeHidden) {
-            final Value value=ServerConfigurationFactory.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
+            final Value value=gpConfig.getValue(userContext, PROP_HIDDEN_CATEGORIES);
             if (value != null) {
                 hiddenCategories.addAll(value.getValues());
             }
@@ -229,8 +228,8 @@ public class CategoryUtil {
      * @param userContext
      * @return
      */
-    public Set<String> getHiddenCategories(final GpContext userContext) {
-        final Value value=ServerConfigurationFactory.instance().getValue(userContext, PROP_HIDDEN_CATEGORIES);
+    public Set<String> getHiddenCategories(final GpConfig gpConfig, final GpContext userContext) {
+        final Value value=gpConfig.getValue(userContext, PROP_HIDDEN_CATEGORIES);
         if (value==null || value.getNumValues()==0) {
             return Collections.emptySet();
         }

@@ -42,6 +42,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.EulaInfo;
@@ -198,7 +199,7 @@ public class ModuleQueryServlet extends HttpServlet {
         }
     }
 
-    public SortedSet<String> getAllCategories(GpContext userContext) {
+    public SortedSet<String> getAllCategories(final GpConfig gpConfig, final GpContext userContext) {
         SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
             // sort categories alphabetically, ignoring case
             public int compare(String arg0, String arg1) {
@@ -215,7 +216,7 @@ public class ModuleQueryServlet extends HttpServlet {
         for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
 
             final CategoryUtil cu = new CategoryUtil();
-            final List<String> taskTypes = cu.getCategoriesForTask(userContext, ti);
+            final List<String> taskTypes = cu.getCategoriesForTask(gpConfig, userContext, ti);
             categories.addAll(taskTypes);
         }
         return Collections.unmodifiableSortedSet(categories);
@@ -227,11 +228,12 @@ public class ModuleQueryServlet extends HttpServlet {
             sendError(response, "No GenePattern session found.  Please log in.");
             return;
         }
+        GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext userContext = GpContext.getContextForUser(username);
 
         SortedSet<String> categories = null;
         try {
-            categories = getAllCategories(userContext);
+            categories = getAllCategories(gpConfig, userContext);
         } catch (Throwable t) {
             t.printStackTrace();
             log.error("Error listing categories from TaskInfoCache: " + t.getLocalizedMessage());
