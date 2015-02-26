@@ -11,8 +11,10 @@ import java.util.Map;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -55,6 +57,22 @@ public class TestCommandLineParser {
         assertEquals(
                 Arrays.asList( java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val ),
                 CommandLineParser.resolveValue(gpConfig, gpContext, "<ant>", parameterInfoMap, 0));
+    }
+    
+    //TODO: implement support for _basename substitution in the resolveValue method
+    @Ignore @Test
+    public void resolveValue_basename() {
+        String userId="test_user";
+        String gpUrl="http://127.0.0.1:8080/gp/";
+        // set up job context
+        JobInput jobInput=new JobInput();
+        jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test.cls");
+        GpContext gpContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        assertEquals(
+                Arrays.asList("all_aml_test"),
+                CommandLineParser.resolveValue(gpConfig, gpContext, "<input.filename_basename>", parameterInfoMap, 0));
     }
 
     @Test

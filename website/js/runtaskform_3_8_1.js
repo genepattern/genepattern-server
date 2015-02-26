@@ -662,12 +662,24 @@ function loadModuleInfo(module) {
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
     $(".properties-commandline").text(module["commandLine"]);
-    $(".properties-tasktype").text(module["taskType"]);
+    $(".properties-tasktype").text(module["taskType"] + ";" + module["categories"]);
     $(".properties-cpu").text(module["cpuType"]);
     $(".properties-os").text(module["os"]);
     $(".properties-language").text(module["language"]);
     $(".properties-versioncomment").text(module["version"]);
     $(".properties-formats").text(module["fileFormat"]);
+
+    if (module["allFiles"]) {
+        for (var i = 0; i < module["allFiles"].length; i++) {
+            var file = module["allFiles"][i];
+            $(".properties-files").append(
+                $("<a></a>")
+                    .attr("href", "/gp/getFile.jsp?task=" + encodeURIComponent(module["LSID"]) + "&file=" + encodeURIComponent(file))
+                    .append(file)
+            )
+            .append(", ")
+        }
+    }
 
     // Display pipeline properties
     if (module["children"]) {
@@ -685,7 +697,13 @@ function loadModuleInfo(module) {
                                 .attr("width", 19)
                                 .attr("src", "/gp/images/toggle_expand.png")
                         )
-                        .append((i+1) + ". " + child["name"])
+                        .append((i+1) + ". ")
+                        .append(
+                            $("<a></a>")
+                                .attr("href", "/gp/pages/index.jsf?lsid=" + child["lsid"])
+                                .attr("onclick", "event.stopPropagation();")
+                                .append(child["name"])
+                        )
                         .append(
                         $("<div></div>")
                             .css("float", "right")
@@ -1886,6 +1904,10 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
             $("#viewCodeDiv").hide();
         });
 
+        $("#removeViewProperties").button().click(function () {
+            $("#viewProperties").hide();
+        });
+
         /*add action for when one of the view code languages is selected */
         $("#viewCodeDiv").hide();
         $(".viewCode").click(function () {
@@ -3023,8 +3045,7 @@ function sendToByKind(url, kind) {
     setInputField(selectedParam, url);
 }
 
-function tagResponse(event, ui)
-{
+function tagResponse(event, ui) {
     var value = $(event.target).val();
 
     var matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( value ), "i" );
@@ -3045,4 +3066,8 @@ function tagResponse(event, ui)
     }
 
     ui.content.splice(0, contentLen);
+}
+
+function showProperties() {
+    $("#viewProperties").show();
 }

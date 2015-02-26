@@ -5,12 +5,27 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -21,13 +36,14 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfoParser;
@@ -41,7 +57,12 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.*;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
+import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -287,6 +308,7 @@ public class TasksResource {
             final @QueryParam("includeHidden") String includeHidden,
             final @Context HttpServletRequest request, 
             final @Context HttpServletResponse response) {
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
 
@@ -313,7 +335,7 @@ public class TasksResource {
             final CategoryUtil cu=new CategoryUtil();
             // multimap of <baseLsid,categoryNames>
             final Multimap<String,String> customCategoryMap=cu.getCustomCategoriesFromDb();
-            final Set<String> hiddenCategories=cu.getHiddenCategories(userContext);
+            final Set<String> hiddenCategories=cu.getHiddenCategories(gpConfig, userContext);
             //initialize suites, multimap of <baseLsid,SuiteInfos>
             final SuiteInfo[] suiteInfos=SuiteResource.getAllSuites(userContext);
             final Multimap<String,SuiteInfo> suiteInfoMap=initSuiteInfoMap(suiteInfos);

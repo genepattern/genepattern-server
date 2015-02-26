@@ -200,8 +200,14 @@ a:hover {
 }
 
 #workspace {
-	padding-left: 10px;
-	background-color: #FFFFFF;
+    background-color: #ffffff;
+    bottom: 0;
+    left: 190px;
+    overflow: auto;
+    padding-left: 10px;
+    position: fixed;
+    right: 300px;
+    top: 100px;
 }
 
 .tableDiv {

@@ -36,12 +36,13 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.rest.api.v1.data.upload.DataResource;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -211,7 +212,6 @@ public class Analysis extends GenericWebService {
     public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
-        JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
         Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
         JobInfo[] jobs = new JobInfo[jobSet.size()];
         int i = 0;
@@ -562,11 +562,12 @@ public class Analysis extends GenericWebService {
      * @return the job information for this process
      * @exception WebServiceException, thrown if problems are encountered
      */
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, @SuppressWarnings("rawtypes") Map files) throws WebServiceException {
         log.debug("submitJob: " + taskID);
-        String username = getUsernameFromContext();
+        final String username = getUsernameFromContext();
+        final GpContext userContext=GpContext.getContextForUser(username);
         JobInfo jobInfo = null;
-        renameInputFiles(parameters, files);
+        renameInputFiles_v3_9_2(userContext, parameters, files);
         try {
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
             jobInfo = req.executeRequest();
@@ -593,10 +594,12 @@ public class Analysis extends GenericWebService {
      *                    if problems are encountered
      */
 
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId) throws WebServiceException {
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, @SuppressWarnings("rawtypes") Map files, int parentJobId) throws WebServiceException {
         try {
             log.debug("submitJob parentJobId=" + parentJobId);
-            renameInputFiles(parameters, files);
+            final String username = getUsernameFromContext();
+            final GpContext userContext=GpContext.getContextForUser(username);
+            renameInputFiles_v3_9_2(userContext, parameters, files);
             log.debug("new AddNewJobHander...");
             AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
             log.debug("executeRequest...");
@@ -683,8 +686,13 @@ public class Analysis extends GenericWebService {
         return newParams.toArray(new ParameterInfo[newParams.size()]);
     }
 
-    // find any input files and concat axis name with original file name.
-    private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
+    /**
+     * find any input files and concat axis name with original file name.
+     * @param parameters
+     * @param files
+     * @throws WebServiceException
+     */
+    private void renameInputFiles(ParameterInfo[] parameters, @SuppressWarnings("rawtypes") Map files) throws WebServiceException {
         if (parameters == null) {
             return;
         }
@@ -728,6 +736,57 @@ public class Analysis extends GenericWebService {
                     throw new WebServiceException("Unable to save file " + newFileName + ".");
                 }
             }
+        }
+    }
+
+    /**
+     * Handle SOAP uploads in the same way as files uploaded for REST API job submissions.
+     * 
+     * @param userContext
+     * @param parameters
+     * @param files
+     * @throws WebServiceException
+     */
+    private void renameInputFiles_v3_9_2(final GpContext userContext, final ParameterInfo[] parameters, @SuppressWarnings("rawtypes") final Map files) throws WebServiceException {
+        if (parameters == null) {
+            return;
+        }
+        for(final ParameterInfo parameter : parameters) {
+            if(parameter.isInputFile()) {
+                processInputFile(userContext, parameter, files);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void processInputFile(final GpContext userContext, final ParameterInfo parameter, @SuppressWarnings("rawtypes") final Map files) throws WebServiceException {
+        String orgFilename = parameter.getValue();
+        Object obj = files.get(orgFilename);
+        DataHandler dataHandler = null;
+        if (obj instanceof AttachmentPart) {
+            AttachmentPart ap = (AttachmentPart) obj;
+            try {
+                dataHandler = ap.getDataHandler();
+            } catch (SOAPException se) {
+                throw new WebServiceException("Error while processing files");
+            }
+        } 
+        else {
+            dataHandler = (DataHandler) obj;
+        }
+        
+        final File uploadedFile = new File(dataHandler.getName());
+        try {
+            GpFilePath toPath=DataResource.moveSoapAttachmentToUserUploads(userContext, uploadedFile, parameter.getValue());
+            parameter.setValue(""+toPath.getUrl());
+            // { MODE=URL_IN, type=java.io.File }
+            if (parameter.getAttributes() != null) {
+                parameter.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+                parameter.getAttributes().remove(ParameterInfo.TYPE);
+            }
+        }
+        catch (Throwable t) {
+            throw new WebServiceException("Error moving soap attachment to tmp upload dir, "+parameter.getName()+"="+ parameter.getValue());
         }
     }
 
