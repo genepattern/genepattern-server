@@ -155,7 +155,7 @@ $(function()
                 position: 'left',
                 scrollToElement: true
             },
-           /* {
+            {
                 element: "#job-results",
                 intro: '<div class="tour-header"> Job Results Summary Page </div> The Job Results Summary Page now has additional search options.',
                 position: 'right',
@@ -172,7 +172,7 @@ $(function()
                 intro: '<div class="tour-header"> Job Results Table </div> There is a new Tags column which lists all the tags associated with a job.',
                 position: 'left',
                 scrollToElement: true
-            },*/
+            },
             {
                 intro: '<div class="tour-header"> The End</div> This is the end of the tour. To learn more about what'
                     + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.2" target="_blank">release notes</a>.',
@@ -200,7 +200,8 @@ $(function()
                     }
                 });
 
-                $("#main-pane").load("/gp/pages/tour/properties_menu_item.html",
+                $("#main-pane").append("<div id='gpTourDiv'/>");
+                $("#gpTourDiv").load("/gp/pages/tour/properties_menu_item.html",
                     function()
                     {
                         $(this).find(".uploadedinputfile").hide();
@@ -211,7 +212,7 @@ $(function()
             }
             if(intro._currentStep == 1)
             {
-                $("#main-pane").load("/gp/pages/tour/module_properties_view.html",
+                $("#gpTourDiv").load("/gp/pages/tour/module_properties_view.html",
                     function()
                     {
                         $(this).find(".uploadedinputfile").hide();
@@ -220,24 +221,25 @@ $(function()
             }
             else if(intro._currentStep == 2)
             {
-                $("#runTaskSettingsDiv").remove();
-
-                $("#main-pane").load("/gp/pages/tour/pipeline_properties_view.html",
+                $("#gpTourDiv").load("/gp/pages/tour/pipeline_properties_view.html",
                     function()
                     {
                         $(this).find(".uploadedinputfile").hide();
                     }
                 );
             }
-            /*else if(intro._currentStep == 3)
+            else if(intro._currentStep == 3)
             {
-                $(".tour_module_properties").remove();
+                $("#gpTourDiv").remove();
+
+                $("#main-pane").children(".wasVisibleBefore").show();
+                $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
 
                 loadJobResults(true);
-               // $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
+                $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
             }
 
-            else if(intro._currentStep == 4)
+           /* else if(intro._currentStep == 4)
             {
                 $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
                 //$("#jobTable").scrollRight();
