@@ -138,31 +138,44 @@ $(function()
         var steps = [
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Job Comments </div>There is a new commenting feature for jobs. Before running a job, you can now attach comments to it.',
+                intro: '<div class="tour-header"> Module Properties </div> Selecting the properties for a module or pipeline will now display the properties information above the job submit form.',
                 position: 'left',
                 scrollToElement: true
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Job Comments </div>Comments for a job will be visible on the Job Status page. From there, you or anyone who can view your job can add, edit, or delete a comment.',
+                intro: '<div class="tour-header"> Module Properties </div> When viewing properties of a module, the same information is available as before.',
                 position: 'left',
                 scrollToElement: true
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Job Tags </div>There is a new tagging feature for jobs. Before running a job, you can now add tags. Tags are a neat way to label your jobs.',
+                intro: '<div class="tour-header"> Module Properties </div> When viewing the properties of a pipeline, the information about the individual ' +
+                    'steps in a pipeline is still available as well as some additional information about the pipeline.',
+                position: 'left',
+                scrollToElement: true
+            },
+           /* {
+                element: "#job-results",
+                intro: '<div class="tour-header"> Job Results Summary Page </div> The Job Results Summary Page now has additional search options.',
+                position: 'right',
+                scrollToElement: true
+            },
+            {
+                element: "#jobTableSearch",
+                intro: '<div class="tour-header"> Job Results Search </div> Jobs can be searched for based on comments or tags.',
                 position: 'left',
                 scrollToElement: true
             },
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Job Tags </div>Tags for a job will be visible on the Job Status page. From there, you can also delete or add additional tags.',
+                element: "#jobTableTagColumn",
+                intro: '<div class="tour-header"> Job Results Table </div> There is a new Tags column which lists all the tags associated with a job.',
                 position: 'left',
                 scrollToElement: true
-            },
+            },*/
             {
                 intro: '<div class="tour-header"> The End</div> This is the end of the tour. To learn more about what'
-                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.1" target="_blank">release notes</a>.',
+                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.2" target="_blank">release notes</a>.',
                 position: 'left',
                 scrollToElement: true
             }
@@ -177,11 +190,8 @@ $(function()
 
         intro.onbeforechange(function(targetElement)
         {
-            //switch the active left navigation tab to the appropriate one for the step
             if(intro._currentStep == 0)
             {
-                $(".tour_main_image").remove();
-
                 $("#main-pane").children().each(function()
                 {
                     if($(this).is(":visible"))
@@ -190,71 +200,65 @@ $(function()
                     }
                 });
 
-                $("#main-pane").append('<img class="tour_main_image" src="../images/gp_comments_jobsubmit.png" alt="Job Comments Job Submit" width="815" height="540" style="border: none;"></img>');
+                $("#main-pane").load("/gp/pages/tour/properties_menu_item.html",
+                    function()
+                    {
+                        $(this).find(".uploadedinputfile").hide();
+                        $("#otherOptionsMenu").show();
+                        $("#properties").focus();
+                    }
+                );
             }
-            else if(intro._currentStep == 1)
+            if(intro._currentStep == 1)
             {
-                $(".tour_main_image").remove();
-
-                $("#main-pane").children().each(function()
-                {
-                    if($(this).is(":visible"))
+                $("#main-pane").load("/gp/pages/tour/module_properties_view.html",
+                    function()
                     {
-                        $(this).addClass("wasVisibleBefore").hide();
+                        $(this).find(".uploadedinputfile").hide();
                     }
-                });
-
-                $("#main-pane").append('<img class="tour_main_image" src="../images/gp_comments_jobstatus.png" alt="Job Comments Job Status" width="850" height="490" style="border: none;"></img>');
+                );
             }
             else if(intro._currentStep == 2)
             {
-                $(".tour_main_image").remove();
-                $("#main-pane").children().each(function()
-                {
-                    if($(this).is(":visible"))
-                    {
-                        $(this).addClass("wasVisibleBefore").hide();
-                    }
-                });
-                $("#main-pane").append('<img class="tour_main_image" src="../images/gp_tags_jobsubmit.png" alt="Job Tags Job Submit" width="820" height="535" style="border: none;"></img>');
-            }
-            else if(intro._currentStep == 3)
-            {
-                $(".tour_main_image").remove();
-                $("#main-pane").children().each(function()
-                {
-                    if($(this).is(":visible"))
-                    {
-                        $(this).addClass("wasVisibleBefore").hide();
-                    }
-                });
+                $("#runTaskSettingsDiv").remove();
 
-                $("#main-pane").append('<img class="tour_main_image" src="../images/gp_tags_jobstatus.png" alt="Job Tags Job Status" width="850" height="450" style="border: none;"></img>');
+                $("#main-pane").load("/gp/pages/tour/pipeline_properties_view.html",
+                    function()
+                    {
+                        $(this).find(".uploadedinputfile").hide();
+                    }
+                );
             }
+            /*else if(intro._currentStep == 3)
+            {
+                $(".tour_module_properties").remove();
+
+                loadJobResults(true);
+               // $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
+            }
+
             else if(intro._currentStep == 4)
             {
-                newTourCleanup();
-            }
+                $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
+                //$("#jobTable").scrollRight();
+                //$("#jobTableSearch").find(".summaryTitle").children("td").last().attr("id", "jobTableSearchTagColumn");
+            }*/
         });
 
-        intro.onchange(function(targetElement)
-        {
-            if(intro._currentStep == 4)
-            {
-                $(".search-widget").searchslider("hide");
-            }
-        });
 
         intro.onexit(function()
         {
             introTourCleanup();
             newTourCleanup();
+            window.location.href = "/gp";
         });
 
         intro.oncomplete(function()
         {
             introTourCleanup();
-            newTourCleanup()
+            newTourCleanup();
+
+            window.location.href = "/gp";
         });
 
         last_left_nav_tab_new =  $("#left-nav").tabs( "option", "active");
@@ -265,15 +269,12 @@ $(function()
 
 function newTourCleanup()
 {
-    $(".tour_main_image").remove();
+    $("#runTaskSettingsDiv").remove();
+
     $("#main-pane").children(".wasVisibleBefore").show();
     $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
 
-    $("#menus-uploads .file-widget-actions").find(".module-listing").last().removeClass("tourHighlight");
-
-    $(".search-widget").searchslider("hide");
-
-    $( "#left-nav" ).tabs( "option", "active", last_left_nav_tab_new);
+    $("#jobTable").find(".summaryTitle").children("td").last().removeAttr("id");
 }
 
 function jqEscape(str) {
