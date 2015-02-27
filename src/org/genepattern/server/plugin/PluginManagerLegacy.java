@@ -25,6 +25,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,46 +65,115 @@ import org.w3c.dom.NodeList;
  */
 public class PluginManagerLegacy {
     public static Logger log = Logger.getLogger(PluginManagerLegacy.class);
+    
+    /**
+     * Get the list of required patches for the given task.
+     * @param taskInfo
+     * @return
+     */
+    protected List<PatchInfo> getRequiredPatches(final TaskInfo taskInfo) throws JobDispatchException {
+        final TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
+        String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
+        return getRequiredPatches(requiredPatchLSID, requiredPatchURL);
+    }
+    
+    protected List<PatchInfo> getRequiredPatches(final String requiredPatchLSIDs, final String requiredPatchURLs) 
+    throws JobDispatchException {
+        // no patches required?
+        if (requiredPatchLSIDs == null || requiredPatchLSIDs.length() == 0) {
+            return Collections.emptyList();
+        }
+        
+        String[] requiredPatchLSIDArray = requiredPatchLSIDs.split(",");
+        String[] requiredPatchURLArray = (requiredPatchURLs != null && requiredPatchURLs.length() > 0 ? requiredPatchURLs.split(",")
+                : new String[requiredPatchLSIDArray.length]);
+        if (requiredPatchURLArray != null && requiredPatchURLArray.length != requiredPatchLSIDArray.length) {
+            throw new JobDispatchException("manifest has " + requiredPatchLSIDArray.length + " patch LSIDs but " + requiredPatchURLArray.length + " URLs");
+        }
+        List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
+        for(int i=0; i<requiredPatchLSIDArray.length; ++i) {
+            try {
+                PatchInfo patchInfo=new PatchInfo(requiredPatchLSIDArray[i], requiredPatchURLArray[i]);
+                patchInfos.add(patchInfo);
+            }
+            catch (MalformedURLException e) {
+                throw new JobDispatchException("Error initializing patchInfo from args, "+
+                        "lsid="+requiredPatchLSIDArray[i]+
+                        "url="+requiredPatchURLArray[i], e);
+            }
+        }
+        return patchInfos;
+    }
+    
+    protected List<PatchInfo> getPatchesToInstall(TaskInfo taskInfo) throws MalformedURLException, JobDispatchException {
+        final List<PatchInfo> requiredPatches=getRequiredPatches(taskInfo);
+        // no patches required?
+        if (requiredPatches==null || requiredPatches.size()==0) {
+            return Collections.emptyList();
+        }
+        final List<String> installedPatchLSIDs=getInstalledPatches();
+        
+        // remove installed patches from list of required patches
+        for (Iterator<PatchInfo> iterator = requiredPatches.iterator(); iterator.hasNext();) {
+            final PatchInfo requiredPatch = iterator.next();
+            if (isInstalled(requiredPatch, installedPatchLSIDs)) {
+                iterator.remove();
+            }
+        }
+        return requiredPatches;
+    }
+    
+    protected List<String> getInstalledPatches() {
+        String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+        String[] installedPatchLSIDs = new String[0];
+        if (installedPatches != null) {
+            installedPatchLSIDs = installedPatches.split(",");
+        }
+        return Arrays.asList(installedPatchLSIDs);
+    }
+    
+    protected boolean isInstalled(final PatchInfo requiredPatch, List<String> installedPatchLSIDs) throws MalformedURLException {
+        for(final String installedPatchLSID : installedPatchLSIDs) {
+            LSID installedLSID = new LSID(installedPatchLSID);
+            if (installedLSID.isEquivalent(requiredPatch.getPatchLsid())) {
+                // there are installed patches, and there is an LSID match to this one
+                log.info(requiredPatch.getPatchLsid().toString() + " is already installed");
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    protected String toStringOrEmpty(Object obj) {
+        if (obj==null) {
+            return "";
+        }
+        return obj.toString();
+    }
+
+    protected String toStringOrNull(Object obj) {
+        if (obj==null) {
+            return null;
+        }
+        return obj.toString();
+    }
+
     // check that each patch listed in the TaskInfoAttributes for this task is installed.
     // if not, download and install it.
     // For any problems, throw an exception
     public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
-        // no patches required?
-        if (requiredPatchLSID == null || requiredPatchLSID.length() == 0) {
+        List<PatchInfo> patchesToInstall=getPatchesToInstall(taskInfo);
+        // no patches to install?
+        if (patchesToInstall==null) {
+            log.error("Unexpected null value returned from getPatchesToInstall, for task="
+                    +taskInfo.getName()+", "+taskInfo.getLsid());
             return true;
-        }
-
-        // some patches required, check which are already installed
-        String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
-        String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
-        String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",")
-                : new String[requiredPatchLSIDs.length]);
-        if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
-            throw new JobDispatchException(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " + patchURLs.length + " URLs");
-        }
-        eachRequiredPatch: for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
-            String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-            String[] installedPatchLSIDs = new String[0];
-            if (installedPatches != null) {
-                installedPatchLSIDs = installedPatches.split(",");
-            }
-            requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
-            LSID requiredLSID = new LSID(requiredPatchLSID);
-            log.debug("Checking whether " + requiredPatchLSID + " is already installed...");
-            for (int p = 0; p < installedPatchLSIDs.length; p++) {
-                LSID installedLSID = new LSID(installedPatchLSIDs[p]);
-                if (installedLSID.isEquivalent(requiredLSID)) {
-                    // there are installed patches, and there is an LSID match to this one
-                    log.info(requiredLSID.toString() + " is already installed");
-                    continue eachRequiredPatch;
-                }
-            }
-
-            // download and install this patch
-            installPatch(requiredPatchLSIDs[requiredPatchNum], patchURLs[requiredPatchNum], taskIntegrator);
         } 
+        for(final PatchInfo patchToInstall : patchesToInstall) {
+            // download and install this patch
+            installPatch(toStringOrNull(patchToInstall.getPatchLsid()), toStringOrEmpty(patchToInstall.getPatchUrl()), taskIntegrator);
+        }
         // end of loop for each patch LSID for the task
         return true;
     }

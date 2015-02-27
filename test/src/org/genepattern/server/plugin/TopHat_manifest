@@ -1,0 +1,312 @@
+#TopHat
+#Thu Dec 16 14:51:34 EST 2010
+JVMLevel=
+author=Marc-Danie Nazaire, gp-help@broadinstitute.org, Broad Institute
+commandLine=<perl> <libdir>tophat_wrapper.pl --tophatDir <patches>/TopHat/2.0.11/*/ --samtoolsDir <patches>/SAMTools/0.1.19 --bowtieDir <patches>/Bowtie/2.1.0/bowtie2-2.1.0 --libdir <libdir> --index <bowtie.index> --pair1 <reads.pair.1> --pair2 <reads.pair.2> --mateDist <mate.inner.dist> --mateStd <mate.std.dev> --readEditDist <read.edit.dist>  --readGapLength <read.gap.length> --oprefix <output.prefix> --gtf <GTF.file> --transcriptomeIndex <transcriptome.index> --juncs <raw.junctions.file> --transcriptomeOnly <transcriptome.only> --minALen <min.anchor.length> --maxSpliceM <max.splice.mismatches> --minILen <min.intron.length> --maxILen <max.intron.length> --maxInsLen <max.insertion.length> --maxDelLen <max.deletion.length> --maxMHit <max.multihits> --readMis <read.mismatches> --maxTHit <max.transcriptome.hits> --fAnchorLen <fusion.anchor.length> --fReadMis <fusion.read.mismatches> --fusion <fusion.mapping> -- <find.novel.junctions> <library.type> <quality.value.scale> <coverage.search> <microexon.search> <prefilter.multihits> <Bowtie.preset.options> -p 6 <additional.tophat.options>
+cpuType=any
+description=[**Beta Release** Contact gp-help with any issues. Check stdout.txt and stderr.txt for errors] TopHat 2.0.11 is a fast splice junction mapper for RNA-Seq reads. It aligns RNA-Seq reads to mammalian-sized genomes using the ultra high-throughput short read aligner Bowtie, and then analyzes the mapping results to identify splice junctions between exons.
+fileFormat=bam;junctions.bed;insertions.bed;deletions.bed
+language=C++;Perl;Python
+name=TopHat
+os=any
+requiredPatchLSIDs=urn\:lsid\:broadinstitute.org\:plugin\:Ant_1.8\:1,urn\:lsid\:broadinstitute.org\:plugin\:Check_Python_2.6\:2,urn\:lsid\:broadinstitute.org\:plugin\:Bowtie_2.1.0\:2,urn\:lsid\:broadinstitute.org\:plugin\:SAMTools_0_1_19\:2,urn\:lsid\:broadinstitute.org\:plugin\:TopHat_2.0.11\:4
+requiredPatchURLs=http\://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/Ant_1_8/broadinstitute.org\:plugin/Ant_1.8/1/Ant_1_8.zip,http\://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/Check_Python_2.6/broadinstitute.org\:plugin/Check_Python_2.6/2/Check_Python_2_6.zip,http\://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/Bowtie_2.1.0/broadinstitute.org\:plugin/Bowtie_2.1.0/2/Bowtie_2_1_0.zip,http\://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/SAMTools_0.1.19/broadinstitute.org\:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip,http\://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/TopHat_2.0.11/broadinstitute.org\:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip
+taskDoc=doc.html
+
+p1_MODE=IN
+p1_TYPE=FILE
+p1_choiceDir=ftp\://gpftp.broadinstitute.org/module_support_files/annotation/gtf/
+p1_choiceDirFilter=*.gtf
+p1_default_value=
+p1_description=A GTF file (v. 2.2 or higher) or GFF3 file containing a list of gene model annotations. TopHat will first extract the transcript sequences and align them to this virtual transcriptome first. Only the reads that do not fully map to the transcriptome will then be mapped on the genome. The reads that did map on the transcriptome will be converted to genomic mappings (spliced as needed) and merged with the novel mappings.
+p1_fileFormat=gtf;gff3
+p1_name=GTF.file
+p1_optional=on
+p1_prefix_when_specified=
+p1_type=java.io.File
+p1_value=
+
+p2_default_value=
+p2_description=A directory containing a transcriptome index generated from a previous run of TopHat
+p2_fileFormat=
+p2_name=transcriptome.index
+p2_optional=on
+p2_prefix_when_specified=
+p2_type=java.io.File
+p2_value=
+
+p3_choiceDir=ftp\://gpftp.broadinstitute.org/module_support_files/bowtie2/index/by_genome/
+p3_choiceDirFilter=type=dir
+p3_MODE=IN
+p3_TYPE=FILE
+p3_default_value=
+p3_description=A zip file or directory containing a Bowtie 2 index.
+p3_fileFormat=
+p3_flag=--index
+p3_name=bowtie.index
+p3_optional=
+p3_prefix=
+p3_prefix_when_specified=
+p3_type=java.io.File
+p3_value=
+
+p4_MODE=IN
+p4_TYPE=FILE
+p4_default_value=
+p4_description=Unpaired reads file or first mate for paired reads. One or more files containing reads in FASTA or FASTQ format (bz2 and gz compressed files are supported).
+p4_fileFormat=fn;fa;fasta;fq;fastq;fn.gz;fa.gz;fasta.gz;fq.gz;fastq.gz;fn.bz2;fa.bz2;fasta.bz2;fq.bz2;fastq.bz2;zip;gz;bz2
+p4_name=reads.pair.1
+p4_numValues=0+
+p4_optional=on
+p4_prefix_when_specified=
+p4_type=java.io.File
+p4_value=
+
+p5_MODE=IN
+p5_TYPE=FILE
+p5_default_value=
+p5_description=Second mate for paired reads. Zero or more files in FASTA or FASTQ format (bz2 and gz compressed files are supported).
+p5_fileFormat=fn;fa;fasta;fq;fastq;fn.gz;fa.gz;fasta.gz;fq.gz;fastq.gz;fn.bz2;fa.bz2;fasta.bz2;fq.bz2;fastq.bz2;zip;gz;bz2
+p5_name=reads.pair.2
+p5_numValues=0+
+p5_optional=on
+p5_prefix_when_specified=
+p5_type=java.io.File
+p5_value=
+
+p6_default_value=50
+p6_description=The expected mean inner distance between mate pairs.
+p6_name=mate.inner.dist
+p6_optional=on
+p6_prefix_when_specified=
+p6_type=java.lang.Integer
+p6_value=
+
+p7_default_value=
+p7_description=The standard deviation for the distribution of inner distances between mate pairs.
+p7_name=mate.std.dev
+p7_optional=on
+p7_prefix_when_specified=
+p7_type=java.lang.Integer
+p7_value=
+
+p8_default_value=
+p8_description=Library type for strand specific reads.
+p8_name=library.type
+p8_optional=on
+p8_prefix_when_specified=--library-type 
+p8_type=java.lang.String
+p8_value=\=Select a library type;fr-unstranded\=Standard Illumina (fr-unstranded);fr-firststrand\=dUTP, NSR, NNSR (fr-firststrand);fr-secondstrand\=Ligation, Standard SOLiD (fr-secondstrand)
+
+p9_default_value=
+p9_description=A combination of pre-packaged options for Bowtie 2 based on speed and sensitivity/accuracy.
+p9_name=Bowtie.preset.options
+p9_optional=on
+p9_prefix_when_specified=
+p9_type=java.lang.String
+p9_value=\=Select a preset option;--b2-very-fast\=very-fast;--b2-fast\=fast;--b2-sensitive\=sensitive;--b2-very-sensitive\=very-sensitive
+
+p10_default_value=no
+p10_description=Whether to align the reads to the virtual transcriptome (provided in the GTF file parameter) and report only those mappings as genomic mappings.
+p10_flag=--transcriptomeOnly
+p10_name=transcriptome.only
+p10_optional=on
+p10_prefix_when_specified=
+p10_type=java.lang.String
+p10_value=no;yes
+
+p11_default_value=
+p11_description=The maximum number of mappings allowed for a read when it is aligned to the virtual transcriptome (provided in the GTF file parameter). Any reads found with more than this number of mappings will be discarded.
+p11_flag=--maxTHit
+p11_name=max.transcriptome.hits
+p11_optional=on
+p11_prefix_when_specified=
+p11_type=java.lang.Integer
+p11_value=
+
+p12_default_value=
+p12_description=When mapping reads on the virtual transcriptome (provided in the GTF file parameter), some repetitive or low complexity reads that would be discarded in the context of the genome may appear to align to the transcript sequences and thus may end up reported as mapped to those genes only. This option directs TopHat to first align the reads to the whole genome, then exclude such multi-mapped reads.
+p12_name=prefilter.multihits
+p12_optional=on
+p12_prefix_when_specified=
+p12_type=java.lang.Integer
+p12_value=\=no;--prefilter-multihits\=yes
+
+p13_MODE=IN
+p13_TYPE=FILE
+p13_default_value=
+p13_description=A file containing raw junctions. Junctions are specified one per line in a tab-delimited format.
+p13_fileFormat=juncs
+p13_name=raw.junctions.file
+p13_optional=on
+p13_prefix_when_specified=
+p13_type=java.io.File
+p13_value=
+
+p14_default_value=
+p14_description=If you select no, then the module will only look for junctions indicated in the GTF file supplied in the GTF file parameter. (This parameter is ignored when no GTF file is specified.)
+p14_name=find.novel.junctions
+p14_optional=on
+p14_prefix_when_specified=
+p14_type=java.lang.String
+p14_value=\=yes;--no-novel-juncs\=no
+
+p15_default_value=8
+p15_description=The anchor length. This value must be at least 3.
+p15_flag=--minALen
+p15_name=min.anchor.length
+p15_optional=on
+p15_prefix_when_specified=
+p15_type=java.lang.Integer
+p15_value=
+
+p16_default_value=0
+p16_description=The maximum number of mismatches that may appear in the "anchor" region of a spliced alignment.
+p16_flag=--maxSpliceM
+p16_name=max.splice.mismatches
+p16_optional=on
+p16_prefix_when_specified=
+p16_type=java.lang.Integer
+p16_value=
+
+p17_default_value=
+p17_description=The minimum intron length. TopHat will ignore donor/acceptor pairs closer than this many bases apart.
+p17_flag=--minILen
+p17_name=min.intron.length
+p17_optional=on
+p17_prefix_when_specified=
+p17_type=java.lang.Integer
+p17_value=
+
+p18_default_value=500000
+p18_description=The maximum intron length. When searching for junctions ab initio, TopHat will ignore donor/acceptor pairs farther than this many bases apart, except when such a pair is supported by a split segment alignment of a long read.
+p18_flag=--maxILen
+p18_name=max.intron.length
+p18_optional=on
+p18_prefix_when_specified=
+p18_type=java.lang.Integer
+p18_value=
+
+p19_default_value=3
+p19_description=The maximum insertion length
+p19_flag=--maxInsLen
+p19_name=max.insertion.length
+p19_optional=on
+p19_type=java.lang.String
+p19_value=
+
+p20_default_value=3
+p20_description=The maximum deletion length
+p20_flag=--maxDelLen
+p20_name=max.deletion.length
+p20_optional=on
+p20_prefix_when_specified=
+p20_type=java.lang.String
+p20_value=
+
+p21_default_value=
+p21_description=Whether to use the Solexa, Phred 33, or  Solexa v. 1.3 (Phred 64) quality value scale.
+p21_name=quality.value.scale
+p21_optional=on
+p21_prefix_when_specified=
+p21_type=java.lang.String
+p21_value=\=Phred 33;--solexa1.3-quals\=Solexa 1.3 (Phred 64);--solexa-quals\=Solexa
+
+p22_default_value=20
+p22_description=The maximum number of times a read can be aligned to the reference genome. If a read is aligned more than this number of times, then TopHat will choose the alignments based on their alignment scores, reporting the alignments with the best alignment scores. If there are more than this number of alignments with the same score for a read, TopHat will randomly report only this many alignments.
+p22_flag=--maxMHit
+p22_name=max.multihits
+p22_optional=on
+p22_prefix_when_specified=
+p22_type=java.lang.Integer
+p22_value=
+
+p23_default_value=2
+p23_description=Final read alignments having more than these many mismatches should be discarded.
+p23_flag=--readMis
+p23_name=read.mismatches
+p23_optional=on
+p23_prefix_when_specified=
+p23_type=java.lang.Integer
+p23_value=
+
+p24_default_value=--no-coverage-search
+p24_description=Enables or disables the coverage based search for junctions. Use when coverage search is disabled by default (such as for reads 75bp or longer), for maximum sensitivity.
+p24_name=coverage.search
+p24_optional=on
+p24_prefix_when_specified=
+p24_type=java.lang.String
+p24_value=--no-coverage-search\=no;--coverage-search\=yes
+
+p25_default_value=
+p25_description=Attempts to find alignments incident to microexons. Works only for reads 50bp or longer.
+p25_name=microexon.search
+p25_optional=on
+p25_prefix_when_specified=
+p25_type=java.lang.String
+p25_value=\=no;--microexon-search\=yes
+
+p26_default_value=
+p26_description=Whether to enable fusion mapping
+p26_name=fusion.mapping
+p26_optional=on
+p26_prefix_when_specified=
+p26_type=java.lang.String
+p26_value=\=no;yes
+
+p27_default_value=20
+p27_description=A "supporting" read must map to both sides of a fusion by at least these many bases. Only applies when fusion mapping is set to yes.
+p27_name=fusion.anchor.length
+p27_optional=on
+p27_prefix_when_specified=
+p27_type=java.lang.String
+p27_value=
+
+p28_default_value=2
+p28_description=Reads support fusions if they map across fusion with at most these many mismatches. Only applies when fusion mapping is set to yes.
+p28_name=fusion.read.mismatches
+p28_optional=on
+p28_prefix_when_specified=
+p28_type=java.lang.String
+p28_value=
+
+p29_default_value=<job_id>_<reads.pair.1_basename>
+p29_description=The prefix to use for the output file
+p29_name=output.prefix
+p29_optional=on
+p29_prefix_when_specified=
+p29_type=java.lang.Integer
+p29_value=
+
+p30_default_value=
+p30_description=Final read alignments having more than these many edit distance are discarded.
+p30_name=read.edit.dist
+p30_optional=on
+p30_prefix_when_specified=
+p30_type=java.lang.Integer
+p30_value=
+
+p31_default_value=
+p31_description=Final read alignments having more than these many total length of gaps are discarded.
+p31_name=read.gap.length
+p31_optional=on
+p31_prefix_when_specified=
+p31_type=java.lang.Integer
+p31_value=
+
+p32_default_value=
+p32_description=Additional options to be passed along to the TopHat program at the command line. This parameter gives you a means to specify otherwise unavailable TopHat options and switches not supported by the module; check the TopHat manual for details. Recommended for experts only; use this at your own discretion.
+p32_fileFormat=
+p32_name=additional.tophat.options
+p32_optional=on
+p32_prefix_when_specified=
+p32_type=java.lang.String
+p32_value=
+
+pipelineModel=
+privacy=public
+quality=production
+serializedModel=
+taskType=RNA-seq
+userid=GenePattern
+version=Changed default value of output prefix to include job number
