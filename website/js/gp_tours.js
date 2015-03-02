@@ -144,14 +144,14 @@ $(function()
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> When viewing properties of a module, the same information is available as before.',
+                intro: '<div class="tour-header"> Module Properties </div> The properties for a module includes details about the module such as the LSID,command-line,etc...',
                 position: 'left',
                 scrollToElement: true
             },
             {
                 element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> When viewing the properties of a pipeline, the information about the individual ' +
-                    'steps in a pipeline is still available as well as some additional information about the pipeline.',
+                intro: '<div class="tour-header"> Module Properties </div> The properties for a pipeline includes the same information as a module, ' +
+                    'as well as information about the parameters for the individual steps in the pipeline.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -168,8 +168,9 @@ $(function()
                 scrollToElement: true
             },
             {
-                element: "#jobTableTagColumn",
-                intro: '<div class="tour-header"> Job Results Table </div> There is a new Tags column which lists all the tags associated with a job.',
+                intro: '<div class="tour-header"> Job Results Table </div> There is a new <b>Tags</b> column which lists all the ' +
+                    'tags associated with a job. Clicking on any tag in the <b>Tags</b> column will open a ' +
+                    'new Job Results Page with all jobs that have this tag.',
                 position: 'left',
                 scrollToElement: true
             },
@@ -236,17 +237,25 @@ $(function()
                 $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
 
                 loadJobResults(true);
-                $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
             }
-
-           /* else if(intro._currentStep == 4)
+            else if(intro._currentStep == 4)
             {
-                $("#jobTable").find(".summaryTitle").children("td").last().attr("id", "jobTableTagColumn");
-                //$("#jobTable").scrollRight();
-                //$("#jobTableSearch").find(".summaryTitle").children("td").last().attr("id", "jobTableSearchTagColumn");
-            }*/
+                $("#main-pane").scrollLeft(0);
+            }
+            else if(intro._currentStep == 5)
+            {
+                $("#main-pane").scrollLeft(1000);
+            }
         });
 
+
+        /*intro.onafterchange(function(targetElement)
+        {
+            if(intro._currentStep == 6)
+            {
+                $("#main-pane").scrollLeft(180);
+            }
+        });*/
 
         intro.onexit(function()
         {
