@@ -13,6 +13,10 @@ public class PatchInfo {
     public PatchInfo() {
     }
     
+    public PatchInfo(final String patchLsid) throws MalformedURLException {
+        this(patchLsid, (String)null);
+    }
+    
     public PatchInfo(final String patchLsid, final String patchUrl) throws MalformedURLException {
         this.patchLsid=patchLsid==null ? null : new LSID(patchLsid);
         this.patchUrl=patchUrl==null ? null : new URL(patchUrl);
@@ -45,5 +49,9 @@ public class PatchInfo {
     
     public int hashCode() {
         return Objects.hash(patchLsid, patchUrl);
+    }
+    
+    public String toString() {
+        return ""+patchLsid;
     }
 }
