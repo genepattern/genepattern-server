@@ -1,0 +1,188 @@
+<div id="runTaskSettingsDiv">
+                <div class="task_header" id="taskHeaderDiv">
+                    <span id="task_name" class="module_header ">ConvertLineEndings</span>
+                <span id="task_version_main">
+                    <label for="task_versions">
+                        version
+                    </label>
+                    <select name="task_versions" id="task_versions" selected="selected"><option value="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2">2</option><option value="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1">1</option></select>
+                </span>
+
+                    <div id="otherOptionsDiv" class="floatRight">
+                        <img id="otherOptions" alt="other options" src="/gp/images/gear_blue_and_white.png" height="20">
+                            <ul id="otherOptionsMenu" class="module-menu ui-menu ui-widget ui-widget-content ui-corner-all" style="position: absolute; top: 22px; left: -164px; display: none;" role="menu" tabindex="0" aria-activedescendant="properties">
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="properties" href="#" onclick="jq('#otherOptionsMenu').hide();showProperties();" class="ui-corner-all" tabindex="-1" role="menuitem">Properties</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="clone" href="#" onclick="jq('#otherOptionsMenu').hide();cloneTask();" class="ui-corner-all" tabindex="-1" role="menuitem">Clone</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="export" target="_blank" onclick="jq('#otherOptionsMenu').hide();" href="/gp/makeZip.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2" class="ui-corner-all" tabindex="-1" role="menuitem">Export</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="javaCode" class="viewCode ui-corner-all" href="#" onclick="jq('#otherOptionsMenu').hide();" tabindex="-1" role="menuitem">Java code</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="matlabCode" class="viewCode ui-corner-all" href="#" onclick="jq('#otherOptionsMenu').hide();" tabindex="-1" role="menuitem">MATLAB code</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a id="rCode" class="viewCode ui-corner-all" href="#" onclick="jq('#otherOptionsMenu').hide();" tabindex="-1" role="menuitem">R code</a>
+                                </li>
+                                <li class="ui-menu-item" role="presentation">
+                                    <a onclick="jq('#otherOptionsMenu').hide();" id="ui-id-2132" class="ui-corner-all" tabindex="-1" role="menuitem">
+                                    <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked">
+                                    <label for="toggleDesc">
+                                        Show parameter descriptions
+                                    </label>
+                                    </a>
+                                </li>
+                            </ul>
+                    </div>
+                    <a class="floatRight" id="documentation" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2" target="_blank">Documentation</a>
+
+                </div>
+                <div class="clear" id="viewCodeDiv" style="display: none;">
+                    <img class="floatRight ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" alt="close view code text" id="removeViewCode" src="/gp/images/delete-blue.png" role="button" aria-disabled="false"></img>
+                </div>
+
+                <div class="clear propertiesContent solid-border paramgroup-spacing" id="viewProperties" style="display: none;">
+                    <img class="floatRight ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" alt="close view code text" id="removeViewProperties" src="/gp/images/delete-blue.png" role="button" aria-disabled="false"></img>
+                    <table>
+                        <tbody><tr>
+                            <td class="properties-label">Name</td>
+                            <td class="properties-name">ConvertLineEndings</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">LSID</td>
+                            <td class="properties-lsid">urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Description</td>
+                            <td class="properties-description">Converts line endings to the host operating system's format.</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Author</td>
+                            <td class="properties-author">Joshua Gould, Broad Institute</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Privacy</td>
+                            <td class="properties-privacy">public</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">License</td>
+                            <td class="properties-license">None</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Quality Level</td>
+                            <td class="properties-quality">production</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Documentation</td>
+                            <td class="properties-documentation"><a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2">Click Here</a></td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Command Line</td>
+                            <td class="properties-commandline">&lt;perl&gt; &lt;libdir&gt;to_host.pl &lt;input.filename&gt; &lt;output.file&gt;</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Categories</td>
+                            <td class="properties-tasktype">Preprocess &amp; Utilities;</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">CPU Type</td>
+                            <td class="properties-cpu">any</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Operating System</td>
+                            <td class="properties-os">any</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Language</td>
+                            <td class="properties-language">Perl</td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Current Files</td>
+                            <td class="properties-files"><a href="/gp/getFile.jsp?task=urn%3Alsid%3Abroad.mit.edu%3Acancer.software.genepattern.module.analysis%3A00002%3A2&amp;file=ConvertLineEndings.pdf">ConvertLineEndings.pdf</a>, <a href="/gp/getFile.jsp?task=urn%3Alsid%3Abroad.mit.edu%3Acancer.software.genepattern.module.analysis%3A00002%3A2&amp;file=to_host.pl">to_host.pl</a>, <a href="/gp/getFile.jsp?task=urn%3Alsid%3Abroad.mit.edu%3Acancer.software.genepattern.module.analysis%3A00002%3A2&amp;file=manifest">manifest</a>, </td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Version Comment</td>
+                            <td class="properties-versioncomment"></td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">File Formats</td>
+                            <td class="properties-formats"></td>
+                        </tr>
+                    </tbody></table>
+                    <div class="properties-children"></div>
+                </div>
+
+                <table id="description_main">
+                    <tbody>
+                    <tr>
+                        <td id="mod_description">
+
+                        Converts line endings to the host operating system's format.</td>
+                        <td id="source_info">Source: <img src="/gp/images/winzip_icon.png" width="18" height="16">
+                            <div id="source_info_tooltip" style="display: none; position: absolute; top: 189px; right: 20px;"></div>
+                        Installed from zip</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <hr class="clear">
+
+                <div>
+                <span class="otherControlsDiv">
+                    * required field
+                </span>
+                <span class="submitControlsDiv floatRight">
+                    <button class="Reset ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"> Reset </span></button>
+                    <button class="Run ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"> Run </span></button>
+                </span>
+                </div>
+
+                <hr class="clear">
+                <!--<table>
+                    <tr>
+                        <td><b>Notes:</b> </td>
+                        <td>
+                            <textarea rows="4" cols="50"> This run tests running CMS using SNR test statistic. </textarea>
+                        </td>
+                    </tr>
+                </table> -->
+
+                <div id="missingTasksDiv"></div>
+                <div id="paramsListingDiv">
+                    <form id="runTaskForm" action="#">
+                        <table id="paramsTable"></table>
+                    </form>
+                <div class="pHeaderTitleDiv top-level-background"><img src="/gp/images/toggle_collapse.png" width="19" height="19" class="paramSectionToggle">  </div><div id="paramGroup_0_0" class="paramGroupSection solid-border paramgroup-spacing"><table class="paramsTable"><tbody><tr id="input.filename" class="pRow"><td class="pTitle"><div class="pTitleDiv">input filename*</div></td><td class="paramValueTd"><div class="valueEntryDiv"><div class="fileDiv mainDivBorder ui-droppable" id="fileDiv-input.filename-1"><div class="fileUploadDiv"><div class="batchBox" title="A job will be launched for every file with a matching type."><input type="checkbox" id="batchCheckinput.filename"><label for="batchCheckinput.filename">Batch</label></div><button class="uploadBtn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" type="button" role="button" aria-disabled="false"><span class="ui-button-text">Upload File...</span></button><div class="inputFileBtn"><input class="uploadedinputfile requiredParam" type="file"></div><button type="button" class="urlButton ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Add Path or URL...</span></button><span class="drop-box">Drag Files Here</span><div class="fileSizeCaption"> 2GB file upload limit using the Upload File... button. For files &gt; 2GB upload from the Files tab. </div></div><div class="fileListingDiv"></div></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">The input file (any non-binary file format)</td></tr><tr id="output.file" class="pRow"><td class="pTitle"><div class="pTitleDiv">output file*</div></td><td class="paramValueTd"><div class="valueEntryDiv"><div class="textDiv"><input type="text" class="pValue"></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">The output file</td></tr></tbody></table></div><div class="pHeaderTitleDiv top-level-background"><img src="/gp/images/toggle_expand.png" width="19" height="19" class="paramSectionToggle">Lsf Flags</div><div id="paramGroup_1_0" class="paramGroupSection solid-border paramgroup-spacing" style="display: none;"><div class="pHeaderDescription">Optional LSF job resource requirements. These options correspond to command line args to the 'bsub' command.</div><table class="paramsTable"><tbody><tr id="job.queue" class="pRow"><td class="pTitle"><div class="pTitleDiv">queue</div></td><td class="paramValueTd"><div class="valueEntryDiv"><div class="selectChoice"><select class="choice" id="job.queue_1" style="display: none;"><option value="genepattern">genepattern</option><option value="hour">hour</option><option value="week">week</option><option value="preview">preview</option></select><button type="button" class="ui-multiselect ui-widget ui-state-default ui-corner-all mSelect" aria-haspopup="true" style="width: 199.025307642265px;"><span class="ui-icon ui-icon-triangle-1-s"></span><span>genepattern</span></button></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">All jobs are run as the 'gpdev' role account, by default on the 'genepattern' queue. See the BITS Wiki (https://it.broadinstitute.org/wiki/LSF) for details on the other queues.</td></tr><tr id="job.memory" class="pRow"><td class="pTitle"><div class="pTitleDiv">memory</div></td><td class="paramValueTd"><div class="valueEntryDiv"><div class="selectChoice"><select class="choice" id="job.memory_1" style="display: none;"><option value="1">small (1 Gb)</option><option value="2">default (2 Gb)</option><option value="8">8 Gb</option><option value="12">12 Gb</option><option value="16">16 Gb</option><option value="24">max available (24 Gb)</option><option value="36">more than max (32 Gb)</option><option value="64">pending indefinitely (64 Gb)</option></select><button type="button" class="ui-multiselect ui-widget ui-state-default ui-corner-all mSelect" aria-haspopup="true" style="width: 276.572974344542px;"><span class="ui-icon ui-icon-triangle-1-s"></span><span>default (2 Gb)</span></button></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">An integer, in number of Gb, default is '2'</td></tr><tr id="lsf.cpu.slots" class="pRow"><td class="pTitle"><div class="pTitleDiv">cpu slots</div></td><td class="paramValueTd"><div class="valueEntryDiv"><div class="selectChoice"><select class="choice" id="lsf.cpu.slots_1" style="display: none;"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option></select><button type="button" class="ui-multiselect ui-widget ui-state-default ui-corner-all mSelect" aria-haspopup="true" style="width: 230.124863945902px;"><span class="ui-icon ui-icon-triangle-1-s"></span><span>1</span></button></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">The '-n' arg to the bsub command</td></tr></tbody></table></div></div>
+
+                <div class="pHeaderTitleDiv top-level-background">
+                    <img src="/gp/images/toggle_collapse.png" alt="toggle image" width="19" height="19" class="paramSectionToggle">
+                    Comments
+                </div>
+                <div class="commentsContent paramgroup-spacing">
+                    <textarea id="jobComment" placeholder="Add a comment..."></textarea>
+                </div>
+
+               <div class="pHeaderTitleDiv top-level-background">
+                    <img src="/gp/images/toggle_collapse.png" alt="toggle image" width="19" height="19" class="paramSectionToggle">
+                    Tags
+                </div>
+                <div class="tagsContent paramgroup-spacing">
+                    <input id="jobTags" style="display: none;"><div id="jobTags_tagsinput" class="tagsinput" style="width: 97%; min-height: 40px; height: 100%;"><div id="jobTags_addTag"><input id="jobTags_tag" value="" data-default="Add tag and press enter..." class="ui-autocomplete-input" autocomplete="off" style="color: rgb(204, 204, 204); width: 150px;"><span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span></div><div class="tags_clear"></div></div>
+                </div>
+
+                <hr>
+
+                <div style="height: 40px;">
+                <span class="floatLeft otherControlsDiv">
+                </span>
+                <span class="floatRight submitControlsDiv">
+                    <button class="Reset ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"> Reset </span></button>
+                    <button class="Run ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"> Run </span></button>
+                </span>
+                </div>
+            </div>
