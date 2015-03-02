@@ -745,8 +745,8 @@ public class GenePatternAnalysisTask {
             PluginManagerLegacy pluginManager=new PluginManagerLegacy();
             pluginManager.validatePatches(taskInfo, null);
         }
-        catch (MalformedURLException e) {
-            throw new JobDispatchException(e);
+        catch (Exception e) {
+            throw new JobDispatchException("Error validating patches for task="+taskInfo.getName(), e);
         }
         Map<String, String> environmentVariables = new HashMap<String, String>();
 

@@ -22,12 +22,16 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import static org.hamcrest.CoreMatchers.*;
 import org.mockito.Mockito;
 
 public class TestPluginManagerLegacy {
     final String ANT="urn:lsid:broadinstitute.org:plugin:Ant_1.8:1";
     final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
+    final String Bowtie_2_1_0="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2";
     final String Check_Python_2_6="urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2";
+    final String SAMTools_0_1_19="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2";
+    final String TopHat_2_0_11="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4";
     
     private GpConfig gpConfig;
     private GpContext gpContext;
@@ -75,11 +79,11 @@ public class TestPluginManagerLegacy {
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip"),
             new PatchInfo(Check_Python_2_6,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Check_Python_2.6/broadinstitute.org:plugin/Check_Python_2.6/2/Check_Python_2_6.zip"),
-            new PatchInfo("urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2",
+            new PatchInfo(Bowtie_2_1_0,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/2/Bowtie_2_1_0.zip"),
-            new PatchInfo("urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2",
+            new PatchInfo(SAMTools_0_1_19,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
-            new PatchInfo("urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4",
+            new PatchInfo(TopHat_2_0_11,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
         );
 
@@ -214,9 +218,18 @@ public class TestPluginManagerLegacy {
     public void patchesToInstall_TopHat_some_installed() throws Exception {
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
+        
+        System.setProperty(GPConstants.INSTALLED_PATCH_LSIDS, ANT+","+Check_Python_2_6+","+Bowtie_2_1_0);
+        List<PatchInfo> expected=Arrays.asList(
+            new PatchInfo(SAMTools_0_1_19,
+                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
+            new PatchInfo(TopHat_2_0_11,
+                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
+                );
+        
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
-        assertEquals(topHatPatchInfos, patchesToInstall);
+        assertThat(patchesToInstall,is(expected));
     }
 
 }

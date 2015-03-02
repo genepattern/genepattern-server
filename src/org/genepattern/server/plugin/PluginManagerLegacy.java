@@ -2,7 +2,6 @@ package org.genepattern.server.plugin;
 
 import static org.genepattern.util.GPConstants.COMMAND_LINE;
 import static org.genepattern.util.GPConstants.DEFAULT_PATCH_URL;
-import static org.genepattern.util.GPConstants.INSTALLED_PATCH_LSIDS;
 import static org.genepattern.util.GPConstants.MANIFEST_FILENAME;
 import static org.genepattern.util.GPConstants.PATCH_ERROR_EXIT_VALUE;
 import static org.genepattern.util.GPConstants.PATCH_SUCCESS_EXIT_VALUE;
@@ -26,7 +25,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,6 +63,25 @@ import org.w3c.dom.NodeList;
  */
 public class PluginManagerLegacy {
     public static Logger log = Logger.getLogger(PluginManagerLegacy.class);
+    
+    private final GpConfig gpConfig;
+    private final GpContext gpContext;
+    private final PluginRegistry pluginRegistry;
+    
+    public PluginManagerLegacy() {
+        this(ServerConfigurationFactory.instance(),
+                GpContext.getServerContext(),
+                initDefaultPluginRegistry());
+    }
+    public PluginManagerLegacy(GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
+        this.gpConfig=gpConfig;
+        this.gpContext=gpContext;
+        this.pluginRegistry=pluginRegistry;
+    }
+    
+    protected static PluginRegistry initDefaultPluginRegistry() {
+        return new PluginRegistrySystemProps();
+    }
     
     /**
      * Get the list of required patches for the given task.
@@ -106,43 +123,30 @@ public class PluginManagerLegacy {
         return patchInfos;
     }
     
-    protected List<PatchInfo> getPatchesToInstall(TaskInfo taskInfo) throws MalformedURLException, JobDispatchException {
+    protected List<PatchInfo> getPatchesToInstall(final TaskInfo taskInfo) throws Exception, MalformedURLException, JobDispatchException {
         final List<PatchInfo> requiredPatches=getRequiredPatches(taskInfo);
         // no patches required?
         if (requiredPatches==null || requiredPatches.size()==0) {
             return Collections.emptyList();
         }
-        final List<String> installedPatchLSIDs=getInstalledPatches();
         
         // remove installed patches from list of required patches
         for (Iterator<PatchInfo> iterator = requiredPatches.iterator(); iterator.hasNext();) {
             final PatchInfo requiredPatch = iterator.next();
-            if (isInstalled(requiredPatch, installedPatchLSIDs)) {
+            if (pluginRegistry.isInstalled(gpConfig, gpContext, requiredPatch)) {
                 iterator.remove();
             }
         }
         return requiredPatches;
     }
-    
-    protected List<String> getInstalledPatches() {
-        String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-        String[] installedPatchLSIDs = new String[0];
-        if (installedPatches != null) {
-            installedPatchLSIDs = installedPatches.split(",");
-        }
-        return Arrays.asList(installedPatchLSIDs);
-    }
-    
-    protected boolean isInstalled(final PatchInfo requiredPatch, List<String> installedPatchLSIDs) throws MalformedURLException {
-        for(final String installedPatchLSID : installedPatchLSIDs) {
-            LSID installedLSID = new LSID(installedPatchLSID);
-            if (installedLSID.isEquivalent(requiredPatch.getPatchLsid())) {
-                // there are installed patches, and there is an LSID match to this one
-                log.info(requiredPatch.getPatchLsid().toString() + " is already installed");
-                return true;
-            }
-        }
-        return false;
+
+    /**
+     * Get the list of installed patches.
+     * @return
+     * @throws Exception
+     */
+    protected List<PatchInfo> getInstalledPatches() throws Exception {
+        return pluginRegistry.getInstalledPatches(gpConfig, gpContext);
     }
     
     protected String toStringOrEmpty(Object obj) {
@@ -162,7 +166,7 @@ public class PluginManagerLegacy {
     // check that each patch listed in the TaskInfoAttributes for this task is installed.
     // if not, download and install it.
     // For any problems, throw an exception
-    public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
+    public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws Exception, MalformedURLException, JobDispatchException {
         List<PatchInfo> patchesToInstall=getPatchesToInstall(taskInfo);
         // no patches to install?
         if (patchesToInstall==null) {
@@ -179,24 +183,13 @@ public class PluginManagerLegacy {
     }
 
     public void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
-        String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-        String[] installedPatchLSIDs = new String[0];
-        if (installedPatches != null) {
-            installedPatchLSIDs = installedPatches.split(",");
-        }
-        LSID requiredLSID = new LSID(requiredPatchLSID);
-        log.debug("Checking whether " + requiredPatchLSID + " is already installed...");
-        for (int p = 0; p < installedPatchLSIDs.length; p++) {
-            LSID installedLSID = new LSID(installedPatchLSIDs[p]);
-            if (installedLSID.isEquivalent(requiredLSID)) {
-                // there are installed patches, and there is an LSID match to
-                // this one
-                log.info(requiredLSID.toString() + " is already installed");
-                return;
-            }
+        boolean isInstalled=pluginRegistry.isInstalled(gpConfig, gpContext, new PatchInfo(requiredPatchLSID, requiredPatchURL));
+        if (isInstalled) {
+            return;
         }
         installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
+    
     
     protected static File getPatchDirectory(final String patchName) 
     throws ConfigurationException
@@ -349,10 +342,11 @@ public class PluginManagerLegacy {
         String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
         if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
             try {
-                recordPatch(requiredPatchLSID);
+                PatchInfo patchInfo=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+                pluginRegistry.recordPatch(gpConfig, gpContext, patchInfo);
             }
-            catch (IOException e) {
-                String errorMessage="IOException while recording patch: "+e.getLocalizedMessage();
+            catch (Exception e) {
+                String errorMessage="Exception while recording patch: "+e.getLocalizedMessage();
                 log.error(errorMessage, e);
                 throw new JobDispatchException(errorMessage, e);
             }
@@ -555,56 +549,7 @@ public class PluginManagerLegacy {
         int exitValue = process.exitValue();
         return exitValue;
     }
-
-    // record the patch LSID in the genepattern.properties file
-    private static synchronized void recordPatch(String patchLSID) throws IOException {
-        // add this LSID to the installed patches repository
-        String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-        if (installedPatches == null || installedPatches.length() == 0) {
-            installedPatches = "";
-        } 
-        else {
-            installedPatches = installedPatches + ",";
-        }
-        installedPatches = installedPatches + patchLSID;
-        System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-        Properties props = new Properties();
-        props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
-
-        // make sure any changes are properly set in the System props
-        props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-        props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")), "added installed patch LSID");
-
-        for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
-            String k = (String) iter.next();
-            String v = (String) props.get(k);
-            System.setProperty(k, v);
-        }
-    }
     
-    /**
-     * // read the genepattern.properties file into a String (preserving comments!) public static String
-     * readGenePatternProperties() throws IOException { File gpPropertiesFile = new
-     * File(System.getProperty("resources"), "genepattern.properties"); return readPropertiesFile(gpPropertiesFile); }
-     * // read the genepattern.properties file into a String (preserving comments!) protected static String
-     * readPropertiesFile(File propertiesFile) throws IOException { FileReader fr = new FileReader(propertiesFile); char
-     * buf[] = new char[(int)propertiesFile.length()]; int len = fr.read(buf, 0, buf.length); fr.close(); String
-     * properties = new String(buf, 0, len); return properties; } // write a String as a genepattern.properties file
-     * (preserving comments) public static void writeGenePatternProperties(String properties) throws IOException { File
-     * gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
-     * writePropertiesFile(gpPropertiesFile, properties); }
-     * <p/>
-     * protected static void writePropertiesFile(File propertiesFile, String properties) throws IOException { FileWriter
-     * fw = new FileWriter(propertiesFile, false); fw.write(properties); fw.close(); } // add or set the value of a
-     * particular key in the String representation of a properties file public static String addProperty(String
-     * properties, String key, String value) { int ipStart = properties.indexOf(key + "="); if (ipStart == -1) {
-     * properties = properties + System.getProperty("line.separator") + key + "=" + value +
-     * System.getProperty("line.separator"); } else { int ipEnd =
-     * properties.indexOf(System.getProperty("line.separator"), ipStart); properties = properties.substring(0, ipStart +
-     * key.length() + "=".length()) + value; if (ipEnd != -1) properties = properties + "," +
-     * properties.substring(ipEnd); } return properties; }
-     */
-
     protected static void processNode(Node node, HashMap hmProps) {
     if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element c_elt = (Element) node;
