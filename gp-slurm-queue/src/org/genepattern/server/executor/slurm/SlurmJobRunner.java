@@ -332,7 +332,8 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
-            if (stderr != null && stderr.exists()) {
+            if (stderr != null && stderr.exists() && stderr.length() != 0) {
+                Thread.currentThread().interrupt();
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
             }
             else {
@@ -343,15 +344,19 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("FAILED") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("TIMEOUT") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("PREEMPT") == 0 || slurmStatusString.compareToIgnoreCase("PREEMPTED") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("NODE_FAI") == 0 || slurmStatusString.compareToIgnoreCase("NODE_FAIL") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else {
