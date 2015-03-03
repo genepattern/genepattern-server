@@ -1527,11 +1527,11 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
     }
 
     if (run_task_info.params === null) {
-        throw new Error("Error initializating parameters");
+        throw new Error("Error initializing parameters");
     }
 
     if (run_task_info.params === null) {
-        throw new Error("Error initializating parameter groups");
+        throw new Error("Error initializing parameter groups");
     }
 
     $("#runTaskSettingsDiv").off("click.headerTitle").on("click.headerTitle", ".pHeaderTitleDiv",  function () {

@@ -742,10 +742,11 @@ public class GenePatternAnalysisTask {
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
         validateOS(expected, "run " + taskName);
         try {
-            PluginManagerLegacy.validatePatches(taskInfo, null);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy();
+            pluginManager.validatePatches(taskInfo, null);
         }
-        catch (MalformedURLException e) {
-            throw new JobDispatchException(e);
+        catch (Exception e) {
+            throw new JobDispatchException("Error validating patches for task="+taskInfo.getName(), e);
         }
         Map<String, String> environmentVariables = new HashMap<String, String>();
 
@@ -3288,7 +3289,8 @@ public class GenePatternAnalysisTask {
                 return v;
             }
             //if necessary, install patches
-            PluginManagerLegacy.validatePatches(taskInfo, taskIntegrator);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy();
+            pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
             final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
             if (vProblems != null && vProblems.size()>0) {
