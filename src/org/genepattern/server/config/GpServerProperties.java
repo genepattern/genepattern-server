@@ -2,6 +2,8 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -82,6 +84,28 @@ public class GpServerProperties {
                     log.error(e);
                     ///CLOVER:ON
                 }
+            }
+        }
+    }
+
+    /**
+     * Helper method for saving the given properties instance to the given file.
+     * 
+     * @param props
+     * @param propFile
+     * @param comment
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static void writeProperties(final Properties props, final File propFile, final String comment) throws FileNotFoundException, IOException {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(propFile);
+            props.store(fos, comment);
+        } 
+        finally {
+            if (fos != null) {
+                fos.close();
             }
         }
     }
