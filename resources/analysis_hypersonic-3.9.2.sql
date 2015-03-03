@@ -26,10 +26,20 @@ create table patch_info (
     lsid varchar(255) not null,
     user_id varchar(255) default null,
     url varchar(255) default null,
-    status_date timestamp not null,
+    status_date timestamp default now not null,
     primary key (id),
     unique (lsid)
 );
 
+-- initialize with default values, previously set in genepattern.properties file
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1');
+insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1');
+
 -- update schema version
 update props set value='3.9.2' where key='schemaVersion';
+commit;

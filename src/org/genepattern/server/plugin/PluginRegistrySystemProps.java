@@ -27,6 +27,10 @@ public class PluginRegistrySystemProps implements PluginRegistry {
     @Override
     public List<PatchInfo> getInstalledPatches(GpConfig gpConfig, GpContext gpContext) throws MalformedURLException {
         final String installedPatches = System.getProperty(GPConstants.INSTALLED_PATCH_LSIDS);
+        return getInstalledPatches(installedPatches);
+    }
+    
+    protected static List<PatchInfo> getInstalledPatches(final String installedPatches) throws MalformedURLException {
         String[] installedPatchLSIDs = new String[0];
         if (installedPatches != null) {
             installedPatchLSIDs = installedPatches.split(",");

@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -20,17 +21,20 @@ import org.junit.rules.TemporaryFolder;
 public class TestPluginRegistrySystemProps {
     GpConfig gpConfig=null;
     GpContext gpContext=null;
-    PluginRegistry pr=new PluginRegistrySystemProps();
+    PluginRegistrySystemProps pr=new PluginRegistrySystemProps();
     File resourcesDir;
 
     
-    public final String defaultInstalledPatchLSIDs=
+    public static final String defaultInstalledPatchLSIDs=
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1,urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1";
 
-    public final String GenePattern_3_4="urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1";
-    public final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
-    public final String TopHat="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3";
-        //String Ant="urn:lsid:broadinstitute.org:plugin:Ant_1.8:1";
+    public static final List<PatchInfo> initDefaultInstalledPatchInfos() throws MalformedURLException {
+        return PluginRegistrySystemProps.getInstalledPatches(defaultInstalledPatchLSIDs);
+    }
+    
+    public static final String GenePattern_3_4="urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1";
+    public static final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
+    public static final String TopHat="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3";
 
     @Rule
     public TemporaryFolder temp=new TemporaryFolder();
