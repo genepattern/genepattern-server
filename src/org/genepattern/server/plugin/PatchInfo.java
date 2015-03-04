@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Properties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,11 +25,13 @@ public class PatchInfo {
     private String lsid;
     private String userId;
     private String url;
+    private String patchDir;
     private Date statusDate=new Date();
 
-    // non-DB columns
+    // non-DB fields
     private LSID patchLsid;
     private URL patchUrl;
+    private Properties customProps=new Properties();
     
     public PatchInfo() {
     }
@@ -40,6 +43,10 @@ public class PatchInfo {
     public PatchInfo(final String patchLsid, final String patchUrl) throws MalformedURLException {
         setLsid(patchLsid);
         setUrl(patchUrl);
+    }
+    
+    public void addCustomProps(final Properties props) {
+        customProps.putAll(props);
     }
     
     @Id
@@ -86,7 +93,15 @@ public class PatchInfo {
     }
     public void setStatusDate(final Date statusDate) {
         this.statusDate=statusDate;
-    }        
+    }
+    
+    @Column(name="patch_dir")
+    public String getPatchDir() {
+        return patchDir;
+    }
+    public void setPatchDir(final String patchDir) {
+        this.patchDir=patchDir;
+    }
 
     @Transient
     public LSID getPatchLsid() {
@@ -98,6 +113,16 @@ public class PatchInfo {
         return patchUrl;
     }
     
+    @Transient
+    public boolean hasCustomProps() {
+        return customProps != null && customProps.size() > 0;
+    }
+    
+    @Transient
+    public Properties getCustomProps() {
+        return customProps;
+    }
+    
     public boolean equals(Object obj) {
         if (obj == null) { 
             return false;
@@ -106,14 +131,11 @@ public class PatchInfo {
             return false;
         }
         PatchInfo arg=(PatchInfo)obj;
-        return //Objects.equals(id, arg.id) &&
-                Objects.equals(lsid, arg.lsid) &&
-                Objects.equals(url, arg.url);
+        return Objects.equals(lsid, arg.lsid);
     }
     
     public int hashCode() {
-        //return Objects.hash(id, lsid, url);
-        return Objects.hash(lsid, url);
+        return Objects.hash(lsid);
     }
     
     public String toString() {

@@ -56,7 +56,12 @@ public class TestPatchInfoDao {
             new PatchInfoDao().getInstalledPatches());
         
         // test three, duplicate lsid, update the entry
-        new PatchInfoDao().recordPatch(new PatchInfo(BWA));
+        PatchInfo bwa=new PatchInfo(BWA);
+        String patchDir=new File("../patches/"+BWA).getAbsolutePath();
+        bwa.setPatchDir(patchDir);
+        new PatchInfoDao().recordPatch(bwa);
+        assertEquals("BWA.patchDir", patchDir, new PatchInfoDao().selectPatchInfoByLsid(BWA).getPatchDir());
+              
         assertEquals(
             "expecting no new entry after recording a patch update", 
             // expected

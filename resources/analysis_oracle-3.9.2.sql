@@ -13,6 +13,7 @@ create table patch_info (
     lsid varchar(255 char) not null,
     user_id varchar(255 char) default null,
     url varchar(255 char) default null,
+    patch_dir varchar(255 char) default null,
     status_date timestamp default sysdate not null,
     primary key (id),
     unique (lsid)

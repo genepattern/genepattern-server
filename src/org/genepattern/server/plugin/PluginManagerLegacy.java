@@ -62,7 +62,7 @@ import org.w3c.dom.NodeList;
  * @author pcarr
  */
 public class PluginManagerLegacy {
-    public static Logger log = Logger.getLogger(PluginManagerLegacy.class);
+    private static Logger log = Logger.getLogger(PluginManagerLegacy.class);
     
     private final GpConfig gpConfig;
     private final GpContext gpContext;
@@ -70,8 +70,10 @@ public class PluginManagerLegacy {
     
     public PluginManagerLegacy() {
         this(ServerConfigurationFactory.instance(),
-                GpContext.getServerContext(),
-                initDefaultPluginRegistry());
+                GpContext.getServerContext());
+    }
+    public PluginManagerLegacy(GpConfig gpConfig, GpContext gpContext) {
+        this(gpConfig, gpContext, initDefaultPluginRegistry(gpConfig, gpContext));
     }
     public PluginManagerLegacy(GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
         this.gpConfig=gpConfig;
@@ -79,8 +81,8 @@ public class PluginManagerLegacy {
         this.pluginRegistry=pluginRegistry;
     }
     
-    protected static PluginRegistry initDefaultPluginRegistry() {
-        return new PluginRegistrySystemProps();
+    public static PluginRegistry initDefaultPluginRegistry(GpConfig gpConfig, GpContext gpContext) {
+        return new PluginRegistryGpDb();
     }
     
     /**
@@ -342,7 +344,10 @@ public class PluginManagerLegacy {
         String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
         if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
             try {
-                PatchInfo patchInfo=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+                File patchManifest=new File(patchDirectory, "manifest");
+                PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(patchManifest, null);
+                patchInfo.setUrl(requiredPatchURL);
+                patchInfo.setPatchDir(patchDirectory.getAbsolutePath());
                 pluginRegistry.recordPatch(gpConfig, gpContext, patchInfo);
             }
             catch (Exception e) {

@@ -742,7 +742,7 @@ public class GenePatternAnalysisTask {
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
         validateOS(expected, "run " + taskName);
         try {
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy();
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, jobContext);
             pluginManager.validatePatches(taskInfo, null);
         }
         catch (Exception e) {
@@ -3289,7 +3289,9 @@ public class GenePatternAnalysisTask {
                 return v;
             }
             //if necessary, install patches
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy();
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            GpContext gpContext=GpContext.getServerContext();
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, gpContext);
             pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
             final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);

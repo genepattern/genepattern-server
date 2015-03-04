@@ -41,6 +41,7 @@ import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
+import org.genepattern.server.plugin.MigratePlugins;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
@@ -368,6 +369,16 @@ public class StartupServlet extends HttpServlet {
         }
         catch (Throwable t) {
             getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
+        }
+        
+        // import installed plugins (aka patches) from the root plugin directory into the GP database
+        try {
+            getLog().info("\tmigrating installed plugins ...");
+            MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext);
+            migratePlugins.migratePlugins();
+        }
+        catch (Throwable t) {
+            getLog().error("Error migrating installed plugins: " + t.getLocalizedMessage(), t);
         }
         
         //start the JobPurger
