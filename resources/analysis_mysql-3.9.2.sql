@@ -25,6 +25,7 @@ create table PATCH_INFO (
     lsid varchar(255) not null,
     user_id varchar(255) default null,
     url varchar(255) default null,
+    patch_dir varchar(255) default null,
     status_date timestamp not null,
     primary key (id),
     unique (lsid)

@@ -76,14 +76,19 @@ public class GpConfigLoader {
     public static File initConfigFileFromServerProps(final GpServerProperties serverProperties) throws Exception {
         String configFilepath=serverProperties.getProperty(ServerConfigurationFactory.PROP_CONFIG_FILE);
         if (configFilepath == null) {
-            configFilepath = serverProperties.getProperty(ServerConfigurationFactory.PROP_LEGACY_CONFIG_FILE);
             log.info(""+ServerConfigurationFactory.PROP_CONFIG_FILE+" not set, checking "+ServerConfigurationFactory.PROP_LEGACY_CONFIG_FILE);
+            configFilepath = serverProperties.getProperty(ServerConfigurationFactory.PROP_LEGACY_CONFIG_FILE);
         }
-        if (configFilepath == null) {
-            configFilepath = "config_default.yaml";
-            log.info(""+ServerConfigurationFactory.PROP_CONFIG_FILE+" not set, using default config file: "+configFilepath);
+        if (configFilepath != null) {
+            return initFileFromStr(serverProperties.getResourcesDir(), configFilepath);
         }
-        return initFileFromStr(serverProperties.getResourcesDir(), configFilepath);
+        
+        log.info(""+ServerConfigurationFactory.PROP_LEGACY_CONFIG_FILE+" not set");
+        File custom=new File(serverProperties.getResourcesDir(), "config_custom.yaml");
+        if (custom.exists()) {
+            return custom;
+        }
+        return initFileFromStr(serverProperties.getResourcesDir(), "config_default.yaml");
     }
 
     public static GpConfig createFromSystemProps() {

@@ -1,6 +1,7 @@
 package org.genepattern.server.plugin;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -207,27 +208,54 @@ public class TestPluginManagerLegacy {
     
     @Test
     public void patchesToInstall_TopHat_none_installed() throws Exception {
+        GpConfig gpConfig=mock(GpConfig.class);
+        GpContext gpContext=new GpContext.Builder().build();
+        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertEquals(topHatPatchInfos, patchesToInstall);
     }
 
     @Test
     public void patchesToInstall_TopHat_some_installed() throws Exception {
-        File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
-        TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
-        
-        System.setProperty(GPConstants.INSTALLED_PATCH_LSIDS, ANT+","+Check_Python_2_6+","+Bowtie_2_1_0);
-        List<PatchInfo> expected=Arrays.asList(
+        final File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
+        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
+        final List<PatchInfo> installedPatches=Arrays.asList(
+                new PatchInfo(ANT),
+                new PatchInfo(Check_Python_2_6),
+                new PatchInfo(Bowtie_2_1_0)
+                );
+        final List<PatchInfo> expected=Arrays.asList(
             new PatchInfo(SAMTools_0_1_19,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
             new PatchInfo(TopHat_2_0_11,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
                 );
         
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginRegistry pluginRegistry=new PluginRegistry() {
+
+            @Override
+            public List<PatchInfo> getInstalledPatches(GpConfig gpConfig, GpContext gpContext) throws Exception {
+                return installedPatches;
+            }
+
+            @Override
+            public boolean isInstalled(GpConfig gpConfig, GpContext gpContext, PatchInfo patchInfo) throws Exception {
+                boolean in=installedPatches.contains(patchInfo);
+                return in;
+            }
+
+            @Override
+            public void recordPatch(GpConfig gpConfig, GpContext gpContext, PatchInfo patchInfo) throws Exception {
+                throw new IllegalArgumentException("Not implemented!");
+            }
+        };
+        
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertThat(patchesToInstall,is(expected));
     }

@@ -1,0 +1,1 @@
+Mock ant installation directory.

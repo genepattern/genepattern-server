@@ -11,6 +11,23 @@ import org.hibernate.Query;
 public class PatchInfoDao {
     private static final Logger log = Logger.getLogger(PatchInfoDao.class);
     
+    protected void validatePatchInfo(final PatchInfo patchInfo) throws IllegalArgumentException {
+        if (patchInfo==null) {
+            throw new IllegalArgumentException("patchInfo==null");
+        }
+        if (patchInfo.getLsid()==null) {
+            throw new IllegalArgumentException("patchInfo.lsid==null");
+        }
+        if (patchInfo.getPatchLsid()==null) {
+            throw new IllegalArgumentException("patchInfo.patchLsid==null");
+        }
+    }
+    
+    public PatchInfo selectPatchInfoByLsid(final PatchInfo query) throws IllegalArgumentException, DbException {
+        validatePatchInfo(query);
+        return selectPatchInfoByLsid(query.getLsid());
+    }
+    
     /**
      * Get the entry from the patch_info table for the given patchLsid. 
      * 
@@ -18,7 +35,7 @@ public class PatchInfoDao {
      * @return null if there is no matching entry in the table.
      * @throws Exception
      */
-    protected PatchInfo selectPatchInfoByLsid(final String patchLsid) throws DbException {
+    public PatchInfo selectPatchInfoByLsid(final String patchLsid) throws DbException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();
         try {
@@ -67,15 +84,7 @@ public class PatchInfoDao {
     }
     
     public void recordPatch(final PatchInfo patchInfo) throws IllegalArgumentException, DbException {
-        if (patchInfo==null) {
-            throw new IllegalArgumentException("patchInfo==null");
-        }
-        if (patchInfo.getLsid()==null) {
-            throw new IllegalArgumentException("patchInfo.lsid==null");
-        }
-        if (patchInfo.getPatchLsid()==null) {
-            throw new IllegalArgumentException("patchInfo.patchLsid==null");
-        }
+        validatePatchInfo(patchInfo);
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         HibernateUtil.beginTransaction();
         try {
@@ -102,15 +111,7 @@ public class PatchInfoDao {
     }
     
     public boolean removePatch(PatchInfo patchInfo) throws IllegalArgumentException, DbException {
-        if (patchInfo==null) {
-            throw new IllegalArgumentException("patchInfo==null");
-        }
-        if (patchInfo.getLsid()==null) {
-            throw new IllegalArgumentException("patchInfo.lsid==null");
-        }
-        if (patchInfo.getPatchLsid()==null) {
-            throw new IllegalArgumentException("patchInfo.patchLsid==null");
-        }
+        validatePatchInfo(patchInfo);
         return removePatchByLsid(patchInfo.getLsid());
     }
     
