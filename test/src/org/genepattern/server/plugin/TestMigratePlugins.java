@@ -95,13 +95,13 @@ public class TestMigratePlugins {
         MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
         File rootPluginDir=FileUtil.getDataFile("patches").getAbsoluteFile();
         migratePlugins.scanPluginDir(rootPluginDir);
-        assertEquals("Expecting to find 5 patches", 5, migratePlugins.getPatchInfos().size()); 
+        assertEquals("patchInfos.size", 5, migratePlugins.getPatchInfos().size()); 
         PatchInfo[] patchInfos=migratePlugins.getPatchInfos().toArray(new PatchInfo[0]);
-        assertEquals("patchInfos[0]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:Ant_1.8:1"), patchInfos[0]);
-        assertEquals("patchInfos[1]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2"), patchInfos[1]);
-        assertEquals("patchInfos[2]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2"), patchInfos[2]);
-        assertEquals("patchInfos[3]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2"), patchInfos[3]);
-        assertEquals("patchInfos[4]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3"), patchInfos[4]);
+        assertEquals("patchInfos[0]", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfos[0].getLsid());
+        assertEquals("patchInfos[1]", "urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2", patchInfos[1].getLsid());
+        assertEquals("patchInfos[2]", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2", patchInfos[2].getLsid());
+        assertEquals("patchInfos[3]", "urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2", patchInfos[3].getLsid());
+        assertEquals("patchInfos[4]", "urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3", patchInfos[4].getLsid());
         
         assertEquals("Expectiung to find 4 custom properties files", 4, migratePlugins.getCustomPropFiles().size());
         
