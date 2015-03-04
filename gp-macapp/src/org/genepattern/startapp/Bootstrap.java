@@ -70,58 +70,65 @@ public class Bootstrap {
         String user = System.getProperty("user.name");
         File gpHome = new File("/Users/" + user + "/.genepattern");
 
+        boolean createdDirectory = false;
+
         // Lazily check for GP Home
         if (!gpHome.exists()) {
             gpHome.mkdir();
-
-            // Lazily create subdirectories
-            File jobResults = new File(gpHome, "jobResults");
-            if (!jobResults.exists()) {
-                File iJobResults = new File(gpServer, "jobResults");
-                FileUtils.copyDirectory(iJobResults, jobResults);
-            }
-
-            File logs = new File(gpHome, "logs");
-            if (!logs.exists()) {
-                File iLogs = new File(gpServer, "logs");
-                FileUtils.copyDirectory(iLogs, logs);
-            }
-
-            File patches = new File(gpHome, "patches");
-            if (!patches.exists()) {
-                File iPatches = new File(gpServer, "patches");
-                FileUtils.copyDirectory(iPatches, patches);
-            }
-
-            File resources = new File(gpHome, "resources");
-            if (!resources.exists()) {
-                File iResources = new File(gpServer, "resources");
-                FileUtils.copyDirectory(iResources, resources);
-            }
-
-            File taskLib = new File(gpHome, "taskLib");
-            if (!taskLib.exists()) {
-                File iTaskLib = new File(gpServer, "taskLib");
-                FileUtils.copyDirectory(iTaskLib, taskLib);
-            }
-
-            File temp = new File(gpHome, "temp");
-            if (!temp.exists()) {
-                File iTemp = new File(gpServer, "temp");
-                FileUtils.copyDirectory(iTemp, temp);
-            }
-
-            File users = new File(gpHome, "users");
-            if (!users.exists()) {
-                File iUsers = new File(gpServer, "users");
-                FileUtils.copyDirectory(iUsers, users);
-            }
-
-            return true;
+            createdDirectory = true;
         }
-        else {
-            return false;
+
+        // Lazily create subdirectories
+        File jobResults = new File(gpHome, "jobResults");
+        if (!jobResults.exists()) {
+            File iJobResults = new File(gpServer, "jobResults");
+            FileUtils.copyDirectory(iJobResults, jobResults);
+            createdDirectory = true;
         }
+
+        File logs = new File(gpHome, "logs");
+        if (!logs.exists()) {
+            File iLogs = new File(gpServer, "logs");
+            FileUtils.copyDirectory(iLogs, logs);
+            createdDirectory = true;
+        }
+
+        File patches = new File(gpHome, "patches");
+        if (!patches.exists()) {
+            File iPatches = new File(gpServer, "patches");
+            FileUtils.copyDirectory(iPatches, patches);
+            createdDirectory = true;
+        }
+
+        File resources = new File(gpHome, "resources");
+        if (!resources.exists()) {
+            File iResources = new File(gpServer, "resources");
+            FileUtils.copyDirectory(iResources, resources);
+            createdDirectory = true;
+        }
+
+        File taskLib = new File(gpHome, "taskLib");
+        if (!taskLib.exists()) {
+            File iTaskLib = new File(gpServer, "taskLib");
+            FileUtils.copyDirectory(iTaskLib, taskLib);
+            createdDirectory = true;
+        }
+
+        File temp = new File(gpHome, "temp");
+        if (!temp.exists()) {
+            File iTemp = new File(gpServer, "temp");
+            FileUtils.copyDirectory(iTemp, temp);
+            createdDirectory = true;
+        }
+
+        File users = new File(gpHome, "users");
+        if (!users.exists()) {
+            File iUsers = new File(gpServer, "users");
+            FileUtils.copyDirectory(iUsers, users);
+            createdDirectory = true;
+        }
+
+        return createdDirectory;
     }
 
     public static File getWorkingDirectory(String workingDirString) {
