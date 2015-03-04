@@ -57,7 +57,7 @@ public class TestMigratePlugins {
     
     @Test
     public void scanRootPluginDir() throws Exception {
-        migratePlugins.scanRootPluginDir();
+        migratePlugins.scanPluginDir(rootPluginDir);
         assertEquals("Expecting to find 5 patches", 5, migratePlugins.getPatchInfos().size()); 
         PatchInfo[] patchInfos=migratePlugins.getPatchInfos().toArray(new PatchInfo[0]);
         assertEquals("patchInfos[0]", new PatchInfo("urn:lsid:broadinstitute.org:plugin:Ant_1.8:1"), patchInfos[0]);
