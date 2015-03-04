@@ -110,6 +110,45 @@ public class GpServerProperties {
         }
     }
     
+    /**
+     * Save custom plugin properties into the custom.properties file for the server.
+     * You must reload the configuration to guarantee that the updates are available to the
+     * GP runtime.
+     * 
+     * @param customPropsFile, the path to the GP server custom.properties file
+     * @param pluginCustomProps, the custom properties to set from the plugin directory
+     */
+    public static void updateCustomProperties(final File customPropsFile, final Properties pluginCustomProps) throws FileNotFoundException, IOException {
+        String comment=null;
+        boolean skipExisting=true;
+        updateCustomProperties(customPropsFile, pluginCustomProps, comment, skipExisting);
+    }
+
+    public static void updateCustomProperties(final File customPropsFile, final Properties pluginCustomProps, final String comment, final boolean skipExisting) throws FileNotFoundException, IOException {
+        //1) load the file
+        final Properties customProps=GpServerProperties.loadProps(customPropsFile);
+        //2) save changes
+        for(final String key : pluginCustomProps.stringPropertyNames()) {
+            String updatedValue=pluginCustomProps.getProperty(key);
+            String existingValue=customProps.getProperty(key);
+            if (skipExisting && existingValue != null) {
+                log.debug(key+"="+existingValue+" is already in custom.properties file");
+                if (existingValue.equals(updatedValue)) {
+                    log.debug("skipping duplicate custom plugin property");
+                }
+                else {
+                    log.error(key+"="+existingValue+" is already in custom.properties file");
+                    log.error("Ignoring custom plugin property, "+key+"="+updatedValue);
+                }
+            }
+            else {
+                customProps.setProperty(key, updatedValue);
+            }
+        }
+        //3) save file
+        GpServerProperties.writeProperties(customProps, customPropsFile, comment);
+    }
+
     public static class Record {
         private final File propFile;
         private long dateLoaded = System.currentTimeMillis();
