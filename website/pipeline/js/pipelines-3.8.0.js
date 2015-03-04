@@ -236,8 +236,8 @@ var editor = {
     },
 
     relocateIfNeeded: function(module) {
-        var LIBRARY_WIDTH = 190;
-        var HEADER_HEIGHT = 112;
+        var LIBRARY_WIDTH = 0;
+        var HEADER_HEIGHT = 0;
 
         var repaint = false;
 
