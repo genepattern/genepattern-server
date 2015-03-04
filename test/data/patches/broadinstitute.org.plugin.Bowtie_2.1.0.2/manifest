@@ -1,0 +1,17 @@
+#Tue, 29 Oct 2013 11:29:14 -0400
+#Outputs a custom properties file containing the path to the Bowtie 2.1.0 installation
+#Require the Ant 1.8 plugin
+name=Bowtie_2.1.0
+description=Install Bowtie 2.1.0
+version=updated to not fail when installing the plugin if the files already exist
+privacy=public
+os=any
+author=Peter Carr, Marc-Danie Nazaire Broad Institute
+userid=
+taskType=Patch
+quality=production
+failureExitValue=1
+cpuType=all
+commandLine=<ant-1.8> -f installExecutable.xml -Dconfiguration\=configuration.txt -Dresources\=<resources> -Dplugin.dir\=<patches>
+
+LSID=urn\:lsid\:broadinstitute.org\:plugin\:Bowtie_2.1.0\:2
