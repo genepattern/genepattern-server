@@ -56,7 +56,44 @@ public class TestMigratePlugins {
     }
     
     @Test
+    public void initPatchInfo_Ant() throws Exception {
+        File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Ant_1.8.1/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfo.getLsid());
+    }
+    
+    @Test
+    public void initPatchInfo_Bowtie() throws Exception {
+        File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Bowtie_2.1.0.2/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2", patchInfo.getLsid());
+    }
+
+    @Test
+    public void initPatchInfo_CheckPython() throws Exception {
+        File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Check_Python_2.6.2/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2", patchInfo.getLsid());
+    }
+
+    @Test
+    public void initPatchInfo_SAMTools() throws Exception {
+        File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.SAMTools_0_1_19.2/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2", patchInfo.getLsid());
+    }
+
+    @Test
+    public void initPatchInfo_TopHat() throws Exception {
+        File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.TopHat_2.0.9.3/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3", patchInfo.getLsid());
+    }
+    
+    @Test
     public void scanRootPluginDir() throws Exception {
+        MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
+        File rootPluginDir=FileUtil.getDataFile("patches").getAbsoluteFile();
         migratePlugins.scanPluginDir(rootPluginDir);
         assertEquals("Expecting to find 5 patches", 5, migratePlugins.getPatchInfos().size()); 
         PatchInfo[] patchInfos=migratePlugins.getPatchInfos().toArray(new PatchInfo[0]);

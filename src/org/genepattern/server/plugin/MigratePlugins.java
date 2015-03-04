@@ -167,7 +167,7 @@ public class MigratePlugins {
     protected void scanPluginDir(final File rootPluginDir) throws Exception {
         for(final File file : rootPluginDir.listFiles()) {
             File manifest=checkForManifest(file);
-            if (manifest  != null) {
+            if (manifest != null) {
                 visitPluginManifest(manifest);
             }
         }
