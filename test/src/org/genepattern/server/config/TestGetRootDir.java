@@ -10,11 +10,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Test cases for getting the user directory for a given GP user account.
+ * Test cases for getting the data directory paths for the GpConfig.
+ * <pre>
+    <GENEPATTERN_HOME>/users
+    <GENEPATTERN_HOME>/jobResults
+ *  </pre>
  * @author pcarr
  *
  */
-public class TestGetUserRootDir {
+public class TestGetRootDir {
     private GpConfig gpConfig;
     private GpContext userContext;
     private File javaWorkingDir;
@@ -88,5 +92,21 @@ public class TestGetUserRootDir {
         File expected=new File(new File(javaWorkingDir.getParentFile(), "users"), userId).getAbsoluteFile();
         assertEquals("userDir", expected, gpConfig.getUserDir(userContext)); 
     }
-
+    
+    /**
+     * By default it's relative to GENEPATTERN_HOME. 
+     * @throws ServerConfigurationException 
+     */
+    @Test
+    public void rootJobDir_gpHome() throws ServerConfigurationException {
+        File expected=new File(gpHomeDir, "jobResults");
+        assertEquals("default rootJobDir", expected, gpConfig.getRootJobDir(userContext));
+    }
+    
+    @Test
+    public void rootJobDir_gpHomeNotSet() throws ServerConfigurationException {
+        gpConfig=new GpConfig.Builder().build();
+        File expected=new File(javaWorkingDir.getParentFile(), "jobResults").getAbsoluteFile();
+        assertEquals(expected, gpConfig.getRootJobDir(userContext));
+    }
 }

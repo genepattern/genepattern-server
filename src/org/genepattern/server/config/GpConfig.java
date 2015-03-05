@@ -245,7 +245,7 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
-        this.jobsDir=initJobsDir(gpContext);
+        this.jobsDir=initRootDir(gpContext, GpConfig.PROP_JOBS, "jobResults", true);
         this.userRootDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
         this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
         this.gpTmpDir=initGpTmpDir(gpContext);
@@ -365,26 +365,6 @@ public class GpConfig {
                 log.debug("setting "+PROP_HIBERNATE_CONNECTION_URL+"="+jdbcUrl);
             }
         }
-    }
-    
-    /**
-     * Initialize root 'jobs' directory, the globally set path to the jobResults directory.
-     * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
-     * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
-     * 
-     * @param valueLookup
-     * @return
-     */
-    private File initJobsDir(final GpContext gpContext) { 
-        File jobsDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_JOBS, "../jobResults"));
-        jobsDir=new File(normalizePath(jobsDir.getPath()));
-        if (!jobsDir.exists()) {
-            boolean success=jobsDir.mkdirs();
-            if (success) {
-                log.info("created '"+PROP_JOBS+"' directory="+jobsDir);
-            }
-        }
-        return jobsDir;
     }
 
     public static File relativize(final File rootDir, final String pathStr) {
