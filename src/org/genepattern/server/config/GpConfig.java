@@ -390,7 +390,7 @@ public class GpConfig {
      * @param pathOrRelativePath
      * @return
      */
-    protected File initAbsolutePath(final GpContext gpContext, final String pathOrRelativePath) { 
+    protected File initAbsolutePath(final String pathOrRelativePath) { 
         final File rootDir;
         if (this.gpHomeDir != null) {
             rootDir=this.gpHomeDir;
@@ -434,7 +434,7 @@ public class GpConfig {
                 dirProp="../"+defaultDirName;
             }
         }
-        File f=initAbsolutePath(serverContext, dirProp);
+        File f=initAbsolutePath(dirProp);
         if (isSubstitutionParam) {
             this.substitutionParams.put(propName, ""+f);
         }
@@ -452,26 +452,35 @@ public class GpConfig {
         return f;
     }
     
+    
     /**
      * Initialize the global path to the temp directory.
-     * If 'gp.tmpdir' is defined use that value, otherwise fall back to use 'java.io.tmpdir'.
-     * Relative paths are relative to the gpWorkingDir.
+     * If {@link GpConfig#PROP_GP_TMPDIR} is defined use that value.
+     * Else if 'java.io.tmpdir' is set in the 'genepattern.properties' file use that value.
+     * Else if gpHomeDir is not null use gpHomeDir/temp
+     * Else if gpWorkingDir is not null use gpWorkingDir/temp
+     * Else use 'java.io.tempdir'.
      * 
-     * @see PROP_GP_TMPDIR
-     * 
-     * @param gpContext
-     * @return
      */
     protected File initGpTmpDir(final GpContext gpContext) {
-        File gpTmpDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_GP_TMPDIR, System.getProperty("java.io.tmpdir")));
-        gpTmpDir=new File(normalizePath(gpTmpDir.getPath())); 
-        if (!gpTmpDir.exists()) {
-            boolean success=gpTmpDir.mkdirs();
-            if (success) {
-                log.info("created '"+PROP_GP_TMPDIR+"' directory="+gpTmpDir);
+        String prop=getGPProperty(gpContext, GpConfig.PROP_GP_TMPDIR);
+        if (prop != null) {
+            return initRootDir(gpContext, GpConfig.PROP_GP_TMPDIR, "temp", true);
+        }
+        //special-case for legacy servers
+        if (serverProperties != null) {
+            if (serverProperties.isSetInGpProperties("java.io.tmpdir")) {
+                return this.initAbsolutePath(serverProperties.getProperty("java.io.tmpdir"));
             }
         }
-        return gpTmpDir;
+        
+        if (gpHomeDir != null) {
+            return new File(gpHomeDir, "temp");
+        }
+        else if (gpWorkingDir != null) {
+            return new File(gpWorkingDir, "temp");
+        }
+        return new File(System.getProperty("java.io.tmpdir"));
     }
 
     /**

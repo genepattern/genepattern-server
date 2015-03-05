@@ -3,6 +3,7 @@ package org.genepattern.server.config;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -155,6 +156,83 @@ public class TestGetRootDir {
         gpConfig=new GpConfig.Builder().build();
         File expected=new File(javaWorkingDir.getParentFile(), "temp/attachments").getAbsoluteFile();
         assertEquals(expected, gpConfig.getSoapAttDir(userContext));
+    }
+    
+    @Test
+    public void rootSoapAttachmentDir_custom() throws  ServerConfigurationException {
+        File customDir=temp.newFolder("custom_soap_attachments").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_SOAP_ATT_DIR, customDir.toString())
+        .build();
+        assertEquals(customDir, gpConfig.getSoapAttDir(userContext));
+    }
+    
+    @Test
+    public void gpTempDir_gpHome() {
+        File expected=new File(gpHomeDir, "temp");
+        assertEquals(expected, gpConfig.getTempDir(userContext));
+    }
+
+    @Test
+    public void gpTempDir_gpHomeNotSet() throws ServerConfigurationException {
+        File gpWorkingDir=temp.newFolder("gp_working_dir").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .gpWorkingDir(gpWorkingDir)
+        .build();
+        File expected=new File(gpWorkingDir, "temp");
+        assertEquals(expected, gpConfig.getTempDir(userContext));
+    }
+    
+    @Test
+    public void gpTempDir_custom_gpTmpdir() throws ServerConfigurationException {
+        File custom=temp.newFolder("custom_tmpdir").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_GP_TMPDIR, custom.toString())
+        .build();
+        File actual=gpConfig.getTempDir(userContext);
+        assertEquals(custom, actual);
+    }
+    
+    @Test
+    public void gpTempDir_custom_gpTmpdir_relativeToGpHome() {
+        // by default, relative to gpHome
+        String relativePath="custom_temp";
+        gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
+            .addProperty(GpConfig.PROP_GP_TMPDIR, relativePath)
+        .build();
+
+        File expected=new File(gpHomeDir, relativePath);
+        assertEquals(expected, gpConfig.getTempDir(userContext));
+    }
+
+    @Test
+    public void gpTempDir_custom_gpTmpdir_relativeToWorkingDir() {
+        // by default, relative to gpHome
+        String relativePath="custom_temp";
+        gpConfig=new GpConfig.Builder()
+            .gpHomeDir(null)
+            .addProperty(GpConfig.PROP_GP_TMPDIR, relativePath)
+        .build();
+
+        File expected=new File(javaWorkingDir, relativePath);
+        assertEquals(expected, gpConfig.getTempDir(userContext));
+    }
+
+    @Test
+    public void gpTempDir_javaIoTmpdir_set_in_gp_properties() throws Exception {
+        // simulate GpConfig 'java.io.tmpdir' set in the 'genepattern.properties' file
+        File custom=temp.newFolder("custom_tmpdir").getAbsoluteFile();
+        File gpPropsFile=temp.newFile("genepattern.properties");
+        Properties gpProps=new Properties();
+        gpProps.setProperty("java.io.tmpdir", custom.toString());
+        GpServerProperties.writeProperties(gpProps, gpPropsFile, "for junit test");
+        gpConfig=new GpConfig.Builder()
+            .gpWorkingDir(null)
+            .serverProperties(new GpServerProperties.Builder().gpProperties(gpPropsFile).build())
+        .build();
+        File actual=gpConfig.getTempDir(userContext);
+        assertEquals(custom, actual);
     }
 
 }
