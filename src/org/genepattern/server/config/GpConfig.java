@@ -28,6 +28,11 @@ import com.google.common.collect.ImmutableList;
 
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
+    
+    /**
+     * Set the file system path for GenePattern data files.
+     */
+    public static final String PROP_GENEPATTERN_HOME="GENEPATTERN_HOME";
 
     /**
      * The version of the database for saving GP session data, default value is 'HSQL'. Other supported
@@ -40,6 +45,11 @@ public class GpConfig {
      */
     public static final String PROP_SHOW_ESTIMATED_QUEUETIME="gp.showEstimatedQueuetime";
 
+    /**
+     * The location for user data directories.
+     */
+    public static final String PROP_USER_ROOT_DIR="user.root.dir";
+    
     /**
      * The directory to write temporary files to
      */
@@ -236,12 +246,12 @@ public class GpConfig {
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
         this.jobsDir=initJobsDir(gpContext);
-        this.userRootDir=initUserRootDir();
+        this.userRootDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
         this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
-        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches");
+        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", false); // don't create on startup
     }
     
     /**
@@ -432,7 +442,7 @@ public class GpConfig {
      * 
      * @return
      */
-    protected File initRootDir(final GpContext serverContext, String propName, String defaultDirName) {
+    protected File initRootDir(final GpContext serverContext, final String propName, String defaultDirName, final boolean mkdirs) {
         String dirProp=getGPProperty(serverContext, propName);
         boolean isSubstitutionParam=false;
         if (dirProp == null) {
@@ -448,26 +458,18 @@ public class GpConfig {
         if (isSubstitutionParam) {
             this.substitutionParams.put(propName, ""+f);
         }
-        return f;
-    }
-    
-    protected File initUserRootDir() {
-        String userRootDirProp=getGPProperty(GpContext.getServerContext(), "user.root.dir");
-        File userRootDir;
-        if (userRootDirProp != null) {
-            userRootDir=relativize(gpWorkingDir, userRootDirProp);
-        }
-        else {
-            userRootDir=relativize(gpWorkingDir, "../users");
-        }
-        userRootDir=new File(normalizePath(userRootDir.getPath()));
-        if (!userRootDir.exists()) {
-            boolean success=userRootDir.mkdirs();
-            if (success) {
-                log.info("created 'user.root.dir' directory="+userRootDir);
+        if (mkdirs) {
+            if (!f.exists()) {
+                boolean success=f.mkdirs();
+                if (success) {
+                    log.info("created '"+propName+"' directory="+f);
+                }
+                else {
+                    log.error("failed to create '"+propName+"' directory="+f);
+                }
             }
         }
-        return userRootDir;
+        return f;
     }
     
     protected File initSoapAttachmentDir(final GpContext gpContext) {
@@ -755,6 +757,35 @@ public class GpConfig {
 
     //helper methods for locating server files and folders
     /**
+     * Get the GENEPATTERN_HOME directory, should be a fully qualified File, can be null when not set.
+     * Servers updated from <= 3.9.1 don't set GENEPATTERN_HOME.
+     * 
+     * @return
+     */
+    protected File getGpHomeDir() {
+        return this.gpHomeDir;
+    }
+
+    /**
+     * Get the default working directory for the server.
+     * 
+     * @deprecated required for legacy GP servers. Newer GP servers should use GENEPATTERN_HOME.
+     * 
+     */
+    protected File getGpWorkingDir() {
+        return this.gpWorkingDir;
+    }
+    
+    /**
+     * Get the 'users' folder for the server. This is a global server property.
+     * 
+     * @return
+     */
+    protected File getRootUserDir() {
+        return userRootDir;
+    }
+    
+    /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
      * By default, user home directories are created in the <user.root.dir> directory.
      * The 'gp.user.dir' property can be set on a per user basis to change the default location.
@@ -899,7 +930,7 @@ $GENEPATTERN_HOME$/tasklib
      * @return
      */
     public File getRootTasklibDir(GpContext serverContext) {
-        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib");
+        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib", true);
     }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
