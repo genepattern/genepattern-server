@@ -28,6 +28,11 @@ import com.google.common.collect.ImmutableList;
 
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
+    
+    /**
+     * Set the file system path for GenePattern data files.
+     */
+    public static final String PROP_GENEPATTERN_HOME="GENEPATTERN_HOME";
 
     /**
      * The version of the database for saving GP session data, default value is 'HSQL'. Other supported
@@ -40,6 +45,11 @@ public class GpConfig {
      */
     public static final String PROP_SHOW_ESTIMATED_QUEUETIME="gp.showEstimatedQueuetime";
 
+    /**
+     * The location for user data directories.
+     */
+    public static final String PROP_USER_ROOT_DIR="user.root.dir";
+    
     /**
      * The directory to write temporary files to
      */
@@ -166,9 +176,9 @@ public class GpConfig {
     private final File webserverLogFile;
     private final File resourcesDir;
     private final File gpWorkingDir;
-    private final File jobsDir;
-    private final File userRootDir;
-    private final File soapAttachmentDir;
+    private final File rootJobDir;
+    private final File rootUserDir;
+    private final File rootSoapAttachmentDir;
     private final File gpTmpDir;
     private final File gpPluginDir;
     private final List<Throwable> initErrors;
@@ -235,13 +245,13 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
-        this.jobsDir=initJobsDir(gpContext);
-        this.userRootDir=initUserRootDir();
-        this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
+        this.rootJobDir=initRootDir(gpContext, GpConfig.PROP_JOBS, "jobResults", true);
+        this.rootUserDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
+        this.rootSoapAttachmentDir=initRootDir(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "temp/attachments", true);
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
-        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches");
+        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", false); // don't create on startup
     }
     
     /**
@@ -356,26 +366,6 @@ public class GpConfig {
             }
         }
     }
-    
-    /**
-     * Initialize root 'jobs' directory, the globally set path to the jobResults directory.
-     * Lecacy (GP <= 3.9.0) default location is './Tomcat/webapps/gp/jobResults'.
-     * Newer default location is a fully qualified path to the installation directory: <GenePatternServer>/jobResults.
-     * 
-     * @param valueLookup
-     * @return
-     */
-    private File initJobsDir(final GpContext gpContext) { 
-        File jobsDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_JOBS, "../jobResults"));
-        jobsDir=new File(normalizePath(jobsDir.getPath()));
-        if (!jobsDir.exists()) {
-            boolean success=jobsDir.mkdirs();
-            if (success) {
-                log.info("created '"+PROP_JOBS+"' directory="+jobsDir);
-            }
-        }
-        return jobsDir;
-    }
 
     public static File relativize(final File rootDir, final String pathStr) {
         File path=new File(pathStr);
@@ -432,7 +422,7 @@ public class GpConfig {
      * 
      * @return
      */
-    protected File initRootDir(final GpContext serverContext, String propName, String defaultDirName) {
+    protected File initRootDir(final GpContext serverContext, final String propName, String defaultDirName, final boolean mkdirs) {
         String dirProp=getGPProperty(serverContext, propName);
         boolean isSubstitutionParam=false;
         if (dirProp == null) {
@@ -448,38 +438,18 @@ public class GpConfig {
         if (isSubstitutionParam) {
             this.substitutionParams.put(propName, ""+f);
         }
+        if (mkdirs) {
+            if (!f.exists()) {
+                boolean success=f.mkdirs();
+                if (success) {
+                    log.info("created '"+propName+"' directory="+f);
+                }
+                else {
+                    log.error("failed to create '"+propName+"' directory="+f);
+                }
+            }
+        }
         return f;
-    }
-    
-    protected File initUserRootDir() {
-        String userRootDirProp=getGPProperty(GpContext.getServerContext(), "user.root.dir");
-        File userRootDir;
-        if (userRootDirProp != null) {
-            userRootDir=relativize(gpWorkingDir, userRootDirProp);
-        }
-        else {
-            userRootDir=relativize(gpWorkingDir, "../users");
-        }
-        userRootDir=new File(normalizePath(userRootDir.getPath()));
-        if (!userRootDir.exists()) {
-            boolean success=userRootDir.mkdirs();
-            if (success) {
-                log.info("created 'user.root.dir' directory="+userRootDir);
-            }
-        }
-        return userRootDir;
-    }
-    
-    protected File initSoapAttachmentDir(final GpContext gpContext) {
-        File soapAttDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "../temp/attachments"));
-        soapAttDir=new File(normalizePath(soapAttDir.getPath()));
-        if (!soapAttDir.exists()) {
-            boolean success=soapAttDir.mkdirs();
-            if (success) {
-                log.info("created '"+PROP_SOAP_ATT_DIR+"' directory="+soapAttDir);
-            }
-        }
-        return soapAttDir;
     }
     
     /**
@@ -755,6 +725,35 @@ public class GpConfig {
 
     //helper methods for locating server files and folders
     /**
+     * Get the GENEPATTERN_HOME directory, should be a fully qualified File, can be null when not set.
+     * Servers updated from <= 3.9.1 don't set GENEPATTERN_HOME.
+     * 
+     * @return
+     */
+    protected File getGpHomeDir() {
+        return this.gpHomeDir;
+    }
+
+    /**
+     * Get the default working directory for the server.
+     * 
+     * @deprecated required for legacy GP servers. Newer GP servers should use GENEPATTERN_HOME.
+     * 
+     */
+    protected File getGpWorkingDir() {
+        return this.gpWorkingDir;
+    }
+    
+    /**
+     * Get the 'users' folder for the server. This is a global server property.
+     * 
+     * @return
+     */
+    protected File getRootUserDir() {
+        return rootUserDir;
+    }
+    
+    /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
      * By default, user home directories are created in the <user.root.dir> directory.
      * The 'gp.user.dir' property can be set on a per user basis to change the default location.
@@ -779,7 +778,7 @@ public class GpConfig {
             gpUserDir=new File(userDirPath);
         }
         else {
-            gpUserDir=new File(userRootDir, context.getUserId());
+            gpUserDir=new File(rootUserDir, context.getUserId());
         }
         if (gpUserDir.exists()) {
             return gpUserDir;
@@ -807,7 +806,7 @@ public class GpConfig {
      * @return the parent directory in which to create the new working directory for a job.
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
-        return jobsDir;
+        return rootJobDir;
     }
 
     /**
@@ -899,7 +898,7 @@ $GENEPATTERN_HOME$/tasklib
      * @return
      */
     public File getRootTasklibDir(GpContext serverContext) {
-        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib");
+        return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib", true);
     }
 
     public File getGPFileProperty(final GpContext gpContext, final String key) {
@@ -924,7 +923,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     public File getSoapAttDir(GpContext gpContext) {
-        return this.soapAttachmentDir;
+        return this.rootSoapAttachmentDir;
     }
 
     public File getTempDir(GpContext gpContext) {
