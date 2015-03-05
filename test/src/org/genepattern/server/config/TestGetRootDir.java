@@ -77,6 +77,16 @@ public class TestGetRootDir {
     }
     
     @Test
+    public void rootUserDir_custom() {
+        File customDir=temp.newFolder("custom_user_dir").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, customDir.toString())
+        .build();
+        assertEquals(customDir, gpConfig.getRootUserDir());
+    }
+    
+    @Test
     public void userDir_gpHome() {
         File expected=new File(gpHomeDir, "users/"+userId);
         assertEquals("userDir", expected, gpConfig.getUserDir(userContext));
@@ -91,6 +101,17 @@ public class TestGetRootDir {
         // <user.dir>/../users/<user_id>
         File expected=new File(new File(javaWorkingDir.getParentFile(), "users"), userId).getAbsoluteFile();
         assertEquals("userDir", expected, gpConfig.getUserDir(userContext)); 
+    }
+
+    @Test
+    public void userDir_custom() {
+        File customDir=temp.newFolder("custom_user_dir").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, customDir.toString())
+        .build();
+        File expected=new File(customDir, userId).getAbsoluteFile();
+        assertEquals(expected, gpConfig.getUserDir(userContext)); 
     }
     
     /**
@@ -110,6 +131,15 @@ public class TestGetRootDir {
         assertEquals(expected, gpConfig.getRootJobDir(userContext));
     }
     
+    @Test
+    public void rootJobDir_custom() throws ServerConfigurationException {
+        File customDir=temp.newFolder("custom_job_results").getAbsoluteFile();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_JOBS, customDir.toString())
+        .build();
+        assertEquals(customDir, gpConfig.getRootJobDir(userContext));
+    }
+
     /**
      * By default it's relative to GENEPATTERN_HOME. 
      * @throws ServerConfigurationException 
