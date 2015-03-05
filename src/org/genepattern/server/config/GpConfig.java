@@ -246,12 +246,12 @@ public class GpConfig {
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
         this.rootJobDir=initRootDir(gpContext, GpConfig.PROP_JOBS, "jobResults", true);
-        this.rootUserDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
+        this.rootUserDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true);
         this.rootSoapAttachmentDir=initRootDir(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "temp/attachments", true);
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
-        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", false); // don't create on startup
+        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", true);
     }
     
     /**
