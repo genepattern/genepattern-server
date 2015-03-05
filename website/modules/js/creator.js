@@ -1924,6 +1924,7 @@ function loadModuleInfo(module)
     if(module["categories"] !== undefined && module["categories"].length > 0)
     {
         module_editor.moduleCategories = module["categories"].split(";");
+        updatemodulecategories();
     }
     else if(module["taskType"] !== undefined)
     {
@@ -1931,6 +1932,7 @@ function loadModuleInfo(module)
 
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
+        updatemodulecategories();
     }
 
     if(module["cpuType"] !== undefined)
@@ -2591,7 +2593,6 @@ jQuery(document).ready(function() {
     $("input[type='text']").val("");
 
     addsectioncollapseimages();
-    updatemodulecategories();
     updatefileformats();
 
     //check if this is a request to edit an existing module
