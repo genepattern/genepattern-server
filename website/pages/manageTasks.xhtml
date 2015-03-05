@@ -166,12 +166,11 @@
                                                 </t:div>
                                             </div>
                                         </td>
-                                        <td align="left"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
-                                            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+                                        <td align="left">
+                                            <h:outputText><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
                                         </td>
                                         <td>
-                                            <h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
-                                            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
+                                            <h:outputText><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
                                         </td>
                                         <td>#{versionInfo.owner}</td>
                                         <td>
