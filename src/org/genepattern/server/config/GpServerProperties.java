@@ -273,6 +273,22 @@ public class GpServerProperties {
         return new Value(prop);
     }
     
+    /**
+     * Helper method to find out if a given property is set in the genepattern.properties file.
+     * @param key
+     * @return
+     */
+    public boolean isSetInGpProperties(final String key) {
+        return isSetIn("genepattern.properties", key);
+    }
+    protected boolean isSetIn(final String fileType, final String key) {
+        Record record=propertiesList.get(fileType);
+        if (record==null) {
+            return false;
+        }
+        return record.getProperties().containsKey(key);
+    }
+    
     public static final class Builder {
         private boolean initFromSystemProperties = true;
         private boolean useSystemProperties = true;

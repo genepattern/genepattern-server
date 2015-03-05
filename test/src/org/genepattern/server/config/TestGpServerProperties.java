@@ -49,7 +49,6 @@ public class TestGpServerProperties {
         Properties updated=new Properties();
         updated.setProperty("key_01", "custom_value_01_from_plugin");
         GpServerProperties.writeProperties(updated, customPropsFile, null);
-        //pluginRegistry.updateCustomProperties(customPropsFile, new Properties());
         boolean skipExisting=true;
         GpServerProperties.updateCustomProperties(customPropsFile, new Properties(), "", skipExisting);
         
@@ -65,11 +64,9 @@ public class TestGpServerProperties {
         before.setProperty("key_01", "value_01");
         GpServerProperties.writeProperties(before, customPropsFile, "Original values");
         
-        //
         Properties updated=new Properties();
         updated.setProperty("key_01", "custom_value_01_from_plugin");
         updated.setProperty("key_02", "custom_value_02_from_plugin");
-        //pluginRegistry.updateCustomProperties(customPropsFile, updated);
 
         boolean skipExisting=true;
         GpServerProperties.updateCustomProperties(customPropsFile, updated, "adding custom property", skipExisting);
@@ -89,11 +86,9 @@ public class TestGpServerProperties {
         before.setProperty("key_01", "value_01");
         GpServerProperties.writeProperties(before, customPropsFile, "Original values");
         
-        //
         Properties updated=new Properties();
         updated.setProperty("key_01", "custom_value_01_from_plugin");
         updated.setProperty("key_02", "custom_value_02_from_plugin");
-        //pluginRegistry.updateCustomProperties(customPropsFile, updated);
 
         GpServerProperties.updateCustomProperties(customPropsFile, updated, "adding custom property", skipExisting);
         
@@ -101,6 +96,28 @@ public class TestGpServerProperties {
         assertEquals("num properties after update", 2, after.size());
         assertEquals("key_01 already defined in custom.properties, should be updated", "custom_value_01_from_plugin", after.getProperty("key_01"));
         assertEquals("key_02 already defined in custom.properties, should be updated", "custom_value_02_from_plugin", after.getProperty("key_02"));
+    }
+    
+    @Test
+    public void isPropDefinedInFile() throws Exception {
+        Properties gpProps=new Properties();
+        gpProps.setProperty("GenePatternVersion", "3.9.2");
+        gpProps.setProperty("java.io.tmpdir", temp.getRoot().toString());
+        
+        File gpPropFile=temp.newFile("genepattern.properties");
+        // given a GpServerProperties instance which has been initialized by loading a properties file ...
+        GpServerProperties.writeProperties(gpProps, gpPropFile, "for junit test");
+        
+        GpServerProperties serverProps=new GpServerProperties.Builder()
+            .gpProperties(gpPropFile)
+        .build();
+
+        assertEquals("GenePatternVersion", "3.9.2", serverProps.getProperty("GenePatternVersion"));
+        assertEquals("java.io.tmpdir", temp.getRoot().toString(), serverProps.getProperty("java.io.tmpdir"));
+        
+        assertEquals("isSet(GenePatternVersion)", true, serverProps.isSetInGpProperties("GenePatternVersion"));
+        assertEquals("isSet(java.io.tmpdir)", true, serverProps.isSetInGpProperties("java.io.tmpdir"));
+        assertEquals("isSet(custom_key)", false, serverProps.isSetInGpProperties("custom_key"));
     }
 
 }
