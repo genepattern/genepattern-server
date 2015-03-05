@@ -1,5 +1,6 @@
 package org.genepattern.server.plugin;
 
+import static org.genepattern.server.plugin.TestMigratePlugins.assertComparePatchInfo;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,7 +24,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import static org.hamcrest.CoreMatchers.*;
 import org.mockito.Mockito;
 
 public class TestPluginManagerLegacy {
@@ -170,7 +170,7 @@ public class TestPluginManagerLegacy {
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, BWA);
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
         
-        assertEquals("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
+        assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(BWA, null)),
                 pluginMgr.getRequiredPatches(taskInfo));
     }
@@ -183,7 +183,7 @@ public class TestPluginManagerLegacy {
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, ANT+","+BWA);
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
         
-        assertEquals("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
+        assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(ANT, null), new PatchInfo(BWA, null)),
                 pluginMgr.getRequiredPatches(taskInfo));
     }
@@ -195,7 +195,7 @@ public class TestPluginManagerLegacy {
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
         List<PatchInfo> actual=pluginMgr.getRequiredPatches(taskInfo);
         assertNotNull(actual);
-        assertEquals(topHatPatchInfos, actual);
+        assertComparePatchInfo("", topHatPatchInfos, actual);
     }
     
     @Test(expected=JobDispatchException.class)
@@ -216,7 +216,7 @@ public class TestPluginManagerLegacy {
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
-        assertEquals(topHatPatchInfos, patchesToInstall);
+        assertComparePatchInfo("none installed", topHatPatchInfos, patchesToInstall);
     }
 
     @Test
@@ -257,7 +257,9 @@ public class TestPluginManagerLegacy {
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
-        assertThat(patchesToInstall,is(expected));
+        //assertComparePatchInfo("some installed", expected, patchesToInstall);
+        assertComparePatchInfo("some installed", expected, patchesToInstall);
+
     }
 
 }

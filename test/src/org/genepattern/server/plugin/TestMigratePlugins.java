@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.genepattern.junitutil.DbUtil;
@@ -39,6 +42,35 @@ public class TestMigratePlugins {
         migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
     }
     
+    /**
+     * To help with junit test evaluation, get the list of lsid from the list of PathcInfo
+     * @param patchInfos
+     * @return
+     */
+    public static List<String> getLsids(List<PatchInfo> patchInfos) {
+        if (patchInfos==null) return null;
+        if (patchInfos.size()==0) return Collections.emptyList();
+        List<String> lsidStr=new ArrayList<String>(patchInfos.size());
+        for(PatchInfo patchInfo : patchInfos) {
+            lsidStr.add(patchInfo.getLsid());
+        }
+        return lsidStr;
+    }
+    
+    /**
+     * Hand-coded replacement for assertEquals(String message, List<PatchInfo> expected, List<PatchInfo> actual),
+     * compare by lsid only.
+     * 
+     * @param message
+     * @param expected
+     * @param actual
+     */
+    public static void assertComparePatchInfo(String message, List<PatchInfo> expected, List<PatchInfo> actual) {
+        assertEquals(message,
+                getLsids(expected),
+                getLsids(actual));
+    }
+        
     @Test
     public void dbCheck() throws Exception {
         DbUtil.initDb();
