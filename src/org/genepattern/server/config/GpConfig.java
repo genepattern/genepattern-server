@@ -176,9 +176,9 @@ public class GpConfig {
     private final File webserverLogFile;
     private final File resourcesDir;
     private final File gpWorkingDir;
-    private final File jobsDir;
-    private final File userRootDir;
-    private final File soapAttachmentDir;
+    private final File rootJobDir;
+    private final File rootUserDir;
+    private final File rootSoapAttachmentDir;
     private final File gpTmpDir;
     private final File gpPluginDir;
     private final List<Throwable> initErrors;
@@ -245,9 +245,9 @@ public class GpConfig {
         }
         this.configFile=in.configFile;
         this.repoConfig=initRepoConfig(this.resourcesDir);
-        this.jobsDir=initRootDir(gpContext, GpConfig.PROP_JOBS, "jobResults", true);
-        this.userRootDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
-        this.soapAttachmentDir=initSoapAttachmentDir(gpContext);
+        this.rootJobDir=initRootDir(gpContext, GpConfig.PROP_JOBS, "jobResults", true);
+        this.rootUserDir=initRootDir(gpContext, PROP_USER_ROOT_DIR, "users", true); // create on startup
+        this.rootSoapAttachmentDir=initRootDir(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "temp/attachments", true);
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
@@ -450,18 +450,6 @@ public class GpConfig {
             }
         }
         return f;
-    }
-    
-    protected File initSoapAttachmentDir(final GpContext gpContext) {
-        File soapAttDir=relativize(gpWorkingDir, getGPProperty(gpContext, GpConfig.PROP_SOAP_ATT_DIR, "../temp/attachments"));
-        soapAttDir=new File(normalizePath(soapAttDir.getPath()));
-        if (!soapAttDir.exists()) {
-            boolean success=soapAttDir.mkdirs();
-            if (success) {
-                log.info("created '"+PROP_SOAP_ATT_DIR+"' directory="+soapAttDir);
-            }
-        }
-        return soapAttDir;
     }
     
     /**
@@ -762,7 +750,7 @@ public class GpConfig {
      * @return
      */
     protected File getRootUserDir() {
-        return userRootDir;
+        return rootUserDir;
     }
     
     /**
@@ -790,7 +778,7 @@ public class GpConfig {
             gpUserDir=new File(userDirPath);
         }
         else {
-            gpUserDir=new File(userRootDir, context.getUserId());
+            gpUserDir=new File(rootUserDir, context.getUserId());
         }
         if (gpUserDir.exists()) {
             return gpUserDir;
@@ -818,7 +806,7 @@ public class GpConfig {
      * @return the parent directory in which to create the new working directory for a job.
      */
     public File getRootJobDir(final GpContext context) throws ServerConfigurationException {
-        return jobsDir;
+        return rootJobDir;
     }
 
     /**
@@ -935,7 +923,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     public File getSoapAttDir(GpContext gpContext) {
-        return this.soapAttachmentDir;
+        return this.rootSoapAttachmentDir;
     }
 
     public File getTempDir(GpContext gpContext) {

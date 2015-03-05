@@ -109,4 +109,22 @@ public class TestGetRootDir {
         File expected=new File(javaWorkingDir.getParentFile(), "jobResults").getAbsoluteFile();
         assertEquals(expected, gpConfig.getRootJobDir(userContext));
     }
+    
+    /**
+     * By default it's relative to GENEPATTERN_HOME. 
+     * @throws ServerConfigurationException 
+     */
+    @Test
+    public void rootSoapAttachmentDir_gpHome() throws ServerConfigurationException {
+        File expected=new File(gpHomeDir, "temp/attachments");
+        assertEquals(expected, gpConfig.getSoapAttDir(userContext));
+    }
+    
+    @Test
+    public void rootSoapAttachmentDir_gpHomeNotSet() throws ServerConfigurationException {
+        gpConfig=new GpConfig.Builder().build();
+        File expected=new File(javaWorkingDir.getParentFile(), "temp/attachments").getAbsoluteFile();
+        assertEquals(expected, gpConfig.getSoapAttDir(userContext));
+    }
+
 }
