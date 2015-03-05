@@ -1,5 +1,6 @@
 package org.genepattern.server.plugin;
 
+import static org.genepattern.server.plugin.TestMigratePlugins.assertComparePatchInfo;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -36,19 +37,19 @@ public class TestPatchInfoDao {
                 expected,
                 new PatchInfoDao().getInstalledPatches());
     }
-        
+    
     @Test
     public void recordPatch() throws DbException, MalformedURLException {
         // test one, default entries 
         List<PatchInfo> defaultEntries = TestPluginRegistrySystemProps.initDefaultInstalledPatchInfos();
-        assertEquals("before recordPatch, expecting default list", defaultEntries, new PatchInfoDao().getInstalledPatches());
+        assertComparePatchInfo("before recordPatch, expecting default list", defaultEntries, new PatchInfoDao().getInstalledPatches());
 
         // test two, record patch
         final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
         new PatchInfoDao().recordPatch(new PatchInfo(BWA));
         List<PatchInfo> expected = new ArrayList<PatchInfo>(defaultEntries);
         expected.add(new PatchInfo(BWA));
-        assertEquals(
+        assertComparePatchInfo(
             "expecting a new entry after recording patch", 
             // expected
             expected, 
@@ -62,7 +63,7 @@ public class TestPatchInfoDao {
         new PatchInfoDao().recordPatch(bwa);
         assertEquals("BWA.patchDir", patchDir, new PatchInfoDao().selectPatchInfoByLsid(BWA).getPatchDir());
               
-        assertEquals(
+        assertComparePatchInfo(
             "expecting no new entry after recording a patch update", 
             // expected
             expected, 
@@ -72,7 +73,7 @@ public class TestPatchInfoDao {
         // test four, delete record
         boolean success=new PatchInfoDao().removePatch(new PatchInfo(BWA));
         assertEquals("Expecting successful remove patch", true, success);
-        assertEquals(
+        assertComparePatchInfo(
             "after removePatch, expecting the default list",
             // expected
             defaultEntries, 

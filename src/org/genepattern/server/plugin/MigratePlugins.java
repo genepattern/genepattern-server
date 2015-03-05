@@ -6,9 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -43,20 +45,7 @@ public class MigratePlugins {
     private final GpConfig gpConfig;
     private final GpContext gpContext;
     private PluginRegistry pluginRegistry;
-    
-    private final SortedSet<PatchInfo> patchInfos=new TreeSet<PatchInfo>(new Comparator<PatchInfo>(){
-        @Override
-        public int compare(PatchInfo o1, PatchInfo o2) {
-            Long t1 = o1.getStatusDate() == null ? null : o1.getStatusDate().getTime();
-            Long t2 = o2.getStatusDate() == null ? null : o2.getStatusDate().getTime();
-            if (t1==null) {
-                if (t2==null) {
-                    return 0;
-                }
-                return -1;
-            }
-            return t1.compareTo(t2);
-        }});
+    private List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
 
     private final SortedSet<File> customPropFiles=new TreeSet<File>(new Comparator<File>(){
         @Override
@@ -127,13 +116,13 @@ public class MigratePlugins {
     }
 
     /**
-     * Get the set of installed patches loaded from the file system, ordered by the lastModified date
+     * Get the read-only list of installed patches loaded from the file system, ordered by the lastModified date
      * of the manifest file. This gets populated after calling 'scanRootPluginDir'.
      * 
      * @return
      */
-    protected SortedSet<PatchInfo> getPatchInfos() {
-        return Collections.unmodifiableSortedSet(patchInfos);
+    protected List<PatchInfo> getPatchInfos() {
+        return Collections.unmodifiableList(patchInfos);
     }
 
     /**
@@ -171,6 +160,22 @@ public class MigratePlugins {
                 visitPluginManifest(manifest);
             }
         }
+        // sort the patchInfos by modification date
+        Collections.sort(patchInfos, new Comparator<PatchInfo>() {
+        @Override
+        public int compare(PatchInfo o1, PatchInfo o2) {
+            Long t1 = o1.getStatusDate() == null ? null : o1.getStatusDate().getTime();
+            Long t2 = o2.getStatusDate() == null ? null : o2.getStatusDate().getTime();
+            if (t1==null) {
+                if (t2==null) {
+                    return 0;
+                }
+                return -1;
+            }
+            return t1.compareTo(t2);
+        }
+        });
+
     }
     
     /**

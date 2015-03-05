@@ -123,20 +123,20 @@ public class PatchInfo {
         return customProps;
     }
     
-    public boolean equals(Object obj) {
-        if (obj == null) { 
-            return false;
-        }
-        if (!(obj instanceof PatchInfo)) {
-            return false;
-        }
-        PatchInfo arg=(PatchInfo)obj;
-        return Objects.equals(lsid, arg.lsid);
-    }
-    
-    public int hashCode() {
-        return Objects.hash(lsid);
-    }
+//    public boolean equals(Object obj) {
+//        if (obj == null) { 
+//            return false;
+//        }
+//        if (!(obj instanceof PatchInfo)) {
+//            return false;
+//        }
+//        PatchInfo arg=(PatchInfo)obj;
+//        return Objects.equals(lsid, arg.lsid);
+//    }
+//    
+//    public int hashCode() {
+//        return Objects.hash(lsid);
+//    }
     
     public String toString() {
         return lsid;
