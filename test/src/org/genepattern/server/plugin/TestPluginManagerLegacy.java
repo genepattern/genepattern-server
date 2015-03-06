@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -223,11 +224,11 @@ public class TestPluginManagerLegacy {
     public void patchesToInstall_TopHat_some_installed() throws Exception {
         final File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
-        final List<PatchInfo> installedPatches=Arrays.asList(
-                new PatchInfo(ANT),
-                new PatchInfo(Check_Python_2_6),
-                new PatchInfo(Bowtie_2_1_0)
-                );
+        final List<String> installedPatchLsids=Arrays.asList(ANT, Check_Python_2_6, Bowtie_2_1_0);
+        final List<PatchInfo> installedPatches=new ArrayList<PatchInfo>();
+        for(final String lsid : installedPatchLsids) {
+            installedPatches.add(new PatchInfo(lsid));
+        }
         final List<PatchInfo> expected=Arrays.asList(
             new PatchInfo(SAMTools_0_1_19,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
@@ -244,7 +245,7 @@ public class TestPluginManagerLegacy {
 
             @Override
             public boolean isInstalled(GpConfig gpConfig, GpContext gpContext, PatchInfo patchInfo) throws Exception {
-                boolean in=installedPatches.contains(patchInfo);
+                boolean in=installedPatchLsids.contains(patchInfo.getLsid());
                 return in;
             }
 
@@ -257,9 +258,7 @@ public class TestPluginManagerLegacy {
         PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
-        //assertComparePatchInfo("some installed", expected, patchesToInstall);
         assertComparePatchInfo("some installed", expected, patchesToInstall);
-
     }
 
 }

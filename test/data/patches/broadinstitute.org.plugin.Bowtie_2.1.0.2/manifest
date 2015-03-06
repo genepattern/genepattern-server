@@ -14,4 +14,4 @@ failureExitValue=1
 cpuType=all
 commandLine=<ant-1.8> -f installExecutable.xml -Dconfiguration\=configuration.txt -Dresources\=<resources> -Dplugin.dir\=<patches>
 
-LSID=urn\:lsid\:broadinstitute.org\:plugin\:Bowtie_2.1.0\:2
+LSID=urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2

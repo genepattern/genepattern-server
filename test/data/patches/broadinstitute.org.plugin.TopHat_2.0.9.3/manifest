@@ -13,4 +13,4 @@ failureExitValue=1
 cpuType=all
 commandLine=<ant-1.8> -f installExecutable.xml -Dconfiguration\=configuration.txt -Dresources\=<resources> -Dplugin.dir\=<patches>
 
-LSID=urn\:lsid\:broadinstitute.org\:plugin\:TopHat_2.0.9\:3
+LSID=urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3
