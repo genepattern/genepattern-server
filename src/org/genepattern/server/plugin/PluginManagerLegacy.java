@@ -190,10 +190,6 @@ public class PluginManagerLegacy {
             return;
         }
         installPatch(requiredPatchLSID, requiredPatchURL, null);
-        // always reload config
-        ServerConfigurationFactory.reloadConfiguration();
-        this.gpConfig=ServerConfigurationFactory.instance();
-
     }
     
     
@@ -353,6 +349,9 @@ public class PluginManagerLegacy {
                 patchInfo.setUrl(requiredPatchURL);
                 patchInfo.setPatchDir(patchDirectory.getAbsolutePath());
                 pluginRegistry.recordPatch(gpConfig, gpContext, patchInfo);
+                // always reload config
+                ServerConfigurationFactory.reloadConfiguration();
+                this.gpConfig=ServerConfigurationFactory.instance();
             }
             catch (Exception e) {
                 String errorMessage="Exception while recording patch: "+e.getLocalizedMessage();
