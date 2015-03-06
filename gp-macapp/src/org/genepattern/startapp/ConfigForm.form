@@ -133,7 +133,7 @@
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
-          <text value="/usr/bin/r_25"/>
+          <text value="/Library/Frameworks/R.framework/Versions/2.5/Resources"/>
         </properties>
       </component>
       <component id="6cab7" class="javax.swing.JLabel">

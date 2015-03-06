@@ -47,8 +47,9 @@ public class Bootstrap {
         String user = System.getProperty("user.name");
         File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
         File propFile = new File(resourcesDir, "genepattern.properties");
+        File gpHome = new File(resourcesDir.getParent());
         try {
-            pw.writeInstallTime(propFile);
+            pw.writeInstallTime(propFile, workingDirString, gpHome.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }

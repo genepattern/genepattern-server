@@ -49,7 +49,7 @@ public class ConfigApp {
         ConfigApp._instance = frame;
 
         // Set the working directory
-        String workingString = ""; // "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        String workingString = "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
         if (args.length >= 1) {
             workingString = args[0];
         }
@@ -159,7 +159,8 @@ public class ConfigApp {
         }
     }
 
-    /** Validate the purge time field
+    /**
+     * Validate the purge time field
      *
      * @param purge
      * @return
@@ -288,7 +289,7 @@ public class ConfigApp {
         rField.setText("/usr/bin/r");
         genepatternConfigPanel.add(rField, cc.xy(3, 7, CellConstraints.FILL, CellConstraints.DEFAULT));
         r25Field = new JTextField();
-        r25Field.setText("/usr/bin/r_25");
+        r25Field.setText("/Library/Frameworks/R.framework/Versions/2.5/Resources");
         genepatternConfigPanel.add(r25Field, cc.xy(3, 9, CellConstraints.FILL, CellConstraints.DEFAULT));
         final JLabel label6 = new JLabel();
         label6.setText("Perl");
