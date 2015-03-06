@@ -64,7 +64,7 @@ import org.w3c.dom.NodeList;
 public class PluginManagerLegacy {
     private static Logger log = Logger.getLogger(PluginManagerLegacy.class);
     
-    private final GpConfig gpConfig;
+    private GpConfig gpConfig;
     private final GpContext gpContext;
     private final PluginRegistry pluginRegistry;
     
@@ -190,6 +190,10 @@ public class PluginManagerLegacy {
             return;
         }
         installPatch(requiredPatchLSID, requiredPatchURL, null);
+        // always reload config
+        ServerConfigurationFactory.reloadConfiguration();
+        this.gpConfig=ServerConfigurationFactory.instance();
+
     }
     
     
