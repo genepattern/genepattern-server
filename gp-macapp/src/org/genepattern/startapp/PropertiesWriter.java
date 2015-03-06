@@ -24,7 +24,7 @@ public class PropertiesWriter {
     private String perl = "/usr/bin/perl";               // Prompt user
     private String java = "/usr";                        // Prompt user
     private String r = "/usr/bin/r";                     // Prompt user
-    private String r25 = "/usr/bin/r_2.5";               // Prompt user
+    private String r25 = "/Library/Frameworks/R.framework/Versions/2.5/Resources";               // Prompt user
     private String requirePassword = "false";            // Prompt user
 
     private String lsid = "";                            // Generate
@@ -152,7 +152,7 @@ public class PropertiesWriter {
      * @param propFile
      * @throws IOException
      */
-    public void writeInstallTime(File propFile) throws IOException {
+    public void writeInstallTime(File propFile, String workingDirString, String gpHomeDirString) throws IOException {
         List<String> lines = new ArrayList<String>();
 
         // Read the file and store changes
@@ -161,6 +161,12 @@ public class PropertiesWriter {
         while (line != null) {
             if (line.contains("$LSID_AUTHORITY$")) {
                 line = line.replaceAll("\\$LSID_AUTHORITY\\$", lsid);
+            }
+            else if (line.contains("run_r_path=")) {
+                line = line.replaceAll("\\.\\.", workingDirString + "/GenePatternServer");
+            }
+            else if (line.contains("R.suppress.messages.file=")) {
+                line = line.replaceAll("\\.\\.", gpHomeDirString);
             }
 
             lines.add(line);
@@ -208,6 +214,14 @@ public class PropertiesWriter {
             }
             else if (line.contains("$USER_INSTALL_DIR$")) {
                 line = line.replaceAll("\\$USER_INSTALL_DIR\\$", installDir);
+            }
+
+            // Comment out problematic lines entirely
+            if (line.contains("java.io.tmpdir=")) {
+                line = "# " + line;
+            }
+            else if (line.contains("soap.attachment.dir=")) {
+                line = "# " + line;
             }
 
             lines.add(line);
