@@ -1485,7 +1485,7 @@ function changeParameterType(element)
                         "<label><input type='checkbox' name='unlimitedFileGroups'/>unlimited</label></td></tr>" +
                         "<tr><td>Group label: </td>" +
                         "<td> <input type='text' name='groupColumnLabel'/> </td></tr>" +
-                        "<tr><td>Number files per group must match: </td>" +
+                        "<tr><td>Number of files per group must match: </td>" +
                         "<td> <select type='checkbox' name='fileGroupsMatch'> " +
                         "<option value='true'>yes</option>" +
                         "<option value='false'>no</option> </select></td></tr>" +

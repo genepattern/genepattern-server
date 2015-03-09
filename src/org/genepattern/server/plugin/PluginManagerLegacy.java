@@ -64,7 +64,7 @@ import org.w3c.dom.NodeList;
 public class PluginManagerLegacy {
     private static Logger log = Logger.getLogger(PluginManagerLegacy.class);
     
-    private final GpConfig gpConfig;
+    private GpConfig gpConfig;
     private final GpContext gpContext;
     private final PluginRegistry pluginRegistry;
     
@@ -349,6 +349,9 @@ public class PluginManagerLegacy {
                 patchInfo.setUrl(requiredPatchURL);
                 patchInfo.setPatchDir(patchDirectory.getAbsolutePath());
                 pluginRegistry.recordPatch(gpConfig, gpContext, patchInfo);
+                // always reload config
+                ServerConfigurationFactory.reloadConfiguration();
+                this.gpConfig=ServerConfigurationFactory.instance();
             }
             catch (Exception e) {
                 String errorMessage="Exception while recording patch: "+e.getLocalizedMessage();

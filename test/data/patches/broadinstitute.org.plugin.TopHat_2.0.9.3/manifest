@@ -1,4 +1,4 @@
-#Mon, 23 Sep 2013 11:15:36 -0400
+#Fri, 06 Mar 2015 15:55:00 -0400
 #Outputs a custom properties file containing the path to the TopHat 2.0.8b installation
 name=TopHat_2.0.9
 description=Install TopHat version 2.0.9
