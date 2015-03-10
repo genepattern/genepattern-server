@@ -31,12 +31,18 @@ public class TestCommandLineParser {
     public TemporaryFolder tmp = new TemporaryFolder();
     private File rootTasklibDir;
     private File libdir;
+    private File webappDir;
     
     
     @SuppressWarnings("deprecation")
     @Before
     public void setUp() {
+        webappDir=tmp.newFolder("Tomcat/webapps/gp").getAbsoluteFile();
+        File tomcatCommonLib=new File(webappDir.getParentFile().getParentFile(), "common/lib").getAbsoluteFile();
+        tomcatCommonLib_val=tomcatCommonLib.toString();
+        
         gpConfig=new GpConfig.Builder()
+            .webappDir(webappDir)
             .addProperty("java", java_val)
             .addProperty("tomcatCommonLib", tomcatCommonLib_val)
             .addProperty("ant", "<java> -cp <tomcatCommonLib>/tools.jar -jar <tomcatCommonLib>/ant-launcher.jar -Dant.home=<tomcatCommonLib> -lib <tomcatCommonLib>")
@@ -53,7 +59,7 @@ public class TestCommandLineParser {
     }
     
     @Test
-    public void resolveValue_nested() {
+    public void resolveValue_antCmd() {
         assertEquals(
                 Arrays.asList( java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val ),
                 CommandLineParser.resolveValue(gpConfig, gpContext, "<ant>", parameterInfoMap, 0));

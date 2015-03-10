@@ -168,6 +168,15 @@ public class PropertiesWriter {
             else if (line.contains("R.suppress.messages.file=")) {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
             }
+            else if (line.startsWith("resources=")) {
+                line = "resources=" + gpHomeDirString + "/resources";
+            }
+            else if (line.startsWith("tomcatCommonLib=")) {
+                line = "tomcatCommonLib=" + workingDirString + "/GenePatternServer/Tomcat/common/lib";
+            }
+            else if (line.startsWith("webappDir=")) {
+                line = "webappDir=" + workingDirString + "/GenePatternServer/Tomcat/webapps/gp";
+            }
 
             lines.add(line);
             line = in.readLine();
