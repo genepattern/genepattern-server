@@ -34,7 +34,7 @@ function updateCommentTotalAfterLoad(event)
 
         $("#commentsContent").find(".posted-comments-postbox").find("textarea").off("keypress");
 
-        var submitComment = $("<button id='jobCommentsBtn'>Submit Comment</button>");
+        var submitComment = $("<button id='jobCommentsBtn'>Save Comment</button>");
         submitComment.button().click(function()
         {
             var comment = $("#commentsContent").find(".posted-comments-postbox").find("textarea").val();
