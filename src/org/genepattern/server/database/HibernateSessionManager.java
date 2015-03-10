@@ -153,14 +153,26 @@ public final class HibernateSessionManager {
     }
 
     protected static AnnotationConfiguration preInitAnnotationConfiguration() {
+        if (log.isDebugEnabled()) {
+            log.debug("preparing hibernate annotation configuration ...");
+        }
         AnnotationConfiguration config = new AnnotationConfiguration();
 
         // add mappings from xml files here, instead of in the .xml file
+        if (log.isDebugEnabled()) {
+            log.debug("add mapping from xml files ...");
+        }
         for (final String hbmXml : hbmXmls()) {
+            if (log.isDebugEnabled()) {
+                log.debug("\thbmXml="+hbmXml);
+            }
             config.addResource(hbmXml);
         }
 
         //add annotated hibernate mapping classes here, instead of in the .xml file
+        if (log.isDebugEnabled()) {
+            log.debug("scan for annotated hibernate mapping classes ...");
+        }
         Collection<Class<?>> annotatedClasses=null;
         try {
             annotatedClasses=scanForAnnotatedClasses();
@@ -169,7 +181,13 @@ public final class HibernateSessionManager {
             log.error("Unexpected error scanning for hibernate annotation classes, using hard-coded list instead", t);
             annotatedClasses=hardCodedAnnotatedClasses();
         }
+        if (log.isDebugEnabled()) {
+            log.debug("found " + annotatedClasses.size() + " annotated classes");
+        }
         for(Class<?> clazz : annotatedClasses) {
+            if (log.isDebugEnabled()) {
+                log.debug("\tannotated class="+clazz);
+            }
             config.addAnnotatedClass( clazz );
         }
         return config;
@@ -187,6 +205,9 @@ public final class HibernateSessionManager {
         config.addProperties(hibernateProperties);
         mergeSystemProperties(config);
         log.info("hibernate.connection.url="+config.getProperty("hibernate.connection.url"));
+        if (log.isDebugEnabled()) {
+            log.debug("building session factory ...");
+        }
         return config.buildSessionFactory();
     }
 
