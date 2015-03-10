@@ -167,6 +167,7 @@ public class GpConfig {
             .build();
     }
 
+    private final File webappDir;
     private final File gpHomeDir;
     private final URL genePatternURL;
     private final String gpUrl;
@@ -198,6 +199,7 @@ public class GpConfig {
 
     public GpConfig(final Builder in) {
         GpContext gpContext=GpContext.getServerContext();
+        this.webappDir=in.webappDir;
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
@@ -734,6 +736,14 @@ public class GpConfig {
 
     //helper methods for locating server files and folders
     /**
+     * The location for the web application files, e.g.
+     *     /Applications/GenePatternServer/Tomcat/webapps/gp
+     */
+    protected File getWebappDir() {
+        return this.webappDir;
+    }
+    
+    /**
      * Get the GENEPATTERN_HOME directory, should be a fully qualified File, can be null when not set.
      * Servers updated from <= 3.9.1 don't set GENEPATTERN_HOME.
      * 
@@ -1045,6 +1055,7 @@ $GENEPATTERN_HOME$/tasklib
     public static final class Builder {
         private URL genePatternURL=null;
         private String genePatternVersion=null;
+        private File webappDir=null;
         private File gpHomeDir=null;
         private File logDir=null;
         private File resourcesDir=null;
@@ -1076,6 +1087,11 @@ $GENEPATTERN_HOME$/tasklib
             return this;
         }
         
+        public Builder webappDir(final File webappDir) {
+            this.webappDir=webappDir;
+            return this;
+        }
+
         public Builder gpHomeDir(final File gpHomeDir) {
             this.gpHomeDir=gpHomeDir;
             return this;
