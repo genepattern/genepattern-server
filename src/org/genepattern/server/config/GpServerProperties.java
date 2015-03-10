@@ -58,6 +58,13 @@ public class GpServerProperties {
         if (props==null) {
             throw new IllegalArgumentException("props==null");
         }
+        if (propFile==null) {
+            log.error("unexpected null arg, propFile==null");
+            return null;
+        }
+        if (!propFile.exists()) {
+            log.debug("File does not exist, propFile="+propFile);
+        }
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(propFile);
