@@ -1,2 +1,5 @@
 .DS_Store
 /junitdb
+/.clover
+*~
+/.settings/com.cenqua.clover.core.prefs
