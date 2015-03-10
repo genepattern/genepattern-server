@@ -3,7 +3,6 @@ package org.genepattern.server.plugin;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Properties;
 
 import javax.persistence.Column;
