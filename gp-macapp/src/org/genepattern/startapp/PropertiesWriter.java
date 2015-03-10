@@ -168,6 +168,9 @@ public class PropertiesWriter {
             else if (line.contains("R.suppress.messages.file=")) {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
             }
+            else if (line.startsWith("resources=")) {
+                line = "#"+line;
+            }
 
             lines.add(line);
             line = in.readLine();
