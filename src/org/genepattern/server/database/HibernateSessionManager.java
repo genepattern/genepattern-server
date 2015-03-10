@@ -173,14 +173,15 @@ public final class HibernateSessionManager {
         if (log.isDebugEnabled()) {
             log.debug("scan for annotated hibernate mapping classes ...");
         }
-        Collection<Class<?>> annotatedClasses=null;
-        try {
-            annotatedClasses=scanForAnnotatedClasses();
-        }
-        catch (Throwable t) {
-            log.error("Unexpected error scanning for hibernate annotation classes, using hard-coded list instead", t);
-            annotatedClasses=hardCodedAnnotatedClasses();
-        }
+        Collection<Class<?>> annotatedClasses=hardCodedAnnotatedClasses();
+        log.debug("Using hard-coded annotated classes");
+        //try {
+        //    annotatedClasses=scanForAnnotatedClasses();
+        //}
+        //catch (Throwable t) {
+        //    log.error("Unexpected error scanning for hibernate annotation classes, using hard-coded list instead", t);
+        //    annotatedClasses=hardCodedAnnotatedClasses();
+        //}
         if (log.isDebugEnabled()) {
             log.debug("found " + annotatedClasses.size() + " annotated classes");
         }
