@@ -66,7 +66,8 @@ public class StartupServlet extends HttpServlet {
         }
         return this.log;
     }
-    
+
+    private File webappDir=null;
     private File gpWorkingDir=null;
     private File gpHomeDir=null;
     private File gpResourcesDir=null;
@@ -138,7 +139,7 @@ public class StartupServlet extends HttpServlet {
         if (this.gpHomeDir != null) {
             return null;
         }
-        
+
         String gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
         return new File(gpWorkingDir);
     }
@@ -253,6 +254,8 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
+        this.webappDir=new File(servletConfig.getServletContext().getRealPath(""));
+        ServerConfigurationFactory.setWebappDir(webappDir);
         this.gpHomeDir=initGpHomeDir(servletConfig);
         ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
 
@@ -468,6 +471,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(message + NL);
         startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
         startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\twebappDir: " + this.webappDir + NL );
         startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
         startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
         startupMessage.append("\t" + GpConfig.PROP_PLUGIN_DIR+": "+ gpConfig.getRootPluginDir(serverContext) + NL);
