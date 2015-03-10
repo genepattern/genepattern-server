@@ -62,8 +62,11 @@ public final class HibernateSessionManager {
         
         ClassLoader cl=UserUpload.class.getClassLoader();
         if (cl==null) {
-            log.info("UserUpload.class.getClassLoader returned null, trying system class loader");
+            log.error("UserUpload.class.getClassLoader returned null, trying system class loader");
             cl=ClassLoader.getSystemClassLoader();
+        }
+        if (cl==null) {
+            log.error("ClassLoader.getSystemClassLoader() returned null");
         }
         final ClassPath classPath=ClassPath.from(cl);
         Set<ClassPath.ClassInfo> set=new HashSet<ClassPath.ClassInfo>();
@@ -123,6 +126,8 @@ public final class HibernateSessionManager {
 
     /**
      * Hard-coded list of Hibernate mapping annotated classes.
+     * To generate this list, try 
+     *     find . -name "*.java" -exec grep -l "@Entity" {} \; | xargs ls -ltrhg
      * @return
      */
     protected static List<Class<?>> hardCodedAnnotatedClasses() {
@@ -142,7 +147,8 @@ public final class HibernateSessionManager {
                 org.genepattern.server.job.output.JobOutputFile.class,
                 org.genepattern.server.job.comment.JobComment.class,
                 org.genepattern.server.tag.Tag.class,
-                org.genepattern.server.job.tag.JobTag.class
+                org.genepattern.server.job.tag.JobTag.class,
+                org.genepattern.server.plugin.PatchInfo.class
                 );
     }
 
