@@ -169,7 +169,7 @@ public class PropertiesWriter {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
             }
             else if (line.startsWith("resources=")) {
-                line = "#"+line;
+                line = "resources=" + gpHomeDirString + "/resources";
             }
             else if (line.startsWith("tomcatCommonLib=")) {
                 line = "tomcatCommonLib=" + workingDirString + "/GenePatternServer/Tomcat/common/lib";
