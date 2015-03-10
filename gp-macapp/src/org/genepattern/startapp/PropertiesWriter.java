@@ -172,7 +172,10 @@ public class PropertiesWriter {
                 line = "resources=" + gpHomeDirString + "/resources";
             }
             else if (line.startsWith("tomcatCommonLib=")) {
-                line = "tomcatCommonLib=" + workingDirString + "/GenePatternServer/Tomcat/common/lib";
+                File workingDir=new File(workingDirString);
+                File gpAppDir=workingDir.getParentFile();
+                File tomcatCommonLib=new File(gpAppDir, "Contents/Resources/GenePatternServer/Tomcat/common/lib").getAbsoluteFile();
+                line = "tomcatCommonLib=" +tomcatCommonLib;
             }
             else if (line.startsWith("webappDir=")) {
                 line = "webappDir=" + workingDirString + "/GenePatternServer/Tomcat/webapps/gp";
