@@ -4883,6 +4883,7 @@ function Port(module, pointer, param, id) {
                         editor.loading = true;
                         editor.addPipe(input, output);
                         editor.loading = false;
+                        input.param.makeUsed();
                         input.module.checkForWarnings();
                     }
                 }
