@@ -584,7 +584,6 @@ public class RunTaskServlet extends HttpServlet
                 analysisJob.setJobNo(gpJobNo);
                 jobComment.setAnalysisJob(analysisJob);
 
-                jobComment.setPostedDate(new Date());
                 JobCommentManager.addJobComment(jobComment);
             }
 
@@ -723,7 +722,6 @@ public class RunTaskServlet extends HttpServlet
                     analysisJob.setJobNo(gpJobNo);
                     jobComment.setAnalysisJob(analysisJob);
 
-                    jobComment.setPostedDate(new Date());
                     JobCommentManager.addJobComment(jobComment);
                 }
             }
