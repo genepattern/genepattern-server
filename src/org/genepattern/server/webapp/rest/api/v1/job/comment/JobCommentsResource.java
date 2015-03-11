@@ -102,7 +102,6 @@ public class JobCommentsResource
                 jobComment.setAnalysisJob(analysisJob);
 
                 jobComment.setParentId(parentId);
-                jobComment.setPostedDate(new Date());
                 jobComment.setComment(commentText);
                 jobComment.setUserId(userContext.getUserId());
                 jobComment = JobCommentManager.addJobComment(jobComment);

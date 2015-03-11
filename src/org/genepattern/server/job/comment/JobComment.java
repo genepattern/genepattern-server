@@ -62,8 +62,8 @@ public class JobComment {
     @Column(name="parent_id")
     private int parentId;
 
-    @Column(name="posted_date", nullable=false)
-    private Date postedDate;
+    @Column(name="posted_date", nullable=false, updatable=false)
+    private Date postedDate = new Date();
 
     @Column(name="user_id", nullable=false, length=255)
     private String userId;
@@ -71,6 +71,7 @@ public class JobComment {
     @Column(name="comment_text", nullable=false, length=COMMENT_TEXT_LENGTH)
     @Size(max=COMMENT_TEXT_LENGTH)
     private String comment;
+
 
     public AnalysisJob getAnalysisJob() { return analysisJob; }
 
@@ -109,11 +110,6 @@ public class JobComment {
     public void setParentId(final int parentId)
     {
         this.parentId = parentId;
-    }
-
-    public void setPostedDate(final Date postedDate)
-    {
-        this.postedDate = postedDate;
     }
 
     public void setUserId(final String userId)

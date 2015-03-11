@@ -87,7 +87,6 @@ public class TestJobCommentDao
         jobComment.setAnalysisJob(analysisJob);
 
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 
@@ -122,7 +121,6 @@ public class TestJobCommentDao
         jobComment.setAnalysisJob(analysisJob);
 
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 
@@ -157,7 +155,6 @@ public class TestJobCommentDao
         jobComment.setAnalysisJob(analysisJob);
 
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 
