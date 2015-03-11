@@ -3,7 +3,7 @@ package org.genepattern.server.config;
 import java.io.File;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,11 +38,27 @@ public class TestGpServerProperties {
         GpServerProperties props=new GpServerProperties.Builder()
             .customProperties(null)
             .build();
-        Assert.assertEquals("GenePatternURL", null, props.getProperty("GenePatternURL"));
+        assertEquals("GenePatternURL", null, props.getProperty("GenePatternURL"));
         
     }
 
-        @Test
+    @Test
+    public void addCustomPropertyFileDoesNotExist() throws Exception {
+        File parent=temp.newFolder("temp_resources");
+        File customPropsFile=new File(parent, "custom.properties");
+        assertFalse("before test, 'custom.properties' should not exist, customPropsFile="+customPropsFile, customPropsFile.exists());
+        
+        Properties customProps=new Properties();
+        customProps.setProperty("key_01", "custom_value_01");
+        boolean skipExisting=true;
+        
+        GpServerProperties.updateCustomProperties(customPropsFile, customProps, "saving custom properties", skipExisting);
+        Properties after=GpServerProperties.loadProps(customPropsFile);
+        assertEquals("num properties after update", 1, after.size());
+        assertEquals("custom_value_01", after.getProperty("key_01"));
+    }
+    
+    @Test
     public void addCustomPropertyToEmptyFile() throws Exception {
         File customPropsFile=temp.newFile("custom.properties");
         
@@ -118,6 +134,15 @@ public class TestGpServerProperties {
         assertEquals("isSet(GenePatternVersion)", true, serverProps.isSetInGpProperties("GenePatternVersion"));
         assertEquals("isSet(java.io.tmpdir)", true, serverProps.isSetInGpProperties("java.io.tmpdir"));
         assertEquals("isSet(custom_key)", false, serverProps.isSetInGpProperties("custom_key"));
+    }
+    
+    @Test
+    public void loadProps_fileDoesNotExist() {
+        File parent=temp.newFolder("temp_resources");
+        File customPropsFile=new File(parent, "custom.properties");
+        assertFalse("before test, 'custom.properties' should not exist, customPropsFile="+customPropsFile, customPropsFile.exists());
+        Properties props=GpServerProperties.loadProps(customPropsFile);
+        assertEquals("expecting empty properties", 0, props.size());
     }
 
 }
