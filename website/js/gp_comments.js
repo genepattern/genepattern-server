@@ -12,14 +12,20 @@ function updateCommentTotalAfterLoad(event)
 
     if(comment != undefined && comment != null)
     {
-        $("#commentsContent").find(".posted-comments-postbox").find("textarea").val(comment);
+        var commentObj = JSON.parse(comment);
+
+        var index = commentObj.index;
+        if(index == 0)
+        {
+            var textArea = $(".posted-comments-postbox").find("textarea").first();
+            textArea.val(commentObj.text);
+        }
     }
 
     if($.cookie("show_comments_focus"+currentJobNumber))
     {
         $("#commentsContent").find(".posted-comments-postbox").find("textarea").focus();
     }
-
 
     //only execute this once
     if($("#jobCommentsBtn").length == 0)
@@ -34,7 +40,7 @@ function updateCommentTotalAfterLoad(event)
 
         $("#commentsContent").find(".posted-comments-postbox").find("textarea").off("keypress");
 
-        var submitComment = $("<button id='jobCommentsBtn'>Save Comment</button>");
+        var submitComment = $("<button id='postJobCommentsBtn'>Save Comment</button>");
         submitComment.button().click(function()
         {
             var comment = $("#commentsContent").find(".posted-comments-postbox").find("textarea").val();
@@ -45,6 +51,43 @@ function updateCommentTotalAfterLoad(event)
         });
 
         $("#commentsContent").find(".posted-comments-postbox").append(submitComment);
+
+        $(".posted-comments").on("focus", "textarea", function()
+        {
+            if($(this).siblings("textarea").length == 0)
+            {
+                var newEditedComment = $(this).clone(true);
+                newEditedComment.addClass("editJobComment");
+                $(this).before(newEditedComment);
+                newEditedComment.hide();
+
+                var editCommentBtn = $("<button class='editJobCommentsBtn'>Save Comment</button>");
+                editCommentBtn.button().click(function(event)
+                {
+                    event.preventDefault();
+                    var originalTextArea = $(this).prev("textarea");
+                    var comment = originalTextArea.val();
+
+                    var hiddenTextArea = originalTextArea.prev("textarea");
+                    hiddenTextArea.val(comment);
+
+                    //trigger enter event
+                    hiddenTextArea.trigger(jQuery.Event( 'keypress', { keyCode: 13, which: 13 } ));
+
+                    hiddenTextArea.hide();
+                    $(this).hide();
+                });
+
+                $(this).after(editCommentBtn);
+
+                $(this).off("keypress");
+            }
+            else
+            {
+                //There should already be a submit so just show it
+                $(this).next().show();
+            }
+        });
     }
 }
 
@@ -121,10 +164,15 @@ $(function()
         $("#commentsHeader").click();
     }
 
+    $.cookie.json = true;
     //keep track of changes to the comment text area
     $("#commentsContent").on("keyup", "textarea", function()
     {
-        $.cookie("show_comments_value"+currentJobNumber, $(this).val());
+        var index = $("#commentsContent textarea").index(this);
+
+        var commentsObj = { text: $(this).val(), index: index};
+
+        $.cookie("show_comments_value"+currentJobNumber, JSON.stringify(commentsObj));
     });
 
     //keep track of changes to the comment text area
@@ -138,5 +186,4 @@ $(function()
     {
         $.removeCookie("show_comments_focus"+currentJobNumber);
     });
-
 });
