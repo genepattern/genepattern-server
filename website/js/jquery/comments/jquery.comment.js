@@ -405,6 +405,17 @@ if ( typeof Object.create !== 'function' ) {
 					post_txt.toggle();
 
 					form_edit_container.toggle();
+
+                    //add by Marc-Danie 3/12/2015
+                    if(form_edit_container.is(":visible"))
+                    {
+                        $(this).text("Cancel");
+                    }
+                    else
+                    {
+                        $(this).text("Edit");
+                    }
+
 					var textarea = $('textarea', form_edit_container);
 					textarea.val(post_txt.html());
 					textarea.autogrow();
