@@ -253,7 +253,12 @@ public class GpConfig {
         this.gpTmpDir=initGpTmpDir(gpContext);
         this.dbProperties=initDbProperties(gpContext, this.resourcesDir);
         this.dbVendor=initDbVendor(gpContext);
-        this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", true);
+        if (in.rootPluginDir != null) {
+            this.gpPluginDir=in.rootPluginDir;
+        }
+        else {
+            this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", true);
+        }
     }
     
     /**
@@ -1059,6 +1064,7 @@ $GENEPATTERN_HOME$/tasklib
         private File gpHomeDir=null;
         private File logDir=null;
         private File resourcesDir=null;
+        private File rootPluginDir=null;
         private File configFile=null;
         private File gpWorkingDir=null;
         private GpServerProperties.Builder serverPropertiesBuilder=null;
@@ -1109,6 +1115,11 @@ $GENEPATTERN_HOME$/tasklib
 
         public Builder resourcesDir(final File resourcesDir) {
             this.resourcesDir=resourcesDir;
+            return this;
+        }
+        
+        public Builder rootPluginDir(final File rootPluginDir) {
+            this.rootPluginDir=rootPluginDir;
             return this;
         }
 
