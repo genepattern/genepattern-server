@@ -48,6 +48,10 @@ public class ParametersJSON extends JSONObject {
     public static final String DEFAULT_VALUE = "default_value";
     public static final String OPTIONAL = "optional";
     public static final String FILEFORMAT = "fileFormat";
+    public static final String MIN_NUM_VALUE = "minValue";
+    public static final String MAX_NUM_VALUE = "maxValue";
+    public static final String MIN_NUM_GROUPS = "minNumGroups";
+    public static final String MAX_NUM_GROUPS = "maxNumGroups";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";
@@ -105,12 +109,38 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
             this.put(FLAG, pAttrs.get(FLAG));
             this.put(VALUE, pInfo.getValue());
-            
+
+            final NumValues numValues = ParamListHelper.initNumValues(pInfo);
+
+            if(numValues != null)
+            {
+                if (numValues.getMin() != null)
+                {
+                    this.put(MIN_NUM_VALUE, numValues.getMin());
+                }
+                if (numValues.getMax() != null)
+                {
+                    this.put(MAX_NUM_VALUE, numValues.getMax());
+                }
+            }
+
+            if(numValues != null)
+            {
+                if (numValues.getMin() != null)
+                {
+                    this.put(MIN_NUM_VALUE, numValues.getMin());
+                }
+                if (numValues.getMax() != null)
+                {
+                    this.put(MAX_NUM_VALUE, numValues.getMax());
+                }
+            }
+
             Iterator<?> it = pAttrs.entrySet().iterator();
             while (it.hasNext()) {
                 final Map.Entry<?,?> entry = (Map.Entry<?,?>)it.next();
                 final String keyName = (String) entry.getKey();
-                if (!this.has(keyName)) {
+                if (!this.has(keyName) && !keyName.equals("numValues")) {
                     this.put(keyName, (String) entry.getValue());
                 }
             }
@@ -196,6 +226,34 @@ public class ParametersJSON extends JSONObject {
 
     public String getPrefix() throws JSONException {
           return this.getString(PREFIX);
+    }
+
+    public long getMinNumValue() throws JSONException
+    {
+        return this.getLong(MIN_NUM_VALUE);
+    }
+
+    public long getMaxNumValue() throws JSONException {
+        return this.getLong(MAX_NUM_VALUE);
+    }
+
+    public long getMinGroups() throws JSONException
+    {
+        if(this.has(MIN_NUM_GROUPS))
+        {
+            return this.getLong(MIN_NUM_GROUPS);
+        }
+
+        return 0;
+    }
+
+    public long getMaxGroups() throws JSONException {
+        if(this.has(MAX_NUM_GROUPS))
+        {
+            return this.getLong(MAX_NUM_GROUPS);
+        }
+
+        return 0;
     }
 
     public String getValue() throws JSONException {

@@ -50,7 +50,10 @@ public class SearchQuery {
 
     final String groupId;
     final String batchId;
-    
+
+    final String tag;
+    final String comment;
+
     final int page;
     final int pageSize;
     
@@ -76,6 +79,8 @@ public class SearchQuery {
         this.jobSortOrder=in.jobSortOrder;
         this.ascending=in.ascending;
         this.orderFilesBy=in.orderFilesBy;
+        this.tag=in.tag;
+        this.comment=in.comment;
     }
     
     public String getCurrentUser() {
@@ -101,8 +106,21 @@ public class SearchQuery {
     public String getUserId() {
         return userId;
     }
+    public String getTag() {
+        return tag;
+    }
+    public String getComment() {
+        return comment;
+    }
+
     public boolean isBatchFilter() {
         return !Strings.isNullOrEmpty(batchId);
+    }
+    public boolean isTagFilter() {
+        return !Strings.isNullOrEmpty(tag);
+    }
+    public boolean isCommentFilter() {
+        return !Strings.isNullOrEmpty(comment);
     }
     public boolean isGroupFilter() {
         return !Strings.isNullOrEmpty(groupId);
@@ -229,6 +247,8 @@ public class SearchQuery {
         private String selectedBatchId=null;
         private String orderBy=null;
         private String orderFilesBy=null;
+        private String tag = null;
+        private String comment = null;
 
         private JobSortOrder jobSortOrder=JobSortOrder.JOB_NUMBER;
         private boolean ascending=false;
@@ -273,6 +293,16 @@ public class SearchQuery {
         }
         public Builder orderFilesBy(final String orderFilesBy) {
             this.orderFilesBy=orderFilesBy;
+            return this;
+        }
+
+        public Builder tag(final String tag) {
+            this.tag=tag;
+            return this;
+        }
+
+        public Builder comment(final String comment) {
+            this.comment=comment;
             return this;
         }
 

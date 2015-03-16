@@ -236,8 +236,8 @@ var editor = {
     },
 
     relocateIfNeeded: function(module) {
-        var LIBRARY_WIDTH = 190;
-        var HEADER_HEIGHT = 112;
+        var LIBRARY_WIDTH = 0;
+        var HEADER_HEIGHT = 0;
 
         var repaint = false;
 
@@ -4883,6 +4883,7 @@ function Port(module, pointer, param, id) {
                         editor.loading = true;
                         editor.addPipe(input, output);
                         editor.loading = false;
+                        input.param.makeUsed();
                         input.module.checkForWarnings();
                     }
                 }

@@ -196,8 +196,8 @@
 	                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
 	                    <ul>
 	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
-	                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
-	                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+	                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
+	                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                             <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
@@ -210,15 +210,17 @@
 	                </li>
 	                <li><a href="/gp/pages/index.jsf">Help</a>
 	                    <ul>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html')">Tutorial</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')">Video Tutorial</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html')">User Guide</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html')">Programmers Guide</a></li>
-	                        <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats')">File Formats</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
-	                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')">FAQ</a></li>
-	                        <li><a href="/gp/pages/about.jsf">About</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial')">Tutorial</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/desc/videos')">Video Tutorial</a></li>
+                            <li><a class="gp_tours" href="#">Tour of GenePatttern UI</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/user-guide')">User Guide</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers')">Programmers Guide</a></li>
+
+                            <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats/')">File Formats</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+                            <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/')">FAQ</a></li>
+                            <li><a href="/gp/pages/about.jsf">About</a></li>
 	                    </ul>
 	                </li>
 	                <li class="genomeSpaceMenu">
@@ -299,7 +301,7 @@
                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td>
-                                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
+                                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{aboutBean.contactUs}">Contact Us</h:outputLink>
                                     </td>
                                     <td>
                                         <div align="right">&#169;2003-2015&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>

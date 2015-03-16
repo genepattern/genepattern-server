@@ -553,7 +553,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     var reader = new FileReader();
 
     var path = directory + encodeURIComponent(file.name); // The full url of the uploaded file
-    var step = 1024*1024;                               // The chunk size
+    var step = 1024*1024*100;                           // The chunk size
     var total = file.size;                              // The total file size
     var totalChunks = Math.ceil(total / step);          // Total number of chunks in file
     var nextChunk = 0;                                  // Index of the next chunk
@@ -2864,6 +2864,60 @@ function populateJobResultsTable(settings, callback) {
     var _buildSharing = function(job) {
         return job.permissions.isPublic ? "Public" : (job.permissions.isShared ? "Shared" : "Private");
     };
+    var _buildTag = function(job)
+    {
+        var wrapper = $("<div/>").attr("id", "jobTags");
+        var tagString = [];
+        var tagsList = job.tags;
+        if(tagsList !== undefined && tagsList !== null)
+        {
+            var visibleTags = $("<span/>")
+
+            wrapper.append(visibleTags);
+            var visibleTagsLength = tagsList.length > 3 ? 3 : tagsList.length;
+            for(var i=0;i<visibleTagsLength;i++)
+            {
+                var jobTagObj = tagsList[i];
+                visibleTags.append($("<a>"+jobTagObj.tag.tag+"</a>")
+                    .attr("href", "index.jsf?jobResults=tag%3D" + jobTagObj.tag.tag));
+                if(i+1 < visibleTagsLength)
+                {
+                    visibleTags.append(", ");
+                }
+            }
+
+            if(visibleTagsLength != tagsList.length)
+            {
+                visibleTags.prepend($("<a></a>")
+                    .addClass("job-tag-toggle")
+                    .attr("href", "#")
+                    //.attr("onclick", "return false;")
+                    .append(
+                    $("<img />")
+                        .addClass("jobtag-toggle")
+                        .attr("src", "/gp/images/triangle_black.gif")
+                ));
+            }
+
+            var hiddenTags = $("<span/>").attr("id", "hiddenJobTags");
+            wrapper.append(hiddenTags);
+            hiddenTags.append(", ");
+            for(i=visibleTagsLength;i<tagsList.length;i++)
+            {
+                var jobTagObj = tagsList[i];
+                hiddenTags.append($("<a>"+jobTagObj.tag.tag+"</a>")
+                    .attr("href", "index.jsf?jobResults=" + encodeURIComponent("tag=" + jobTagObj.tag.tag)));
+                if(i+1 < tagsList.length)
+                {
+                    hiddenTags.append(", ");
+                }
+            }
+            hiddenTags.hide();
+        }
+
+        return wrapper[0].outerHTML;
+        //return tagString;
+    };
     var _attachMetadata = function(toReturn, data) {
         toReturn.draw = settings.draw;
         toReturn.recordsTotal = data.nav.numItems;
@@ -2887,6 +2941,7 @@ function populateJobResultsTable(settings, callback) {
             row.push(_buildCompletion(job));
             row.push(_buildOwner(job));
             row.push(_buildSharing(job));
+            row.push(_buildTag(job));
 
             // Attach row to the list
             rows.push(row);
@@ -2910,9 +2965,68 @@ function populateJobResultsTable(settings, callback) {
         var page = Math.floor(settings.start / pageSize) + 1;
         var filter = getJobFilter();
 
-        // Handle user search
-        if (settings.search && settings.search.value) {
-            filter = "userId=" + settings.search.value;
+        // Handle search
+        var searchTerm = $("#jobSearchText").val();
+        if (searchTerm !== undefined && searchTerm !== null && searchTerm.length > 0)
+        {
+            if($("#jobSearchOwner").is(":checked"))
+            {
+                //remove any existing userId query parameter
+                var startIndex = filter.indexOf("userId");
+                if(startIndex != -1)
+                {
+                    var endIndex = filter.indexOf("&");
+                    if(endIndex != 1)
+                    {
+                        filter = filter.substring(startIndex, endIndex);
+                    }
+                    else
+                    {
+                        filter = filter.substring(startIndex);
+                    }
+                }
+
+                filter += "userId=" + searchTerm;
+            }
+
+            if($("#jobSearchComment").is(":checked"))
+            {
+                //remove any existing comment query parameter
+                var startIndex = filter.indexOf("comment");
+                if(startIndex != -1)
+                {
+                    var endIndex = filter.indexOf("&");
+                    if(endIndex != 1)
+                    {
+                        filter = filter.substring(startIndex, endIndex);
+                    }
+                    else
+                    {
+                        filter = filter.substring(startIndex);
+                    }
+                }
+
+                filter += "&comment=" + searchTerm;
+            }
+
+            if($("#jobSearchTag").is(":checked"))
+            {
+                //remove any existing userId query parameter
+                var startIndex = filter.indexOf("tag");
+                if(startIndex != -1)
+                {
+                    var endIndex = filter.indexOf("&");
+                    if(endIndex != 1)
+                    {
+                        filter = filter.substring(startIndex, endIndex);
+                    }
+                    else
+                    {
+                        filter = filter.substring(startIndex);
+                    }
+                }
+                filter += "&tag=" + searchTerm;
+            }
         }
 
         var sort = _columnToName(settings.order[0].column);
@@ -2960,6 +3074,20 @@ function populateJobResultsTable(settings, callback) {
                 else {
                     toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
                     $(this).parent().find(".jobresults-files, .jobresults-child").show();
+                }
+            });
+
+            //attach the show hide tag toggle
+            $(".job-tag-toggle").click(function() {
+                var toggleImage = $(this).parent().find(".jobtag-toggle");
+                var open = toggleImage.attr("src").indexOf("_run") != -1;
+                if (open) {
+                    toggleImage.attr("src", "/gp/images/triangle_black.gif");
+                     $(this).parents("div").first().find("#hiddenJobTags").hide();
+                }
+                else {
+                    toggleImage.attr("src", "/gp/images/triangle_black_run.gif");
+                    $(this).parents("div").first().find("#hiddenJobTags").show();
                 }
             });
 
@@ -3037,10 +3165,20 @@ function buildJobResultsPage() {
     $("<div ></div>")
         .addClass("title")
         .text("Job Results")
-        .append(
-        $("<div ></div>")
+        .appendTo(container);
+
+
+    //Add the job table search controls
+    var searchControls = $("<div></div>").attr("id", "jobTableSearch").addClass("float-left")
+        .append($("<input type='search'/>").attr("id", "jobSearchText")
+            .before("<label for='jobSearchText'>Search: </label>").on( 'keyup click', function () {
+            $("#jobTable").DataTable()
+                .search( $(this).val() )
+                .draw();
+        }))
+        .append($("<span ></span>")
             .addClass("jobresults-navigation")
-            .text("Show: ")
+            .text("Filter: ")
             .append(
             $("<select></select>")
                 .attr("id", "jobresults-filter")
@@ -3050,9 +3188,25 @@ function buildJobResultsPage() {
                     setJobFilter(filter);
                     loadJobResults(filter);
                 })
-        )
-    )
+        ))
+        .append($("<label></label>")
+            .append($("<input type='radio' name='jobSearch' checked='checked'/>")
+                .attr("id", "jobSearchTag"))
+            .append("Tags"))
+         .append($("<label></label>")
+                    .append($("<input type='radio' name='jobSearch'/>")
+                        .attr("id", "jobSearchComment"))
+                    .append("Comments"))
         .appendTo(container);
+
+    if(adminServerAllowed)
+    {
+        searchControls
+            .append($("<label></label>")
+                .append($("<input type='radio' name='jobSearch' />")
+                    .attr("id", "jobSearchOwner"))
+                .append("Owner"))
+    }
 
     // Build the table
     var jobTable = $("<table></table>")
@@ -3185,10 +3339,13 @@ function buildJobResultsPage() {
                 $("<td></td>")
                     .addClass("header-sm")
                     .text("Sharing")
+            ) .append(
+                $("<td></td>")
+                    .css("min-width", "100px")
+                    .text("Tags")
             )
         )
-    )
-        .appendTo(container);
+    ).appendTo(container);
 
     // Build the table body
     var tbody = $("<tbody></tbody>")
@@ -3204,18 +3361,56 @@ function buildJobResultsPage() {
         "columnDefs": [
             { "orderable": false, "targets": [2, 4, 7, 8] }
         ],
-        "searching": adminServerAllowed,
+        "searching": false,
         "oLanguage": {
-            "sSearch": "Owner Search: "
+            "sSearch": "Search: "
         },
         "lengthMenu": [10, 20, 50, 100],
         stateSave: true,
         "sPaginationType": "input",
-        "bProcessing": true
+        "bProcessing": true,
+        "preDrawCallback": function(settings)
+        {
+            $("body").css("cursor", "wait");
+        },
+        "drawCallback": function(settings)
+        {
+            $("body").css("cursor", "default");
+
+            var searchTerm = $("#jobSearchText").val();
+            //remove any existing highlights
+            $(this).removeHighlight();
+
+            if(searchTerm !== undefined && searchTerm !== null && searchTerm.length > 0)
+            {
+                $(this).find("td").each(function()
+                {
+                    var myIndex = $(this).index();
+
+                    var tagSearch = $("#jobSearchTag").is(":checked");
+                    if(tagSearch && myIndex != 0 && myIndex % 9 == 0) //column 9
+                    {
+                        $(this).highlight(searchTerm);
+                    }
+
+                    var ownerSearch = $("#jobSearchOwner").is(":checked");
+                    if(ownerSearch && myIndex != 0 && myIndex % 7 == 0) //column 7
+                    {
+                        $(this).highlight(searchTerm);
+                    }
+                })
+            }
+        },
+        "dom": '<"top"l<"inline"i>p<"clear">>rt<"bottom"ip<"clear">>'
     });
 
     // Append the container to the correct past of the page
     jobResults.append(container);
+
+    $("input[name='jobSearch']").click(function()
+    {
+        $("#jobSearchText").keyup();
+    })
 }
 
 function loadJobResults(jobResults) {

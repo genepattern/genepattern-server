@@ -172,12 +172,13 @@ public class SlurmJobRunner implements JobRunner {
      * @return - Return the path to the submission script
      * @throws CommandExecutorException
      */
-    String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String queue, String account, String maxTime) throws CommandExecutorException {
+    String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String queue, String account, String maxTime, String remoteHomeDirectory) throws CommandExecutorException {
         File workingDirectory = new File(workDirPath);
         File jobScript = new File(workingDirectory, "launchJob.sh");
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
                             "#SBATCH -J " + gpJobId + "\n" +
+                            "#SBATCH -D " + remoteHomeDirectory + "/jobResults/" + gpJobId + "\n" +
                             "#SBATCH -o stdout.txt\n" +
                             "#SBATCH -e stderr.txt\n" +
 
@@ -218,13 +219,7 @@ public class SlurmJobRunner implements JobRunner {
             }
         }
 
-        try {
-            return jobScript.getCanonicalPath();
-        }
-        catch (IOException e) {
-            log.error("Error getting Canonical Path, falling back to Absolute Path: " + jobScript.getAbsolutePath());
-            return jobScript.getAbsolutePath();
-        }
+        return jobScript.getAbsolutePath();
     }
 
     /**
@@ -249,9 +244,16 @@ public class SlurmJobRunner implements JobRunner {
         String queue = drmJobSubmission.getQueue("development");
         String account =  config.getGPProperty(context, "tacc.account", "TACC-GenePattern");
         String maxTime = drmJobSubmission.getWalltime("00:01:00").toString();
+        String replacePath =  config.getGPProperty(context, "tacc.rodeo.path", "/home/rodeo/GenePatternServer");
+        String replaceWithPath =  config.getGPProperty(context, "tacc.stampede.path", "/home1/03271/thorin");
+
+        commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
 
         // Build the shell script for submitting the slurm job
-        String scriptPath = buildSubmissionScript(gpJobId, workDir, commandLine, queue, account, maxTime);
+        String scriptPath = buildSubmissionScript(gpJobId, workDir, commandLine, queue, account, maxTime, replaceWithPath);
+
+        // Substitute file path prefixes with the correct prefixes for the execution server
+        scriptPath = scriptPath.replaceAll(replacePath, replaceWithPath);
 
         // Run the command line through the Slurm shell script
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
@@ -330,7 +332,8 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
-            if (stderr != null && stderr.exists()) {
+            if (stderr != null && stderr.exists() && stderr.length() != 0) {
+                Thread.currentThread().interrupt();
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
             }
             else {
@@ -341,15 +344,19 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("FAILED") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("TIMEOUT") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("PREEMPT") == 0 || slurmStatusString.compareToIgnoreCase("PREEMPTED") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("NODE_FAI") == 0 || slurmStatusString.compareToIgnoreCase("NODE_FAIL") == 0) {
+            Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
         else {

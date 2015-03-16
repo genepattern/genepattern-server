@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+	<dict>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>English</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>GenePattern</string>
+		<key>CFBundleExecutable</key>
+		<string>GenePattern</string>
+		<key>CFBundleVersion</key>
+		<string>16.0</string>
+		<key>CFBundleGetInfoString</key>
+		<string>GenePattern, © 2015 Broad Institute of MIT and Harvard</string>
+		<key>CFBundleIconFile</key>
+		<string>GenePattern.icns</string>
+		<key>WorkingDirectory</key>
+        <string>$APP_PACKAGE/Contents/Resources</string>
+	</dict>
+</plist>

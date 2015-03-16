@@ -1,0 +1,151 @@
+<project name="gp-custom-lsf-executor" default="describe">
+    <target name="describe">
+        <echo>
+            Create the GenePattern Mac App
+        </echo>
+    </target>
+
+    <!-- SET PROPERTIES -->
+
+    <property name="gp.classes" location="../build"/>
+    <property name="gp.server.lib" location="../website/WEB-INF/lib"/>
+
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+
+    <path id="gp.server.classpath">
+        <!-- include GenePattern jar files -->
+        <fileset dir="${gp.server.lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="gp.dev.classpath">
+        <pathelement location="${gp.classes}"/>
+    </path>
+
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}"/>
+        <path refid="gp.server.classpath"/>
+        <path refid="gp.dev.classpath"/>
+    </path>
+
+    <!-- INITIALIZATION TARGETS -->
+
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="clean-all" depends="clean">
+        <description>
+            Deletes everything.
+        </description>
+        <delete file="dist/gp-macapp.zip"/>
+    </target>
+
+    <!-- RESOURCE COPY TARGETS -->
+
+    <target name="echo-classpath" depends="init">
+        <pathconvert property="expanded.classpath" refid="compile.classpath"/>
+        <echo message="${expanded.classpath}" />
+    </target>
+
+    <target name="copy-base" depends="init">
+        <copydir src="resources/GenePattern.app" dest="${dist.dir}/GenePattern.app" />
+    </target>
+
+    <target name="copy-tomcat" depends="init, copy-base">
+        <copydir src="../installer-2014/gpdist/Tomcat" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat" />
+    </target>
+
+    <target name="copy-resources" depends="init, copy-base">
+        <copydir src="../resources" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/resources" />
+    </target>
+
+    <target name="copy-website" depends="init, copy-base, copy-tomcat">
+        <copydir src="../website" dest="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp" />
+    </target>
+
+    <target name="create-empty-dirs" depends="init, copy-base">
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/jobResults" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/logs" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/patches" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/taskLib" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/temp" />
+        <mkdir dir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/users" />
+    </target>
+
+    <!-- COMPILATION TARGETS -->
+
+    <target name="compile" depends="init">
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor"/>
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath"/>
+        <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath"/>
+
+        <!-- copy non-java resource files to the output directory -->
+        <copy todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-gp-full" depends="init, copy-base, copy-tomcat">
+        <copy file="../build/gp-full.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/lib" />
+    </target>
+
+    <target name="copy-visualizer-jar" depends="init, copy-base, copy-website">
+        <copy file="../build/runVisualizer.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/downloads" />
+    </target>
+
+    <target name="make-executable" depends="init, copy-base, copy-tomcat">
+        <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/digest.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/setclasspath.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/shutdown.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/startup.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/tool-wrapper.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/version.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" perm="ugo+rx"/>
+    </target>
+
+    <target name="update-properties" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, compile">
+        <java classname="org.genepattern.startapp.PropertiesWriter">
+            <arg value="${build}"/>
+            <arg value="-h"/>
+            <classpath refid="compile.classpath" />
+        </java>
+    </target>
+
+    <!-- DISTRIBUTION TARGETS -->
+
+    <target name="echo-args">
+        <!-- Must call: ant echo-args -Dbuild=YYY -->
+        <echo message="${build}" />
+    </target>
+
+    <target name="jar" depends="compile">
+        <property name="jar.file" location="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" />
+        <jar destfile="${jar.file}" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="org.genepattern.startapp.Bootstrap" />
+                <attribute name="Class-Path" value="." />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-visualizer-jar, update-properties, jar, make-executable">
+        <!-- Should call: ant dist -Dbuild=YYY -->
+        <zip basedir="dist" destfile="dist/gp-macapp.zip">
+            <zipfileset filemode="755" dir="dist" includes="GenePattern.app/**/*" />
+        </zip>
+    </target>
+
+</project>

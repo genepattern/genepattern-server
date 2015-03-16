@@ -1,6 +1,7 @@
 package org.genepattern.server.job.comment;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.hibernate.validator.Size;
 import org.json.JSONArray;
@@ -54,14 +55,15 @@ public class JobComment {
     private int id;
 
     //this is a foreign key to the analysis_job table
-    @Column(name="gp_job_no")
-    private int gpJobNo;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "gp_job_no", nullable=false)
+    private AnalysisJob analysisJob;
 
     @Column(name="parent_id")
     private int parentId;
 
-    @Column(name="posted_date", nullable=false)
-    private Date postedDate;
+    @Column(name="posted_date", nullable=false, updatable=false)
+    private Date postedDate = new Date();
 
     @Column(name="user_id", nullable=false, length=255)
     private String userId;
@@ -70,10 +72,8 @@ public class JobComment {
     @Size(max=COMMENT_TEXT_LENGTH)
     private String comment;
 
-    public int getGpJobNo()
-    {
-        return gpJobNo;
-    }
+
+    public AnalysisJob getAnalysisJob() { return analysisJob; }
 
     public int getId()
     {
@@ -100,10 +100,7 @@ public class JobComment {
         return comment;
     }
 
-    public void setGpJobNo(final int gpJobNo)
-    {
-        this.gpJobNo = gpJobNo;
-    }
+    public void setAnalysisJob(AnalysisJob analysisJob) { this.analysisJob = analysisJob; }
 
     public void setCommentId(final int commentId)
     {
@@ -113,11 +110,6 @@ public class JobComment {
     public void setParentId(final int parentId)
     {
         this.parentId = parentId;
-    }
-
-    public void setPostedDate(final Date postedDate)
-    {
-        this.postedDate = postedDate;
     }
 
     public void setUserId(final String userId)

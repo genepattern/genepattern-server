@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.tag.Tag;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class JobTagDao
         }
         catch (Throwable t) {
 
-            log.error("Error adding tag for gpJobNo=" + jobTag.getGpJobNo(), t);
+            log.error("Error adding tag for gpJobNo=" + jobTag.getAnalysisJob().getJobNo(), t);
             HibernateUtil.rollbackTransaction();
         }
         finally {
@@ -66,8 +67,11 @@ public class JobTagDao
         try {
             HibernateUtil.beginTransaction();
 
-            jobTagList = HibernateUtil.getSession().createCriteria(JobTag.class)
-                    .add(Restrictions.eq("gpJobNo", gpJobNo)).list();
+            jobTagList = HibernateUtil.getSession().createCriteria(JobTag.class, "jobTag")
+                    .createAlias("jobTag.analysisJob", "analysisJob")
+                    .createAlias("jobTag.tagObj", "tagObj")
+                    .add(Restrictions.eq("analysisJob.jobNo", gpJobNo))
+                    .addOrder(Order.asc("tagObj.tag")).list();
         }
         catch (Throwable t) {
             log.error("Error getting tags for gpJobNo="+gpJobNo,t);

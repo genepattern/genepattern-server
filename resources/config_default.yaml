@@ -1,5 +1,8 @@
 #
-# default job configuration 
+# default job configuration; treat this as a read-only file 
+# To customize your server, first make a copy of this file,
+#     cp config_default.yaml config_custom.yaml
+# Then make edits to the config_custom.yaml file.
 #
 # Note: this is a YAML file, indentation is important, TAB characters are not permitted.
 #     You must use an exact number of spaces to denote each indentation level.
@@ -16,8 +19,6 @@ default.properties:
     # default setting hides all files which begin with a '.' character
     job.FilenameFilter: [ ".*" ]
     
-    # flag to enable batch execution of jobs from the run module web page
-    allow.batch.process: false
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 
@@ -69,6 +70,12 @@ default.properties:
     #
     gparcUploadURL: http://www.gparc.org/server_upload.php
     gparcSubmitURL: http://www.gparc.org/uniqid
+
+    #
+    # Google Analytics, available in 3.9.2+
+    #
+    #googleAnalytics.enabled: true
+    #googleAnalytics.trackingId: ""
     
     # 
     # for per-module End-user license agreements (EULA)

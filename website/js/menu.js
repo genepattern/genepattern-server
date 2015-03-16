@@ -33,7 +33,7 @@ var Menu = {
 	denyIE: function(url) {
 		if (navigator.userAgent.indexOf("MSIE") !== -1) {
 			var alert = document.createElement("div");
-			this.jquery(alert).text("The Pipeline Designer and Module Integrator don't support Internet Explorer.  Please use Firefox or Chrome.");
+			this.jquery(alert).text("The Pipeline Designer and Module Integrator don't support Internet Explorer, except for Internet Explorer 11 in Standards mode.  Either use Firefox, Chrome or switch IE to Standards mode.");
 			this.jquery(alert).dialog({
 	            modal: true,
 	            dialogClass: "top-dialog",

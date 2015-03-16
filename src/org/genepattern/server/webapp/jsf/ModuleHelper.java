@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
@@ -81,7 +82,7 @@ public class ModuleHelper {
         
         for(final TaskInfo taskInfo : tasks) {
             final CategoryUtil cu=new CategoryUtil();
-            final List<String> taskTypes=cu.getCategoriesForTask(userContext, taskInfo);
+            final List<String> taskTypes=cu.getCategoriesForTask(ServerConfigurationFactory.instance(), userContext, taskInfo);
             for(final String taskType : taskTypes) {
                 List<TaskInfo> taskMapEntries = taskMap.get(taskType);
                 if (taskMapEntries == null) {

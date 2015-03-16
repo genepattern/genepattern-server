@@ -4,6 +4,7 @@ import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.tag.Tag;
 import org.genepattern.webservice.JobInfo;
@@ -86,7 +87,11 @@ public class TestJobTagDao
         JobTag jobTag = new JobTag();
         jobTag.setUserId(user);
         jobTag.setTagObj(tag);
-        jobTag.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(gpJobNo);
+        jobTag.setAnalysisJob(analysisJob);
+
         jobTag.setDateTagged(date);
         boolean success = jobTagDao.insertJobTag(jobTag);
         assertTrue("insert success", success);
@@ -103,7 +108,11 @@ public class TestJobTagDao
         JobTag jobTag2 = new JobTag();
         jobTag2.setUserId(admin);
         jobTag2.setTagObj(tag2);
-        jobTag2.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob2 = new AnalysisJob();
+        analysisJob2.setJobNo(gpJobNo);
+        jobTag2.setAnalysisJob(analysisJob2);
+
         jobTag2.setDateTagged(date2);
 
         jobTagDao.insertJobTag(jobTag2);
@@ -131,7 +140,11 @@ public class TestJobTagDao
         JobTag jobTag = new JobTag();
         jobTag.setUserId(user);
         jobTag.setTagObj(tag);
-        jobTag.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(gpJobNo);
+        jobTag.setAnalysisJob(analysisJob);
+
         jobTag.setDateTagged(date);
         jobTag.setTagObj(tag);
 

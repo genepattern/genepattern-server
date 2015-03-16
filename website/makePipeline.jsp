@@ -203,7 +203,7 @@
 	TaskInfo pTaskInfo = new TaskInfo();
 	TaskInfoAttributes pTia = null;
 	Vector vProblems = new Vector();
-	File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+    File tmpDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
 
 	IAdminClient adminClient = new LocalAdminClient(requestParameters.getProperty(GPConstants.USERID));
 	Map taskCatalog = adminClient.getTaskCatalogByLSID();

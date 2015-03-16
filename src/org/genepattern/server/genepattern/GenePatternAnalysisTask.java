@@ -742,10 +742,11 @@ public class GenePatternAnalysisTask {
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
         validateOS(expected, "run " + taskName);
         try {
-            PluginManagerLegacy.validatePatches(taskInfo, null);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, jobContext);
+            pluginManager.validatePatches(taskInfo, null);
         }
-        catch (MalformedURLException e) {
-            throw new JobDispatchException(e);
+        catch (Exception e) {
+            throw new JobDispatchException("Error validating patches for task="+taskInfo.getName(), e);
         }
         Map<String, String> environmentVariables = new HashMap<String, String>();
 
@@ -760,9 +761,9 @@ public class GenePatternAnalysisTask {
         }
 
         ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
-        Properties props = null;
+        final Properties propsPre; // <---- initialize properties, needed to compute the originalPath
         try {
-            props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
+            propsPre = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
                     taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
         }
         catch (MalformedURLException e) {
@@ -781,7 +782,7 @@ public class GenePatternAnalysisTask {
                 String mode = (String) attrsCopy.get(ParameterInfo.MODE);
                 String originalPath = pinfo.getValue();
                 // allow parameter value substitutions within file input parameters
-                originalPath = substitute(originalPath, props, paramsCopy);
+                originalPath = substitute(originalPath, propsPre, paramsCopy);
                 boolean isOptional = "on".equals(attrsCopy.get("optional"));
                 // if necessary use the URL value instead of the server file path value
                 final boolean isUrlMode=pinfo._isUrlMode();
@@ -1318,6 +1319,7 @@ public class GenePatternAnalysisTask {
         // build the command line, replacing <variableName> with the same name from the properties
         // (ParameterInfo[], System properties, environment variables, and built-ins merged)
         // build props again, now that downloaded files are set
+        final Properties props;
         try {
             props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
@@ -2710,6 +2712,12 @@ public class GenePatternAnalysisTask {
                 taskLibDir = f.getPath() + System.getProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
+            
+            // explicitly add the '<patches>' substitution parameter
+            File pluginDir=ServerConfigurationFactory.instance().getRootPluginDir(GpContext.getServerContext());
+            if (pluginDir!=null) {
+                props.put(GpConfig.PROP_PLUGIN_DIR, pluginDir.getPath());
+            }
 
             // set the java flags if they have been overridden in the java_flags.properties file
             PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
@@ -3281,7 +3289,10 @@ public class GenePatternAnalysisTask {
                 return v;
             }
             //if necessary, install patches
-            PluginManagerLegacy.validatePatches(taskInfo, taskIntegrator);
+            GpConfig gpConfig=ServerConfigurationFactory.instance();
+            GpContext gpContext=GpContext.getServerContext();
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, gpContext);
+            pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
             final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
             if (vProblems != null && vProblems.size()>0) {

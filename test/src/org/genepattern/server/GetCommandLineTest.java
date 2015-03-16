@@ -18,6 +18,8 @@ import java.util.Map.Entry;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.MyLabelledParameterized;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -37,7 +39,6 @@ public class GetCommandLineTest {
     private static String[] testCaseFiles={ 
         //"debug_test_case.yaml",
         //"test_cases.yaml", 
-        //"rna_seq_test_cases.yaml", 
         //"gptest_generated_test_cases.yaml",
         "gpprod_generated_testcases_0000.yaml",
         "gpprod_generated_testcases_0400.yaml",
@@ -295,7 +296,11 @@ public class GetCommandLineTest {
 
     @Test
     public void testTranslateCmdLine() {
-        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, env, parameterInfoMap);
+        GpConfig gpConfig=new GpConfig.Builder()
+            .addProperties(env)
+        .build();
+        GpContext gpContext=GpContext.getServerContext();
+        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(gpConfig, gpContext, cmdLine, parameterInfoMap);
         Assert.assertNotNull(name+": cmdLineArgs", cmdLineArgs);
         Assert.assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
         int i=0;

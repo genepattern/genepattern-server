@@ -519,7 +519,7 @@ hr
     font-size: 11px;
 }
 
-#viewCodeDiv
+#viewCodeDiv, #viewProperties
 {
     border: 2px solid #80a7d0;
     margin: 14px 0 14px 0;
@@ -664,4 +664,15 @@ div.tagsinput span.tag
 div.tagsinput span.tag a
 {
     color: #3333CC;
+}
+
+.properties-label {
+    font-weight: bold;
+    padding-right: 20px;
+    width: 120px;
+}
+
+#jobTags_tag
+{
+    min-width: 150px;
 }

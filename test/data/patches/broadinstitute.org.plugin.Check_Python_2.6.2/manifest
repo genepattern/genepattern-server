@@ -1,0 +1,15 @@
+#Fri, 06 Mar 2015 15:25:00 -0400
+name=Check_Python_2.6
+privacy=public
+commandLine=<perl> check_python_version.pl
+os=any
+author=Marc-Danie Nazaire, Broad Institute
+userid=GenePattern (gp-help@broadinstitute.org)
+version=Modified check for Python version greater then 2.6
+taskType=Patch
+description=Check that Python exists and its version is 2.6 or greater
+quality=production
+failureExitValue=1
+cpuType=any
+
+LSID=urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2

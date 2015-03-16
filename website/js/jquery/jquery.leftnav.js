@@ -482,7 +482,7 @@ $.widget("gp.modulelist", {
     },
 
     set_title: function(title) {
-        this.element.find(".module-list-title").html(title);
+        this.element.closest(".search-widget").find(".module-list-title").html(title);
     },
     
     get_module: function(lsid) {

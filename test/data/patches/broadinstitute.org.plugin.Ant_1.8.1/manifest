@@ -1,0 +1,14 @@
+#Sat, 30 Mar 2013 13:32:14 +0900
+name=Ant_1_8
+description=Install Ant 1.8.4 and set ant-1.8 in genepattern.properties file
+LSID=urn\:lsid\:broadinstitute.org\:plugin\:Ant_1.8\:1
+author=Peter Carr, Broad Institute
+privacy=public
+commandLine=<ant> -f installAnt.xml -Dresources\=<resources> -Dplugin.dir\=<patches> -Dant-1.8_HOME\=<ant-1.8_HOME>
+version=
+os=any
+userid=
+taskType=Patch
+quality=production
+failureExitValue=1
+cpuType=all

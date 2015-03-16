@@ -1,0 +1,1 @@
+Mock TopHat installation directory.

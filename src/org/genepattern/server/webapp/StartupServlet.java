@@ -41,6 +41,7 @@ import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
+import org.genepattern.server.plugin.MigratePlugins;
 import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
@@ -65,7 +66,8 @@ public class StartupServlet extends HttpServlet {
         }
         return this.log;
     }
-    
+
+    private File webappDir=null;
     private File gpWorkingDir=null;
     private File gpHomeDir=null;
     private File gpResourcesDir=null;
@@ -137,7 +139,7 @@ public class StartupServlet extends HttpServlet {
         if (this.gpHomeDir != null) {
             return null;
         }
-        
+
         String gpWorkingDir=GpConfig.normalizePath(servletConfig.getServletContext().getRealPath("../../"));
         return new File(gpWorkingDir);
     }
@@ -252,7 +254,10 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
+        this.webappDir=new File(servletConfig.getServletContext().getRealPath(""));
+        ServerConfigurationFactory.setWebappDir(webappDir);
         this.gpHomeDir=initGpHomeDir(servletConfig);
+        ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
 
         this.gpWorkingDir=initGpWorkingDir(servletConfig);
         ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
@@ -271,7 +276,7 @@ public class StartupServlet extends HttpServlet {
         getLog().info("\tgpWorkingDir="+gpWorkingDir);
         getLog().info("\tresources="+gpResourcesDir);
 
-        loadProperties(servletConfig); // assumes this.gpResourcesDir and this.gpWorkingDir are initialized
+        loadProperties(servletConfig); // assumes this.gpHomeDir, this.gpResourcesDir, and this.gpWorkingDir are initialized
         setServerURLs(servletConfig);
 
         ServerConfigurationFactory.reloadConfiguration();
@@ -369,6 +374,16 @@ public class StartupServlet extends HttpServlet {
             getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
         }
         
+        // import installed plugins (aka patches) from the root plugin directory into the GP database
+        try {
+            getLog().info("\tmigrating installed plugins ...");
+            MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext);
+            migratePlugins.migratePlugins();
+        }
+        catch (Throwable t) {
+            getLog().error("Error migrating installed plugins: " + t.getLocalizedMessage(), t);
+        }
+        
         //start the JobPurger
         PurgerFactory.instance().start();
 
@@ -456,8 +471,10 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(message + NL);
         startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
         startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\twebappDir: " + this.webappDir + NL );
         startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
-        startupMessage.append("\ttasklib: " + System.getProperty("tasklib") + NL);
+        startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
+        startupMessage.append("\t" + GpConfig.PROP_PLUGIN_DIR+": "+ gpConfig.getRootPluginDir(serverContext) + NL);
         startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
         startupMessage.append("\tjava.io.tmpdir: " + System.getProperty("java.io.tmpdir") + NL );
         startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);

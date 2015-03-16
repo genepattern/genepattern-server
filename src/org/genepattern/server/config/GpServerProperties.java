@@ -2,6 +2,8 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -56,6 +58,13 @@ public class GpServerProperties {
         if (props==null) {
             throw new IllegalArgumentException("props==null");
         }
+        if (propFile==null) {
+            log.error("unexpected null arg, propFile==null");
+            return null;
+        }
+        if (!propFile.exists()) {
+            log.debug("File does not exist, propFile="+propFile);
+        }
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(propFile);
@@ -85,7 +94,68 @@ public class GpServerProperties {
             }
         }
     }
+
+    /**
+     * Helper method for saving the given properties instance to the given file.
+     * 
+     * @param props
+     * @param propFile
+     * @param comment
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static void writeProperties(final Properties props, final File propFile, final String comment) throws FileNotFoundException, IOException {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(propFile);
+            props.store(fos, comment);
+        } 
+        finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
     
+    /**
+     * Save custom plugin properties into the custom.properties file for the server.
+     * You must reload the configuration to guarantee that the updates are available to the
+     * GP runtime.
+     * 
+     * @param customPropsFile, the path to the GP server custom.properties file
+     * @param pluginCustomProps, the custom properties to set from the plugin directory
+     */
+    public static void updateCustomProperties(final File customPropsFile, final Properties pluginCustomProps) throws FileNotFoundException, IOException {
+        String comment=null;
+        boolean skipExisting=true;
+        updateCustomProperties(customPropsFile, pluginCustomProps, comment, skipExisting);
+    }
+
+    public static void updateCustomProperties(final File customPropsFile, final Properties pluginCustomProps, final String comment, final boolean skipExisting) throws FileNotFoundException, IOException {
+        //1) load the file
+        final Properties customProps=GpServerProperties.loadProps(customPropsFile);
+        //2) save changes
+        for(final String key : pluginCustomProps.stringPropertyNames()) {
+            String updatedValue=pluginCustomProps.getProperty(key);
+            String existingValue=customProps.getProperty(key);
+            if (skipExisting && existingValue != null) {
+                log.debug(key+"="+existingValue+" is already in custom.properties file");
+                if (existingValue.equals(updatedValue)) {
+                    log.debug("skipping duplicate custom plugin property");
+                }
+                else {
+                    log.error(key+"="+existingValue+" is already in custom.properties file");
+                    log.error("Ignoring custom plugin property, "+key+"="+updatedValue);
+                }
+            }
+            else {
+                customProps.setProperty(key, updatedValue);
+            }
+        }
+        //3) save file
+        GpServerProperties.writeProperties(customProps, customPropsFile, comment);
+    }
+
     public static class Record {
         private final File propFile;
         private long dateLoaded = System.currentTimeMillis();
@@ -208,6 +278,22 @@ public class GpServerProperties {
             return null;
         }
         return new Value(prop);
+    }
+    
+    /**
+     * Helper method to find out if a given property is set in the genepattern.properties file.
+     * @param key
+     * @return
+     */
+    public boolean isSetInGpProperties(final String key) {
+        return isSetIn("genepattern.properties", key);
+    }
+    protected boolean isSetIn(final String fileType, final String key) {
+        Record record=propertiesList.get(fileType);
+        if (record==null) {
+            return false;
+        }
+        return record.getProperties().containsKey(key);
     }
     
     public static final class Builder {

@@ -6,6 +6,8 @@
   ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
   --%>
 
+<%@ page import="org.genepattern.server.webapp.jsf.AboutBean" %>
+<% AboutBean aboutBean = new AboutBean(); %>
 <% String username = (String) request.getAttribute("userid"); %>
 <!-- top band with the logo -->
 <div id="topband" class="topband">
@@ -42,8 +44,8 @@
 	     <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
 	         <ul>
 	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
-	             <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
-	             <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+	             <li><a href="<%=aboutBean.getContactUs()%>">Report Bugs</a></li>
+	             <li><a href="<%=aboutBean.getContactUs()%>">Contact Us</a></li>
                  <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                  <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                  <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>

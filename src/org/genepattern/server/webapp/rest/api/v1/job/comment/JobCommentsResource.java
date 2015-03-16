@@ -2,6 +2,7 @@ package org.genepattern.server.webapp.rest.api.v1.job.comment;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.config.GpContext;
@@ -95,9 +96,12 @@ public class JobCommentsResource
                 }
 
                 JobComment jobComment = new JobComment();
-                jobComment.setGpJobNo(gpJobNo);
+
+                AnalysisJob analysisJob = new AnalysisJob();
+                analysisJob.setJobNo(gpJobNo);
+                jobComment.setAnalysisJob(analysisJob);
+
                 jobComment.setParentId(parentId);
-                jobComment.setPostedDate(new Date());
                 jobComment.setComment(commentText);
                 jobComment.setUserId(userContext.getUserId());
                 jobComment = JobCommentManager.addJobComment(jobComment);
@@ -140,7 +144,11 @@ public class JobCommentsResource
                 int commentId = Integer.parseInt(id);
                 jobComment.setUserId(userContext.getUserId());
                 jobComment.setCommentId(commentId);
-                jobComment.setGpJobNo(gpJobNo);
+
+                AnalysisJob analysisJob = new AnalysisJob();
+                analysisJob.setJobNo(gpJobNo);
+                jobComment.setAnalysisJob(analysisJob);
+
                 jobComment.setComment(commentText);
                 success = JobCommentManager.updateJobComment(jobComment);
                 if(success)

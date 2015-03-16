@@ -1,6 +1,7 @@
 package org.genepattern.server.job.tag;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.tag.dao.JobTagDao;
 import org.genepattern.server.tag.Tag;
 import org.json.JSONArray;
@@ -19,9 +20,12 @@ public class JobTagManager
     static public void addTag(String userId, int jobNo,String tagText, Date date, boolean isPublic)
     {
         JobTag jobTag = new JobTag();
-        jobTag.setGpJobNo(jobNo);
         jobTag.setDateTagged(date);
         jobTag.setUserId(userId);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(jobNo);
+        jobTag.setAnalysisJob(analysisJob);
 
         Tag tag = new Tag();
         tag.setDateAdded(date);

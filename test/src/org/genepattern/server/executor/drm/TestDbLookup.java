@@ -216,6 +216,8 @@ public class TestDbLookup {
         Date lsfStartTime =new DateTime("2014-07-15T09:15:21").toDate();
         Date lsfEndTime   =new DateTime("2014-07-15T10:15:21").toDate();
         
+        Memory reqMemory=Memory.fromSizeInBytes(4000L);
+        
         CpuTime cpuTime=new CpuTime(900L, TimeUnit.MILLISECONDS);
         Memory maxMemory=Memory.fromSizeInBytes(1000L);
         Memory maxSwap=Memory.fromSizeInBytes(2000L);
@@ -242,6 +244,7 @@ public class TestDbLookup {
             .maxSwap(maxSwap)
             .maxProcesses(maxProcesses)
             .maxThreads(maxThreads)
+            .requestedMemory(reqMemory)
         .build();
         DbLookup.insertJobRunnerJob(jobRecord);
         
@@ -255,6 +258,7 @@ public class TestDbLookup {
         Assert.assertEquals("jobRunnerJob.maxSwap", (Long) maxSwap.getNumBytes(), query.getMaxSwap());
         Assert.assertEquals("jobRunnerJob.maxProcesses", (Integer) maxProcesses, query.getMaxProcesses());
         Assert.assertEquals("jobRunnerJob.maxThreads", (Integer) maxThreads, query.getMaxThreads());
+        Assert.assertEquals("jobRunnerJob.reqMemory", (Long) reqMemory.getNumBytes(), query.getRequestedMemory());
     }
     
     @Test

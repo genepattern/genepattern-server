@@ -1,0 +1,1 @@
+Mock bowtie installation directory.

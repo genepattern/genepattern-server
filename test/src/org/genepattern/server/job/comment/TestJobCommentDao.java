@@ -3,6 +3,7 @@ package org.genepattern.server.job.comment;
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
+import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.JobInfo;
@@ -79,9 +80,13 @@ public class TestJobCommentDao
         int parentId = 0;
 
         JobComment jobComment = new JobComment();
-        jobComment.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(gpJobNo);
+        analysisJob.setParent(-1);
+        jobComment.setAnalysisJob(analysisJob);
+
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 
@@ -89,7 +94,7 @@ public class TestJobCommentDao
 
         List<JobComment> query=dao.selectJobComments(gpJobNo);
         JobComment result = query.get(0);
-        assertEquals("gpJobNo", gpJobNo, result.getGpJobNo());
+        assertEquals("gpJobNo", gpJobNo, result.getAnalysisJob().getJobNo().intValue());
         assertEquals("parentId", parentId, result.getParentId());
         assertEquals("posted date", postedDate, result.getPostedDate());
         assertEquals("userId", user, result.getUserId());
@@ -109,9 +114,13 @@ public class TestJobCommentDao
         int parentId = 0;
 
         JobComment jobComment = new JobComment();
-        jobComment.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(gpJobNo);
+        analysisJob.setParent(-1);
+        jobComment.setAnalysisJob(analysisJob);
+
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 
@@ -139,9 +148,13 @@ public class TestJobCommentDao
         int parentId = 0;
 
         JobComment jobComment = new JobComment();
-        jobComment.setGpJobNo(gpJobNo);
+
+        AnalysisJob analysisJob = new AnalysisJob();
+        analysisJob.setJobNo(gpJobNo);
+        analysisJob.setParent(-1);
+        jobComment.setAnalysisJob(analysisJob);
+
         jobComment.setParentId(parentId);
-        jobComment.setPostedDate(postedDate);
         jobComment.setUserId(user);
         jobComment.setComment(comment);
 

@@ -16,12 +16,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
@@ -39,6 +34,8 @@ import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.comment.JobComment;
+import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -49,8 +46,10 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
+import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
+import org.hibernate.criterion.*;
 
 /**
  * AnalysisDAO.java
@@ -155,7 +154,291 @@ public class AnalysisDAO extends BaseDAO {
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
     }
-    
+
+    /**
+     * Get the list of jobs with a specific tag
+     *
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsWithTag(final String tag, final String userId, final String batchId, final Set<String> groupIds, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder,
+                                             final boolean ascending) {
+
+        int firstResult = (pageNum - 1) * pageSize;
+        int maxResults = pageSize;
+
+        HibernateUtil.beginTransaction();
+
+        List<JobInfo> jobInfos = null;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select a from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
+                    + " jt.tagObj.tag like lower('" + tag + "%') "
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+            appendSortOrder(hql, jobSortOrder, ascending);
+
+            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            query.setFirstResult(firstResult);
+            query.setMaxResults(maxResults);
+            query.setString("batchId", batchId);
+
+            List<AnalysisJob> jobTags = query.list();
+
+            jobInfos = new ArrayList<JobInfo>(jobTags.size());
+            for (AnalysisJob analysisJob : jobTags)
+            {
+                JobInfo jobInfo = new JobInfo(analysisJob);
+                jobInfos.add(jobInfo);
+            }
+        }
+        else
+        {
+            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
+                    .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
+                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase())
+                    .setFirstResult(firstResult).setMaxResults(maxResults);
+
+            Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
+            if(sortOrder != null)
+            {
+                criteria.addOrder(sortOrder);
+            }
+
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("analysisJob.permissions", "permissions")
+                    .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+            }
+
+            List<JobTag> jobTags = criteria.list();
+
+            jobInfos = new ArrayList<JobInfo>(jobTags.size());
+            for(JobTag jobTag : jobTags) {
+                JobInfo jobInfo = new JobInfo(jobTag.getAnalysisJob());
+                jobInfos.add(jobInfo);
+            }
+        }
+        return jobInfos;
+    }
+
+    /**
+     * Get the list of jobs with a specific tag
+     *
+     * @return
+     */
+    public int getJobsWithTagCount(final String tag, final String userId, final String batchId, final Set<String> groupIds) {
+        HibernateUtil.beginTransaction();
+
+        int jobCount = 0;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select count(a) from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
+                    + " jt.tagObj.tag like '" + tag + "%' "
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            query.setString("batchId", batchId);
+
+            jobCount = getCount(query.uniqueResult());
+        }
+        else
+        {
+            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
+                    .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
+                    .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase());
+
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("analysisJob.permissions", "permissions")
+                        .add(Restrictions.in("permissions.groupId", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+            }
+
+            criteria.setProjection(Projections.rowCount());
+            jobCount = getCount(criteria.uniqueResult());
+        }
+        return jobCount;
+    }
+
+
+    private static Order generateSortOrder(JobSortOrder jobSortOrder, boolean ascending, String alias)
+    {
+        Order order = null;
+        if(alias == null)
+        {
+            alias = "";
+        }
+        else
+        {
+            alias += ".";
+        }
+
+        switch (jobSortOrder) {
+            case JOB_NUMBER:
+                order = ascending ? Order.asc(alias+"jobNo") : Order.desc(alias+"jobNo");
+                break;
+            case JOB_STATUS:
+                order = ascending ? Order.asc(alias+"jobStatus") : Order.desc(alias+"jobStatus");
+                break;
+            case SUBMITTED_DATE:
+                order = ascending ? Order.asc(alias+"submittedDate") : Order.desc(alias+"submittedDate");
+                break;
+            case COMPLETED_DATE:
+                order = ascending ? Order.asc(alias+"completedDate") : Order.desc(alias+"completedDate");
+                break;
+            case USER:
+                order = ascending ? Order.asc(alias+"userId") : Order.desc(alias+"userId");
+                break;
+            case MODULE_NAME:
+                order = ascending ? Order.asc(alias+"taskName") : Order.desc(alias+"taskName");
+                break;
+        }
+
+        return order;
+    }
+
+    /**
+     * Get the list of jobs with a specific tag
+     *
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsWithComment(final String comment, final String userId, final String batchId, final Set<String> groupIds, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder,
+                                             final boolean ascending)
+    {
+
+        int firstResult = (pageNum - 1) * pageSize;
+        int maxResults = pageSize;
+
+        HibernateUtil.beginTransaction();
+
+        List<JobInfo> jobInfos = null;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select a from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
+                    + " jc.comment like lower('" + comment + "%') "
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+            appendSortOrder(hql, jobSortOrder, ascending);
+
+            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            query.setFirstResult(firstResult);
+            query.setMaxResults(maxResults);
+            query.setString("batchId", batchId);
+
+            List<AnalysisJob> analysisJobs = query.list();
+
+            jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+            for (AnalysisJob analysisJob : analysisJobs)
+            {
+                JobInfo jobInfo = new JobInfo(analysisJob);
+                jobInfos.add(jobInfo);
+            }
+        }
+        else
+        {
+            Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+                    .createAlias("jobComment.analysisJob", "analysisJob")
+                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase())
+                    .setFirstResult(firstResult).setMaxResults(maxResults);
+
+            Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
+            if(sortOrder != null)
+            {
+                criteria.addOrder(sortOrder);
+            }
+
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("analysisJob.permissions", "permissions")
+                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+            }
+
+            List<JobComment> jobComments = criteria.list();
+
+            jobInfos = new ArrayList<JobInfo>(jobComments.size());
+            for(JobComment jobComment : jobComments) {
+                JobInfo jobInfo = new JobInfo(jobComment.getAnalysisJob());
+                jobInfos.add(jobInfo);
+            }
+        }
+        return jobInfos;
+    }
+
+    /**
+     * Get the list of jobs with a specific tag
+     *
+     * @return
+     */
+    public int getJobsWithCommentCount(final String comment, final String userId, final String batchId, final Set<String> groupIds)
+    {
+        HibernateUtil.beginTransaction();
+
+        int jobCount = 0;
+
+        if (batchId != null && batchId.length() > 0)
+        {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select count(a) from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
+                    + " jc.comment like lower('" + comment + "%') "
+                    + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
+                    + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
+
+            jobCount = getCount(HibernateUtil.getSession().createQuery(hql.toString()).uniqueResult());
+        }
+        else
+        {
+            Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+                    .createAlias("jobComment.analysisJob", "analysisJob")
+                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase());
+
+            if (groupIds != null && groupIds.size() > 0)
+            {
+                criteria.createAlias("analysisJob.permissions", "permissions")
+                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+            }
+            if(userId != null)
+            {
+                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+            }
+
+            criteria.setProjection(Projections.rowCount());
+            jobCount = getCount(criteria.uniqueResult());
+        }
+        return jobCount;
+    }
+
+
     /**
      * Get the list of jobs which are in the given group, paged and sorted.
      * 
@@ -637,7 +920,22 @@ public class AnalysisDAO extends BaseDAO {
         Object rval = query.uniqueResult();
         return getCount(rval);
     }
-    
+
+    /**
+     * Get the number of jobs in at least one of the given groups. Don't count duplicates.
+     *
+     * @param groupIds
+     * @return
+     * @throws OmnigeneException
+     */
+    public int gettOTALrESULTS(Set<String> groupIds) throws OmnigeneException {
+        Query query = getSession().getNamedQuery("getNumJobsInGroups");
+        query.setBoolean("deleted", false);
+        query.setParameterList("groupId", groupIds);
+        Object rval = query.uniqueResult();
+        return getCount(rval);
+    }
+
     /**
      * Helper method for converting from query#getUniqeResult to an int.
      * 

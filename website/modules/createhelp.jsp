@@ -191,6 +191,16 @@ ConsensusClustering example: <span class="example">Resampling-based clustering m
 Upload a pdf, txt, html, htm, xhtml, or rtf file describing the module and how to use it.
 A link to this file will be available when users go to run the module. <br>
 
+<strong>Help Files</strong>: Public modules should always include a help file that provides instructions
+for using the module, a detailed description of each input parameter, a detailed description of each output
+file (both its format and content), and either an explanation of the algorithm or a reference to the paper, journal or book that
+explains it.
+
+When a user selects your module, GenePattern displays a form that includes the
+module parameters and a documentation link. If no documentation file was provided, GenePattern displays a message indicating that no information is
+available. (By default, the supported documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
+You can modify this list of extensions by editing the files.doc property in the
+GenePattern /resources/genepattern.properties file.)<br><br>
 
 <a name="Author"></a><h4>Author</h4>
 Enter the author&apos;s name.  If you share this module
@@ -296,24 +306,79 @@ GenePattern copies the file to the server and adds it to the Current Files list.
 This file will be deleted when the module is saved. When you save the module, GenePattern removes the file from the server and the Current Files list.</li>
 </ul>
 
+<h4>Advanced Parameters</h4>
+A file named paramgroups.json can be provided to change the layout of the parameters on the module run form. For example, this can be used
+to group the parameters into separate Basic and Advanced sections.
+
+The paramgroups.json file contains a list of objects in JSON format with the following keys:
+
+<ul>
+    <li>name - This is a required key that takes a path style name for the parameter group in which you can specify the
+        hierarchy of the parameter group. For example, setting the name to  "/Basic/Required" would mean that the Required
+        section would appear under a top level section named Basic. In other words, Required is a sub parameter group of
+        the Basic parameter group.
+    </li>
+
+    <li>parameters - This is an optional key that takes a list containing the actual names of the parameters that should
+        be in the parameter group.
+    </li>
+
+    <li>hidden - This is an optional key that can be set to either true or false with true indicating that the parameter
+        group should be displayed in collapsed mode. The default is to display the parameter group in the expanded mode.
+    </li>
+
+    <li>Top level parameter groups and also parameters will be displayed in the order they are defined in the
+        paramgroups.json file.
+    </li>
+</ul>
+
+Here is an example of the contents of this file:
+
+[{name: "/Basic/Required", parameters: ["input.file"]},
+{name:"Advanced", parameters: ["input.format", "optional.file", "size"], hidden:true},
+{name: "/Basic/Optional", parameters: ["count", "clusters"]}]
+
+<p>
+    The parameter groups would be structured like this:
+
+    <ul>
+        <li>
+            Basic
+
+            <ul>
+                <li>Required
+
+                    <ul>
+                        <li>input.file</li>
+                    </ul>
+                </li>
+                <li>
+                Optional
+
+                    <ul>
+                        <li>count</li>
+
+                        <li>clusters</li>
+                    </ul>
+                </li>
+             </ul>
+        </li>
+        <li>Advanced
+            <ul>
+                <li>input.format</li>
+
+                <li> contaminant.file </li>
+
+                <li> size </li>
+            </ul>
+        </li>
+    </ul>
+</p>
+
+<h4>Current Files</h4>
 Files that have been previously uploaded appear as links in the Current Files section. You may view or download them by clicking appropriately
 in your browser.
 <br><br>
-
-<strong>Help Files</strong>: Public modules should always include a help file that provides instructions
-for using the module, a detailed description of each input parameter, a detailed description of each output
-file (both its format and content), and either an explanation of the algorithm or a reference to the paper, journal or book that
-explains it.
-<ul><li>To add a help file to your module, include the appropriate text file as the <strong>first</strong> text file
-in the list of Support Files.
-</li></ul>
-When a user selects your module, GenePattern displays a form that includes the
-module parameters and a documentation link. When the user clicks the documentation link, GenePattern examines the list of
-support files for the module and displays the first file that has a standard documentation file extension.
-If no documentation file was provided, GenePattern displays a message indicating that no information is
-available. (By default, the supported documentation file extensions are html, htm, xhtml, pdf, rtf, and txt.
-You can modify this list of extensions by editing the files.doc property in the
-GenePattern /resources/genepattern.properties file.)<br><br>
 
 ConsensusClustering example: <span class="example">Current files: </span> <span class="exampleLink">Acme.jar</span> <span class="exampleLink">archiver.jar</span> <span class="exampleLink">common_cmdline.jar</span> <span class="exampleLink">ConsensusClustering.pdf</span> <span class="exampleLink">file_support.jar</span> <span class="exampleLink">geneweaver.jar</span> <span class="exampleLink">gp-common.jar</span> <span class="exampleLink">ineq_0.2-2.tar.gz</span> <span class="exampleLink">ineq_0.2-2.tgz</span> <span class="exampleLink">jaxb-rt-1.0-ea.jar</span> <span class="exampleLink">my.local.install.r</span> <span class="exampleLink">RunSomAlg.jar</span> <span class="exampleLink">trove.jar</span> <span class="exampleLink">version.txt</span>
 
@@ -551,6 +616,12 @@ You can also combine name and type filters. The following is an example of filte
 For a dynamic drop-down list, there is also the option of having an alternative static drop-down list. This alternative static drop-down list will only be displayed in the event that
 there was an error in obtaining the list of files in the ftp directory URL. This alternative static drop-down list works the same way as described above.
 
+<a name="fileList"></a><h4>Multiple File Inputs</h4>
+Indicate the number of files that a parameter accepts. You must specify a minimum number of files which can be zero. The maximum number of files allowed can be set to unlimited. The input to the parameter will be a text file containing local paths to the input files. There will be one file path per line.
+
+<a name="fileGroup"></a><h4>Group Input Files</h4>
+Specify how the input files for a parameter should be grouped. The input to the parameter will be a three-column tab delimited text file.
+The first column contains the local path to the file. The second column has the group assignment of the file. The third column contains the URL to the file.
 
 <a name="paramDefault"></a><h4>Default Value</h4>
 

@@ -1,6 +1,10 @@
 package org.genepattern.junitutil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.GpConfig;
@@ -33,6 +37,8 @@ public class ConfigUtil {
     /**
      * Load a 'config.yaml' file from the given file.
      * @param configFile
+     * 
+     * @deprecated, should create a new GpConfig with the GpConfig.Builder class instead.
      */
     static public void loadConfigFile(final File configFile) {
         if (configFile==null) {
@@ -73,4 +79,23 @@ public class ConfigUtil {
         UserAccountManager.instance().setUserGroups(userGroups);
         UserAccountManager.instance().refreshUsersAndGroups();
     }
+    
+    public static Properties loadProperties(File propsFile) throws FileNotFoundException, IOException {
+        return loadPropertiesInto(new Properties(), propsFile);
+    }
+    
+    public static Properties loadPropertiesInto(final Properties props, final File propsFile) throws FileNotFoundException, IOException {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(propsFile);
+            props.load(fis);
+        }
+        finally {
+            if (fis != null) {
+                fis.close();
+            }
+        }
+        return props;
+    }
+
 }

@@ -23,6 +23,7 @@ var module_editor = {
     currentUploadedFiles: [],
     licensefile: "",
     documentationfile: "",
+    moduleCategories: [],
     otherModAttrs: {},
     promptForTaskDoc: false
 };
@@ -111,6 +112,26 @@ function bytesToSize(bytes)
     }
 }
 
+
+function createErrorMsg(title, message)
+{
+    var errorDiv = $("<div/>");
+    var errorContents = $('<p> <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>'
+        + '<strong>Error: </strong></p>');
+    errorContents.append(message);
+    errorDiv.append(errorContents);
+
+    errorDiv.dialog({
+        title: title,
+        width: 480,
+        buttons: {
+            "OK": function()
+            {
+                $(this).dialog("close");
+            }
+        }
+    });
+}
 
 function saveError(errorMessage)
 {
@@ -201,7 +222,33 @@ function saveModule()
     var language = $('select[name="language"] option:selected').val();
     var lang_version = $('input[name="lang_version"]').val();
     var os = $('input[name=os]:checked').val();
-    var tasktype = $("select[name='category'] option:selected").val();
+
+    var categories = $("select[name='category']").val();
+
+    if(categories == null || categories == undefined || categories.length == 0)
+    {
+        saveError("Error: Please specify at least one category for the module.");
+    }
+
+    //check if this is a pipeline
+    var taskType = "";
+
+    //check if this is a visualizer
+    if($.inArray("visualizer",categories) !== -1)
+    {
+        taskType = "visualizer";
+    }
+    else
+    {
+        //do not allow pipeline to be added as a taskType for a module
+        if(categories[0] !== undefined && categories[0] !== null
+            && categories.length > 0 && categories[0] !== "pipeline")
+        {
+            taskType = categories[0];
+        }
+    }
+
+
     var cpu = $("select[name='cpu'] option:selected").val();
     var commandLine = $('textarea[name="cmdtext"]').val();
     var fileFormats = $('select[name="mod_fileformat"]').val();
@@ -231,7 +278,7 @@ function saveModule()
     var json = {};
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
-        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
+        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "categories": categories, "taskType": taskType, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
@@ -401,7 +448,8 @@ function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
         <table class='deloptions'>\
-        <tr> <td class='dragIndicator'></td>\
+        <tr> <td class='dragIndicator'><div class='dragSquare'></div>\
+        <div class='dragSquare'></div><div class='dragSquare'></div></td>\
         <td class='btntd'>\
         <button class='delparam'>x Delete</button></td><td>\
         <p>Name*: <br/>\
@@ -425,6 +473,7 @@ function addparameter()
         </td></tr>\
         </table>\
         <div class='editChoicesDialog'/> \
+        <div class='editFileGroupDialog'/> \
     </div>");
 
     paramDiv.find("select[name='p_type']").multiselect({
@@ -457,6 +506,25 @@ function addparameter()
         }
 
         changeParameterType(tSelect);
+    });
+
+    $("input[name='p_optional']").live("click", function()
+    {
+        //if parameter is not optional then minimum number of files should be at least 1
+        var minNumFile = $(this).parents(".parameter").find("input[name='minNumFile']");
+        if(minNumFile.length > 0) {
+            if ($(this).is(":checked"))
+            {
+                minNumFile.spinner("value", 0);
+            }
+            else
+            {
+                if (minNumFile.val() < 1)
+                {
+                    minNumFile.spinner("value", 1);
+                }
+            }
+        }
     });
 
     $('#parameters').append(paramDiv);
@@ -1337,10 +1405,243 @@ function changeParameterType(element)
                 $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
             }
         }
-
     });
 
     typeDetailsTable.append(specifyChoicesRow);
+
+    if(value == "Input File") {
+        var specifyMinFilesRow = $("<tr/>");
+        var specifyMinFilesTd = $("<td/>");
+        specifyMinFilesTd.append('Minimum number of files:<br/>');
+        var minFiles = $('<input name="minNumFile" value="0"/>');
+        specifyMinFilesTd.append(minFiles);
+        minFiles.spinner({
+            min: 0,
+            incremental: true,
+            change: function(event, ui)
+            {
+                setDirty(true);
+            }
+        });
+        specifyMinFilesRow.append(specifyMinFilesTd);
+        typeDetailsTable.append(specifyMinFilesRow);
+
+        var helpImgSrc = $(".helpbutton").first().attr("src");
+        specifyMinFilesTd.append("<a href='createhelp.jsp#fileList' target='help'> " +
+            " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
+            + "</a>");
+
+        var specifyMaxFilesRow = $("<tr/>");
+        var specifyMaxFilesTd = $("<td/>");
+        specifyMaxFilesTd.append('Maximum number of files:<br/>');
+        var maxFiles = $('<input name="maxNumFile" value="1"/>');
+
+        specifyMaxFilesTd.append(maxFiles);
+        maxFiles.spinner({
+            min: 1,
+            incremental: true,
+            change: function(event, ui)
+            {
+                setDirty(true);
+            }
+        });
+        var unlimitedFiles = $('<input name="unlimitedNumFile" type="checkbox" />');
+        unlimitedFiles.click(function () {
+            if ($(this).is(":checked")) {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner("disable");
+            }
+            else {
+                $(this).parent("td").find("input[name='maxNumFile']").spinner("enable");
+            }
+        });
+        specifyMaxFilesTd.append(unlimitedFiles);
+        specifyMaxFilesTd.append("unlimited");
+        specifyMaxFilesRow.append(specifyMaxFilesTd);
+        typeDetailsTable.append(specifyMaxFilesRow);
+
+        //specify file grouping
+        var specifyGroupsRow = $("<tr class='fileGroups'/>");
+
+        var editFileGroupLink = $("<a href='#' class='fileGroupsLink'>add file groups</a>");
+
+        editFileGroupLink.click(function (event) {
+            event.preventDefault();
+
+            var editFileGroupDialog = $(this).parents(".parameter").find(".editFileGroupDialog");
+
+            editFileGroupDialog.empty();
+
+            editFileGroupDialog.dialog({
+                autoOpen: true,
+                height: 330,
+                width: 600,
+                title: "Specify File Groups",
+                create: function(event){
+                    var table = $("<table>" +
+                        "<tr><td>Minimum number of groups: </td>" +
+                        "<td> <input type='text' name='minNumFileGroups' value='1'/> </td></tr>" +
+                        "<tr><td>Maximum number of groups: </td>" +
+                        "<td><input type='text' name='maxNumFileGroups' value='1'/>"+
+                        "<label><input type='checkbox' name='unlimitedFileGroups'/>unlimited</label></td></tr>" +
+                        "<tr><td>Group label: </td>" +
+                        "<td> <input type='text' name='groupColumnLabel'/> </td></tr>" +
+                        "<tr><td>Number of files per group must match: </td>" +
+                        "<td> <select type='checkbox' name='fileGroupsMatch'> " +
+                        "<option value='true'>yes</option>" +
+                        "<option value='false'>no</option> </select></td></tr>" +
+                        "<tr><td>File label (optional):</td>" +
+                        "<td> <input type='text' name='fileColumnLabel'/> </td></tr>" +
+                        "</table>");
+
+                    table.find("input[name='minNumFileGroups']").spinner({
+                        min: 0,
+                        spin: function(event, ui)
+                        {
+                            if(ui.value == 0)
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("disable");
+                                $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", true);
+                                $(this).parents("table").find("input[name='fileColumnLabel']").prop("disabled", true);
+                                $(this).parents("table").find("select[name='fileGroupsMatch']").prop("disabled", true);
+                            }
+                            else
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("enable");
+                                $(this).parents("table").find("input[name='groupColumnLabel']").prop("disabled", false);
+                                $(this).parents("table").find("input[name='fileColumnLabel']").prop("disabled", false);
+                                $(this).parents("table").find("select[name='fileGroupsMatch']").prop("disabled", false);
+                            }
+
+                            var maxNumFileGroups = $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("value");
+                            if(ui.value > maxNumFileGroups)
+                            {
+                                $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("value", ui.value);
+                            }
+                        }
+                    });
+
+                    table.find("input[name='maxNumFileGroups']").spinner({
+                        min: 1
+                    });
+
+                    table.find("input[name='unlimitedFileGroups']").click(function()
+                    {
+                        //disable the maximum file group
+                        if($(this).is(":checked"))
+                        {
+                            $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("disable");
+                        }
+                        else
+                        {
+                            $(this).parents("table").find("input[name='maxNumFileGroups']").spinner("enable");
+                        }
+                    });
+
+                    table.find("select[name='fileGroupsMatch']").multiselect(
+                    {
+                        header: false,
+                        multiple: false,
+                        selectedList: 1,
+                        minWidth: 145
+                    });
+
+                    var minNumGroups = element.parents(".parameter").data("minNumGroups");
+                    if(parseInt(minNumGroups) !== 0 && minNumGroups !== undefined && minNumGroups !== null)
+                    {
+                        table.find("input[name='minNumFileGroups']").spinner("value", minNumGroups);
+
+                        var maxNumGroups = element.parents(".parameter").data("maxNumGroups");
+                        var groupColumnLabel = element.parents(".parameter").data("groupColumnLabel");
+                        var fileColumnLabel = element.parents(".parameter").data("fileColumnLabel");
+                        var fileGroupsMatch = element.parents(".parameter").data("fileGroupsMatch");
+
+                        if(maxNumGroups !== undefined && maxNumGroups !== null) {
+                            table.find("input[name='maxNumFileGroups']").spinner("value", maxNumGroups);
+                        }
+                        else
+                        {
+                            table.find("input[name='unlimitedFileGroups']").prop('checked', true);
+                            table.find("input[name='maxNumFileGroups']").spinner("disable");
+                        }
+
+                        if(groupColumnLabel !== undefined && groupColumnLabel !== null) {
+                            table.find("input[name='groupColumnLabel']").val(groupColumnLabel);
+                        }
+
+                        if(fileColumnLabel !== undefined && fileColumnLabel !== null) {
+                            table.find("input[name='fileColumnLabel']").val(fileColumnLabel);
+                        }
+                        if(fileGroupsMatch !== undefined && fileGroupsMatch !== null && fileGroupsMatch == true) {
+                            table.find("select[name='fileGroupsMatch']").val("true");
+                        }
+                    }
+
+                    $(this).append(table);
+                },
+                buttons: {
+                    "OK": function ()
+                    {
+                        var minNumGroups = $(this).find("input[name='minNumFileGroups']").val();
+                        var maxNumGroups = $(this).find("input[name='maxNumFileGroups']").val();
+                        var groupColumnLabel = $(this).find("input[name='groupColumnLabel']").val();
+                        var fileColumnLabel = $(this).find("input[name='fileColumnLabel']").val();
+                        var fileGroupsMatch = $(this).find("select[name='fileGroupsMatch']").val();
+
+                        if(groupColumnLabel === "")
+                        {
+                            createErrorMsg("File Group Error", "A group column label must be specified");
+                        }
+                        else
+                        {
+                            //check if number of groups is unlimited
+                            if($(this).find("input[name='unlimitedFileGroups']").is(":checked"))
+                            {
+                                maxNumGroups = -1;
+                            }
+
+                            element.parents(".parameter").data("minNumGroups", minNumGroups);
+                            element.parents(".parameter").data("maxNumGroups", maxNumGroups);
+                            element.parents(".parameter").data("groupColumnLabel", groupColumnLabel);
+                            element.parents(".parameter").data("fileColumnLabel", fileColumnLabel);
+                            element.parents(".parameter").data("fileGroupsMatch", fileGroupsMatch);
+
+                            if(parseInt(minNumGroups) === 0)
+                            {
+                                element.parents(".parameter").find(".fileGroupsLink").text("add file groups");
+                                element.parents(".parameter").removeData("maxNumGroups");
+                                element.parents(".parameter").removeData("groupColumnLabel");
+                                element.parents(".parameter").removeData("fileColumnLabel");
+                                element.parents(".parameter").removeData("fileGroupsMatch");
+                            }
+                            else
+                            {
+                                element.parents(".parameter").find(".fileGroupsLink").text("edit file groups");
+                            }
+
+                            $(this).dialog("destroy");
+                        }
+                    },
+                    "Cancel": function () {
+                        $(this).dialog("destroy");
+                    }
+                },
+                close: function()
+                {
+                    $(this).dialog("destroy");
+                }
+
+            });
+        });
+
+        $("<td/>").append(editFileGroupLink).appendTo(specifyGroupsRow);
+        typeDetailsTable.append(specifyGroupsRow);
+
+        var helpImgSrc = $(".helpbutton").first().attr("src");
+        editFileGroupLink.parent().append("<a href='createhelp.jsp#fileGroup' target='help'> " +
+            " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
+            + "</a>");
+
+    }
 }
 
 function updatemodulecategories()
@@ -1360,11 +1661,25 @@ function updatemodulecategories()
                 var result = categories.split(", ");
                 var mcat = $("select[name='category']");
 
-                for(i=0;i < result.length;i++)
+                for(var i=0;i < result.length;i++)
                 {
-                    mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    if(result[i] != "")
+                    {
+                        mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
+                    }
                 }
                 mcat.multiselect("refresh");
+
+                if(module_editor.moduleCategories.length > 0)
+                {
+                    mcat.val(module_editor.moduleCategories);
+                    mcat.multiselect("refresh");
+                }
+                else
+                {
+                    mcat.val(["Uncategorized"]);
+                    mcat.multiselect("refresh");
+                }
             }
         },
         dataType: "json"
@@ -1606,10 +1921,18 @@ function loadModuleInfo(module)
         $('input[name=os]').val(module["os"]);
     }
 
-    if(module["taskType"] !== undefined)
+    if(module["categories"] !== undefined && module["categories"].length > 0)
     {
+        module_editor.moduleCategories = module["categories"].split(";");
+        updatemodulecategories();
+    }
+    else if(module["taskType"] !== undefined)
+    {
+        module_editor.moduleCategories = module["taskType"];
+
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
+        updatemodulecategories();
     }
 
     if(module["cpuType"] !== undefined)
@@ -1699,7 +2022,7 @@ function loadModuleInfo(module)
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
-            && keyName != "supportFiles" && keyName != "taskType"
+            && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
             module_editor.otherModAttrs[keyName] = module[keyName];
@@ -1880,6 +2203,44 @@ function loadParameterInfo(parameters)
             }
         }
 
+        if(parameters[i].minValue != undefined && parameters[i].minValue != null)
+        {
+            newParameter.find('input[name="minNumFile"]').spinner( "value", parameters[i].minValue);
+        }
+
+        if(parameters[i].maxValue != undefined && parameters[i].maxValue != null && parameters[i].maxValue != -1)
+        {
+            newParameter.find('input[name="maxNumFile"]').spinner("value", parameters[i].maxValue);
+        }
+        else
+        {
+            newParameter.find('input[name="maxNumFile"]').spinner( "disable" );
+            newParameter.find('input[name="unlimitedNumFile"]').prop('checked', true);
+        }
+
+        if(parameters[i].groupInfo != undefined && parameters[i].groupInfo !== null)
+        {
+            var groupInfo = parameters[i].groupInfo;
+            if (groupInfo.minNumGroups != undefined && groupInfo.minNumGroups != null) {
+                newParameter.data("minNumGroups", groupInfo.minNumGroups);
+            }
+            if (groupInfo.maxNumGroups != undefined && groupInfo.maxNumGroups != null) {
+                newParameter.data("maxNumGroups", groupInfo.maxNumGroups);
+            }
+            if (groupInfo.groupColumnLabel != undefined && groupInfo.groupColumnLabel != null) {
+                newParameter.data("groupColumnLabel", groupInfo.groupColumnLabel);
+            }
+            if (groupInfo.fileColumnLabel != undefined && groupInfo.fileColumnLabel != null) {
+                newParameter.data("fileColumnLabel", groupInfo.fileColumnLabel);
+            }
+
+            if (groupInfo.numValuesMustMatch != undefined && groupInfo.numValuesMustMatch != null) {
+                newParameter.data("fileGroupsMatch", groupInfo.numValuesMustMatch);
+            }
+
+            newParameter.find(".fileGroupsLink").text("edit file groups");
+        }
+
         var allAttrs = {};
         $.each(parameters[i], function(keyName, value) {
             allAttrs[keyName] = parameters[i][keyName];
@@ -1975,11 +2336,62 @@ function getParametersJSON()
             saveError("A parameter name must be specified for parameter number " + pnum);
             throw("A parameter name is missing");
         }
+
+        var parameter = {};
         //this is an input file type
         if(type === "Input File")
         {
             mode = "IN";
             type = "FILE";
+
+            var minValue = $(this).find('input[name="minNumFile"]').val();
+            var maxValue = $(this).find('input[name="maxNumFile"]').val();
+            if($(this).find('input[name="maxNumFile"]').is(':disabled'))
+            {
+                maxValue = -1;
+            }
+
+            if(maxValue != -1 && minValue > maxValue)
+            {
+                saveError("Maximum number of files must be greater than minimum number of " +
+                    "files for parameter " + pname);
+                throw("Maximum number of files must be greater than minimum number of files for parameter " + pname);
+            }
+
+            parameter.minValue = minValue;
+            parameter.maxValue = maxValue;
+
+            //add file group info if available
+            var minNumGroups = $(this).data("minNumGroups");
+            var maxNumGroups = $(this).data("maxNumGroups");
+            var fileGroupsMatch = $(this).data("fileGroupsMatch");
+            var groupColumnLabel = $(this).data("groupColumnLabel");
+            var fileColumnLabel = $(this).data("fileColumnLabel");
+
+
+            if(minNumGroups !== undefined && minNumGroups !== null && minNumGroups !== 0)
+            {
+                parameter.minNumGroups = minNumGroups;
+
+                if (maxNumGroups != -1 && minNumGroups > maxNumGroups) {
+                    saveError("Maximum number of file groups must be greater than minimum number of " +
+                        "file groups for parameter " + pname);
+                    throw("Maximum number of file groups must be greater than minimum number of file groups for parameter " + pname);
+                }
+                parameter.maxNumGroups = maxNumGroups;
+
+                if (groupColumnLabel !== undefined && groupColumnLabel !== null) {
+                    parameter.groupColumnLabel = groupColumnLabel;
+                }
+
+                if (fileColumnLabel !== undefined && fileColumnLabel !== null) {
+                    parameter.fileColumnLabel = fileColumnLabel;
+                }
+
+                if (fileGroupsMatch !== undefined && fileGroupsMatch !== null) {
+                    parameter.groupNumValuesMustMatch = fileGroupsMatch.toString();
+                }
+            }
         }
         else
         {
@@ -2011,11 +2423,11 @@ function getParametersJSON()
             prefix = $(this).find('input[name="p_flag"]').val();
         }
 
-        var parameter = {
-            "name": pname, "description": description, "TYPE": type,
+        $.extend(parameter,
+            {"name": pname, "description": description, "TYPE": type,
             "default_value": default_val, "optional": optional,
             "fileFormat": fileformatlist, "MODE": mode, "prefix": prefix, "flag": flag
-        };
+        });
 
         parameter["value"] = "";
 
@@ -2048,7 +2460,9 @@ function getParametersJSON()
             $.each(allAttrs, function(keyName, value) {
                 if($.inArray(keyName, Object.keys(parameter)) == -1
                     && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
-                    && keyName != "choiceDir" && keyName != "choiceDirFilter")
+                    && keyName != "choiceDir" && keyName != "choiceDirFilter" && keyName != "numValues"
+                    && keyName != "numGroups" && keyName != "groupInfo" && keyName != "groupColumnLabel"
+                    && keyName != "fileColumnLabel" && keyName != "groupNumValuesMustMatch")
                 {
                     parameter[keyName] = allAttrs[keyName];
                     console.log("\nsaving unknown parameter attributes: " + keyName + "=" + allAttrs[keyName]);
@@ -2179,7 +2593,6 @@ jQuery(document).ready(function() {
     $("input[type='text']").val("");
 
     addsectioncollapseimages();
-    updatemodulecategories();
     updatefileformats();
 
     //check if this is a request to edit an existing module
@@ -2346,10 +2759,37 @@ jQuery(document).ready(function() {
             "OK": function() {
                 var category = $("#newcategoryname").val();
                 var newcategory = $("<option>" +category + "</option>");
-                $("select[name='category']").append(newcategory);
-                $("select[name='category']").val(category);
-                $("select[name='category']").multiselect("refresh");
-                $( this ).dialog( "close" );
+
+                var duplicate = false;
+                $("select[name='category']").children("option").each(function(event)
+                {
+                    if(category == $(this).val())
+                    {
+                        duplicate = true;
+                    }
+
+                });
+
+                if(!duplicate)
+                {
+                    $("select[name='category']").append(newcategory);
+                    var categories = $("select[name='category']").val();
+
+                    if(!categories)
+                    {
+                        categories = [];
+                    }
+
+                    categories.push(category);
+                    $("select[name='category']").val(categories);
+                    $("select[name='category']").multiselect("refresh");
+                    $("#newcategoryname").val("");
+                    $(this).dialog("close");
+                }
+                else
+                {
+                    createErrorMsg("Duplicate Category Error", "The category \"" + category + "\" already exists.");
+                }
             },
             "Cancel": function() {
                 $( this ).dialog( "close" );
@@ -2640,16 +3080,21 @@ jQuery(document).ready(function() {
         selectedList: 4 // 0-based index
     });
 
-    $("select[name='category'], select[name='privacy'], select[name='quality'], " +
+    $("select[name='category']").multiselect({
+        header: false,
+        selectedList: 1
+    });
+
+    $("select[name='privacy'], select[name='quality'], " +
         "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
         multiple: false,
         header: false,
         selectedList: 1
     });
 
-    $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
+    /*$( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
         this.buttonlabel.html( value );
-    };
+    };*/
 
     $("#helpbtn").button().click(function()
     {

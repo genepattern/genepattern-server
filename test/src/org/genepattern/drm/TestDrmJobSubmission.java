@@ -1,6 +1,7 @@
 package org.genepattern.drm;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.Arrays;
@@ -262,6 +263,86 @@ public class TestDrmJobSubmission {
         Assert.assertEquals("job.javaXmx", "2gb", drmJob.getProperty("job.javaXmx"));
     }
     
+    @Test
+    public void testInitFromGpConfig_memory() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder().addProperty(JobRunner.PROP_MEMORY, "4gb").build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("job.memory", Memory.fromString("4gb"), jobSubmission.getMemory());
+    }
+    
+    @Test
+    public void testInitFromGpConfig_cpuCount() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder().addProperty(JobRunner.PROP_CPU_COUNT, "2").build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("job.cpuCount", (Integer)2, jobSubmission.getCpuCount());
+    }
+    
+    @Test
+    public void testInitFromGpConfig_nodeCount() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder().addProperty(JobRunner.PROP_NODE_COUNT, "2").build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("job.nodeCount", (Integer)2, jobSubmission.getNodeCount());
+    }
+    
+    @Test
+    public void testInitFromGpConfig_walltime() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder().addProperty(JobRunner.PROP_WALLTIME, "7-00:00:00").build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("job.walltime", Walltime.fromString("7-00:00:00"), jobSubmission.getWalltime());
+    }
+    
+    @Test
+    public void testInitFromGpConfig_queue() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty(JobRunner.PROP_QUEUE, "my_queue")
+        .build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("getQueue", "my_queue", jobSubmission.getQueue());
+        assertEquals("getQueueId", "my_queue", jobSubmission.getQueueId());
+    }
+
+    @Test
+    public void testInitFromGpConfig_queue_and_virtualQueue() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty(JobRunner.PROP_QUEUE, "my_queue")
+            .addProperty(JobRunner.PROP_VIRTUAL_QUEUE, "my_virtual_queue")
+        .build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("getQueue", "my_queue", jobSubmission.getQueue());
+        assertEquals("getQueueId", "my_virtual_queue", jobSubmission.getQueueId());
+    }
+
+    @Test
+    public void testInitFromGpConfig_queue_virtualQueue_only() throws Exception {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty(JobRunner.PROP_VIRTUAL_QUEUE, "my_virtual_queue")
+        .build();
+        final DrmJobSubmission jobSubmission=new DrmJobSubmission.Builder(workingDir)
+            .jobContext(jobContext)
+            .gpConfig(gpConfig)
+        .build();
+        assertEquals("getQueue", null, jobSubmission.getQueue());
+        assertEquals("getQueueId", "my_virtual_queue", jobSubmission.getQueueId());
+    }
+
     @Test
     public void testExecutorCustomProperties() {
         final GpConfig config=ServerConfigurationFactory.instance();

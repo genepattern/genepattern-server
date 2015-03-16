@@ -19,8 +19,11 @@
 
 	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/layout-default-latest.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css" />
+
     <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
-    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.all.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.theme.css" rel="stylesheet" type="text/css" media="screen" /> -->
+
+    <!--<link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.all.css" rel="stylesheet" type="text/css" media="screen" /> -->
     <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/header_style.css"  />
     <link type="text/css" rel="stylesheet"  href="#{facesContext.externalContext.requestContextPath}/css/frozen/style.css"  />
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/creator.css" />
@@ -36,6 +39,7 @@
     <script type="text/javascript" src="js/creator.js"></script>
     <script type="text/javascript" src="js/combobox.js"></script>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
+
     <script type="text/javascript" src="/gp/js/genepattern.js"/>
     <script type="text/javascript" src="/gp/js/mainMenu.js"/>
     <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript" />
@@ -85,7 +89,7 @@
 
     <!-- Footer -->
     <div class="ui-layout-south">
-        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="/gp/pages/contactUs.jsf">Contact Us</a>&#160;|&#160;
+        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="#{aboutBean.contactUs}">Contact Us</a>&#160;|&#160;
         &copy;2003-2015&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
         <a href="http://www.broadinstitute.org" target="_blank"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
         </a>
@@ -143,8 +147,8 @@
                 <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
                     <ul>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html')">Mailing List</a></li>
-                        <li><a href="/gp/pages/contactUs.jsf">Report Bugs</a></li>
-                        <li><a href="/gp/pages/contactUs.jsf">Contact Us</a></li>
+                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
+                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                     </ul>
                 </li>
                 <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
@@ -308,9 +312,7 @@
                         <table class="no-border">
                             <tr>
                                 <td>
-                                    <select name="category">
-                                        <option value=""> Uncategorized</option>
-                                    </select>
+                                    <select name="category" multiple="multiple"/>
                                 </td>
                                 <td>
                                     <button id="addcategory">New</button>

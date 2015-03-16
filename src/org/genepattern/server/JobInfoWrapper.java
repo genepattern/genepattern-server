@@ -980,22 +980,12 @@ public class JobInfoWrapper implements Serializable {
                 }
 
                 //Changes for GP-5372
-                if(paramInfoMap.containsKey(param.getName()))
-                {
-                    ParameterInfoRecord pInfoRec = paramInfoMap.get(param.getName());
-                    ParameterInfo pInfo = pInfoRec.getActual();
-                    if(!ChoiceInfo.hasDynamicChoiceInfo(pInfo) && ChoiceInfo.hasStaticChoiceInfo(pInfo))
-                    {
-                        Map<String, String> choices = pInfo.getChoices();
-                        if(choices.containsValue(param.getValue()))
-                        {
-                            for (Map.Entry<String, String> entry : choices.entrySet())
-                            {
-                                if(entry.getValue().contains(param.getValue()))
-                                {
-                                    inputParam.setDisplayValue(entry.getKey());
-                                }
-                            }
+                if (inputParam != null) {
+                    final ParameterInfoRecord record=paramInfoMap.get( inputParam.getName() );
+                    if (record != null) {
+                        final String displayValue=ChoiceInfo.getDisplayValueForActualValue(inputParam.getValue(), record.getFormal());
+                        if (displayValue != null) {
+                            inputParam.setDisplayValue(displayValue);
                         }
                     }
                 }

@@ -474,19 +474,27 @@ body {
 }
 
 .jstree > ul > li > a {
-    max-width: 290px;
+    max-width: 270px;
+    padding-left: 20px;
+    text-indent: -20px;
 }
 
 .jstree > ul > li > ul > li > a {
-    max-width: 270px;
+    max-width: 250px;
+    padding-left: 20px;
+    text-indent: -20px;
 }
 
 .jstree > ul > li > ul > li > ul > li > a {
-    max-width: 250px;
+    max-width: 230px;
+    padding-left: 20px;
+    text-indent: -20px;
 }
 
 .jstree > ul > li > ul > li > ul > li > ul > li > a {
-    max-width: 230px;
+    max-width: 210px;
+    padding-left: 20px;
+    text-indent: -20px;
 }
 
 .current-job-status {

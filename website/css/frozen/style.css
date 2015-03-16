@@ -1098,3 +1098,52 @@ strong.filtered-number
     z-index: 6001;
     width: 150px;
 }
+
+#jobTableSearch
+{
+    border: 1px solid #d3d3d3;
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+#jobTableSearch span
+{
+    margin-left: 70px;
+}
+
+.float-left
+{
+    float: left;
+}
+
+#jobSearchOwner, #jobSearchComment, #jobSearchTag
+{
+    margin-left: 5px;
+}
+
+#jobTags a
+{
+    padding: 1px;
+}
+
+#statusJobTags_tag
+{
+    min-width: 150px;
+}
+
+#jobTable_length
+{
+    margin-top: 5px;
+    margin-right: 130px;
+}
+
+.inline
+{
+    display:inline-block;
+}
+
+#jobTable_paginate input[type=text]
+{
+    min-width: 45px;
+}
