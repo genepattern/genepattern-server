@@ -345,7 +345,7 @@ public class PluginManagerLegacy {
         if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
             try {
                 File patchManifest=new File(patchDirectory, "manifest");
-                PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(patchManifest, null);
+                PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(patchManifest);
                 patchInfo.setUrl(requiredPatchURL);
                 patchInfo.setPatchDir(patchDirectory.getAbsolutePath());
                 pluginRegistry.recordPatch(gpConfig, gpContext, patchInfo);

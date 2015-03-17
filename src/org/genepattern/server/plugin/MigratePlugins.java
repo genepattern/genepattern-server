@@ -12,8 +12,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
@@ -21,6 +19,9 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Props;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Helper class for migrating the list of installed plugins (aka patches) into the GP database.
@@ -46,14 +47,10 @@ public class MigratePlugins {
     private final GpContext gpContext;
     private PluginRegistry pluginRegistry;
     private List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
-
-    private final SortedSet<File> customPropFiles=new TreeSet<File>(new Comparator<File>(){
-        @Override
-        public int compare(final File o1, final File o2) {
-            return Long.compare(o1.lastModified(), o2.lastModified());
-        }
-    });
     
+    // multimap of patchLsid -> custom prop file
+    private Multimap<String,File> filemap=HashMultimap.create();
+
     public MigratePlugins(GpConfig gpConfig, GpContext gpContext) {
         this(gpConfig, 
                 gpContext, 
@@ -126,16 +123,6 @@ public class MigratePlugins {
     }
 
     /**
-     * Get the list of custom properties associated with all installed patches, ordered by the lastModified date
-     * of each properties file.
-     * 
-     * @return
-     */
-    protected SortedSet<File> getCustomPropFiles() {
-        return Collections.unmodifiableSortedSet(customPropFiles);
-    }
-    
-    /**
      * Scan the file system for all installed plugins (aka patches). 
      * This call resets the set of pathInfos.
      * 
@@ -203,7 +190,7 @@ public class MigratePlugins {
     }
 
     protected void visitPluginManifest(File manifest) throws FileNotFoundException, IOException, MalformedURLException {
-        PatchInfo patchInfo=initPatchInfoFromManifest(manifest, customPropFiles);
+        PatchInfo patchInfo=initPatchInfoFromManifest(manifest);
         if (patchInfo != null) {
             patchInfos.add(patchInfo);
         }
@@ -218,7 +205,7 @@ public class MigratePlugins {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static PatchInfo initPatchInfoFromManifest(final File manifest, SortedSet<File> customPropFiles) throws FileNotFoundException, IOException {
+    public static PatchInfo initPatchInfoFromManifest(final File manifest) throws FileNotFoundException, IOException {
         // get the LSID from the manifest file
         Properties props=new Properties();
         props.load(new FileReader(manifest));
@@ -231,10 +218,8 @@ public class MigratePlugins {
         // list custom properties
         File[] customPropFilesArray=listCustomProperties(manifest.getParentFile());
         for(final File customPropFile : customPropFilesArray) {
-            if (customPropFiles != null) {
-                customPropFiles.add(customPropFile);
-            }
             Properties customProps=GpServerProperties.loadProps(customPropFile);
+            patchInfo.addCustomProps(customPropFile, customProps);
             patchInfo.addCustomProps(customProps);
         }
         return patchInfo;
@@ -252,6 +237,10 @@ public class MigratePlugins {
         });
     }
 
+    /**
+     * For testing/debugging, get the custom properties from each installed patch.
+     * @return
+     */
     protected Properties collectPluginCustomProps() {
         Properties pluginCustomProps=new Properties();
         for(final PatchInfo patchInfo : patchInfos) {
@@ -260,6 +249,18 @@ public class MigratePlugins {
             }
         }
         return pluginCustomProps;
+    }
+    
+    /**
+     * For testing/debugging, get the list of custom properties files from each installed patch.
+     * @return
+     */
+    protected List<File> collectPluginCustomPropFiles() {
+        List<File> all=new ArrayList<File>();
+        for(final PatchInfo patchInfo : patchInfos) {
+            all.addAll( patchInfo.getCustomPropFiles() );
+        }
+        return all;        
     }
 
 }

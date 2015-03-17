@@ -1,8 +1,12 @@
 package org.genepattern.server.plugin;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import javax.persistence.Column;
@@ -31,6 +35,7 @@ public class PatchInfo {
     private LSID patchLsid;
     private URL patchUrl;
     private Properties customProps=new Properties();
+    private List<File> customPropFiles=null;
     
     public PatchInfo() {
     }
@@ -42,6 +47,14 @@ public class PatchInfo {
     public PatchInfo(final String patchLsid, final String patchUrl) throws MalformedURLException {
         setLsid(patchLsid);
         setUrl(patchUrl);
+    }
+    
+    public void addCustomProps(final File fromFile, final Properties loadedProps) {
+        if (customPropFiles==null) {
+            customPropFiles=new ArrayList<File>();
+        }
+        customPropFiles.add(fromFile);
+        addCustomProps(loadedProps);
     }
     
     public void addCustomProps(final Properties props) {
@@ -120,6 +133,14 @@ public class PatchInfo {
     @Transient
     public Properties getCustomProps() {
         return customProps;
+    }
+    
+    @Transient
+    public List<File> getCustomPropFiles() {
+        if (customPropFiles==null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(customPropFiles);
     }
     
 //    public boolean equals(Object obj) {
