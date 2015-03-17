@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Ensure that the correct version of java is installed
+# Ensure that th e correct version of java is installed
 if type -p java; then
     echo found java executable in PATH
     _java=java
