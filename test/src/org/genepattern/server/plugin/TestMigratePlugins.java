@@ -1,12 +1,14 @@
 package org.genepattern.server.plugin;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.genepattern.junitutil.DbUtil;
@@ -26,6 +28,31 @@ import org.junit.Test;
  *
  */
 public class TestMigratePlugins {
+    /**
+     * For testing/debugging, implements the PluginRegistry in-memory using java collections classes.
+     * @author pcarr
+     *
+     */
+    static class PluginRegistryInMemory implements PluginRegistry {
+        private Map<String,PatchInfo> installedPatches=new HashMap<String,PatchInfo>();
+
+        @Override
+        public List<PatchInfo> getInstalledPatches(GpConfig gpConfig, GpContext gpContext) throws Exception {
+            Collection<PatchInfo> col=installedPatches.values();
+            return new ArrayList<PatchInfo>(col);
+        }
+
+        @Override
+        public boolean isInstalled(GpConfig gpConfig, GpContext gpContext, PatchInfo patchInfo) throws Exception {
+            return installedPatches.containsKey(patchInfo.getLsid());
+        }
+
+        @Override
+        public void recordPatch(GpConfig gpConfig, GpContext gpContext, PatchInfo patchInfo) throws Exception {
+            installedPatches.put(patchInfo.getLsid(), patchInfo);
+        }
+    }
+    
     GpConfig gpConfig;
     GpContext gpContext;
     PluginRegistry pluginRegistry;
@@ -35,10 +62,11 @@ public class TestMigratePlugins {
     @Before
     public void setUp() {
         rootPluginDir=FileUtil.getDataFile("patches").getAbsoluteFile();
-        gpConfig=mock(GpConfig.class);
+        gpConfig=new GpConfig.Builder()
+            .rootPluginDir(rootPluginDir)
+        .build();
         gpContext=new GpContext.Builder().build();
-        when(gpConfig.getRootPluginDir(gpContext)).thenReturn(rootPluginDir);
-        pluginRegistry=mock(PluginRegistry.class);
+        pluginRegistry=new PluginRegistryInMemory();
         migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
     }
     
@@ -90,36 +118,45 @@ public class TestMigratePlugins {
     @Test
     public void initPatchInfo_Ant() throws Exception {
         File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Ant_1.8.1/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
+        assertEquals("patchInfo.customPropFiles[0].name", "Ant_1_8.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
     }
     
     @Test
     public void initPatchInfo_Bowtie() throws Exception {
         File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Bowtie_2.1.0.2/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
+        assertEquals("patchInfo.customPropFiles[0].name", "Bowtie_2.1.0.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
     }
 
     @Test
     public void initPatchInfo_CheckPython() throws Exception {
         File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Check_Python_2.6.2/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 0, patchInfo.getCustomPropFiles().size());
     }
 
     @Test
     public void initPatchInfo_SAMTools() throws Exception {
         File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.SAMTools_0_1_19.2/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
+        assertEquals("patchInfo.customPropFiles[0].name", "SAMTools_0.1.19.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
     }
 
     @Test
     public void initPatchInfo_TopHat() throws Exception {
         File manifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.TopHat_2.0.9.3/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
+        assertEquals("patchInfo.customPropFiles[0].name", "TopHat_2.0.9.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
     }
     
     @Test
@@ -135,7 +172,7 @@ public class TestMigratePlugins {
         assertEquals("patchInfos[3]", "urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2", patchInfos[3].getLsid());
         assertEquals("patchInfos[4]", "urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3", patchInfos[4].getLsid());
         
-        assertEquals("Expectiung to find 4 custom properties files", 4, migratePlugins.getCustomPropFiles().size());
+        assertEquals("Expecting to find 4 custom properties files", 4, migratePlugins.collectPluginCustomPropFiles().size());
         
         Properties customProps=migratePlugins.collectPluginCustomProps();
 
@@ -156,7 +193,7 @@ public class TestMigratePlugins {
     @Test
     public void initPatchDir() throws Exception {
         File manifest=new File(rootPluginDir, "broadinstitute.org.plugin.Check_Python_2.6.2/manifest");
-        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest, null);
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
         assertEquals("patchInfo.patchDir", manifest.getParentFile().getAbsolutePath(), patchInfo.getPatchDir());
     }
     
