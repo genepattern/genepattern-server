@@ -15,7 +15,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-ant.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-schema.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/cleanimports.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/colt.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/common-annotations.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-beanutils.jar"/>
