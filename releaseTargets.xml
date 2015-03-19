@@ -40,7 +40,6 @@
 			<include name="**.jar" />
 		</fileset>
 		<fileset dir="lib">
-			<include name="activation.jar" />
 			<include name="xerces.jar" />
 			<include name="saaj.jar" />
 			<include name="jaxrpc.jar" />

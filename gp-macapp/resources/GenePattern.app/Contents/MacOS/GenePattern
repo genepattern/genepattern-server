@@ -37,5 +37,5 @@ then
     open http://127.0.0.1:8080/gp
 else
     # Otherwise launch the config app
-    java -cp "$DIR/../Resources/bootstrap.jar:$DIR/../Resources/mail.jar:$DIR/../Resources/jgoodies-forms-1.9.0.jar:$DIR/../Resources/jgoodies-common-1.8.1.jar:$DIR/../Resources/commons-io-2.0.1.jar" org.genepattern.startapp.Bootstrap $DIR
+    java -cp "$DIR/../Resources/bootstrap.jar:$DIR/../Resources/javax.mail.jar:$DIR/../Resources/jgoodies-forms-1.9.0.jar:$DIR/../Resources/jgoodies-common-1.8.1.jar:$DIR/../Resources/commons-io-2.0.1.jar" org.genepattern.startapp.Bootstrap $DIR
 fi
