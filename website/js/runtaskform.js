@@ -2350,7 +2350,7 @@ function checkFileSizes(files)
             errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
                 " to upload these files.</p>");
             errorMessageDiv.append("<p> More information about using large files can be found in our " +
-                "<a href='http://www.broadinstitute.org/cancer/software/genepattern/gp_guides/user-guide" +
+                "<a href='http://www.broadinstitute.org/cancer/software/genepattern/user-guide" +
                 "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide</a>.</p>");
             errorMessageDiv.dialog({
                 title: "Max File Upload Size Exceeded",
