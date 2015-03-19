@@ -68,7 +68,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/macos.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
