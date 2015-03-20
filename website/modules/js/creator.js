@@ -223,28 +223,26 @@ function saveModule()
     var lang_version = $('input[name="lang_version"]').val();
     var os = $('input[name=os]:checked').val();
 
-    var categories = $("select[name='category']").val();
-
-    if(categories == null || categories == undefined || categories.length == 0)
-    {
-        saveError("Error: Please specify at least one category for the module.");
-    }
-
-    //check if this is a pipeline
     var taskType = "";
 
+    var categories = [];
     //check if this is a visualizer
-    if($.inArray("visualizer",categories) !== -1)
+    if($("select[name='category']").val() != null && $("select[name='category']").val().length > 0)
     {
-        taskType = "visualizer";
-    }
-    else
-    {
-        //do not allow pipeline to be added as a taskType for a module
-        if(categories[0] !== undefined && categories[0] !== null
-            && categories.length > 0 && categories[0] !== "pipeline")
+        categories = $("select[name='category']").val();
+
+        if($.inArray("visualizer",categories) !== -1)
         {
-            taskType = categories[0];
+            taskType = "visualizer";
+        }
+        else
+        {
+            //do not allow pipeline to be added as a taskType for a module
+            if(categories[0] !== undefined && categories[0] !== null
+                && categories.length > 0 && categories[0] !== "pipeline")
+            {
+                taskType = categories[0];
+            }
         }
     }
 
@@ -278,10 +276,14 @@ function saveModule()
     var json = {};
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
-        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "categories": categories, "taskType": taskType, "version": version,
+        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
+    if(categories.length > 0)
+    {
+        json.module["categories"] = categories;
+    }
     //add other remaining attributes
     $.each(module_editor.otherModAttrs, function(keyName, value) {
         console.log("\nsaving other module attributes: " + keyName + "=" + module_editor.otherModAttrs[keyName]);
@@ -1924,7 +1926,9 @@ function loadModuleInfo(module)
     if(module["categories"] !== undefined && module["categories"].length > 0)
     {
         module_editor.moduleCategories = module["categories"].split(";");
-        updatemodulecategories();
+
+        $("select[name='category']").val(module_editor.moduleCategories);
+        $("select[name='category']").multiselect("refresh");
     }
     else if(module["taskType"] !== undefined)
     {
@@ -1932,7 +1936,6 @@ function loadModuleInfo(module)
 
         $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
-        updatemodulecategories();
     }
 
     if(module["cpuType"] !== undefined)
@@ -2593,6 +2596,7 @@ jQuery(document).ready(function() {
     $("input[type='text']").val("");
 
     addsectioncollapseimages();
+    updatemodulecategories();
     updatefileformats();
 
     //check if this is a request to edit an existing module
