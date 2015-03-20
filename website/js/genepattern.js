@@ -3388,7 +3388,7 @@ function buildJobResultsPage() {
                     var myIndex = $(this).index();
 
                     var tagSearch = $("#jobSearchTag").is(":checked");
-                    if(tagSearch && myIndex != 0 && myIndex % 9 == 0) //column 9
+                    if(tagSearch && $(this).text() != "Tags" && myIndex % 9 == 0) //column 9
                     {
                         $(this).highlight(searchTerm);
                     }

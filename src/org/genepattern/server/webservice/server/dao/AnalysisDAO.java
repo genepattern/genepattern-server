@@ -177,8 +177,8 @@ public class AnalysisDAO extends BaseDAO {
         if (batchId != null && batchId.length() > 0)
         {
             StringBuffer hql = new StringBuffer();
-            hql.append("select a from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
-                    + " jt.tagObj.tag like lower('" + tag + "%') "
+            hql.append("select distinct a from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
+                    + " jt.tagObj.tag like lower('%" + tag + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -201,12 +201,12 @@ public class AnalysisDAO extends BaseDAO {
         }
         else
         {
-            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
-                    .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
+            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag").createCriteria("analysisJob")
+                    .createAlias("jobtag.tagObj", "tagObj")
                     .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
 
-            Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
+            SortOrder sortOrder = generateSortOrder(jobSortOrder, ascending, null);
             if(sortOrder != null)
             {
                 criteria.addOrder(sortOrder);
@@ -214,19 +214,23 @@ public class AnalysisDAO extends BaseDAO {
 
             if (groupIds != null && groupIds.size() > 0)
             {
-                criteria.createAlias("analysisJob.permissions", "permissions")
-                    .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
+                criteria.createAlias("permissions", "permissions")
+                        .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
             }
             if(userId != null)
             {
-                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+                criteria.add(Restrictions.eq("userId", userId));
             }
+            //return unique job results
+            criteria.setProjection(
+                    Projections.alias(Projections.distinct(
+                            Projections.property("jobtag.analysisJob")), sortOrder.getPropertyName()));
 
-            List<JobTag> jobTags = criteria.list();
+            List<AnalysisJob> analysisJobs = criteria.list();
 
-            jobInfos = new ArrayList<JobInfo>(jobTags.size());
-            for(JobTag jobTag : jobTags) {
-                JobInfo jobInfo = new JobInfo(jobTag.getAnalysisJob());
+            jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+            for(AnalysisJob analysisJob : analysisJobs) {
+                JobInfo jobInfo = new JobInfo(analysisJob);
                 jobInfos.add(jobInfo);
             }
         }
@@ -246,8 +250,8 @@ public class AnalysisDAO extends BaseDAO {
         if (batchId != null && batchId.length() > 0)
         {
             StringBuffer hql = new StringBuffer();
-            hql.append("select count(a) from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
-                    + " jt.tagObj.tag like '" + tag + "%' "
+            hql.append("select count(distinct a) from " + JobTag.class.getName() + " as jt inner join jt.analysisJob as a where"
+                    + " jt.tagObj.tag like '%" + tag + "%' "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -273,16 +277,19 @@ public class AnalysisDAO extends BaseDAO {
                 criteria.add(Restrictions.eq("analysisJob.userId", userId));
             }
 
-            criteria.setProjection(Projections.rowCount());
+            ProjectionList projectionList=Projections.projectionList();
+            projectionList.add(Projections.countDistinct("analysisJob"));
+            criteria.setProjection(projectionList);
+
             jobCount = getCount(criteria.uniqueResult());
         }
         return jobCount;
     }
 
 
-    private static Order generateSortOrder(JobSortOrder jobSortOrder, boolean ascending, String alias)
+    private static SortOrder generateSortOrder(JobSortOrder jobSortOrder, boolean ascending, String alias)
     {
-        Order order = null;
+        SortOrder order = null;
         if(alias == null)
         {
             alias = "";
@@ -294,22 +301,22 @@ public class AnalysisDAO extends BaseDAO {
 
         switch (jobSortOrder) {
             case JOB_NUMBER:
-                order = ascending ? Order.asc(alias+"jobNo") : Order.desc(alias+"jobNo");
+                order = ascending ? SortOrder.asc(alias+"jobNo") : SortOrder.desc(alias+"jobNo");
                 break;
             case JOB_STATUS:
-                order = ascending ? Order.asc(alias+"jobStatus") : Order.desc(alias+"jobStatus");
+                order = ascending ?  SortOrder.asc(alias+"jobStatus") :  SortOrder.desc(alias+"jobStatus");
                 break;
             case SUBMITTED_DATE:
-                order = ascending ? Order.asc(alias+"submittedDate") : Order.desc(alias+"submittedDate");
+                order = ascending ?  SortOrder.asc(alias+"submittedDate") :  SortOrder.desc(alias+"submittedDate");
                 break;
             case COMPLETED_DATE:
-                order = ascending ? Order.asc(alias+"completedDate") : Order.desc(alias+"completedDate");
+                order = ascending ?  SortOrder.asc(alias+"completedDate") :  SortOrder.desc(alias+"completedDate");
                 break;
             case USER:
-                order = ascending ? Order.asc(alias+"userId") : Order.desc(alias+"userId");
+                order = ascending ?  SortOrder.asc(alias+"userId") :  SortOrder.desc(alias+"userId");
                 break;
             case MODULE_NAME:
-                order = ascending ? Order.asc(alias+"taskName") : Order.desc(alias+"taskName");
+                order = ascending ?  SortOrder.asc(alias+"taskName") :  SortOrder.desc(alias+"taskName");
                 break;
         }
 
@@ -339,8 +346,8 @@ public class AnalysisDAO extends BaseDAO {
         if (batchId != null && batchId.length() > 0)
         {
             StringBuffer hql = new StringBuffer();
-            hql.append("select a from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
-                    + " jc.comment like lower('" + comment + "%') "
+            hql.append("select distinct a from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
+                    + " jc.comment like lower('%" + comment + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
@@ -364,11 +371,11 @@ public class AnalysisDAO extends BaseDAO {
         else
         {
             Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
-                    .createAlias("jobComment.analysisJob", "analysisJob")
-                    .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase())
+                    .createCriteria("analysisJob")
+                    .add(Restrictions.like("jobComment.comment", comment, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
 
-            Order sortOrder = generateSortOrder(jobSortOrder, ascending, "analysisJob");
+            SortOrder sortOrder = generateSortOrder(jobSortOrder, ascending, null);
             if(sortOrder != null)
             {
                 criteria.addOrder(sortOrder);
@@ -376,19 +383,24 @@ public class AnalysisDAO extends BaseDAO {
 
             if (groupIds != null && groupIds.size() > 0)
             {
-                criteria.createAlias("analysisJob.permissions", "permissions")
+                criteria.createAlias("permissions", "permissions")
                         .add(Restrictions.in("permissions.group_id", groupIds.toArray()));
             }
             if(userId != null)
             {
-                criteria.add(Restrictions.eq("analysisJob.userId", userId));
+                criteria.add(Restrictions.eq("userId", userId));
             }
 
-            List<JobComment> jobComments = criteria.list();
+            //return unique job results
+            criteria.setProjection(
+                    Projections.alias(Projections.distinct(
+                            Projections.property("jobComment.analysisJob")), sortOrder.getPropertyName()));
 
-            jobInfos = new ArrayList<JobInfo>(jobComments.size());
-            for(JobComment jobComment : jobComments) {
-                JobInfo jobInfo = new JobInfo(jobComment.getAnalysisJob());
+            List<AnalysisJob> analysisJobs = criteria.list();
+
+            jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+            for(AnalysisJob analysisJob : analysisJobs) {
+                JobInfo jobInfo = new JobInfo(analysisJob);
                 jobInfos.add(jobInfo);
             }
         }
@@ -409,12 +421,16 @@ public class AnalysisDAO extends BaseDAO {
         if (batchId != null && batchId.length() > 0)
         {
             StringBuffer hql = new StringBuffer();
-            hql.append("select count(a) from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
-                    + " jc.comment like lower('" + comment + "%') "
+            hql.append("select count(distinct a) from " + JobComment.class.getName() + " as jc inner join jc.analysisJob as a where"
+                    + " jc.comment like lower('%" + comment + "%') "
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
-            jobCount = getCount(HibernateUtil.getSession().createQuery(hql.toString()).uniqueResult());
+            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            query.setBoolean("deleted", false);
+            query.setString("batchId", batchId);
+
+            jobCount = getCount(query.uniqueResult());
         }
         else
         {
@@ -432,7 +448,11 @@ public class AnalysisDAO extends BaseDAO {
                 criteria.add(Restrictions.eq("analysisJob.userId", userId));
             }
 
-            criteria.setProjection(Projections.rowCount());
+            //return count of distinct analysis jobs
+            ProjectionList projectionList=Projections.projectionList();
+            projectionList.add(Projections.countDistinct("analysisJob"));
+            criteria.setProjection(projectionList);
+
             jobCount = getCount(criteria.uniqueResult());
         }
         return jobCount;
@@ -1560,4 +1580,35 @@ public class AnalysisDAO extends BaseDAO {
         return count;
     }
 
+    private static class SortOrder extends Order
+    {
+        private String propertyName;
+
+        protected SortOrder(String propertyName, boolean ascending)
+        {
+            super(propertyName, ascending);
+            this.propertyName = propertyName;
+        }
+
+        public String getPropertyName()
+        {
+            return propertyName;
+        }
+
+        public static SortOrder asc(String propertyName)
+        {
+            SortOrder sortOrder = new SortOrder(propertyName, true);
+
+            return sortOrder;
+        }
+
+        public static SortOrder desc(String propertyName)
+        {
+            SortOrder sortOrder = new SortOrder(propertyName, false);
+
+            return sortOrder;
+        }
+    }
 }
+
+
