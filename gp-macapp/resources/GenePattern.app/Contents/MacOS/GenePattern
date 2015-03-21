@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Ensure that th e correct version of java is installed
+# Ensure that the correct version of java is installed
 if type -p java; then
     echo found java executable in PATH
     _java=java
@@ -21,21 +21,25 @@ if [[ "$_java" ]]; then
     fi
 fi
 
-# Hack to get the working directory
+# Get the 'GenePattern.app' directory
+APP_DIR=$(cd "$(dirname "$0")"; cd ../; cd ../; pwd)
+export GENEPATTERN_APP_DIR="$APP_DIR"
+
+# Get the working directory
 DIR=$(cd "$(dirname "$0")"; pwd)
 
-# Hack to get the user's home directory
-USER_HOME=$(echo ~)
+# Set the GENEPATTERN_HOME_DIR
+export GENEPATTERN_HOME=${HOME}/.genepattern
 
 # If the flag is there indicating that configuration has already been ran
-if [ -f "$DIR/../Resources/ready" ]
+if [ -f "${APP_DIR}/Contents/Resources/ready" ]
 then
     # Launch GenePattern and open your browser pointing to it
-    export JAVA_OPTS="-DGENEPATTERN_HOME=$USER_HOME/.genepattern"
-    $DIR/../Resources/GenePatternServer/Tomcat/bin/catalina.sh run &
+    "${GENEPATTERN_APP_DIR}/Contents/Resources/GenePatternServer/Tomcat/bin/catalina-macapp.sh" run &
     sleep 3
     open http://127.0.0.1:8080/gp
 else
+    echo "launching config app..."
     # Otherwise launch the config app
-    java -cp "$DIR/../Resources/bootstrap.jar:$DIR/../Resources/mail.jar:$DIR/../Resources/jgoodies-forms-1.9.0.jar:$DIR/../Resources/jgoodies-common-1.8.1.jar:$DIR/../Resources/commons-io-2.0.1.jar" org.genepattern.startapp.Bootstrap $DIR
+    java -cp "${APP_DIR}/Contents/Resources/bootstrap.jar:${APP_DIR}/Contents/Resources/mail.jar:${APP_DIR}/Contents/Resources/jgoodies-forms-1.9.0.jar:${APP_DIR}/Contents/Resources/jgoodies-common-1.8.1.jar:${APP_DIR}/Contents/Resources/commons-io-2.0.1.jar" org.genepattern.startapp.Bootstrap "${DIR}"
 fi
