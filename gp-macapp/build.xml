@@ -107,6 +107,7 @@
     <target name="make-executable" depends="init, copy-base, copy-tomcat">
         <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina.sh" perm="ugo+rx"/>
+        <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina-macapp.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/digest.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/setclasspath.sh" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/shutdown.sh" perm="ugo+rx"/>
