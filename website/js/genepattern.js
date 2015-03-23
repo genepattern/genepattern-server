@@ -3359,7 +3359,7 @@ function buildJobResultsPage() {
         },
         "order": [[1, "desc"]],
         "columnDefs": [
-            { "orderable": false, "targets": [2, 4, 7, 8] }
+            { "orderable": false, "targets": [2, 4, 7, 8, 9] }
         ],
         "searching": false,
         "oLanguage": {

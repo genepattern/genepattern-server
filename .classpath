@@ -7,13 +7,14 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-junit-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-launcher-1.6.5.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/analysistoolmgmt-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/antlr-2.7.6rc1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-swing-1.6.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/archiver.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/asm-3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis.jar" sourcepath="/Broad/Java/axis/axis-1_4/src"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-ant.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-schema.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/cleanimports.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/colt.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/common-annotations.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-beanutils.jar"/>
@@ -24,12 +25,13 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-validator-1.3.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/concurrent-1.3.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/connector.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ehcache-1.2.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/el-api.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/el-ri.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/forms-1.0.5.jar"/>
@@ -50,7 +52,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-jmx.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-system.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jdbc2_0-stdext.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdnc-0_6-all.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jfreechart-1.0.0.jar"/>
@@ -62,9 +63,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-impl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jta.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/macos.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oromatcher.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oscache-2.3.2.jar"/>
@@ -72,9 +73,8 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/proxool-0.8.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/saaj.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/sax.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/snakeyaml-1.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/standard.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/swarmcache-1.0rc2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/syndiag2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/tomahawk-1.1.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/trove.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/versioncheck.jar"/>
@@ -83,22 +83,15 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/snakeyaml-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="test/lib/jmock-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-annotations.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/analysistoolmgmt-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.com.jamesmurty.utils-0.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.apache.commons.codec-1.3.0.jar"/>
@@ -135,11 +128,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-multipart-1.11.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-1.11.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-servlet-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/asm-3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
@@ -147,6 +138,8 @@
 	<classpathentry kind="lib" path="test/lib/com.springsource.org.objenesis-1.0.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/com.springsource.org.hamcrest.core-1.1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.mail.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
