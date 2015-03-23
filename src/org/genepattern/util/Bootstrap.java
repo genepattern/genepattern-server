@@ -19,7 +19,7 @@ public class Bootstrap {
             command = args[0];
         }
 
-        File catalinaPath = new File( "bin/catalina.sh" );
+        File catalinaPath = new File( "bin/catalina-macapp.sh" );
 
         List<String> processList = new ArrayList<String>();
         processList.add(catalinaPath.getPath());
