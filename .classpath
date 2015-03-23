@@ -53,7 +53,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-jmx.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-system.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jcommon-1.0.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jdbc2_0-stdext.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdnc-0_6-all.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jfreechart-1.0.0.jar"/>
