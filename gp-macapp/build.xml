@@ -103,7 +103,13 @@
     <target name="copy-visualizer-jar" depends="init, copy-base, copy-website">
         <copy file="../build/runVisualizer.jar" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/downloads" />
     </target>
-
+    
+    <target name="copy-runr-classes" depends="init, copy-base, copy-tomcat">
+        <copy file="../build/Run.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
+        <copy file="../build/RunR$StreamCopier.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
+        <copy file="../build/RunR$1.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
+    </target>
+    
     <target name="make-executable" depends="init, copy-base, copy-tomcat">
         <chmod file="${dist.dir}/GenePattern.app/Contents/MacOS/GenePattern" perm="ugo+rx"/>
         <chmod file="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/bin/catalina.sh" perm="ugo+rx"/>
@@ -142,7 +148,7 @@
         </jar>
     </target>
 
-    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-visualizer-jar, update-properties, jar, make-executable">
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-runr-classes, copy-visualizer-jar, update-properties, jar, make-executable">
         <!-- Should call: ant dist -Dbuild=YYY -->
         <zip basedir="dist" destfile="dist/GenePattern.app.zip">
             <zipfileset filemode="755" dir="dist" includes="GenePattern.app/**/*" />
