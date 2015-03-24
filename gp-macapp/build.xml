@@ -46,7 +46,7 @@
         <description>
             Deletes everything.
         </description>
-        <delete file="dist/gp-macapp.zip"/>
+        <delete file="dist/GenePattern.app.zip"/>
     </target>
 
     <!-- RESOURCE COPY TARGETS -->
@@ -136,7 +136,7 @@
         <property name="jar.file" location="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}">
             <manifest>
-                <attribute name="Main-Class" value="org.genepattern.startapp.Bootstrap" />
+                <attribute name="Main-Class" value="org.genepattern.startapp.GenePattern" />
                 <attribute name="Class-Path" value="." />
             </manifest>
         </jar>
@@ -144,7 +144,7 @@
 
     <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-visualizer-jar, update-properties, jar, make-executable">
         <!-- Should call: ant dist -Dbuild=YYY -->
-        <zip basedir="dist" destfile="dist/gp-macapp.zip">
+        <zip basedir="dist" destfile="dist/GenePattern.app.zip">
             <zipfileset filemode="755" dir="dist" includes="GenePattern.app/**/*" />
         </zip>
     </target>
