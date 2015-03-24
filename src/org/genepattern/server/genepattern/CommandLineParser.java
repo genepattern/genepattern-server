@@ -33,16 +33,50 @@ public class CommandLineParser {
         }
     }
     
+    /**
+     * Create the list of cmd line args for the module, GP <= 3.9.1 implementation.
+     * The GPAT.java onJob method must initialize the full set of substitution parameters before calling this method.
+     * 
+     * @param cmdLine, the command line string from the module manifest file
+     * @param props, the lookup table of all substitution parameters
+     * @param formalParameters, the formal parameters from the TaskInfo, needed for some special-cases such as splitting prefix when run params. 
+     * @return
+     */
     public static List<String> createCmdLine(String cmdLine, Properties props, ParameterInfo[] formalParameters) { 
+        return createCmdLine(null, null, cmdLine, props, formalParameters);
+    }
+
+    /**
+     * Updated createCmdLine method which uses the gpConfig to resolve global parameters, such as R2.15_HOME, which can be set at server runtime
+     * as a result of installing a patch.
+     * 
+     * @param gpConfig
+     * @param gpContext
+     * @param cmdLine
+     * @param props
+     * @param formalParameters
+     * @return
+     */
+    public static List<String> createCmdLine(final GpConfig gpConfig, final GpContext gpContext, String cmdLine, Properties props, ParameterInfo[] formalParameters) { 
         Map<String,String> env = new HashMap<String,String>();
         for(Object keyObj : props.keySet()) {
             String key = keyObj.toString();
             env.put( key.toString(), props.getProperty(key));
         }
         Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
-        return resolveValue(cmdLine, env, parameterInfoMap, 0);
+        return resolveValue(gpConfig, gpContext, cmdLine, env, parameterInfoMap, 0);
     }
-    
+
+    /**
+     * Proposed newer createCmdLine method (this works when generating the command line for installing patches) which is not yet ready for production.
+     * Still need to implement support for file input parameters.
+     * 
+     * @param gpConfig
+     * @param gpContext
+     * @param cmdLine
+     * @param formalParameters
+     * @return
+     */
     public static List<String> createCmdLine(GpConfig gpConfig, GpContext gpContext, String cmdLine, ParameterInfo[] formalParameters) { 
         Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
         return resolveValue(gpConfig, gpContext, cmdLine, parameterInfoMap, 0);
@@ -160,7 +194,7 @@ public class CommandLineParser {
         return st.getTokens();
     }
 
-    private static List<String> resolveValue(final String value, final Map<String,String> props, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
+    private static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,String> props, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
@@ -177,7 +211,7 @@ public class CommandLineParser {
         //otherwise, tokenize and return
         List<String> tokens = getTokens(value);
         for(String token : tokens) {
-            List<String> substitution = substituteValue(token, props, parameterInfoMap);
+            List<String> substitution = substituteValue(gpConfig, gpContext, token, props, parameterInfoMap);
             
             if (substitution == null || substitution.size() == 0) {
                 //remove empty substitutions
@@ -191,13 +225,13 @@ public class CommandLineParser {
                     rval.add( token );
                 }
                 else {
-                    List<String> resolvedList = resolveValue( singleValue, props, parameterInfoMap, 1+depth );
+                    List<String> resolvedList = resolveValue(gpConfig, gpContext, singleValue, props, parameterInfoMap, 1+depth );
                     rval.addAll( resolvedList );
                 }
             }
             else {
                 for(String sub : substitution) {
-                    List<String> resolvedSub = resolveValue(sub, props, parameterInfoMap, 1+depth);
+                    List<String> resolvedSub = resolveValue(gpConfig, gpContext, sub, props, parameterInfoMap, 1+depth);
                     rval.addAll( resolvedSub );
                 }
             }
@@ -250,7 +284,7 @@ public class CommandLineParser {
         return rval;
     }
 
-    private static List<String> substituteValue(final String arg, final Map<String,String> dict, final Map<String,ParameterInfo> parameterInfoMap) {
+    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,String> dict, final Map<String,ParameterInfo> parameterInfoMap) {
         List<String> rval = new ArrayList<String>();
         List<String> subs = getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
@@ -264,6 +298,9 @@ public class CommandLineParser {
             String value = null;
             if (dict.containsKey(paramName)) {
                 value = dict.get(paramName);
+            }
+            else if (gpConfig != null) {
+                value = gpConfig.getGPProperty(gpContext, paramName);
             }
  
             //default to empty string, to handle optional parameters which have not been set
