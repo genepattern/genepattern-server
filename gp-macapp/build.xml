@@ -136,7 +136,7 @@
         <property name="jar.file" location="${dist.dir}/GenePattern.app/Contents/Resources/bootstrap.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}">
             <manifest>
-                <attribute name="Main-Class" value="org.genepattern.startapp.Bootstrap" />
+                <attribute name="Main-Class" value="org.genepattern.startapp.GenePattern" />
                 <attribute name="Class-Path" value="." />
             </manifest>
         </jar>

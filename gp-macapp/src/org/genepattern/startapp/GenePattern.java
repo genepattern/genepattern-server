@@ -13,7 +13,7 @@ import java.util.Scanner;
  *
  * @author Thorin Tabor
  */
-public class Bootstrap {
+public class GenePattern {
 
     /**
      * Main method for the executable bootstrap.jar

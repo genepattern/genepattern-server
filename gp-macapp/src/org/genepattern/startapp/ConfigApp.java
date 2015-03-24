@@ -101,10 +101,13 @@ public class ConfigApp {
                 }
 
                 // Run the shell script
-                Bootstrap.runShellScript(workingDir.getAbsolutePath());
+                // GenePattern.runShellScript(workingDir.getAbsolutePath());
+
+                // Show the dialog
+                JFrame frame = ConfigApp.instance();
+                JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");
 
                 // Close
-                JFrame frame = ConfigApp.instance();
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
         });

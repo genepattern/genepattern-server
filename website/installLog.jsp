@@ -48,6 +48,10 @@
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
+<h1>Welcome to GenePattern!</h1>
+<h4>Please <a href="/gp/" target="_parent">bookmark this website</a> for future reference.</h4>
+<br/>
+
 <pre>
 <%= f.getCanonicalPath() %>
 <hr>
