@@ -411,29 +411,6 @@ public class PluginManagerLegacy {
         final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, formalParameters);        
         return cmdLineArgs;
     }
-    
-    /**
-     * @deprecated, should use newer GpConfig system
-     */
-    protected static List<String> initCmdLineArrayFromSystemProps(final String cmdLine) {
-        Properties systemProps = new Properties();
-        //copy into from System.getProperties
-        for(Object keyObj : System.getProperties().keySet()) {
-            String key = keyObj.toString();
-            String val = System.getProperty(key);
-            systemProps.setProperty(key, val);
-        }
-        return initCmdLineArray(systemProps, cmdLine);
-    }
-
-    /**
-     * @deprecated, should use newer GpConfig system
-     */
-    protected static List<String> initCmdLineArray(final Properties systemProps, final String cmdLine) {
-        final ParameterInfo[] formalParameters = new ParameterInfo[0];
-        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);
-        return cmdLineArgs;
-    }
 
     // download the patch zip file from a URL
     private static String downloadPatch(String url, Status taskIntegrator, String contentLength) throws IOException {
