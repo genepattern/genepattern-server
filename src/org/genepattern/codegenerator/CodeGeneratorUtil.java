@@ -40,6 +40,7 @@ public class CodeGeneratorUtil {
         languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator());
         languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator());
         languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
+        languageToCodeGenerator.put("Python", new PythonPipelineCodeGenerator());
     }
 
     public static String getJobResultFileName(JobInfo job, int parameterInfoIndex) {
