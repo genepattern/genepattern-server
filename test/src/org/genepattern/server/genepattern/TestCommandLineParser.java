@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -32,11 +33,13 @@ public class TestCommandLineParser {
     private File rootTasklibDir;
     private File libdir;
     private File webappDir;
+    private File uploadsDir;
     
     
     @SuppressWarnings("deprecation")
     @Before
     public void setUp() {
+        uploadsDir=tmp.newFolder("users/test_user/uploads");
         webappDir=tmp.newFolder("Tomcat/webapps/gp").getAbsoluteFile();
         File tomcatCommonLib=new File(webappDir.getParentFile().getParentFile(), "common/lib").getAbsoluteFile();
         tomcatCommonLib_val=tomcatCommonLib.toString();
@@ -114,6 +117,25 @@ public class TestCommandLineParser {
     @Test(expected=IllegalArgumentException.class)
     public void nullGpConfig() {
         CommandLineParser.substituteValue( (GpConfig) null, gpContext, "literal", parameterInfoMap );
+    }
+    
+    @Test
+    public void gpatCreateCmdLine_fromPropsAndConfig() {
+        final String R2_15_HOME="/Library/Frameworks/R.framework/Versions/2.15/Resources";
+        GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("R2.15_HOME", R2_15_HOME)
+        .build();
+
+        // <R2.15_HOME>/bin/Rscript --no-save --quiet --slave --no-restore <libdir>run_rank_normalize.R <libdir> <user.dir> <patches> --input.file=<input.file> --output.file.name=<output.file.name> <scale.to.value> <threshold> <ceiling> <shift>
+        final String cmdLine="<R2.15_HOME>/bin/Rscript --input.file=<input.file>";
+        final Properties setupProps=new Properties();
+        File inputFile=new File(uploadsDir, "all_aml_test.gct");
+        setupProps.setProperty("input.file", inputFile.getAbsolutePath());
+        final ParameterInfo[] formalParameters=new ParameterInfo[0];
+        final List<String> actual=CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, setupProps, formalParameters);
+        assertEquals(
+                Arrays.asList(R2_15_HOME+"/bin/Rscript", "--input.file="+inputFile.getAbsolutePath()),
+                actual );
     }
     
 }

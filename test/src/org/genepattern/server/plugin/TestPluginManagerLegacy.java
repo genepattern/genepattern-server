@@ -106,12 +106,6 @@ public class TestPluginManagerLegacy {
     }
     
     @Test
-    public void createPluginCmdLine_from_systemProps() {
-        systemProps.setProperty("resources", resourcesDir.getAbsolutePath());
-        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(systemProps, cmdLine));
-    }
-    
-    @Test
     public void createPluginCmdLine() {
         List<String> actual=PluginManagerLegacy.initCmdLineArray(gpConfig, gpContext, cmdLine);
         assertEquals(expected, actual);
