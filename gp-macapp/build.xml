@@ -105,7 +105,7 @@
     </target>
     
     <target name="copy-runr-classes" depends="init, copy-base, copy-tomcat">
-        <copy file="../build/Run.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
+        <copy file="../build/RunR.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
         <copy file="../build/RunR$StreamCopier.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
         <copy file="../build/RunR$1.class" todir="${dist.dir}/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes" />
     </target>
