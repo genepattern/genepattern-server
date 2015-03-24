@@ -2368,6 +2368,12 @@ function createJobWidget(job) {
             "name": "View R Code",
             "description": "View the code for referencing this job programmatically from R.",
             "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "View Python Code",
+            "description": "View the code for referencing this job programmatically from Python.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
         }
     ];
 
@@ -2382,6 +2388,7 @@ function createJobWidget(job) {
                 var javaAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Java") === 0;
                 var matlabAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View MATLAB") === 0;
                 var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") === 0;
+                var pythonAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Python") === 0;
 
                 if (javaAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java");
@@ -2395,6 +2402,11 @@ function createJobWidget(job) {
 
                 else if (rAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R");
+                    $(".search-widget:visible").searchslider("hide");
+                }
+
+                else if (pythonAction) {
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Python");
                     $(".search-widget:visible").searchslider("hide");
                 }
 
