@@ -210,6 +210,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     $("#javaCode").parents("tr:first").hide();
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
+                    $("#pythonCode").parents("tr:first").hide();
 
                 }
                 else if (module["private_tasks"]) {
@@ -220,6 +221,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     $("#javaCode").parents("tr:first").hide();
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
+                    $("#pythonCode").parents("tr:first").hide();
                 }
                 else if (module["eula"]) {
                     clearEulas();
@@ -1899,6 +1901,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
         $("#javaCode").data("language", "Java");
         $("#matlabCode").data("language", "MATLAB");
         $("#rCode").data("language", "R");
+        $("#pythonCode").data("language", "Python");
 
         $("#removeViewCode").button().click(function () {
             $("#viewCodeDiv").hide();
@@ -1951,7 +1954,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
                         $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
                     }
                     else {
-                        $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
+                        $("#viewCodeDiv").append("<pre style='overflow: auto;'>" + htmlEncode(response["code"]) + "</pre>");
                         //add a link to the appropriate programmers guide
                         $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                             "Using GenePattern from " + language + "</a></span>");

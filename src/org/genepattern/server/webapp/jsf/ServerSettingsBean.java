@@ -127,7 +127,7 @@ public class ServerSettingsBean implements Serializable {
 	    try {
 		defaultSettings = PropertiesManager_3_2.getDefaultProperties();
 	    } catch (IOException ioe) {
-		log.error(ioe);
+		log.debug(ioe);
 	    }
 	}
     }

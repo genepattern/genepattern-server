@@ -153,6 +153,7 @@ public class PropertiesWriter {
      * @throws IOException
      */
     public void writeInstallTime(File propFile, String workingDirString, String gpHomeDirString) throws IOException {
+        final String tomcatDir="<GENEPATTERN_APP_DIR>/Contents/Resources/GenePatternServer/Tomcat";
         List<String> lines = new ArrayList<String>();
 
         // Read the file and store changes
@@ -162,8 +163,8 @@ public class PropertiesWriter {
             if (line.contains("$LSID_AUTHORITY$")) {
                 line = line.replaceAll("\\$LSID_AUTHORITY\\$", lsid);
             }
-            else if (line.contains("run_r_path=")) {
-                line = line.replaceAll("\\.\\.", workingDirString + "/GenePatternServer");
+            else if (line.startsWith("run_r_path=")) {
+                line = "run_r_path="+tomcatDir+"/webapps/gp/WEB-INF/classes/";
             }
             else if (line.contains("R.suppress.messages.file=")) {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
@@ -172,12 +173,10 @@ public class PropertiesWriter {
                 line = "resources=" + gpHomeDirString + "/resources";
             }
             else if (line.startsWith("tomcatCommonLib=")) {
-                File tomcatCommonLib=new File(new File(workingDirString).getParentFile(), 
-                        "Resources/GenePatternServer/Tomcat/common/lib").getAbsoluteFile();
-                line = "tomcatCommonLib=" +tomcatCommonLib;
+                line = "tomcatCommonLib="+tomcatDir+"/common/lib";
             }
             else if (line.startsWith("webappDir=")) {
-                line = "webappDir=" + workingDirString + "/GenePatternServer/Tomcat/webapps/gp";
+                line = "webappDir="+tomcatDir+"webapps/gp";
             }
 
             lines.add(line);

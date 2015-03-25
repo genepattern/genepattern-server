@@ -64,6 +64,7 @@ public class GpServerProperties {
         }
         if (!propFile.exists()) {
             log.debug("File does not exist, propFile="+propFile);
+            return null;
         }
         FileInputStream fis = null;
         try {

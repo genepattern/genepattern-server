@@ -192,7 +192,7 @@ public class GpConfig {
     /**
      *  Special-case, some properties can be set by convention rather than declared in a config file.
      *  For example,  patches=$GENEPATTERN_HOME$/patches
-     *  When this is the case, save the lookup into the subsitutionParams map when initializing the config.
+     *  When this is the case, save the lookup into the substitutionParams map when initializing the config.
      */
     private final Map<String,String> substitutionParams=new HashMap<String,String>();
     private final ValueLookup valueLookup;

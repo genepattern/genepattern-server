@@ -8,11 +8,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.ParameterInfo;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -32,11 +34,17 @@ public class TestCommandLineParser {
     private File rootTasklibDir;
     private File libdir;
     private File webappDir;
+    private File uploadsDir;
+    private File resourcesDir;
+    private File gpAppDir;
     
     
     @SuppressWarnings("deprecation")
     @Before
     public void setUp() {
+        gpAppDir=tmp.newFolder("GenePattern.app").getAbsoluteFile();
+        resourcesDir=tmp.newFolder("resources").getAbsoluteFile();
+        uploadsDir=tmp.newFolder("users/test_user/uploads");
         webappDir=tmp.newFolder("Tomcat/webapps/gp").getAbsoluteFile();
         File tomcatCommonLib=new File(webappDir.getParentFile().getParentFile(), "common/lib").getAbsoluteFile();
         tomcatCommonLib_val=tomcatCommonLib.toString();
@@ -114,6 +122,69 @@ public class TestCommandLineParser {
     @Test(expected=IllegalArgumentException.class)
     public void nullGpConfig() {
         CommandLineParser.substituteValue( (GpConfig) null, gpContext, "literal", parameterInfoMap );
+    }
+    
+    @Test
+    public void gpatCreateCmdLine_fromPropsAndConfig() {
+        final String R2_15_HOME="/Library/Frameworks/R.framework/Versions/2.15/Resources";
+        GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("R2.15_HOME", R2_15_HOME)
+        .build();
+
+        // <R2.15_HOME>/bin/Rscript --no-save --quiet --slave --no-restore <libdir>run_rank_normalize.R <libdir> <user.dir> <patches> --input.file=<input.file> --output.file.name=<output.file.name> <scale.to.value> <threshold> <ceiling> <shift>
+        final String cmdLine="<R2.15_HOME>/bin/Rscript --input.file=<input.file>";
+        final Properties setupProps=new Properties();
+        File inputFile=new File(uploadsDir, "all_aml_test.gct");
+        setupProps.setProperty("input.file", inputFile.getAbsolutePath());
+        final ParameterInfo[] formalParameters=new ParameterInfo[0];
+        final List<String> actual=CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, setupProps, formalParameters);
+        assertEquals(
+                Arrays.asList(R2_15_HOME+"/bin/Rscript", "--input.file="+inputFile.getAbsolutePath()),
+                actual );
+    }
+    
+    @Test
+    public void gpatCreateCmdLine_MacApp_R2_5() {
+        // simulate genepattern.properties entries for 3.9.2 Mac app 
+        final File svmLibdir=new File(rootTasklibDir, "SVM.4.100");
+
+        final File tomcatDir=new File(gpAppDir, "Contents/Resources/GenePatternServer/Tomcat");
+        GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("GENEPATTERN_APP_DIR", gpAppDir.toString())
+            .addProperty("java", "/usr/bin/java")
+            .addProperty("R2.5", "<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R2.5_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR")
+            .addProperty("R2.5_HOME", "/Library/Frameworks/R.framework/Versions/2.5/Resources")
+            .addProperty("R.suppress.messages.file", "<resources>/R_suppress.txt")
+            .addProperty("run_r_path", tomcatDir+"/webapps/gp/WEB-INF/classes/")
+            .addProperty("r_flags", "--no-save --quiet --slave --no-restore")
+        .build();
+        
+        // simulate the Properties object passed in from GPAT.java onJob (circa GP <= 3.9.2)
+        Properties gpatRuntimeProps=new Properties();
+        //TODO: improve substitution for <resources>, should not depend on this being passed via the Properties arg
+        gpatRuntimeProps.setProperty("resources", resourcesDir.toString());
+        //TODO: improve substitution for <libdir>, should not depend on this being passed via the Properties arg
+        gpatRuntimeProps.setProperty("libdir", svmLibdir+"/");
+        gpatRuntimeProps.setProperty("train.data.filename", "/path/to/all_aml_train.gct");
+        
+        //String cmdLine="<R2.5> <libdir>svm.R mysvm -rf<train.data.filename> -rc<train.cls.filename> -ef<test.data.filename> -ec<test.cls.filename> -pr<pred.results.output.file> -mf<model.output.file> -li<libdir> -sm<saved.model.filename>";
+        String cmdLine="<R2.5> <libdir>svm.R mysvm -rf<train.data.filename>";
+        
+        final ParameterInfo[] formalParameters=new ParameterInfo[0];
+        final List<String> expected=Arrays.asList(
+                "/usr/bin/java", 
+                "-DR_suppress="+resourcesDir.getAbsolutePath()+"/R_suppress.txt",
+                "-DR_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources", 
+                "-Dr_flags=--no-save --quiet --slave --no-restore",
+                "-cp",
+                gpAppDir+"/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/",
+                "RunR",
+                svmLibdir+"/svm.R", "mysvm",
+                "-rf/path/to/all_aml_train.gct"
+                );
+        final List<String> actual=CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, gpatRuntimeProps, formalParameters);
+        assertThat(actual, Matchers.is(expected));
+        
     }
     
 }
