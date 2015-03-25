@@ -176,7 +176,7 @@ public class PropertiesWriter {
                 line = "tomcatCommonLib="+tomcatDir+"/common/lib";
             }
             else if (line.startsWith("webappDir=")) {
-                line = "webappDir="+tomcatDir+"webapps/gp";
+                line = "webappDir="+tomcatDir+"/webapps/gp";
             }
 
             lines.add(line);
