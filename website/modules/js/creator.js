@@ -3096,9 +3096,9 @@ jQuery(document).ready(function() {
         selectedList: 1
     });
 
-    /*$( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
+    $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
         this.buttonlabel.html( value );
-    };*/
+    };
 
     $("#helpbtn").button().click(function()
     {
