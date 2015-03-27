@@ -504,6 +504,15 @@ public class PluginManagerLegacy {
      * Run the patch command line in the patch directory, returning the exit code from the executable.
      */
     private static int executePatch(String[] commandLineArray, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
+        if (log.isDebugEnabled()) {
+            log.debug("patch dir="+patchDirectory);
+            log.debug("patch commandLine ...");
+            int i=0;
+            for(final String arg : commandLineArray) {
+                log.debug("\targ["+i+"]: "+arg);
+            }
+        }
+        
         // spawn the command
         Process process = Runtime.getRuntime().exec(commandLineArray, null, patchDirectory);
 

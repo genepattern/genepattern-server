@@ -208,6 +208,16 @@ public class MigratePlugins {
     public static PatchInfo initPatchInfoFromManifest(final File manifest) throws FileNotFoundException, IOException {
         // get the LSID from the manifest file
         Properties props=new Properties();
+        FileReader fr=null;
+        try {
+            fr = new FileReader(manifest);
+            props.load(fr);
+        }
+        finally {
+            if (fr != null) {
+                fr.close();
+            }
+        }
         props.load(new FileReader(manifest));
         String patchLsid=props.getProperty("LSID");
 
