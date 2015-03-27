@@ -1202,6 +1202,7 @@ var editor = {
             type: "POST",
             url: "/gp/PipelineDesigner/load",
             data: { "lsid" : lsid },
+            cache: false,
             success: function(response) {
                 var error = response["ERROR"];
                 if (error !== undefined) {
