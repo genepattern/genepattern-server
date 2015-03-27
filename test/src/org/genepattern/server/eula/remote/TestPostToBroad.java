@@ -38,7 +38,7 @@ public class TestPostToBroad {
             post.doPost();
         }
         catch (Throwable t) {
-            Assert.fail(""+t.getLocalizedMessage());
+            Assert.fail("Error posting to "+RecordEulaDefault.REMOTE_URL_DEFAULT+": "+t.getLocalizedMessage());
         }
     }
     
