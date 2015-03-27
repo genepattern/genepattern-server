@@ -139,7 +139,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-14.0.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>

@@ -1360,16 +1360,19 @@ public class GenePatternAnalysisTask {
                 final List<String> cmdLineArgs;
                 final boolean useLegacyCmdLineParser=gpConfig.getGPBooleanProperty(jobContext, "gp.legacyCmdLineParser", false);
                 log.debug("gp.legacyCmdLineParser="+useLegacyCmdLineParser); 
+                List<String> cmdLineArgsA = null;
                 if (useLegacyCmdLineParser) {
-                    List<String> cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
+                    cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
                     cmdLineArgs=cmdLineArgsA;
                 }
                 else {
                     List<String> cmdLineArgsB = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, props, formalParameters);
-                    List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramsCopy);
                     cmdLineArgs=cmdLineArgsB;
                     if (log.isDebugEnabled()) {
-                        List<String> cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
+                        if (cmdLineArgsA==null) {
+                            cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
+                        }
+                        List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramsCopy);
                         log.debug("cmdLineArgsA (legacy): "+cmdLineArgsA); // pre 3.9.2
                         log.debug("cmdLineArgsB (hybrid): "+cmdLineArgsB); // 3.9.2, it works!
                         log.debug("cmdLineArgsC    (new): "+cmdLineArgsC); // under development, file input params not yet implemented
