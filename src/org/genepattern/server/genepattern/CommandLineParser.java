@@ -16,6 +16,8 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.ParameterInfo;
 
+import com.google.common.base.Joiner;
+
 /**
  * Utility class for parameter substitution.
  * 
@@ -239,6 +241,14 @@ public class CommandLineParser {
         return rval;
     }
     
+    protected static String asString(final List<String> arr) {
+        if (arr==null) {
+            return "<null>";
+        }
+        String joined=Joiner.on(",").join(arr);
+        return joined;
+    }
+    
     protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
@@ -257,6 +267,9 @@ public class CommandLineParser {
         List<String> tokens = getTokens(value);
         for(String token : tokens) {
             List<String> substitution = substituteValue(gpConfig, gpContext, token, parameterInfoMap);
+            if (log.isTraceEnabled()) {
+                log.trace("substitute('"+token+"')=[ "+asString(substitution) +" ]");
+            }
             
             if (substitution == null || substitution.size() == 0) {
                 //remove empty substitutions
