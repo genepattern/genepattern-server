@@ -10,6 +10,7 @@ import javax.persistence.Table;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
 
 /**
@@ -30,6 +31,17 @@ public class PropsTable {
     /**
      * Get the value for the given key in the PROPS table.
      * 
+     * @param key
+     * @return
+     * @throws DbException
+     */
+    public static String selectValue(final String key) throws DbException {
+        return selectValue(HibernateUtil.instance(), key);
+    }
+    
+    /**
+     * Get the value for the given key in the PROPS table.
+     * 
      * @param mgr
      * @param key
      * @return
@@ -43,6 +55,10 @@ public class PropsTable {
         return row.getValue();
     }
     
+    public static PropsTable selectRow(final String key) {
+        return selectRow(HibernateUtil.instance(), key);
+    }
+
     public static PropsTable selectRow(final HibernateSessionManager mgr, final String key) {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
@@ -66,6 +82,16 @@ public class PropsTable {
         }
     }
 
+    /**
+     * Save a key/value pair to the PROPS table.
+     * @param key
+     * @param value
+     * @return
+     */
+    public static boolean saveProp(final String key, final String value) {
+        return saveProp(HibernateUtil.instance(), key, value);
+    }
+    
     /**
      * Save a key/value pair to the PROPS table.
      * @param key
@@ -97,6 +123,14 @@ public class PropsTable {
             mgr.rollbackTransaction();
             return false;
         }
+    }
+    
+    /**
+     * Remove an entry from the PROPS table.
+     * @param key
+     */
+    public static void removeProp(final String key) {
+        removeProp(HibernateUtil.instance(), key);
     }
     
     /**
