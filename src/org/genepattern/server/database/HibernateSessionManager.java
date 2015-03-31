@@ -108,7 +108,6 @@ public final class HibernateSessionManager {
                 "org/genepattern/server/domain/BatchJob.hbm.xml", 
                 "org/genepattern/server/domain/JobStatus.hbm.xml", 
                 "org/genepattern/server/domain/Lsid.hbm.xml", 
-                "org/genepattern/server/domain/Props.hbm.xml", 
                 "org/genepattern/server/domain/Sequence.hbm.xml", 
                 "org/genepattern/server/domain/Suite.hbm.xml", 
                 "org/genepattern/server/domain/TaskAccess.hbm.xml", 
