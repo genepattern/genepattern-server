@@ -148,7 +148,8 @@ public final class HibernateSessionManager {
                 org.genepattern.server.job.comment.JobComment.class,
                 org.genepattern.server.tag.Tag.class,
                 org.genepattern.server.job.tag.JobTag.class,
-                org.genepattern.server.plugin.PatchInfo.class
+                org.genepattern.server.plugin.PatchInfo.class,
+                org.genepattern.server.domain.PropsTable.class
                 );
     }
 

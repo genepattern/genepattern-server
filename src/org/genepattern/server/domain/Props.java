@@ -1,7 +1,7 @@
 /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
+ This software and its documentation are copyright (2003-2015) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
  
@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
 
+@Deprecated
 public class Props {
     private static Logger log = Logger.getLogger(Props.class);
 
