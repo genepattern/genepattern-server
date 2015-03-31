@@ -29,13 +29,15 @@ import org.hibernate.StatelessSession;
 
 public class HibernateUtil {
     private static final Logger log = Logger.getLogger(HibernateUtil.class);
+    
+    // TODO: should lazily initialize this
     private static HibernateSessionManager instance;
     
     public static synchronized void setInstance(HibernateSessionManager mgr) {
         instance=mgr;
     }
     
-    private static synchronized HibernateSessionManager instance() {
+    public static synchronized HibernateSessionManager instance() {
         if (instance==null) {
             log.debug("initializing hibernate session ...");
             GpContext serverContext=GpContext.getServerContext();
