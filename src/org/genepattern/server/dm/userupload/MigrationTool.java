@@ -13,13 +13,12 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
-import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
 /**
@@ -52,7 +51,7 @@ public class MigrationTool {
 
         //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
         final String KEY = "sync.job.uploads.complete";
-        Props row=Props.selectRow(KEY);
+        PropsTable row=PropsTable.selectRow(KEY);
         if (row != null && gpVersion.equals(row.getValue())) {
             //if the flag is already set, exit
             log.debug("job upload files already migrated for gpVersion="+gpVersion);
@@ -62,7 +61,7 @@ public class MigrationTool {
         migrateJobUploadDirs();
 
         //finally) set the flag in the DB
-        Props.saveProp(KEY, gpVersion);        
+        PropsTable.saveProp(KEY, gpVersion);        
     }
     
     private static void migrateJobUploadDirs() {
@@ -133,25 +132,11 @@ public class MigrationTool {
      *     also return true if there was some kind of DB connection error.
      */
     protected static boolean checkDbForSyncUserUploadsComplete() {
-        try {
-            HibernateUtil.beginTransaction();
-            String hql = "select props.value from "+Props.class.getName()+" props where props.key = :key";
-            Query query=HibernateUtil.getSession().createQuery(hql);
-            query.setString("key", "sync.user.uploads.complete");
-            List<String> rval = query.list();
-            if (rval != null && rval.size() > 0) {
-                log.debug("sync.user.uploads.complete="+rval.get(0));
+            PropsTable row=PropsTable.selectRow("sync.user.uploads.complete");
+            if (row != null) {
                 return true;
             }
-        }
-        catch (Throwable t) {
-            log.error("Server error: "+t.getLocalizedMessage(), t);
-            return true;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        return false;
+            return false;
     }
     
     /**
@@ -183,7 +168,7 @@ public class MigrationTool {
         updatePrevJobInputParams();
         
         //6) finally, update the flag in the DB, so that we don't do this again
-        boolean success=Props.saveProp("sync.user.uploads.complete", "true");
+        boolean success=PropsTable.saveProp("sync.user.uploads.complete", "true");
         log.info("migrated="+success);
     }
 
