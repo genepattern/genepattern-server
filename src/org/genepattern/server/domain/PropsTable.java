@@ -1,5 +1,6 @@
 package org.genepattern.server.domain;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -55,11 +56,49 @@ public class PropsTable {
         return row.getValue();
     }
     
-    public static PropsTable selectRow(final String key) {
+    /**
+     * Get the list of keys from the PROPS table which match the given matchingKey.
+     * To get more than one result pass in a '%' wildcard character, e.g.
+     *     matchingKey='registeredVersion%'
+     * @param matchingKey
+     * @return
+     */
+    public static List<String> selectKeys(final String matchingKey) {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        try {
+            final String hql="select p.key from "+PropsTable.class.getName()+" p where p.key like :key";
+            Query query = HibernateUtil.getSession().createQuery(hql);  
+            query.setString("key", matchingKey);
+            List<String> values=query.list();
+            return values;
+        }
+        catch (Throwable t) {
+            log.error("Error getting values from PROPS table for key='"+matchingKey+"': "+t.getLocalizedMessage(), t);
+            return Collections.emptyList();
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    public static PropsTable selectRow(final String key) throws DbException {
         return selectRow(HibernateUtil.instance(), key);
     }
 
-    public static PropsTable selectRow(final HibernateSessionManager mgr, final String key) {
+    /**
+     * Select a row from the PROPS table which matches the given key, 
+     * return null if there is no entry in the table.
+     * @param mgr
+     * @param key
+     * @return
+     * @throws DbException 
+     */
+    public static PropsTable selectRow(final HibernateSessionManager mgr, final String key) 
+    throws DbException
+    {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
@@ -74,6 +113,11 @@ public class PropsTable {
                 log.error("More than one row in PROPS table for key='"+key+"'");
             }
             return props.get(0);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new DbException(
+                    "Unexpected error getting row from PROPS table, key='"+key+"': "+t.getLocalizedMessage(), t);
         }
         finally {
             if (!isInTransaction) {
