@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -43,7 +44,7 @@ public class MigrationTool {
      * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
      * are not in the correct location on the file system.
      */
-    public static void migrateJobUploads() {
+    public static void migrateJobUploads() throws DbException {
         final String gpVersion =  ServerConfigurationFactory.instance().getGenePatternVersion();
         if (gpVersion == null) {
             return;
@@ -131,7 +132,7 @@ public class MigrationTool {
      * @return true if 'sync.user.uploads.complete' is set to true for this version of GenePattern;
      *     also return true if there was some kind of DB connection error.
      */
-    protected static boolean checkDbForSyncUserUploadsComplete() {
+    protected static boolean checkDbForSyncUserUploadsComplete() throws DbException {
             PropsTable row=PropsTable.selectRow("sync.user.uploads.complete");
             if (row != null) {
                 return true;
@@ -144,7 +145,7 @@ public class MigrationTool {
      * Store a record of this in the DB so that we only do this once.
      * This should be called from the StartupServlet after the DB is initialized.
      */
-    public static void migrateUserUploads() {
+    public static void migrateUserUploads() throws DbException {
         boolean dbcheck=checkDbForSyncUserUploadsComplete();
         if (dbcheck) {
             return;

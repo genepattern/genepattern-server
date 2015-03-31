@@ -29,6 +29,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
@@ -265,7 +266,7 @@ public class HsqlDbUtil {
         
         String dbSchemaVersion;
         try {
-            dbSchemaVersion=Props.selectValue("schemaVersion");
+            dbSchemaVersion=PropsTable.selectValue("schemaVersion");
         }
         catch (Throwable t) {
             log.info("Database tables not found.  Create new database");
@@ -373,7 +374,7 @@ public class HsqlDbUtil {
      * @return the contents of the file as a String
      * @throws IOException from reader.read
      */
-    private static String readFile(File file) throws IOException 
+    protected static String readFile(File file) throws IOException 
     {
         FileReader reader = null;
         StringBuffer b = new StringBuffer();
