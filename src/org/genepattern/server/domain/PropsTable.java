@@ -64,11 +64,15 @@ public class PropsTable {
      * @return
      */
     public static List<String> selectKeys(final String matchingKey) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        return selectKeys(HibernateUtil.instance(), matchingKey);
+    }
+
+    public static List<String> selectKeys(final HibernateSessionManager mgr, final String matchingKey) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
+            mgr.beginTransaction();
             final String hql="select p.key from "+PropsTable.class.getName()+" p where p.key like :key";
-            Query query = HibernateUtil.getSession().createQuery(hql);  
+            Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", matchingKey);
             List<String> values=query.list();
             return values;
@@ -79,7 +83,7 @@ public class PropsTable {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -118,6 +122,37 @@ public class PropsTable {
             log.error(t);
             throw new DbException(
                     "Unexpected error getting row from PROPS table, key='"+key+"': "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+
+    public static List<PropsTable> selectAllProps() throws DbException {
+        return selectAllProps(HibernateUtil.instance());
+    }
+
+    /**
+     * Get all entries from the PROPS table.
+     * 
+     * @param mgr
+     * @return
+     * @throws DbException
+     */
+    public static List<PropsTable> selectAllProps(final HibernateSessionManager mgr) throws DbException {
+        // select value from props where `key`={key}
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            mgr.beginTransaction();
+            final String hql=" from "+PropsTable.class.getName();
+            Query query = mgr.getSession().createQuery(hql);  
+            List<PropsTable> rval=query.list();
+            return rval;
+        }
+        catch (Throwable t) {
+            throw new DbException("Error getting all entries from PROPS table: "+t.getLocalizedMessage(), t);
         }
         finally {
             if (!isInTransaction) {
