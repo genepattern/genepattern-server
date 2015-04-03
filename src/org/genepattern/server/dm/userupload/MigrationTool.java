@@ -20,6 +20,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
 /**
@@ -174,20 +175,16 @@ public class MigrationTool {
     }
 
     /**
-     * Update all previous jobs which have a user upload file as an input parameter.
-     * Replace the 3.3.2 style link with the 3.3.3 style link. E.g.,
-     * change 
-     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
-     * to
-     *     <GenePatternURL>users/admin/all_aml_test.gct
+     * Get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob.
      */
-    private static void updatePrevJobInputParams() {
-        //get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob
+    protected static List<Integer> getUserUploadsJobNos() {
         List<Integer> jobNos = new ArrayList<Integer>();
         try {
             HibernateUtil.beginTransaction();
-            String sql = "select job_no from analysis_job where parameter_info like '%user.uploads%' and deleted = 0";
-            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            final String hql = "select a.jobNo from "+AnalysisJob.class.getName()+" a where a.parameterInfo like :match and a.deleted = :isDeleted";
+            Query query = HibernateUtil.getSession().createQuery(hql);
+            query.setString("match", "%user.uploads%");
+            query.setBoolean("isDeleted", false);
             List<?> jobNoObjs = query.list();
             for(Object jobNoObj : jobNoObjs) {
                 int jobNo = -1;
@@ -209,12 +206,23 @@ public class MigrationTool {
         }
         catch (Throwable t) {
             log.error("Error getting list of jobIds with 'user.uploads' in PARAMETER_INFO clob", t);
-            return;
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-
+        return jobNos;
+    }
+    
+    /**
+     * Update all previous jobs which have a user upload file as an input parameter.
+     * Replace the 3.3.2 style link with the 3.3.3 style link. E.g.,
+     * change 
+     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
+     * to
+     *     <GenePatternURL>users/admin/all_aml_test.gct
+     */
+    private static void updatePrevJobInputParams() {
+        List<Integer> jobNos = getUserUploadsJobNos();
         int numJobsChanged = 0;
         int totalNumParamsChanged = 0;
         //for each job in the list, update input parameters which reference a GP 3.3.2 user upload file
