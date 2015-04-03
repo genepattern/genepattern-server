@@ -87,7 +87,7 @@ public class DbUtil {
             }
             
             final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
-            String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
+            final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
 
             final String hibernateConfigFile="hibernate.junit.cfg.xml";
             final String hibernateConnectionUrl="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb";
@@ -113,6 +113,16 @@ public class DbUtil {
         }
     }
 
+    public static void startDb(final File hsqlDbDir, final String hsqlDbName) throws Throwable {
+        if (isDbInitialized) {
+            return;
+        }
+        isDbInitialized = true;
+        final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
+        final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
+        HsqlDbUtil.startDatabase(hsqlArgs);
+    }
+    
     public static void shutdownDb() {
         if (!isDbInitialized) {
             return;
