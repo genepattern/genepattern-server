@@ -27,7 +27,11 @@
              <path refid="toolslib"/>
              <pathelement location="./website/WEB-INF/classes" />
          </classpath>
-             
+          
+         <!-- 
+           - Note: to use this script you must make a copy of the hibernate.cfg.xml file,
+           - manually add the mappings back to the file.
+          -->
          <annotationconfiguration configurationfile="src/hibernate.cfg.xml"/>
          <hbm2ddl export="false" format="true" outputfilename="sql.ddl"/>
         </hibernatetool>
