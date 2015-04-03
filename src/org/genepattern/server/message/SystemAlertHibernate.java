@@ -62,8 +62,9 @@ class SystemAlertHibernate implements ISystemAlert {
         //delete from SYSTEM_MESSAGE where deleteOnRestart is true
       HibernateUtil.beginTransaction();
        try {
-            Query query = HibernateUtil.getSession().createQuery("delete from SystemMessage where deleteOnRestart != 0");
-            query.executeUpdate();
+           Query query = HibernateUtil.getSession().createQuery("delete from SystemMessage where deleteOnRestart = :deleteOnRestart");
+           query.setBoolean("deleteOnRestart", true);
+           query.executeUpdate();
             HibernateUtil.commitTransaction();
         }
         catch (HibernateException e) {
