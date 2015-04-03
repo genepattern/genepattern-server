@@ -47,7 +47,7 @@ public class TestPostgresqlConfig {
      * 
      * @throws Throwable
      */
-    @Test
+    @Ignore @Test
     public void testPostgresqlConnection() throws Throwable {
         Connection conn=null;
         try {
