@@ -1,0 +1,40 @@
+diff -urN src-2.3.2/org/hsqldb/ParserDDL.java src/org/hsqldb/ParserDDL.java
+--- src-2.3.2/org/hsqldb/ParserDDL.java	2014-02-02 12:41:00.000000000 -0500
++++ src/org/hsqldb/ParserDDL.java	2015-04-07 16:46:01.000000000 -0400
+@@ -40,6 +40,7 @@
+ import org.hsqldb.error.ErrorCode;
+ import org.hsqldb.index.Index;
+ import org.hsqldb.lib.ArrayUtil;
++import org.hsqldb.lib.FrameworkLogger;
+ import org.hsqldb.lib.HsqlArrayList;
+ import org.hsqldb.lib.HsqlList;
+ import org.hsqldb.lib.OrderedHashSet;
+@@ -62,6 +63,9 @@
+  * @since 1.9.0
+  */
+ public class ParserDDL extends ParserRoutine {
++    private static final FrameworkLogger logger =
++            FrameworkLogger.getLog(ParserRoutine.class);
++
+ 
+     static final int[]   schemaCommands             = new int[] {
+         Tokens.CREATE, Tokens.GRANT
+@@ -1331,7 +1335,17 @@
+ 
+                     if (table.getUniqueConstraintForColumns(c.core.mainCols)
+                             != null) {
+-                        throw Error.error(ErrorCode.X_42522);
++                        // using system property because I didn't find a clean way to set a flag 
++                        // when starting the DB from org.hsqldb.server.Server.main.
++                        // - pcarr
++                        boolean ignore=Boolean.valueOf( System.getProperty("hsqldb.ignoreX_42522", "true" ));
++                        if (!ignore) {
++                            throw Error.error(ErrorCode.X_42522);
++                        }
++                        else {
++                            logger.warning(ErrorCode.X_42522+" a UNIQUE constraint already exists on the set of columns");
++                        }
++                        break;
+                     }
+ 
+                     // create an autonamed index
