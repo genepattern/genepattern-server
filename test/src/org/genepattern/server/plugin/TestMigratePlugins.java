@@ -15,12 +15,10 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-
-//import org.hamcrest.Matchers;
-//import static org.hamcrest.Matchers.*;
 
 /**
  * jUnit tests for the MigratePlugins class.
@@ -107,11 +105,11 @@ public class TestMigratePlugins {
         migratePlugins.updateDb();
         assertEquals("checkDb after migrate", true, migratePlugins.checkDb());
         
-        Props.saveProp(MigratePlugins.PROP_DB_CHECK, "false");
+        PropsTable.saveProp(MigratePlugins.PROP_DB_CHECK, "false");
         assertEquals("after Props.saveProp(...,'false')", false, migratePlugins.checkDb());
         
         // cleanup
-        Props.removeProp(MigratePlugins.PROP_DB_CHECK);
+        PropsTable.removeProp(MigratePlugins.PROP_DB_CHECK);
         assertEquals("checkDb after Props.removeProp", false, migratePlugins.checkDb());
     }
     
@@ -122,6 +120,26 @@ public class TestMigratePlugins {
         assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfo.getLsid());
         assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
         assertEquals("patchInfo.customPropFiles[0].name", "Ant_1_8.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
+    }
+
+    /**
+     * test case for incorrectly escaped file paths in the Ant_1_8.custom.properties file for Windows installations.
+     * it's not implemented
+     */
+    @Ignore @Test
+    public void initPatchInfo_Ant_1_8_WinHack() throws Exception {
+        File manifest=FileUtil.getDataFile("patches2/broadinstitute.org.plugin.Ant_1.8.1_Win/manifest");
+        PatchInfo patchInfo=MigratePlugins.initPatchInfoFromManifest(manifest);
+        assertEquals("patchInfo.lsid", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfo.getLsid());
+        assertEquals("patchInfo.customPropFiles.size", 1, patchInfo.getCustomPropFiles().size());
+        assertEquals("patchInfo.customPropFiles[0].name", "Ant_1_8.custom.properties", patchInfo.getCustomPropFiles().get(0).getName());
+        
+        assertEquals("ant-1.8", 
+                "<java> -jar C\\:GenePatternServer\\patches\\ant\\apache-ant-1.8.4\\lib\\ant-launcher.jar -Dant.home\\=C\\:GenePatternServer\\patches\\ant/apache-ant-1.8.4",
+                patchInfo.getCustomProps().getProperty("ant-1.8"));
+        assertEquals("ant-1.8_HOME", 
+                "", 
+                patchInfo.getCustomProps().getProperty("ant-1.8_HOME"));
     }
     
     @Test

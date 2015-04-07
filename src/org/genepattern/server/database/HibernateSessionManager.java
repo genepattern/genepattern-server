@@ -108,7 +108,6 @@ public final class HibernateSessionManager {
                 "org/genepattern/server/domain/BatchJob.hbm.xml", 
                 "org/genepattern/server/domain/JobStatus.hbm.xml", 
                 "org/genepattern/server/domain/Lsid.hbm.xml", 
-                "org/genepattern/server/domain/Props.hbm.xml", 
                 "org/genepattern/server/domain/Sequence.hbm.xml", 
                 "org/genepattern/server/domain/Suite.hbm.xml", 
                 "org/genepattern/server/domain/TaskAccess.hbm.xml", 
@@ -118,7 +117,6 @@ public final class HibernateSessionManager {
                 "org/genepattern/server/message/SystemMessage.hbm.xml", 
                 "org/genepattern/server/user/JobCompletionEvent.hbm.xml", 
                 "org/genepattern/server/user/User.hbm.xml",
-                "org/genepattern/server/user/UserProp.hbm.xml", 
                 "org/genepattern/server/auth/JobGroup.hbm.xml", 
                 "org/genepattern/server/executor/sge/JobSge.hbm.xml"  
         };
@@ -148,7 +146,9 @@ public final class HibernateSessionManager {
                 org.genepattern.server.job.comment.JobComment.class,
                 org.genepattern.server.tag.Tag.class,
                 org.genepattern.server.job.tag.JobTag.class,
-                org.genepattern.server.plugin.PatchInfo.class
+                org.genepattern.server.plugin.PatchInfo.class,
+                org.genepattern.server.domain.PropsTable.class,
+                org.genepattern.server.user.UserProp.class
                 );
     }
 

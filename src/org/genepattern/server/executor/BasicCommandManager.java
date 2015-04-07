@@ -187,11 +187,12 @@ public class BasicCommandManager implements CommandManager {
     private static List<MyJobInfoWrapper> getJobsWithStatusId(List<Integer> statusIds, AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
         Session session = HibernateUtil.getSession();
-        final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId in ( :statusIds ) and deleted = false order by submittedDate ";
+        final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId in ( :statusIds ) and deleted = :isDeleted order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
             query.setMaxResults(maxJobCount);
         }
+        query.setBoolean("isDeleted", false);
         query.setParameterList("statusIds", statusIds);
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {

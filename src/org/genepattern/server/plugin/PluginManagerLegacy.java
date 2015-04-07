@@ -41,6 +41,7 @@ import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -178,18 +179,31 @@ public class PluginManagerLegacy {
         } 
         for(final PatchInfo patchToInstall : patchesToInstall) {
             // download and install this patch
-            installPatch(toStringOrNull(patchToInstall.getPatchLsid()), toStringOrEmpty(patchToInstall.getPatchUrl()), taskIntegrator);
+            checkInstallPatch(toStringOrNull(patchToInstall.getPatchLsid()), toStringOrEmpty(patchToInstall.getPatchUrl()), taskIntegrator);
         }
         // end of loop for each patch LSID for the task
         return true;
     }
 
-    public void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
+    /**
+     * Install the patch if and only if it is not already installed.
+     * @param requiredPatchLSID
+     * @param requiredPatchURL
+     * @param taskIntegrator
+     * @throws Exception
+     */
+    protected void checkInstallPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws Exception {
+        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        if (HibernateUtil.isInTransaction()) {
+            log.debug("isInTransaction="+isInTransaction+", closeCurrentSession");
+            HibernateUtil.closeCurrentSession();
+        }
         boolean isInstalled=pluginRegistry.isInstalled(gpConfig, gpContext, new PatchInfo(requiredPatchLSID, requiredPatchURL));
         if (isInstalled) {
+            taskIntegrator.statusMessage("Patch is already installed, patchLsid="+requiredPatchLSID);
             return;
         }
-        installPatch(requiredPatchLSID, requiredPatchURL, null);
+        installPatch(requiredPatchLSID, requiredPatchURL, taskIntegrator);
     }
     
     
@@ -504,6 +518,15 @@ public class PluginManagerLegacy {
      * Run the patch command line in the patch directory, returning the exit code from the executable.
      */
     private static int executePatch(String[] commandLineArray, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
+        if (log.isDebugEnabled()) {
+            log.debug("patch dir="+patchDirectory);
+            log.debug("patch commandLine ...");
+            int i=0;
+            for(final String arg : commandLineArray) {
+                log.debug("\targ["+i+"]: "+arg);
+            }
+        }
+        
         // spawn the command
         Process process = Runtime.getRuntime().exec(commandLineArray, null, patchDirectory);
 

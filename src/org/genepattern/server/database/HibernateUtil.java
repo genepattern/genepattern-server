@@ -29,24 +29,26 @@ import org.hibernate.StatelessSession;
 
 public class HibernateUtil {
     private static final Logger log = Logger.getLogger(HibernateUtil.class);
-    private static HibernateSessionManager instance;
     
-    public static synchronized void setInstance(HibernateSessionManager mgr) {
-        instance=mgr;
+    public static HibernateSessionManager instance() {
+        return SessionMgr.INSTANCE;
     }
     
-    private static synchronized HibernateSessionManager instance() {
-        if (instance==null) {
+    private static class SessionMgr {
+        private static final HibernateSessionManager INSTANCE=init();
+        
+        private static final HibernateSessionManager init() {
             log.debug("initializing hibernate session ...");
             GpContext serverContext=GpContext.getServerContext();
             GpConfig gpConfig=ServerConfigurationFactory.instance();
-            instance=initFromConfig(gpConfig, serverContext);
+            return initFromConfig(gpConfig, serverContext);
         }
         
-        return instance;
+        private SessionMgr() {
+        }
     }
     
-    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+    protected static HibernateSessionManager initFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
         Properties hibProps=gpConfig.getDbProperties();
         
         if (hibProps==null) {
