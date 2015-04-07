@@ -96,7 +96,7 @@ public class TestJobCommentDao
         JobComment result = query.get(0);
         assertEquals("gpJobNo", gpJobNo, result.getAnalysisJob().getJobNo().intValue());
         assertEquals("parentId", parentId, result.getParentId());
-        assertEquals("posted date", postedDate, result.getPostedDate());
+        assertEquals("posted date", postedDate.getTime(), result.getPostedDate().getTime());
         assertEquals("userId", user, result.getUserId());
         assertEquals("comment", comment, result.getComment());
     }
