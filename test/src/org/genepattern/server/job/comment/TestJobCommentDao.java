@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -96,7 +97,7 @@ public class TestJobCommentDao
         JobComment result = query.get(0);
         assertEquals("gpJobNo", gpJobNo, result.getAnalysisJob().getJobNo().intValue());
         assertEquals("parentId", parentId, result.getParentId());
-        assertEquals("posted date", postedDate.getTime(), result.getPostedDate().getTime());
+        assertTrue("posted date is "+postedDate, Math.abs(postedDate.getTime() - result.getPostedDate().getTime()) < 100L);
         assertEquals("userId", user, result.getUserId());
         assertEquals("comment", comment, result.getComment());
     }
