@@ -2261,7 +2261,7 @@ function submitTask() {
             else if (run_task_info.is_js_viewer) {
                 if (response.launchUrl)
                 {
-                    openJsViewer(run_task_info.name, response.launchUrl);
+                    //openJsViewer(run_task_info.name, run_task_info.lsid,  response.launchUrl);
                     window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
                 }
                 else
