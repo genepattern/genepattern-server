@@ -437,6 +437,11 @@
   <servlet-name>ModuleDocServlet</servlet-name>
   <url-pattern>/module/doc/*</url-pattern>
  </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>ModuleDocServlet</servlet-name>
+  <url-pattern>/tasklib/*</url-pattern>
+ </servlet-mapping>
+
  
  <!--  DEPRECATED: Point old references to submitJob.jsp to the new servlet -->
  <!-- 
