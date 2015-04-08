@@ -174,8 +174,6 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
             }
             else {
                 in = new File(taskLibDir, filename);
-                //really restrict to files in the taskLibDir
-                in = new File(taskLibDir, in.getName());
             }
 
             if (in == null || !in.exists() || !in.canRead()) {
