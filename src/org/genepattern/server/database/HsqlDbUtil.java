@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -23,10 +25,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.hsqldb.Server;
 
 public class HsqlDbUtil {
@@ -142,22 +144,51 @@ public class HsqlDbUtil {
         argsArray = argsList.toArray(argsArray);
         return argsArray;
     }
-
+    
     public static void shutdownDatabase() {
+        shutdownDatabase(HibernateUtil.instance());
+    }
+
+    public static void shutdownDatabase(final HibernateSessionManager mgr) {
         try {
             log.info("Shutting down HSQL database ...");
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             log.info("Checkpointing database ...");
-            AnalysisDAO dao = new AnalysisDAO();
-            dao.executeUpdate("CHECKPOINT");
+            executeSQL(mgr, "CHECKPOINT");
             log.info("Checkpointed.");
-            dao.executeUpdate("SHUTDOWN");
-        }  
-        catch (Throwable t) {
-            log.error("Error shutting down database: "+t.getLocalizedMessage(), t);
+            executeSQL(mgr, "SHUTDOWN");
+        }
+        catch (DbException e) {
+            log.error("Error shutting down database: "+e.getLocalizedMessage(), e);
         }
         finally {
             HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    public static void executeSQL(final HibernateSessionManager mgr, final String sql) throws DbException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            } 
+            Statement updateStatement = null;
+            updateStatement = mgr.getSession().connection().createStatement();
+            int rval=updateStatement.executeUpdate(sql);
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+        catch (SQLException e) {
+            throw new DbException("Unexpected SQLException executing sql='"+sql+"': "+e.getLocalizedMessage(), e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error executing sql='"+sql+"': "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
         }
     }
 
