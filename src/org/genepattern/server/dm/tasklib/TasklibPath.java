@@ -67,12 +67,12 @@ public class TasklibPath extends GpFilePath {
             log.error("Error encoding "+relativePath, e);
             encodedFilepath = URLEncoder.encode(relativePath);
         }
-        String uriStr = "/getFile.jsp?task="+lsid+"&file="+encodedFilepath;
+        String uriStr = "tasklib/"+lsid+"/"+encodedFilepath;
         try {
             return new URI(uriStr);
         }
         catch (URISyntaxException e) {
-            log.error("Error constructiung uri from "+uriStr, e);
+            log.error("Error constructing uri from "+uriStr, e);
         }
         return null;
     }
