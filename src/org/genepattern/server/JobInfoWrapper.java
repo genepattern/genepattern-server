@@ -1131,6 +1131,16 @@ public class JobInfoWrapper implements Serializable {
         return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
 
+    //support for javascript
+    public boolean isJavascript()
+    {
+        if (taskInfo != null) {
+            return TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes());
+        }
+
+        return false;
+    }
+
     /**
      * The value of the 'id' attribute to the applet tag for this visualizer, so that you can access the visualizer with JavaScript.
      * E.g. Document.getElementById().
