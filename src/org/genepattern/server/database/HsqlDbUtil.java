@@ -154,9 +154,9 @@ public class HsqlDbUtil {
             log.info("Shutting down HSQL database ...");
             mgr.beginTransaction();
             log.info("Checkpointing database ...");
-            executeSQL(mgr, "CHECKPOINT");
+            HibernateUtil.executeSQL(mgr, "CHECKPOINT");
             log.info("Checkpointed.");
-            executeSQL(mgr, "SHUTDOWN");
+            HibernateUtil.executeSQL(mgr, "SHUTDOWN");
         }
         catch (DbException e) {
             log.error("Error shutting down database: "+e.getLocalizedMessage(), e);
@@ -166,32 +166,6 @@ public class HsqlDbUtil {
         }
     }
     
-    public static void executeSQL(final HibernateSessionManager mgr, final String sql) throws DbException {
-        final boolean isInTransaction=mgr.isInTransaction();
-        try {
-            if (!isInTransaction) {
-                mgr.beginTransaction();
-            } 
-            Statement updateStatement = null;
-            updateStatement = mgr.getSession().connection().createStatement();
-            int rval=updateStatement.executeUpdate(sql);
-            if (!isInTransaction) {
-                mgr.commitTransaction();
-            }
-        }
-        catch (SQLException e) {
-            throw new DbException("Unexpected SQLException executing sql='"+sql+"': "+e.getLocalizedMessage(), e);
-        }
-        catch (Throwable t) {
-            throw new DbException("Unexpected error executing sql='"+sql+"': "+t.getLocalizedMessage(), t);
-        }
-        finally {
-            if (!isInTransaction) {
-                mgr.closeCurrentSession();
-            }
-        }
-    }
-
     /**
      * Get the list of schema files to process for the given schemaPrefix, e
      * @return
