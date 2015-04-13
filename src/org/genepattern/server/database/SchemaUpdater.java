@@ -196,7 +196,9 @@ public class SchemaUpdater {
             catch (Throwable t) {
                 log.error("Error processing SQL in schemaFile="+schemaFile);
                 log.error("sql: "+sql, t);
-                throw new DbException("Error processing SQL in schemaFile="+schemaFile+"\n\t"+sql);
+                throw new DbException("Error processing SQL in schemaFile="+schemaFile+
+                        "\n\t"+t.getLocalizedMessage()+
+                        "\n\t"+sql);
             }
         }
         log.debug("updating database from schema ... Done!");
