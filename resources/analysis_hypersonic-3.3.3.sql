@@ -18,10 +18,9 @@ create index idx_user_upload_user_id on user_upload (user_id);
 -- for GenomeSpace integration, link GP user account to GS user account
 create table GS_ACCOUNT (
     -- use the File.canonicalPath as the primary key
-    GP_USERID varchar primary key,
+    GP_USERID varchar (255) primary key references GP_USER(USER_ID),
     -- owner of the file
-    TOKEN varchar (255),
-constraint gsa_fk foreign key (GP_USERID) references GP_USER(USER_ID)
+    TOKEN varchar (255)
 );
 
 -- improve performance by creating indexes on the ANALYSIS_JOB table
