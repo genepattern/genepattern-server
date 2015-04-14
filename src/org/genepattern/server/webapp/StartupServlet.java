@@ -317,12 +317,13 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            HsqlDbUtil.updateSchema(gpResourcesDir, gpConfig.getDbSchemaPrefix(), gpVersion);
+            //Set<String> schemaEntries=servletConfig.getServletContext().getResourcePaths("/WEB-INF/schema");
+            File schemaDir=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/schema"));
+            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpVersion); 
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
         }
-        
         
         //load the configuration file
         try {

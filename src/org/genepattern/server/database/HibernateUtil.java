@@ -13,9 +13,12 @@
 package org.genepattern.server.database;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -115,6 +118,32 @@ public class HibernateUtil {
 
     public static boolean isInTransaction() {
         return instance().isInTransaction();
+    }
+
+    public static void executeSQL(final HibernateSessionManager mgr, final String sql) throws DbException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            } 
+            Statement updateStatement = null;
+            updateStatement = mgr.getSession().connection().createStatement();
+            int rval=updateStatement.executeUpdate(sql);
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+        catch (SQLException e) {
+            throw new DbException("Unexpected SQLException executing sql='"+sql+"': "+e.getLocalizedMessage(), e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error executing sql='"+sql+"': "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
     }
 
     /**

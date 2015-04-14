@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.hsqldb.Server;
 
 public class HsqlDbUtil {
@@ -142,25 +142,28 @@ public class HsqlDbUtil {
         argsArray = argsList.toArray(argsArray);
         return argsArray;
     }
-
+    
     public static void shutdownDatabase() {
+        shutdownDatabase(HibernateUtil.instance());
+    }
+
+    public static void shutdownDatabase(final HibernateSessionManager mgr) {
         try {
             log.info("Shutting down HSQL database ...");
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             log.info("Checkpointing database ...");
-            AnalysisDAO dao = new AnalysisDAO();
-            dao.executeUpdate("CHECKPOINT");
+            HibernateUtil.executeSQL(mgr, "CHECKPOINT");
             log.info("Checkpointed.");
-            dao.executeUpdate("SHUTDOWN");
-        }  
-        catch (Throwable t) {
-            log.error("Error shutting down database: "+t.getLocalizedMessage(), t);
+            HibernateUtil.executeSQL(mgr, "SHUTDOWN");
+        }
+        catch (DbException e) {
+            log.error("Error shutting down database: "+e.getLocalizedMessage(), e);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     /**
      * Get the list of schema files to process for the given schemaPrefix, e
      * @return

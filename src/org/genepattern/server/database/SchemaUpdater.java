@@ -32,33 +32,28 @@ public class SchemaUpdater {
     private static final Logger log = Logger.getLogger(SchemaUpdater.class);
 
     protected static void updateSchema(final HibernateSessionManager mgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
-    throws Throwable
+    throws DbException
     {
         try {
-            // 1) ...
             mgr.beginTransaction();
-            try {
-                // 2) ...
-                innerUpdateSchema(mgr, resourceDir, schemaPrefix, expectedSchemaVersion);
-                mgr.commitTransaction();
-            }
-            catch (Throwable t) {
-                // ... 2) can't update the schema
-                try {
-                    mgr.rollbackTransaction();
-                }
-                catch (Throwable ex2) {
-                    log.error("Error rolling back transaction: "+ex2.getLocalizedMessage(), ex2);
-                }
-                throw new Throwable("Error checking or updating db schema: "+t.getLocalizedMessage(), t);
-            }
         }
         catch (Throwable t) {
             // ... 1) can't even begin a transaction
-            throw new Throwable("Database connection error: "+t.getLocalizedMessage(), t);
+            throw new DbException("Database connection error: "+t.getLocalizedMessage(), t);
+        }
+        try {
+            innerUpdateSchema(mgr, resourceDir, schemaPrefix, expectedSchemaVersion);
+            mgr.commitTransaction();
+        }
+        catch (DbException e) {
+            mgr.rollbackTransaction();
+            throw e;
+        }
+        catch (Throwable t) {
+            mgr.rollbackTransaction();
+            throw new DbException("Unexpected error initializing the databse: "+t.getLocalizedMessage(), t);
         }
         finally {
-            //in both cases, attempt to close the session
             try {
                 mgr.closeCurrentSession();
             }
@@ -69,7 +64,7 @@ public class SchemaUpdater {
     }
     
     private static void innerUpdateSchema(final HibernateSessionManager sessionMgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
-    throws Exception 
+    throws DbException 
     {
         final String dbSchemaVersion=getDbSchemaVersion(sessionMgr);
         boolean upToDate = false;
@@ -92,6 +87,7 @@ public class SchemaUpdater {
         }
         if (!upToDate) {
             log.error("schema didn't have correct version after creating");
+            throw new DbException("schema didn't have correct version after creating, expected="+expectedSchemaVersion+", actual="+updatedSchemaVersion);
         }
         log.info("Updating schema...Done!");
     }
@@ -154,22 +150,24 @@ public class SchemaUpdater {
         return false;
     }
 
-    private static void createSchema(final HibernateSessionManager sessionMgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
+    private static void createSchema(final HibernateSessionManager sessionMgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) 
+    throws DbException
+    {
         List<File> schemaFiles=HsqlDbUtil.listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
         for(final File schemaFile : schemaFiles) {
             processSchemaFile(sessionMgr, schemaFile);
         }
     }
 
-    private static void processSchemaFile(final HibernateSessionManager sessionMgr, final File schemaFile) {
+    protected static void processSchemaFile(final HibernateSessionManager sessionMgr, final File schemaFile) throws DbException {
         log.info("updating database from schema " + schemaFile.getPath());
         String all = null;
         try {
             all = HsqlDbUtil.readFile(schemaFile);
         }
         catch (IOException e) {
-            log.error("database not updated from schema, error reading schema " + schemaFile.getPath(), e);
-            return;
+            log.error("Error reading schema file=" + schemaFile.getPath(), e);
+            throw new DbException("Error reading schema file="+schemaFile.getPath(), e);
         }
         while (!all.equals("")) {
             all = all.trim();
@@ -199,6 +197,9 @@ public class SchemaUpdater {
             catch (Throwable t) {
                 log.error("Error processing SQL in schemaFile="+schemaFile);
                 log.error("sql: "+sql, t);
+                throw new DbException("Error processing SQL in schemaFile="+schemaFile+
+                        "\n\t"+t.getLocalizedMessage()+
+                        "\n\t"+sql);
             }
         }
         log.debug("updating database from schema ... Done!");
