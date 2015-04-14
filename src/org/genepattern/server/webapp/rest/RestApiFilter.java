@@ -40,6 +40,9 @@ public class RestApiFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
+        // Get request method
+        String method = req.getMethod().toLowerCase();
+
         //announce support for partial get
         resp.setHeader("Accept-Ranges", "bytes");
 
@@ -51,8 +54,9 @@ public class RestApiFilter implements Filter {
             BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
             return;
         }
-        
-        if (gpUserId == null) {
+
+        // Don't return this error for CORS pre-flight requests
+        if (gpUserId == null && !method.equals("options")) {
             log.error("Expecting an AuthenticationException to be thrown");
             BasicAuthUtil.requestAuthentication(req, resp);
             return;
