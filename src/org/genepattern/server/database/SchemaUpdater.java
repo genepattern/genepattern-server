@@ -87,6 +87,7 @@ public class SchemaUpdater {
         }
         if (!upToDate) {
             log.error("schema didn't have correct version after creating");
+            throw new DbException("schema didn't have correct version after creating, expected="+expectedSchemaVersion+", actual="+updatedSchemaVersion);
         }
         log.info("Updating schema...Done!");
     }
