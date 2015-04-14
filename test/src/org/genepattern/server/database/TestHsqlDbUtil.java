@@ -29,6 +29,7 @@ public class TestHsqlDbUtil {
     private GpContext gpContext;
     private File workingDir=new File(System.getProperty("user.dir"));
     private File resourcesDir=new File(workingDir, "resources");
+    private File schemaDir=new File("website/WEB-INF/schema");
     private Value defaultValue;
     private Value defaultValues;
     private String[] defaultExpected=new String[] {
@@ -141,7 +142,7 @@ public class TestHsqlDbUtil {
     public void listSchemaFiles_nullDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion=null;
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", dbSchemaVersion);
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", dbSchemaVersion);
         assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
     }
 
@@ -149,21 +150,21 @@ public class TestHsqlDbUtil {
     public void listSchemaFiles_emptyDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion="";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", dbSchemaVersion);
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", dbSchemaVersion);
         assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
     }
     
     @Test
     public void listSchemaFiles_update() {
         final String schemaPrefix="analysis_hypersonic-";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, "3.9.2", "3.9.1");
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", "3.9.1");
         assertEquals("num schema files, updated install of 3.9.2", 1, schemaFiles.size());
     }
     
     @Test
     public void listSchemaFiles_default() {
         final String schemaPrefix="analysis_hypersonic-";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(resourcesDir, schemaPrefix, null, null);
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, null, null);
         assertEquals("num schema files, latest version", 39, schemaFiles.size());
     }
     
