@@ -97,7 +97,7 @@ public class TestPostgresqlConfig {
         assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(sessionMgr, "PROPS"));
 
         final String dbVendor="postgresql";
-        final File schemaDir=resourcesDir;
+        final File schemaDir=new File("website/WEB-INF/schema");
         SchemaUpdater.updateSchema(sessionMgr, schemaDir, "analysis_"+dbVendor.toLowerCase()+"-", toVersion);
         
         // do a test query
