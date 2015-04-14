@@ -142,16 +142,16 @@ public class TestHsqlDbUtil {
     public void listSchemaFiles_nullDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion=null;
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
     }
 
     @Test
     public void listSchemaFiles_emptyDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion="";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.2", 39, schemaFiles.size());
+        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
     }
     
     @Test
@@ -165,7 +165,7 @@ public class TestHsqlDbUtil {
     public void listSchemaFiles_default() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, null, null);
-        assertEquals("num schema files, latest version", 39, schemaFiles.size());
+        assertEquals("num schema files, latest version", 40, schemaFiles.size());
     }
     
     @Ignore @Test
