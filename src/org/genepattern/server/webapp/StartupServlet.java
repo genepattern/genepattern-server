@@ -342,8 +342,14 @@ public class StartupServlet extends HttpServlet {
         catch (Throwable t) {
             getLog().error("error initializing taskInfo cache", t);
         }
-        
-        CommandManagerFactory.startJobQueue();
+
+        try {
+            getLog().info("\tstarting job queue...");
+            CommandManagerFactory.startJobQueue();
+        }
+        catch (Throwable t) {
+            getLog().error("error starting job queue", t);
+        }
         
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
