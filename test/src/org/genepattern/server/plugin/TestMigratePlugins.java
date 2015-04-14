@@ -15,7 +15,7 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -105,11 +105,11 @@ public class TestMigratePlugins {
         migratePlugins.updateDb();
         assertEquals("checkDb after migrate", true, migratePlugins.checkDb());
         
-        Props.saveProp(MigratePlugins.PROP_DB_CHECK, "false");
+        PropsTable.saveProp(MigratePlugins.PROP_DB_CHECK, "false");
         assertEquals("after Props.saveProp(...,'false')", false, migratePlugins.checkDb());
         
         // cleanup
-        Props.removeProp(MigratePlugins.PROP_DB_CHECK);
+        PropsTable.removeProp(MigratePlugins.PROP_DB_CHECK);
         assertEquals("checkDb after Props.removeProp", false, migratePlugins.checkDb());
     }
     

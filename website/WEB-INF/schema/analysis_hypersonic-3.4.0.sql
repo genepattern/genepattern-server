@@ -1,7 +1,7 @@
 -- for GenomeSpace integration, link GP user account to GS user account
-alter table GS_ACCOUNT add GS_USERID varchar;
+alter table GS_ACCOUNT add GS_USERID varchar (255);
 alter table GS_ACCOUNT add TOKEN_TIMESTAMP timestamp;
-alter table GS_ACCOUNT add GS_EMAIL varchar;
+alter table GS_ACCOUNT add GS_EMAIL varchar (255);
 
 
 -- updates for Word Add-In bug fix

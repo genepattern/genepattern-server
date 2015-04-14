@@ -427,8 +427,7 @@ img.buttonIcon {
 
 .inputFileBtn
 {
-    position:absolute;
-    z-index:-1000;
+    position: absolute;
 }
 
 .ui-multiselect.mSelect 
@@ -675,4 +674,17 @@ div.tagsinput span.tag a
 #jobTags_tag
 {
     min-width: 150px;
+}
+
+.inputFileBtn input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    border: solid transparent;
+    border-width: 0 0 100px 200px;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    direction: ltr;
+    cursor: pointer;
 }

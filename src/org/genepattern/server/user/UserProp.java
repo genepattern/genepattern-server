@@ -12,6 +12,14 @@
 
 package org.genepattern.server.user;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="gp_user_prop")
 public class UserProp {
     /**
      * @param jobNumber
@@ -23,25 +31,30 @@ public class UserProp {
         }        
         return "sendEmailNotification_" + jobNumber;
     }
-
+    
+    @Id
+    @GeneratedValue
     private Integer id;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column(name="key")
     private String key;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column
     private String value;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column(name="gp_user_id")
     private String gpUserId;
 
     /**

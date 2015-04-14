@@ -16,8 +16,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -25,15 +23,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
-import org.genepattern.server.domain.Props;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
-
-import com.google.common.base.Strings;
 
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
@@ -119,46 +113,8 @@ public class HsqlDbUtil {
         Server.main(hsqlArgs);
     }
     
-    /**
-     * On server startup, start a Hibernate transaction and run all necessary DDL scripts 
-     * to update the database schema to match the current GenePattern version.
-     * 
-     * @param expectedSchemaVersion
-     * @throws Throwable
-     */
     public static void updateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
-        try {
-            // 1) ...
-            HibernateUtil.beginTransaction();
-            try {
-                // 2) ...
-                innerUpdateSchema(resourceDir, schemaPrefix, expectedSchemaVersion);
-                HibernateUtil.commitTransaction();
-            }
-            catch (Throwable t) {
-                // ... 2) can't update the schema
-                try {
-                    HibernateUtil.rollbackTransaction();
-                }
-                catch (Throwable ex2) {
-                    log.error("Error rolling back transaction: "+ex2.getLocalizedMessage(), ex2);
-                }
-                throw new Throwable("Error checking or updating db schema: "+t.getLocalizedMessage(), t);
-            }
-        }
-        catch (Throwable t) {
-            // ... 1) can't even begin a transaction
-            throw new Throwable("Database connection error: "+t.getLocalizedMessage(), t);
-        }
-        finally {
-            //in both cases, attempt to close the session
-            try {
-                HibernateUtil.closeCurrentSession();
-            }
-            catch (Exception e) {
-                log.error("Exception thrown closing database connection: "+e.getLocalizedMessage(), e);
-            }
-        }
+        SchemaUpdater.updateSchema(HibernateUtil.instance(), resourceDir, schemaPrefix, expectedSchemaVersion);
     }
 
     protected static List<String> appendIfNecessary(final List<String> argsList) {
@@ -186,106 +142,28 @@ public class HsqlDbUtil {
         argsArray = argsList.toArray(argsArray);
         return argsArray;
     }
-
+    
     public static void shutdownDatabase() {
+        shutdownDatabase(HibernateUtil.instance());
+    }
+
+    public static void shutdownDatabase(final HibernateSessionManager mgr) {
         try {
             log.info("Shutting down HSQL database ...");
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             log.info("Checkpointing database ...");
-            AnalysisDAO dao = new AnalysisDAO();
-            dao.executeUpdate("CHECKPOINT");
+            HibernateUtil.executeSQL(mgr, "CHECKPOINT");
             log.info("Checkpointed.");
-            dao.executeUpdate("SHUTDOWN");
-        }  
-        catch (Throwable t) {
-            log.error("Error shutting down database: "+t.getLocalizedMessage(), t);
+            HibernateUtil.executeSQL(mgr, "SHUTDOWN");
+        }
+        catch (DbException e) {
+            log.error("Error shutting down database: "+e.getLocalizedMessage(), e);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
     }
-
-    private static void innerUpdateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
-    throws Exception 
-    {
-        final String dbSchemaVersion=getDbSchemaVersion();
-        boolean upToDate = false;
-        if (!Strings.isNullOrEmpty(dbSchemaVersion)) {
-            upToDate = (expectedSchemaVersion.compareTo(dbSchemaVersion) <= 0);
-        }
-        log.info("schema up-to-date: " + upToDate + ": " + expectedSchemaVersion + " required, " + dbSchemaVersion + " current");
-        if (upToDate) {
-            return;
-        }
-
-        // run all new DDL scripts to bring the DB up to date with the GP version
-        log.info("Updating schema...");
-        createSchema(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
-
-        // validate that the DB version is up to date
-        final String updatedSchemaVersion=getDbSchemaVersion();
-        if (!Strings.isNullOrEmpty(updatedSchemaVersion)) {
-            upToDate = (expectedSchemaVersion.compareTo(updatedSchemaVersion) <= 0);
-        }
-        if (!upToDate) {
-            log.error("schema didn't have correct version after creating");
-        }
-        log.info("Updating schema...Done!");
-    }
-
-    protected static boolean tableExists(String tableName) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        try {
-            DatabaseMetaData md = HibernateUtil.getSession().connection().getMetaData();
-            ResultSet rs=md.getTables(null, null, tableName, null);
-            if (rs.next()) {
-                return true;
-            }
-        }
-        catch (Throwable t) {
-            log.error("Unexpected error checking if tableExists for tableName="+tableName, t);
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-        return false;
-    }
     
-    /**
-     * Query the database for the current schema version recorded in the database.
-     * @return
-     */
-    protected static String getDbSchemaVersion() {
-        boolean e=tableExists("PROPS");
-        if (!e) {
-            return "";
-        }
-        
-        String dbSchemaVersion;
-        try {
-            dbSchemaVersion=Props.selectValue("schemaVersion");
-        }
-        catch (Throwable t) {
-            log.info("Database tables not found.  Create new database");
-            dbSchemaVersion="";
-        }
-        log.info("Current dbSchemaVersion: "+dbSchemaVersion);
-        return dbSchemaVersion;
-    }
-
-    /**
-     * 
-     * @throws exception
-     */
-    private static void createSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
-        List<File> schemaFiles=listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
-        for(final File schemaFile : schemaFiles) {
-            processSchemaFile(schemaFile);
-        }
-    }
-
     /**
      * Get the list of schema files to process for the given schemaPrefix, e
      * @return
@@ -325,55 +203,12 @@ public class HsqlDbUtil {
         return rval;
     }
 
-    private static void processSchemaFile(File schemaFile) {
-        log.info("updating database from schema " + schemaFile.getPath());
-        String all = null;
-        try {
-            all = readFile(schemaFile);
-        }
-        catch (IOException e) {
-            log.error("database not updated from schema, error reading schema " + schemaFile.getPath(), e);
-            return;
-        }
-        while (!all.equals("")) {
-            all = all.trim();
-            int i = all.indexOf('\n');
-            if (i == -1) i = all.length() - 1;
-            if (all.startsWith("--")) {
-                all = all.substring(i + 1);
-                continue;
-            }
-
-            i = all.indexOf(';');
-            String sql;
-            if (i != -1) {
-                sql = all.substring(0, i);
-                all = all.substring(i + 1);
-            }
-            else {
-                sql = all;
-                all = "";
-            }
-            sql = sql.trim();
-            log.info("apply SQL-> " + sql);
-            try {
-                BaseDAO dao = new BaseDAO();
-                dao.executeUpdate(sql);
-            }
-            catch (Throwable t) {
-                log.error("Error processing SQL in schemaFile="+schemaFile);
-                log.error("sql: "+sql, t);
-            }
-        }
-        log.debug("updating database from schema ... Done!");
-    }
-
     /**
      * @param file
      * @return the contents of the file as a String
      * @throws IOException from reader.read
      */
-    private static String readFile(File file) throws IOException 
+    protected static String readFile(File file) throws IOException 
     {
         FileReader reader = null;
         StringBuffer b = new StringBuffer();
