@@ -113,7 +113,7 @@ public class CategoryUtil {
      * 
      * @return
      */
-    public List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
+    public static List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
         final List<String> categories=parseCategoriesFromManifest(taskInfo);
         if (categories != null) {
@@ -131,7 +131,7 @@ public class CategoryUtil {
         return rval;
     }
 
-    private List<String> parseCategoriesFromManifest(final TaskInfo taskInfo) {
+    private static List<String> parseCategoriesFromManifest(final TaskInfo taskInfo) {
         //check for custom 'categories' in the manifest ...
         if (!taskInfo.getTaskInfoAttributes().containsKey(GPConstants.CATEGORIES)) {
             //no match, return null
@@ -245,7 +245,7 @@ public class CategoryUtil {
      * @param categoryName
      * @return
      */
-    public boolean isHidden(final String categoryName) {
+    public static boolean isHidden(final String categoryName) {
         if (categoryName==null) {
             return true;
         }

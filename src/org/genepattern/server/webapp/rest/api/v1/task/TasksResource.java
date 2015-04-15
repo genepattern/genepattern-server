@@ -3,13 +3,10 @@ package org.genepattern.server.webapp.rest.api.v1.task;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -272,21 +269,6 @@ public class TasksResource {
         }
         return eulaInfoJson;
     }
-
-    /**
-     * Returns a hash of the modules visible to the user
-     * @param user
-     * @return
-     */
-    private String getTasksHash(String user) {
-        //TODO: Implement correct hash
-        // Currently the hash simply returns the user and the hour
-        // This results in a cache that lasts until the top of the hour each hour.
-        Date date = new Date();
-        DateFormat df = new SimpleDateFormat("hh:'00' a");
-        String hour = df.format(date);
-        return user + " " + hour;
-    }
     
     /**
      * Rapid prototype method to get the latest version of all installed tasks in json format,
@@ -355,12 +337,12 @@ public class TasksResource {
                     }
                 }
                 else {
-                    categories=cu.getCategoriesFromManifest(taskInfo);
+                    categories=CategoryUtil.getCategoriesFromManifest(taskInfo);
                 }
                 
                 if (categories != null) {
                     for(final String category : categories) {
-                        if (_includeHidden ||  (!hiddenCategories.contains(category) && !cu.isHidden(category))) {
+                        if (_includeHidden ||  (!hiddenCategories.contains(category) && !CategoryUtil.isHidden(category))) {
                             filteredTasks.add( taskInfo );
                             filteredCategories.put( taskInfo.getLsid(), category );
                         }
@@ -657,8 +639,15 @@ public class TasksResource {
             jsonObj.put("quality", tia.get(GPConstants.QUALITY));
             // Command line
             jsonObj.put("command_line", tia.get(GPConstants.COMMAND_LINE));
+            // Task type
+            jsonObj.put(GPConstants.TASK_TYPE, tia.get(GPConstants.TASK_TYPE));
             // Categories
-            jsonObj.put("categories", tia.get(GPConstants.TASK_TYPE));
+            final List<String> categories=CategoryUtil.getCategoriesFromManifest(taskInfo);            
+            JSONArray categoriesJson=new JSONArray();
+            for(final String cat : categories) {
+                categoriesJson.put(cat);
+            }
+            jsonObj.put("categories", categoriesJson);
             // CPU type
             jsonObj.put("cpu", tia.get(GPConstants.CPU_TYPE));
             // OS
