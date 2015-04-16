@@ -135,7 +135,6 @@ public class PythonPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
      * @return String generated R code
      * @exception GenePatternException
      *                Description of the Exception
-     * @author Jim Lerner
      */
     public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] actualParams, int taskNum)
             throws GenePatternException {
@@ -280,7 +279,7 @@ public class PythonPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
     }
 
     protected String pythonEncode(String varName) {
-        return varName.replaceAll("/[^A-Za-z0-9 ]/", "_").toLowerCase();
+        return varName.replaceAll("[^A-Za-z0-9]", "_").toLowerCase();
     }
 
 }
