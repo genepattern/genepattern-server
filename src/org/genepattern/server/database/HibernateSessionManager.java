@@ -97,7 +97,8 @@ public final class HibernateSessionManager {
                 org.genepattern.server.job.tag.JobTag.class,
                 org.genepattern.server.plugin.PatchInfo.class,
                 org.genepattern.server.domain.PropsTable.class,
-                org.genepattern.server.user.UserProp.class
+                org.genepattern.server.user.UserProp.class,
+                org.genepattern.server.taskinstall.dao.Category.class
                 );
     }
 
