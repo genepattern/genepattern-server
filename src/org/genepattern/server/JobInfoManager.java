@@ -295,7 +295,7 @@ public class JobInfoManager {
             //appletTag.append("<applet ");
             appletTag.append(" name=\"" + jobInfoWrapper.getVisualizerAppletName() + "\" id=\"" + jobInfoWrapper.getVisualizerAppletId() + "\" code=\""
                     + org.genepattern.visualizer.RunVisualizerApplet.class.getName()
-                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
+                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.6.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
             appletTag.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
             appletTag.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(os, "UTF-8") + "\">");
