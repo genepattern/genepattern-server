@@ -395,7 +395,7 @@ public class StartupServlet extends HttpServlet {
         // copy task categories from CLOB
         try {
             MigrateTaskCategories mtc=new MigrateTaskCategories();
-            if (mtc.checkDb()) {
+            if (!mtc.isComplete()) {
                 getLog().info("\tcopying categories from CLOB into task_install_category table ...");
                 mtc.copyCategoriesFromClobs();
             }

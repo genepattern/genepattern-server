@@ -33,8 +33,9 @@ public class MigrateTaskCategories {
 
     /**
      * Check the db to see if we need to run this migration.
+     * @return true if the migration is complete
      */
-    public boolean checkDb() {
+    public boolean isComplete() {
         String val="";
         try {
             val=PropsTable.selectValue(PROP_DB_CHECK);
@@ -59,7 +60,7 @@ public class MigrateTaskCategories {
     }
 
     public void copyCategoriesFromClobs() throws DbException  {
-        if (checkDb()) {
+        if (isComplete()) {
             log.debug("task_install_category table already initialized");
             return;
         }
