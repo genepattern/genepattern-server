@@ -38,7 +38,7 @@ public class TestRecordInstallInfoToDb {
     @BeforeClass
     public static void beforeClass() throws Exception {
         //some of the classes being tested require a Hibernate Session connected to a GP DB
-        DbUtil.initDb(DbType.MYSQL);
+        DbUtil.initDb();
         
         //add two users
         DbUtil.addUserToDb("admin");
