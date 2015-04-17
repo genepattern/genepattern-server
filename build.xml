@@ -266,7 +266,7 @@
     <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
         <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/javax.mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
+                <attribute name="Class-Path" value="./lib/axis.jar ./lib/commons-codec-1.6.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/javax.mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
             </manifest>
         </jar>
 
@@ -274,7 +274,7 @@
             <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}" />
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar javax.mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="axis.jar commons-codec-1.6.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar javax.mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
             <zipfileset dir="clients/Java/doc" prefix="doc" />
         </zip>
     </target>
@@ -453,7 +453,7 @@
                          alias="${signjar.alias}"
                          storepass="${signjar.storepass}"
         />
-        <signjar jar="website/WEB-INF/lib/commons-codec-1.3.jar"
+        <signjar jar="website/WEB-INF/lib/commons-codec-1.6.jar"
                          keystore="${signjar.keystore}"
                          maxmemory="1024M"
                          alias="${signjar.alias}"

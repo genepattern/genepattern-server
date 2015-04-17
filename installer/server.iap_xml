@@ -14347,7 +14347,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="existingFilePath">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$commons-codec-1.3.jar]]></string>
+												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$commons-codec-1.6.jar]]></string>
 											</property>
 											<property name="destination">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$downloads$/$]]></string>

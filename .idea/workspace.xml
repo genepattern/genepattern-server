@@ -9,12 +9,15 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7642d3ac-e14b-40bc-8d97-c6e798036675" name="Default" comment="Fixes to Mac app to work with config">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/deploy/IndianaU/config/resources/genepattern.properties" afterPath="$PROJECT_DIR$/deploy/IndianaU/config/resources/genepattern.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/deploy/broad/cilgenepattern/config/resources/genepattern.properties" afterPath="$PROJECT_DIR$/deploy/broad/cilgenepattern/config/resources/genepattern.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/deploy/broad/genet/config/resources/genepattern.properties" afterPath="$PROJECT_DIR$/deploy/broad/genet/config/resources/genepattern.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/genepattern.properties" afterPath="$PROJECT_DIR$/resources/genepattern.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/website/WEB-INF/lib/version.properties" afterPath="$PROJECT_DIR$/website/WEB-INF/lib/version.properties" />
+    <list default="true" id="7642d3ac-e14b-40bc-8d97-c6e798036675" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.xml" afterPath="$PROJECT_DIR$/build.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/clients/MATLAB/build.xml" afterPath="$PROJECT_DIR$/clients/MATLAB/build.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/external-src/commons-httpclient-3.0.1/build.xml" afterPath="$PROJECT_DIR$/external-src/commons-httpclient-3.0.1/build.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/load_testing/workshop_2008_march/clustering.twill" afterPath="$PROJECT_DIR$/test/load_testing/workshop_2008_march/clustering.twill" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/load_testing/workshop_2008_march/dir/clustering.twill" afterPath="$PROJECT_DIR$/test/load_testing/workshop_2008_march/dir/clustering.twill" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/installer-2014/server-bak.iap_xml" afterPath="$PROJECT_DIR$/installer-2014/server-bak.iap_xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/installer/server.iap_xml" afterPath="$PROJECT_DIR$/installer/server.iap_xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/installer-2014/serverBuild.iap_xml" afterPath="$PROJECT_DIR$/installer-2014/serverBuild.iap_xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="gp-trunk.iws" />
@@ -235,76 +238,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="DataResource.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/genepattern/server/webapp/rest/api/v1/data/upload/DataResource.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="5841" max-vertical-offset="13080">
-              <caret line="454" column="65" selection-start-line="454" selection-start-column="65" selection-end-line="454" selection-end-column="65" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="UserUploadFile.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/genepattern/server/dm/UserUploadFile.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="663" max-vertical-offset="1545">
-              <caret line="89" column="63" selection-start-line="89" selection-start-column="63" selection-end-line="89" selection-end-column="63" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="gp.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/website/libraries/javascript/gp.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="270" max-vertical-offset="15900">
-              <caret line="23" column="3" selection-start-line="23" selection-start-column="3" selection-end-line="23" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="genepattern.properties" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/genepattern.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2118" max-vertical-offset="3210">
-              <caret line="160" column="89" selection-start-line="160" selection-start-column="89" selection-end-line="160" selection-end-column="104" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="version.properties" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/website/WEB-INF/lib/version.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="538" max-vertical-offset="2415">
-              <caret line="47" column="19" selection-start-line="47" selection-start-column="19" selection-end-line="47" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="genepattern.properties" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ziptemp/gpinstall/resources/genepattern.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2373" max-vertical-offset="3030">
-              <caret line="168" column="104" selection-start-line="168" selection-start-column="104" selection-end-line="168" selection-end-column="104" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="genepattern.properties" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/deploy/broad/cilgenepattern/config/resources/genepattern.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="828" max-vertical-offset="1380">
-              <caret line="65" column="100" selection-start-line="65" selection-start-column="100" selection-end-line="65" selection-end-column="100" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="genepattern.properties" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deploy/broad/genet/config/resources/genepattern.properties">
           <provider selected="true" editor-type-id="text-editor">
@@ -315,11 +248,91 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="genepattern.properties" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="genepattern.properties" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deploy/IndianaU/config/resources/genepattern.properties">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33182845" vertical-offset="1023" max-vertical-offset="1635">
+            <state vertical-scroll-proportion="0.0" vertical-offset="616" max-vertical-offset="1635">
               <caret line="78" column="100" selection-start-line="78" selection-start-column="100" selection-end-line="78" selection-end-column="100" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/build.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="3993" max-vertical-offset="9840">
+              <caret line="276" column="99" selection-start-line="276" selection-start-column="99" selection-end-line="276" selection-end-column="99" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/clients/MATLAB/build.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="208" max-vertical-offset="930">
+              <caret line="24" column="48" selection-start-line="24" selection-start-column="48" selection-end-line="24" selection-end-column="48" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/external-src/commons-httpclient-3.0.1/build.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="288" max-vertical-offset="3525">
+              <caret line="29" column="74" selection-start-line="29" selection-start-column="74" selection-end-line="29" selection-end-column="74" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="clustering.twill" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/load_testing/workshop_2008_march/dir/clustering.twill">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="354" max-vertical-offset="810">
+              <caret line="44" column="34" selection-start-line="44" selection-start-column="34" selection-end-line="44" selection-end-column="34" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="clustering.twill" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/load_testing/workshop_2008_march/clustering.twill">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="354" max-vertical-offset="810">
+              <caret line="44" column="34" selection-start-line="44" selection-start-column="34" selection-end-line="44" selection-end-column="34" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="server.iap_xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/installer/server.iap_xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="215088" max-vertical-offset="249090">
+              <caret line="14349" column="143" selection-start-line="14349" selection-start-column="143" selection-end-line="14349" selection-end-column="143" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="server-bak.iap_xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/installer-2014/server-bak.iap_xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="214263" max-vertical-offset="254160">
+              <caret line="14294" column="143" selection-start-line="14294" selection-start-column="143" selection-end-line="14294" selection-end-column="143" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="serverBuild.iap_xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/installer-2014/serverBuild.iap_xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.33182845" vertical-offset="214263" max-vertical-offset="248235">
+              <caret line="14294" column="143" selection-start-line="14294" selection-start-column="143" selection-end-line="14294" selection-end-column="143" />
               <folding />
             </state>
           </provider>
@@ -346,14 +359,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/deploy/broad/gpbeta/config/resources/config_custom.yaml" />
-        <option value="$PROJECT_DIR$/website/templates/common-new.xhtml" />
-        <option value="$PROJECT_DIR$/website/templates/common.xhtml" />
-        <option value="$PROJECT_DIR$/website/css/frozen/pipeline/styles/pipelines.css" />
-        <option value="$PROJECT_DIR$/website/css/frozen/runtaskform_3_8_1.css" />
-        <option value="$PROJECT_DIR$/gp-slurm-queue/src/org/genepattern/server/executor/slurm/SlurmJobRunner.java" />
-        <option value="$PROJECT_DIR$/website/js/runtaskform.js" />
-        <option value="$PROJECT_DIR$/gp-macapp/dist/GenePattern.app/Contents/Resources/GenePatternServer/Tomcat/webapps/gp/pages/about.xhtml" />
         <option value="$PROJECT_DIR$/website/pages/manageTasks.xhtml" />
         <option value="$PROJECT_DIR$/website/modules/js/creator.js" />
         <option value="$PROJECT_DIR$/gp-macapp/src/org/genepattern/startapp/Bootstrap.java" />
@@ -397,6 +402,14 @@
         <option value="$PROJECT_DIR$/deploy/broad/cilgenepattern/config/resources/genepattern.properties" />
         <option value="$PROJECT_DIR$/deploy/broad/genet/config/resources/genepattern.properties" />
         <option value="$PROJECT_DIR$/deploy/IndianaU/config/resources/genepattern.properties" />
+        <option value="$PROJECT_DIR$/build.xml" />
+        <option value="$PROJECT_DIR$/clients/MATLAB/build.xml" />
+        <option value="$PROJECT_DIR$/external-src/commons-httpclient-3.0.1/build.xml" />
+        <option value="$PROJECT_DIR$/test/load_testing/workshop_2008_march/dir/clustering.twill" />
+        <option value="$PROJECT_DIR$/test/load_testing/workshop_2008_march/clustering.twill" />
+        <option value="$PROJECT_DIR$/installer/server.iap_xml" />
+        <option value="$PROJECT_DIR$/installer-2014/server-bak.iap_xml" />
+        <option value="$PROJECT_DIR$/installer-2014/serverBuild.iap_xml" />
       </list>
     </option>
   </component>
@@ -618,6 +631,104 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="downloads" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="regression" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="load_testing" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="load_testing" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="workshop_2008_march" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="load_testing" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="workshop_2008_march" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dir" />
               <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -957,6 +1068,20 @@
               <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="installer" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="gp-custom-auth" />
               <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -998,6 +1123,38 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="openIdClient" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="external-src" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gp-trunk" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="genepattern" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="external-src" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="commons-httpclient-3.0.1" />
               <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -4734,7 +4891,11 @@
       <created>1429287691290</created>
       <updated>1429287691290</updated>
     </task>
-    <option name="localTasksCounter" value="503" />
+    <task id="LOCAL-00503" summary="Updated hard-coded references to updated JAR files">
+      <created>1429287991861</created>
+      <updated>1429287991861</updated>
+    </task>
+    <option name="localTasksCounter" value="504" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -4767,7 +4928,7 @@
       <window_info id="Persistence" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21338452" sideWeight="0.50132626" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32868633" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35174954" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.53185594" sideWeight="0.49865952" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.53185594" sideWeight="0.49865952" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32967636" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32872927" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -4838,7 +4999,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="GP-5468 - Fix to SLURM Job Runner to work with GP 3.9.2" />
     <MESSAGE value="Fix for Pipeline Designer regression" />
     <MESSAGE value="Fix for Mac installer on Yosemite" />
     <MESSAGE value="GP-5577 - Fix to manage module page links" />
@@ -4863,7 +5023,8 @@
     <MESSAGE value="GenomeSpace CDK update part 1 (low risk JARs)" />
     <MESSAGE value="GenomeSpace CDK update part 2 (medium risk JARs)" />
     <MESSAGE value="Fixes to Mac app to work with config" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixes to Mac app to work with config" />
+    <MESSAGE value="Updated hard-coded references to updated JAR files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated hard-coded references to updated JAR files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -4985,69 +5146,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/website/pages/runTaskFormJQuery.xhtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="285" max-vertical-offset="2340">
-          <caret line="19" column="35" selection-start-line="19" selection-start-column="35" selection-end-line="19" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/genepattern/util/Bootstrap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="45" max-vertical-offset="1035">
-          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/website/installFrame.jsp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="842">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/website/installLog.jsp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="757" max-vertical-offset="1635">
-          <caret line="103" column="0" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gp-macapp/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1597" max-vertical-offset="2460">
-          <caret line="129" column="51" selection-start-line="129" selection-start-column="51" selection-end-line="129" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/website/pages/requireChangePassword.xhtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="975">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gp-macapp/src/org/genepattern/startapp/ConfigApp.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.88122606" vertical-offset="3960" max-vertical-offset="4845">
-          <caret line="322" column="5" selection-start-line="322" selection-start-column="5" selection-end-line="322" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gp-macapp/resources/GenePattern.app/Contents/MacOS/GenePattern">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44061303" vertical-offset="0" max-vertical-offset="783">
-          <caret line="23" column="37" selection-start-line="23" selection-start-column="37" selection-end-line="23" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gp-macapp/src/org/genepattern/startapp/GenePattern.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="2715">
-          <caret line="24" column="28" selection-start-line="24" selection-start-column="28" selection-end-line="24" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/genepattern/server/webapp/rest/RunTaskServlet.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="5869" max-vertical-offset="15795">
@@ -5371,8 +5469,80 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/deploy/IndianaU/config/resources/genepattern.properties">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33182845" vertical-offset="1023" max-vertical-offset="1635">
+        <state vertical-scroll-proportion="0.0" vertical-offset="616" max-vertical-offset="1635">
           <caret line="78" column="100" selection-start-line="78" selection-start-column="100" selection-end-line="78" selection-end-column="100" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3993" max-vertical-offset="9840">
+          <caret line="276" column="99" selection-start-line="276" selection-start-column="99" selection-end-line="276" selection-end-column="99" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/clients/MATLAB/build.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="208" max-vertical-offset="930">
+          <caret line="24" column="48" selection-start-line="24" selection-start-column="48" selection-end-line="24" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/regression/.classpath">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.16447368" vertical-offset="0" max-vertical-offset="510">
+          <caret line="5" column="42" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/external-src/commons-httpclient-3.0.1/build.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="288" max-vertical-offset="3525">
+          <caret line="29" column="74" selection-start-line="29" selection-start-column="74" selection-end-line="29" selection-end-column="74" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/load_testing/workshop_2008_march/dir/clustering.twill">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="354" max-vertical-offset="810">
+          <caret line="44" column="34" selection-start-line="44" selection-start-column="34" selection-end-line="44" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/load_testing/workshop_2008_march/clustering.twill">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="354" max-vertical-offset="810">
+          <caret line="44" column="34" selection-start-line="44" selection-start-column="34" selection-end-line="44" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/installer/server.iap_xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="215088" max-vertical-offset="249090">
+          <caret line="14349" column="143" selection-start-line="14349" selection-start-column="143" selection-end-line="14349" selection-end-column="143" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/installer-2014/server-bak.iap_xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="214263" max-vertical-offset="254160">
+          <caret line="14294" column="143" selection-start-line="14294" selection-start-column="143" selection-end-line="14294" selection-end-column="143" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/installer-2014/serverBuild.iap_xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33182845" vertical-offset="214263" max-vertical-offset="248235">
+          <caret line="14294" column="143" selection-start-line="14294" selection-start-column="143" selection-end-line="14294" selection-end-column="143" />
           <folding />
         </state>
       </provider>
