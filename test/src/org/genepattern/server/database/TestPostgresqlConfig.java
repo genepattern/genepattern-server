@@ -88,7 +88,7 @@ public class TestPostgresqlConfig {
     @Ignore @Test
     public void initDbSchemaPostresql() throws Throwable {
         final String fromVersion="";
-        final String toVersion="3.9.2";
+        final String toVersion="3.9.3";
         
         HibernateSessionManager sessionMgr=initSessionMgrPostgreSQL();
         String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(sessionMgr);
