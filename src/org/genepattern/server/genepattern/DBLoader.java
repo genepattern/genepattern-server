@@ -272,7 +272,6 @@ public abstract class DBLoader {
         if (installInfo.getRepositoryUrl() != null) {
             log.debug("    repository: "+installInfo.getRepositoryUrl());
         } 
-        //TODO: add record to DB
         
         try {
             log.debug("initializing categories...");
