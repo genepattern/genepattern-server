@@ -14,8 +14,10 @@ package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -272,13 +274,23 @@ public abstract class DBLoader {
         } 
         //TODO: add record to DB
         
-        log.debug("saving to db ...");
         try {
+            log.debug("initializing categories...");
+            initCategories();
+            log.debug("saving to db ...");
             new RecordInstallInfoToDb().save(installInfo);
             log.debug("done!");
         }
         catch (Throwable t) {
             log.error("failed! ", t);
+        }
+    }
+    
+    protected void initCategories() {
+        TaskInfoAttributes tia=TaskInfoAttributes.decode(_taskInfoAttributes);
+        List<String> categoryNames=CategoryUtil.getCategoriesFromManifest(tia);
+        for(final String name : categoryNames) {
+            installInfo.addCategory(name);
         }
     }
     
