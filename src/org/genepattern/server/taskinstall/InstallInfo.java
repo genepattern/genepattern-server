@@ -2,7 +2,10 @@ package org.genepattern.server.taskinstall;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
@@ -68,6 +71,7 @@ public class InstallInfo {
     private GpFilePath zipFile;
     private LSID prevLsid;
     private GpFilePath libdir;
+    private Set<String> categories=null;
 
     public InstallInfo() {
         this(Type.UNKNOWN);
@@ -128,6 +132,25 @@ public class InstallInfo {
 
     public GpFilePath getLibdir() {
         return libdir;
+    }
+    
+    public void addCategory(final String category) {
+        if (categories==null) {
+            categories=new LinkedHashSet<String>();
+        }
+        categories.add(category);
+    }
+
+    /**
+     * Get the read-only list of categories for this module;
+     * usually loaded from the manifest file.
+     * @return
+     */
+    public Set<String> getCategories() {
+        if (categories==null) {
+            return Collections.emptySet();
+        }
+        return Collections.unmodifiableSet(categories);
     }
 
 }
