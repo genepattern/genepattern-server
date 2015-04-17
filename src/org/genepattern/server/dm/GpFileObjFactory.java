@@ -247,9 +247,28 @@ public class GpFileObjFactory {
         }
         catch (URISyntaxException e) {
             log.error("Invalid url: "+urlStr, e);
-            throw new Exception("Invalid url: "+urlStr);
+            // hack fix for GP-5558
+            urlStr=sanixize(ServerConfigurationFactory.instance(), urlStr);
+            try {
+                uri = new URI(urlStr);
+            }
+            catch (URISyntaxException e1) {
+                log.error("Still invalid url: "+urlStr, e);
+                throw new Exception("Invalid url: "+urlStr);
+            }
         }
         return getRequestedGpFileObj(uri);
+    }
+    
+    static public String sanixize(GpConfig gpConfig, String urlStr) {
+        final String gpUrl=gpConfig.getGpUrl();
+        if (urlStr.startsWith(gpUrl)) {
+            //urlStr=urlStr.replace(" ", "%20");
+            String tail=urlStr.substring(gpUrl.length());
+            tail=UrlUtil.encodeURIcomponent(tail);
+            urlStr=gpUrl+tail;
+        }
+        return urlStr;
     }
 
     static private GpFilePath getRequestedGpFileObj(URI uri) throws Exception {
