@@ -15,11 +15,16 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestPostgresqlConfig {
-    private final String username="genepattern";
-    private final String password="";
-    private final String dbSchema="public";
-    private final String jdbcUrl="jdbc:postgresql://127.0.0.1:5432/"+username;
+/**
+ * Example junit test for validating a MySQL connection.
+ * @author pcarr
+ *
+ */
+public class TestMysqlConfig {
+    private final String username="gpdev";
+    private final String password="gpdev";
+    private final String dbSchema="gpdev";
+    private final String jdbcUrl="jdbc:mysql://127.0.0.1:3306/gpdev";
     
     private File resourcesDir;
     
@@ -42,7 +47,7 @@ public class TestPostgresqlConfig {
      * @throws Throwable
      */
     @Ignore @Test
-    public void testPostgresqlConnection() throws Throwable {
+    public void testMysqlConnection() throws Throwable {
         Connection conn=null;
         try {
             conn = DriverManager.getConnection(jdbcUrl, username, password);
@@ -57,17 +62,19 @@ public class TestPostgresqlConfig {
         }
     }
     
-    protected HibernateSessionManager initSessionMgrPostgreSQL() throws FileNotFoundException, IOException {
+    protected HibernateSessionManager initSessionMgr() throws FileNotFoundException, IOException {
         Properties p=new Properties();
         ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
 
-        p.setProperty("database.vendor", "postgresql");
-        p.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver");
+        //# MySQL DB specific settings
+        //# See more at: http://www.javabeat.net/configure-mysql-database-with-hibernate-mappings
+        p.setProperty("database.vendor", "MySQL");
+        p.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
         p.setProperty("hibernate.connection.url", jdbcUrl);
         p.setProperty("hibernate.connection.username", username);
         p.setProperty("hibernate.connection.password", password);
         p.setProperty("hibernate.default_schema", dbSchema);
-        p.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        p.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         p.setProperty("hibernate.show_sql", "true");
         
         HibernateSessionManager sessionMgr=new HibernateSessionManager(p);        
@@ -75,22 +82,16 @@ public class TestPostgresqlConfig {
     }
     
     /**
-     * Manual SchemaUpdater test with PostgreSQL. This test initializes the genepattern schema for a PostgreSQL database.
-     * It requires access to a PostgreSQL database.  To set this up, first delete the DB if necessary, then create a new one ...
-     * 
-     *     # drop database genepattern;
-     *     # create database genepattern owner = genepattern;
-     *     
-     * I tested on my MacOS X dev machine with PostgreSQL (v. 9.4).
+     * Manual SchemaUpdater test with MySQL. 
      *   
      * @throws Throwable
      */
     @Ignore @Test
-    public void initDbSchemaPostresql() throws Throwable {
+    public void initDbSchemaMysql() throws Throwable {
         final String fromVersion="";
         final String toVersion="3.9.3";
         
-        HibernateSessionManager sessionMgr=initSessionMgrPostgreSQL();
+        HibernateSessionManager sessionMgr=initSessionMgr();
         String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(sessionMgr);
         assertEquals("before update", fromVersion, dbSchemaVersion);
         assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(sessionMgr, "props"));

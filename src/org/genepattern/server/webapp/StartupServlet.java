@@ -43,6 +43,7 @@ import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.plugin.MigratePlugins;
 import org.genepattern.server.purger.PurgerFactory;
+import org.genepattern.server.taskinstall.MigrateTaskCategories;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
@@ -389,6 +390,18 @@ public class StartupServlet extends HttpServlet {
         }
         catch (Throwable t) {
             getLog().error("Error migrating installed plugins: " + t.getLocalizedMessage(), t);
+        }
+        
+        // copy task categories from CLOB
+        try {
+            MigrateTaskCategories mtc=new MigrateTaskCategories();
+            if (!mtc.isComplete()) {
+                getLog().info("\tcopying categories from CLOB into task_install_category table ...");
+                mtc.copyCategoriesFromClobs();
+            }
+        }
+        catch (Throwable t) {
+            getLog().error("Error copying module categories: " + t.getLocalizedMessage(), t);
         }
         
         //start the JobPurger

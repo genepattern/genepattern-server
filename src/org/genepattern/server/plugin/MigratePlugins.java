@@ -83,11 +83,7 @@ public class MigratePlugins {
     }
     
     /**
-     * Check the db, has the '' flag already been set to true.
-     * 
-     * @param gpConfig
-     * @param gpContext
-     * @return true if the plugins have already been migrated.
+     * Check the db, has the {@link #PROP_DB_CHECK} flag already been set.
      */
     protected boolean checkDb() {
         String val="";
