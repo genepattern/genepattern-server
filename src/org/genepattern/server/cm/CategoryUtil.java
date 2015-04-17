@@ -15,6 +15,7 @@ import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -114,14 +115,18 @@ public class CategoryUtil {
      * @return
      */
     public static List<String> getCategoriesFromManifest(final TaskInfo taskInfo) {
+        return getCategoriesFromManifest(taskInfo.getTaskInfoAttributes());
+    }
+
+    public static List<String> getCategoriesFromManifest(final TaskInfoAttributes tia) {
         //check for custom 'categories' in the manifest ...
-        final List<String> categories=parseCategoriesFromManifest(taskInfo);
+        final List<String> categories=parseCategoriesFromManifest(tia);
         if (categories != null) {
             return categories;
         }
         
         //legacy, (<= GP 3.7.2) use the taskType
-        String taskType = taskInfo.getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
+        String taskType = tia.get(GPConstants.TASK_TYPE);
         if (taskType == null || taskType.length() == 0) {
             taskType = "Uncategorized";
         }
@@ -131,15 +136,15 @@ public class CategoryUtil {
         return rval;
     }
 
-    private static List<String> parseCategoriesFromManifest(final TaskInfo taskInfo) {
+    public static List<String> parseCategoriesFromManifest(final TaskInfoAttributes tia) {
         //check for custom 'categories' in the manifest ...
-        if (!taskInfo.getTaskInfoAttributes().containsKey(GPConstants.CATEGORIES)) {
+        if (!tia.containsKey(GPConstants.CATEGORIES)) {
             //no match, return null
             return null;
         }
         else {
             //found a match, start with zero categories
-            String customCategories = taskInfo.getTaskInfoAttributes().get(GPConstants.CATEGORIES);
+            String customCategories = tia.get(GPConstants.CATEGORIES);
             String[] arr=customCategories.split(";");
             if (arr.length==0) {
                 return Collections.emptyList();
