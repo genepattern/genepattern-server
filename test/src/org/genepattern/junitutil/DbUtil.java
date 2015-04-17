@@ -60,7 +60,7 @@ public class DbUtil {
     protected static void initDbDefault() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
-        final String gpVersion="3.9.2";
+        final String gpVersion="3.9.3";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
