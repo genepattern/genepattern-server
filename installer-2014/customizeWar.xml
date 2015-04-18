@@ -37,8 +37,6 @@
 			<replacefilter token="tasklib=../tasklib" value="tasklib=${INSTALL_DIR}/tasklib" />
 			<replacefilter token="jobs=temp" value="jobs=${INSTALL_DIR}/temp" />
 			<replacefilter token="tomcat=../Tomcat" value="" />
-			<replacefilter token="tomcatCommonLib=$USER_INSTALL_DIR$/Tomcat/common/lib" value="tomcatCommonLib=${INSTALL_DIR}/WEB-INF/lib" />
-			<replacefilter token="webappDir=$USER_INSTALL_DIR$/Tomcat/webapps/gp" value="webappDir=${INSTALL_DIR}/" />
 
 		</replace>
 
