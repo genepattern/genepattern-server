@@ -189,6 +189,8 @@ public class GpConfig {
     private final File configFile;
     private final Properties dbProperties;
     private final String dbVendor;
+    private final File ant_1_8_HomeDir;
+
     /**
      *  Special-case, some properties can be set by convention rather than declared in a config file.
      *  For example,  patches=$GENEPATTERN_HOME$/patches
@@ -200,6 +202,16 @@ public class GpConfig {
     public GpConfig(final Builder in) {
         GpContext gpContext=GpContext.getServerContext();
         this.webappDir=in.webappDir;
+        if (this.webappDir != null) {
+            ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
+            String antCmd="<java> -jar <ant-1.8_HOME><file.separator>lib<file.separator>ant-launcher.jar -Dant.home=<ant-1.8_HOME>";            
+            this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
+            this.substitutionParams.put("ant-1.8", antCmd);
+            this.substitutionParams.put("ant", antCmd);
+        }
+        else {
+            ant_1_8_HomeDir=null;
+        } 
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
@@ -576,10 +588,17 @@ public class GpConfig {
     }
 
     public Value getValue(final GpContext context, final String key) {
-        if (valueLookup==null) {
-            return null;
+        Value value=null;
+        if (valueLookup!=null) {
+            value=valueLookup.getValue(context, key);
         }
-        return valueLookup.getValue(context, key);
+        if (value==null) {
+            String substitutionValue=this.substitutionParams.get(key);
+            if (substitutionValue!=null) {
+                value=new Value(substitutionValue);
+            }
+        }
+        return value;
     }
 
     public Value getValue(final GpContext context, final String key, final Value defaultValue) {
@@ -599,7 +618,7 @@ public class GpConfig {
     public String getGPProperty(final GpContext context, final String key) {
         final Value value = getValue(context, key);
         if (value == null) {
-            return this.substitutionParams.get(key);
+            return null;
         }
         if (value.getNumValues() > 1) {
             log.error("returning first item of a "+value.getNumValues()+" item list");
@@ -746,6 +765,10 @@ public class GpConfig {
      */
     protected File getWebappDir() {
         return this.webappDir;
+    }
+    
+    protected File getAntHomeDir() {
+        return this.ant_1_8_HomeDir;
     }
     
     /**

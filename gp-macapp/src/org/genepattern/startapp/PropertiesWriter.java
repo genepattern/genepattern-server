@@ -172,12 +172,6 @@ public class PropertiesWriter {
             else if (line.startsWith("resources=")) {
                 line = "resources=" + gpHomeDirString + "/resources";
             }
-            else if (line.startsWith("tomcatCommonLib=")) {
-                line = "tomcatCommonLib="+tomcatDir+"/common/lib";
-            }
-            else if (line.startsWith("webappDir=")) {
-                line = "webappDir="+tomcatDir+"/webapps/gp";
-            }
 
             lines.add(line);
             line = in.readLine();
