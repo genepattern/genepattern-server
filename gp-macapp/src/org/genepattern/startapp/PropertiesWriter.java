@@ -163,9 +163,6 @@ public class PropertiesWriter {
             if (line.contains("$LSID_AUTHORITY$")) {
                 line = line.replaceAll("\\$LSID_AUTHORITY\\$", lsid);
             }
-            else if (line.startsWith("run_r_path=")) {
-                line = "run_r_path="+tomcatDir+"/webapps/gp/WEB-INF/classes/";
-            }
             else if (line.contains("R.suppress.messages.file=")) {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
             }

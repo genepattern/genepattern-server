@@ -208,6 +208,8 @@ public class GpConfig {
             this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
             this.substitutionParams.put("ant-1.8", antCmd);
             this.substitutionParams.put("ant", antCmd);
+
+            this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
         }
         else {
             ant_1_8_HomeDir=null;
