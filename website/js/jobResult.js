@@ -13,7 +13,7 @@ $(function(){
     }
 
     //f this is a pipeline with a visualizer
-    if(isPipeline && hasJavascript && getURLParameter("openVisualizers"))
+    if(isPipeline && hasJavascript && getURLParameter("openVisualizers") == "true")
     {
         jobResultsTab = $("<ul id='jobResultsTab'><li><a href='#jobResults'>Job Results</a></li></ul>");
         $("#main-pane").prepend(jobResultsTab);
