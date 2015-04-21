@@ -2578,7 +2578,7 @@ public class GenePatternAnalysisTask {
             // ignore
         }
         GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid, null, null, null, username, 0);
-        int formerID = loader.getTaskIDByName(lsid, username);
+        int formerID = GenePatternTaskDBLoader.getTaskIDByName(lsid, username);
         loader.run(GenePatternTaskDBLoader.DELETE);
         try {
             // remove taskLib directory for this task
@@ -2624,8 +2624,7 @@ public class GenePatternAnalysisTask {
                 }
 
                 // search for an existing task with the same name
-                GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
-                taskID = loader.getTaskIDByName(taskName, username);
+                taskID = GenePatternTaskDBLoader.getTaskIDByName(taskName, username);
                 if (taskID != -1) {
                     taskInfo = (new AdminDAO()).getTask(taskID);
                 }

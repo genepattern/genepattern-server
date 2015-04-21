@@ -1,10 +1,7 @@
 package org.genepattern.server.database;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -12,14 +9,12 @@ import java.util.Set;
 import javax.persistence.Entity;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
-
-import com.google.common.reflect.ClassPath;
+import org.reflections.Reflections;
 
 /**
  * refactored from HibernateUtil class, to avoid reliance on top level static initializers.
@@ -28,6 +23,12 @@ import com.google.common.reflect.ClassPath;
  */
 public final class HibernateSessionManager {
     private static final Logger log = Logger.getLogger(HibernateSessionManager.class);
+
+    /**
+     * Set 'database.scanForAnnotations=false' in the database_default.properties or database_custom.properties file
+     * to overwrite the default method for loading JPA Annotated Entity classes. Added for debugging GP-5626. 
+     */
+    public static final String PROP_DB_SCAN_FOR_ANNOTATIONS="database.scanForAnnotations";
 
     private final SessionFactory sessionFactory;
     public HibernateSessionManager(String hibernateConfigurationFile, String connectionUrl) {
@@ -42,58 +43,6 @@ public final class HibernateSessionManager {
             log.debug("initializing session factory from hibernate properties="+hibernateProperties);
         }
         sessionFactory = createSessionFactory(hibernateProperties);
-    }
-    
-    /**
-     * Scan the current class loader for all classes with the given package prefix,
-     *     packagePrefix='org.genepattern.server.'
-     * ImmutableSet<ClassPath.ClassInfo> getTopLevelClassesRecursive(String packageName)
-     */
-    protected static List<Class<?>> scanForAnnotatedClasses() throws IOException, ClassNotFoundException {
-        final String packagePrefix="org.genepattern.server";
-        return scanForAnnotatedClasses(Arrays.asList(packagePrefix));
-    }
-
-    /**
-     * Scan the current class loader for all classes with the given list of package prefixes.
-     * Return a list of Classes which have the JPA Entity annotation.
-     */
-    protected static List<Class<?>> scanForAnnotatedClasses(List<String> packagePrefixes) throws IOException, ClassNotFoundException {
-        
-        ClassLoader cl=UserUpload.class.getClassLoader();
-        if (cl==null) {
-            log.error("UserUpload.class.getClassLoader returned null, trying system class loader");
-            cl=ClassLoader.getSystemClassLoader();
-        }
-        if (cl==null) {
-            log.error("ClassLoader.getSystemClassLoader() returned null");
-        }
-        final ClassPath classPath=ClassPath.from(cl);
-        Set<ClassPath.ClassInfo> set=new HashSet<ClassPath.ClassInfo>();
-        for(final String packagePrefix : packagePrefixes) {
-            Set<ClassPath.ClassInfo> classInfos=classPath.getTopLevelClassesRecursive(packagePrefix);
-            for(final ClassPath.ClassInfo classInfo : classInfos) {
-                if (classInfo.getName().startsWith(packagePrefix)) {
-                    set.add(classInfo);
-                }
-                else {
-                    log.error("Unexpected result: "+classInfo);
-                }
-            }
-        }
-        List<Class<?>> list=new ArrayList<Class<?>>();
-        for(ClassPath.ClassInfo ci : set) {
-            try {
-                Class<?> clazz=Class.forName(ci.getName(), false, cl);
-                if (clazz.isAnnotationPresent(Entity.class)) {
-                    list.add(clazz);
-                }
-            }
-            catch (Throwable t) {
-                log.error(t);
-            }
-        }
-        return list;
     }
 
     /**
@@ -148,11 +97,12 @@ public final class HibernateSessionManager {
                 org.genepattern.server.job.tag.JobTag.class,
                 org.genepattern.server.plugin.PatchInfo.class,
                 org.genepattern.server.domain.PropsTable.class,
-                org.genepattern.server.user.UserProp.class
+                org.genepattern.server.user.UserProp.class,
+                org.genepattern.server.taskinstall.dao.Category.class
                 );
     }
 
-    protected static AnnotationConfiguration preInitAnnotationConfiguration() {
+    protected static AnnotationConfiguration preInitAnnotationConfiguration(final boolean scan) {
         if (log.isDebugEnabled()) {
             log.debug("preparing hibernate annotation configuration ...");
         }
@@ -168,20 +118,8 @@ public final class HibernateSessionManager {
             }
             config.addResource(hbmXml);
         }
-
-        //add annotated hibernate mapping classes here, instead of in the .xml file
-        if (log.isDebugEnabled()) {
-            log.debug("scan for annotated hibernate mapping classes ...");
-        }
-        Collection<Class<?>> annotatedClasses=hardCodedAnnotatedClasses();
-        log.debug("Using hard-coded annotated classes");
-        //try {
-        //    annotatedClasses=scanForAnnotatedClasses();
-        //}
-        //catch (Throwable t) {
-        //    log.error("Unexpected error scanning for hibernate annotation classes, using hard-coded list instead", t);
-        //    annotatedClasses=hardCodedAnnotatedClasses();
-        //}
+        
+        Collection<Class<?>> annotatedClasses=initAnnotatedClasses(scan);
         if (log.isDebugEnabled()) {
             log.debug("found " + annotatedClasses.size() + " annotated classes");
         }
@@ -194,6 +132,36 @@ public final class HibernateSessionManager {
         return config;
     }
     
+    protected static Collection<Class<?>> initAnnotatedClasses(final boolean scan) {
+        try {
+            if (scan) {
+                log.info("scanning for Entity Annotations ...");
+                return initAnnotatedClasses_Reflections();
+            }
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error scanning for Entity Annotations", t);
+        }
+        log.info("using hard-coded Entity Annotations");
+        return hardCodedAnnotatedClasses();
+    }
+    
+    /**
+     * Scan urls for types that have the "org.genepattern.server" package prefix 
+     * and are annotated with the Entity class.
+     * 
+     * @return
+     */
+    protected static Set<Class<?>> initAnnotatedClasses_Reflections() {
+        if (log.isDebugEnabled()) {
+            log.debug("scanning classpath for Entity annotated classes...");
+        }
+        final String packagePrefix="org.genepattern.server";
+        Reflections reflections = new Reflections(packagePrefix);
+        Set<Class<?>> annotatedClasses=reflections.getTypesAnnotatedWith(Entity.class);
+        return annotatedClasses;
+    }
+
     /**
      * Initialize the hibernate connection based on the values set in the given Properties arg.
      * Default values are loaded from the ./resources/hibernate_default.properties file.
@@ -202,7 +170,8 @@ public final class HibernateSessionManager {
      * @return
      */
     public static SessionFactory createSessionFactory(Properties hibernateProperties) {
-        AnnotationConfiguration config = preInitAnnotationConfiguration();
+        boolean scanForClasses=getScanForAnnotationsFlag(hibernateProperties);
+        AnnotationConfiguration config = preInitAnnotationConfiguration(scanForClasses);
         config.addProperties(hibernateProperties);
         mergeSystemProperties(config);
         log.info("hibernate.connection.url="+config.getProperty("hibernate.connection.url"));
@@ -210,6 +179,23 @@ public final class HibernateSessionManager {
             log.debug("building session factory ...");
         }
         return config.buildSessionFactory();
+    }
+    
+    protected static boolean getScanForAnnotationsFlag(Properties hibernateProperties) {
+        final boolean defaultFlag=true;
+        if (hibernateProperties==null) {
+            log.warn("hibernateProperties==null, using default value="+defaultFlag);
+            return defaultFlag;
+        }
+        else if (!hibernateProperties.containsKey(PROP_DB_SCAN_FOR_ANNOTATIONS)) {
+            log.debug(""+PROP_DB_SCAN_FOR_ANNOTATIONS+" not set, using default value="+defaultFlag);
+            return defaultFlag;
+        }
+        else {
+            final String val=hibernateProperties.getProperty(PROP_DB_SCAN_FOR_ANNOTATIONS);
+            log.debug(PROP_DB_SCAN_FOR_ANNOTATIONS+"="+val);
+            return Boolean.valueOf(val);
+        }
     }
 
     /**
@@ -220,7 +206,7 @@ public final class HibernateSessionManager {
      * @return
      */
     public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
-        AnnotationConfiguration config = preInitAnnotationConfiguration();
+        AnnotationConfiguration config = preInitAnnotationConfiguration(true);
         config.configure(configResource);
         mergeSystemProperties(config);
         if (connectionUrl != null) {

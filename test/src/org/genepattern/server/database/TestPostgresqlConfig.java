@@ -10,7 +10,6 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.genepattern.junitutil.ConfigUtil;
-import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,17 +21,12 @@ public class TestPostgresqlConfig {
     private final String dbSchema="public";
     private final String jdbcUrl="jdbc:postgresql://127.0.0.1:5432/"+username;
     
-    private File workingDir;
     private File resourcesDir;
     
     @Before
     public void setUp() {
-        workingDir=new File(System.getProperty("user.dir"));
+        File workingDir=new File(System.getProperty("user.dir"));
         resourcesDir=new File(workingDir, "resources");
-    }
-    
-    public void dropTablesIfNecessaryCreateDb() {
-        
     }
     
     /**
@@ -62,28 +56,8 @@ public class TestPostgresqlConfig {
             }
         }
     }
-
-    @Test
-    public void initDbSchemaHsqlDb() throws Throwable {
-        Properties p=new Properties();
-        ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
-
-        final File hsqlDbDir=new File("junitdb");
-        final String hsqlDbName="GenePatternDB";
-
-        DbUtil.startDb(hsqlDbDir, hsqlDbName);
-        try {
-            p.setProperty("database.vendor", "HSQL");
-            p.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
-            HibernateSessionManager mgr=new HibernateSessionManager(p);
-            SchemaUpdater.updateSchema(mgr, resourcesDir, "analysis_hypersonic-", "3.9.2");
-        }
-        finally {
-            DbUtil.shutdownDb();
-        } 
-    }
     
-    protected HibernateSessionManager initSessionMgr() throws FileNotFoundException, IOException {
+    protected HibernateSessionManager initSessionMgrPostgreSQL() throws FileNotFoundException, IOException {
         Properties p=new Properties();
         ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
 
@@ -114,17 +88,16 @@ public class TestPostgresqlConfig {
     @Ignore @Test
     public void initDbSchemaPostresql() throws Throwable {
         final String fromVersion="";
-        final String toVersion="3.9.2";
+        final String toVersion="3.9.3";
         
-        HibernateSessionManager sessionMgr=initSessionMgr();
+        HibernateSessionManager sessionMgr=initSessionMgrPostgreSQL();
         String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(sessionMgr);
         assertEquals("before update", fromVersion, dbSchemaVersion);
-        assertEquals("before update, 'props' table exists", false, SchemaUpdater.tableExists(sessionMgr, "props"));
+        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(sessionMgr, "props"));
         assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(sessionMgr, "PROPS"));
 
         final String dbVendor="postgresql";
-        //final File schemaDir=new File(resourcesDir, dbVendor.toLowerCase());
-        final File schemaDir=resourcesDir;
+        final File schemaDir=new File("website/WEB-INF/schema");
         SchemaUpdater.updateSchema(sessionMgr, schemaDir, "analysis_"+dbVendor.toLowerCase()+"-", toVersion);
         
         // do a test query

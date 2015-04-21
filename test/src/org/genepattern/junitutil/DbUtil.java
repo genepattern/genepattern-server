@@ -14,6 +14,7 @@ import org.junit.Ignore;
 @Ignore
 public class DbUtil {
     private static boolean isDbInitialized = false;
+    public static final File schemaDir=new File("website/WEB-INF/schema");
     
     public enum DbType {
         HSQLDB,
@@ -59,7 +60,7 @@ public class DbUtil {
     protected static void initDbDefault() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
-        final String gpVersion="3.9.2";
+        final String gpVersion="3.9.3";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
@@ -103,7 +104,7 @@ public class DbUtil {
             try {
                 isDbInitialized = true;
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                HsqlDbUtil.updateSchema(new File(pathToResourceDir), "analysis_hypersonic-", gpVersion);
+                HsqlDbUtil.updateSchema(schemaDir, "analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...

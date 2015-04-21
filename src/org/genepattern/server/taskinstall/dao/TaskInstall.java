@@ -1,13 +1,27 @@
 package org.genepattern.server.taskinstall.dao;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+
+import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.hibernate.criterion.Restrictions;
 
 /**
  * Hibernate mapping class for recording Task Installation details to the GP database.
@@ -17,6 +31,80 @@ import javax.persistence.Table;
 @Entity
 @Table(name="task_install")
 public class TaskInstall {
+    private static final Logger log = Logger.getLogger(TaskInstall.class);
+
+    /**
+     * Set the categories for an installed task. There must already be an entry in the task_install table.
+     * If there is no entry and error message will be written to the log file.
+     * 
+     * @param mgr
+     * @param lsid, the lsid for the task
+     * @param categoryNames, the set of categories
+     * @throws DbException for unexpected DB connection errors
+     */
+    public static void setCategories(final HibernateSessionManager mgr, final String lsid, final List<String> categoryNames) throws DbException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            }
+            TaskInstall taskInstall = (TaskInstall) mgr.getSession().get(TaskInstall.class, lsid);
+            if (taskInstall==null) {
+                log.error("No entry in task_install for lsid="+lsid);
+                return;
+            }
+            
+            final Set<Category> categories=new LinkedHashSet<Category>();
+            for(final String name : categoryNames) {
+                Category category = (Category) mgr.getSession().createCriteria(Category.class).add(Restrictions.eq("name", name)).uniqueResult();
+                if (category==null) {
+                    category = new Category(name);
+                    mgr.getSession().save(category);
+                }
+                categories.add(category);
+            }
+            taskInstall.setCategories(categories);
+            mgr.getSession().saveOrUpdate(taskInstall);
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+        catch (Throwable t) {
+            throw new DbException("Error setting categories for lsid="+lsid+", categories="+categoryNames, t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * For debugging, get the list of all entries in the task_install_category mapping table.
+     * @param mgr
+     * @return
+     * @throws DbException
+     */
+    public static List<?> getAllTaskInstallCategory(final HibernateSessionManager mgr) throws DbException {
+        final String sql="select * from task_install_category order by lsid, category_id";
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            }
+            List<?> items = mgr.getSession().createSQLQuery(sql).list();
+            return items;
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error getting entries from task_install_category table", t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+    
     public TaskInstall() {
     }
     public TaskInstall(final String lsid) {
@@ -27,6 +115,7 @@ public class TaskInstall {
      * The full lsid of the installed task, it's the primary key in the table.
      */
     @Id
+    @Column(name = "lsid")
     private String lsid;
 
     /**
@@ -91,6 +180,14 @@ public class TaskInstall {
      */
     @Column(name = "libdir")
     private String libdir;
+    
+    /*cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}*/
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
+    @JoinTable( name="task_install_category", 
+        joinColumns = { 
+            @JoinColumn(name="lsid", referencedColumnName="lsid") },
+            inverseJoinColumns = { @JoinColumn(name="category_id") })
+    private Set<Category> categories = new HashSet<Category>(0);
 
     public String getLsid() {
         return lsid;
@@ -148,6 +245,12 @@ public class TaskInstall {
         this.libdir = libdir;
     }
 
-
+    public Set<Category> getCategories() {
+        return this.categories;
+    }
+    
+    public void setCategories(Set<Category> categories) {
+        this.categories=categories;
+    }
 
 }
