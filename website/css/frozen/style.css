@@ -1174,3 +1174,8 @@ strong.filtered-number
     margin-right: 5px;
     margin-top: 2px;
 }
+
+#openJSWin
+{
+    cursor: pointer;
+}

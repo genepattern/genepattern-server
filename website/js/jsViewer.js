@@ -61,7 +61,7 @@
 
             var actionBar = $("<div/>").attr("id", "actionBar");
 
-            var newWindowImage = $("<img src='../images/newWindow.png' width='17' height='17' title='Relaunch in a new window'/>");
+            var newWindowImage = $("<img id='openJSWin' src='../images/newWindow.png' width='17' height='17' title='Relaunch in a new window'/>");
             newWindowImage.click(function()
             {
                 //alert("opening new window");
