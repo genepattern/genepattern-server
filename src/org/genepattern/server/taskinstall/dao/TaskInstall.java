@@ -18,6 +18,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.criterion.Restrictions;
@@ -30,13 +31,16 @@ import org.hibernate.criterion.Restrictions;
 @Entity
 @Table(name="task_install")
 public class TaskInstall {
+    private static final Logger log = Logger.getLogger(TaskInstall.class);
 
     /**
      * Set the categories for an installed task. There must already be an entry in the task_install table.
+     * If there is no entry and error message will be written to the log file.
+     * 
      * @param mgr
      * @param lsid, the lsid for the task
      * @param categoryNames, the set of categories
-     * @throws DbException if the 
+     * @throws DbException for unexpected DB connection errors
      */
     public static void setCategories(final HibernateSessionManager mgr, final String lsid, final List<String> categoryNames) throws DbException {
         final boolean isInTransaction=mgr.isInTransaction();
@@ -46,7 +50,8 @@ public class TaskInstall {
             }
             TaskInstall taskInstall = (TaskInstall) mgr.getSession().get(TaskInstall.class, lsid);
             if (taskInstall==null) {
-                throw new DbException("No entry in task_install for lsid="+lsid);
+                log.error("No entry in task_install for lsid="+lsid);
+                return;
             }
             
             final Set<Category> categories=new LinkedHashSet<Category>();
