@@ -533,8 +533,10 @@ public class JobInfoManager {
                 try {
                     String value=parameterInfo.getValue();
 
-                    if (parameterInfo.getAttributes() != null && parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
+                    if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
                         && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
+                            || (parameterInfo.getAttributes().containsKey("type")
+                            && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
                     {
                         if (value.endsWith(".list.txt")) {
                             List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());

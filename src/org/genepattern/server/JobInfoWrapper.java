@@ -1182,9 +1182,30 @@ public class JobInfoWrapper implements Serializable {
     	}
     	return false;
     }
-    
+
+    public boolean getHasJavascript() {
+        if (isPipeline()) {
+            for (JobInfoWrapper child : children) {
+                if (child.isJavascript()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void setVisualizerAppletTag(String tag) {
         this.visualizerAppletTag = tag;
+    }
+
+    public String getLaunchUrl()throws Exception
+    {
+        if(taskInfo == null || jobInfo == null)
+        {
+            return "";
+        }
+
+        return JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
     }
 
     public String getVisualizerAppletTag() {

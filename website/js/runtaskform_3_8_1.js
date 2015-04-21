@@ -2261,6 +2261,8 @@ function submitTask() {
                 if (response.launchUrl)
                 {
                     //openJavascriptModule(run_task_info.name, run_task_info.lsid,  response.launchUrl);
+                    //mainLayout.close('west');
+
                     window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
                 }
                 else

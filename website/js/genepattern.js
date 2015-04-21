@@ -2283,7 +2283,7 @@ function createJobWidget(job) {
                 var url = listObject.attr("data-url");
 
                 if (statusAction) {
-                    loadJobStatus(job.jobId);
+                    loadJobStatus(job.jobId, false);
                 }
 
                 else if (downloadAction) {
@@ -2340,7 +2340,7 @@ function createJobWidget(job) {
                 }
                 else if (relaunchAction)
                 {
-                    loadJavascript(job.jobId, true);
+                    loadJavascript(job.jobId, $("#main-pane"), true);
                 }
                 else {
                     console.log("ERROR: Executing click function for Job " + job.jobId);
@@ -2603,8 +2603,23 @@ function getURLParameter(sParam) {
     return null;
 }
 
-//this will load a javascript module
-function loadJavascript(jobId, openJavascript) {
+function cleanUpPanels()
+{
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Hide the protocols, run task form & eula, if visible
+    $("#protocols").hide();
+    var submitJob = $("#submitJob").hide();
+    $("#eula-block").hide();
+    $("#jobResults").hide();
+    $("#infoMessageDiv").hide();
+    $("#errorMessageDiv").hide();
+    $("#mainViewerPane").remove();
+}
+
+ //this will load a javascript module
+function loadJavascript(jobId, container, openJavascript) {
     // Abort if there is no job id
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
@@ -2629,6 +2644,8 @@ function loadJavascript(jobId, openJavascript) {
 
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
 
+    cleanUpPanels();
+
     $.ajax({
         type: "GET",
         url: "/gp/rest/v1/jobs/" + jobId,
@@ -2636,7 +2653,12 @@ function loadJavascript(jobId, openJavascript) {
         success: function(data) {
             var job = data;
             if (job.launchUrl !== undefined && job.launchUrl !== null) {
-                openJavascriptModule(job.taskName, job.taskLsid, job.launchUrl);
+                container.gpJavascript({
+                        taskName: job.taskName,
+                        taskLsid: job.taskLsid,
+                        url: job.launchUrl  //The URL to the main javascript html file
+                });
+                mainLayout.close('west');
             }
         },
         error: function(data) {
@@ -2708,7 +2730,7 @@ function loadJobStatus(jobId, forceVisualizers) {
     /*var jobResultsTab = $("<div/>");
     $("#main-pane").prepend(jobResultsTab);
     jobResultsTab.w2tabs({
-        name: 'main-pane',
+        name: 'jobResultsTab',
         active: 'jobResults',
         tabs: [
             { id: 'jobResults', caption: 'Job Results' }

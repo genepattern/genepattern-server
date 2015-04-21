@@ -1150,7 +1150,10 @@ strong.filtered-number
 
 #jsViewer
 {
-    height: 90%;
+    height: 80%;
+    /*overflow: auto;*/
+    overflow: hidden;
+    width: 100%;
 }
 
 #jsViewerInfoBar
@@ -1162,7 +1165,7 @@ strong.filtered-number
     width: 100%;
     font-size: 14px;
     font-weight: bold;
-    margin-left: -30px;
+    /*margin-left: -30px;*/
     padding-left: 15px;
     left: 30px;
     /*margin-right: -80px; */

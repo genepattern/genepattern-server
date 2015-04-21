@@ -1,89 +1,124 @@
-function getTaskVersion(lsid)
-{
-    var version = -1;
-    var index = lsid.lastIndexOf(":");
-    if(index == -1)
-    {
-        console.log("An error occurred while parsing version from LSID: " + lsid);
-    }
-    else
-    {
-        var version = lsid.substring(index+1, lsid.length);
-    }
+/*$.fn.gpJavascript = function(options) {
+ var settings = $.extend({
+ // These are the defaults.
+ taskName: "",
+ taskLsid: "",
+ launchUrl: ""
+ }, options );
 
-    return version;
-}
+ this.filter( "div" ).append(function() {
+ return _openJavascriptModule();
+ });
 
-function cleanUpPanels()
-{
-    // Hide the search slider if it is open
-    $(".search-widget").searchslider("hide");
+ return this;
 
-    // Hide the protocols, run task form & eula, if visible
-    $("#protocols").hide();
-    var submitJob = $("#submitJob").hide();
-    $("#eula-block").hide();
-    $("#jobResults").hide();
-    $("#infoMessageDiv").hide();
-    $("#errorMessageDiv").hide();
+ };*/
 
-    $("#mainViewerPane").remove();
-}
+(function( $ ) {
+    $.widget("ui.gpJavascript", {
+        options: {
+            taskName: "",
+            taskLsid: "",
+            url: ""
+        },
+        _create: function() {
 
-function openJavascriptModule(taskName, taskLsid, launchUrl)
-{
-    cleanUpPanels();
+            var self = this,
+                opt = self.options,
+                el = self.element;
 
-    var mainViewerPane = $("<div/>").attr("id", "mainViewerPane");
-    var headerString = taskName;
-    var version = getTaskVersion(taskLsid);
-    if(version != -1)
-    {
-        headerString+= " version " + version;
-    }
+            this._openJavascriptModule();
+        },
+        _setOption: function (key, value) {},
+        _getTaskVersion: function()
+        {
+            var version = -1;
+            var index = this.options.taskLsid.lastIndexOf(":");
+            if(index == -1)
+            {
+                console.log("An error occurred while parsing version from LSID: " + this.options.taskLsid);
+            }
+            else
+            {
+                version = this.options.taskLsid.substring(index+1, this.options.taskLsid.length);
+            }
 
-    var infoBar = $("<div/>").attr("id", "jsViewerInfoBar");
-    infoBar.append("<label>" + headerString + "</label>");
-    infoBar.css("margin-top", "-43px");
+            return version;
+        },
+        _openJavascriptModule: function()
+        {
+            var self = this;
+            var mainViewerPane = $("<div/>").attr("id", "mainViewerPane");
+            var headerString = self.options.taskName;
+            var version = this._getTaskVersion();
+            if(version != -1)
+            {
+                headerString+= " version " + version;
+            }
 
-    var actionBar = $("<div/>").attr("id", "actionBar");
+            var infoBar = $("<div class='ui-layout-north'/>").attr("id", "jsViewerInfoBar");
+            infoBar.append("<label>" + headerString + "</label>");
+            //infoBar.css("margin-top", "-43px");
 
-    var newWindowImage = $("<img src='../images/newWindow.png' width='18' height='18' />");
-    newWindowImage.click(function()
-    {
-        //alert("opening new window");
-        /*window.open(window.location, "_blank");
-        //window.focus();
-        console.log("my focus");
-        window.moveTo(0);*/
+            var actionBar = $("<div/>").attr("id", "actionBar");
 
-        /*The code below works
-        var divText = document.getElementById("main-pane").outerHTML;
-        var myWindow = window.open('', '_blank', 'width=1000,height=800');
-        var doc = myWindow.document;
-        doc.open();
-        doc.write(divText);
-        doc.close();*/
+            var newWindowImage = $("<img src='../images/newWindow.png' width='18' height='18' />");
+            newWindowImage.click(function()
+            {
+                //alert("opening new window");
+                /*window.open(window.location, "_blank");
+                 //window.focus();
+                 console.log("my focus");
+                 window.moveTo(0);*/
 
-        window.open(launchUrl, "_blank");
+                /*The code below works
+                 var divText = document.getElementById("main-pane").outerHTML;
+                 var myWindow = window.open('', '_blank', 'width=1000,height=800');
+                 var doc = myWindow.document;
+                 doc.open();
+                 doc.write(divText);
+                 doc.close();*/
+
+                window.open(self.options.url, "_blank");
+            });
+
+            actionBar.append(newWindowImage);
+            actionBar.css("float", "right");
+            //actionBar.css("margin-left", "100px");
+
+            infoBar.append(actionBar);
+
+            mainViewerPane.append(infoBar);
+
+            var jsViewerFrame = $("<iframe class='ui-layout-center' width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+            jsViewerFrame.attr("src", self.options.url);
+            var viewerDiv = $("<div/>").attr("id", "jsViewer");
+            viewerDiv.append(jsViewerFrame);
+            mainViewerPane.append(viewerDiv);
+
+            this.element.append(mainViewerPane);
+        },
+        destroy: function() {
+            this.element.next().remove();
+        }
     });
 
-    actionBar.append(newWindowImage);
-    actionBar.css("float", "right");
-    actionBar.css("margin-left", "100px");
 
-    infoBar.append(actionBar);
+    /*function cleanUpPanels()
+    {
+        // Hide the search slider if it is open
+        $(".search-widget").searchslider("hide");
 
-    mainViewerPane.append(infoBar);
+        // Hide the protocols, run task form & eula, if visible
+        $("#protocols").hide();
+        var submitJob = $("#submitJob").hide();
+        $("#eula-block").hide();
+        $("#jobResults").hide();
+        $("#infoMessageDiv").hide();
+        $("#errorMessageDiv").hide();
+
+        $("#mainViewerPane").remove();
+    }*/
+}( jQuery ));
 
 
-    var jsViewerFrame = $("<iframe width='100%' height='500' frameborder='0' scrolling='no'>GenePattern Javascript Visualization</iframe>");
-    jsViewerFrame.attr("src", launchUrl);
-    var viewerDiv = $("<div/>").attr("id", "jsViewer");
-    viewerDiv.append(jsViewerFrame);
-    mainViewerPane.append(viewerDiv);
-
-    $("#main-pane").append(mainViewerPane);
-
-    mainLayout.close('west');
-}
