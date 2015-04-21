@@ -78,7 +78,8 @@
                  doc.write(divText);
                  doc.close();*/
 
-                window.open(self.options.url, "_blank");
+                var newPage = window.open(self.options.url, "_blank");
+                newPage.onload = function() { this.document.title = headerString; }
             });
 
             actionBar.append(newWindowImage);
