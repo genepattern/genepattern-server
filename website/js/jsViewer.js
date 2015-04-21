@@ -58,11 +58,10 @@
 
             var infoBar = $("<div class='ui-layout-north'/>").attr("id", "jsViewerInfoBar");
             infoBar.append("<label>" + headerString + "</label>");
-            //infoBar.css("margin-top", "-43px");
 
             var actionBar = $("<div/>").attr("id", "actionBar");
 
-            var newWindowImage = $("<img src='../images/newWindow.png' width='18' height='18' />");
+            var newWindowImage = $("<img src='../images/newWindow.png' width='17' height='17' title='Relaunch in a new window'/>");
             newWindowImage.click(function()
             {
                 //alert("opening new window");
@@ -83,8 +82,7 @@
             });
 
             actionBar.append(newWindowImage);
-            actionBar.css("float", "right");
-            //actionBar.css("margin-left", "100px");
+            //actionBar.css("float", "right");
 
             infoBar.append(actionBar);
 
@@ -102,23 +100,6 @@
             this.element.next().remove();
         }
     });
-
-
-    /*function cleanUpPanels()
-    {
-        // Hide the search slider if it is open
-        $(".search-widget").searchslider("hide");
-
-        // Hide the protocols, run task form & eula, if visible
-        $("#protocols").hide();
-        var submitJob = $("#submitJob").hide();
-        $("#eula-block").hide();
-        $("#jobResults").hide();
-        $("#infoMessageDiv").hide();
-        $("#errorMessageDiv").hide();
-
-        $("#mainViewerPane").remove();
-    }*/
 }( jQuery ));
 
 
