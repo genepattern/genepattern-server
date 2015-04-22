@@ -455,6 +455,8 @@ body {
 
 #main-pane {
     position: absolute;
+    padding-left: 27px;
+    padding-right: 27px;
     /*overflow-x: auto;
     overflow-y: scroll;*/
     /*overflow: auto;
