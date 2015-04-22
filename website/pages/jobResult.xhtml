@@ -25,6 +25,11 @@
         <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js"></script>
 
         <script type="text/javascript">
+
+                //convert to tabbed pane if this is a pipeline with javascript visualization
+                var hasJavascript = #{jobStatusBean.jobInfo.hasJavascript};
+                var isPipeline = #{jobStatusBean.jobInfo.pipeline};
+
                 var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};                
 
                 function setEmailNotification(cb, jobId, userId, userEmail) {
@@ -226,6 +231,42 @@
                     d.close();
                 }
 
+                function openJavascript(jobId, taskName, taskLsid, launchUrl)
+                {
+                    if(getURLParameter("openVisualizers") == "true")
+                    {
+                        var jsId = "javascript_" + jobId;
+
+                        var div = $("#" + jsId);
+                        if (div.length == 0) {
+                            div = $("<div/>").attr("id", "javascript_" + jobId);
+
+                            if(!isPipeline)
+                            {
+                                $("#jobResults").empty();
+                                $("#jobResults").append(div);
+                            }
+                            else
+                            {
+                                $("#main-pane").append(div);
+                            }
+                        }
+
+                        div.gpJavascript({
+                            taskName: taskName,
+                            taskLsid: taskLsid,
+                            url: launchUrl  //The URL to the main javascript html file
+                        });
+
+                        //f this is a pipeline with a visualizer
+                        if(isPipeline && hasJavascript)
+                        {
+                            $("#jobResultsTab").append("<li><a href='#" + jsId + "'>" + jobId + "</a></li>");
+                            $("#main-pane").tabs("refresh");
+                        }
+                    }
+                }
+
                 function attachMenus() {
                     var data = $("#main-pane").data("job-status-" + currentJobNumber);
 
@@ -299,6 +340,8 @@
 
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_comments.js"></script>
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gp_tags.js"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResult.js"></script>
+
     </ui:define>
 
 	<ui:define name="body">

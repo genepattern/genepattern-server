@@ -25,10 +25,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.dm.webupload.WebUploadPath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
@@ -522,22 +519,35 @@ public class JobInfoManager {
     public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
         String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-        if(tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER)) {
+        if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
             String mainFile = (String)taskInfo.getAttributes().get("commandLine");
             mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
             TasklibPath tasklibPath = new TasklibPath(taskInfo, mainFile);
             launchUrl = ServerConfigurationFactory.instance().getGenePatternURL() + tasklibPath.getRelativeUri().toString();
+
+            //add the job number
+            launchUrl += "?job.number=" + jobInfo.getJobNumber();
             ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
             for (ParameterInfo parameterInfo : parameterInfos)
             {
                 try {
                     String value=parameterInfo.getValue();
 
-                    if (value.endsWith(".list.txt")) {
-                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+                    if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
+                        && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
+                            || (parameterInfo.getAttributes().containsKey("type")
+                            && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
+                    {
+                        if (value.endsWith(".list.txt")) {
+                            List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
 
-                        for (String fileUrl : fileList) {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                            for (String fileUrl : fileList) {
+                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                            }
+                        }
+                        else
+                        {
+                            launchUrl += "&" + parameterInfo.getName() + "=" + GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
                         }
                     }
                     else

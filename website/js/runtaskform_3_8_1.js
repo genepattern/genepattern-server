@@ -648,8 +648,7 @@ function loadModuleInfo(module) {
         $("#source_info").prepend("Source: ");
     }
 
-    if(module["categories"] != undefined && module["categories"] != null &&
-        module["categories"].indexOf("JsViewer") != -1)
+    if(module["taskType"] && module["taskType"] === "JsViewer")
     {
         run_task_info.is_js_viewer = true;
     }
@@ -2258,20 +2257,22 @@ function submitTask() {
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
-            else if (run_task_info.is_js_viewer) {
+            /*else if (run_task_info.is_js_viewer) {
                 if (response.launchUrl)
                 {
-                    //openJsViewer(run_task_info.name, run_task_info.lsid,  response.launchUrl);
+                    //openJavascriptModule(run_task_info.name, run_task_info.lsid,  response.launchUrl);
+                    //mainLayout.close('west');
+
                     window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
                 }
                 else
                 {
                     alert("Could not open viewer: " + run_task_info.name);
                 }
-            }
-            else if (response.jobId !== undefined) {
+            }*/
+            //else if (response.jobId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
-            }
+            //}
 
             console.log("Response text: " + response.text);
         },

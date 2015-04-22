@@ -1131,6 +1131,16 @@ public class JobInfoWrapper implements Serializable {
         return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
 
+    //support for javascript
+    public boolean isJavascript()
+    {
+        if (taskInfo != null) {
+            return TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes());
+        }
+
+        return false;
+    }
+
     /**
      * The value of the 'id' attribute to the applet tag for this visualizer, so that you can access the visualizer with JavaScript.
      * E.g. Document.getElementById().
@@ -1172,9 +1182,30 @@ public class JobInfoWrapper implements Serializable {
     	}
     	return false;
     }
-    
+
+    public boolean getHasJavascript() {
+        if (isPipeline()) {
+            for (JobInfoWrapper child : children) {
+                if (child.isJavascript()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void setVisualizerAppletTag(String tag) {
         this.visualizerAppletTag = tag;
+    }
+
+    public String getLaunchUrl()throws Exception
+    {
+        if(taskInfo == null || jobInfo == null)
+        {
+            return "";
+        }
+
+        return JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
     }
 
     public String getVisualizerAppletTag() {

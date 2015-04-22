@@ -88,11 +88,6 @@ public class ServerSettingsBean implements Serializable {
 	            "resources", 
 	            "index", 
 	            "tasklib", 
-	            "tomcatCommonLib", 
-	            "webappDir",
-	            "pipeline.cp",
-	            "pipeline.main", 
-	            "pipeline.vmargs", 
 	            "installedPatchLSIDs", 
 	            "num.threads" });
 	    modes.put("Custom", null);

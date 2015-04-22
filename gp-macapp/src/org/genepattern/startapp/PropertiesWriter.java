@@ -163,20 +163,11 @@ public class PropertiesWriter {
             if (line.contains("$LSID_AUTHORITY$")) {
                 line = line.replaceAll("\\$LSID_AUTHORITY\\$", lsid);
             }
-            else if (line.startsWith("run_r_path=")) {
-                line = "run_r_path="+tomcatDir+"/webapps/gp/WEB-INF/classes/";
-            }
             else if (line.contains("R.suppress.messages.file=")) {
                 line = line.replaceAll("\\.\\.", gpHomeDirString);
             }
             else if (line.startsWith("resources=")) {
                 line = "resources=" + gpHomeDirString + "/resources";
-            }
-            else if (line.startsWith("tomcatCommonLib=")) {
-                line = "tomcatCommonLib="+tomcatDir+"/common/lib";
-            }
-            else if (line.startsWith("webappDir=")) {
-                line = "webappDir="+tomcatDir+"/webapps/gp";
             }
 
             lines.add(line);

@@ -71,11 +71,6 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
 
-<managed-bean>
-  <managed-bean-name>jobErrorReporterBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.JobErrorReporterBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
  <managed-bean>
   <managed-bean-name>pageMessages</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>

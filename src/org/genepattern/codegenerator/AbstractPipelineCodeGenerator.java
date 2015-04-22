@@ -91,17 +91,17 @@ public abstract class AbstractPipelineCodeGenerator {
     }
 
     public static String generateCommandLine(PipelineModel model) {
-        StringBuffer commandLine = new StringBuffer("<java> -cp <pipeline.cp>");
+        StringBuffer commandLine = new StringBuffer("<java> ");
 
         // System properties
         commandLine.append(" -Dgenepattern.properties=<resources>");
         commandLine.append(" -D" + GPConstants.LSID + "=<LSID>");
         commandLine.append(" -D" + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=<"
                 + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + ">");
-        commandLine.append(" " + System.getProperty("pipeline.vmargs", "") + " ");
+        commandLine.append(" -DGenePatternURL=<GenePatternURL> ");
 
         // class to run
-        commandLine.append(" <pipeline.main>");
+        commandLine.append(" org.genepattern.server.webapp.RunPipelineSoap");
 
         // script name
         commandLine.append(" <GenePatternURL>getPipelineModel.jsp?");

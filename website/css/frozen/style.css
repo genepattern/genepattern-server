@@ -1147,3 +1147,35 @@ strong.filtered-number
 {
     min-width: 45px;
 }
+
+#jsViewer
+{
+    height: 80%;
+    overflow: hidden;
+    width: 100%;
+}
+
+#jsViewerInfoBar
+{
+    background-color: #EAEAEA;
+    line-height: 20px;
+    padding-top: 2px;
+    float: left;
+    width: 100%;
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 8px;
+    left: 30px;
+}
+
+#actionBar
+{
+    float:left;
+    margin-right: 5px;
+    margin-top: 2px;
+}
+
+#openJSWin
+{
+    cursor: pointer;
+}

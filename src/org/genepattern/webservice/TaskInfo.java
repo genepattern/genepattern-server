@@ -378,9 +378,9 @@ public class TaskInfo implements Serializable {
 
     public static boolean isJavascript(TaskInfoAttributes tia)
     {
-        if (tia != null && tia.get(GPConstants.CATEGORIES) != null)
+        if (tia != null && tia.get(GPConstants.TASK_TYPE) != null)
         {
-            return (tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER));
+            return (tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_JAVASCRIPT));
         }
 
         return false;

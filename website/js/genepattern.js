@@ -2255,7 +2255,7 @@ function createJobWidget(job) {
         });
     }
 
-    if (job.launchUrl != undefined && job.launchUrl != null) {
+    if (job.launchUrl !== undefined && job.launchUrl !== null) {
         actionData.push({
             "lsid": "",
             "name": "Relaunch",
@@ -2283,7 +2283,7 @@ function createJobWidget(job) {
                 var url = listObject.attr("data-url");
 
                 if (statusAction) {
-                    loadJobStatus(job.jobId);
+                    loadJobStatus(job.jobId, false);
                 }
 
                 else if (downloadAction) {
@@ -2340,8 +2340,7 @@ function createJobWidget(job) {
                 }
                 else if (relaunchAction)
                 {
-                    openJsViewer(job.taskName, job.launchUrl);
-                    $(".search-widget:visible").searchslider("hide");
+                    loadJavascript(job.jobId, $("#main-pane"), true);
                 }
                 else {
                     console.log("ERROR: Executing click function for Job " + job.jobId);
@@ -2604,6 +2603,75 @@ function getURLParameter(sParam) {
     return null;
 }
 
+function cleanUpPanels()
+{
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Hide the protocols, run task form & eula, if visible
+    $("#protocols").hide();
+    var submitJob = $("#submitJob").hide();
+    $("#eula-block").hide();
+    $("#jobResults").hide();
+    $("#infoMessageDiv").hide();
+    $("#errorMessageDiv").hide();
+    $("#mainViewerPane").remove();
+}
+
+ //this will load a javascript module
+function loadJavascript(jobId, container, openJavascript) {
+    // Abort if there is no job id
+    if (jobId === undefined || jobId === null || jobId === '') {
+        return;
+    }
+
+    var openVisualizers;
+    if (openJavascript !== undefined) {
+        openVisualizers = openJavascript;
+    }
+    else {
+        openVisualizers = getURLParameter("openVisualizers");
+    }
+
+    // if open visualizer is false then user most likely
+    // intends to open job status page
+    if (!openVisualizers) {
+        return;
+    }
+
+    // Add to history so back button works
+    var visualizerAppend = "&openVisualizers="+openVisualizers;
+
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
+
+    cleanUpPanels();
+
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/jobs/" + jobId,
+        cache: false,
+        success: function(data) {
+            var job = data;
+            if (job.launchUrl !== undefined && job.launchUrl !== null) {
+                container.gpJavascript({
+                        taskName: job.taskName,
+                        taskLsid: job.taskLsid,
+                        url: job.launchUrl  //The URL to the main javascript html file
+                });
+                mainLayout.close('west');
+            }
+        },
+        error: function(data) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
+            showErrorMessage(data);
+        },
+        dataType: "json"
+    });
+}
+
 function loadJobStatus(jobId, forceVisualizers) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
@@ -2617,6 +2685,9 @@ function loadJobStatus(jobId, forceVisualizers) {
     $("#protocols").hide();
     var submitJob = $("#submitJob").hide();
     $("#eula-block").hide();
+
+    //hide the Javascript Visualizer Div
+    $("#mainViewerPane").hide();
 
     // Clean the Run Task Form for future loads
     if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = submitJob.clone(); }
@@ -2654,6 +2725,17 @@ function loadJobStatus(jobId, forceVisualizers) {
         visualizerAppend = openVisualizers;
     }
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
+
+    //make the job results page a tabbed page
+    /*var jobResultsTab = $("<div/>");
+    $("#main-pane").prepend(jobResultsTab);
+    jobResultsTab.w2tabs({
+        name: 'jobResultsTab',
+        active: 'jobResults',
+        tabs: [
+            { id: 'jobResults', caption: 'Job Results' }
+        ]
+    });*/
 
     $.ajax({
         type: "GET",

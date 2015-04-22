@@ -514,6 +514,7 @@ function showFileInput(id) {
     <script type="text/javascript">
         $(document).ready(function() {
             loadRunTaskForm();
+            //loadJavascript('#{runTaskBean.jobId}', $("#main-pane"));
             loadJobStatus(#{runTaskBean.jobId});
             loadJobResults('#{runTaskBean.jobResults}');
         });

@@ -146,7 +146,7 @@ public class GPConstants {
     public static final String TASK_TYPE_VISUALIZER = "Visualizer";
 
     /** well known task category that gets special handling in menus and browsers */
-    public static final String TASK_CATEGORY_JSVIEWER = "JsViewer";
+    public static final String TASK_TYPE_JAVASCRIPT = "javascript";
 
     /** well known task type that gets special handling in menus and browsers */
     public static final String TASK_TYPE_PIPELINE = "pipeline";
