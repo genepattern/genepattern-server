@@ -62,6 +62,7 @@ public class GenomeSpaceClient {
         try {
            ConfigurationUrls.init(env);
            GsSession gsSession = new GsSession();
+           gsSession.setGSToolName("GenePattern");
            User gsUser = gsSession.login(username, password);
 
            GenomeSpaceLogin response = new GenomeSpaceLogin();
@@ -156,6 +157,7 @@ public class GenomeSpaceClient {
         try {
             ConfigurationUrls.init(env);
             GsSession gsSession = new GsSession();
+            gsSession.setGSToolName("GenePattern");
             gsSession.registerUser(username, password, regEmail);
         }
         catch (Throwable t) {
@@ -454,7 +456,7 @@ public class GenomeSpaceClient {
             if (tool.getName().equals(toolName)) {
                 List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(tool.getFileParameters(), metadata);
                 try {
-                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers);
+                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers, true);
                 }
                 catch (InternalServerException e) {
                     log.error("Error getting the tool URL for the tool: " + tool.getName() + " file: " + file.getName());

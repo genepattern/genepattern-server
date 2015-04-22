@@ -34,14 +34,13 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
 import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
  * RESTful implementation of the /data resource.
@@ -155,18 +154,18 @@ public class DataResource {
      */
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("/upload/job_input_form") 
+    @Path("/upload/job_input_form")
     public Response handlePostJobInputMultipartForm(
             final @Context HttpServletRequest request,
             final @HeaderParam("Content-Length") String contentLength,
             final @FormDataParam("file") InputStream in,
-            final @FormDataParam("file") FormDataContentDisposition fileDetail) 
+            final @FormDataParam("file") FormDataContentDisposition fileDetail)
     {
         try {
-            final GpContext userContext=Util.getUserContext(request);        
+            final GpContext userContext=Util.getUserContext(request);
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
             final GpFilePath gpFilePath=writeJobInputFile(userContext, in, fileDetail.getFileName(), maxNumBytes);
-            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            final String location = ""+gpFilePath.getUrl().toExternalForm();
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -618,7 +617,7 @@ public class DataResource {
     {
         if (contentLength == null) {
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.LENGTH_REQUIRED).build());
+                    Response.status(Response.Status.LENGTH_REQUIRED).build());
         }
         long numBytes = -1L;
         long maxNumBytes = MAX_FILE_SIZE_DEFAULT;
@@ -626,7 +625,7 @@ public class DataResource {
         maxNumBytes=ServerConfigurationFactory.instance().getGPLongProperty(userContext, PROP_MAX_FILE_SIZE, MAX_FILE_SIZE_DEFAULT);
         if (numBytes > maxNumBytes) {
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.REQUEST_ENTITY_TOO_LARGE).build());
+                    Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).build());
         }
         return maxNumBytes;
     }
@@ -674,7 +673,7 @@ public class DataResource {
         catch (Exception e) {
             //TODO: figure out how to include more meaningful error message in the response header
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
         }
 
         // save it
@@ -797,15 +796,15 @@ public class DataResource {
         }
         catch (MaxFileSizeException e) {
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.REQUEST_ENTITY_TOO_LARGE).build());
+                    Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).build());
         }
         catch (WriteToFileException e) {
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
         }
         catch (Throwable t) {
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
         }
         finally {
             if (!success) {
@@ -822,7 +821,7 @@ public class DataResource {
         catch (Throwable t) {
             log.error("Error saving record of job_input_file to DB, filename="+gpFilePath.getRelativePath(), t);
             throw new WebApplicationException(
-                    Response.status(ClientResponse.Status.INTERNAL_SERVER_ERROR).build());
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
         }
     }
     
