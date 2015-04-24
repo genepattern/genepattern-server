@@ -37,10 +37,10 @@ public class CodeGeneratorUtil {
     private static Map<String, TaskCodeGenerator> languageToCodeGenerator;
     static {
         languageToCodeGenerator = new HashMap<String, TaskCodeGenerator>();
-        languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator());
-        languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator());
-        languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
-        languageToCodeGenerator.put("Python", new PythonPipelineCodeGenerator());
+        languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("R", new RPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("Python", new PythonPipelineCodeGenerator(UIBeanHelper.getServer()));
     }
 
     public static String getJobResultFileName(JobInfo job, int parameterInfoIndex) {

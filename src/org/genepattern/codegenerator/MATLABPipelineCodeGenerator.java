@@ -57,7 +57,8 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
 	super(model, server, jobSubmissionTaskInfos);
     }
 
-    public MATLABPipelineCodeGenerator() {
+    public MATLABPipelineCodeGenerator(String server) {
+        this.server = server;
     }
 
     public String emitUserInstructions() {

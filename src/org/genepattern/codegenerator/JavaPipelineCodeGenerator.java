@@ -61,8 +61,8 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         super(model, server, jobSubmissionTaskInfos);
     }
 
-    public JavaPipelineCodeGenerator() {
-
+    public JavaPipelineCodeGenerator(String server) {
+        this.server = server;
     }
 
     public String emitUserInstructions() {

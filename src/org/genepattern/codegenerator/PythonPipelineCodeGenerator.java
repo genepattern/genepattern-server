@@ -51,8 +51,8 @@ public class PythonPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
         super(model, server, jobSubmissionTaskInfos);
     }
 
-    public PythonPipelineCodeGenerator() {
-
+    public PythonPipelineCodeGenerator(String server) {
+        this.server = server;
     }
 
     public String emitUserInstructions() {

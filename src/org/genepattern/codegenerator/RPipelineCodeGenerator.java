@@ -51,8 +51,8 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
         super(model, server, jobSubmissionTaskInfos);
     }
 
-    public RPipelineCodeGenerator() {
-
+    public RPipelineCodeGenerator(String server) {
+        this.server = server;
     }
 
     public String emitUserInstructions() {
