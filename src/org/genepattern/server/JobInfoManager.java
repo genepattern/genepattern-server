@@ -11,6 +11,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpContext;
@@ -28,6 +30,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.UserDAO;
@@ -547,7 +550,24 @@ public class JobInfoManager {
                         }
                         else
                         {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
+                            URL fileUrl= JobInputHelper.initExternalUrl(value);
+                            if (fileUrl == null) {
+                                //need to dowload it first if it if its is an ftp file
+                                /*if(fileUrl.getProtocol().equals("ftp"))
+                                {
+                                    File fileTempDir = ServerConfigurationFactory
+                                            .instance().getTemporaryUploadDir(GpContext.getContextForUser(jobInfo.getUserId()));
+                                    File downloadFile = new File(fileTempDir, fileUrl.getFile());
+                                    FileUtils.copyURLToFile(fileUrl, downloadFile);
+                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(downloadFile.getCanonicalPath()).getUrl();
+                                }*/
+                            }
+                            else
+                            {
+                                //it's an not an external or GenomeSpace URL
+                                fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
+                            }
+                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
                         }
                     }
                     else
