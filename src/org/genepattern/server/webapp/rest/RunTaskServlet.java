@@ -61,13 +61,11 @@ import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.*;
 import org.genepattern.webservice.AnalysisJob;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * Created by IntelliJ IDEA.
@@ -459,6 +457,7 @@ public class RunTaskServlet extends HttpServlet
     @POST
     @Path("/addJob")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response addJob(
         JobSubmitInfo jobSubmitInfo,
         @Context HttpServletRequest request)
@@ -466,7 +465,7 @@ public class RunTaskServlet extends HttpServlet
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
         return addJob(userContext, jobSubmitInfo, request);
     }
@@ -481,7 +480,7 @@ public class RunTaskServlet extends HttpServlet
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
         return launchJsViewer(userContext, jobSubmitInfo, request);
     }
@@ -605,7 +604,7 @@ public class RunTaskServlet extends HttpServlet
             if(e.getMessage() != null) {
                 message = message + ": " + e.getMessage();
             }
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(message).build();
         }
         catch(Throwable t) {
             String message = "An error occurred while submitting the job";
@@ -748,7 +747,7 @@ public class RunTaskServlet extends HttpServlet
             if(e.getMessage() != null) {
                 message = message + ": " + e.getMessage();
             }
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(message).build();
         }
         catch(Throwable t) {
             String message = "An error occurred while submitting the job";

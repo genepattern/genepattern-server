@@ -63,8 +63,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.jersey.api.client.ClientResponse;
-
 /**
  * RESTful implementation of the /jobs resource.
  * 
@@ -136,12 +134,12 @@ public class JobsResource {
     ////////////////////////////////////////
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON) 
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addJob(
             final @Context UriInfo uriInfo,
-            final @Context HttpServletRequest request, 
-            final JobInputValues jobInputValues) 
+            final @Context HttpServletRequest request,
+            final JobInputValues jobInputValues)
     {
         final GpContext jobContext=Util.getUserContext(request);
 
@@ -154,7 +152,7 @@ public class JobsResource {
             if(diskInfo.isAboveQuota())
             {
                 //disk usage exceeded so do not allow user to run a job
-                return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+                return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
         }
         catch(DbException db)
@@ -184,7 +182,7 @@ public class JobsResource {
             //}
             //final String jobId=receipt.getJobIds().get(0);
             rval.put("jobId", jobId);
-            
+
             //set the Location header to the URI of the newly created resource
             final URI uri = uriInfo.getAbsolutePathBuilder().path(jobId).build();
             rval.put("jobUri", uri.toString());
@@ -202,7 +200,7 @@ public class JobsResource {
                 Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage())
                     .build()
-                );            
+                );
         }
         catch (Throwable t) {
             throw new WebApplicationException(
@@ -212,7 +210,7 @@ public class JobsResource {
                 );
         }
     }
-    
+
     /////////////////////////////////////
     // Job search API
     /////////////////////////////////////
@@ -234,7 +232,7 @@ public class JobsResource {
      * <pre>
         curl -u test:test -X GET http://127.0.0.1:8080/gp/rest/v1/jobs
      * </pre>
-     *  
+     *
      * @param uriInfo
      * @param request
      * @param userId
@@ -287,15 +285,15 @@ public class JobsResource {
                orderBy=jobId
                orderBy=-jobId
                </pre>
-             * 
+             *
              */
-            final @QueryParam("orderBy") String orderBy, 
+            final @QueryParam("orderBy") String orderBy,
             /**
              * Optionally set the order of the outputFiles for each jobs.
              *     orderFilesBy={name | date | size}, default sort order is by date.
              * By default they are ordered by 'date'.
              * This determines the sort order of files within each job results 'folder'.
-             * 
+             *
              * Examples,
              * <pre>
                # sort by date, descending order
@@ -312,7 +310,7 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("includePermissions") boolean includePermissions,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
-        
+
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=Util.getUserContext(request);
 
@@ -383,7 +381,7 @@ public class JobsResource {
         }
         catch (Throwable t) {
             log.error(t);
-            final String message="Error in job search: "+t.getLocalizedMessage();            
+            final String message="Error in job search: "+t.getLocalizedMessage();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(message)
                     .build();
@@ -395,7 +393,7 @@ public class JobsResource {
     ////////////////////////////////////
     /**
      * GET a job, by jobId.
-     * 
+     *
      * Example
      * <pre>
        curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140?includeChildren=true
@@ -416,7 +414,7 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
-        
+
         final GpContext jobContext=Util.getJobContext(request, jobId);
 
         final String gpUrl=UrlUtil.getGpUrl(request);
@@ -442,7 +440,7 @@ public class JobsResource {
             else {
                 jsonStr=job.toString();
             }
-            
+
             //for debugging
             if (log.isDebugEnabled()) {
                 try {
@@ -464,7 +462,7 @@ public class JobsResource {
             //    ?, when job_id is not set
             //    ?, when job_id is invalid, e.g. not an integer
             //    ?, when current user does not have read access to the job
-            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();            
+            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(message)
                     .build();
@@ -508,7 +506,7 @@ public class JobsResource {
                     .build();
         }
     }
-    
+
     /**
      * Terminate the specified job
      * @param request
@@ -526,7 +524,7 @@ public class JobsResource {
             return Response.ok().entity("Terminated Job: " + intJobId).build();
         }
         catch (Throwable t) {
-            log.error("job termination error, jobId="+jobId, t);            
+            log.error("job termination error, jobId="+jobId, t);
             return Response.status(500).entity("Could not terminate job " + jobId + " " + t.getLocalizedMessage()).build();
         }
     }
@@ -691,15 +689,15 @@ public class JobsResource {
     /**
      * Get a JSON List of the JSOn objects for the most recent jobs,
      * as well as the total number of processing jobs for the current user.
-     * 
+     *
      * Response template:
      * <pre>
        {
            numProcessingJobs: 14,
            recentJobs: [ {}, {}, ..., {} ]
-       } 
+       }
      * </pre>
-     * 
+     *
      * @param uriInfo
      * @param request
      * @return
@@ -708,7 +706,7 @@ public class JobsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/recent")
     public Response getRecentJobs (
-            final @Context UriInfo uriInfo, 
+            final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
@@ -745,7 +743,7 @@ public class JobsResource {
             JSONObject jsonObj=new JSONObject();
             jsonObj.put("recentJobs", jobs);
             jsonObj.put("numProcessingJobs", numProcessingJobs);
-            
+
             final int indentFactor=2;
             String jsonStr=jsonObj.toString(indentFactor);
             return Response.ok().entity(jsonStr).build();
@@ -755,10 +753,10 @@ public class JobsResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
-    
+
     /**
      * GET children for the given jobId.
-     * 
+     *
      * Example
      * <pre>
        curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140/children
@@ -776,7 +774,7 @@ public class JobsResource {
             final @PathParam("jobId") String jobId,
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
-        
+
         final GpContext userContext=Util.getUserContext(request);
         final String self=uriInfo.getAbsolutePath().toString();
         final String gpUrl=UrlUtil.getGpUrl(request);
@@ -800,7 +798,7 @@ public class JobsResource {
             //    ?, when job_id is not set
             //    ?, when job_id is invalid, e.g. not an integer
             //    ?, when current user does not have read access to the job
-            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();            
+            final String message="Error creating JSON representation for jobId="+jobId+": "+t.getLocalizedMessage();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(message)
                     .build();
@@ -811,7 +809,7 @@ public class JobsResource {
                 .entity(jsonStr)
                 .build();
     }
-    
+
     /**
      * Returns a list of job numbers for currently pending or running jobs
      * @param request
@@ -823,13 +821,13 @@ public class JobsResource {
     public Response isJobRunning(@Context HttpServletRequest request) {
         GpContext userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
-        
+
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the map of the latest tasks
             AnalysisDAO analysisDao = new AnalysisDAO();
             List<JobInfo> jobs = analysisDao.getIncompleteJobsForUser(userId);
-            
+
             // Return the JSON object
             JSONArray jsonArray = new JSONArray();
             for (JobInfo jobInfo : jobs) {
