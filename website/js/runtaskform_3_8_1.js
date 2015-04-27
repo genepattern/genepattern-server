@@ -2257,22 +2257,8 @@ function submitTask() {
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
-            /*else if (run_task_info.is_js_viewer) {
-                if (response.launchUrl)
-                {
-                    //openJavascriptModule(run_task_info.name, run_task_info.lsid,  response.launchUrl);
-                    //mainLayout.close('west');
 
-                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
-                }
-                else
-                {
-                    alert("Could not open viewer: " + run_task_info.name);
-                }
-            }*/
-            //else if (response.jobId !== undefined) {
-                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
-            //}
+            window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
 
             console.log("Response text: " + response.text);
         },
@@ -2634,7 +2620,7 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
 
             //determine if this is a  url
             if (files[i].name.indexOf("://") !== -1) {
-                fileRow.append("<td><a href='" + files[i].name + "'> " + files[i].name + "</a></td>");
+                fileRow.append("<td><a href='" + files[i].name + "'> " + decodeURI(files[i].name) + "</a></td>");
             }
             else {
                 fileRow.append("<td>" + files[i].name + "</td>");
