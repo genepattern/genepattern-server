@@ -551,7 +551,7 @@ public class JobInfoManager {
                         else
                         {
                             URL fileUrl= JobInputHelper.initExternalUrl(value);
-                            if (fileUrl == null) {
+                            if (fileUrl != null) {
                                 //need to dowload it first if it if its is an ftp file
                                 /*if(fileUrl.getProtocol().equals("ftp"))
                                 {
