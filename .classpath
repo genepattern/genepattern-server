@@ -97,12 +97,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.com.jamesmurty.utils-0.0.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.apache.commons.codec-1.3.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.apache.commons.httpclient-3.1.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.apache.commons.logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.apache.log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.jets3t-0.8.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-io-2.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-lang-2.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dm-messages-0.1-SNAPSHOT.jar"/>
@@ -114,7 +108,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.servicemix.specs.stax-api-1.0-1.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/stax-api-1.0-2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/guice-2.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpcore-4.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
@@ -125,13 +118,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-client-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-client-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-core-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-json-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-multipart-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-1.11.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-servlet-1.11.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-2.2.0-b21.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
@@ -147,5 +133,18 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/postgresql-9.4-1201.jdbc41.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/reflections-0.10-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/javassist-3.4.GA.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.3.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-connector-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-client-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-common-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-core-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-json-jettison-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-multipart-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/genson-1.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/httpmime-4.3.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.ws.rs-api-2.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
