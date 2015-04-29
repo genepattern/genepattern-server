@@ -35,6 +35,9 @@ public class TasklibPath extends GpFilePath {
         if (taskInfo==null) {
             throw new IllegalArgumentException("taskInfo==null");
         }
+        if (taskInfo.getLsid()==null) {
+            throw new IllegalArgumentException("taskInfo.lsid==null");
+        }
         if (libdirStrategy == null) {
             libdirStrategy=new LibdirLegacy();
         }
