@@ -6,7 +6,10 @@
         <element id="directory" name="classes">
           <element id="module-output" name="gp-trunk" />
         </element>
-        <element id="directory" name="lib" />
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="lib1" />
+          <element id="library" level="project" name="lib" />
+        </element>
       </element>
       <element id="javaee-facet-resources" facet="gp-trunk/web/Web" />
     </root>
