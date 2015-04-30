@@ -35,6 +35,9 @@ public class TasklibPath extends GpFilePath {
         if (taskInfo==null) {
             throw new IllegalArgumentException("taskInfo==null");
         }
+        if (taskInfo.getLsid()==null) {
+            throw new IllegalArgumentException("taskInfo.lsid==null");
+        }
         if (libdirStrategy == null) {
             libdirStrategy=new LibdirLegacy();
         }
@@ -67,7 +70,7 @@ public class TasklibPath extends GpFilePath {
             log.error("Error encoding "+relativePath, e);
             encodedFilepath = URLEncoder.encode(relativePath);
         }
-        String uriStr = "tasklib/"+lsid+"/"+encodedFilepath;
+        String uriStr = "/getFile.jsp?task="+lsid+"&file="+encodedFilepath;
         try {
             return new URI(uriStr);
         }
