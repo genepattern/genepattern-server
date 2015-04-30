@@ -20,14 +20,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.job.input.JobInputHelper;
@@ -520,63 +519,56 @@ public class JobInfoManager {
     }
 
     public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
+        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobInfo);
+    }
+    
+    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final JobInfo jobInfo) throws Exception {
         String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
         if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
             String mainFile = (String)taskInfo.getAttributes().get("commandLine");
             mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
-            TasklibPath tasklibPath = new TasklibPath(taskInfo, mainFile);
-            launchUrl = ServerConfigurationFactory.instance().getGenePatternURL() + tasklibPath.getRelativeUri().toString();
-
+            final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
+            launchUrl = gpConfig.getGenePatternURL() + relativeUriStr;
             //add the job number
             launchUrl += "?job.number=" + jobInfo.getJobNumber();
             ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            for (ParameterInfo parameterInfo : parameterInfos)
-            {
-                try {
-                    String value=parameterInfo.getValue();
+            if (parameterInfos != null) {
+                for (ParameterInfo parameterInfo : parameterInfos) {
+                    try {
+                        String value=parameterInfo.getValue();
 
-                    if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
-                        && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
-                            || (parameterInfo.getAttributes().containsKey("type")
-                            && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
-                    {
-                        if (value.endsWith(".list.txt")) {
-                            List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
-
-                            for (String fileUrl : fileList) {
-                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                            }
-                        }
-                        else
+                        if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
+                                && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
+                                || (parameterInfo.getAttributes().containsKey("type")
+                                        && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
                         {
-                            URL fileUrl= JobInputHelper.initExternalUrl(value);
-                            if (fileUrl != null) {
-                                //need to dowload it first if it if its is an ftp file
-                                /*if(fileUrl.getProtocol().equals("ftp"))
-                                {
-                                    File fileTempDir = ServerConfigurationFactory
-                                            .instance().getTemporaryUploadDir(GpContext.getContextForUser(jobInfo.getUserId()));
-                                    File downloadFile = new File(fileTempDir, fileUrl.getFile());
-                                    FileUtils.copyURLToFile(fileUrl, downloadFile);
-                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(downloadFile.getCanonicalPath()).getUrl();
-                                }*/
+                            if (value.endsWith(".list.txt")) {
+                                List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+
+                                for (String fileUrl : fileList) {
+                                    launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                                }
                             }
                             else
                             {
-                                //it's an not an external or GenomeSpace URL
-                                fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
+                                URL fileUrl= JobInputHelper.initExternalUrl(value);
+                                if (fileUrl != null) {
+                                }
+                                else {
+                                    //it's an not an external or GenomeSpace URL
+                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
+                                }
+                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
                             }
-                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
                         }
+                        else {
+                            launchUrl += "&" + parameterInfo.getName() + "=" + value;
+                        }
+                    } 
+                    catch (Exception io) {
+                        log.error(io);
                     }
-                    else
-                    {
-                        launchUrl += "&" + parameterInfo.getName() + "=" + value;
-                    }
-
-                } catch (Exception io) {
-                    log.error(io);
                 }
             }
         }
