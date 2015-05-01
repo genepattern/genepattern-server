@@ -30,7 +30,7 @@ var gpUtil = function() {
     }
 
     function pad(num) {
-        norm = Math.abs(Math.floor(num));
+        var norm = Math.abs(Math.floor(num));
         return (norm < 10 ? '0' : '') + norm;
     }
 
