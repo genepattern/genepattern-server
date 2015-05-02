@@ -3,6 +3,13 @@
  */
 
 var gpUtil = function() {
+
+    /**
+     * helper function to test if an object is a string
+     */
+    function isString(s) {
+        return typeof(s) === 'string' || s instanceof String;
+    }
     
     /**
      * Pretty print the date for display on the job status page in "month day, h:mm am/pm" format, E.g.
@@ -114,6 +121,76 @@ var gpUtil = function() {
         }
     }
 
+    /**
+     * Parse the query string from the current window location.
+     * 
+     * @returns an Object containing the decoded values,
+     *     It's empty if there is not search string,
+     *     each key with one value is set directly,
+     *     each key with multiple values is set as an array
+     *     
+     * For example,
+     *     input: ?flag&param1=value1&multiParam=A&multiParam=B
+     *     output: {
+     *         flag: undefined,
+     *         param1: value1,
+     *         multiParam: [ A, B]
+     *     }
+     */
+    function parseQueryString() {
+        var queryString = window.location.search;
+        return parseQueryString(queryString);
+    }
+
+    /**
+     * Parse the given query string of the form '?{name1}={value}&{name2}={value}
+     * @param the query string from a URL, for example window.location.search
+     * @return a hash of decoded values, if there are more than one value, the rhs of the hash will be an array.
+     */
+    function parseQueryString( queryString ) {
+        if (!queryString) {
+            return {};
+        }
+        // strip leading '?'
+        if (queryString.charAt(0) == '?') {
+            queryString=queryString.substring(1);
+        }
+        if (!queryString) {
+            return {};
+        }
+        
+        var params = {}, queries, temp, i, l;
+     
+        // Split into key/value pairs
+        queries = queryString.split("&");
+     
+        // Convert the array of strings into an object
+        for ( i = 0, l = queries.length; i < l; i++ ) {
+            temp = queries[i].split('=');
+            var key=decodeURIComponent(temp[0]);
+            var val=undefined;
+            if (temp[1]) {
+                val=decodeURIComponent(temp[1]);            
+            }
+            if (params[key]) {
+                var e=params[key];
+                if (isString(params[key])) {
+                    var myArray=new Array();
+                    myArray.push(e);
+                    myArray.push(val);
+                    params[key]=myArray;
+                }
+                else {
+                    e.push(val);
+                }
+            } 
+            else {
+                params[key] = val;
+            }
+        }     
+        return params;
+    }
+
     // declare 'public' functions
     return {
         formatTimezone:formatTimezone,
@@ -121,6 +198,7 @@ var gpUtil = function() {
         formatDate:formatDate,
         formatTimeOfDay:formatTimeOfDay,
         initToggleDiv:initToggleDiv,
-        toggleDiv:toggleDiv
+        toggleDiv:toggleDiv,
+        parseQueryString:parseQueryString 
     };
 }();
