@@ -143,9 +143,12 @@ var gpUtil = function() {
     }
 
     /**
-     * Parse the given query string of the form '?{name1}={value}&{name2}={value}
+     * Parse the given query string of the form '?{name1}={value}&{name2}={value}&{flag}
      * @param the query string from a URL, for example window.location.search
-     * @return a hash of decoded values, if there are more than one value, the rhs of the hash will be an array.
+     * @return a hash of decoded values, where the rhs value is an array. E.g.
+     *     '?myFlag', { myFlag: [ "" ] }
+     *     '?param=val, { param: [ "val" ] }
+     *     '?params=val1&params=val2, { params : [ "val1", "val2" ] }
      */
     function parseQueryString( queryString ) {
         if (!queryString) {
@@ -168,25 +171,17 @@ var gpUtil = function() {
         for ( i = 0, l = queries.length; i < l; i++ ) {
             temp = queries[i].split('=');
             var key=decodeURIComponent(temp[0]);
-            var val=undefined;
+            var val=""; // undefined value will be set to a string, e.g. '?myFlag' with no equal sign
             if (temp[1]) {
-                val=decodeURIComponent(temp[1]);            
+                val=decodeURIComponent(temp[1]); 
             }
-            if (params[key]) {
-                var e=params[key];
-                if (isString(params[key])) {
-                    var myArray=new Array();
-                    myArray.push(e);
-                    myArray.push(val);
-                    params[key]=myArray;
-                }
-                else {
-                    e.push(val);
-                }
-            } 
-            else {
-                params[key] = val;
+
+            var myArray=params[key];
+            if (!myArray) {
+                myArray = new Array();
+                params[key]=myArray;
             }
+            myArray.push(val);
         }     
         return params;
     }
