@@ -6,6 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
+import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
@@ -21,8 +25,8 @@ import org.genepattern.server.genomespace.GenomeSpaceLogin;
  * 
  * @author pcarr
  */
-public class BasicAuthUtil {
-    private static Logger log = Logger.getLogger(BasicAuthUtil.class);
+public class AuthenticationUtil {
+    private static Logger log = Logger.getLogger(AuthenticationUtil.class);
 
     /**
      * Check the servlet request for an authenticated user. 
@@ -44,12 +48,16 @@ public class BasicAuthUtil {
     static public String getAuthenticatedUserId(HttpServletRequest req, HttpServletResponse resp) throws AuthenticationException {
         String userIdFromSession = LoginManager.instance().getUserIdFromSession(req);
 
+        /*
+         * First try Basic Auth
+         */
+
         // Get Authorization header
         String userIdFromAuthorizationHeader = null;
         byte[] password = null;
         String auth = req.getHeader("Authorization");
         if (auth != null) {
-            String[] up = getUsernamePassword(auth);
+            String[] up = getBasicAuthCredentials(auth);
             userIdFromAuthorizationHeader = up[0];
             String passwordStr = up[1];
             password = passwordStr != null ? passwordStr.getBytes() : null;
@@ -85,19 +93,61 @@ public class BasicAuthUtil {
         try {
             authenticated = UserAccountManager.instance().getAuthentication().authenticate(userIdFromAuthorizationHeader, password);
             if (authenticated) {
-                gpUserId=userIdFromAuthorizationHeader;
+                gpUserId = userIdFromAuthorizationHeader;
             }
         }
         catch (AuthenticationException ex) {
             //ignore it
             authenticated=false;
         }
+
+        /*
+         * If not Basic Auth, try OAuth
+         */
+
+        // TODO: Implement
+//        try {
+//            UserAccountManager.instance().authenticateUser(userIdFromSession, password);
+//        }
+//        catch (AuthenticationException e) {
+//            ;
+//        }
+
+//        try {
+//            OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(req, ParameterStyle.HEADER, ParameterStyle.QUERY);
+//            String accessToken = oauthRequest.getAccessToken();
+//
+//            if (OAuthManager.instance().isTokenValid(accessToken)) {
+//                String usernameFromToken = OAuthManager.instance().getUsernameFromToken(accessToken);
+//                if (userIdFromSession.equals(usernameFromToken)) {
+//                    authenticated = true;
+//                    gpUserId = usernameFromToken;
+//                }
+//            }
+//
+//            if (authenticated) {
+//                log.debug("gpUserId=" + gpUserId);
+//                LoginManager.instance().addUserIdToSession(req, gpUserId);
+//                return gpUserId;
+//            }
+//        } catch (OAuthSystemException e) {
+//            //ignore it
+//            authenticated = false;
+//        } catch (OAuthProblemException e) {
+//            //ignore it, probably simply lacks a token
+//            authenticated = false;
+//        }
+
+        /*
+         * If other auth fails, try GenomeSpace auth
+         */
+
         final boolean checkGsCredentials=true;
         if (!authenticated && checkGsCredentials) {
             //if we are here, it means the gp user_id / password doesn't match
             //for GP-4540, it could be a GenomeSpace account
             log.debug("checking GenomeSpace credentials");
-            gpUserId = gs_authenticateUser(userIdFromAuthorizationHeader, password);
+            gpUserId = genomeSpaceAuthentication(userIdFromAuthorizationHeader, password);
             if (gpUserId != null) {
                 //we have valid GS credentials and a linked GP account
                 authenticated=true;
@@ -109,6 +159,10 @@ public class BasicAuthUtil {
             LoginManager.instance().addUserIdToSession(req, gpUserId);
             return gpUserId;
         }
+
+        /*
+         * If still not authenticated, return null
+         */
 
         //if we are here, the user was not authenticated, an AuthenticationException should have been thrown
         log.debug("AuthenticationException was not thrown, returning null userId instead.");
@@ -124,7 +178,7 @@ public class BasicAuthUtil {
      *     Otherwise return null.
      * @throws AuthenticationException
      */
-    static private String gs_authenticateUser(final String gsUsername, final byte[] gsPassword) throws AuthenticationException {
+    static private String genomeSpaceAuthentication(final String gsUsername, final byte[] gsPassword) throws AuthenticationException {
         // Protect against nulls
         if (gsUsername == null || gsPassword == null) {
             return null;
@@ -135,7 +189,7 @@ public class BasicAuthUtil {
             final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
             final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
             final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));
-            final String gpUserId=GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
+            final String gpUserId = GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
             return gpUserId;
         }
         catch (GenomeSpaceException e) {
@@ -154,7 +208,7 @@ public class BasicAuthUtil {
      * @param auth
      * @return <pre>new String[] {<username>, <password>};</pre>
      */
-    static private String[] getUsernamePassword(String auth) {
+    static private String[] getBasicAuthCredentials(String auth) {
         String[] up = new String[2];
         up[0] = null;
         up[1] = null;
@@ -207,11 +261,11 @@ public class BasicAuthUtil {
      * @param response
      * @throws IOException
      */
-    static public void requestAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        requestAuthentication(response, "You must log in to view the page: "+request.getPathInfo());
+    static public void requestBasicAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        requestBasicAuth(response, "You must log in to view the page: " + request.getPathInfo());
     }
     
-    static public void requestAuthentication(HttpServletResponse response, String message) throws IOException {
+    static public void requestBasicAuth(HttpServletResponse response, String message) throws IOException {
         final String realm = "GenePattern";
         response.setHeader("WWW-Authenticate", "BASIC realm=\""+realm+"\"");
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);

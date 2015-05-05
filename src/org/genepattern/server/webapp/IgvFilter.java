@@ -101,16 +101,16 @@ public class IgvFilter implements Filter {
 
         String gpUserId = null;
         try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(req, resp);
         }
         catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+            AuthenticationUtil.requestBasicAuth(resp, e.getLocalizedMessage());
             return;
         }
         
         if (gpUserId == null) {
             log.error("Expecting an AuthenticationException to be thrown");
-            BasicAuthUtil.requestAuthentication(req, resp);
+            AuthenticationUtil.requestBasicAuth(req, resp);
             return;
         }
         chain.doFilter(req, resp);

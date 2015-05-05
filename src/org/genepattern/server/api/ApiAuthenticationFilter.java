@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.webapp.BasicAuthUtil;
+import org.genepattern.server.webapp.AuthenticationUtil;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 /**
@@ -40,16 +40,16 @@ public class ApiAuthenticationFilter implements Filter {
         //1) authenticate
         String gpUserId = null;
         try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(req, resp);
         }
         catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+            AuthenticationUtil.requestBasicAuth(resp, e.getLocalizedMessage());
             return;
         } 
         if (gpUserId == null) {
             //don't expect to be here
             log.error("Expecting an AuthenticationException to be thrown");
-            BasicAuthUtil.requestAuthentication(req, resp);
+            AuthenticationUtil.requestBasicAuth(req, resp);
             return;
         }
         //2) authorize

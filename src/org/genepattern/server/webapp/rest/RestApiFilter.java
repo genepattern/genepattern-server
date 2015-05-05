@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.webapp.BasicAuthUtil;
+import org.genepattern.server.webapp.AuthenticationUtil;
 
 /**
  * Custom filter to use HTTP Basic Authentication for the GenePattern REST API.
@@ -48,17 +48,18 @@ public class RestApiFilter implements Filter {
 
         String gpUserId = null;
         try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(req, resp);
         }
         catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+            AuthenticationUtil.requestBasicAuth(resp, e.getLocalizedMessage());
             return;
         }
 
         // Don't return this error for CORS pre-flight requests
+        // TODO: Fix this for when to prompt for Basic Auth
         if (gpUserId == null && !method.equals("options")) {
             log.error("Expecting an AuthenticationException to be thrown");
-            BasicAuthUtil.requestAuthentication(req, resp);
+            AuthenticationUtil.requestBasicAuth(req, resp);
             return;
         }
         chain.doFilter(req, resp);
