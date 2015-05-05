@@ -111,7 +111,7 @@ public class BasicAuthUtil {
         }
 
         //if we are here, the user was not authenticated, an AuthenticationException should have been thrown
-        log.error("An AuthenticationException should have been thrown, returning null userId instead.");
+        log.debug("AuthenticationException was not thrown, returning null userId instead.");
         return null;
     }
 
