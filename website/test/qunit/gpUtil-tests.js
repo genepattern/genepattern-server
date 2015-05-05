@@ -70,3 +70,58 @@ test("gpUtil.formatDate", function() {
     checkTimeoffset(new Date(amDate+"-12:00"), 15, 55, "new am Date, '+00:00' offset");
 
 });
+
+test("gputil.parseQueryString", function() {
+    // qunit template: equal( actual, expected [, message ] )
+    // useful for encoding/decoding values http://meyerweb.com/eric/tools/dencoder/
+
+    deepEqual(gpUtil.parseQueryString(), {}, "parseQueryString with no arg");
+    deepEqual(gpUtil.parseQueryString(undefined), {}, "undefined search string");
+    deepEqual(gpUtil.parseQueryString(""), {}, "empty search string");
+    deepEqual(gpUtil.parseQueryString("?"), {}, "'?' search string");
+    
+    deepEqual(gpUtil.parseQueryString("?myFlag").hasOwnProperty('myFlag'), 
+            true, 
+            "hasOwnProperty on key with no value"); // undefined value will be set to a string, e.g. '?myFlag' with no equal sign
+    deepEqual(gpUtil.parseQueryString("?myFlag").myFlag, 
+            [ "" ], 
+            "key with no value");
+    equal(gpUtil.parseQueryString("?myFlag").hasOwnProperty('differentFlag'), 
+            false, 
+            "hasOwnProperty on missing key");
+    
+    deepEqual(gpUtil.parseQueryString("?a=1.txt&a=2.txt&a=3.txt").a, 
+            ["1.txt", "2.txt", "3.txt"], 
+            "multiple values");
+
+    // the GP url to the data file (not the '@' in the gp username is encoded as '%40'
+    var urlVal="http://127.0.0.1:8080/gp/users/user%40email.com/all_aml_test.gct";
+    // the right-hand side of the '=' in the URL query string
+    var encodedVal="http%3A%2F%2F127.0.0.1%3A8080%2Fgp%2Fusers%2Fuser%2540email.com%2Fall_aml_test.gct";
+    
+    var h=gpUtil.parseQueryString("?input.file="+encodedVal); 
+    equal(h['input.file'][0],  [ urlVal ], "input.file");
+    
+    var href="http://127.0.0.1:8080/gp/launch.html?input.file="+encodedVal;
+    // mock window
+    var myWindow = {
+            location: {
+                href: "http://127.0.0.1:8080/gp/launch.html?input.file="+encodedVal,
+                search: "?input.file="+encodedVal
+            }
+    };
+    
+    equal(myWindow.location.search, "?input.file="+encodedVal, "check mock window");
+    h=gpUtil.parseQueryString(myWindow.location.search);
+    equal(h['input.file'][0], [ urlVal ], "parseQueryString from mock window");
+    
+    var params=gpUtil.parseQueryString("?arg1=val1&arg1=val2&arg1=val3&myFlag&arg0=val0");
+    deepEqual(params['arg1'], ["val1", "val2", "val3"], "param with 3 values");
+    equal(params.hasOwnProperty('myFlag'), true, "complex query, myFlag check");
+    equal(params.hasOwnProperty('myFlagNotPresent'), false, "complex query, myFlagNotPresent");
+    equal(params['arg0'][0], "val0", "single value request parameter, arg0");
+    equal(params['arg1'][0], "val1", "multiple value request param, arg1[0]");
+    equal(params['arg1'][1], "val2", "multiple value request param, arg1[1]");
+    equal(params['arg1'][2], "val3", "multiple value request param, arg1[2]");
+    
+});

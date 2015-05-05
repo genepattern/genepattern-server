@@ -112,7 +112,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="installer/gpdist/Tomcat/server/lib/jaas.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.9.4.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
