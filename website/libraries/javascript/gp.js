@@ -320,7 +320,7 @@ gp.upload = function(pObj) {
         headers: {
             "Content-Length": pObj.file.size
         },
-        success: function(data, textStatus, request){
+        success: function(data, textStatus){
             if (pObj && pObj.success) {
                 pObj.success(textStatus, data);
             }
@@ -615,16 +615,15 @@ gp.Job = function(jobJson) {
         }
 
         var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
-        var job = this;
 
         return $.ajax({
-            url: gp.server() + REST_ENDPOINT,
-            type: 'GET',
-            dataType: 'text',
-            xhrFields: {
-                withCredentials: true
-            }
-        })
+                url: gp.server() + REST_ENDPOINT,
+                type: 'GET',
+                dataType: 'text',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
             .fail(function(exception) {
                 if (pObj && pObj.error) {
                     pObj.error(exception);
