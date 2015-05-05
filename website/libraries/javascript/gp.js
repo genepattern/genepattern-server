@@ -64,7 +64,8 @@ gp.server = function() {
  *      See http://api.jquery.com/jquery.deferred/ for details.
  */
 gp.tasks = function(pObj) {
-    var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+    var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+        (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
     var useCache = gp._tasks && !forceRefresh;
 
     if (useCache) {
@@ -81,13 +82,13 @@ gp.tasks = function(pObj) {
         var includeHidden = pObj && pObj.hidden && pObj.hidden.toLowerCase() === 'true' ? '?includeHidden=true' : '';
 
         return $.ajax({
-                url: gp.server() + REST_ENDPOINT + includeHidden,
-                type: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true
-                }
-            })
+            url: gp.server() + REST_ENDPOINT + includeHidden,
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
             .done(function(response) {
                 // Create the new _tasks list and iterate over returned JSON list, creating Task objects
                 gp._tasks = [];
@@ -198,13 +199,13 @@ gp.jobs = function(pObj) {
         if (includePermissions) REST_ENDPOINT += "&includePermissions=" + encodeURIComponent(includePermissions);
 
         return $.ajax({
-                url: gp.server() + REST_ENDPOINT,
-                type: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true
-                }
-            })
+            url: gp.server() + REST_ENDPOINT,
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
             .done(function(response) {
                 // Create the new _jobs list and iterate over returned JSON list, creating Job objects
                 gp._jobs = [];
@@ -243,7 +244,8 @@ gp.jobs = function(pObj) {
  *      See http://api.jquery.com/jquery.deferred/ for details.
  */
 gp.job = function(pObj) {
-    var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+    var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+        (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
     var jobNumber = pObj.jobNumber;
 
     // Try to find the job in the cache
@@ -265,13 +267,13 @@ gp.job = function(pObj) {
     // Otherwise, if not cached or refreshed forced
     var REST_ENDPOINT = "/rest/v1/jobs/";
     return $.ajax({
-            url: gp.server() + REST_ENDPOINT + jobNumber,
-            type: 'GET',
-            dataType: 'json',
-            xhrFields: {
-                withCredentials: true
-            }
-        })
+        url: gp.server() + REST_ENDPOINT + jobNumber,
+        type: 'GET',
+        dataType: 'json',
+        xhrFields: {
+            withCredentials: true
+        }
+    })
         .done(function(response) {
             // Create the new _jobs list and iterate over returned JSON list, creating Job objects
             var loadedJob = new gp.Job(response);
@@ -307,24 +309,23 @@ gp.upload = function(pObj) {
     var nameParam = "?name=" + pObj.file.name;
 
     return $.ajax({
-            url: gp.server() + REST_ENDPOINT + nameParam,
-            type: 'POST',
-            dataType: "text",
-            processData: false,
-            data: pObj.file,
-            xhrFields: {
-                withCredentials: true
-            },
-            headers: {
-                "Content-Length": pObj.file.size
-            },
-            success: function(data, textStatus, request){
-                var location = request.getResponseHeader('Location');
-                if (pObj && pObj.success) {
-                    pObj.success(textStatus, location);
-                }
+        url: gp.server() + REST_ENDPOINT + nameParam,
+        type: 'POST',
+        dataType: "text",
+        processData: false,
+        data: pObj.file,
+        xhrFields: {
+            withCredentials: true
+        },
+        headers: {
+            "Content-Length": pObj.file.size
+        },
+        success: function(data, textStatus, request){
+            if (pObj && pObj.success) {
+                pObj.success(textStatus, data);
             }
-        })
+        }
+    })
         .fail(function(exception) {
             if (pObj && pObj.error) {
                 pObj.error(exception);
@@ -390,7 +391,8 @@ gp.Task = function(taskJson) {
      */
     this.params = function(pObj) {
         var task = this;
-        var forceRefresh = (pObj && pObj.force && pObj.force.toLowerCase() === 'true') ? true : false;
+        var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+            (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
         var inCache = forceRefresh ? false : task._params !== null;
 
         if (inCache) {
@@ -406,13 +408,13 @@ gp.Task = function(taskJson) {
             var REST_ENDPOINT = "/rest/v1/tasks/";
 
             return $.ajax({
-                    url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
-                    type: 'GET',
-                    dataType: 'json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
+                url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
+                type: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
                 .done(function(response) {
                     // Add params to Task object
                     var params = response['params'];
@@ -565,13 +567,13 @@ gp.Job = function(jobJson) {
         var job = this;
 
         return $.ajax({
-                url: gp.server() + REST_ENDPOINT,
-                type: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true
-                }
-            })
+            url: gp.server() + REST_ENDPOINT,
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
             .done(function(response) {
                 // Add params to Job object
                 var status = response;
@@ -583,6 +585,46 @@ gp.Job = function(jobJson) {
                     pObj.success(response, status);
                 }
             })
+            .fail(function(exception) {
+                if (pObj && pObj.error) {
+                    pObj.error(exception);
+                }
+            });
+    };
+
+    /**
+     * Returns API code for getting the status of this job
+     *
+     * @param pObj - The following parameters may be set
+     *                  language: The language to get the code in, default to Python.
+     *								Options: R, Java, MATLAB, Python
+     *                  error: callback function for an fail() event, expects exception as argument
+     *
+     * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+     *      See http://api.jquery.com/jquery.deferred/ for details.
+     */
+    this.code = function(pObj) {
+        // Validate language
+        var language = null;
+
+        if (typeof pObj === "string") { language = pObj; }
+        else { language = pObj.language; }
+
+        if (language !== "Python" && language !== "R" && language !== "Java" && language !== "MATLAB") {
+            console.log("Unknown language, defaulting to Python: " + language);
+        }
+
+        var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
+        var job = this;
+
+        return $.ajax({
+            url: gp.server() + REST_ENDPOINT,
+            type: 'GET',
+            dataType: 'text',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
             .fail(function(exception) {
                 if (pObj && pObj.error) {
                     pObj.error(exception);
@@ -793,18 +835,15 @@ gp.JobInput = function(task) {
         var REST_ENDPOINT = "/rest/v1/jobs/";
 
         return $.ajax({
-                url: gp.server() + REST_ENDPOINT,
-                type: 'POST',
-                data: JSON.stringify(this._submitJson_()),
-                dataType: 'json',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                xhrFields: {
-                    withCredentials: true
-                }
-            })
+            url: gp.server() + REST_ENDPOINT,
+            type: 'POST',
+            data: JSON.stringify(this._submitJson_()),
+            dataType: 'json',
+            contentType: "application/json",
+            xhrFields: {
+                withCredentials: true
+            }
+        })
             .done(function(response) {
                 // Create Job object from JSON response
                 var jobNumber = response['jobId'];
