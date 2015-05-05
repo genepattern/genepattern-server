@@ -1,2 +1,0 @@
-server @version.major@.@version.minor@ @buildtag@
-client @version.major@.@version.minor@ @buildtag@
