@@ -2,69 +2,39 @@
        *** GENEPATTERN LICENSE AGREEMENT ***
                    
 ----------------------------------------------------------------
-MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+GenePattern is distributed under the following BSD-style license:
+                            
+Copyright © 2003-2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+                            
+Redistribution and use in source and binary forms, with or without modification, 
+are permitted provided that the following conditions are met:
+                            
+     1. Redistributions of source code must retain the above copyright notice, 
+        this list of conditions and the following disclaimer.
+                            
+     2. Redistributions in binary form must reproduce the above copyright notice, 
+        this list of conditions and the following disclaimer in the documentation 
+        and/or other materials provided with the distribution.
+                            
+     3. Neither the names of the Broad Institute, Inc., Massachusetts Institute of Technology 
+        nor the names of its contributors may be used to endorse or promote products derived 
+        from this software without specific prior written permission.
+                            
+THIS SOFTWARE IS PROVIDED ÒAS IS.Ó  BROAD AND MIT MAKE NO EXPRESS OR IMPLIED 
+REPRESENTATIONS OR WARRANTIES OF ANY KIND REGARDING THE SOFTWARE AND COPYRIGHT, 
+INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE, CONFORMITY WITH ANY DOCUMENTATION, NONINFRINGEMENT, OR THE 
+ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER OR NOT DISCOVERABLE. IN NO EVENT SHALL
+BROAD, MIT, THE COPYRIGHT HOLDERS, OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+BUT NOT LIMITED TO PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
+OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF, HAVE REASON 
+TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF SUCH DAMAGE.
+                            
+If, by operation of law or otherwise, any of the aforementioned warranty disclaimers 
+are determined inapplicable, your sole remedy, regardless of the form of action, 
+including, but not limited to, negligence and strict liability, shall be replacement
+of the software with an updated version if one exists.
 
-
-SERVER AND CLIENT SOFTWARE LICENSE AGREEMENT FOR INTERNAL RESEARCH PURPOSES ONLY
-
-This Agreement is made between Massachusetts Institute of Technology with a principal address at 77 Massachusetts Avenue, Cambridge, MA 02139 ("MIT") and the subscriber above ("LICENSEE"), and is effective at the date the downloading is completed and proper registration/licensee subscriber information submitted ("EFFECTIVE DATE").  
-WHEREAS, LICENSEE desires to license the PROGRAM, as defined hereinafter, and Whitehead Institute for Biomedical Research, with a principal address at 9 Cambridge Center, Cambridge, MA 02142 (hereinafter referred to as "WHITEHEAD") and MIT wish to have this PROGRAM utilized in the public interest, subject only to the royalty-free, nonexclusive, nontransferable license rights of the United States Government pursuant to 48 CFR 52.227-14; and
-WHEREAS, MIT is WHITEHEAD's licensing agent and has the authority to negotiate this Agreement on WHITEHEAD's behalf; and
-WHEREAS, LICENSEE desires to license the PROGRAM and MIT desires to grant a license on the following terms and conditions.
-NOW, THEREFORE, in consideration of the promises and covenants made herein, the parties hereto agree as follows:
-
-1.	DEFINITIONS
-1.1	 "BUG FIX(ES)" shall mean LICENSEE-created code that repairs a WHITEHEAD and MIT identified function of the PROGRAM.
-1.2	"CLIENT SOFTWARE" a part of the PROGRAM existing on the EFFECTIVE DATE, as described on this web site on the EFFECTIVE DATE, as available for download from this web site on the EFFECTIVE DATE and known together with the SERVER SOFTWARE as the PROGRAM.
-1.3     "PROGRAM" shall mean copyright in the object code and source code of the most recent version as disclosed in MIT Case No. 10639B "GenePattern" and related documentation, if any, specifically excluding embedded TIGR modules, as they exist on the EFFECTIVE DATE and as ascribed in Sections 101 et seq. of the United States Copyright Act, amended from time to time, and in International Treaty provisions, in effect from time to time, relating to the protection of copyrights worldwide. 
-1.4	"SERVER SOFTWARE" a part of the PROGRAM existing on the EFFECTIVE DATE, as described on this web site on the EFFECTIVE DATE, as available for download from this web site on the EFFECTIVE DATE and known together with the CLIENT SOFTWARE as the PROGRAM.
-1.5	"SITE" shall mean LICENSEE's facilities listed in Section 2.1(a) below.
-1.6	"TERM" shall commence on the EFFECTIVE DATE and shall expire on the second anniversary of the EFFECTIVE DATE, unless earlier terminated as provided herein.
-
-2.	LICENSE
-2.1(a)	Server Software Grant.  Subject to the terms of this Agreement, MIT hereby grants to LICENSEE, solely for one computer at the SITE listed below and for internal research purposes, a non-exclusive, non-transferable license, during the TERM to: (a) install, execute and display SERVER SOFTWARE on a single SITE computer, and (b) create BUG FIXES and modify the PROGRAM only for the purpose of making the PROGRAM compatible with pre-existing LICENSEE networks, platforms and applications located at each such SITE (hereinafter "SERVER SOFTWARE RIGHTS").
-SITE location:
-SERVER SOFTWARE Registration Information.
-
-2.1(b)	Client Software Grant.  Subject to the terms of this Agreement, MIT hereby grants to LICENSEE, solely for registered users at the SITE and for internal research purposes, a non-exclusive, non-transferable license, during the TERM to: (a) install, execute and display CLIENT SOFTWARE, and (b) create BUG FIXES and modify the PROGRAM only for the purpose of making the PROGRAM compatible with pre-existing LICENSEE networks, platforms and applications located at each such SITE (hereinafter "CLIENT SOFTWARE RIGHTS").
-2.1(c)	Rights Granted.  SERVER SOFTWARE RIGHTS and CLIENT SOFTWARE RIGHTS together are "RIGHTS GRANTED."
-2.2	No Sublicensing or Additional Rights.  In no event shall LICENSEE sublicense or distribute the PROGRAM, any part of the PROGRAM, SERVER SOFTWARE or CLIENT SOFTWARE, modifications, or BUG FIXES without prior permission from MIT.  LICENSEE agrees not to allow any non-employee of LICENSEE to access, view or use the PROGRAM, SERVER SOFTWARE or CLIENT SOFTWARE unless such person is an independent contractor performing services on behalf of LICENSEE.  
-2.3	License Limitations.  Nothing in this Agreement shall be construed to confer any rights upon LICENSEE by implication, estoppel, or otherwise to any computer software, trademark, intellectual property, or patent rights of WHITEHEAD or MIT, or of any other entity, except as expressly granted herein.  LICENSEE agrees that the PROGRAM shall not be used as the basis of a commercial software or hardware product and that the same shall not be rewritten in another computer language or otherwise adapted to circumvent the need for obtaining a license for use of the PROGRAM other than as specified by this Agreement.
-
-3.	CONSIDERATION
-In consideration of the RIGHTS GRANTED herein, LICENSEE agrees to provide a written evaluation of the PROGRAM including a description of its functionality or problems, areas for further improvement in the PROGRAM, accurate registration information prior to using the SERVER SOFTWARE and accurate registration information for each user of the CLIENT SOFTWARE.  LICENSEE hereby automatically grants to MIT a non-exclusive, royalty-free, irrevocable worldwide license to any LICENSEE BUG FIXES or modifications to the PROGRAM with unlimited rights to sublicense and/or distribute.  Such modifications and BUG FIXES shall be provided to MIT promptly upon their creation.
-
-4.	OWNERSHIP OF INTELLECTUAL PROPERTY AND GRANT BACK
-LICENSEE acknowledges that title to the PROGRAM shall remain with WHITEHEAD and MIT.  To the extent the PROGRAM is marked with a WHITEHEAD and/or MIT copyright notice, LICENSEE shall retain such notice on all copies, and on modifications and BUG FIXES where applicable.  LICENSEE shall be entitled to establish all proprietary rights for itself in the modifications or BUG FIXES created pursuant to Section 2.1, whether in the nature of trade secrets or copyrights, provided that all such rights are subject to WHITEHEAD and MIT's copyright and that any copyright registration by LICENSEE gives full attribution to WHITEHEAD and MIT's copyright.  
-
-5.	INDEMNIFICATION
-LICENSEE shall indemnify, defend, and hold harmless WHITEHEAD, MIT, and their respective trustees, officers, faculty, students, employees, and agents, and their respective successors, heirs and assigns, ("Indemnitees"), against any liability, damage, loss, or expense (including reasonable attorneys fees and expenses) incurred by or imposed upon any of the Indemnitees in connection with any claims, suits, actions, demands or judgments arising out of any theory of liability (including, without limitation, actions in the form of tort, warranty, or strict liability and regardless of whether such action has any factual basis) pursuant to any right or license granted under this Agreement.
-
-6.	NO REPRESENTATIONS OR WARRANTIES
-THE PROGRAM IS DELIVERED "AS IS."  NEITHER WHITEHEAD NOR MIT MAKES ANY REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE PROGRAM OR THE COPYRIGHT, EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER OR NOT DISCOVERABLE.  NEITHER WHITEHEAD NOR MIT EXTENDS ANY WARRANTIES OF ANY KIND AS TO PROGRAM CONFORMITY WITH WHATEVER USER MANUALS OR OTHER LITERATURE MAY BE ISSUED FROM TIME TO TIME.  
-IN NO EVENT SHALL WHITEHEAD, MIT, OR THEIR RESPECTIVE TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER WHITEHEAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING. 
-If, by operation of law or otherwise, any of the aforementioned warranty disclaimers are determined inapplicable, LICENSEE's sole remedy against WHITEHEAD or MIT, regardless of the form of action, including, but not limited to, negligence and strict liability, shall be replacement of the licensed SERVER SOFTWARE or CLIENT SOFTWARE or the entire PROGRAM with an updated version, if one exists, or refund of the royalties paid to MIT.
-
-7.	ASSIGNMENT	
-This Agreement is personal to LICENSEE and any rights or obligations assigned by LICENSEE without the prior written consent of MIT shall be null and void except that LICENSEE may assign this Agreement and its rights and obligations hereunder in connection with a sale of all or substantially all of its assets or voting stock, or a merger.
-
-8.	MISCELLANEOUS
-8.1	Export Control.  LICENSEE gives assurance that it will comply with all United States export control laws and regulations controlling the export of the PROGRAM, including, without limitation, all Export Administration Regulations of the United States Department of Commerce.  Among other things, these laws and regulations prohibit, or require a license for, the export of certain types of software to specified countries.
-8.2	Non-Use Of Name.  LICENSEE shall not use any trademark or trade name of WHITEHEAD or MIT or any variation, adaptation, or abbreviation, of such marks or trade names, or any names of trustees, officers, faculty, students, employees, or agents of WHITEHEAD or MIT without the prior written consent of WHITEHEAD or MIT.  In a similar manner, neither WHITEHEAD nor MIT shall use any trademark or trade name of LICENSEE, nor any names of its officers, employees or agents without the prior written consent of the LICENSEE.
-8.3	Termination.  LICENSEE shall have the right to terminate this Agreement for any reason upon prior written notice to MIT.  If LICENSEE breaches any provision hereunder, and fails to cure such breach within thirty (30) days, MIT may terminate this Agreement immediately.  Upon termination, LICENSEE shall provide MIT with written assurance that the original and all copies of the PROGRAM, including partial copies in modifications, SERVER SOFTWARE and CLIENT SOFTWARE, have been destroyed, except that, upon prior written authorization from MIT, LICENSEE may retain a copy for archive purposes. 
-8.4	Survival.  The following provisions shall survive the expiration or termination of this Agreement:  Articles 1, 5, 6 and Sections 2.2, 2.3, 8.2, 8.4 and 8.5.  
-8.5	Notice.  Any notices under this Agreement shall be in writing, shall specifically refer to this Agreement, and shall be sent by hand, recognized national overnight courier, confirmed facsimile transmission, confirmed electronic mail, or registered or certified mail, postage prepaid, return receipt requested, to the following addresses or facsimile numbers of the parties:
-If to M.I.T.:						If to LICENSEE:
-Massachusetts Institute of Technology			SERVER SOFTWARE
-Technology Licensing Office, Rm NE25-230		Registration Information
-Five Cambridge Center, Kendall Square			
-Cambridge, MA 02142-1493
-Attn:  Software End-Use Licensing Officer					
-Fax:   617-258-6790					
-Phone: 617-253-6966					
-
-
-All notices under this Agreement shall be deemed effective upon receipt.  A party may change its contact information immediately upon written notice to the other party in the manner provided in this Section.
-8.6	Amendment And Waiver; Entire Agreement.  This Agreement may be amended, supplemented, or otherwise modified only by means of a written instrument signed by all parties.  Any waiver of any rights or failure to act in a specific instance shall relate only to such instance and shall not be construed as an agreement to waive any rights or fail to act in any other instance, whether or not similar.  This Agreement constitutes the entire agreement among the parties with respect to its subject matter and supersedes prior agreements or understandings between the parties relating to its subject matter.  M.I.T. and WHITEHEAD shall not be bound by any provisions on the face or reverse side of any LICENSEE Purchase Order relating to the PROGRAM, or any LICENSEE attachment to a Purchase Order, that are inconsistent with or in addition to the provisions of this Agreement.  
-8.7	Binding Effect; Headings.  This Agreement shall be binding upon and inure to the benefit of the parties and their respective permitted successors and assigns.  All headings are for convenience only and shall not affect the meaning of any provision of this Agreement.
-8.8	Governing Law.  This Agreement shall be construed, governed, interpreted and applied in accordance with the internal laws of the Commonwealth of Massachusetts, U.S.A., without regard to conflict of laws principles.
