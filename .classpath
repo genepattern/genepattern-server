@@ -72,6 +72,21 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oromatcher.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.commons.encodedtoken-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.commons.json-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.jose.jws-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.authzserver-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.client-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.common-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.dynamicreg.client-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.dynamicreg.common-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.dynamicreg.server-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.httpclient4-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.integration-tests-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.jwt-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.resourceserver-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.resourceserver-filter-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.test-utils-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oscache-2.3.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/PDFBox-0.6.7a.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/proxool-0.8.3.jar"/>
