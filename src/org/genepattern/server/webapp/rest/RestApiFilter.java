@@ -40,12 +40,20 @@ public class RestApiFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        // Get request method
+        // Get request method and pathInfo (ex: "/v1/jobs")
         String method = req.getMethod().toLowerCase();
+        String pathInfo = req.getPathInfo();
 
         //announce support for partial get
         resp.setHeader("Accept-Ranges", "bytes");
 
+        // Don't attempt basic auth on oauth endpoints
+        if (pathInfo.startsWith("/v1/oauth")) {
+            chain.doFilter(req, resp);
+            return;
+        }
+
+        // Check supported forms of authentication
         String gpUserId = null;
         try {
             gpUserId = AuthenticationUtil.getAuthenticatedUserId(req, resp);
@@ -56,7 +64,6 @@ public class RestApiFilter implements Filter {
         }
 
         // Don't return this error for CORS pre-flight requests
-        // TODO: Fix this for when to prompt for Basic Auth
         if (gpUserId == null && !method.equals("options")) {
             log.error("Expecting an AuthenticationException to be thrown");
             AuthenticationUtil.requestBasicAuth(req, resp);

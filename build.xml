@@ -38,9 +38,13 @@
     &release_targets;
 
     <property name="clover.dest" location="${basedir}/build/clover" />
-    <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0" />
-    <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
-    <clover-env/>
+    <property name="clover.home" location="${user.home}/.gp_build/clover/clover-ant-3.2.0" />
+    <available file="${clover.home}/lib/clover.jar" property="clover.enabled" />
+
+    <target name="init-clover" if="clover.enabled">
+        <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
+        <clover-env/>
+    </target>
 
     <!-- Get all the files in the /lib directory and add them to the -->
     <!-- Classpath -->
@@ -50,7 +54,7 @@
         <echo>tag: tags entire repository prior to an official build</echo>
     </target>
 
-    <target name="init">
+    <target name="init" depends="init-clover">
         <tstamp />
 
         <property name="genepattern.root" value="${basedir}" />
@@ -102,14 +106,20 @@
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
             <pathelement location="test/src" />
-            <pathelement location="${clover.home}/lib/clover.jar"/>
+            <!-- pathelement location="${clover.home}/lib/clover.jar"/ -->
+            <fileset dir="${clover.home}/lib">
+                <include name="clover.jar" if="clover.enabled" />
+            </fileset>
         </path>
 
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
+        
+        <!-- for debugging only -->
+        <!-- echo message="My junit.classpath is ${toString:junit.classpath}" / -->
     </target>
 
-    <target name="clover.clean" description="Deletes the clover database.">
+    <target name="clover.clean" description="Deletes the clover database." depends="init" unless="clover.enabled">
         <clover-clean/>
     </target>
 

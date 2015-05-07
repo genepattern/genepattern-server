@@ -113,30 +113,32 @@ public class AuthenticationUtil {
 //            ;
 //        }
 
-//        try {
-//            OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(req, ParameterStyle.HEADER, ParameterStyle.QUERY);
-//            String accessToken = oauthRequest.getAccessToken();
-//
-//            if (OAuthManager.instance().isTokenValid(accessToken)) {
-//                String usernameFromToken = OAuthManager.instance().getUsernameFromToken(accessToken);
-//                if (userIdFromSession.equals(usernameFromToken)) {
-//                    authenticated = true;
-//                    gpUserId = usernameFromToken;
-//                }
-//            }
-//
-//            if (authenticated) {
-//                log.debug("gpUserId=" + gpUserId);
-//                LoginManager.instance().addUserIdToSession(req, gpUserId);
-//                return gpUserId;
-//            }
-//        } catch (OAuthSystemException e) {
-//            //ignore it
-//            authenticated = false;
-//        } catch (OAuthProblemException e) {
-//            //ignore it, probably simply lacks a token
-//            authenticated = false;
-//        }
+        if (!authenticated) {
+            try {
+                OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(req, ParameterStyle.HEADER, ParameterStyle.QUERY);
+                String accessToken = oauthRequest.getAccessToken();
+
+                if (OAuthManager.instance().isTokenValid(accessToken)) {
+                    String usernameFromToken = OAuthManager.instance().getUsernameFromToken(accessToken);
+                    if (userIdFromSession.equals(usernameFromToken)) {
+                        authenticated = true;
+                        gpUserId = usernameFromToken;
+                    }
+                }
+
+                if (authenticated) {
+                    log.debug("gpUserId=" + gpUserId);
+                    LoginManager.instance().addUserIdToSession(req, gpUserId);
+                    return gpUserId;
+                }
+            } catch (OAuthSystemException e) {
+                //ignore it
+                authenticated = false;
+            } catch (OAuthProblemException e) {
+                //ignore it, probably simply lacks a token
+                authenticated = false;
+            }
+        }
 
         /*
          * If other auth fails, try GenomeSpace auth
@@ -153,6 +155,7 @@ public class AuthenticationUtil {
                 authenticated=true;
             }
         }
+
         log.debug("authenticated="+authenticated);
         if (authenticated) {
             log.debug("gpUserId="+gpUserId);
