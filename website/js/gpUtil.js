@@ -122,29 +122,9 @@ var gpUtil = function() {
     }
 
     /**
-     * Parse the query string from the current window location.
-     * 
-     * @returns an Object containing the decoded values,
-     *     It's empty if there is not search string,
-     *     each key with one value is set directly,
-     *     each key with multiple values is set as an array
-     *     
-     * For example,
-     *     input: ?flag&param1=value1&multiParam=A&multiParam=B
-     *     output: {
-     *         flag: undefined,
-     *         param1: value1,
-     *         multiParam: [ A, B]
-     *     }
-     */
-    function parseQueryString() {
-        var queryString = window.location.search;
-        return parseQueryString(queryString);
-    }
-
-    /**
      * Parse the given query string of the form '?{name1}={value}&{name2}={value}&{flag}
      * @param the query string from a URL, for example window.location.search
+     *        If it is empty then it defaults to window.location.search
      * @return a hash of decoded values, where the rhs value is an array. E.g.
      *     '?myFlag', { myFlag: [ "" ] }
      *     '?param=val, { param: [ "val" ] }
@@ -152,7 +132,7 @@ var gpUtil = function() {
      */
     function parseQueryString( queryString ) {
         if (!queryString) {
-            return {};
+            queryString= window.location.search;
         }
         // strip leading '?'
         if (queryString.charAt(0) == '?') {
