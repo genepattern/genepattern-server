@@ -271,7 +271,7 @@ public class AuthResource {
             }
 
             // If the password grant_type was selected
-            if (GrantType.PASSWORD.toString().equals(grantType)) {
+            else if (GrantType.PASSWORD.toString().equals(grantType)) {
                 // Check username and password
                 try {
                     UserAccountManager.instance().authenticateUser(username, password.getBytes());
@@ -285,9 +285,14 @@ public class AuthResource {
             }
 
             // If the refresh_token grant_type was selected
-            if (GrantType.REFRESH_TOKEN.toString().equals(grantType)) {
+            else if (GrantType.REFRESH_TOKEN.toString().equals(grantType)) {
                 // This call is NOT IMPLEMENTED yet
                 throw OAuthProblemException.error("refresh_token grant_type is not implemented");
+            }
+
+            // The grant_type is unknown, throw an error
+            else {
+                throw OAuthProblemException.error("unknown grant_type");
             }
 
             // Build and return the token response
