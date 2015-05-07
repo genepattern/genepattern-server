@@ -48,7 +48,7 @@ public class RestApiFilter implements Filter {
         resp.setHeader("Accept-Ranges", "bytes");
 
         // Don't attempt basic auth on oauth endpoints
-        if (pathInfo.startsWith("/v1/oauth")) {
+        if (pathInfo.startsWith("/v1/oauth2")) {
             chain.doFilter(req, resp);
             return;
         }

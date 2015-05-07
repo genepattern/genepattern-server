@@ -104,15 +104,6 @@ public class AuthenticationUtil {
         /*
          * If not Basic Auth, try OAuth
          */
-
-        // TODO: Implement
-//        try {
-//            UserAccountManager.instance().authenticateUser(userIdFromSession, password);
-//        }
-//        catch (AuthenticationException e) {
-//            ;
-//        }
-
         if (!authenticated) {
             try {
                 OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(req, ParameterStyle.HEADER, ParameterStyle.QUERY);

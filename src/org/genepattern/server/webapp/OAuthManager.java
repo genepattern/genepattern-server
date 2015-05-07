@@ -143,6 +143,39 @@ public class OAuthManager {
     }
 
     /**
+     * Returns whether or not an auth code is currently valid
+     *
+     * @param code
+     * @return
+     */
+    public boolean isCodeValid(String code) {
+        // Lazily purge sessions
+        purgeExpiredSessions();
+
+        OAuthSession session = codeSessionMap.get(code);
+        return session != null;
+    }
+
+    /**
+     * Returns the client_id associated with a valid code
+     * Returns null if the code is not valid
+     *
+     * @param code
+     * @return
+     */
+    public String getClientIDFromCode(String code) {
+        // Lazily purge sessions
+        purgeExpiredSessions();
+
+        OAuthSession session = codeSessionMap.get(code);
+
+        // Return null if the code is not valid
+        if (session == null) return null;
+
+        return session.getClientID();
+    }
+
+    /**
      * Returns the username associated with a valid token
      * Returns null if the token is not valid
      *
@@ -162,14 +195,25 @@ public class OAuthManager {
     }
 
     /**
+     * Removes an auth code session from the code session map
+     * Returns true if a code was successfully removed, false otherwise
+     *
+     * @param code
+     * @return
+     */
+    public boolean invalidateCode(String code) {
+        return codeSessionMap.remove(code) == null;
+    }
+
+    /**
      * Create a token session and add it to the session map
      *
      * @param user
      * @param token
      * @param expiry
      */
-    public void createTokenSession(String user, String token, long expiry) {
-        OAuthSession session = new OAuthSession(user, expiry);
+    public void createTokenSession(String user, String token, String clientID, long expiry) {
+        OAuthSession session = new OAuthSession(user, clientID, expiry);
         tokenSessionMap.put(token, session);
     }
 
@@ -179,8 +223,8 @@ public class OAuthManager {
      * @param code
      * @param expiry
      */
-    public void createCodeSession(String user, String code, long expiry) {
-        OAuthSession session = new OAuthSession(user, expiry);
+    public void createCodeSession(String user, String code, String clientID, long expiry) {
+        OAuthSession session = new OAuthSession(user, clientID, expiry);
         codeSessionMap.put(code, session);
     }
 
@@ -189,10 +233,12 @@ public class OAuthManager {
      */
     public class OAuthSession {
         private String username;
+        private String clientID;
         private long expires;
 
-        public OAuthSession(String username, long expires) {
+        public OAuthSession(String username, String clientID, long expires) {
             this.username = username;
+            this.clientID = clientID;
             this.expires = expires;
         }
 
@@ -202,6 +248,14 @@ public class OAuthManager {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getClientID() {
+            return clientID;
+        }
+
+        public void setClientID(String clientID) {
+            this.clientID = clientID;
         }
 
         public long getExpires() {
