@@ -648,7 +648,7 @@ function loadModuleInfo(module) {
         $("#source_info").prepend("Source: ");
     }
 
-    if(module["taskType"] && module["taskType"] === "JsViewer")
+    if(module["taskType"] && module["taskType"] === "javascript")
     {
         run_task_info.is_js_viewer = true;
     }
@@ -2257,8 +2257,10 @@ function submitTask() {
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
-
-            window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+            else
+            {
+                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+            }
 
             console.log("Response text: " + response.text);
         },
