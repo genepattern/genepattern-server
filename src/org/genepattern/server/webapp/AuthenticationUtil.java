@@ -25,7 +25,7 @@ import org.genepattern.server.genomespace.GenomeSpaceLogin;
 
 /**
  * Utility methods for implementing HTTP Basic Authentication.
- * 
+ *
  * @author pcarr
  */
 public class AuthenticationUtil {
@@ -35,14 +35,14 @@ public class AuthenticationUtil {
      * Check the servlet request for an authenticated user. 
      * This method returns quickly with the userid from the session if there is
      * already a logged in user.
-     * 
+     *
      * Next, it authenticates the GP account with the username/password credentials from the HTTP Basic Auth headers.
      * If the credentials don't match and existing GP account, try to authenticate to GenomeSpace.
      * For GenomeSpace, the credentials must match and there must be a linked GenePattern account.
-     * 
+     *
      * Need to add and remove userid from gp session as necessary because
      * this is invoked from both a Servlet and a Filter.
-     * 
+     *
      * @param req
      * @param resp
      * @return a valid userid, or null if not authenticated.
@@ -76,7 +76,7 @@ public class AuthenticationUtil {
             if (userIdFromAuthorizationHeader.equals(linkedGsUsername)) {
                 return userIdFromSession;
             }
-            
+
             //special-case when the userId from the session doesn't match the one in the authorization header
             try {
                 boolean redirect = false;
@@ -114,10 +114,8 @@ public class AuthenticationUtil {
 
                 if (OAuthManager.instance().isTokenValid(accessToken)) {
                     String usernameFromToken = OAuthManager.instance().getUsernameFromToken(accessToken);
-                    if (userIdFromSession.equals(usernameFromToken)) {
-                        authenticated = true;
-                        gpUserId = usernameFromToken;
-                    }
+                    authenticated = UserAccountManager.instance().getAuthentication().authenticate(usernameFromToken, password);
+                    gpUserId = usernameFromToken;
                 }
 
                 if (authenticated) {
@@ -168,7 +166,7 @@ public class AuthenticationUtil {
 
     /**
      * Authenticate the username/password pair as a GenomeSpace account.
-     *  
+     *
      * @param gsUsername
      * @param gsPassword
      * @return the linked GenePattern userId, iff the GS credentials are valid AND there is an linked GP account.
@@ -180,7 +178,7 @@ public class AuthenticationUtil {
         if (gsUsername == null || gsPassword == null) {
             return null;
         }
-        
+
         try {
             final GpContext serverContext = GpContext.getServerContext();
             final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
@@ -201,7 +199,7 @@ public class AuthenticationUtil {
 
     /**
      * Parse out the username:password pair from the authorization header.
-     * 
+     *
      * @param auth
      * @return <pre>new String[] {<username>, <password>};</pre>
      */
@@ -241,27 +239,27 @@ public class AuthenticationUtil {
         up[1] = passwordStr;
         return up;
     }
-    
+
     /**
      * Call this method when the current request is not authenticated. 
      * Fail with a 401 status code (UNAUTHORIZED) 
      * and respond with the WWW-Authenticate header for this servlet.
-     * 
+     *
      * Note that this is the normal situation the first time you request a protected resource.
      * The client web browser will prompt for userID and password and cache them
      * so that it doesn't have to prompt you again.
-     * 
+     *
      * 1. request requires a valid username/password, but none has been provided.
      * 2a. request refused, even though a username/password was provided. Server says it's a bogus username/password pair.
      * 2b. request refused, Server says the user does not have permission to read the requested resource.
-     * 
+     *
      * @param response
      * @throws IOException
      */
     static public void requestBasicAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
         requestBasicAuth(response, "You must log in to view the page: " + request.getPathInfo());
     }
-    
+
     static public void requestBasicAuth(HttpServletResponse response, String message) throws IOException {
         final String realm = "GenePattern";
         response.setHeader("WWW-Authenticate", "BASIC realm=\""+realm+"\"");

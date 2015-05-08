@@ -42,6 +42,7 @@ public class OAuthManager {
      */
     private OAuthManager() {
         tokenSessionMap = new HashMap<String, OAuthSession>();
+        codeSessionMap = new HashMap<String, OAuthSession>();
     }
 
     /**
@@ -60,7 +61,8 @@ public class OAuthManager {
      */
     public static long calcExpiry(long timeTillExpiry) {
         Date now = new Date();
-        return now.getTime() + timeTillExpiry;
+        // Make sure to convert seconds to milliseconds
+        return now.getTime() + (timeTillExpiry * 1000);
     }
 
     /**
