@@ -132,7 +132,7 @@ public class AuthResource {
 
             // Register the AUTHORIZATION CODE with the server, if applicable
             if (responseType.equals(ResponseType.CODE.toString())) {
-                OAuthManager.instance().createTokenSession(user, authorizationCode, clientID, OAuthManager.calcExpiry(CODE_EXPIRY_TIME));
+                OAuthManager.instance().createCodeSession(user, authorizationCode, clientID, OAuthManager.calcExpiry(CODE_EXPIRY_TIME));
             }
 
             // Register the ACCESS TOKEN with the server, if applicable
@@ -263,7 +263,7 @@ public class AuthResource {
                 // Verify the client_id matches the one in the session
                 if (!OAuthManager.instance().getClientIDFromCode(authCode).equals(clientID)) {
                     OAuthResponse response = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).setError(OAuthError.TokenResponse.INVALID_CLIENT)
-                                    .setErrorDescription("client_id not found").buildJSONMessage();
+                            .setErrorDescription("client_id not found").buildJSONMessage();
                     return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
                 }
 
@@ -298,8 +298,14 @@ public class AuthResource {
                 throw OAuthProblemException.error("unknown grant_type");
             }
 
+            // Generate the access token
+            String token = oauthIssuerImpl.accessToken();
+
+            // Register the access token with GenePattern
+            OAuthManager.instance().createTokenSession(username, token, clientID, OAuthManager.calcExpiry(CODE_EXPIRY_TIME));
+
             // Build and return the token response
-            OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(oauthIssuerImpl.accessToken())
+            OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
                     .setExpiresIn(String.valueOf(TOKEN_EXPIRY_TIME)).buildJSONMessage();
             return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
         }
@@ -308,5 +314,50 @@ public class AuthResource {
             OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(e).buildJSONMessage();
             return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
         }
+    }
+
+    /**
+     * This endpoint allows clients to register and obtain client_id and client_secret's.
+     * This would allow us to track which clients are using the REST API through OAuth2.
+     *
+     * Currently this endpoint is a stub without a full implementation
+     *
+     * @param request
+     * @return
+     * @throws OAuthSystemException
+     */
+    @POST
+    @Path("/register")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response register(@Context HttpServletRequest request) throws OAuthSystemException {
+//        OAuthServerRegistrationRequest oauthRequest = null;
+//        try {
+//            oauthRequest = new OAuthServerRegistrationRequest(new JSONHttpServletRequestWrapper(request));
+//            oauthRequest.discover();
+//            oauthRequest.getClientName();
+//            oauthRequest.getClientUrl();
+//            oauthRequest.getClientDescription();
+//            oauthRequest.getRedirectURI();
+//
+//            OAuthResponse response = OAuthServerRegistrationResponse
+//                    .status(HttpServletResponse.SC_OK)
+//                    .setClientId(ServerContent.CLIENT_ID)
+//                    .setClientSecret(ServerContent.CLIENT_SECRET)
+//                    .setIssuedAt(ServerContent.ISSUED_AT)
+//                    .setExpiresIn(ServerContent.EXPIRES_IN)
+//                    .buildJSONMessage();
+//            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
+//
+//        } catch (OAuthProblemException e) {
+//            OAuthResponse response = OAuthServerRegistrationResponse
+//                    .errorResponse(HttpServletResponse.SC_BAD_REQUEST)
+//                    .error(e)
+//                    .buildJSONMessage();
+//            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
+//        }
+
+        OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(OAuthProblemException.error("register is not implemented")).buildJSONMessage();
+        return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
     }
 }
