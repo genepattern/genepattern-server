@@ -48,9 +48,10 @@
         _openJavascriptModule: function()
         {
             var self = this;
-            var mainViewerPane = $("<div/>").attr("id", "mainViewerPane");
+
+            var mainViewerPane = $("<div/>").attr("id", "mainJsViewerPane");
             var headerString = self.options.taskName;
-            var version = this._getTaskVersion();
+            var version = self._getTaskVersion();
             if(version != -1)
             {
                 headerString+= " version " + version;
@@ -83,19 +84,46 @@
             });
 
             actionBar.append(newWindowImage);
-            //actionBar.css("float", "right");
 
             infoBar.append(actionBar);
 
             mainViewerPane.append(infoBar);
 
-            var jsViewerFrame = $("<iframe class='ui-layout-center' width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
-            jsViewerFrame.attr("src", self.options.url);
-            var viewerDiv = $("<div/>").attr("id", "jsViewer");
-            viewerDiv.append(jsViewerFrame);
-            mainViewerPane.append(viewerDiv);
+            self.element.append(mainViewerPane);
 
-            this.element.append(mainViewerPane);
+            mainViewerPane.block(
+                {
+                    message: '<h2><img src="../images/spin.gif" /> Loading...</h2>',
+                    css: {
+                        padding:        0,
+                        margin:         0,
+                        width:          '30%',
+                        top:            '40%',
+                        left:           '35%',
+                        textAlign:      'center',
+                        color:          '#000',
+                        border:         '2px solid #aaa',
+                        backgroundColor: '#fff',
+                        cursor:         'wait'
+                    },
+                    overlayCSS:  {
+                        backgroundColor: '#000',
+                        opacity:         0.1,
+                        cursor:          'wait'
+                    }
+                });
+
+            setTimeout(function(){
+                var jsViewerFrame = $("<iframe class='ui-layout-center' width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+                jsViewerFrame.attr("src", self.options.url);
+                jsViewerFrame.on("load", function(){
+                    //remove the blocking UI
+                    $("#mainJsViewerPane").unblock();
+                });
+                var viewerDiv = $("<div/>").attr("id", "jsViewer");
+                viewerDiv.append(jsViewerFrame);
+                $("#mainJsViewerPane").append(viewerDiv);
+            }, 2000 );
         },
         destroy: function() {
             this.element.next().remove();
