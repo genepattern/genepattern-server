@@ -20,7 +20,7 @@
 			<exclude name="doc/**" />
 		</fileset>
 	</copy>
-	<copy todir="wartemp" file="installer/GenePatternLogo.jpg" />
+	<copy todir="wartemp" file="installer-2014/GenePatternLogo.jpg" />
 	<copy todir="wartemp/WEB-INF/classes">
 		<fileset dir="build">
 			<include name="Run*.class" />
@@ -56,14 +56,14 @@
 	<war destfile="gp.war" basedir="wartemp"
 		webxml="wartemp/WEB-INF/web.xml">
 	</war>
-	<copy todir="ziptemp" file="installer/customizeWar.xml" />
-	<copy todir="ziptemp" file="installer/runtimeBuild.xml" />
-	<copy todir="ziptemp" file="installer/runtimeBuild.properties" />
+	<copy todir="ziptemp" file="installer-2014/customizeWar.xml" />
+	<copy todir="ziptemp" file="installer-2014/runtimeBuild.xml" />
+	<copy todir="ziptemp" file="installer-2014/runtimeBuild.properties" />
 	<move todir="ziptemp" file="gp.war" />
 	<zip destfile="gp_war.zip" basedir="ziptemp" />
 </target>
 
 <target name="copyWar">
-    <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
-    <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
+    <mkdir dir="installer-2014/GP_server_Build_Output/Web_Installers/InstData/warfile" />
+    <copy file="gp_war.zip" todir="installer-2014/GP_server_Build_Output/Web_Installers/InstData/warfile" />
 </target>
