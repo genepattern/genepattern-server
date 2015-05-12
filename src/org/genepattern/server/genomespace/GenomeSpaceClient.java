@@ -38,6 +38,7 @@ public class GenomeSpaceClient {
         else {
             GsSession session;
             try {
+                GsSession.setGSToolName("GenePattern");
                 session = new GsSession(token);
             }
             catch (InternalServerException e) {
@@ -64,8 +65,8 @@ public class GenomeSpaceClient {
 
         try {
            ConfigurationUrls.init(env);
+           GsSession.setGSToolName("GenePattern");
            GsSession gsSession = new GsSession();
-           gsSession.setGSToolName("GenePattern");
            User gsUser = gsSession.login(username, password);
 
            GenomeSpaceLogin response = new GenomeSpaceLogin();
@@ -102,6 +103,7 @@ public class GenomeSpaceClient {
         
         try {
             ConfigurationUrls.init(env);
+            GsSession.setGSToolName("GenePattern");
             GsSession gsSession = new GsSession(token);
             
             // Make a simple call to GenomeSpace to test the validity of the token
@@ -159,8 +161,8 @@ public class GenomeSpaceClient {
 
         try {
             ConfigurationUrls.init(env);
+            GsSession.setGSToolName("GenePattern");
             GsSession gsSession = new GsSession();
-            gsSession.setGSToolName("GenePattern");
             gsSession.registerUser(username, password, regEmail);
         }
         catch (Throwable t) {
