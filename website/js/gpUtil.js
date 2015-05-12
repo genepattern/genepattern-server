@@ -166,6 +166,17 @@ var gpUtil = function() {
         return params;
     }
 
+    /**
+     * Check whether the string ends with the specified text
+     * @param string - the string to search for the suffix
+     * @param suffix - the text to search for
+     * @returns {boolean}
+     */
+    function endsWith(string, suffix) {
+        return string.length >= suffix.length
+            && string.substr(string.length - suffix.length) === suffix;
+    }
+
     // declare 'public' functions
     return {
         formatTimezone:formatTimezone,
@@ -174,6 +185,7 @@ var gpUtil = function() {
         formatTimeOfDay:formatTimeOfDay,
         initToggleDiv:initToggleDiv,
         toggleDiv:toggleDiv,
-        parseQueryString:parseQueryString 
+        parseQueryString:parseQueryString,
+        endsWith: endsWith
     };
 }();
