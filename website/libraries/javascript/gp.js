@@ -236,6 +236,7 @@ gp.jobs = function(pObj) {
  * @param pObj - An object specifying this property:
  *                  jobNumber: the job number of the job
  *                  force: do not use cache, force a new query
+ *                  permissions: whether to include permissions info (default: false)
  *                  success: callback function for a done() event,
  *                          expects response and a Job object as arguments
  *                  error: callback function for an fail() event, expects exception as argument
@@ -246,6 +247,8 @@ gp.jobs = function(pObj) {
 gp.job = function(pObj) {
     var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
         (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
+    var getPermissions = pObj && ((typeof pObj.permissions === 'boolean' && pObj.permissions) ||
+        (typeof pObj.permissions === 'string' && pObj.permissions.toLowerCase() === 'true'));
     var jobNumber = pObj.jobNumber;
 
     // Try to find the job in the cache
@@ -265,9 +268,10 @@ gp.job = function(pObj) {
     }
 
     // Otherwise, if not cached or refreshed forced
+    var permissionsParam = getPermissions ? "?includePermissions=true" : "";
     var REST_ENDPOINT = "/rest/v1/jobs/";
     return $.ajax({
-        url: gp.server() + REST_ENDPOINT + jobNumber,
+        url: gp.server() + REST_ENDPOINT + jobNumber + permissionsParam,
         type: 'GET',
         dataType: 'json',
         xhrFields: {
