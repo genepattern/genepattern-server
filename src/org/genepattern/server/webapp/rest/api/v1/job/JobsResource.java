@@ -1,19 +1,24 @@
-/*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
- *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -21,10 +26,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.server.*;
-import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.DbException;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -57,58 +63,60 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.jersey.api.client.ClientResponse;
+
 /**
  * RESTful implementation of the /jobs resource.
  *
  * Example usage, via curl command line:
  * <p>To add a job to the server. This example runs the PreprocessDataset module with an ftp input file.</p>
  * <pre>
- * curl -X POST -u test:test -H "Accept: application/json" -H "Content-type: application/json" 
- *      -d '{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4", 
+ * curl -X POST -u test:test -H "Accept: application/json" -H "Content-type: application/json"
+ *      -d '{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:4",
  *           "params": [
  *               {"name": "input.filename", "values": [
  *                     "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"] },
  *               {"name": "threshold.and.filter", "values": [
- *                     "1"] },  
+ *                     "1"] },
  *           ]
- *          }' 
+ *          }'
  *      http://127.0.0.1:8080/gp/rest/v1/jobs
  * </pre>
  *
  * <p>Optionally set the 'groupId' for modules which accept file group parameters.
  * <pre>
- {
- "lsid":<actualLsid>,
- "params": [
- { "name": <paramName>,
- "groupId": <groupName1>,
- "values": [ ... ]
- },
- // repeat the paramName for each grouping of input files
- { "name": <paramName>,
- "groupId": <groupName2>,
- "values": [ ... ]
- }
- ]
- }
+   {
+     "lsid":<actualLsid>,
+     "params": [
+       { "name": <paramName>,
+         "groupId": <groupName1>,
+         "values": [ ... ]
+       },
+       // repeat the paramName for each grouping of input files
+       { "name": <paramName>,
+         "groupId": <groupName2>,
+         "values": [ ... ]
+       }
+     ]
+   }
 
  * <pre>
  *
  *
  * <p>To add a batch of jobs to the server, use the 'batchParam' property.</p>
  * <pre>
- {
- "lsid":<actualLsid>,
- "params": [
- { "name": <paramName>,
- "batchParam": <true | false>, //if not set, it means it's not a batch parameter
- "values": [ //list of values, for a file input parameter, if the value is for a directory, then ...
- ]
- },
- {
- }
- ]
- }
+   {
+     "lsid":<actualLsid>,
+     "params": [
+       { "name": <paramName>,
+         "batchParam": <true | false>, //if not set, it means it's not a batch parameter
+         "values": [ //list of values, for a file input parameter, if the value is for a directory, then ...
+         ]
+       },
+       {
+       }
+     ]
+   }
 
  * </pre>
  *
@@ -146,7 +154,7 @@ public class JobsResource {
             if(diskInfo.isAboveQuota())
             {
                 //disk usage exceeded so do not allow user to run a job
-                return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+                return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
         }
         catch(DbException db)
@@ -184,24 +192,24 @@ public class JobsResource {
         }
         catch (JSONException e) {
             throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(e.getMessage())
-                            .build()
-            );
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build()
+                );
         }
         catch (GpServerException e) {
             throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(e.getMessage())
-                            .build()
-            );
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build()
+                );
         }
         catch (Throwable t) {
             throw new WebApplicationException(
-                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(t.getMessage())
-                            .build()
-            );
+                Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(t.getMessage())
+                    .build()
+                );
         }
     }
 
@@ -212,19 +220,19 @@ public class JobsResource {
     /**
      * Job search API, default GET response for this resource.
      * Template:
-     <pre>
-     curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
-     ?userId={userId}
-     &groupId={groupId}
-     &batchId={batchId}
-     &page={page}
-     &pageSize={pageSize}
-     &orderBy={jobId | taskName | dateSubmitted | dateComplated | status}, prefix with '-' to reverse order
-     &orderFilesBy={name | date | size}, prefix with '-' to reverse order
-     </pre>
+       <pre>
+       curl -u {userId}:{password} -X GET {GenePatternURL}rest/v1/jobs
+           ?userId={userId}
+           &groupId={groupId}
+           &batchId={batchId}
+           &page={page}
+           &pageSize={pageSize}
+           &orderBy={jobId | taskName | dateSubmitted | dateComplated | status}, prefix with '-' to reverse order
+           &orderFilesBy={name | date | size}, prefix with '-' to reverse order
+       </pre>
      * Example query:
      * <pre>
-     curl -u test:test -X GET http://127.0.0.1:8080/gp/rest/v1/jobs
+        curl -u test:test -X GET http://127.0.0.1:8080/gp/rest/v1/jobs
      * </pre>
      *
      * @param uriInfo
@@ -276,9 +284,9 @@ public class JobsResource {
              * Optionally set the order of the jobs, default is by jobId.
              * Examples,
              * <pre>
-             orderBy=jobId
-             orderBy=-jobId
-             </pre>
+               orderBy=jobId
+               orderBy=-jobId
+               </pre>
              *
              */
             final @QueryParam("orderBy") String orderBy,
@@ -290,12 +298,12 @@ public class JobsResource {
              *
              * Examples,
              * <pre>
-             # sort by date, descending order
-             orderFilesBy=-date
-             # sort by name, ascending order
-             orderFilesBy=name
-             # sort by size, ascending order ('+' is allowed but optional)
-             orderFilesBy+name
+               # sort by date, descending order
+               orderFilesBy=-date
+               # sort by name, ascending order
+               orderFilesBy=name
+               # sort by size, ascending order ('+' is allowed but optional)
+               orderFilesBy+name
              * </pre>
              */
             final @QueryParam("orderFilesBy") String orderFilesBy,
@@ -312,16 +320,16 @@ public class JobsResource {
             final String gpUrl=UrlUtil.getGpUrl(request);
             final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
-                    .userId(userId)
-                    .groupId(groupId)
-                    .batchId(batchId)
-                    .tag(tag)
-                    .comment(comment)
-                    .pageNum(page)
-                    .pageSize(pageSize)
-                    .orderBy(orderBy)
-                    .orderFilesBy(orderFilesBy)
-                    .build();
+                .userId(userId)
+                .groupId(groupId)
+                .batchId(batchId)
+                .tag(tag)
+                .comment(comment)
+                .pageNum(page)
+                .pageSize(pageSize)
+                .orderBy(orderBy)
+                .orderFilesBy(orderFilesBy)
+            .build();
             final SearchResults searchResults= JobSearch.doSearch(q);
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
 
@@ -382,157 +390,6 @@ public class JobsResource {
         }
     }
 
-    /**
-     * Get a JSON object of the job's permissions, including a list of all possible groups to share with
-     * and the current permission status of each group.
-     *
-     * @param request
-     * @param jobId
-     * @return
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{jobId}/permissions")
-    public Response getJobPermissions(@Context HttpServletRequest request, @PathParam("jobId") String jobId) {
-        GpContext jobContext = Util.getJobContext(request, jobId);
-        GpContext userContext = Util.getUserContext(request);
-        JobInfo jobInfo = jobContext.getJobInfo();
-
-        PermissionsHelper ph = new PermissionsHelper(
-                userContext.isAdmin(), //final boolean _isAdmin,
-                userContext.getUserId(), // final String _userId,
-                jobInfo.getJobNumber(), // final int _jobNo,
-                jobInfo.getUserId(), //final String _rootJobOwner,
-                jobInfo.getJobNumber()//, //final int _rootJobNo,
-        );
-
-        try {
-            // Create the user permissions object
-            JSONObject userPerms = GetPipelineJobLegacy.permissionsToJson(userContext, ph);
-
-            // Create the group perms object
-            JSONArray groupPerms = makeGroupPerms(ph);
-
-            // Create the JSON Object to return
-            JSONObject toReturn = new JSONObject();
-            toReturn.put("user", userPerms);
-            toReturn.put("groups", groupPerms);
-
-            // Return the response
-            return Response.ok().entity(toReturn.toString()).build();
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error obtaining permissions").build();
-        }
-    }
-
-    /**
-     * Sets the permissions for a job
-     *
-     * Takes an array of permissions objects and sets the permissions for each group with a matching ID
-     *      Ex: {id: GROUP_ID, read: BOOLEAN, write: BOOLEAN}
-     *
-     * Returns the job's new set of permissions
-     *
-     * @param request
-     * @param jobId
-     * @return
-     */
-    @PUT
-    //@Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{jobId}/permissions")
-    public Response setJobPermissions(@Context HttpServletRequest request, @PathParam("jobId") String jobId, String payload) {
-        GpContext jobContext = Util.getJobContext(request, jobId);
-        GpContext userContext = Util.getUserContext(request);
-        JobInfo jobInfo = jobContext.getJobInfo();
-
-        PermissionsHelper ph = new PermissionsHelper(
-                userContext.isAdmin(), //final boolean _isAdmin,
-                userContext.getUserId(), // final String _userId,
-                jobInfo.getJobNumber(), // final int _jobNo,
-                jobInfo.getUserId(), //final String _rootJobOwner,
-                jobInfo.getJobNumber()//, //final int _rootJobNo,
-        );
-
-        try {
-            // Parse the payload
-            JSONArray setPerms = new JSONArray(payload);
-
-            // Set the permissions
-            if(!ph.canSetJobPermissions()) {
-                throw new Exception("Cannot set permissions on job: " + jobId);
-            }
-            else {
-                // New permissions
-                Set<GroupPermission> newPermissions = new HashSet<GroupPermission>();
-
-                List<GroupPermission> perms = ph.getJobResultPermissions(true);
-
-                // Add public to list
-                GroupPermission.Permission pubPerm = ph.getPublicAccessPermission();
-                perms.add(new GroupPermission("*", pubPerm));
-
-                // Set the permissions for each group
-                for (int i = 0; i < setPerms.length(); i++) {
-                    JSONObject iPerm = setPerms.getJSONObject(i);
-
-                    // New permission being set, add
-                    GroupPermission gp = null;
-                    if (iPerm.getBoolean("write")) {
-                        gp = new GroupPermission(iPerm.getString("id"), GroupPermission.Permission.READ_WRITE);
-                        newPermissions.add(gp);
-                    } else if (iPerm.getBoolean("read")) {
-                        gp = new GroupPermission(iPerm.getString("id"), GroupPermission.Permission.READ);
-                        newPermissions.add(gp);
-                    } else {
-                        // new GroupPermission(iPerm.getString("id"), GroupPermission.Permission.NONE);
-                    }
-                }
-
-                ph.setPermissions(newPermissions);
-            }
-
-            // Create the JSON Object to return
-            JSONObject toReturn = new JSONObject();
-            toReturn.put("user", GetPipelineJobLegacy.permissionsToJson(userContext, ph));
-            toReturn.put("groups", makeGroupPerms(ph));
-
-            // Return the response
-            return Response.ok().entity(toReturn.toString()).build();
-        }
-        catch (JSONException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error setting permissions").build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
-        }
-    }
-
-    private JSONArray makeGroupPerms(PermissionsHelper ph) throws JSONException {
-        List<GroupPermission> perms = ph.getJobResultPermissions(true);
-        GroupPermission.Permission pubPerm = ph.getPublicAccessPermission();
-        JSONArray groups = new JSONArray();
-
-        // Add permissions to public
-        JSONObject everyone = new JSONObject();
-        everyone.put("id", "*");
-        everyone.put("read", pubPerm.getRead());
-        everyone.put("write", pubPerm.getWrite());
-        groups.put(everyone);
-
-        // Add permissions to groups
-        for (GroupPermission perm : perms) {
-            JSONObject group = new JSONObject();
-            group.put("id", perm.getGroupId());
-            group.put("read", perm.getPermission().getRead());
-            group.put("write", perm.getPermission().getWrite());
-            groups.put(group);
-        }
-
-        return groups;
-    }
-
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
@@ -541,7 +398,7 @@ public class JobsResource {
      *
      * Example
      * <pre>
-     curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140?includeChildren=true
+       curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140?includeChildren=true
      * </pre>
      * @param request
      * @param jobId
@@ -629,7 +486,7 @@ public class JobsResource {
             final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request,
             final @PathParam("jobId") String jobId
-    ) {
+            ) {
 
         final GpContext jobContext=Util.getJobContext(request, jobId);
         try {
@@ -837,10 +694,10 @@ public class JobsResource {
      *
      * Response template:
      * <pre>
-     {
-     numProcessingJobs: 14,
-     recentJobs: [ {}, {}, ..., {} ]
-     }
+       {
+           numProcessingJobs: 14,
+           recentJobs: [ {}, {}, ..., {} ]
+       }
      * </pre>
      *
      * @param uriInfo
@@ -850,9 +707,11 @@ public class JobsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/recent")
-    public Response getRecentJobs (@Context UriInfo uriInfo, @Context HttpServletRequest request,
-                                   @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-                                   @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
+    public Response getRecentJobs (
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            final @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
+            final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
         final GpContext userContext = Util.getUserContext(request);
 
@@ -874,7 +733,7 @@ public class JobsResource {
             GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
-            boolean includePermissions = false;
+            final boolean includePermissions=false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
                 JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles,
@@ -902,7 +761,7 @@ public class JobsResource {
      *
      * Example
      * <pre>
-     curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140/children
+       curl -D headers.txt -u test:test http://127.0.0.1:8080/gp/rest/v1/jobs/9140/children
      * </pre>
      * @param request
      * @param jobId
