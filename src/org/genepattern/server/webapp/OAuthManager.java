@@ -9,6 +9,7 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages active OAuth token sessions
@@ -41,8 +42,8 @@ public class OAuthManager {
      * private constructor requires call to {@link #instance()}.
      */
     private OAuthManager() {
-        tokenSessionMap = new HashMap<String, OAuthSession>();
-        codeSessionMap = new HashMap<String, OAuthSession>();
+        tokenSessionMap = new ConcurrentHashMap<String, OAuthSession>();
+        codeSessionMap = new ConcurrentHashMap<String, OAuthSession>();
     }
 
     /**
@@ -118,14 +119,16 @@ public class OAuthManager {
     private void purgeExpiredSessions() {
         long now = (new Date()).getTime();
 
-        for (String token : tokenSessionMap.keySet()) {
+        Set<String> tokenKeys = tokenSessionMap.keySet();
+        for (String token : tokenKeys) {
             OAuthSession session = tokenSessionMap.get(token);
             if (session.getExpires() <= now) {
                 tokenSessionMap.remove(token);
             }
         }
 
-        for (String code : codeSessionMap.keySet()) {
+        Set<String> codeKeys = codeSessionMap.keySet();
+        for (String code : codeKeys) {
             OAuthSession session = codeSessionMap.get(code);
             if (session.getExpires() <= now) {
                 codeSessionMap.remove(code);
