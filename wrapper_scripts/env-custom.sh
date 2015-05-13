@@ -5,9 +5,9 @@
 # installation at Indiana University
 #
 
-#declare -a envCmd
-envCmd=("module" "load")
-#debug: envCmd=("echo" "loading module")
+function initEnv() {
+    module load "$1" &>/dev/null
+}
 
 #declare -A envMap
 envMap=( 

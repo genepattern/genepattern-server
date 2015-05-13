@@ -7,10 +7,17 @@
 #
 
 
-# set the 'envCmd' to ("use") for DotKit and to ( "load" "module" ) for Environment Modules
-declare -a envCmd
-#default value is for debugging only
-envCmd=("echo" "loading module")
+#
+# The initEnv function is the site-specific method for initializing the environment for the
+# given 'module', aka 'package', aka 'DotKit name'
+#
+# DotKit: use "$1" &>/dev/null
+# Environment Modules: module load "$1" &>/dev/null
+# debug: echo "loading module" $1
+#
+function initEnv() {
+    echo "loading module" "$1"
+}
 
 # optionally set envMap to an associative array (requires bash v. 4)
 # the keys are the DotKit values for Broad hosted GP servers
@@ -43,19 +50,4 @@ function modOrReplace() {
         module=$moduleReplace
     fi
     echo $module;
-}
-
-#
-# initialize the environment for the given 'environment module'
-# args: $1, must be the name of the 'environment module', e.g. 'Java-7'
-#
-function initEnv() {
-    if [ -z "$1" ]
-    then
-        return -1
-    else 
-        module="$1";
-    fi
-    "${envCmd[@]}" "${module}"
-    return 0
 }

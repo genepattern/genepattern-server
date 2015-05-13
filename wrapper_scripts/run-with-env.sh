@@ -12,8 +12,9 @@
 # Configure the GP server to use the script as the executable.
 # Pass the list of module environments on on the command line.
 #
-
-# to make this script portable, set 'envCmd' in the env-custom.sh file 
+#
+# You must define a the site-specific 'initEnv' function in the env-custom.sh file
+# 
 source $(dirname $0)/env-init.sh
 
 # initialize the list of environment modules
