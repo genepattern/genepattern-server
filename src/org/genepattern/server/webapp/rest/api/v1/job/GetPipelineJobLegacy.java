@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
@@ -369,7 +370,33 @@ public class GetPipelineJobLegacy implements GetJob {
         jsonObj.put("canSetPermissions", ph.canSetJobPermissions());
         jsonObj.put("isPublic", ph.isPublic());
         jsonObj.put("isShared", ph.isShared());
+        jsonObj.put("groups", makeGroupPerms(ph));
+
         return jsonObj;
+    }
+
+    private static JSONArray makeGroupPerms(PermissionsHelper ph) throws JSONException {
+        List<GroupPermission> perms = ph.getJobResultPermissions(true);
+        GroupPermission.Permission pubPerm = ph.getPublicAccessPermission();
+        JSONArray groups = new JSONArray();
+
+        // Add permissions to public
+        JSONObject everyone = new JSONObject();
+        everyone.put("id", "*");
+        everyone.put("read", pubPerm.getRead());
+        everyone.put("write", pubPerm.getWrite());
+        groups.put(everyone);
+
+        // Add permissions to groups
+        for (GroupPermission perm : perms) {
+            JSONObject group = new JSONObject();
+            group.put("id", perm.getGroupId());
+            group.put("read", perm.getPermission().getRead());
+            group.put("write", perm.getPermission().getWrite());
+            groups.put(group);
+        }
+
+        return groups;
     }
 
 }

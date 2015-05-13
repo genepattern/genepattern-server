@@ -410,16 +410,8 @@ public class JobsResource {
             // Create the user permissions object
             JSONObject userPerms = GetPipelineJobLegacy.permissionsToJson(userContext, ph);
 
-            // Create the group perms object
-            JSONArray groupPerms = makeGroupPerms(ph);
-
-            // Create the JSON Object to return
-            JSONObject toReturn = new JSONObject();
-            toReturn.put("user", userPerms);
-            toReturn.put("groups", groupPerms);
-
             // Return the response
-            return Response.ok().entity(toReturn.toString()).build();
+            return Response.ok().entity(userPerms.toString()).build();
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -495,9 +487,7 @@ public class JobsResource {
             }
 
             // Create the JSON Object to return
-            JSONObject toReturn = new JSONObject();
-            toReturn.put("user", GetPipelineJobLegacy.permissionsToJson(userContext, ph));
-            toReturn.put("groups", makeGroupPerms(ph));
+            JSONObject toReturn = GetPipelineJobLegacy.permissionsToJson(userContext, ph);
 
             // Return the response
             return Response.ok().entity(toReturn.toString()).build();
@@ -509,29 +499,7 @@ public class JobsResource {
         }
     }
 
-    private JSONArray makeGroupPerms(PermissionsHelper ph) throws JSONException {
-        List<GroupPermission> perms = ph.getJobResultPermissions(true);
-        GroupPermission.Permission pubPerm = ph.getPublicAccessPermission();
-        JSONArray groups = new JSONArray();
 
-        // Add permissions to public
-        JSONObject everyone = new JSONObject();
-        everyone.put("id", "*");
-        everyone.put("read", pubPerm.getRead());
-        everyone.put("write", pubPerm.getWrite());
-        groups.put(everyone);
-
-        // Add permissions to groups
-        for (GroupPermission perm : perms) {
-            JSONObject group = new JSONObject();
-            group.put("id", perm.getGroupId());
-            group.put("read", perm.getPermission().getRead());
-            group.put("write", perm.getPermission().getWrite());
-            groups.put(group);
-        }
-
-        return groups;
-    }
 
     ////////////////////////////////////
     // Getting a job
