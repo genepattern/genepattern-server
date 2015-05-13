@@ -63,7 +63,12 @@ public class CorsFilter implements Filter {
             response.setHeader("Access-Control-Allow-Origin", "*");
         }
 
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        String reqMethods = request.getHeader("Access-Control-Request-Method");
+        if (reqMethods == null) {
+            reqMethods = "GET, POST, OPTIONS";
+        }
+
+        response.setHeader("Access-Control-Allow-Methods", reqMethods);
 
         String reqHead = request.getHeader("Access-Control-Request-Headers");
 
