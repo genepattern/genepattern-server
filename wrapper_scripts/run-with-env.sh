@@ -15,6 +15,7 @@
 #
 # You must define a the site-specific 'initEnv' function in the env-custom.sh file
 # 
+script_dir=$(dirname $0)
 source $(dirname $0)/env-init.sh
 
 # initialize the list of environment modules
@@ -31,6 +32,9 @@ for module in "${modules[@]}"
 do
   initEnv "${module}"
 done
+
+# add this directory to the path
+PATH="${script_dir}:${PATH}"
 
 # run the command
 "${@}" 

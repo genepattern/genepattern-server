@@ -16,6 +16,7 @@ envMap=(
   ['.matlab-2013a']='matlab/2013a'
   ['Python-2.5']='python/2.5.4'
   ['Python-2.6']='python/2.6.9'
+  ['R-2.5']='R/2.5.1'
   ['R-2.7']='R/2.7.2'
   ['R-2.10']='R/2.10.1'
   ['R-2.11']='R/2.11.1'
@@ -26,6 +27,3 @@ envMap=(
   ['R-3.1']='R/3.1.1'
   ['GCC']='gcc/4.7.2'
 )
-
-# Note to self, make sure to set R2.14_HOME with the correct path
-

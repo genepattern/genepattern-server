@@ -51,3 +51,19 @@ function modOrReplace() {
     fi
     echo $module;
 }
+
+#
+# initialize the environment for the given 'environment module'
+# args: $1, must be the name of the 'environment module', e.g. 'Java-7'
+#
+#function initEnv() {
+#    if [ -z "$1" ]
+#    then
+#        return -1
+#    else 
+#        module="$1";
+#    fi
+#    #"${envCmd[@]}" "${module}"
+#    envCmd "$module"
+#    return 0
+#}
