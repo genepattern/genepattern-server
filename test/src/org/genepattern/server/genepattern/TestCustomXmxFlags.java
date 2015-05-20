@@ -3,8 +3,16 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
-import java.io.File;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
@@ -53,7 +61,7 @@ public class TestCustomXmxFlags {
         final String[] cmdLineArgs={ "java", "-Xmx512m", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
         final String[] expected={ "java", "-Xmx16g", "-cp", ""+libdir.getAbsolutePath()+"/DemoJava.jar"};
         final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
-        Assert.assertArrayEquals("No change for pipelines", expected, actual);
+        Assert.assertArrayEquals(expected, actual);
     }
     
     /**
@@ -203,5 +211,136 @@ public class TestCustomXmxFlags {
         Assert.assertEquals(arg, 
                 CustomXmxFlags.replaceXmx(mem, arg));
     }
+
+    @Test
+    public void testGetXmxMem_emptyCmdLine() {
+        assertEquals(null, getXmxMem(Arrays.asList("")));
+    }
+
+    @Test
+    public void testGetXmxMem_NoXmxArg() {
+        assertEquals(null, getXmxMem(Arrays.asList("<R2.5_Rscript>", "--version")));
+    }
+
+    @Test
+    public void testGetXmxMem_512m() {
+        assertEquals(Memory.fromString("512m"), getXmxMem(Arrays.asList("java", "-Xmx512m", "-jar", "myApp.jar")));
+    }
+
+    @Test
+    public void testGetXmxMem_1g() {
+        assertEquals(Memory.fromString("1 Gb"), getXmxMem(Arrays.asList("java", "-Xmx1g", "-jar", "myApp.jar")));
+    }
+
+    @Test
+    public void testGetXmxMem_16g() {
+        assertEquals(Memory.fromString("16 Gb"), getXmxMem(Arrays.asList("java", "-Xmx16g", "-jar", "myApp.jar")));
+    }
+    
+    @Test
+    public void testPadXmxForIU() {
+        // given a command line with an Xmx flag .... 
+        //     a) if necessary, change the Xmx flag to be >= 1 Gb
+        //     b) return the amount of memory to request of the job queue, padded by 3 Gb
+        
+        List<String> cmdLineIn=Arrays.asList("java", "-Xmx512m", "-jar", "/mock/libdir/DemoJava.jar");
+        DrmJobSubmission job=mock(DrmJobSubmission.class);
+        when(job.getCommandLine()).thenReturn(cmdLineIn);
+        when(job.getMemory()).thenReturn(Memory.fromString("512m"));
+
+        Memory minXmx=Memory.fromString("1 Gb");
+        Memory pad=Memory.fromString("3 Gb");
+        List<String> adjustedCmdLine=adjustXmxFlag(job, minXmx);
+        Memory xmxMem=getXmxMem(adjustedCmdLine);
+        Memory queueMemory=Memory.fromSizeInBytes( xmxMem.getNumBytes() + pad.getNumBytes() );
+        assertEquals(Arrays.asList("java", "-Xmx1g", "-jar", "/mock/libdir/DemoJava.jar"), adjustedCmdLine);
+
+        assertEquals("adjustMem", Memory.fromString("4 Gb").getNumBytes(), queueMemory.getNumBytes());
+    }
+    
+    /**
+     * Get the adjusted queue memory for the given job.
+     * 
+     * @param job, the job to run
+     * @param minXmx, the minimum allowed xmx memory for the server, e.g. "1g"
+     * @param pad, the amount of extra system memory to allocate in addition to the xmx memory
+     * @return the adjusted queue memory for the job, this is the amount to request
+     */
+    protected Memory adjustMem(DrmJobSubmission job, Memory minXmx, Memory pad) {
+        List<String> adjustedCmdLine=adjustXmxFlag(job, minXmx);
+        Memory queueMem=job.getMemory();
+        Memory xmxMem=getXmxMem(adjustedCmdLine);
+        if (xmxMem != null) {
+            queueMem=Memory.fromSizeInBytes( xmxMem.getNumBytes() + pad.getNumBytes() );
+        }
+        return queueMem;
+    }
+    
+    /**
+     * For the given job, adjust the command line args to set the '-Xmx' java memory flag 
+     * to be greater than or equal to the min value.
+     * 
+     * @param job, the job to run
+     * @param minXmx, the minimum Xmx memory value required by the system (e.g. 1 Gb)
+     * @return, an adjusted command line to be submitted to the queue
+     */
+    protected List<String> adjustXmxFlag(DrmJobSubmission job, Memory minXmx) {
+        Memory xmxIn=getXmxMem(job);
+        if (xmxIn == null) {
+            return job.getCommandLine();
+        }
+        if (xmxIn.getNumBytes() < minXmx.getNumBytes()) {
+            // need to edit the Xmx flag
+            return replaceXmxFlag(job.getCommandLine(), minXmx);
+        }
+        return job.getCommandLine();
+    }
+    
+    /**
+     * Get the Xmx flag for the job; this is the value set by the Gp server before adjustment.
+     * @param job
+     * @return the xmx value or null if none set
+     */
+    protected Memory getXmxMem(DrmJobSubmission job) {
+        return getXmxMem(job.getCommandLine());
+    }
+
+    /**
+     * Get the '-Xmx' flag from the given list of command line arguments.
+     * @param cmdLine
+     * @return the xmx value or null if none set
+     */
+    protected Memory getXmxMem(List<String> cmdLine) {
+        for(final String arg : cmdLine) {
+            if (arg.startsWith("-Xmx")) {
+                return Memory.fromString(arg.substring(4));
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Replace the command line with an adjusted java xmx flag
+     * @param cmdLineArgsIn, the initial command line
+     * @param adjustedXmxMem, the adjusted Xmx value
+     * @return the new command line
+     */
+    protected static List<String> replaceXmxFlag(List<String> cmdLineArgsIn, final Memory adjustedXmxMem) {
+        if (adjustedXmxMem==null) {
+            return cmdLineArgsIn;
+        }
+        final List<String> cmdLineArgsOut=new ArrayList<String>();
+        for(final String arg : cmdLineArgsIn) {
+            if (arg.contains("-Xmx")) {
+                //replace existing -Xmx flag
+                String updated=CustomXmxFlags.replaceXmx(adjustedXmxMem,arg);
+                cmdLineArgsOut.add(updated);
+            }
+            else {
+                cmdLineArgsOut.add(arg);
+            }
+        }
+        return cmdLineArgsOut;
+    }    
     
 }
