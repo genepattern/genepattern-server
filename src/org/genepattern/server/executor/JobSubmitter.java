@@ -45,7 +45,7 @@ public class JobSubmitter implements Runnable {
         GpContext jobContext=null;
         JobInfo jobInfo=null;
         try {
-            jobContext=FileDownloader.initJobContext(jobId);
+            jobContext=GpContext.createContextForJob(jobId);
             if (jobContext != null) {
                 jobInfo=jobContext.getJobInfo();
             }
