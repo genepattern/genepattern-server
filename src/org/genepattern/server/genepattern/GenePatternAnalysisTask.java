@@ -107,7 +107,6 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.JobRunner;
-import org.genepattern.drm.Memory;
 import org.genepattern.server.DbException;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
@@ -789,52 +788,11 @@ public class GenePatternAnalysisTask {
                         selectedChoice.getValue() != null && 
                         selectedChoice.getValue().length() > 0;
                 if (isDirectoryInputParam) {
-                    //check permissions and optionally convert value from url to server file path
-                    final String pname=pinfoRecord.getFormal().getName();
-                    final Param inputParam=new Param(new ParamId(pname), false);
-                    inputParam.addValue(new ParamValue(pinfo.getValue()));
-                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
-                    GpFilePath directory=null;
-                    try {
-                        directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
-                    }
-                    catch (Exception e) {
-                        throw new JobDispatchException(e.getLocalizedMessage());
-                    }
-                    if (directory != null) {
-                        final String serverPath=directory.getServerFile().getAbsolutePath();
-                        pinfo.setValue(serverPath);
-                        final boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
-                        if (!canRead) {
-                            throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
-                        }
-                    } 
+                    setPinfoValueForDirectoryInputParam(jobContext, pinfo, pinfoRecord); 
                 }
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
-                    //it's a file choice
-                    log.debug("Checking cache for "+pinfo.getName()+"="+pinfo.getValue());
-                    final GpFilePath cachedFile;
-                    try {
-                        // this method waits, if necessary, for the file to be transferred to a local path
-                        Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
-                        cachedFile=f.get().getLocalPath();
-                    }
-                    catch (Throwable t) {
-                        final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
-                        log.error(errorMessage, t);
-                        throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
-                    }
-                    if (cachedFile == null || cachedFile.getServerFile()==null) {
-                        final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue()+": file is null";
-                        throw new JobDispatchException(errorMessage);
-                    }
-                    final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
-                    if (!cachedFile.getServerFile().canRead()) {
-                        throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
-                    }
-                    final String serverPath=cachedFile.getServerFile().getAbsolutePath();
-                    pinfo.setValue(serverPath);
+                    final GpFilePath cachedFile = setPinfoValueForFileChoiceSelection(gpConfig, jobContext, pinfo, selectedChoice);
                 }
                 else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
@@ -1536,6 +1494,67 @@ public class GenePatternAnalysisTask {
         }
 
         runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+    }
+
+    protected void setPinfoValueForDirectoryInputParam(final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
+        //check permissions and optionally convert value from url to server file path
+        final String pname=pinfoRecord.getFormal().getName();
+        final Param inputParam=new Param(new ParamId(pname), false);
+        inputParam.addValue(new ParamValue(pinfo.getValue()));
+        ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+        GpFilePath directory=null;
+        try {
+            directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
+        }
+        catch (Exception e) {
+            throw new JobDispatchException(e.getLocalizedMessage());
+        }
+        if (directory != null) {
+            final String serverPath=directory.getServerFile().getAbsolutePath();
+            pinfo.setValue(serverPath);
+            final boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+            if (!canRead) {
+                throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
+            }
+        }
+    }
+
+    /**
+     * If necessary, wait for the remove file to transfer to local cache before starting the job.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param pinfo
+     * @param selectedChoice
+     * @return
+     * @throws JobDispatchException
+     */
+    protected GpFilePath setPinfoValueForFileChoiceSelection(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final Choice selectedChoice)
+    throws JobDispatchException {
+        //it's a file choice
+        log.debug("Checking cache for "+pinfo.getName()+"="+pinfo.getValue());
+        final GpFilePath cachedFile;
+        try {
+            // this method waits, if necessary, for the file to be transferred to a local path
+            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+            cachedFile=f.get().getLocalPath();
+        }
+        catch (Throwable t) {
+            final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
+            log.error(errorMessage, t);
+            throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
+        }
+        if (cachedFile == null || cachedFile.getServerFile()==null) {
+            final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue()+": file is null";
+            throw new JobDispatchException(errorMessage);
+        }
+        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
+        if (!cachedFile.getServerFile().canRead()) {
+            throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
+        }
+        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+        pinfo.setValue(serverPath);
+        return cachedFile;
     }
 
     /**
