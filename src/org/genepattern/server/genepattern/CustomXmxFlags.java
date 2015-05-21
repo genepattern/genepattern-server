@@ -169,12 +169,17 @@ public class CustomXmxFlags {
     
     public static boolean isJavaCmd(final TaskInfo taskInfo) {
         if (taskInfo==null) {
+            log.warn("taskInfo==null");
             return false;
         }
         if (taskInfo.isPipeline()) {
             return false;
         }
         final TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+        if (taskInfoAttributes==null) {
+            log.warn("taskInfo.taskInfoAttributes==null");
+            return false;
+        }
         final String cmdLine=taskInfoAttributes.get(COMMAND_LINE);
         return isJavaCmd(cmdLine);
     }
