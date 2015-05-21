@@ -13,15 +13,18 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
- * Helper class for java modules, to set the java max memory based on the GP server configuration setting 'job.memory'.
+ * Helper class to set the java '-Xmx' arg based on the optional job configuration flags:
+ *     job.memory,
+ *     job.javaXmx
+ *     job.javaXmxMin
  * 
- * This is called after all other command line substitutions have happened and simply replaces all
- * occurrences of -Xmx<originalValue> with -Xmx<customValue> if a custom value has been specified.
+ * This is called after all other command line substitutions. It replaces all
+ * occurrences of -Xmx<originalValue> with -Xmx<customValue> if a custom value has been determined.
  * 
  * Note: this is only applied to java modules. Determined by the command line starting with the '<java>'
- * substitution parameter. 
+ * substitution parameter; as well as special cases for RJava wrappers.
  * 
- * @see JobRunner#PROP_MEMORY
+ * @see {@link JobRunner#PROP_MEMORY}, @see {@link JobRunner#PROP_JAVA_XMX}, @see {@link JobRunner#PROP_JAVA_XMX_MIN}
  * @author pcarr
  *
  */
@@ -62,19 +65,15 @@ public class CustomXmxFlags {
     }
     
     /**
-     * Adjust the command line args, add or edit the -Xmx arg if it is a java module.
-     * 
-     * The 'job.memory' 
-
-     * 
-     * When 'job.javaXmxMin' is set, make sure that there is a -Xmx arg and that it is >= job.javaXmxMin;
+     * Get the '-Xmx' memory value from the config.
+     * Use 'job.memory', unless 'job.javaXmx' is set.
+     * The returned value will be >= 'job.javaXmxMin' when set;
      * 
      * @param gpConfig
      * @param jobContext
-     * @param cmdLineArgs
      * @return
      */
-    public static String[] addOrReplaceXmxFlag(final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgs) {
+    public static Memory getXmxValueFromConfig(final GpConfig gpConfig, final GpContext jobContext) {
         final Memory jobMemory=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
         final Memory javaXmx=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX);
         final Memory javaXmxMin=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_MIN);
@@ -86,15 +85,42 @@ public class CustomXmxFlags {
         else {
             memoryFlag=Memory.max(jobMemory, javaXmxMin);
         }
+        return memoryFlag;
+    }
+    
+    /**
+     * Adjust the command line args, add or edit the -Xmx arg if it is a java module.
+     * 
+     * 
+     * When 'job.javaXmxMin' is set, make sure that there is a -Xmx arg and that it is >= job.javaXmxMin;
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param the initial cmdLineArgs
+     * @return
+     */
+    /**
+     * Adjust the command line args, add or edit the -Xmx arg if it is a java module.
+     * By default it is based on 'job.memory';
+     * When 'job.javaXmx' is set, it takes precedence;
+     * In either case 'job.javaXmxMin' is 
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param cmdLineArgsIn, the initial argument list
+     * @return a new arg list with additional or edited -Xmx flag, or the original one if no change was made
+     */
+    public static String[] addOrReplaceXmxFlag(final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgsIn) {
+        final Memory memoryFlag=getXmxValueFromConfig(gpConfig, jobContext);
         if (memoryFlag!=null) {
             if (log.isDebugEnabled()) {
                 ///CLOVER:OFF
                 log.debug("setting javaXmx flag: "+memoryFlag);
                 ///CLOVER:ON
             }
-            return CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, cmdLineArgs);
+            return CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, cmdLineArgsIn);
         }
-        return cmdLineArgs;
+        return cmdLineArgsIn;
     }
 
     public static String[] addOrReplaceXmxFlag(final GpContext jobContext, final Memory mem, final String[] cmdLineArgs) {
@@ -137,11 +163,14 @@ public class CustomXmxFlags {
         }
     }
     
-    protected static boolean isJavaCmd(final GpContext jobContext) {
+    public static boolean isJavaCmd(final GpContext jobContext) {
+        if (jobContext==null) {
+            return false;
+        }
         return isJavaCmd(jobContext.getTaskInfo());
     }
     
-    protected static boolean isJavaCmd(final TaskInfo taskInfo) {
+    public static boolean isJavaCmd(final TaskInfo taskInfo) {
         if (taskInfo==null) {
             return false;
         }
@@ -159,7 +188,7 @@ public class CustomXmxFlags {
      * @param cmdLine
      * @return
      */
-    protected static boolean isJavaCmd(final String cmdLine) {
+    public static boolean isJavaCmd(final String cmdLine) {
         if (cmdLine==null) {
             return false;
         }
