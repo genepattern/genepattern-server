@@ -212,7 +212,12 @@ public class FileDownloader {
             log.debug("selectedChoices.size()==0");
             return;
         }
-         
+        if (log.isDebugEnabled()) {
+            if (jobContext != null) {
+                log.debug("downloading files for jobId="+jobContext.getJobNumber()+" ...");
+            }
+        }
+
         // loop through all the choices and start downloading ...
         for(final Choice selectedChoice : selectedChoices) {
             try {

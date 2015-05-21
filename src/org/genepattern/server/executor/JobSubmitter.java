@@ -104,11 +104,6 @@ public class JobSubmitter implements Runnable {
     
     private void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
         FileDownloader downloader=FileDownloader.fromJobContext(jobContext);
-        if (!downloader.hasSelectedChoices()) {
-            log.debug("No selected choices");
-            return;
-        }
-        log.debug("downloading files for jobId="+jobId+" ...");
         downloader.startDownloadAndWait(gpConfig, jobContext);
     }
 
