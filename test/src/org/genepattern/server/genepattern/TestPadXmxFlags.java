@@ -76,6 +76,11 @@ public class TestPadXmxFlags {
     }
     
     @Test
+    public void testGetXmxMem_MultiArg() {
+        assertEquals(Memory.fromString("16 Gb"), getXmxMem(Arrays.asList("java", "-Xmx16g -Dhttp.proxyHost=localhost -Dhttp.proxyPort=9393", "-jar", "myApp.jar")));
+    }
+
+    @Test
     public void testPadXmxForIU() {
         // given a command line with an Xmx flag .... 
         //     a) if necessary, change the Xmx flag to be >= 1 Gb
@@ -199,18 +204,63 @@ public class TestPadXmxFlags {
         return getXmxMem(job.getCommandLine());
     }
 
+    protected Memory getXmxMem(List<String> cmdLine) {
+        return getXmxMem_matchAnywhere(cmdLine);
+    }
+    
     /**
      * Get the Xmx flag from the list of command line args
      * @param job
      * @return the xmx value or null if none set
      */
-    protected Memory getXmxMem(List<String> cmdLine) {
+    protected Memory getXmxMem_matchFirst(List<String> cmdLine) {
         for(final String arg : cmdLine) {
             if (arg.startsWith("-Xmx")) {
                 return Memory.fromString(arg.substring(4));
             }
         }
         return null;
+    }
+
+    protected Memory getXmxMem_matchAnywhere(List<String> cmdLine) {
+        for(final String arg : cmdLine) {
+            Memory xmx=getXmxMem_fromArg(arg);
+            if (xmx != null) {
+                return xmx;
+                
+            }
+        }
+        return null;
+    }
+
+    public static Memory getXmxMem_fromArg(final String arg) {
+        final String XMX="-Xmx";
+        if (arg==null) {
+            return null;
+        }
+        final int i0=arg.indexOf(XMX);
+        if (i0<0) {
+            //no match
+            return null;
+        }
+        String xmxVal="";
+        String tail="";
+        final int i1=arg.indexOf(" ", i0);
+        if (i1>=0) {
+            xmxVal=arg.substring(i0+XMX.length(),i1);
+            tail=arg.substring(i1);
+        }
+        else {
+            xmxVal=arg.substring(i0+XMX.length());
+        }
+        try {
+            Memory memOrig=Memory.fromString(xmxVal);
+            return memOrig;
+        }
+        catch (Throwable t) {
+            //ignore
+            return null;
+        }
     }
     
     /**
