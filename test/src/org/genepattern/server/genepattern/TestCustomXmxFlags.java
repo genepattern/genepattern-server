@@ -34,7 +34,6 @@ public class TestCustomXmxFlags {
     final String javaCmdLine="<java> <java_flags> -jar <libdir>DemoJava.jar";
     // mock runtime command array, after subsitutions, before applying -Xmx customization
     final String[] javaCmdArgs={"java", "-Xmx512m", "-jar", "/mock/libdir/DemoJava.jar"};
-    //final List<String> cmdArgsList=Arrays.asList(cmdArgs);
     
     DrmJobSubmission job;
     GpConfig gpConfig;
@@ -67,7 +66,7 @@ public class TestCustomXmxFlags {
         return jobContext;
     }
 
-    private static TaskInfo createTask(final String name, final String cmdLine) {
+    protected static TaskInfo createTask(final String name, final String cmdLine) {
         TaskInfo mockTask=new TaskInfo();
         mockTask.setName(name);
         mockTask.giveTaskInfoAttributes();
@@ -345,11 +344,13 @@ public class TestCustomXmxFlags {
     
     @Test
     public void testIsJavaCmd_null() {
-        assertEquals("isJavaCmd(null ...)", false, CustomXmxFlags.isJavaCmd((String)null));
+        assertEquals("isJavaCmd(null cmdLine String ...)", false, CustomXmxFlags.isJavaCmd((String)null));
     }
     
-    
-
+    @Test
+    public void testIsJavaCmd_nullContext() {
+        assertEquals("isJavaCmd(null jobContext ...)", false, CustomXmxFlags.isJavaCmd((GpContext)null));
+    }
 
     /**
      * An example java module which already has an -Xmx flag,
