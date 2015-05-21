@@ -220,6 +220,21 @@ public class Memory {
         }
     }
 
+    /**
+     * Get the max value of the two args.
+     * @param arg0
+     * @param arg1
+     * @return
+     */
+    public static final Memory max(final Memory arg0, final Memory arg1) {
+        if (arg0==null) { return arg1; }
+        if (arg1==null) { return arg0; }
+        if (arg0.getNumBytes()>=arg1.getNumBytes()) {
+            return arg0;
+        }
+        return arg1;
+    }
+
     private final double value;
     private final Unit unit;
     private final Long numBytes;
