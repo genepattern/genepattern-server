@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -38,15 +39,15 @@ public class TestPadXmxFlags {
         List<String> cmdLineIn=Arrays.asList("java", "-Xmx512m", "-jar", "/mock/libdir/DemoJava.jar");
         job=mock(DrmJobSubmission.class);
         when(job.getCommandLine()).thenReturn(cmdLineIn);
-        when(job.getMemory()).thenReturn(Memory.fromString("512m"));
         
         // mock customizations for 'job.javaXmxMin' and 'job.javaXmxPad'
         gpConfig=mock(GpConfig.class);
         jobContext=mock(GpContext.class);
         when(job.getJobContext()).thenReturn(jobContext);
         when(job.getGpConfig()).thenReturn(gpConfig);
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxMin")).thenReturn(Memory.fromString("1 Gb"));
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxPad")).thenReturn(Memory.fromString("3 Gb"));
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("512 Mb"));
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_MIN)).thenReturn(Memory.fromString("1 Gb"));
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_PAD)).thenReturn(Memory.fromString("3 Gb"));
     }
 
     @Test
@@ -75,6 +76,11 @@ public class TestPadXmxFlags {
     }
     
     @Test
+    public void testGetXmxMem_MultiArg() {
+        assertEquals(Memory.fromString("16 Gb"), getXmxMem(Arrays.asList("java", "-Xmx16g -Dhttp.proxyHost=localhost -Dhttp.proxyPort=9393", "-jar", "myApp.jar")));
+    }
+
+    @Test
     public void testPadXmxForIU() {
         // given a command line with an Xmx flag .... 
         //     a) if necessary, change the Xmx flag to be >= 1 Gb
@@ -88,8 +94,8 @@ public class TestPadXmxFlags {
     
     @Test
     public void noConfig() {
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxMin")).thenReturn(null);
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxPad")).thenReturn(null);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_MIN)).thenReturn(null);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_PAD)).thenReturn(null);
         
         assertEquals(job.getCommandLine(), adjustXmxFlag(job));
         assertEquals(Memory.fromString("512m"), getPaddedQueueMemory(job));
@@ -97,14 +103,14 @@ public class TestPadXmxFlags {
     
     @Test
     public void noJavaXmxPad() {
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxPad")).thenReturn(null);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_PAD)).thenReturn(null);
         assertEquals(Arrays.asList("java", "-Xmx1g", "-jar", "/mock/libdir/DemoJava.jar"), adjustXmxFlag(job));
         assertEquals(Memory.fromString("1 Gb"), getPaddedQueueMemory(job));
     }
 
     @Test
     public void noJavaXmxMin() {
-        when(gpConfig.getGPMemoryProperty(jobContext, "job.javaXmxMin")).thenReturn(null);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_MIN)).thenReturn(null);
         assertEquals(Arrays.asList("java", "-Xmx512m", "-jar", "/mock/libdir/DemoJava.jar"), adjustXmxFlag(job));
         assertEquals(Memory.fromString("3.5 Gb"), getPaddedQueueMemory(job));
     }
@@ -120,8 +126,8 @@ public class TestPadXmxFlags {
      * @return the adjusted queue memory for the job, this is the amount to request for a node on the job queue
      */
     protected Memory getPaddedQueueMemory(DrmJobSubmission job) {
-        Memory javaXmxMin=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), "job.javaXmxMin");
-        Memory javaXmxPad=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), "job.javaXmxPad");
+        Memory javaXmxMin=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), JobRunner.PROP_JAVA_XMX_MIN);
+        Memory javaXmxPad=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), JobRunner.PROP_JAVA_XMX_PAD);
         return getPaddedQueueMemory(job, javaXmxMin, javaXmxPad);
     }
     
@@ -145,7 +151,7 @@ public class TestPadXmxFlags {
         }
 
         // by default, use the job.memory from the config
-        Memory queueMem=job.getMemory();
+        Memory queueMem=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), JobRunner.PROP_MEMORY);
         Memory xmxMem=getXmxMem(cmdLine);
         if (javaXmxPad != null) {
             if (xmxMem != null) {
@@ -171,7 +177,7 @@ public class TestPadXmxFlags {
      * @return, an adjusted command line to be submitted to the queue
      */
     protected List<String> adjustXmxFlag(DrmJobSubmission job) {
-        Memory javaXmxMin=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), "job.javaXmxMin");
+        Memory javaXmxMin=job.getGpConfig().getGPMemoryProperty(job.getJobContext(), JobRunner.PROP_JAVA_XMX_MIN);
         return adjustXmxFlag(job, javaXmxMin);
     }
 
@@ -198,18 +204,63 @@ public class TestPadXmxFlags {
         return getXmxMem(job.getCommandLine());
     }
 
+    protected Memory getXmxMem(List<String> cmdLine) {
+        return getXmxMem_matchAnywhere(cmdLine);
+    }
+    
     /**
      * Get the Xmx flag from the list of command line args
      * @param job
      * @return the xmx value or null if none set
      */
-    protected Memory getXmxMem(List<String> cmdLine) {
+    protected Memory getXmxMem_matchFirst(List<String> cmdLine) {
         for(final String arg : cmdLine) {
             if (arg.startsWith("-Xmx")) {
                 return Memory.fromString(arg.substring(4));
             }
         }
         return null;
+    }
+
+    protected Memory getXmxMem_matchAnywhere(List<String> cmdLine) {
+        for(final String arg : cmdLine) {
+            Memory xmx=getXmxMem_fromArg(arg);
+            if (xmx != null) {
+                return xmx;
+                
+            }
+        }
+        return null;
+    }
+
+    public static Memory getXmxMem_fromArg(final String arg) {
+        final String XMX="-Xmx";
+        if (arg==null) {
+            return null;
+        }
+        final int i0=arg.indexOf(XMX);
+        if (i0<0) {
+            //no match
+            return null;
+        }
+        String xmxVal="";
+        String tail="";
+        final int i1=arg.indexOf(" ", i0);
+        if (i1>=0) {
+            xmxVal=arg.substring(i0+XMX.length(),i1);
+            tail=arg.substring(i1);
+        }
+        else {
+            xmxVal=arg.substring(i0+XMX.length());
+        }
+        try {
+            Memory memOrig=Memory.fromString(xmxVal);
+            return memOrig;
+        }
+        catch (Throwable t) {
+            //ignore
+            return null;
+        }
     }
     
     /**

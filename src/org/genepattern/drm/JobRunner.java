@@ -47,8 +47,45 @@ public interface JobRunner {
      * It can be used as an alias to the actual queue name used by the external system.
      */
     public static final String PROP_VIRTUAL_QUEUE="job.virtualQueue";
+    /**
+     * The 'job.memory' property, when set, declares the amount of RAM to request before starting 
+     * a job on a compute node. For example,
+     *     job.memory: 8 Gb
+     * 
+     * On most queuing systems, the job will not start until a node with the requested RAM becomes available.
+     * The job will also be terminated when it exceeds that amount.
+     * 
+     * For java modules, the 'job.memory' value will be used to generate the '-Xmx' command line arg.
+     * By default, you should not declare 'job.javaXmx' property or set it in the module command line.
+     * Additional customizations for java modules:
+     *     Use 'job.javaXmx' to set a different -Xmx flag than the 'job.memory' value;
+     *     Use 'job.javaXmxMin' to set a global minimum -Xmx value;
+     *     Use 'job.javaXmxPad' to set pad the requested RAM on the compute node;
+     */
     public static final String PROP_MEMORY="job.memory";
+    
+    /**
+     * The 'job.javaXmx' property, when set, is used to set the '-Xmx' flag on the java command line.
+     */
     public static final String PROP_JAVA_XMX="job.javaXmx";
+    /**
+     * The 'job.javaXmxMin' property, defines a minimum '-Xmx' value for the java command line.
+     * For example,
+     *     job.memory: 512 Mb
+     *     job.javaXmxMin: 1 Gb
+     * Will result in the following command line:
+     *     java -Xmx1g ... 
+     */
+    public static final String PROP_JAVA_XMX_MIN="job.javaXmxMin";
+    /**
+     * The 'job.javaXmxPad' specifies an additional amount of RAM which must be requested on compute nodes.
+     * For example,
+     *     job.memory: 8 Gb
+     *     job.javaXmxPad: 4 Gb
+     * Will require a 12 Gb RAM compute node.
+     */
+    public static final String PROP_JAVA_XMX_PAD="job.javaXmxPad";
+    
     /**
      * The 'job.walltime' runtime limit for the job in d-hh:mm:ss format.
      * i.e.

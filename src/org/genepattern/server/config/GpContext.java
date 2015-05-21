@@ -288,6 +288,16 @@ public class GpContext {
         return null;
     }
 
+    public String getTaskName() {
+        if (taskInfo != null) {
+            return taskInfo.getName();
+        }
+        if (jobInfo != null) {
+            return jobInfo.getTaskName();
+        }
+        return null;
+    }
+
     void setJobPermissions(final JobPermissions jobPermissions) {
         this.jobPermissions=jobPermissions;
     }
