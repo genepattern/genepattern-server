@@ -103,7 +103,7 @@ public class JobSubmitter implements Runnable {
     }
     
     private void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
-        FileDownloader downloader=FileDownloader.fromJobContext(jobContext);
+        FileDownloader downloader=FileDownloader.fromJobContext(gpConfig, jobContext);
         downloader.startDownloadAndWait(gpConfig, jobContext);
     }
 

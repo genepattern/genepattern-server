@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.config.Value;
 
@@ -26,6 +26,21 @@ import org.genepattern.server.config.Value;
 public class MapLocalEntry {
     private static final Logger log = Logger.getLogger(MapLocalEntry.class);
     
+    /**
+     * Set 'local.choiceDirs' to a map of externalUrl -> localFilePath.
+     * When handling input values selected from drop-down menus, the GP server
+     * will optionally use a local path instead of downloading the file from the remote location.
+     * Example config_yaml entry:
+     * <pre>
+    #
+    # map of local paths for dynamic file drop-downs
+    #
+    local.choiceDirs: {
+        "ftp://ftp.broadinstitute.org/pub/genepattern/": "/web/ftp/pub/genepattern/", 
+        "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/",
+    }    
+     * </pre>
+     */
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
 
     /**
@@ -34,9 +49,8 @@ public class MapLocalEntry {
      * @return an empty Map if there is no valid entry in the config file. 
      *     For a default gp install this will return an empty map.
      */
-    private static Map<?,?> getLocalChoiceDirsMap() {
-        final GpContext serverContext=GpContext.getServerContext();
-        final Value value=ServerConfigurationFactory.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
+    protected static Map<?,?> getLocalChoiceDirsMap(final GpConfig gpConfig, final GpContext gpContext) {
+        final Value value=gpConfig.getValue(gpContext, PROP_LOCAL_CHOICE_DIRS);
         if (value==null || !value.isMap()) {
             return Collections.emptyMap();
         }
@@ -53,8 +67,8 @@ public class MapLocalEntry {
      * @param selectedUrlValue
      * @return
      */
-    public static File initLocalFileSelection(final String selectedUrlValue) {
-        final Map<?,?> map=getLocalChoiceDirsMap();
+    public static File initLocalFileSelection(final GpConfig gpConfig, final GpContext gpContext, final String selectedUrlValue) {
+        final Map<?,?> map=getLocalChoiceDirsMap(gpConfig, gpContext);
         if (map.isEmpty()) {
             log.debug("No map configured");
             return null;
@@ -81,8 +95,8 @@ public class MapLocalEntry {
      * Check the config for a matching local dir and initialize the localChoiceDir field.
      * @return
      */
-    public static MapLocalEntry initLocalChoiceDir(final String choiceDir) {
-        final Map<?,?> map=getLocalChoiceDirsMap();
+    public static MapLocalEntry initLocalChoiceDir(final GpConfig gpConfig, final GpContext gpContext, final String choiceDir) {
+        final Map<?,?> map=getLocalChoiceDirsMap(gpConfig, gpContext);
         if (map.isEmpty()) {
             return null;
         }

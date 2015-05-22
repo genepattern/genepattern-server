@@ -135,7 +135,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         final DirFilter dirFilter=new DirFilter(param);
         
         //special-case, local.choiceDir
-        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(ftpDir, dirFilter);
+        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(gpConfig, jobContext, ftpDir, dirFilter);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);

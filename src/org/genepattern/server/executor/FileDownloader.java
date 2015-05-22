@@ -15,15 +15,11 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.eula.GetTaskStrategy;
-import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -38,41 +34,6 @@ import org.genepattern.webservice.TaskInfo;
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
     
-    public static final GpContext initJobContext(final Integer jobId) throws JobDispatchException { 
-        final JobInfo jobInfo=initJobInfo(jobId);
-        final GetTaskStrategy getTaskStrategy=new GetTaskStrategyDefault();
-        final TaskInfo taskInfo=getTaskStrategy.getTaskInfo(jobInfo.getTaskLSID());        
-        return GpContext.getContextForJob(jobInfo, taskInfo);
-    }
-    
-    /**
-     * Initialize a JobInfo instance for the given jobId.
-     * @param jobId
-     * @return
-     * @throws JobDispatchException
-     */
-    public static final JobInfo initJobInfo(final Integer jobId) throws JobDispatchException {
-        JobInfo jobInfo = null;
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        log.debug("job #"+jobId+", isInTransaction="+isInTransaction);
-        try {
-            AnalysisDAO dao = new AnalysisDAO();
-            jobInfo = dao.getJobInfo(jobId);
-        }
-        catch (Throwable t) {
-            final String message="Server error: Not able to load jobInfo for jobId: "+jobId;
-            log.debug(message, t);
-            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
-        }
-        finally {
-            if (!isInTransaction) {
-                log.debug("job #"+jobId+", closing DB session");
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-        return jobInfo;
-    }
-    
     /**
      * Create a new downloader for the given job based on the jobId.
      * 
@@ -80,13 +41,13 @@ public class FileDownloader {
      * @return
      * @throws JobDispatchException
      */
-    public static final FileDownloader fromJobContext(final GpContext jobContext) throws JobDispatchException {
-        return new FileDownloader(jobContext);
+    public static final FileDownloader fromJobContext(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+        return new FileDownloader(gpConfig, jobContext);
     }
     
     private final List<Choice> selectedChoices;
 
-    private FileDownloader(final GpContext jobContext) {
+    private FileDownloader(final GpConfig gpConfig, final GpContext jobContext) {
         this.selectedChoices=initSelectedChoices(jobContext.getTaskInfo(), jobContext.getJobInfo());
     }
 

@@ -3,12 +3,14 @@
  *******************************************************************************/
 package org.genepattern.server.executor;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.choice.TestChoiceInfo;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -18,10 +20,17 @@ import org.mockito.Mockito;
  *
  */
 public class TestFileDownloader {
+    private GpConfig gpConfig;
+
     private String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
     private String selectedValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
     private String choiceDir_dirListing="ftp://gpftp.broadinstitute.org/demo/dir/";
     private String selectedDirValue="ftp://gpftp.broadinstitute.org/demo/dir/A/";
+
+    @Before
+    public void setUp() {
+        gpConfig=new GpConfig.Builder().build();
+    }
 
     @Test
     public void hasSelectedChoices()  throws JobDispatchException {
@@ -39,7 +48,7 @@ public class TestFileDownloader {
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)
         .build();
-        FileDownloader downloader = FileDownloader.fromJobContext(jobContext);
+        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext);
         
         Assert.assertTrue("Expecting a choice selection", downloader.hasSelectedChoices());
         Assert.assertEquals(selectedValue, 
@@ -64,7 +73,7 @@ public class TestFileDownloader {
             .jobInfo(jobInfo)
             .taskInfo(taskInfo)
         .build();
-        FileDownloader downloader = FileDownloader.fromJobContext(jobContext);
+        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext);
         
         Assert.assertTrue("Expecting a choice selection", downloader.hasSelectedChoices());
         Assert.assertEquals("selectedChoices[0].value",

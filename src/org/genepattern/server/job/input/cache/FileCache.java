@@ -88,7 +88,7 @@ public class FileCache {
      * @return
      */
     private CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
-        final File mappedFile=MapLocalEntry.initLocalFileSelection(externalUrl);
+        final File mappedFile=MapLocalEntry.initLocalFileSelection(gpConfig, jobContext, externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
                 log.error("mappedFile does not exist, mapping from "+externalUrl+" to "+mappedFile);
