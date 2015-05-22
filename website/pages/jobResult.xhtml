@@ -694,6 +694,39 @@
 
                         <br /> <br />
 
+                        <h:outputText rendered="#{jobStatusBean.jobInfo.visualizer and not jobStatusBean.jobStatus.hasError}">
+                            <div>
+                                <b>Problems Launching? See the following pages for help:</b>
+
+                            </div>
+                            <ul>
+                                <li>
+                                    <a href="http://www.broadinstitute.org/cancer/software/genepattern/FAQ" target="_blank">GenePattern FAQ</a>
+                                </li>
+                                <li>
+                                    <a href="http://www.broadinstitute.org/cancer/software/genepattern/blog" target="_blank">GenePattern Blog</a>
+
+                                </li>
+                            </ul>
+                        </h:outputText>
+
+                        <h:outputText rendered="#{jobStatusBean.jobStatus.hasError and not jobStatusBean.jobInfo.visualizer}">
+                            <div>
+                                <b>For help resolving errors, see the following pages: </b>
+
+                            </div>
+                            <ul>
+                                <li>
+                                    <a href="http://www.broadinstitute.org/cancer/software/genepattern/FAQ" target="_blank">GenePattern FAQ</a>
+                                </li>
+                                <li>
+                                    <a href="http://www.broadinstitute.org/cancer/software/genepattern/blog" target="_blank">GenePattern Blog</a>
+
+                                </li>
+                            </ul>
+                        </h:outputText>
+
+                        <br /> <br />
                     </div>
                     <table cellpadding="0" cellspacing="0" border="0"
                         style="display: none;" id="testTable">
