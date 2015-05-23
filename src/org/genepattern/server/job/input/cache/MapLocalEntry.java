@@ -42,7 +42,14 @@ public class MapLocalEntry {
      * </pre>
      */
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
-
+    
+    /**
+     * Set 'local.choiceDirs.enableCache' to true to enable file caching of all entries in the 'local.choiceDirs' map.
+     * This does a reverse-lookup from each external URL; if it's already in the local dir use it.
+     * If not, then download from the external URL into the local dir.
+     */
+    public static final String PROP_LOCAL_CHOICE_DIRS_ENABLE_CACHE="local.choiceDirs.enableCache";
+    
     /**
      * Get the Map<?,?> of url->localFile from the config.yaml file.
      * 
@@ -158,6 +165,18 @@ public class MapLocalEntry {
      * @return a local File, or null if there is no matching entry in the map, or if there is no matching file in the file system.
      */
     public static File initLocalValue(final String fromUrlValue, final String fromUrlRoot, final String toLocalPathRoot) {
+        File localFile=fromUrlToLocalFile(fromUrlValue, fromUrlRoot, toLocalPathRoot);
+        if (localFile==null) {
+            return null;
+        }
+        if (!localFile.exists()) {
+            log.error("localFile does not exist: "+localFile+", Ignoring local.choiceDirs[ '"+fromUrlRoot+"' ] = '"+toLocalPathRoot+"' for value="+fromUrlValue);
+            return null;
+        }
+        return localFile;
+    }
+    
+    public static File fromUrlToLocalFile(final String fromUrlValue, final String fromUrlRoot, final String toLocalPathRoot) {
         if (fromUrlValue==null) {
             throw new IllegalArgumentException("fromUrlValue==null");
         }
@@ -170,10 +189,6 @@ public class MapLocalEntry {
         if (fromUrlValue.startsWith(fromUrlRoot)) {
             String localFileValue=fromUrlValue.replaceFirst(Pattern.quote(fromUrlRoot), toLocalPathRoot);
             final File localFile=new File(localFileValue);
-            if (!localFile.exists()) {
-                log.error("localFile does not exist: "+localFile+", Ignoring local.choiceDirs[ '"+fromUrlRoot+"' ] = '"+toLocalPathRoot+"' for value="+fromUrlValue);
-                return null;
-            }
             return localFile;
         }
         return null;
