@@ -132,24 +132,21 @@ public class CustomXmxFlags {
             log.debug("cmdLineArgs==null || length is zero");
             //ignore
             return cmdLineArgs;
-        }
-        
+        } 
         if (!isJavaCmd(jobContext)) {
             return cmdLineArgs;
         }
         
         //case 1: replace existing -Xmx flag
         boolean hasXmx=false;
-        if (cmdLineArgs!=null) {  // guard against null cmdLineArgs array
-            int idx=0;
-            for(final String arg : cmdLineArgs) {
-                if (arg.contains("-Xmx")) {
-                    cmdLineArgs[idx]=replaceXmx(mem,arg);
-                    hasXmx=true;
-                    break;
-                }
-                ++idx;
+        int idx=0;
+        for(final String arg : cmdLineArgs) {
+            if (arg.contains("-Xmx")) {
+                cmdLineArgs[idx]=replaceXmx(mem,arg);
+                hasXmx=true;
+                break;
             }
+            ++idx;
         }
         if (hasXmx) {
             return cmdLineArgs;
@@ -172,12 +169,17 @@ public class CustomXmxFlags {
     
     public static boolean isJavaCmd(final TaskInfo taskInfo) {
         if (taskInfo==null) {
+            log.warn("taskInfo==null");
             return false;
         }
         if (taskInfo.isPipeline()) {
             return false;
         }
         final TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+        if (taskInfoAttributes==null) {
+            log.warn("taskInfo.taskInfoAttributes==null");
+            return false;
+        }
         final String cmdLine=taskInfoAttributes.get(COMMAND_LINE);
         return isJavaCmd(cmdLine);
     }

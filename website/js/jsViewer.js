@@ -106,6 +106,8 @@
                         backgroundColor: '#fff',
                         cursor:         'wait'
                     },
+                    centerY: false,
+                    centerX: false,
                     overlayCSS:  {
                         backgroundColor: '#000',
                         opacity:         0.1,
@@ -114,7 +116,7 @@
                 });
 
             setTimeout(function(){
-                var jsViewerFrame = $("<iframe class='ui-layout-center' width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+                var jsViewerFrame = $("<iframe width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
