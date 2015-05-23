@@ -124,7 +124,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -141,7 +141,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -175,7 +175,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl_simple(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl_simple(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -192,7 +192,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -217,7 +217,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -264,7 +264,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }

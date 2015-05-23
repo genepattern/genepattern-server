@@ -51,11 +51,6 @@ public class CachedFtpFileFactory {
         return type.newCachedFtpFile(gpConfig, urlString);
     }
 
-    /** @deprecated, should pass in a GpConfig */
-    public CachedFtpFile newStdJava6Impl(final String urlString) {
-        return new StdJava_6_Impl(ServerConfigurationFactory.instance(), urlString);
-    }
-
     /**
      * This FTP downloader is implemented with standard Java 6 libraries.
      * @param urlString
@@ -79,11 +74,6 @@ public class CachedFtpFileFactory {
         return new CommonsNet_3_3_Impl(gpConfig, urlString);
     }
     
-    /** @deprecated, should pass in a GpConfig */
-    public CachedFtpFile newEdtFtpJImpl(final String urlString) {
-        return newEdtFtpJImpl(ServerConfigurationFactory.instance(), urlString);
-    }
-    
     /**
      * This FTP downloader uses the edtFTPj library, with additional support
      * for handling interrupted exceptions.
@@ -93,11 +83,6 @@ public class CachedFtpFileFactory {
      */
     public CachedFtpFile newEdtFtpJImpl(final GpConfig gpConfig, final String urlString) {
         return new EdtFtpJImpl(gpConfig, urlString, interruptionService);
-    }
-    
-    /** @deprecated, should pass in a GpConfig */
-    public CachedFtpFile newEdtFtpJImpl_simple(final String urlString) {
-        return new EdtFtpJ_simple(ServerConfigurationFactory.instance(), urlString);            
     }
     
     /**
