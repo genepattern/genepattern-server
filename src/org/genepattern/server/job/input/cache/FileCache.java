@@ -111,7 +111,7 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
         if (!isRemoteDir) {
-            return CachedFtpFile.Factory.instance().newCachedFtpFile(gpConfig, externalUrl);
+            return CachedFtpFileFactory.instance().newCachedFtpFile(gpConfig, externalUrl);
         }
         else {
             return new CachedFtpDir(gpConfig, jobContext, externalUrl);
@@ -121,7 +121,7 @@ public class FileCache {
     public void shutdownNow() {
         downloadService.shutdownNow();
         evictionService.shutdownNow();
-        CachedFtpFile.Factory.instance().shutdownNow();
+        CachedFtpFileFactory.instance().shutdownNow();
     }
     
     static class AlreadyDownloaded implements Future<CachedFile> {

@@ -23,8 +23,6 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.choice.DirFilter;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
-import org.genepattern.server.job.input.choice.ftp.FtpDirListerCommonsNet_3_3;
-import org.genepattern.server.job.input.choice.ftp.FtpDirListerEdtFtpJ;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 
@@ -36,66 +34,14 @@ import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
  *
  */
 public class CachedFtpDir implements CachedFile {
-    private static Logger log = Logger.getLogger(CachedFtpDir.class);
+    private static final Logger log = Logger.getLogger(CachedFtpDir.class);
 
-    /**
-     * Initialize an ftp directory lister. 
-     * Customization options can be set in the config_yaml file.
-     * 
-     * <pre>
-    # By default use EDT_FTP_J client, optionally revert to COMMONS_NET_3_3 client.
-    ftpDownloader.type: EDT_FTP_J | COMMONS_NET_3_3
-    gp.server.choice.ftp_username: "anonymous"
-    gp.server.choice.ftp_password: "gp-help@broadinstitute.org"
-    # amount of time in milliseconds
-    gp.server.choice.ftp_socketTimeout: 15000
-    # only for COMMONS_NET_3_3 client
-    gp.server.choice.ftp_dataTimeout: 15000
-     * </pre>
-     * 
-     * @param gpConfig
-     * @param gpContext
-     * @return
-     */
-    public static FtpDirLister initDirListerFromConfig(GpConfig gpConfig, GpContext gpContext) {
-        if (gpConfig==null) {
-            gpConfig=ServerConfigurationFactory.instance();
-        }
-        // special-case, initialize default passiveMode from gpConfig
-        boolean passiveMode=gpConfig.getGPBooleanProperty(gpContext, FtpDirLister.PROP_FTP_PASV, true);
-        return initDirListerFromConfig(gpConfig, gpContext, passiveMode);
-    }
-
-    public static FtpDirLister initDirListerFromConfig(GpConfig gpConfig, GpContext gpContext, final boolean passiveMode) {
-        if (gpConfig==null) {
-            gpConfig=ServerConfigurationFactory.instance();
-        }
-        final String clientType=gpConfig.getGPProperty(gpContext, CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name());
-        if (log.isDebugEnabled()) {
-            log.debug("Initializing ftpDirLister from clientType="+clientType);
-        }
-        if (clientType.startsWith("EDT_FTP_J")) {
-            if (log.isDebugEnabled()) {
-                log.debug("initializing EDT_FTP_J directory lister");
-            }
-            // use EDT_FTP_J directory lister
-            return FtpDirListerEdtFtpJ.createFromConfig(gpConfig, gpContext, passiveMode);
-        }
-        else {
-            if (log.isDebugEnabled()) {
-                log.debug("initializing CommonsNet directory lister");
-            }
-            FtpDirLister dirLister = FtpDirListerCommonsNet_3_3.createFromConfig(gpConfig, gpContext, passiveMode);
-            return dirLister;
-        }
-    }
-    
     /**
      * Utility method for creating a new file with the given message as it's content.
      * @param message
      * @param toFile
      */
-    private static void writeToFile(final String message, final File toFile) {
+    protected static void writeToFile(final String message, final File toFile) {
         toFile.getParentFile().mkdirs();
         BufferedWriter writer = null;
         try {
@@ -253,7 +199,7 @@ public class CachedFtpDir implements CachedFile {
     }
     
     public List<FtpEntry> getFilesToDownload() throws DownloadException, ListFtpDirException {
-        FtpDirLister dirLister = initDirListerFromConfig(gpConfig, jobContext);
+        FtpDirLister dirLister = CachedFtpFileFactory.initDirListerFromConfig(gpConfig, jobContext);
         final String ftpDir=url.toExternalForm();
         DirFilter filter=new DirFilter();
         return dirLister.listFiles(ftpDir, filter);
