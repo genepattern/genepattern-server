@@ -30,7 +30,7 @@ public final class EdtFtpJImpl extends CachedFtpFile {
     private static Logger log = Logger.getLogger(EdtFtpJImpl.class);
     final ExecutorService ex;
 
-    EdtFtpJImpl(final GpConfig gpConfig, final String urlString, final ExecutorService ex) {
+    public EdtFtpJImpl(final GpConfig gpConfig, final String urlString, final ExecutorService ex) {
         super(gpConfig, urlString);
         this.ex=ex;
     }
@@ -64,6 +64,27 @@ public final class EdtFtpJImpl extends CachedFtpFile {
             }
         }
         return ftp;
+    }
+    
+    public boolean isDirectory() throws DownloadException, IOException, FTPException {
+        URL fromUrl=getUrl();
+        FileTransferClient ftpClient=initFtpClient(fromUrl);
+        try {
+            ftpClient.changeDirectory(fromUrl.getPath());
+            return true;
+        }
+        catch (FTPException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("expecting FTPException (5xx) if it's not a directory, fromUrl="+fromUrl, e);
+            } 
+        }
+        catch (Throwable t) {
+            log.error("Unexpected exception in check for isDirectory fromUrl="+fromUrl, t);
+        }
+        finally {
+            ftpClient.disconnect(true);
+        }
+        return false;
     }
     
     public boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) throws IOException, InterruptedException, DownloadException {  
