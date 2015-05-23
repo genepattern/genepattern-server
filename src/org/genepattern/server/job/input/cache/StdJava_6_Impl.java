@@ -43,7 +43,7 @@ public final class StdJava_6_Impl extends CachedFtpFile {
         }
 
         //if necessary, create parent download directory
-        mkdirs(toFile);
+        CachedFileUtil.mkdirs(toFile);
 
         boolean interrupted=false;
         BufferedInputStream in = null;

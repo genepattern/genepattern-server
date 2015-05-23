@@ -70,7 +70,7 @@ public final class EdtFtpJImpl extends CachedFtpFile {
         if (deleteExisting==false) {
             throw new DownloadException("deleteExisting must be false");
         }
-        mkdirs(toFile);
+        CachedFileUtil.mkdirs(toFile);
         final FileTransferClient ftp = initFtpClient(fromUrl);
 
         //start download in new thread

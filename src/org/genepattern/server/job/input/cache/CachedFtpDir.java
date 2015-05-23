@@ -93,7 +93,7 @@ public class CachedFtpDir implements CachedFile {
             this.jobContext=jobContextIn;
         }
 
-        this.localPath=CachedFtpFile.getLocalPath(this.gpConfig, url);
+        this.localPath=CachedFileUtil.getLocalPath(this.gpConfig, url);
         if (this.localPath==null) {
             throw new IllegalArgumentException("error initializing local path for external url: "+urlString);
         }
@@ -101,7 +101,7 @@ public class CachedFtpDir implements CachedFile {
             log.debug("url="+url.toExternalForm());
             log.debug("localPath.serverFile="+localPath.getServerFile());
         }
-        this.tmpDir=CachedFtpFile.getLocalPathForDir(gpConfig, url);
+        this.tmpDir=CachedFileUtil.getLocalPathForDir(gpConfig, url);
     }
 
     @Override

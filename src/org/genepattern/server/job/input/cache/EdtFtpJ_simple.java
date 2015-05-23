@@ -19,7 +19,7 @@ public final class EdtFtpJ_simple extends CachedFtpFile {
         if (deleteExisting==false) {
             throw new DownloadException("deleteExisting must be false");
         }
-        mkdirs(toFile);
+        CachedFileUtil.mkdirs(toFile);
         try {
             FileTransferClient.downloadURLFile(toFile.getAbsolutePath(), fromUrl.toExternalForm());
             return true;
