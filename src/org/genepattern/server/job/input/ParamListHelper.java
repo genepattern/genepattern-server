@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
@@ -150,6 +151,7 @@ public class ParamListHelper {
     }
     
     //inputs
+    final GpConfig gpConfig;
     final GpContext jobContext;
     final ParameterInfoRecord parameterInfoRecord;
     final Param actualValues;
@@ -162,12 +164,19 @@ public class ParamListHelper {
         this(jobContext, parameterInfoRecord, inputValues, false);
     }
     public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, initDefault);
+    }
+    public ParamListHelper(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
+        }
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
         if (parameterInfoRecord==null) {
             throw new IllegalArgumentException("parameterInfoRecord==null");
         }
+        this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.parameterInfoRecord=parameterInfoRecord;
 
@@ -679,19 +688,19 @@ public class ParamListHelper {
     }
     
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(jobContext, pval, false);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, pval, false);
     }
 
     private Record initFromValue(final ParamValue pval, boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.initFromValue(jobContext, pval, downloadExternalUrl);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, pval, downloadExternalUrl);
     }
 
-    public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParamValue pval) throws Exception
     {
-        return initFromValue(jobContext, pval, true);
+        return initFromValue(gpConfig, jobContext, pval, true);
     }
 
-    public static Record initFromValue(final GpContext jobContext, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
         final String value=pval.getValue();
         URL externalUrl = JobInputHelper.initExternalUrl(value);
 

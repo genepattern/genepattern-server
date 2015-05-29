@@ -9,7 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -36,6 +38,7 @@ import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
 public class ParamGroupHelper {
     private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
     
+    private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final GroupInfo groupInfo;
     private final Param param;
@@ -54,6 +57,12 @@ public class ParamGroupHelper {
     private final boolean downloadExternalFiles;
 
     private ParamGroupHelper(final Builder in) {
+        if (in.gpConfig==null) {
+            this.gpConfig=ServerConfigurationFactory.instance();
+        }
+        else {
+            this.gpConfig=in.gpConfig;
+        }
         if (in.jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
@@ -120,7 +129,7 @@ public class ParamGroupHelper {
         final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
         
         for(final ParamValue value : param.getValues()) {
-            final Record rec=ParamListHelper.initFromValue(jobContext, value);
+            final Record rec=ParamListHelper.initFromValue(gpConfig, jobContext, value);
             //if necessary, download data from external sites
             if (downloadExternalFiles) {
                 if (rec.getType().equals(Record.Type.EXTERNAL_URL)) {
@@ -155,6 +164,7 @@ public class ParamGroupHelper {
     }
     
     public static class Builder {
+        private GpConfig gpConfig=null;
         private GpContext jobContext=null;
         private GroupInfo groupInfo=null;
         private final Param param;
@@ -164,6 +174,10 @@ public class ParamGroupHelper {
 
         public Builder(final Param param) {
             this.param=param;
+        }
+        public Builder gpConfig(final GpConfig gpConfig) {
+            this.gpConfig=gpConfig;
+            return this;
         }
         public Builder jobContext(final GpContext jobContext) {
             this.jobContext=jobContext;
