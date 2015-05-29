@@ -27,10 +27,7 @@ public class MapLocalEntry {
     private static final Logger log = Logger.getLogger(MapLocalEntry.class);
     
     /**
-     * Set 'local.choiceDirs' to a map of externalUrl -> localFilePath.
-     * When handling input values selected from drop-down menus, the GP server
-     * will optionally use a local path instead of downloading the file from the remote location.
-     * Example config_yaml entry:
+     * Set 'local.choiceDirs' to a map of externalUrl -> localFilePath, Example config_yaml entry:
      * <pre>
     #
     # map of local paths for dynamic file drop-downs
@@ -40,15 +37,17 @@ public class MapLocalEntry {
         "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/",
     }    
      * </pre>
+     * 
+     * When handling input values selected from drop-down menus, the GP server
+     * will optionally use a local path instead of downloading the file from the remote location.
+     * 
+     * This was set up to avoid unnecessary FTP dir listing and file transfers
+     * for the Broad hosted GP server when using dynamic drop-downs from the
+     * Broad hosted FTP server.
+     * 
+     * @see ChoiceInfo#PROP_CHOICE_DIR
      */
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
-    
-    /**
-     * Set 'local.choiceDirs.enableCache' to true to enable file caching of all entries in the 'local.choiceDirs' map.
-     * This does a reverse-lookup from each external URL; if it's already in the local dir use it.
-     * If not, then download from the external URL into the local dir.
-     */
-    public static final String PROP_LOCAL_CHOICE_DIRS_ENABLE_CACHE="local.choiceDirs.enableCache";
     
     /**
      * Get the Map<?,?> of url->localFile from the config.yaml file.
