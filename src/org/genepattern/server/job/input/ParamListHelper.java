@@ -504,6 +504,7 @@ public class ParamListHelper {
         if (createGroupFile) { 
             ParamGroupHelper pgh=new ParamGroupHelper.Builder(actualValues)
                 .jobContext(jobContext)
+                .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
                 .build();
             final GpFilePath toFile=pgh.createFilelist();
@@ -688,19 +689,20 @@ public class ParamListHelper {
     }
     
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, pval, false);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, false);
     }
 
     private Record initFromValue(final ParamValue pval, boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, pval, downloadExternalUrl);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, downloadExternalUrl);
     }
 
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParamValue pval) throws Exception
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, ParameterInfo formalParam, final ParamValue pval) throws Exception
     {
-        return initFromValue(gpConfig, jobContext, pval, true);
+        return initFromValue(gpConfig, jobContext, formalParam, pval, true);
     }
 
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
+
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
         final String value=pval.getValue();
         URL externalUrl = JobInputHelper.initExternalUrl(value);
 
@@ -712,15 +714,13 @@ public class ParamListHelper {
                 return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
             }
         }
-        if (externalUrl != null) {
-
-            if (downloadExternalUrl)
-            { //this method does not do the file download
+        if (externalUrl != null) { 
+            if (downloadExternalUrl) { 
+                //this method does not do the file download
                 GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
                 return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
             }
-            else
-            {
+            else {
                 //this section is for if the external file will not be downloaded
                 GpFilePath gpPath = new ExternalFile(externalUrl);
                 return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
