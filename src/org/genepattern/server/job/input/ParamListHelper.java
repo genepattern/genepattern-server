@@ -708,7 +708,7 @@ public class ParamListHelper {
         if (externalUrl != null && GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
 
             if (downloadExternalUrl) {
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
                 return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
             }
         }
@@ -716,7 +716,7 @@ public class ParamListHelper {
 
             if (downloadExternalUrl)
             { //this method does not do the file download
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
                 return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
             }
             else
