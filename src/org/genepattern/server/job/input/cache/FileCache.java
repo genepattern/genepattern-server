@@ -73,6 +73,20 @@ public class FileCache {
     
     
     private final ConcurrentMap<String, Future<CachedFile>> cache = new ConcurrentHashMap<String, Future<CachedFile>>();
+
+    /**
+     * Initialize a CacheFile instance for the given externalUrl, 
+     * using a simple naming convention to determine if it's a remote directory;
+     *     if externalUrl ends with "/"
+     * @param gpConfig
+     * @param jobContext
+     * @param externalUrl
+     * @return
+     */
+    public static CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
+        boolean isRemoteDir=externalUrl.endsWith("/");
+        return initCachedFileObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+    }
     
     /**
      * For the given url, we have some options:
@@ -87,7 +101,7 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    private CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+    public static CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
         final File mappedFile=MapLocalEntry.initLocalFileSelection(gpConfig, jobContext, externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -156,20 +170,17 @@ public class FileCache {
         }
     }
 
+    public synchronized Future<CachedFile> getFutureObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
+        final CachedFile obj = initCachedFileObj(gpConfig, jobContext, externalUrl);
+        return getFutureObj(obj);
+    }
+    
     public synchronized Future<CachedFile> getFutureObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
-        if (log.isDebugEnabled()) {
-            StringBuffer sb=new StringBuffer();
-            sb.append("checking for cached ");
-            if (isRemoteDir) {
-                sb.append("directory ");
-            }
-            else {
-                sb.append("file ");
-            }
-            sb.append(" from "+externalUrl+" ... ");
-            log.debug(sb.toString());
-        }
         final CachedFile obj = initCachedFileObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+        return getFutureObj(obj);
+    }
+    
+    public synchronized Future<CachedFile> getFutureObj(final CachedFile obj) {
         if (obj.isDownloaded()) {
             //already downloaded
             if (log.isDebugEnabled()) {
@@ -210,13 +221,13 @@ public class FileCache {
                 if (ex != null) {
                     //TODO: implement pause and retry
                     if (log.isDebugEnabled()) {
-                        log.debug("Error downloading from "+externalUrl, ex);
+                        log.debug("Error downloading from "+obj.getUrl(), ex);
                     }
                     throw ex;
                 }
 
                 if (log.isDebugEnabled()) {
-                    log.debug("completed download from "+externalUrl);
+                    log.debug("completed download from "+obj.getUrl());
                 }
                 return obj;
             }

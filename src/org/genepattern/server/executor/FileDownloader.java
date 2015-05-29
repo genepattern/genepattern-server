@@ -5,8 +5,12 @@ package org.genepattern.server.executor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -15,14 +19,17 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
-import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.webservice.JobInfo;
+import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for the JobSubmitter, for downloading external file drop-down selections
@@ -33,6 +40,38 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
+    
+    protected static final class FileValue {
+        final String value;
+        final boolean isDir;
+        
+        public FileValue(final String value) {
+            this(value, value.endsWith("/"));
+        }
+        public FileValue(final String value, boolean isDir) {
+            this.value=value;
+            this.isDir=isDir;
+        } 
+        
+        public String getValue() {
+            return value;
+        }
+        public boolean isRemoteDir() {
+            return isDir;
+        }
+        
+        public int hashCode() {
+            return Objects.hash(value, isDir);
+        }
+        
+        public boolean equals(Object arg) {
+            if (!(arg instanceof FileValue)) {
+                return false;
+            }
+            FileValue fv = (FileValue) arg;
+            return Objects.equals(value, fv.value) && isDir==fv.isDir;
+        }
+    }
     
     /**
      * Create a new downloader for the given job based on the jobId.
@@ -45,114 +84,152 @@ public class FileDownloader {
         return new FileDownloader(gpConfig, jobContext);
     }
     
-    private final List<Choice> selectedChoices;
+    private final GpConfig gpConfig;
+    private final GpContext jobContext;
+    private final Map<String,ParameterInfoRecord> paramInfoMap;
+    private final JobInput jobInput;
+    private final UrlPrefixFilter cacheFilter;
+    private List<CachedFile> filesToCache=null;
 
     private FileDownloader(final GpConfig gpConfig, final GpContext jobContext) {
-        this.selectedChoices=initSelectedChoices(jobContext.getTaskInfo(), jobContext.getJobInfo());
+        this(gpConfig, jobContext, null);
     }
 
-    /**
-     * Initialize a list of selected Choices for the given job. For each input parameter, 
-     * if it has a file drop-down (aka Choice) and the runtime value was selected from the drop-down, 
-     * then add it to the list.
-     *
-     * Note: as an optimization, rather than doing a remote listing of the 'choiceDir',
-     *     this method just checks if the runtime value is prefixed by the choiceDir.
-     * 
-     * The 'isRemoteDir' flag is set when the runtime value ends with a '/' character.
-     * 
-     * @param taskInfo
-     * @param jobInfo
-     * @return an empty list if the job has no input values from a file drop-down selection.
-     */
-    private static List<Choice> initSelectedChoices(final TaskInfo taskInfo, final JobInfo jobInfo) {
-        List<Choice> selectedChoices=null;
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-        for(final ParameterInfo actualParam : jobInfo.getParameterInfoArray()) {
-            final ParameterInfoRecord pinfoRecord=paramInfoMap.get( actualParam.getName() );
-            if (pinfoRecord==null) {
-                //skip, probably here because it's a completed job
-                log.debug("pinfoRecord==null, skipping param="+actualParam.getName());
-            }
-            else {
-                Choice selectedChoice=getSelectedChoicesForParam(actualParam, pinfoRecord);
-                if (selectedChoice !=null) {
-                    //lazy init the selectedChoices array
-                    if (selectedChoices==null) {
-                        selectedChoices=new ArrayList<Choice>();
-                    }
-                    selectedChoices.add(selectedChoice);
-                }
-            }
+    private FileDownloader(final GpConfig gpConfig, final GpContext jobContext, Map<String,ParameterInfoRecord> paramInfoMapIn) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
         }
-        if (selectedChoices==null) {
+        if (jobContext==null) {
+            throw new IllegalArgumentException("jobContext==null");
+        }
+        if (paramInfoMapIn!=null) {
+            this.paramInfoMap=paramInfoMapIn;
+        }
+        else {
+            this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(jobContext.getTaskInfo());
+        }
+        this.gpConfig=gpConfig;
+        this.jobContext=jobContext;
+        this.jobInput=jobContext.getJobInput();
+        // 1) check for 'cache.externalUrlDirs' from config; can be null
+        cacheFilter=UrlPrefixFilter.initCacheExternalUrlDirsFromConfig(gpConfig, jobContext);
+        //this.filesToCache=initFilesToCache();
+    }
+    
+    /**
+     * Initialize the list of external data files to be saved to the cache.
+     * By default, include all values from dynamic drop-down parameters.
+     * Optionally, include all values which match the server configured 'cache.externalUrlDirs' array.
+     */ 
+    private List<CachedFile> initFilesToCache() {
+        if (jobInput==null) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList( selectedChoices );
+        Set<FileValue> fileValues=null;
+        for(final Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
+            Set<FileValue> fv=getFilesToCacheForParam(entry.getValue());
+            if (fv != null && fv.size()>0) {
+                //lazy-init
+                if (fileValues==null) {
+                    fileValues=new LinkedHashSet<FileValue>();
+                }
+                fileValues.addAll(fv);
+            }
+        }
+        if (fileValues==null || fileValues.size()==0) {
+            return Collections.emptyList();
+        }
+        List<CachedFile> cachedFiles=new ArrayList<CachedFile>();
+        for(final FileValue fv : fileValues) {
+            cachedFiles.add(FileCache.initCachedFileObj(gpConfig, jobContext, fv.getValue(), fv.isRemoteDir()));
+        }
+        return cachedFiles;
+    }
+    
+    /**
+     * For the given input parameter, get the set of unique files (by externalUrl) 
+     * which should be cached on the local server.
+     * 
+     * @param param
+     * @return
+     */
+    protected Set<FileValue> getFilesToCacheForParam(final Param param) {
+        final String pname=param.getParamId().getFqName();
+        ParameterInfoRecord record=paramInfoMap.get(pname);
+        if (record==null) {
+            if (log.isDebugEnabled()) {
+                log.debug("record==null, param="+pname);
+            }
+            return Collections.emptySet();
+        }
+        return getFilesToCacheForParam(param, record.getFormal());
     }
 
-    private static Choice getSelectedChoicesForParam(final ParameterInfo actualParam, final ParameterInfoRecord pinfoRecord) {
-        if (!pinfoRecord.getFormal().isInputFile()) {
-            //skip unless it's an input param
-            log.debug("not input file, skipping param="+actualParam.getName());
-            return null;
+    protected Set<FileValue> getFilesToCacheForParam(final Param param, final ParameterInfo formal) {
+        final String pname=param.getParamId().getFqName();
+        final boolean isInputFile=formal.isInputFile();
+        if (!isInputFile) {
+            return Collections.emptySet();
         }
-        if (actualParam.getValue()==null || actualParam.getValue().length()==0) {
-            //skip empty input value
-            log.debug("value not set, skipping param="+actualParam.getName());
-            return null;
+        if (param.getNumValues()==0) {
+            if (log.isDebugEnabled()) {
+                log.debug("no values for param="+pname);
+            }
+            return Collections.emptySet();
         }
-        final ChoiceInfo choiceInfo=ChoiceInfoHelper.initChoiceInfo(pinfoRecord.getFormal(), false);
-        if (choiceInfo == null) {
-            //skip, this param does not have a choiceInfo
-            log.debug("not a drop-down, skipping param="+actualParam.getName());
-            return null;
+        if (formal._isUrlMode()) {
+            if (log.isDebugEnabled()) {
+                log.debug("ignore passByReference param");
+            }
+            return Collections.emptySet();
         }
-        if (isPrefix(choiceInfo, actualParam.getValue())) {
-            boolean isRemoteDir=isRemoteDir(actualParam.getValue());
-            return new Choice(actualParam.getValue(), isRemoteDir);
+
+        // 2) check for selection from dynamic drop-down menu; match all values which are prefixed by the remote directory
+        final boolean initDropdown=false;
+        ChoiceInfo dropDown=ChoiceInfoHelper.initChoiceInfo(formal, initDropdown);
+        UrlPrefixFilter dropDownFilter=null;
+        if (dropDown != null && dropDown.getChoiceDir() != null && dropDown.getChoiceDir().length()>0) {
+            dropDownFilter=new UrlPrefixFilter();
+            dropDownFilter.addUrlPrefix(dropDown.getChoiceDir());
         }
         
-        final Choice selectedChoice = choiceInfo.getValue(actualParam.getValue());
-        final boolean isFileChoiceSelection=
-                pinfoRecord.getFormal().isInputFile() &&
-                selectedChoice != null && 
-                selectedChoice.getValue() != null && 
-                selectedChoice.getValue().length() > 0;
-                if (isFileChoiceSelection) {
-                    //lazy-init the list
-                    return selectedChoice;
+        if (cacheFilter==null && dropDownFilter==null) {
+            // no filter
+            return Collections.emptySet();
+        }
+
+        // filter values by prefix
+        Set<FileValue> rval=null;
+        for(ParamValue value : param.getValues()) {
+            boolean accepted=UrlPrefixFilter.accept(value.getValue(), dropDownFilter, cacheFilter);
+            if (accepted) {
+                if (rval==null) {
+                    // lazy-init rval
+                    rval=new LinkedHashSet<FileValue>();
                 }
-        return null;
-    }
-    
-    private static boolean isPrefix(final ChoiceInfo choiceInfo, final String paramValue) {
-        if (choiceInfo==null) {
-            return false;
+                rval.add(new FileValue(value.getValue()));
+            }
         }
-        if (choiceInfo.getChoiceDir()==null) {
-            return false;
+        if (rval==null) {
+            return Collections.emptySet();
         }
-        if (paramValue==null) {
-            return false;
-        }
-        return paramValue.startsWith(choiceInfo.getChoiceDir());
-    }
-    
-    private static boolean isRemoteDir(final String paramValue) {
-        return paramValue != null && paramValue.endsWith("/");
+        return rval;
     }
 
     /**
-     * Does the job have at least one input selected from a file drop-down?
+     * Does the job have at least one input file for the cache?
      * @return
      */
-    public boolean hasSelectedChoices() {
-        return selectedChoices != null && selectedChoices.size()>0;
+    protected boolean hasFilesToCache() {
+        getFilesToCache();
+        return filesToCache != null && filesToCache.size()>0;
     }
     
-    public List<Choice> getSelectedChoices() {
-        return  selectedChoices;
+    protected List<CachedFile> getFilesToCache() {
+        if (this.filesToCache==null) {
+            this.filesToCache=initFilesToCache();
+        }
+        return this.filesToCache;
     }
 
     /**
@@ -165,12 +242,13 @@ public class FileDownloader {
      * @throws ExecutionException
      */
     public void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws InterruptedException, ExecutionException {
-        if (selectedChoices == null) {
-            log.debug("selectedChoices==null");
+        getFilesToCache();
+        if (filesToCache == null) {
+            log.debug("filesToCache==null");
             return;
         }
-        if (selectedChoices.size()==0) {
-            log.debug("selectedChoices.size()==0");
+        if (filesToCache.size()==0) {
+            log.debug("filesToCache.size()==0");
             return;
         }
         if (log.isDebugEnabled()) {
@@ -179,12 +257,10 @@ public class FileDownloader {
             }
         }
 
-        // loop through all the choices and start downloading ...
-        for(final Choice selectedChoice : selectedChoices) {
+        // loop through all the filesToDownload and start downloading ...
+        for(final CachedFile fileToCache : filesToCache) {
             try {
-                final String selectedValue=selectedChoice.getValue();
-                final boolean isDir=selectedChoice.isRemoteDir();
-                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedValue, isDir);
+                final Future<?> f = FileCache.instance().getFutureObj(fileToCache);
                 f.get(100, TimeUnit.MILLISECONDS);
             }
             catch (TimeoutException e) {
@@ -192,13 +268,11 @@ public class FileDownloader {
             }
             Thread.yield();
         }
-        // now loop through all of the choices and wait for each download to complete
-        for(final Choice selectedChoice : selectedChoices) {
-            final String selectedValue=selectedChoice.getValue();
-            final boolean isDir=selectedChoice.isRemoteDir();
-            final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedValue, isDir);
+        // now loop through all of the filesToDownload and wait for each download to complete
+        for(final CachedFile fileToCache : filesToCache) {
+            final Future<?> f = FileCache.instance().getFutureObj(fileToCache);
             f.get();
-        }    
+        }
     }
     
 }
