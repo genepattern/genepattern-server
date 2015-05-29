@@ -162,6 +162,7 @@ import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -765,6 +766,9 @@ public class GenePatternAnalysisTask {
             final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
             for (int j = 0; j < paramsCopy.length; j++) {
                 final ParameterInfo pinfo=paramsCopy[j];
+                if (log.isDebugEnabled()) {
+                    log.debug(pinfo.getName()+": "+pinfo.getValue());
+                }
                 HashMap attrsCopy = pinfo.getAttributes();
                 if (attrsCopy == null) {
                     attrsCopy = new HashMap();
@@ -787,12 +791,18 @@ public class GenePatternAnalysisTask {
                         selectedChoice != null && 
                         selectedChoice.getValue() != null && 
                         selectedChoice.getValue().length() > 0;
+                        
+                final boolean isCachedValue=isCachedValue(gpConfig, jobContext, pinfo, pinfo.getValue());
                 if (isDirectoryInputParam) {
                     setPinfoValueForDirectoryInputParam(jobContext, pinfo, pinfoRecord); 
                 }
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     final GpFilePath cachedFile = setPinfoValueForFileChoiceSelection(gpConfig, jobContext, pinfo, selectedChoice);
+                }
+                else if (isCachedValue) {
+                    // TODO: get the value from the cache
+                    final GpFilePath cachedFile = setPinfoValueForFile(gpConfig, jobContext, pinfo); 
                 }
                 else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
@@ -1520,7 +1530,7 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * If necessary, wait for the remove file to transfer to local cache before starting the job.
+     * If necessary, wait for the remote file to transfer to local cache before starting the job.
      * 
      * @param gpConfig
      * @param jobContext
@@ -1532,29 +1542,54 @@ public class GenePatternAnalysisTask {
     protected GpFilePath setPinfoValueForFileChoiceSelection(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final Choice selectedChoice)
     throws JobDispatchException {
         //it's a file choice
-        log.debug("Checking cache for "+pinfo.getName()+"="+pinfo.getValue());
+        log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
+        final GpFilePath cachedFile = initCachedFilePath(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+        pinfo.setValue(serverPath);
+        return cachedFile;
+    }
+    protected GpFilePath setPinfoValueForFile(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo)
+    throws JobDispatchException {
+        //it's a file choice
+        log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
+        final GpFilePath cachedFile = initCachedFilePath(gpConfig, jobContext, pinfo.getValue());
+        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+        pinfo.setValue(serverPath);
+        return cachedFile;
+    }
+
+    protected GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
+        final boolean isRemoteDir=externalUrl.endsWith("/");
+        return initCachedFilePath(gpConfig, jobContext, externalUrl, isRemoteDir);
+    }
+
+    protected GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
         final GpFilePath cachedFile;
         try {
             // this method waits, if necessary, for the file to be transferred to a local path
-            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, externalUrl, isRemoteDir);
             cachedFile=f.get().getLocalPath();
         }
         catch (Throwable t) {
-            final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
+            final String errorMessage="Error getting cached value for externalUrl="+externalUrl;
             log.error(errorMessage, t);
             throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
         }
         if (cachedFile == null || cachedFile.getServerFile()==null) {
-            final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue()+": file is null";
+            final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
             throw new JobDispatchException(errorMessage);
         }
         final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
         if (!cachedFile.getServerFile().canRead()) {
-            throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
+            throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
         }
-        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
-        pinfo.setValue(serverPath);
         return cachedFile;
+    }
+
+    public static boolean isCachedValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final String paramValue) {
+        UrlPrefixFilter cacheFilter=UrlPrefixFilter.initCacheExternalUrlDirsFromConfig(gpConfig, jobContext);
+        UrlPrefixFilter dropDownFilter=UrlPrefixFilter.initDropDownFilter(formalParam);
+        return UrlPrefixFilter.accept(paramValue, dropDownFilter, cacheFilter);
     }
 
     /**
