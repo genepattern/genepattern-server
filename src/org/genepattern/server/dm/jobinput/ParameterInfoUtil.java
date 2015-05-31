@@ -35,6 +35,7 @@ public class ParameterInfoUtil {
         return ParameterInfoUtil.initTextParam(name, value, description, optional, "");
     }
 
+    @SuppressWarnings("unchecked")
     public static final ParameterInfo initTextParam(final String name, final String value, final String description, final boolean optional, final String defaultValue) {
         ParameterInfo pinfo=new ParameterInfo(name, value, description);
         pinfo.setAttributes(new HashMap<String,String>());
@@ -75,6 +76,7 @@ p1_value=
      * @param optional
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static final ParameterInfo initFileParam(final String name, final String description, final boolean optional) {
         final String value="";
         ParameterInfo pinfo=new ParameterInfo(name, value, description);
