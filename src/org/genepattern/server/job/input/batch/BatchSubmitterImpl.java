@@ -5,6 +5,7 @@ package org.genepattern.server.job.input.batch;
 
 import java.util.List;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -28,13 +29,13 @@ public class BatchSubmitterImpl implements BatchSubmitter {
     private final GpContext userContext;
     private final JobInputApi jobInputApi;
     
-    public BatchSubmitterImpl(final GpContext userContext) {
-        this(userContext, null);
+    public BatchSubmitterImpl(final GpConfig gpConfig, final GpContext userContext) {
+        this(gpConfig, userContext, null);
     }
-    public BatchSubmitterImpl(final GpContext userContext, final JobInputApi jobInputApiIn) {
+    public BatchSubmitterImpl(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn) {
         this.userContext=userContext;
         if (jobInputApiIn == null) {
-            this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);
+            this.jobInputApi=JobInputApiFactory.createJobInputApi(gpConfig, userContext);
         }
         else {
             this.jobInputApi=jobInputApiIn;
