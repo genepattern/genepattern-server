@@ -5,6 +5,8 @@ package org.genepattern.server.dm.jobinput;
 
 import java.util.HashMap;
 
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Ignore;
 
@@ -86,16 +88,39 @@ p1_value=
         pinfo.getAttributes().put("default_value", "");
         pinfo.getAttributes().put("fileFormat", "");
         pinfo.getAttributes().put("flag", "--"+name+"=");
+        setOptional(pinfo, optional);
+        pinfo.getAttributes().put("prefix", "--"+name+"=");
+        pinfo.getAttributes().put("prefix_when_specified", "--"+name+"=");
+        pinfo.getAttributes().put("type", "java.io.File");
+        return pinfo;
+    }
+
+    public static final ParameterInfo initFilelistParam(final String name) {
+        final String numValues="1+";
+        return initFilelistParam(name, "", numValues, ListMode.LIST);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static final ParameterInfo initFilelistParam(final String name, final String description, final String numValues, final ListMode listMode) {
+        final boolean optional=false;
+        final ParameterInfo pinfo=initFileParam(name, description, optional);
+        if (numValues != null) {
+            pinfo.getAttributes().put(NumValues.PROP_NUM_VALUES, numValues);
+        }
+        if (listMode != null) {
+            pinfo.getAttributes().put(NumValues.PROP_LIST_MODE, listMode.name());
+        }
+        return pinfo;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static void setOptional(ParameterInfo pinfo, final boolean optional) {
         if (optional) {
             pinfo.getAttributes().put("optional", "on");
         }
         else {
             pinfo.getAttributes().put("optional", "");
         }
-        pinfo.getAttributes().put("prefix", "--"+name+"=");
-        pinfo.getAttributes().put("prefix_when_specified", "--"+name+"=");
-        pinfo.getAttributes().put("type", "java.io.File");
-        return pinfo;
     }
 
 }

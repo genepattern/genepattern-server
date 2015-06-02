@@ -12,7 +12,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -27,18 +26,6 @@ import org.junit.Test;
  *
  */
 public class TestIsCreateFilelist {
-    private static final ParameterInfo createFilelistParam(final String numValues, final ListMode listMode) {
-        final boolean optional=false;
-        final ParameterInfo pinfo=ParameterInfoUtil.initFileParam("input.files", "Demo filelist parameter", optional);
-        if (numValues != null) {
-            pinfo.getAttributes().put(NumValues.PROP_NUM_VALUES, numValues);
-        }
-        if (listMode != null) {
-            pinfo.getAttributes().put(NumValues.PROP_LIST_MODE, listMode.name());
-        }
-        return pinfo;
-    }
-
     private static TaskInfo taskInfo;
     private static Map<String,ParameterInfoRecord> paramInfoMap;
     private static GpContext jobContext;
@@ -211,7 +198,7 @@ public class TestIsCreateFilelist {
     }
 
     private void doTest(final boolean expectedCreateFilelist, final int actualNumValues, final ParamListHelper.ListMode mode) {
-        final ParameterInfo formalParam=createFilelistParam("0+", mode);
+        final ParameterInfo formalParam=ParameterInfoUtil.initFilelistParam("input.files", "Demo filelist parameter", "0+", mode);
         final ParameterInfoRecord record=new ParameterInfoRecord(formalParam);
         final JobInput jobInput = new JobInput();
         for(int i=0; i<actualNumValues; ++i) {

@@ -252,7 +252,7 @@ public class GenePatternAnalysisTask {
         VISUALIZER,
         JAVASCRIPT,
         PIPELINE,
-        IGV
+        PASS_BY_REFERENCE
     };
 
     public enum INPUT_FILE_MODE {
@@ -608,6 +608,26 @@ public class GenePatternAnalysisTask {
         }
     }
     
+    public static JOB_TYPE initJobType(final TaskInfo taskInfo) {
+        JOB_TYPE jobType = JOB_TYPE.JOB;
+        if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.VISUALIZER;
+        }
+        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.JAVASCRIPT;
+        }
+        else if (taskInfo.isPipeline()) {
+            jobType = JOB_TYPE.PIPELINE;
+        }
+        else {
+            //special-case: hard-coded 'pass-by-reference' input files for IGV and GENE-E
+            if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
+                jobType = JOB_TYPE.PASS_BY_REFERENCE;
+            }
+        }
+        return jobType;
+    }
+
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -698,23 +718,7 @@ public class GenePatternAnalysisTask {
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
-
-        JOB_TYPE jobType = JOB_TYPE.JOB;
-        if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-            jobType = JOB_TYPE.VISUALIZER;
-        }
-        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
-            jobType = JOB_TYPE.JAVASCRIPT;
-        }
-        else if (taskInfo.isPipeline()) {
-            jobType = JOB_TYPE.PIPELINE;
-        }
-        else {
-            //special-case: hard-coded 'pass-by-reference' input files for IGV and GENE-E
-            if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
-                jobType = JOB_TYPE.IGV;
-            }
-        }
+        JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;
         ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -792,16 +796,15 @@ public class GenePatternAnalysisTask {
                         selectedChoice.getValue() != null && 
                         selectedChoice.getValue().length() > 0;
                         
-                final boolean isCachedValue=isCachedValue(gpConfig, jobContext, pinfo, pinfo.getValue());
+                final boolean isCachedValue=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, jobType, pinfo, pinfo.getValue());
                 if (isDirectoryInputParam) {
-                    setPinfoValueForDirectoryInputParam(jobContext, pinfo, pinfoRecord); 
+                    setPinfoValueForDirectoryInputParam(gpConfig, jobContext, pinfo, pinfoRecord); 
                 }
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     final GpFilePath cachedFile = setPinfoValueForFileChoiceSelection(gpConfig, jobContext, pinfo, selectedChoice);
                 }
                 else if (isCachedValue) {
-                    // TODO: get the value from the cache
                     final GpFilePath cachedFile = setPinfoValueForFile(gpConfig, jobContext, pinfo); 
                 }
                 else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
@@ -1077,7 +1080,7 @@ public class GenePatternAnalysisTask {
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
                                     inputParam.addValue(new ParamValue(pinfo.getValue()));
-                                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+                                    ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
                                         gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
@@ -1506,12 +1509,12 @@ public class GenePatternAnalysisTask {
         runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
 
-    protected void setPinfoValueForDirectoryInputParam(final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
+    protected void setPinfoValueForDirectoryInputParam(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
         //check permissions and optionally convert value from url to server file path
         final String pname=pinfoRecord.getFormal().getName();
         final Param inputParam=new Param(new ParamId(pname), false);
         inputParam.addValue(new ParamValue(pinfo.getValue()));
-        ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+        ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
         GpFilePath directory=null;
         try {
             directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
@@ -1584,12 +1587,6 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
         }
         return cachedFile;
-    }
-
-    public static boolean isCachedValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final String paramValue) {
-        UrlPrefixFilter cacheFilter=UrlPrefixFilter.initCacheExternalUrlDirsFromConfig(gpConfig, jobContext);
-        UrlPrefixFilter dropDownFilter=UrlPrefixFilter.initDropDownFilter(formalParam);
-        return UrlPrefixFilter.accept(paramValue, dropDownFilter, cacheFilter);
     }
 
     /**

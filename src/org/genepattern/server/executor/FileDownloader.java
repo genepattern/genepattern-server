@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.executor;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -20,16 +21,17 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
-import org.genepattern.server.job.input.choice.ChoiceInfo;
-import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.util.UrlPrefixFilter;
+//import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for the JobSubmitter, for downloading external file drop-down selections
@@ -40,7 +42,7 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
-    
+
     protected static final class FileValue {
         final String value;
         final boolean isDir;
@@ -87,6 +89,7 @@ public class FileDownloader {
     private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final Map<String,ParameterInfoRecord> paramInfoMap;
+    private final TaskInfo taskInfo;
     private final JobInput jobInput;
     private final UrlPrefixFilter cacheFilter;
     private List<CachedFile> filesToCache=null;
@@ -111,9 +114,12 @@ public class FileDownloader {
         this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.jobInput=jobContext.getJobInput();
+        this.taskInfo=jobContext.getTaskInfo();
+        if (taskInfo==null) {
+            log.error("taskInfo==null");
+        }
         // 1) check for 'cache.externalUrlDirs' from config; can be null
         cacheFilter=UrlPrefixFilter.initCacheExternalUrlDirsFromConfig(gpConfig, jobContext);
-        //this.filesToCache=initFilesToCache();
     }
     
     /**
@@ -165,34 +171,30 @@ public class FileDownloader {
         return getFilesToCacheForParam(param, record.getFormal());
     }
 
+    /**
+     * similar to UrlPrefixFilter.isCachedValue ... call this when the dropDownFilter and cacheFilter are already initialized.
+     * @param paramValue
+     * @param dropDownFilter
+     * @param cacheFilter
+     * @return
+     */
+    protected static boolean isCachedValue(final String paramValue, UrlPrefixFilter dropDownFilter, UrlPrefixFilter cacheFilter) {
+        // only if it's an external url
+        URL externalUrl=JobInputHelper.initExternalUrl(paramValue);
+        if (externalUrl==null) {
+            return false;
+        }
+        return UrlPrefixFilter.accept(externalUrl.toExternalForm(), dropDownFilter, cacheFilter);
+    }
+    
     protected Set<FileValue> getFilesToCacheForParam(final Param param, final ParameterInfo formal) {
-        final String pname=param.getParamId().getFqName();
-        final boolean isInputFile=formal.isInputFile();
-        if (!isInputFile) {
+        boolean canBeCached=UrlPrefixFilter.isCachedParam(jobContext, param, formal);
+        if (!canBeCached) {
             return Collections.emptySet();
-        }
-        if (param.getNumValues()==0) {
-            if (log.isDebugEnabled()) {
-                log.debug("no values for param="+pname);
-            }
-            return Collections.emptySet();
-        }
-        if (formal._isUrlMode()) {
-            if (log.isDebugEnabled()) {
-                log.debug("ignore passByReference param");
-            }
-            return Collections.emptySet();
-        }
-
-        // 2) check for selection from dynamic drop-down menu; match all values which are prefixed by the remote directory
-        final boolean initDropdown=false;
-        ChoiceInfo dropDown=ChoiceInfoHelper.initChoiceInfo(formal, initDropdown);
-        UrlPrefixFilter dropDownFilter=null;
-        if (dropDown != null && dropDown.getChoiceDir() != null && dropDown.getChoiceDir().length()>0) {
-            dropDownFilter=new UrlPrefixFilter();
-            dropDownFilter.addUrlPrefix(dropDown.getChoiceDir());
         }
         
+        // 2) check for selection from dynamic drop-down menu; match all values which are prefixed by the remote directory
+        final UrlPrefixFilter dropDownFilter=UrlPrefixFilter.initDropDownFilter(formal);
         if (cacheFilter==null && dropDownFilter==null) {
             // no filter
             return Collections.emptySet();
@@ -201,7 +203,7 @@ public class FileDownloader {
         // filter values by prefix
         Set<FileValue> rval=null;
         for(ParamValue value : param.getValues()) {
-            boolean accepted=UrlPrefixFilter.accept(value.getValue(), dropDownFilter, cacheFilter);
+            final boolean accepted=isCachedValue(value.getValue(), dropDownFilter, cacheFilter);
             if (accepted) {
                 if (rval==null) {
                     // lazy-init rval
