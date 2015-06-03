@@ -69,9 +69,6 @@ public class ParamGroupHelper {
         if (in.jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
-        if (in.parameterInfoRecord==null) {
-            throw new IllegalArgumentException("parameterInfoRecord==null");
-        }
         if (in.param==null) {
             throw new IllegalArgumentException("param==null");
         }
