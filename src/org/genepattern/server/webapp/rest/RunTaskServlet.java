@@ -8,12 +8,29 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
@@ -31,7 +48,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.domain.*;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.JobInfoLoaderDefault;
@@ -62,8 +78,13 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.webservice.*;
 import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
+import org.genepattern.webservice.WebServiceException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONArray;
@@ -465,12 +486,13 @@ public class RunTaskServlet extends HttpServlet
         JobSubmitInfo jobSubmitInfo,
         @Context HttpServletRequest request)
     {
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
             return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
-        return addJob(userContext, jobSubmitInfo, request);
+        return addJob(gpConfig, userContext, jobSubmitInfo, request);
     }
 
     @POST
@@ -480,12 +502,13 @@ public class RunTaskServlet extends HttpServlet
             JobSubmitInfo jobSubmitInfo,
             @Context HttpServletRequest request)
     {
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
             return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
-        return launchJsViewer(userContext, jobSubmitInfo, request);
+        return launchJsViewer(gpConfig, userContext, jobSubmitInfo, request);
     }
 
     /**
@@ -494,12 +517,12 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response launchJsViewer(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response launchJsViewer(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
 
@@ -649,12 +672,12 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response addJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response addJob(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {

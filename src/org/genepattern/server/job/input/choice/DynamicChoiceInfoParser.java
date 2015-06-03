@@ -9,7 +9,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.job.input.cache.CachedFtpDir;
+import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
@@ -135,7 +135,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         final DirFilter dirFilter=new DirFilter(param);
         
         //special-case, local.choiceDir
-        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(ftpDir, dirFilter);
+        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(gpConfig, jobContext, ftpDir, dirFilter);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);
@@ -165,7 +165,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     }
     
     private ChoiceInfo initChoiceInfoEntriesFromFtp(final ParameterInfo param, final String ftpDir, final ChoiceInfo choiceInfo, final DirFilter dirFilter) {
-        final FtpDirLister ftpDirLister=CachedFtpDir.initDirListerFromConfig(gpConfig, jobContext);
+        final FtpDirLister ftpDirLister=CachedFtpFileFactory.initDirListerFromConfig(gpConfig, jobContext);
         List<FtpEntry> ftpEntries=null;
         try {
             ftpEntries=ftpDirLister.listFiles(ftpDir, dirFilter);

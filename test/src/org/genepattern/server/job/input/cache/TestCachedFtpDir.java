@@ -39,7 +39,7 @@ public class TestCachedFtpDir {
     @Test
     public void testWithEdtFtpClient() throws DownloadException, ListFtpDirException {
         gpConfig=new GpConfig.Builder()
-            .addProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
+            .addProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name())
         .build();
         CachedFtpDir cachedFtpDir=new CachedFtpDir(gpConfig, gpContext, dirUrl);
         List<FtpEntry> ftpEntries=cachedFtpDir.getFilesToDownload();
@@ -49,7 +49,7 @@ public class TestCachedFtpDir {
     @Test
     public void testWithCommonsNetClient()  throws DownloadException, ListFtpDirException {
         gpConfig=new GpConfig.Builder()
-            .addProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.COMMONS_NET_3_3.name())
+            .addProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.COMMONS_NET_3_3.name())
         .build();
         CachedFtpDir cachedFtpDir=new CachedFtpDir(gpConfig, gpContext, dirUrl);
         List<FtpEntry> ftpEntries=cachedFtpDir.getFilesToDownload();

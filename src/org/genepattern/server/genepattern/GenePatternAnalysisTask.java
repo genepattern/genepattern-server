@@ -107,7 +107,6 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.JobRunner;
-import org.genepattern.drm.Memory;
 import org.genepattern.server.DbException;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
@@ -149,7 +148,6 @@ import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
-import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -163,6 +161,7 @@ import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -252,7 +251,7 @@ public class GenePatternAnalysisTask {
         VISUALIZER,
         JAVASCRIPT,
         PIPELINE,
-        IGV
+        PASS_BY_REFERENCE
     };
 
     public enum INPUT_FILE_MODE {
@@ -608,6 +607,26 @@ public class GenePatternAnalysisTask {
         }
     }
     
+    public static JOB_TYPE initJobType(final TaskInfo taskInfo) {
+        JOB_TYPE jobType = JOB_TYPE.JOB;
+        if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.VISUALIZER;
+        }
+        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.JAVASCRIPT;
+        }
+        else if (taskInfo.isPipeline()) {
+            jobType = JOB_TYPE.PIPELINE;
+        }
+        else {
+            //special-case: hard-coded 'pass-by-reference' input files for IGV and GENE-E
+            if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
+                jobType = JOB_TYPE.PASS_BY_REFERENCE;
+            }
+        }
+        return jobType;
+    }
+
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -698,23 +717,7 @@ public class GenePatternAnalysisTask {
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
-
-        JOB_TYPE jobType = JOB_TYPE.JOB;
-        if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-            jobType = JOB_TYPE.VISUALIZER;
-        }
-        if (TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes())) {
-            jobType = JOB_TYPE.JAVASCRIPT;
-        }
-        else if (taskInfo.isPipeline()) {
-            jobType = JOB_TYPE.PIPELINE;
-        }
-        else {
-            //special-case: hard-coded 'pass-by-reference' input files for IGV and GENE-E
-            if ("IGV".equals(taskInfo.getName()) || "GENE_E".equals(taskInfo.getName()) || "GENEE".equals(taskInfo.getName())) {
-                jobType = JOB_TYPE.IGV;
-            }
-        }
+        JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;
         ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -766,6 +769,9 @@ public class GenePatternAnalysisTask {
             final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
             for (int j = 0; j < paramsCopy.length; j++) {
                 final ParameterInfo pinfo=paramsCopy[j];
+                if (log.isDebugEnabled()) {
+                    log.debug(pinfo.getName()+": "+pinfo.getValue());
+                }
                 HashMap attrsCopy = pinfo.getAttributes();
                 if (attrsCopy == null) {
                     attrsCopy = new HashMap();
@@ -788,53 +794,17 @@ public class GenePatternAnalysisTask {
                         selectedChoice != null && 
                         selectedChoice.getValue() != null && 
                         selectedChoice.getValue().length() > 0;
+                        
+                final boolean isCachedValue=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, jobType, pinfo, pinfo.getValue());
                 if (isDirectoryInputParam) {
-                    //check permissions and optionally convert value from url to server file path
-                    final String pname=pinfoRecord.getFormal().getName();
-                    final Param inputParam=new Param(new ParamId(pname), false);
-                    inputParam.addValue(new ParamValue(pinfo.getValue()));
-                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
-                    GpFilePath directory=null;
-                    try {
-                        directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
-                    }
-                    catch (Exception e) {
-                        throw new JobDispatchException(e.getLocalizedMessage());
-                    }
-                    if (directory != null) {
-                        final String serverPath=directory.getServerFile().getAbsolutePath();
-                        pinfo.setValue(serverPath);
-                        final boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
-                        if (!canRead) {
-                            throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
-                        }
-                    } 
+                    setPinfoValueForDirectoryInputParam(gpConfig, jobContext, pinfo, pinfoRecord); 
                 }
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
-                    //it's a file choice
-                    log.debug("Checking cache for "+pinfo.getName()+"="+pinfo.getValue());
-                    final GpFilePath cachedFile;
-                    try {
-                        // this method waits, if necessary, for the file to be transferred to a local path
-                        Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
-                        cachedFile=f.get().getLocalPath();
-                    }
-                    catch (Throwable t) {
-                        final String errorMessage="Error getting cached value for "+pinfo.getName()+"="+pinfo.getValue();
-                        log.error(errorMessage, t);
-                        throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
-                    }
-                    if (cachedFile == null || cachedFile.getServerFile()==null) {
-                        final String errorMessage="Error getting cached value for pinfo.getName()="+pinfo.getValue()+": file is null";
-                        throw new JobDispatchException(errorMessage);
-                    }
-                    final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
-                    if (!cachedFile.getServerFile().canRead()) {
-                        throw new JobDispatchException("You are not permitted to access the file: "+pinfo.getValue());
-                    }
-                    final String serverPath=cachedFile.getServerFile().getAbsolutePath();
-                    pinfo.setValue(serverPath);
+                    final GpFilePath cachedFile = setPinfoValueForFileChoiceSelection(gpConfig, jobContext, pinfo, selectedChoice);
+                }
+                else if (isCachedValue) {
+                    final GpFilePath cachedFile = setPinfoValueForFile(gpConfig, jobContext, pinfo); 
                 }
                 else if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                     if (originalPath == null) {
@@ -1109,7 +1079,7 @@ public class GenePatternAnalysisTask {
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
                                     inputParam.addValue(new ParamValue(pinfo.getValue()));
-                                    ParamListHelper plh=new ParamListHelper(jobContext, pinfoRecord, inputParam);
+                                    ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
                                         gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
@@ -1536,6 +1506,58 @@ public class GenePatternAnalysisTask {
         }
 
         runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+    }
+
+    protected void setPinfoValueForDirectoryInputParam(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
+        //check permissions and optionally convert value from url to server file path
+        final String pname=pinfoRecord.getFormal().getName();
+        final Param inputParam=new Param(new ParamId(pname), false);
+        inputParam.addValue(new ParamValue(pinfo.getValue()));
+        ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
+        GpFilePath directory=null;
+        try {
+            directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
+        }
+        catch (Exception e) {
+            throw new JobDispatchException(e.getLocalizedMessage());
+        }
+        if (directory != null) {
+            final String serverPath=directory.getServerFile().getAbsolutePath();
+            pinfo.setValue(serverPath);
+            final boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
+            if (!canRead) {
+                throw new JobDispatchException("You are not permitted to access the directory: "+pinfo.getValue());
+            }
+        }
+    }
+
+    /**
+     * If necessary, wait for the remote file to transfer to local cache before starting the job.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param pinfo
+     * @param selectedChoice
+     * @return
+     * @throws JobDispatchException
+     */
+    protected GpFilePath setPinfoValueForFileChoiceSelection(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final Choice selectedChoice)
+    throws JobDispatchException {
+        //it's a file choice
+        log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
+        final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+        pinfo.setValue(serverPath);
+        return cachedFile;
+    }
+    protected GpFilePath setPinfoValueForFile(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo)
+    throws JobDispatchException {
+        //it's a file choice
+        log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
+        final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, pinfo.getValue());
+        final String serverPath=cachedFile.getServerFile().getAbsolutePath();
+        pinfo.setValue(serverPath);
+        return cachedFile;
     }
 
     /**

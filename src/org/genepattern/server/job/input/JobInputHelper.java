@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.GetTaskStrategy;
@@ -85,22 +86,26 @@ public class JobInputHelper {
     }
 
     private final BatchInputFileHelper batchInputFileHelper;
-    
+
+    /** @deprecated - should pass in a valid GpConfig. */
     public JobInputHelper(final GpContext userContext, final String lsid) {
-        this(userContext, lsid, null);
+        this(ServerConfigurationFactory.instance(), userContext, lsid);
     }
-    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
-        this(userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
+    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
+        this(gpConfig, userContext, lsid, null);
     }
-    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
+    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
+        this(gpConfig, userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
+    }
+    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
         if (getTaskStrategyIn == null) {
             getTaskStrategyIn=new GetTaskStrategyDefault();
         }
         final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
-        this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo, jobInputApi);
+        this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
     }
-    public JobInputHelper(final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final TaskInfo taskInfo) {
-        this.batchInputFileHelper=new BatchInputFileHelper(userContext, taskInfo, jobInputApi);
+    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final TaskInfo taskInfo) {
+        this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
     }
     
     /**
