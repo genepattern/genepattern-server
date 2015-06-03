@@ -3,16 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.genomespace;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.dm.GpFilePath;
 
 /**
  * GenomeSpace integration, wrapper class. This is part of the core of GenePattern,
