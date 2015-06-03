@@ -142,7 +142,8 @@ public class ParamGroupHelper {
         final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
         
         for(final ParamValue value : param.getValues()) {
-            final Record rec=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, value);
+            final boolean downloadExternalUrl=true;
+            final Record rec=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, value, downloadExternalUrl);
             //if necessary, download data from external sites
             if (downloadExternalFiles) {
                 if (rec.getType().equals(Record.Type.EXTERNAL_URL)) {

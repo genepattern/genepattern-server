@@ -662,15 +662,15 @@ public class ParamListHelper {
         return gpFilePath;
     }
     
-    protected List<GpFilePath> getListOfValues(final boolean downloadExternalFiles) throws Exception {
+    protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(pval, downloadExternalFiles);
+            final Record rec=initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, downloadExternalUrl);
             tmpList.add(rec);
         }
         
         // If necessary, download data from external sites
-        if (downloadExternalFiles) {
+        if (downloadExternalUrl) {
             for(final Record rec : tmpList) {
                 downloadFromRecord(gpConfig, jobContext, rec);
             }
@@ -692,7 +692,7 @@ public class ParamListHelper {
         // Handle external URLs
         if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
             if (rec.isCached) {
-                GpFilePath cached=initCachedFilePath(gpConfig, jobContext, rec.url.toExternalForm());
+                GpFilePath cached=FileCache.downloadCachedFile(gpConfig, jobContext, rec.url.toExternalForm());
                 rec.gpFilePath=cached;
             }
             else {
@@ -700,51 +700,9 @@ public class ParamListHelper {
             }
         }
     }
-    
-//    public static boolean isCachedValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final URL externalUrl) {
-//        UrlPrefixFilter cacheFilter=UrlPrefixFilter.initCacheExternalUrlDirsFromConfig(gpConfig, jobContext);
-//        UrlPrefixFilter dropDownFilter=UrlPrefixFilter.initDropDownFilter(formalParam);
-//        return UrlPrefixFilter.accept(externalUrl.toExternalForm(), dropDownFilter, cacheFilter);
-//    }
-//
-    protected static GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
-        final boolean isRemoteDir=externalUrl.endsWith("/");
-        return initCachedFilePath(gpConfig, jobContext, externalUrl, isRemoteDir);
-    }
-
-    protected static GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
-        final GpFilePath cachedFile;
-        try {
-            // this method waits, if necessary, for the file to be transferred to a local path
-            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, externalUrl, isRemoteDir);
-            cachedFile=f.get().getLocalPath();
-        }
-        catch (Throwable t) {
-            final String errorMessage="Error getting cached value for externalUrl="+externalUrl;
-            log.error(errorMessage, t);
-            throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
-        }
-        if (cachedFile == null || cachedFile.getServerFile()==null) {
-            final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
-            throw new JobDispatchException(errorMessage);
-        }
-        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
-        if (!cachedFile.getServerFile().canRead()) {
-            throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
-        }
-        return cachedFile;
-    }
 
     private Record initFromValue(final ParamValue pval) throws Exception {
         return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, false);
-    }
-
-    private Record initFromValue(final ParamValue pval, boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, downloadExternalUrl);
-    }
-
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, ParameterInfo formalParam, final ParamValue pval) throws Exception {
-        return initFromValue(gpConfig, jobContext, formalParam, pval, true);
     }
 
     public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
@@ -865,19 +823,6 @@ public class ParamListHelper {
         }
     }
     
-//    /**
-//     * Copy data from an external URL into a file in the GP user's uploads directory.
-//     * This method blocks until the data file has been transferred.
-//     * 
-//     * @param gpPath
-//     * @param url
-//     * @throws Exception
-//     * 
-//     * @deprecated - should replace this with a static call
-//     */
-//    private static void forFileListCopyExternalUrlToUserUploads(final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
-//        forFileListCopyExternalUrlToUserUploads(jobContext, gpPath, url);
-//    }
     /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
      * This method blocks until the data file has been transferred.

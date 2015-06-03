@@ -148,7 +148,6 @@ import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
-import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -1546,7 +1545,7 @@ public class GenePatternAnalysisTask {
     throws JobDispatchException {
         //it's a file choice
         log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
-        final GpFilePath cachedFile = initCachedFilePath(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+        final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
         final String serverPath=cachedFile.getServerFile().getAbsolutePath();
         pinfo.setValue(serverPath);
         return cachedFile;
@@ -1555,37 +1554,9 @@ public class GenePatternAnalysisTask {
     throws JobDispatchException {
         //it's a file choice
         log.debug("setting value for file choice selection "+pinfo.getName()+"="+pinfo.getValue());
-        final GpFilePath cachedFile = initCachedFilePath(gpConfig, jobContext, pinfo.getValue());
+        final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, pinfo.getValue());
         final String serverPath=cachedFile.getServerFile().getAbsolutePath();
         pinfo.setValue(serverPath);
-        return cachedFile;
-    }
-
-    protected GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
-        final boolean isRemoteDir=externalUrl.endsWith("/");
-        return initCachedFilePath(gpConfig, jobContext, externalUrl, isRemoteDir);
-    }
-
-    protected GpFilePath initCachedFilePath(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
-        final GpFilePath cachedFile;
-        try {
-            // this method waits, if necessary, for the file to be transferred to a local path
-            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, externalUrl, isRemoteDir);
-            cachedFile=f.get().getLocalPath();
-        }
-        catch (Throwable t) {
-            final String errorMessage="Error getting cached value for externalUrl="+externalUrl;
-            log.error(errorMessage, t);
-            throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
-        }
-        if (cachedFile == null || cachedFile.getServerFile()==null) {
-            final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
-            throw new JobDispatchException(errorMessage);
-        }
-        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
-        if (!cachedFile.getServerFile().canRead()) {
-            throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
-        }
         return cachedFile;
     }
 

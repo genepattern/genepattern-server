@@ -29,9 +29,8 @@ public class CachedFtpFileFactory {
         interruptionService.shutdownNow();
     }
     
-    public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final String urlString) {
-        GpContext serverContext=GpContext.getServerContext();
-        String str=gpConfig.getGPProperty(serverContext, CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name());
+    public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final GpContext gpContext, final String urlString) {
+        String str=gpConfig.getGPProperty(gpContext, CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name());
         CachedFtpFileType type=null;
         try {
             type=CachedFtpFileType.valueOf(str);

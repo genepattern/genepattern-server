@@ -20,6 +20,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.executor.JobDispatchException;
 
 /**
  * Maintain a cache of input files downloaded from an external source. 
@@ -89,6 +91,9 @@ public class FileCache {
     }
     
     /**
+     * Initialize a CachedFile instance for the given externalUrl, 
+     * with declared flag indicating if it's a remote directory.
+     * 
      * For the given url, we have some options:
      *     a) it's mapped (by the gp-admin) to a local path
      *     b) it's a cached data file in one of the following states:
@@ -125,14 +130,62 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
         if (!isRemoteDir) {
-            return CachedFtpFileFactory.instance().newCachedFtpFile(gpConfig, externalUrl);
+            return CachedFtpFileFactory.instance().newCachedFtpFile(gpConfig, jobContext, externalUrl);
         }
         else {
             return new CachedFtpDir(gpConfig, jobContext, externalUrl);
         }
-     }
+    }
     
-    public void shutdownNow() {
+    /**
+     * Figure out if it's a remote directory before getting the local path.
+     * @param gpConfig
+     * @param jobContext
+     * @param externalUrl
+     * @return
+     * @throws JobDispatchException
+     */
+    public static GpFilePath downloadCachedFile(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
+        final boolean isRemoteDir=externalUrl.endsWith("/");
+        return downloadCachedFile(gpConfig, jobContext, externalUrl, isRemoteDir);
+    }
+
+    /**
+     * Get the local path (GpFilePath object) for the cached external url.
+     * This method downloads and waits, if necessary, for the local file to be transferred from the external url.
+     * If it's already in the cache the 
+     * 
+     * @param gpConfig, the server configuration
+     * @param jobContext, the job context
+     * @param externalUrl, the external url from which to download the file or directory
+     * @param isRemoteDir, true if the external url is a directory listing
+     * @return
+     * @throws JobDispatchException
+     */
+    public static GpFilePath downloadCachedFile(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
+        final GpFilePath cachedFile;
+        try {
+            // this method waits, if necessary, for the file to be transferred to a local path
+            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+            cachedFile=f.get().getLocalPath();
+        }
+        catch (Throwable t) {
+            final String errorMessage="Error getting cached value for externalUrl="+externalUrl;
+            log.error(errorMessage, t);
+            throw new JobDispatchException(errorMessage+": "+t.getClass().getName()+" - "+t.getLocalizedMessage());
+        }
+        if (cachedFile == null || cachedFile.getServerFile()==null) {
+            final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
+            throw new JobDispatchException(errorMessage);
+        }
+        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
+        if (!cachedFile.getServerFile().canRead()) {
+            throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
+        }
+        return cachedFile;
+    }
+
+   public void shutdownNow() {
         downloadService.shutdownNow();
         evictionService.shutdownNow();
         CachedFtpFileFactory.instance().shutdownNow();
