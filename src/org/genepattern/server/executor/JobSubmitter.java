@@ -45,7 +45,7 @@ public class JobSubmitter implements Runnable {
         GpContext jobContext=null;
         JobInfo jobInfo=null;
         try {
-            jobContext=FileDownloader.initJobContext(jobId);
+            jobContext=GpContext.createContextForJob(jobId);
             if (jobContext != null) {
                 jobInfo=jobContext.getJobInfo();
             }
@@ -73,7 +73,7 @@ public class JobSubmitter implements Runnable {
         try {
             log.debug("submitting job "+jobId);
             GpConfig gpConfig=ServerConfigurationFactory.instance();
-            startDownloadAndWait(gpConfig, jobContext);
+            FileDownloader fd=startDownloadAndWait(gpConfig, jobContext);
             log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
         }
@@ -102,14 +102,10 @@ public class JobSubmitter implements Runnable {
         }
     }
     
-    private void startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
-        FileDownloader downloader=FileDownloader.fromJobContext(jobContext);
-        if (!downloader.hasSelectedChoices()) {
-            log.debug("No selected choices");
-            return;
-        }
-        log.debug("downloading files for jobId="+jobId+" ...");
+    private FileDownloader startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
+        FileDownloader downloader=FileDownloader.fromJobContext(gpConfig, jobContext);
         downloader.startDownloadAndWait(gpConfig, jobContext);
+        return downloader;
     }
 
     //handle errors during job dispatch (moved from GPAT.onJob)

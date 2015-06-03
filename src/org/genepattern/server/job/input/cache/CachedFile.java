@@ -26,4 +26,11 @@ public interface CachedFile {
      */
     GpFilePath download() throws DownloadException;
 
+    //TODO" add isDirectory to interface
+//    /**
+//     * Is this a file or a directory.
+//     * @return
+//     */
+//    boolean isDirectory();
+
 }

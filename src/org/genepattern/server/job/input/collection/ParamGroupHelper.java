@@ -9,7 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -18,6 +20,8 @@ import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamListHelper.Record;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
+import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Helper class for preparing input values and generating a parameter group file for a given module input parameter.
@@ -36,7 +40,9 @@ import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
 public class ParamGroupHelper {
     private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
     
+    private final GpConfig gpConfig;
     private final GpContext jobContext;
+    private final ParameterInfo formalParam;
     private final GroupInfo groupInfo;
     private final Param param;
     private final List<GpFilePath> gpFilePaths;
@@ -54,8 +60,17 @@ public class ParamGroupHelper {
     private final boolean downloadExternalFiles;
 
     private ParamGroupHelper(final Builder in) {
+        if (in.gpConfig==null) {
+            this.gpConfig=ServerConfigurationFactory.instance();
+        }
+        else {
+            this.gpConfig=in.gpConfig;
+        }
         if (in.jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
+        }
+        if (in.parameterInfoRecord==null) {
+            throw new IllegalArgumentException("parameterInfoRecord==null");
         }
         if (in.param==null) {
             throw new IllegalArgumentException("param==null");
@@ -64,6 +79,13 @@ public class ParamGroupHelper {
             throw new IllegalArgumentException("groupInfo==null");
         }
         this.jobContext=in.jobContext;
+        if (in.parameterInfoRecord != null) {
+            this.formalParam=in.parameterInfoRecord.getFormal();
+        }
+        else {
+            log.warn("Missing parameterInfoRecord.formal");
+            this.formalParam=null;
+        }
         this.param=in.param;
         this.groupInfo=in.groupInfo;
         this.filenameSuffix=in.filenameSuffix;
@@ -120,7 +142,8 @@ public class ParamGroupHelper {
         final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
         
         for(final ParamValue value : param.getValues()) {
-            final Record rec=ParamListHelper.initFromValue(jobContext, value);
+            final boolean downloadExternalUrl=true;
+            final Record rec=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, value, downloadExternalUrl);
             //if necessary, download data from external sites
             if (downloadExternalFiles) {
                 if (rec.getType().equals(Record.Type.EXTERNAL_URL)) {
@@ -155,7 +178,10 @@ public class ParamGroupHelper {
     }
     
     public static class Builder {
+        private GpConfig gpConfig=null;
         private GpContext jobContext=null;
+        private ParameterInfoRecord parameterInfoRecord=null;
+
         private GroupInfo groupInfo=null;
         private final Param param;
         private String filenameSuffix=".group."+TsvWriter.EXT;
@@ -165,8 +191,16 @@ public class ParamGroupHelper {
         public Builder(final Param param) {
             this.param=param;
         }
+        public Builder gpConfig(final GpConfig gpConfig) {
+            this.gpConfig=gpConfig;
+            return this;
+        }
         public Builder jobContext(final GpContext jobContext) {
             this.jobContext=jobContext;
+            return this;
+        }
+        public Builder parameterInfoRecord(ParameterInfoRecord parameterInfoRecord) {
+            this.parameterInfoRecord=parameterInfoRecord;
             return this;
         }
         public Builder groupInfo(final GroupInfo groupInfo) {

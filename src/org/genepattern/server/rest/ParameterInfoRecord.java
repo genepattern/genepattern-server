@@ -3,9 +3,11 @@
  *******************************************************************************/
 package org.genepattern.server.rest;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -19,6 +21,7 @@ import org.genepattern.webservice.TaskInfo;
  *
  */
 public class ParameterInfoRecord {
+    private static final Logger log = Logger.getLogger(ParameterInfoRecord.class);
 
     /**
      * Initialize a map of paramName to ParameterInfo 
@@ -26,6 +29,10 @@ public class ParameterInfoRecord {
      * @return
      */
     final static public Map<String,ParameterInfoRecord> initParamInfoMap(final TaskInfo taskInfo) {
+        if (taskInfo==null) {
+            log.error("taskInfo==null");
+            return Collections.emptyMap();
+        }
         Map<String,ParameterInfoRecord> paramInfoMap=new LinkedHashMap<String,ParameterInfoRecord>();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
             ParameterInfoRecord record = new ParameterInfoRecord(pinfo);

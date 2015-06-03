@@ -16,7 +16,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.TestLoadModuleHelper;
-import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.cache.CachedFtpFileType;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
@@ -233,7 +233,7 @@ public class TestDynamicChoiceInfoParser {
         final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
         
         GpServerProperties serverProperties=new GpServerProperties.Builder()
-            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
+            .addCustomProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name())
             .build();
         GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
@@ -266,7 +266,7 @@ public class TestDynamicChoiceInfoParser {
         //        // set custom.properties to use a 30 second timeout 
         GpServerProperties serverProperties=new GpServerProperties.Builder()
             //.addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
-            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.COMMONS_NET_3_3.name())
+            .addCustomProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.COMMONS_NET_3_3.name())
             //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
             //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
             .build();

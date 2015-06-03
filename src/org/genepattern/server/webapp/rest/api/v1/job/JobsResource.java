@@ -135,6 +135,7 @@ public class JobsResource {
             final @Context HttpServletRequest request,
             final JobInputValues jobInputValues)
     {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext jobContext=Util.getUserContext(request);
 
         try
@@ -163,7 +164,7 @@ public class JobsResource {
             //TODO: add support for batch jobs to REST API
             final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
             final boolean initDefault=true;
-            final JobInputApi impl = JobInputApiFactory.createJobInputApi(jobContext, initDefault);
+            final JobInputApi impl = JobInputApiFactory.createJobInputApi(gpConfig, jobContext, initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
             //JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
             //TODO: if necessary, add batch details to the JSON representation

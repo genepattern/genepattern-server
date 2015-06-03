@@ -44,6 +44,19 @@ public class TestChoiceInfo {
         return pinfo;
     }
     
+    public static final ParameterInfo initFileParam(String name, String value, String description) {
+        final ParameterInfo pinfo=new ParameterInfo(name, value, description);
+        pinfo.setAttributes(new HashMap<String,String>());        
+        pinfo.getAttributes().put("MODE", "IN");
+        pinfo.getAttributes().put("TYPE", "FILE");
+        pinfo.getAttributes().put("default_value", "");
+        pinfo.getAttributes().put("optional", "");
+        pinfo.getAttributes().put("prefix_when_specified", "");
+        pinfo.getAttributes().put("type", "java.io.File");
+
+        return pinfo;
+    } 
+    
     @Test
     public void testFtpPassiveMode_default() {
         final ParameterInfo pinfo=initFtpParam(dropDownDir);

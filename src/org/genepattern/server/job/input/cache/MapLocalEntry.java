@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.config.Value;
 
@@ -26,17 +26,37 @@ import org.genepattern.server.config.Value;
 public class MapLocalEntry {
     private static final Logger log = Logger.getLogger(MapLocalEntry.class);
     
+    /**
+     * Set 'local.choiceDirs' to a map of externalUrl -> localFilePath, Example config_yaml entry:
+     * <pre>
+    #
+    # map of local paths for dynamic file drop-downs
+    #
+    local.choiceDirs: {
+        "ftp://ftp.broadinstitute.org/pub/genepattern/": "/web/ftp/pub/genepattern/", 
+        "ftp://gpftp.broadinstitute.org/": "/xchip/gpdev/gpftp/pub/",
+    }    
+     * </pre>
+     * 
+     * When handling input values selected from drop-down menus, the GP server
+     * will optionally use a local path instead of downloading the file from the remote location.
+     * 
+     * This was set up to avoid unnecessary FTP dir listing and file transfers
+     * for the Broad hosted GP server when using dynamic drop-downs from the
+     * Broad hosted FTP server.
+     * 
+     * @see ChoiceInfo#PROP_CHOICE_DIR
+     */
     public static final String PROP_LOCAL_CHOICE_DIRS="local.choiceDirs";
-
+    
     /**
      * Get the Map<?,?> of url->localFile from the config.yaml file.
      * 
      * @return an empty Map if there is no valid entry in the config file. 
      *     For a default gp install this will return an empty map.
      */
-    private static Map<?,?> getLocalChoiceDirsMap() {
-        final GpContext serverContext=GpContext.getServerContext();
-        final Value value=ServerConfigurationFactory.instance().getValue(serverContext, PROP_LOCAL_CHOICE_DIRS);
+    protected static Map<?,?> getLocalChoiceDirsMap(final GpConfig gpConfig, final GpContext gpContext) {
+        final Value value=gpConfig.getValue(gpContext, PROP_LOCAL_CHOICE_DIRS);
         if (value==null || !value.isMap()) {
             return Collections.emptyMap();
         }
@@ -53,8 +73,8 @@ public class MapLocalEntry {
      * @param selectedUrlValue
      * @return
      */
-    public static File initLocalFileSelection(final String selectedUrlValue) {
-        final Map<?,?> map=getLocalChoiceDirsMap();
+    public static File initLocalFileSelection(final GpConfig gpConfig, final GpContext gpContext, final String selectedUrlValue) {
+        final Map<?,?> map=getLocalChoiceDirsMap(gpConfig, gpContext);
         if (map.isEmpty()) {
             log.debug("No map configured");
             return null;
@@ -81,8 +101,8 @@ public class MapLocalEntry {
      * Check the config for a matching local dir and initialize the localChoiceDir field.
      * @return
      */
-    public static MapLocalEntry initLocalChoiceDir(final String choiceDir) {
-        final Map<?,?> map=getLocalChoiceDirsMap();
+    public static MapLocalEntry initLocalChoiceDir(final GpConfig gpConfig, final GpContext gpContext, final String choiceDir) {
+        final Map<?,?> map=getLocalChoiceDirsMap(gpConfig, gpContext);
         if (map.isEmpty()) {
             return null;
         }
@@ -144,6 +164,18 @@ public class MapLocalEntry {
      * @return a local File, or null if there is no matching entry in the map, or if there is no matching file in the file system.
      */
     public static File initLocalValue(final String fromUrlValue, final String fromUrlRoot, final String toLocalPathRoot) {
+        File localFile=fromUrlToLocalFile(fromUrlValue, fromUrlRoot, toLocalPathRoot);
+        if (localFile==null) {
+            return null;
+        }
+        if (!localFile.exists()) {
+            log.error("localFile does not exist: "+localFile+", Ignoring local.choiceDirs[ '"+fromUrlRoot+"' ] = '"+toLocalPathRoot+"' for value="+fromUrlValue);
+            return null;
+        }
+        return localFile;
+    }
+    
+    public static File fromUrlToLocalFile(final String fromUrlValue, final String fromUrlRoot, final String toLocalPathRoot) {
         if (fromUrlValue==null) {
             throw new IllegalArgumentException("fromUrlValue==null");
         }
@@ -156,10 +188,6 @@ public class MapLocalEntry {
         if (fromUrlValue.startsWith(fromUrlRoot)) {
             String localFileValue=fromUrlValue.replaceFirst(Pattern.quote(fromUrlRoot), toLocalPathRoot);
             final File localFile=new File(localFileValue);
-            if (!localFile.exists()) {
-                log.error("localFile does not exist: "+localFile+", Ignoring local.choiceDirs[ '"+fromUrlRoot+"' ] = '"+toLocalPathRoot+"' for value="+fromUrlValue);
-                return null;
-            }
             return localFile;
         }
         return null;

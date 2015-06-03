@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,7 +22,10 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.cache.CommonsNet_3_3_Impl;
 import org.genepattern.server.job.input.cache.DownloadException;
+import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
+import org.genepattern.server.job.input.cache.EdtFtpJImpl;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
 import org.junit.Assert;
@@ -46,6 +51,9 @@ public class TestFileDownloader {
     final String smallFileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_2.txt";
     final long smallFile_expectedLength=13L;
     final String smallFile_expectedName="dummy_file_2.txt";
+    
+    final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
+    final String fileUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/01.txt";
     
     // this class creates tmp dirs, but cleans up after itself. 
     @Rule
@@ -123,7 +131,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -140,7 +148,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -157,7 +165,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -174,7 +182,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl_simple(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl_simple(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -191,7 +199,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -216,7 +224,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-            CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newStdJava6Impl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -237,7 +245,7 @@ public class TestFileDownloader {
         cancellationTest(false, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -263,7 +271,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile cachedFtpFile = CachedFtpFile.Factory.instance().newEdtFtpJImpl(fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -272,7 +280,6 @@ public class TestFileDownloader {
 
     @Test
     public void testCachedFtpDir_getFilesToDownload() throws DownloadException, ListFtpDirException {
-        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
         final CachedFtpDir cachedFtpDir=new CachedFtpDir(gpConfig, gpContext, dirUrl);
         final List<FtpEntry> files=cachedFtpDir.getFilesToDownload();
         
@@ -291,8 +298,6 @@ public class TestFileDownloader {
      */
     @Test
     public void testDirectoryDownload() throws DownloadException {
-        
-        final String dirUrl="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
         final CachedFtpDir cachedFtpDir = new CachedFtpDir(gpConfig, gpContext, dirUrl);
 
         Assert.assertFalse("cachedFtpDir is already downloaded, localPath="+cachedFtpDir.getLocalPath().getServerFile(), cachedFtpDir.isDownloaded());
@@ -311,5 +316,34 @@ public class TestFileDownloader {
         Assert.assertEquals("localFiles[1].name", "02.txt", localFiles[1].getName());
         Assert.assertEquals("localFiles[2].name", "03.txt", localFiles[2].getName());
         Assert.assertEquals("localFiles[3].name", "04.txt", localFiles[3].getName());
-    }    
+    }
+    
+    @Test
+    public void isDir_edtFtpJ() throws Exception {
+        ExecutorService ex=Executors.newCachedThreadPool();
+        try {
+            EdtFtpJImpl ftpFile=new EdtFtpJImpl(gpConfig, dirUrl, ex);
+            boolean isDirectory=ftpFile.isDirectory();
+            assertEquals(true, isDirectory);
+            
+            ftpFile=new EdtFtpJImpl(gpConfig, fileUrl, ex);
+            isDirectory=ftpFile.isDirectory();
+            assertEquals(false, isDirectory);
+        }
+        finally {
+            ex.shutdownNow();
+        }
+    }
+
+    @Test
+    public void isDir_commons_net() throws Exception {
+        CommonsNet_3_3_Impl ftpFile=new CommonsNet_3_3_Impl(gpConfig, dirUrl);
+        boolean isDirectory=ftpFile.isDirectory();
+        assertEquals(true, isDirectory);
+
+        ftpFile=new CommonsNet_3_3_Impl(gpConfig, fileUrl);
+        isDirectory=ftpFile.isDirectory();
+        assertEquals(false, isDirectory);
+    }
+
 }

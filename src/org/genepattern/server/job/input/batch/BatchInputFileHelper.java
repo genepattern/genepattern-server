@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -227,6 +228,7 @@ public class BatchInputFileHelper {
         }
     }
     
+    private final GpConfig gpConfig;
     private final GpContext userContext;
     private final JobInputApi jobInputApi;
     private final BatchGenerator batchGenerator;
@@ -235,16 +237,17 @@ public class BatchInputFileHelper {
     private Map<String,List<GpFilePath>> batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     private final Map<String,ParameterInfoRecord> paramInfoMap;
 
-    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo) {
-        this(userContext, taskInfo, null);
+    public BatchInputFileHelper(final GpConfig gpConfig, final GpContext userContext, final TaskInfo taskInfo) {
+        this(gpConfig, userContext, taskInfo, null);
     }
-    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
-        this(userContext, taskInfo, jobInputApiIn, null);
+    public BatchInputFileHelper(final GpConfig gpConfig, final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn) {
+        this(gpConfig, userContext, taskInfo, jobInputApiIn, null);
     }
-    public BatchInputFileHelper(final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn, final BatchGenerator batchGeneratorIn) {
+    public BatchInputFileHelper(final GpConfig gpConfig, final GpContext userContext, final TaskInfo taskInfo, final JobInputApi jobInputApiIn, final BatchGenerator batchGeneratorIn) {
+        this.gpConfig=gpConfig;
         this.userContext=userContext;
         if (jobInputApiIn == null) {
-            this.jobInputApi=JobInputApiFactory.createJobInputApi(userContext);
+            this.jobInputApi=JobInputApiFactory.createJobInputApi(gpConfig, userContext);
         }
         else {
             this.jobInputApi=jobInputApiIn;
@@ -259,7 +262,6 @@ public class BatchInputFileHelper {
         this.jobInput.setLsid(taskInfo.getLsid());
         this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
     }
-
 
     public void addValue(final ParamId id, final String value, final GroupId groupId) {
         final boolean isBatchParam=false;
@@ -407,7 +409,7 @@ public class BatchInputFileHelper {
      * @throws GpServerException
      */
     public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
-        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(userContext, jobInputApi);
+        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(gpConfig, userContext, jobInputApi);
         JobReceipt receipt= batchSubmitter.submitBatch(batchInputs);
         return receipt;
     }

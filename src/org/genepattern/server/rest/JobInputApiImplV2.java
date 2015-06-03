@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -56,6 +57,7 @@ public class JobInputApiImplV2 implements JobInputApi {
      * By default, this value is false.
      */
     private final boolean initDefault;
+    
     public JobInputApiImplV2() {
         this(false);
     }
@@ -97,15 +99,23 @@ public class JobInputApiImplV2 implements JobInputApi {
     private static class JobInputHelper {
         final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
+        private final GpConfig gpConfig;
         private final GpContext taskContext;
         private final JobInput jobInput;
         private final boolean initDefault;
         private final int parentJobId;
 
+        /** @deprecated, should pass in a valid GpConfig */
         public JobInputHelper(final GpContext taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
-            this(taskContext, jobInput, getTaskStrategyIn, initDefault, -1);
+            this(ServerConfigurationFactory.instance(), taskContext, jobInput, getTaskStrategyIn, initDefault, -1);
         }
-        public JobInputHelper(final GpContext taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
+        public JobInputHelper(final GpConfig gpConfig, final GpContext taskContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault, final int parentJobId) {
+            if (gpConfig==null) {
+                this.gpConfig=ServerConfigurationFactory.instance();
+            }
+            else {
+                this.gpConfig=gpConfig;
+            }
             if (taskContext==null) {
                 throw new IllegalArgumentException("taskContext==null");
             }
@@ -138,7 +148,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                 // validate num values
                 // and initialize input file (or parameter) lists as needed
                 Param inputParam=jobInput.getParam( entry.getKey() );
-                ParamListHelper plh=new ParamListHelper(taskContext, entry.getValue(), inputParam, initDefault);
+                ParamListHelper plh=new ParamListHelper(gpConfig, taskContext, entry.getValue(), inputParam, initDefault);
                 plh.validateNumValues();
                 plh.updatePinfoValue();
             }
