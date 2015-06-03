@@ -995,7 +995,7 @@ $.widget("gp.runTask", {
                 default: param.defaultValue()
             });
         }
-        else if (param.type() === "java.lang.Integer") {
+        else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float") {
             paramBox.find(".task-widget-param-input").textInput({
                 runTask: this,
                 param: param,
