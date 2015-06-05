@@ -3345,7 +3345,7 @@ function buildJobResultsPage() {
                                 }
                             })
                 ).append(
-                    $("<button>Download</button>")
+                    $("<button id='downloadJobs'>Download</button>")
                         .click(function(){
                             // Gather the jobs to download
                             var jobsDownload = [];
