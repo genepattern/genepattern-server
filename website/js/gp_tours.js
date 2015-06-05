@@ -138,13 +138,30 @@ $(function()
         var steps = [
             {
                 element: ".ui-layout-toggler",
-                intro: '<div class="tour-header"> Show/Hide Left Panel </div>  The left panel can be now be hidden using this toggle button.',
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div>  The left panel can now be hidden using this toggle button.',
                 position: 'left',
                 scrollToElement: true
             },
             {
                 element: ".ui-layout-toggler",
                 intro: '<div class="tour-header"> Show/Hide Left Panel </div> Once hidden, the left panel can be shown again by clicking this toggle button. ',
+                position: 'right',
+                scrollToElement: true
+            },
+            {
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> The Job Results Summary Page now supports downloading of multiple job results.',
+                position: 'right',
+                scrollToElement: true
+            },
+            {
+                element: ".job-select-checkbox-master",
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> First select one or more jobs to download.',
+                position: 'right',
+                scrollToElement: true
+            },
+            {
+                element: "#downloadJobs",
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> Afterwards click on the download button. Each job will be downloaded in a separate zip file.',
                 position: 'right',
                 scrollToElement: true
             },
@@ -167,6 +184,20 @@ $(function()
             if(intro._currentStep == 1)
             {
                 $(".ui-layout-toggler").click();
+            }
+            else if(intro._currentStep == 2)
+            {
+                loadJobResults(true);
+            }
+            else if(intro._currentStep == 3)
+            {
+                $(".job-select-checkbox-master").click();
+                $(".job-select-checkbox").click();
+            }
+            else if(intro._currentStep == 5)
+            {
+                $('.job-select-checkbox-master').attr('checked', false);
+                $('.job-select-checkbox').attr('checked', false);
             }
         });
 
