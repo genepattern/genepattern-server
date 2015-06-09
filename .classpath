@@ -99,8 +99,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/versioncheck.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xalan.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
