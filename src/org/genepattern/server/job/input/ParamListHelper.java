@@ -29,6 +29,7 @@ import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
+import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -685,7 +686,7 @@ public class ParamListHelper {
     public static List<GpFilePath> getListOfValues(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval, downloadExternalUrl);
+            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval);
             tmpList.add(rec);
         }
         
@@ -722,37 +723,43 @@ public class ParamListHelper {
     }
 
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, false);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
         URL externalUrl = JobInputHelper.initExternalUrl(value);
+        final boolean isPassByReference=isPassByReference(formalParam);
         
-        // Handle GenomeSpace URLs
-        if (externalUrl != null && GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
-
-            if (downloadExternalUrl) {
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
-            }
-        }
-        if (externalUrl != null) { 
-            boolean isCached=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, formalParam, externalUrl);
-            if (downloadExternalUrl && !isCached) { 
-                //this method does not do the file download
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
-            }
-            else {
-                //this section is for if the external file will not be downloaded
+        if (externalUrl != null) {
+            final boolean isCached=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, formalParam, externalUrl);
+            if (isPassByReference) {
+                // special-case: pass-by-reference
                 GpFilePath gpPath = new ExternalFile(externalUrl);
                 Record record=new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
                 record.isCached=isCached;
-                record.isPassByReference=isPassByReference(formalParam);
+                record.isPassByReference=isPassByReference;
                 return record;
             }
-        }
+            else if (isCached) {
+                // special-case: 'cache.externalUrlDirs'
+                CachedFile cachedFile=FileCache.initCachedFileObj(gpConfig, jobContext, value);
+                Record record=new Record(Record.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
+                record.isCached=isCached;
+                record.isPassByReference=isPassByReference;
+                return record;
+            }
+            else if (GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
+                // special-case: GenomeSpace input
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
+                return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
+            }
+            else {
+                // by default, external url inputs for file lists are cached on a per-user basis, in the user's tmp directory
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
+                return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
+            }
+        }        
         LSID lsid=null;
         try {
             lsid=new LSID(jobContext.getLsid());
