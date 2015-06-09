@@ -7,11 +7,16 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,12 +144,22 @@ public class ConfigApp {
         pw.setR25(r25Field.getText());
         pw.setRequirePassword(Boolean.toString(yesRadioButton.isSelected()));
 
-        //File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        File newResourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
         String user = System.getProperty("user.name");
         File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
-        File propFile = new File(resourcesDir, "genepattern.properties");
+        File propFile = new File(newResourcesDir, "genepattern.properties");
         try {
             pw.writeUserTime(propFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Copy over the new build.properties file
+        File oldBuildProperties = new File(resourcesDir, "build.properties");
+        File newBuildProperties = new File(newResourcesDir, "build.properties");
+
+        try {
+            FileUtils.copyFile(newBuildProperties, oldBuildProperties);
         } catch (IOException e) {
             e.printStackTrace();
         }
