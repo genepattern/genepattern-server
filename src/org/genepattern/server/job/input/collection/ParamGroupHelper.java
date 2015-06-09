@@ -4,7 +4,6 @@
 package org.genepattern.server.job.input.collection;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,8 +16,6 @@ import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.job.input.ParamListHelper.Record;
-import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
@@ -88,7 +85,7 @@ public class ParamGroupHelper {
         this.filenameSuffix=in.filenameSuffix;
         this.downloadExternalFiles=in.downloadExternalFiles;
         try {
-            this.gpFilePaths=initFilelist(jobContext, downloadExternalFiles);
+            this.gpFilePaths=ParamListHelper.getListOfValues(gpConfig, jobContext, formalParam, param, downloadExternalFiles);
         }
         catch (Exception e) {
             log.error(e);
@@ -124,32 +121,6 @@ public class ParamGroupHelper {
     
     public List<GpFilePath> getGpFilePaths() {
         return Collections.unmodifiableList(gpFilePaths);
-    }
-    
-    /**
-     * Step through each item in the list of input values, 
-     * convert to an appropriate GpFilePath instance,
-     * and if necessary and requested, automatically download external data files.
-     * @param jobContext
-     * @return
-     */
-    private List<GpFilePath> initFilelist(final GpContext jobContext, final boolean downloadExternalFiles) 
-    throws Exception 
-    {
-        final List<GpFilePath> gpFilePaths=new ArrayList<GpFilePath>();
-        
-        for(final ParamValue value : param.getValues()) {
-            final boolean downloadExternalUrl=true;
-            final Record rec=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, value, downloadExternalUrl);
-            //if necessary, download data from external sites
-            if (downloadExternalFiles) {
-                if (rec.getType().equals(Record.Type.EXTERNAL_URL)) {
-                    ParamListHelper.forFileListCopyExternalUrlToUserUploads(jobContext, rec.getGpFilePath(), rec.getUrl());
-                }
-            }
-            gpFilePaths.add(rec.getGpFilePath()); 
-        } 
-        return gpFilePaths;
     }
     
     /**
