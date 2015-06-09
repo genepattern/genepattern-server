@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -30,7 +29,6 @@ import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -467,7 +465,7 @@ public class ParamListHelper {
     }
     
     /**
-     * Convert user-supplied value for a file input paramter into a GpFilePath instance.
+     * Convert user-supplied value for a file input parameter into a GpFilePath instance.
      * 
      * @param paramValueIn
      * @return
@@ -492,9 +490,15 @@ public class ParamListHelper {
         return file;
     }
 
-    public boolean isPassByReference()
-    {
-        return parameterInfoRecord.getFormal()._isUrlMode();
+    public boolean isPassByReference() {
+        return isPassByReference(parameterInfoRecord.getFormal());
+    }
+
+    public static boolean isPassByReference(ParameterInfo formalParam) {
+        if (formalParam==null) {
+            return false;
+        }
+        return formalParam._isUrlMode();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -663,9 +667,25 @@ public class ParamListHelper {
     }
     
     protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
+        return ParamListHelper.getListOfValues(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
+    }
+
+    /**
+     * Create a list of GpFilePath mapped, in the same order as the actualValues, optionally downloading external URLs to the 
+     * server file system.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param formalParam, initialized from the module manifest
+     * @param actualValues, the actual job input values
+     * @param downloadExternalUrl, when true download files and wait.
+     * @return
+     * @throws Exception
+     */
+    public static List<GpFilePath> getListOfValues(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval, downloadExternalUrl);
+            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval, downloadExternalUrl);
             tmpList.add(rec);
         }
         
@@ -729,6 +749,7 @@ public class ParamListHelper {
                 GpFilePath gpPath = new ExternalFile(externalUrl);
                 Record record=new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
                 record.isCached=isCached;
+                record.isPassByReference=isPassByReference(formalParam);
                 return record;
             }
         }
@@ -805,6 +826,7 @@ public class ParamListHelper {
         GpFilePath gpFilePath;
         URL url; //can be null
         boolean isCached; // for external_url, when true it means download to global cache rather than per-user cache
+        boolean isPassByReference; // pass by reference values are not downloaded to the local file system; gpFilePath.serverPath is null
         
         public Record(final Type type, final GpFilePath gpFilePath, final URL url) {
             this.type=type;
