@@ -35,6 +35,9 @@ public class PropertiesWriter {
     private String gpVersion = "";                       // Build parameter
     private String buildTag = "";                        // Build parameter
 
+    private String gpVersionUpgrade = "";                // Install parameter
+    private String buildTagUpgrade = "";                 // Install parameter
+
     /**
      * This method is called by the ant task at build time
      *
@@ -135,6 +138,12 @@ public class PropertiesWriter {
             }
             else if (line.contains("$R25bin$")) {
                 line = line.replaceAll("\\$R25bin\\$", r25);
+            }
+            else if (line.contains("GenePatternVersion=")) {
+                line = "GenePatternVersion=" + gpVersionUpgrade;
+            }
+            else if (line.contains("tag=")) {
+                line = "tag=" + buildTagUpgrade;
             }
 
             lines.add(line);
@@ -366,5 +375,21 @@ public class PropertiesWriter {
 
     public void setBuildTag(String buildTag) {
         this.buildTag = buildTag;
+    }
+
+    public String getGpVersionUpgrade() {
+        return gpVersionUpgrade;
+    }
+
+    public void setGpVersionUpgrade(String gpVersionUpgrade) {
+        this.gpVersionUpgrade = gpVersionUpgrade;
+    }
+
+    public String getBuildTagUpgrade() {
+        return buildTagUpgrade;
+    }
+
+    public void setBuildTagUpgrade(String buildTagUpgrade) {
+        this.buildTagUpgrade = buildTagUpgrade;
     }
 }
