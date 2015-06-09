@@ -44,6 +44,10 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
 
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
+        if (param==null) {
+            log.error("param==null");
+            return null;
+        }
         final List<Choice> choiceList;
         //the new way (>= 3.7.0), check for remote ftp directory
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
