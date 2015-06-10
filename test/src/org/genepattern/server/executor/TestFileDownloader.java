@@ -61,7 +61,7 @@ public class TestFileDownloader {
     @Test
     public void selectionFromDropDown()  throws JobDispatchException {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
-                ParameterInfoUtil.initFileDropdownParam(choiceDir) 
+                ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir) 
         });
         jobInput.addValue("input.file", selectedValue);
         
@@ -77,7 +77,7 @@ public class TestFileDownloader {
     @Test
     public void selectionFromDropDownDir() throws JobDispatchException {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
-                ParameterInfoUtil.initFileDropdownParam(choiceDir_dirListing) 
+                ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir_dirListing) 
         });
         jobInput.addValue("input.file", selectedDirValue);
 
@@ -92,7 +92,7 @@ public class TestFileDownloader {
     @SuppressWarnings("unchecked")
     @Test
     public void passByReference_ignoreDropdownSelection() throws JobDispatchException {
-        ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam(choiceDir);
+        ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         // set to passByReference
         pinfo.getAttributes().put(GPConstants.PARAM_INFO_URL_MODE[0], "on");
         assertEquals("pinfo._isUrlMode()", true, pinfo._isUrlMode());

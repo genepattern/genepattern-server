@@ -11,11 +11,6 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class ParameterInfoUtil {
 
-    /** @deprecated */
-    public static final ParameterInfo initFileDropdownParam(final String choiceDir) {
-        return initFileDropdownParam("input.filename", choiceDir);
-    }
-
     /**
      * For junit testing, initialize a ParameterInfo which has a choiceDir.
      * @param pname, the name of the parameter
