@@ -524,21 +524,7 @@ public class ParamListHelper {
                 .build();
             final GpFilePath toFile=pgh.createFilelist();
             parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
-            
-            //save the filelist and groupids to the parameter info CLOB
-            final List<GpFilePath> listOfValues=pgh.getGpFilePaths();
-            int idx=0;
-            for(final Entry<GroupId, ParamValue> entry : actualValues.getValuesAsEntries()) {
-                final String groupId = entry.getKey().getGroupId();
-                final GpFilePath gpFilePath=listOfValues.get(idx);
-                
-                final String key="values_"+idx;
-                final String value="<GenePatternURL>"+gpFilePath.getRelativeUri().toString();
-                parameterInfoRecord.getActual().getAttributes().put(key, value);
-                final String groupKey="valuesGroup_"+idx;
-                parameterInfoRecord.getActual().getAttributes().put(groupKey, groupId);
-                ++idx;
-            }
+            saveGroupedValuesToClob(pgh.getGpFilePaths());
         }
         else if (createFilelist)
         {
@@ -549,25 +535,7 @@ public class ParamListHelper {
             String filelist=filelistFile.getUrl().toExternalForm();
             parameterInfoRecord.getActual().setValue(filelist);
             
-            //TODO: fix this HACK
-            //    instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
-            int idx=0;
-            for(GpFilePath inputValue : listOfValues) {
-                final String key="values_"+idx;
-                //String value=url.toExternalForm();
-                String value="";
-                if(downloadExternalFiles)
-                {
-                    value = "<GenePatternURL>"+inputValue.getRelativeUri().toString();
-                }
-                else
-                {
-                    //provide the url directly since the file was not downloaded
-                    value = inputValue.getUrl().toExternalForm();
-                }
-                parameterInfoRecord.getActual().getAttributes().put(key, value);
-                ++idx;
-            } 
+            saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
         }
         else if (numValues==0) {
             parameterInfoRecord.getActual().setValue("");
@@ -646,6 +614,51 @@ public class ParamListHelper {
                 final String out=ParamListHelper.insertGpUrlSubstitution(in);
                 parameterInfoRecord.getActual().setValue(out);
             }
+        }
+    }
+
+    /**
+     * Save the list of values to the parameter info CLOB
+     * @param downloadExternalFiles
+     * @param listOfValues
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    protected void saveListOfValuesToClob(final boolean downloadExternalFiles, final List<GpFilePath> listOfValues) throws Exception {
+        int idx=0;
+        for(GpFilePath inputValue : listOfValues) {
+            final String key="values_"+idx;
+            //String value=url.toExternalForm();
+            String value="";
+            if(downloadExternalFiles) {
+                value = "<GenePatternURL>"+inputValue.getRelativeUri().toString();
+            }
+            else {
+                //provide the url directly since the file was not downloaded
+                value = inputValue.getUrl().toExternalForm();
+            }
+            parameterInfoRecord.getActual().getAttributes().put(key, value);
+            ++idx;
+        }
+    }
+
+    /**
+     * Save the filelist and groupids to the parameter info CLOB
+     * @param pgh
+     */
+    @SuppressWarnings("unchecked")
+    protected void saveGroupedValuesToClob(final List<GpFilePath> listOfValues) {
+        int idx=0;
+        for(final Entry<GroupId, ParamValue> entry : actualValues.getValuesAsEntries()) {
+            final String groupId = entry.getKey().getGroupId();
+            final GpFilePath gpFilePath=listOfValues.get(idx);
+            
+            final String key="values_"+idx;
+            final String value="<GenePatternURL>"+gpFilePath.getRelativeUri().toString();
+            parameterInfoRecord.getActual().getAttributes().put(key, value);
+            final String groupKey="valuesGroup_"+idx;
+            parameterInfoRecord.getActual().getAttributes().put(groupKey, groupId);
+            ++idx;
         }
     }
 
