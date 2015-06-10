@@ -127,6 +127,10 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
         else {
             b.jobState(DrmJobState.FAILED);
+            String message=exception.getMessage();
+            if (message != null) {
+                b.jobStatusMessage(message);
+            }
         }
         b.endTime(new Date());
         statusMap.put(gpJobNo, b.build());
