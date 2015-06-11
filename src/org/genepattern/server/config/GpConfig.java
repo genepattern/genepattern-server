@@ -207,12 +207,28 @@ public class GpConfig {
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
             ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
-            String antCmd="<java> -jar <ant-1.8_HOME><file.separator>lib<file.separator>ant-launcher.jar -Dant.home=<ant-1.8_HOME>";            
+            String antCmd="<ant-1.8_HOME>/bin/ant";
             this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
             this.substitutionParams.put("ant-1.8", antCmd);
             this.substitutionParams.put("ant", antCmd);
 
             this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
+            
+            // special-case, set execute flag for ant command
+            File antPath=new File(ant_1_8_HomeDir,"bin/ant");
+            if (!antPath.exists()) {
+                log.warn("<ant-1.8> path doesn't exist: "+antPath);
+            }
+            else {
+                if (!antPath.canExecute()) {
+                    log.warn("<ant-1.8> is not executable: "+antPath);
+                    log.warn("changing exec flag for <ant-1.8> to true");
+                    boolean success=antPath.setExecutable(true);
+                    if (!success) {
+                        log.warn("unable to set exec flag for <ant-1.8>");
+                    }
+                }
+            }
         }
         else {
             ant_1_8_HomeDir=null;
