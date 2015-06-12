@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -345,27 +346,16 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
-        exec.execute(cl, resultHandler);
+        final Map<String,String> cmdEnv=null;
+        exec.execute(cl, cmdEnv, resultHandler);
         return exec;
     }
     
-    protected static Executor runJobNoWait(final DrmJobSubmission gpJob, ExecuteResultHandler resultHandler) throws ExecutionException, IOException {
+    protected static Executor runJobNoWait(final DrmJobSubmission gpJob, Map<String,String> cmdEnv, ExecuteResultHandler resultHandler) throws ExecutionException, IOException {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
-        exec.execute(cl, resultHandler);
+        exec.execute(cl, cmdEnv, resultHandler);
         return exec;
-    }
-
-    protected void runJobAndWait(final DrmJobSubmission gpJob) throws InterruptedException, ExecutionException, IOException {
-        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
-        runJobAndWait(gpJob, resultHandler);
-    }
-
-    protected static void runJobAndWait(final DrmJobSubmission gpJob, final DefaultExecuteResultHandler resultHandler) throws InterruptedException, ExecutionException, IOException {
-        Executor exec=initExecutorForJob(gpJob);
-        CommandLine cl = initCommand(gpJob);
-        exec.execute(cl, resultHandler);
-        resultHandler.waitFor();
     }
     
     /**
