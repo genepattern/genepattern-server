@@ -74,17 +74,35 @@ public class TestGpConfig {
     
     @Test
     public void getAnt() {
-        final File expected_ant_home=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
-        String expected_ant_cmd="<ant-1.8_HOME>/bin/ant --noconfig";
+        final File expectedAntHome=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
+        final String expectedAntScriptCmd="<ant-1.8_HOME>/bin/ant --noconfig";
+        final String expectedAntJavaCmd="<java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher";
+        final String expectedAntCmd=expectedAntJavaCmd;
         
-        assertEquals("antHomeDir", expected_ant_home, gpConfig.getAntHomeDir());
-        assertEquals("<ant> command", expected_ant_cmd, gpConfig.getValue(gpContext, "ant").getValue());
-        assertEquals("<ant-1.8> command", expected_ant_cmd, gpConfig.getValue(gpContext, "ant-1.8").getValue());
-        assertEquals("<ant-1.8_HOME>", expected_ant_home, gpConfig.getGPFileProperty(gpContext, "ant-1.8_HOME"));
+        assertEquals("antHomeDir", expectedAntHome, gpConfig.getAntHomeDir());
+        assertEquals("<ant> command", expectedAntCmd, gpConfig.getValue(gpContext, "ant").getValue());
+        assertEquals("<ant-1.8> command", expectedAntCmd, gpConfig.getValue(gpContext, "ant-1.8").getValue());
+        assertEquals("<ant-1.8_HOME>", expectedAntHome, gpConfig.getGPFileProperty(gpContext, "ant-1.8_HOME"));
+        assertEquals("<ant-java>", expectedAntJavaCmd, gpConfig.getValue(gpContext, "ant-java").getValue());
+        assertEquals("<ant-script>", expectedAntScriptCmd, gpConfig.getValue(gpContext, "ant-script").getValue());
         
+        final List<String> expectedAntScriptArgs=Arrays.asList( new File(expectedAntHome,"bin/ant").getAbsolutePath(), "--noconfig", "-version");
+        assertEquals("parse <ant-script> command", 
+                expectedAntScriptArgs,
+                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]));
+
+        final List<String> expectedAntJavaArgs=Arrays.asList("java", "-Dant.home="+expectedAntHome, "-cp", expectedAntHome+"/lib/ant-launcher.jar", "org.apache.tools.ant.launch.Launcher", "-version");
+        assertEquals("parse <ant-java> command", 
+                expectedAntJavaArgs,
+                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-java> -version", new Properties(), new ParameterInfo[0]));
+
         assertEquals("parse <ant-1.8> command", 
-                Arrays.asList( new File(expected_ant_home,"bin/ant").getAbsolutePath(), "--noconfig", "-version"),
+                expectedAntJavaArgs,
                 CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]));
+
+        assertEquals("parse <ant> command", 
+                expectedAntJavaArgs,
+                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant> -version", new Properties(), new ParameterInfo[0]));
     }
     
     @Test
@@ -96,13 +114,13 @@ public class TestGpConfig {
             .webappDir(webappDirTemp)
         .build();
         
-        assertEquals("parse <ant-1.8> command", 
+        assertEquals("parse <ant-script> command", 
                 Arrays.asList( tmpAnt.getAbsolutePath(), "--noconfig", "-version"),
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]));
+                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]));
     }
-    
+
     @Test
-    public void setAntExecFlag() throws IOException {
+    public void setAntScriptExecFlag() throws IOException {
         final File origAnt=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4/bin/ant").getAbsoluteFile();
         
         File webappDirTemp=temp.newFolder("gp_webapp");
@@ -117,7 +135,7 @@ public class TestGpConfig {
         GpConfig gpConfig=new GpConfig.Builder()
             .webappDir(webappDirTemp)
         .build();
-        List<String> args=CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]);        
+        List<String> args=CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]);        
         assertEquals("after init, exec flag should be true", true, new File(args.get(0)).canExecute());
     }
     
