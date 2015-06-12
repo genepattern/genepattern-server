@@ -137,14 +137,14 @@ $(function()
         //create the steps
         var steps = [
             {
-                element: ".ui-layout-toggler",
+                element: ".toggle-btn",
                 intro: '<div class="tour-header"> Show/Hide Left Panel </div>  The left panel can now be hidden using this toggle button.',
                 position: 'left',
                 scrollToElement: true
             },
             {
-                element: ".ui-layout-toggler",
-                intro: '<div class="tour-header"> Show/Hide Left Panel </div> Once hidden, the left panel can be shown again by clicking this toggle button. ',
+                element: ".ui-layout-resizer",
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div> Once hidden, the left panel can be shown again by clicking this toggle bar. ',
                 position: 'right',
                 scrollToElement: true
             },
@@ -183,7 +183,7 @@ $(function()
         {
             if(intro._currentStep == 1)
             {
-                $(".ui-layout-toggler").click();
+                $(".toggle-btn").click();
             }
             else if(intro._currentStep == 2)
             {
