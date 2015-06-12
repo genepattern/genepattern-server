@@ -207,7 +207,7 @@ public class GpConfig {
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
             ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
-            String antCmd="<ant-1.8_HOME>/bin/ant";
+            String antCmd="<ant-1.8_HOME>/bin/ant --noconfig";
             this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
             this.substitutionParams.put("ant-1.8", antCmd);
             this.substitutionParams.put("ant", antCmd);
