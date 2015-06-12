@@ -170,8 +170,9 @@ public class TestLocalCommonsExecJobRunner {
     
     @Test
     public void checkAntVersion_hardCodedPath() throws IOException, ExecutionException, InterruptedException { 
-        gpJob=initGpJob(Arrays.asList(antPath, "-version"));
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "-version"), gpJob.getCommandLine());
+        // Hint: for debugging  add this arg, "--execdebug"
+        gpJob=initGpJob(Arrays.asList(antPath, "--noconfig", "-version"));
+        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
@@ -179,8 +180,8 @@ public class TestLocalCommonsExecJobRunner {
 
     @Test
     public void checkAntVersion_null_env() throws IOException, ExecutionException, InterruptedException { 
-        gpJob=initGpJob(Arrays.asList(antPath, "-version"));
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "-version"), gpJob.getCommandLine());
+        gpJob=initGpJob(Arrays.asList(antPath, "--noconfig", "-version"));
+        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
@@ -190,7 +191,7 @@ public class TestLocalCommonsExecJobRunner {
     public void checkAntVersion_Ant_substitution()  throws IOException, ExecutionException, InterruptedException { 
         final List<String> args = parseCmd("<ant> -version"); 
         gpJob=initGpJob(args);
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "-version"), gpJob.getCommandLine());
+        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
@@ -200,7 +201,7 @@ public class TestLocalCommonsExecJobRunner {
     public void checkAntVersion_Ant_1_8_substitution()  throws IOException, ExecutionException, InterruptedException { 
         final List<String> args = parseCmd("<ant-1.8> -version"); 
         gpJob=initGpJob(args);
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "-version"), gpJob.getCommandLine());
+        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
