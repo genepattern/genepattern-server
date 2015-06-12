@@ -83,7 +83,7 @@
                 newPage.onload = function() { this.document.title = headerString; }
             });
 
-            actionBar.append(newWindowImage);
+           // actionBar.append(newWindowImage);
 
             infoBar.append(actionBar);
 
