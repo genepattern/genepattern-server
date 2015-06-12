@@ -511,9 +511,9 @@ body {
 }
 
 .current-job-status img {
-	position: relative;
-	top: 5px;
-	height: 17px;
+    position: relative;
+    top: 5px;
+    height: 17px;
 }
 
 .ui-draggable-dragging {
@@ -969,4 +969,34 @@ body {
 #main-pane iframe {
     padding:	0 !important; /* iframes should not have padding */
     overflow:	auto !important;
+}
+
+.toggle-btn{
+    float: right;
+    background: url(../../images/go-lt-off.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+.toggle-btn:hover
+{
+    background: url(../../images/go-lt-on.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+}
+
+.toggler-west-closed
+{
+    background: url(../../images/go-rt-off.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+}
+
+.toggler-west-closed:hover
+{
+    background: url(../../images/go-rt-on.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
 }
