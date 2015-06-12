@@ -8,7 +8,7 @@ $(function()
         ,	togglerClass:			"toggler"
         ,   west__size:					352
         ,	west__spacing_open:		0
-        ,	west__spacing_closed:		22
+        ,	west__spacing_closed:		23
         ,	west__togglerLength_closed:	20 //"100%"
         ,	west__togglerAlign_closed:	"top"
         //,	west__togglerContent_closed:"<BR>L<BR>E<BR>F<BR>T<BR><BR>P<BR>A<BR>N<BR>E<BR>L<BR>"

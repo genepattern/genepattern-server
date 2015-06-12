@@ -457,19 +457,7 @@ body {
     position: absolute;
     padding-left: 27px;
     padding-right: 27px;
-    /*overflow-x: auto;
-    overflow-y: scroll;*/
-    /*overflow: auto;
-    left: 350px;
-    right: 0px;*/
-    /*padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 30px;
-	padding-left: 30px; */
-   /* top: 0px;
-    bottom: 0px;
-    background-color: white;
-    height: 100%; */
+    border: none;
 }
 
 .jstree-leaf a {
@@ -935,6 +923,7 @@ body {
 
 .ui-layout-resizer { /* all 'resizer-bars' */
     background: #DDD;
+    cursor: pointer !important;
 }
 
 .ui-layout-resizer-open:hover { /* mouse-over */
@@ -950,9 +939,9 @@ body {
     border-bottom: 1px solid #BBB;
 }
 
-.ui-layout-toggler:hover { /* mouse-over */
+/*.ui-layout-toggler:hover { /* mouse-over
     background: #DCA;
-}
+}*/
 
 .ui-layout-toggler:hover .content { /* mouse-over */
     color: #009;
