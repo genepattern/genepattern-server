@@ -75,23 +75,35 @@ public class TestGpConfig {
     @Test
     public void getAnt() {
         final File expected_ant_home=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
-        String expected_ant_cmd="<ant-1.8_HOME>/bin/ant";
-
-
+        String expected_ant_cmd="<ant-1.8_HOME>/bin/ant --noconfig";
+        
         assertEquals("antHomeDir", expected_ant_home, gpConfig.getAntHomeDir());
         assertEquals("<ant> command", expected_ant_cmd, gpConfig.getValue(gpContext, "ant").getValue());
         assertEquals("<ant-1.8> command", expected_ant_cmd, gpConfig.getValue(gpContext, "ant-1.8").getValue());
         assertEquals("<ant-1.8_HOME>", expected_ant_home, gpConfig.getGPFileProperty(gpContext, "ant-1.8_HOME"));
         
         assertEquals("parse <ant-1.8> command", 
-                Arrays.asList( new File(expected_ant_home,"bin/ant").getAbsolutePath(), "-version"),
+                Arrays.asList( new File(expected_ant_home,"bin/ant").getAbsolutePath(), "--noconfig", "-version"),
+                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]));
+    }
+    
+    @Test
+    public void getAnt_spaces_in_dir() throws IOException {
+        File webappDirTemp=temp.newFolder("gp webapp"); // Note: space character in directory name
+        File tmpAnt=new File(webappDirTemp, "WEB-INF/tools/ant/apache-ant-1.8.4/bin/ant").getAbsoluteFile();
+        
+        GpConfig gpConfig=new GpConfig.Builder()
+            .webappDir(webappDirTemp)
+        .build();
+        
+        assertEquals("parse <ant-1.8> command", 
+                Arrays.asList( tmpAnt.getAbsolutePath(), "--noconfig", "-version"),
                 CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]));
     }
     
     @Test
     public void setAntExecFlag() throws IOException {
         final File origAnt=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4/bin/ant").getAbsoluteFile();
-        
         
         File webappDirTemp=temp.newFolder("gp_webapp");
         File tmpAnt=new File(webappDirTemp, "WEB-INF/tools/ant/apache-ant-1.8.4/bin/ant").getAbsoluteFile();
