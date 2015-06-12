@@ -39,7 +39,7 @@ public class TestLocalCommonsExecJobRunner {
     private File jobDir;
     private Properties cmdProps=new Properties();
     
-    private String antPath;
+    private File antHome;
     
     private DrmJobSubmission gpJob;
     
@@ -48,7 +48,6 @@ public class TestLocalCommonsExecJobRunner {
     private DefaultExecuteResultHandler resultHandler=null;
     private Integer cmdExitValue=null;
     private ExecuteException cmdException=null;
-    private Map<String,String> cmdEnv;
     
     @Rule
     public TemporaryFolder temp= new TemporaryFolder();
@@ -112,11 +111,11 @@ public class TestLocalCommonsExecJobRunner {
     public void setUp() throws ExecutionException, IOException {
         File webappDir=new File("website").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
+            .addProperty("java", "java")
             .webappDir(webappDir)
         .build();
-        final File antHome=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
+        antHome=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
         assertTrue("antHome.exists", antHome.exists()); 
-        antPath=new File(antHome, "bin/ant").getPath();
         
         File gpHome=temp.newFolder(".genepattern");
         final int jobNo=1;
@@ -127,7 +126,6 @@ public class TestLocalCommonsExecJobRunner {
         exec=null;
         cmdExitValue=null;
         cmdException=null;
-        cmdEnv=new HashMap<String,String>();
         resultHandler=new DefaultExecuteResultHandler() {
             @Override
             public void onProcessComplete(int exitValue) {
@@ -170,29 +168,26 @@ public class TestLocalCommonsExecJobRunner {
     
     @Test
     public void checkAntVersion_hardCodedPath() throws IOException, ExecutionException, InterruptedException { 
-        // Hint: for debugging  add this arg, "--execdebug"
-        gpJob=initGpJob(Arrays.asList(antPath, "--noconfig", "-version"));
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
-        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
-        resultHandler.waitFor();
-        assertAntVersion();
-    }
-
-    @Test
-    public void checkAntVersion_null_env() throws IOException, ExecutionException, InterruptedException { 
-        gpJob=initGpJob(Arrays.asList(antPath, "--noconfig", "-version"));
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
+        List<String> antCmd=Arrays.asList("java", "-Dant.home="+antHome, "-cp", antHome+"/lib/ant-launcher.jar", "org.apache.tools.ant.launch.Launcher", "-version");
+        gpJob=initGpJob(antCmd);
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
     }
 
     @Test
-    public void checkAntVersion_Ant_substitution()  throws IOException, ExecutionException, InterruptedException { 
-        final List<String> args = parseCmd("<ant> -version"); 
-        gpJob=initGpJob(args);
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
+    public void checkAntVersion_nonNullEnv() throws IOException, ExecutionException, InterruptedException { 
+        gpJob=initGpJob(parseCmd("<ant> -version"));
+        final Map<String,String>  cmdEnv=new HashMap<String,String>();
         exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
+        resultHandler.waitFor();
+        assertAntVersion();
+    }
+
+    @Test
+    public void checkAntVersion_Ant_substitution()  throws IOException, ExecutionException, InterruptedException { 
+        gpJob=initGpJob(parseCmd("<ant> -version"));
+        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
     }
@@ -201,8 +196,15 @@ public class TestLocalCommonsExecJobRunner {
     public void checkAntVersion_Ant_1_8_substitution()  throws IOException, ExecutionException, InterruptedException { 
         final List<String> args = parseCmd("<ant-1.8> -version"); 
         gpJob=initGpJob(args);
-        assertEquals("gpJob.commandLine", Arrays.asList(antPath, "--noconfig", "-version"), gpJob.getCommandLine());
-        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
+        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
+        resultHandler.waitFor();
+        assertAntVersion();
+    }
+
+    @Test
+    public void checkAntVersion_Ant_Java_substitution()  throws IOException, ExecutionException, InterruptedException { 
+        gpJob=initGpJob(parseCmd("<ant-java> -version"));
+        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertAntVersion();
     }
@@ -228,7 +230,7 @@ public class TestLocalCommonsExecJobRunner {
                 " -Dftp.filename="+ftpFilename);
         gpJob=initGpJob(args);
         assertEquals("gpJob.workingDir", jobDir, gpJob.getWorkingDir());
-        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
+        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         assertExitStatus();
         assertFileContent(ftpFilename, 
@@ -238,8 +240,8 @@ public class TestLocalCommonsExecJobRunner {
 
     @Test(expected=ExecuteException.class)
     public void spaceCharBeforeExecutable() throws ExecuteException, IOException, InterruptedException, ExecutionException { 
-        gpJob=initGpJob(Arrays.asList(" "+antPath,"-version"));
-        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, cmdEnv, resultHandler);
+        gpJob=initGpJob(parseCmd(" ant -version"));
+        exec=LocalCommonsExecJobRunner.runJobNoWait(gpJob, null, resultHandler);
         resultHandler.waitFor();
         //expecting ExecutionException
         if (cmdException != null) {
