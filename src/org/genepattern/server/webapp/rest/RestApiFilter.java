@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp.rest;
 
 import java.io.IOException;
@@ -13,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.webapp.BasicAuthUtil;
+import org.genepattern.server.webapp.AuthenticationUtil;
 
 /**
  * Custom filter to use HTTP Basic Authentication for the GenePattern REST API.
@@ -40,21 +43,33 @@ public class RestApiFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
+        // Get request method and pathInfo (ex: "/v1/jobs")
+        String method = req.getMethod().toLowerCase();
+        String pathInfo = req.getPathInfo();
+
         //announce support for partial get
         resp.setHeader("Accept-Ranges", "bytes");
 
-        String gpUserId = null;
-        try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
-        }
-        catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+        // Don't attempt basic auth on oauth endpoints
+        if (pathInfo.startsWith("/v1/oauth2")) {
+            chain.doFilter(req, resp);
             return;
         }
-        
-        if (gpUserId == null) {
+
+        // Check supported forms of authentication
+        String gpUserId = null;
+        try {
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(req, resp);
+        }
+        catch (AuthenticationException e) {
+            AuthenticationUtil.requestBasicAuth(resp, e.getLocalizedMessage());
+            return;
+        }
+
+        // Don't return this error for CORS pre-flight requests
+        if (gpUserId == null && !method.equals("options")) {
             log.error("Expecting an AuthenticationException to be thrown");
-            BasicAuthUtil.requestAuthentication(req, resp);
+            AuthenticationUtil.requestBasicAuth(req, resp);
             return;
         }
         chain.doFilter(req, resp);

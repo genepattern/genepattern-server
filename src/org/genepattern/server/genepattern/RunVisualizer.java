@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.genepattern;
 
 import java.io.File;
@@ -67,7 +70,7 @@ public class RunVisualizer {
         StringWriter app = new StringWriter();
         app.append("<applet code=\"" 
                 + org.genepattern.visualizer.RunVisualizerApplet.class.getName() 
-                + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
+                + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.6.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
         app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
         app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(taskInfoAttributes.get(GPConstants.OS), "UTF-8") + "\">");

@@ -1,10 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.cm;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
@@ -30,7 +32,6 @@ public class TestCategoryUtil {
 
     @Before
     public void beforeTest() throws Exception {
-        DbUtil.initDb();
         File configFile=FileUtil.getSourceFile(this.getClass(), "config.yaml");
         userContext=new GpContext.Builder()
             .userId("testUser")

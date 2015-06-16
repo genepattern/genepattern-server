@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.dm.tasklib;
 
 import java.io.File;
@@ -34,6 +37,9 @@ public class TasklibPath extends GpFilePath {
     public TasklibPath(LibdirStrategy libdirStrategy, final TaskInfo taskInfo, final String relativePath) {
         if (taskInfo==null) {
             throw new IllegalArgumentException("taskInfo==null");
+        }
+        if (taskInfo.getLsid()==null) {
+            throw new IllegalArgumentException("taskInfo.lsid==null");
         }
         if (libdirStrategy == null) {
             libdirStrategy=new LibdirLegacy();
@@ -72,7 +78,7 @@ public class TasklibPath extends GpFilePath {
             return new URI(uriStr);
         }
         catch (URISyntaxException e) {
-            log.error("Error constructiung uri from "+uriStr, e);
+            log.error("Error constructing uri from "+uriStr, e);
         }
         return null;
     }

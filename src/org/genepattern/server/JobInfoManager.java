@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server;
 
 import static org.genepattern.util.GPConstants.TASKLOG;
@@ -11,6 +14,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,16 +25,14 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.dm.webupload.WebUploadPath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
+import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.UserDAO;
@@ -295,7 +297,7 @@ public class JobInfoManager {
             //appletTag.append("<applet ");
             appletTag.append(" name=\"" + jobInfoWrapper.getVisualizerAppletName() + "\" id=\"" + jobInfoWrapper.getVisualizerAppletId() + "\" code=\""
                     + org.genepattern.visualizer.RunVisualizerApplet.class.getName()
-                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
+                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.6.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
             appletTag.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
             appletTag.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(os, "UTF-8") + "\">");
@@ -520,33 +522,56 @@ public class JobInfoManager {
     }
 
     public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
+        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobInfo);
+    }
+    
+    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final JobInfo jobInfo) throws Exception {
         String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-        if(tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER)) {
+        if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
             String mainFile = (String)taskInfo.getAttributes().get("commandLine");
             mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
-            TasklibPath tasklibPath = new TasklibPath(taskInfo, mainFile);
-            launchUrl = ServerConfigurationFactory.instance().getGenePatternURL() + tasklibPath.getRelativeUri().toString();
+            final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
+            launchUrl = gpConfig.getGenePatternURL() + relativeUriStr;
+            //add the job number
+            launchUrl += "?job.number=" + jobInfo.getJobNumber();
             ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            for (ParameterInfo parameterInfo : parameterInfos)
-            {
-                try {
-                    String value=parameterInfo.getValue();
+            if (parameterInfos != null) {
+                for (ParameterInfo parameterInfo : parameterInfos) {
+                    try {
+                        String value=parameterInfo.getValue();
 
-                    if (value.endsWith(".list.txt")) {
-                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+                        if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
+                                && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
+                                || (parameterInfo.getAttributes().containsKey("type")
+                                        && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
+                        {
+                            if (value.endsWith(".list.txt")) {
+                                List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
 
-                        for (String fileUrl : fileList) {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                                for (String fileUrl : fileList) {
+                                    launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                                }
+                            }
+                            else
+                            {
+                                URL fileUrl= JobInputHelper.initExternalUrl(value);
+                                if (fileUrl != null) {
+                                }
+                                else {
+                                    //it's an not an external or GenomeSpace URL
+                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
+                                }
+                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
+                            }
                         }
+                        else {
+                            launchUrl += "&" + parameterInfo.getName() + "=" + value;
+                        }
+                    } 
+                    catch (Exception io) {
+                        log.error(io);
                     }
-                    else
-                    {
-                        launchUrl += "&" + parameterInfo.getName() + "=" + value;
-                    }
-
-                } catch (Exception io) {
-                    log.error(io);
                 }
             }
         }

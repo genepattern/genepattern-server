@@ -307,11 +307,11 @@ body {
 }
 
 #left-nav {
-    position: absolute;
+    /*position: absolute;*/
     color: #333366;
     background-color: #F1F2F2;
     width: 348px;
-    top: 0px;
+    /*top: 0px;*/
     bottom: 0px;
     padding: 0px;
     margin: 0px;
@@ -366,7 +366,7 @@ body {
 
 #left-nav-files {
     padding: 0px;
-    width: 348px;
+    /*width: 348px;*/
     bottom: 85px;
 }
 
@@ -392,7 +392,7 @@ body {
 
 #left-nav-genomespace {
 	padding: 0px !important;
-	width: 348px;
+	/*width: 348px;*/
 }
 
 #left-nav-genomespace-logo {
@@ -455,17 +455,9 @@ body {
 
 #main-pane {
     position: absolute;
-    overflow-y: scroll;
-    overflow: auto;
-    left: 350px;
-    right: 0px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 30px;
-	padding-left: 30px;
-    top: 0px;
-    bottom: 0px;
-    background-color: white;
+    padding-left: 27px;
+    padding-right: 27px;
+    border: none;
 }
 
 .jstree-leaf a {
@@ -507,9 +499,9 @@ body {
 }
 
 .current-job-status img {
-	position: relative;
-	top: 5px;
-	height: 17px;
+    position: relative;
+    top: 5px;
+    height: 17px;
 }
 
 .ui-draggable-dragging {
@@ -710,7 +702,7 @@ body {
 }
 
 #left-nav-jobs {
-    width: 348px;
+   /* width: 348px;*/
     padding: 0px;
 }
 
@@ -909,4 +901,91 @@ body {
 
 #jobTable_filter {
     padding-bottom: 10px;
+}
+
+
+/*--------------------*/
+/* layout for the left and right panel*/
+
+.ui-layout-pane { /* all 'panes' */
+    border: 1px solid #BBB;
+}
+.ui-layout-pane-center { /* IFRAME pane */
+    padding: 0;
+    margin:  0;
+    overflow: auto;
+}
+.ui-layout-pane-west { /* west pane */
+    padding: 0 10px;
+    background-color: #EEE !important;
+    overflow: auto;
+}
+
+.ui-layout-resizer { /* all 'resizer-bars' */
+    background: #DDD;
+    cursor: pointer !important;
+}
+
+.ui-layout-resizer-open:hover { /* mouse-over */
+    background: #DDD; /*#9D9;*/
+}
+
+.ui-layout-toggler { /* all 'toggler-buttons' */
+    background: #AAA;
+}
+
+.ui-layout-toggler-closed { /* closed toggler-button */
+    background: #CCC;
+    border-bottom: 1px solid #BBB;
+}
+
+/*.ui-layout-toggler:hover { /* mouse-over
+    background: #DCA;
+}*/
+
+.ui-layout-toggler:hover .content { /* mouse-over */
+    color: #009;
+}
+
+/* masks are usually transparent - make them visible (must 'override' default) */
+.ui-layout-mask {
+    /*background:	#C00 !important;*/
+    opacity:	.20 !important;
+    filter:		alpha(opacity=20) !important;
+}
+
+
+#main-pane iframe {
+    padding:	0 !important; /* iframes should not have padding */
+    overflow:	auto !important;
+}
+
+.toggle-btn{
+    float: right;
+    background: url(../../images/go-lt-off.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+.toggle-btn:hover
+{
+    background: url(../../images/go-lt-on.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+}
+
+.toggler-west-closed
+{
+    background: url(../../images/go-rt-off.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
+}
+
+.toggler-west-closed:hover
+{
+    background: url(../../images/go-rt-on.gif) no-repeat center;
+    width: 17px;
+    height: 17px;
 }

@@ -210,6 +210,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     $("#javaCode").parents("tr:first").hide();
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
+                    $("#pythonCode").parents("tr:first").hide();
 
                 }
                 else if (module["private_tasks"]) {
@@ -220,6 +221,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     $("#javaCode").parents("tr:first").hide();
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
+                    $("#pythonCode").parents("tr:first").hide();
                 }
                 else if (module["eula"]) {
                     clearEulas();
@@ -646,8 +648,7 @@ function loadModuleInfo(module) {
         $("#source_info").prepend("Source: ");
     }
 
-    if(module["categories"] != undefined && module["categories"] != null &&
-        module["categories"].indexOf("JsViewer") != -1)
+    if(module["taskType"] && module["taskType"] === "javascript")
     {
         run_task_info.is_js_viewer = true;
     }
@@ -1899,6 +1900,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
         $("#javaCode").data("language", "Java");
         $("#matlabCode").data("language", "MATLAB");
         $("#rCode").data("language", "R");
+        $("#pythonCode").data("language", "Python");
 
         $("#removeViewCode").button().click(function () {
             $("#viewCodeDiv").hide();
@@ -1951,7 +1953,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
                         $("#viewCodeDiv").append("<p>An error occurred while retrieving the code</p>")
                     }
                     else {
-                        $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
+                        $("#viewCodeDiv").append("<pre style='overflow: auto;'>" + htmlEncode(response["code"]) + "</pre>");
                         //add a link to the appropriate programmers guide
                         $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://www.broadinstitute.org/cancer/software/genepattern/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                             "Using GenePattern from " + language + "</a></span>");
@@ -2255,18 +2257,8 @@ function submitTask() {
             if (response.batchId !== undefined) {
                 window.location.replace("/gp/pages/index.jsf?jobResults=batchId%3D" + response.batchId);
             }
-            else if (run_task_info.is_js_viewer) {
-                if (response.launchUrl)
-                {
-                    openJsViewer(run_task_info.name, response.launchUrl);
-                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId);
-                }
-                else
-                {
-                    alert("Could not open viewer: " + run_task_info.name);
-                }
-            }
-            else if (response.jobId !== undefined) {
+            else
+            {
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
             }
 
@@ -2630,7 +2622,7 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
 
             //determine if this is a  url
             if (files[i].name.indexOf("://") !== -1) {
-                fileRow.append("<td><a href='" + files[i].name + "'> " + files[i].name + "</a></td>");
+                fileRow.append("<td><a href='" + files[i].name + "'> " + decodeURI(files[i].name) + "</a></td>");
             }
             else {
                 fileRow.append("<td>" + files[i].name + "</td>");

@@ -1,17 +1,17 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.server.user;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="gp_user_prop")
 public class UserProp {
     /**
      * @param jobNumber
@@ -23,25 +23,30 @@ public class UserProp {
         }        
         return "sendEmailNotification_" + jobNumber;
     }
-
+    
+    @Id
+    @GeneratedValue
     private Integer id;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column(name="key")
     private String key;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column
     private String value;
     /**
      * auto generated
      * 
      * @es_generated
      */
+    @Column(name="gp_user_id")
     private String gpUserId;
 
     /**

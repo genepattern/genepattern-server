@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.auth.plugin.jopenid;
 
 import java.io.IOException;
@@ -89,7 +92,7 @@ public class JOpenIdAuthentication extends DefaultGenePatternAuthentication {
        </pre>
      *  
      * Option 1: use default login page, and edit 'login.jsf', you must edit login.xhtml
-       <code>super.requestAuthentication(request, response);</code>
+       <code>super.requestBasicAuth(request, response);</code>
      * 
      * Option 2: redirect to a custom page; make sure to add this page to the web application
        <code>
@@ -98,7 +101,7 @@ public class JOpenIdAuthentication extends DefaultGenePatternAuthentication {
      */
     public void requestAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // option 1: use default login page, and edit 'login.jsf', you must edit login.xhtml
-        //super.requestAuthentication(request, response);
+        //super.requestBasicAuth(request, response);
         // option 2: redirect to a custom page; make sure to add this page to the web application
         response.sendRedirect("/gp/pages/loginOpenID.jsf");
     }

@@ -1,21 +1,15 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
-
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -270,15 +264,24 @@ public abstract class DBLoader {
         if (installInfo.getRepositoryUrl() != null) {
             log.debug("    repository: "+installInfo.getRepositoryUrl());
         } 
-        //TODO: add record to DB
         
-        log.debug("saving to db ...");
         try {
+            log.debug("initializing categories...");
+            initCategories();
+            log.debug("saving to db ...");
             new RecordInstallInfoToDb().save(installInfo);
             log.debug("done!");
         }
         catch (Throwable t) {
             log.error("failed! ", t);
+        }
+    }
+    
+    protected void initCategories() {
+        TaskInfoAttributes tia=TaskInfoAttributes.decode(_taskInfoAttributes);
+        List<String> categoryNames=CategoryUtil.getCategoriesFromManifest(tia);
+        for(final String name : categoryNames) {
+            installInfo.addCategory(name);
         }
     }
     

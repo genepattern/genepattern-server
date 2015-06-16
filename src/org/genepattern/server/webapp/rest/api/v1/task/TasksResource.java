@@ -1,15 +1,15 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.task;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,7 +69,6 @@ import org.json.JSONObject;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.sun.jersey.api.Responses;
 
 /**
  * RESTful implementation of the /task resource.
@@ -134,7 +133,7 @@ import com.sun.jersey.api.Responses;
 public class TasksResource {
     final static private Logger log = Logger.getLogger(TasksResource.class);
     final static public String URI_PATH="v1/tasks";
-    
+
     public static String getTaskInfoPath(final HttpServletRequest request, final TaskInfo taskInfo) {
         String rootPath=UrlUtil.getGpUrl(request);
         if (!rootPath.endsWith("/")) {
@@ -144,38 +143,38 @@ public class TasksResource {
         rootPath += URI_PATH + "/" + taskInfo.getLsid();
         return rootPath;
     }
-    
+
     /**
      * Get the relative path, relative to the root REST API end point, to GET the choiceInfo for the given parameter for the given task.
-     * 
+     *
      * @param taskInfo
      * @param pname
      * @return
      */
-    public static String getChoiceInfoPath(final HttpServletRequest request, final TaskInfo taskInfo, final String pname) { 
+    public static String getChoiceInfoPath(final HttpServletRequest request, final TaskInfo taskInfo, final String pname) {
         // at the moment, (circa GP 3.7.0), the task LSID and the parameter name will be valid URI path components
         // if this ever changes we should encode them
         //String path = URI_PATH + "/" + UrlUtil.encodeURIcomponent( taskInfo.getLsid() ) + "/" + UrlUtil.encodeURIcomponent( pname ) + "/choiceInfo.json";
         String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
         return path;
     }
-    
+
     /**
-     * Get the JSON representation for the list of one or more license agreements which the current user must agree to 
+     * Get the JSON representation for the list of one or more license agreements which the current user must agree to
      * before they can run the given module.
-     * 
+     *
      * If there are no pending licenses this may may ...
      * (1) return null, or
      * (2) return a valid json representation with no 'pendingEulas' property, or
      * (3) return a valid json representation with an empty array for the 'pendingEulas' property
-     * 
+     *
      * @param request
      * @param userContext
      * @param taskInfo
      * @return
      * @throws JSONException
      */
-    public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo) 
+    public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo)
     throws JSONException
     {
         final boolean includePending=true;
@@ -190,7 +189,7 @@ public class TasksResource {
         return json;
     }
 
-    public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll) 
+    public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll)
     throws JSONException
     {
         userContext.setTaskInfo(taskInfo);
@@ -203,23 +202,23 @@ public class TasksResource {
         }
         final List<EulaInfo> allEulas;
         if (includeAll) {
-            allEulas=EulaManager.instance(userContext).getAllEulaForModule(userContext); 
+            allEulas=EulaManager.instance(userContext).getAllEulaForModule(userContext);
         }
         else {
             allEulas=null;
         }
-        
+
         final JSONObject eulaObject = initEulaJson( request, userContext, taskInfo, pendingEulas, allEulas );
         return eulaObject;
     }
 
     private static JSONObject initEulaJson(
-            final HttpServletRequest request, 
-            final GpContext userContext, 
-            final TaskInfo taskInfo, 
-            final List<EulaInfo> pendingEulas, 
+            final HttpServletRequest request,
+            final GpContext userContext,
+            final TaskInfo taskInfo,
+            final List<EulaInfo> pendingEulas,
             final List<EulaInfo> allEulas
-    ) 
+    )
     throws JSONException {
         final JSONObject eulaObj=new JSONObject();
         eulaObj.put("currentTaskName", taskInfo.getName());
@@ -230,7 +229,7 @@ public class TasksResource {
         catch (MalformedURLException e) {
             log.error(e);
         }
-        
+
         if (pendingEulas != null) {
             final JSONArray pending=new JSONArray();
             for(final EulaInfo eulaInfo : pendingEulas) {
@@ -247,7 +246,7 @@ public class TasksResource {
             }
             eulaObj.put("allEulas", all);
         }
-        
+
         // return enough info to make an HTTP request as a callback to the server to accept all pending license(s) for the module
         final String acceptUrl=EulaServlet.getServletPath(request);
         eulaObj.put("acceptUrl", acceptUrl);
@@ -257,7 +256,7 @@ public class TasksResource {
         eulaObj.put("acceptData", acceptData);
         return eulaObj;
     }
-    
+
     private static JSONObject eulaInfoToJson(final EulaInfo eulaInfo) throws JSONException {
         JSONObject eulaInfoJson=new JSONObject();
         eulaInfoJson.put("moduleName", eulaInfo.getModuleName());
@@ -274,30 +273,15 @@ public class TasksResource {
     }
 
     /**
-     * Returns a hash of the modules visible to the user
-     * @param user
-     * @return
-     */
-    private String getTasksHash(String user) {
-        //TODO: Implement correct hash
-        // Currently the hash simply returns the user and the hour
-        // This results in a cache that lasts until the top of the hour each hour.
-        Date date = new Date();
-        DateFormat df = new SimpleDateFormat("hh:'00' a");
-        String hour = df.format(date);
-        return user + " " + hour;
-    }
-    
-    /**
      * Rapid prototype method to get the latest version of all installed tasks in json format,
      * for use by the new Modules & Pipelines search panel.
-     * 
+     *
      * Example usage:
      * <pre>
      * curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/all.json >> all_modules.json
      * </pre>
-     * 
-     *  
+     *
+     *
      * @param request
      * @return
      */
@@ -306,7 +290,7 @@ public class TasksResource {
     @Path("all.json")
     public Response getAllTasks(
             final @QueryParam("includeHidden") String includeHidden,
-            final @Context HttpServletRequest request, 
+            final @Context HttpServletRequest request,
             final @Context HttpServletResponse response) {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
@@ -322,7 +306,7 @@ public class TasksResource {
 //        else {
 //            response.addHeader("etag", responseEtag);
 //        }
-        
+
         // Check for "return hidden modules" flag
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
@@ -339,14 +323,14 @@ public class TasksResource {
             //initialize suites, multimap of <baseLsid,SuiteInfos>
             final SuiteInfo[] suiteInfos=SuiteResource.getAllSuites(userContext);
             final Multimap<String,SuiteInfo> suiteInfoMap=initSuiteInfoMap(suiteInfos);
-            
+
             final boolean _includeHidden= includeHidden != null;
             SortedSet<TaskInfo> filteredTasks=new TreeSet<TaskInfo>( new AdminDAO.TaskNameComparator() );
             final Multimap<String, String> filteredCategories=HashMultimap.create();
             for(final Entry<String,TaskInfo> entry : latestTasks.entrySet()) {
                 final TaskInfo taskInfo=entry.getValue();
                 final String baseLsid=CategoryUtil.getBaseLsid(taskInfo);
-                
+
                 final Collection<String> categories;
                 if (baseLsid != null && customCategoryMap.containsKey(baseLsid)) {
                     categories=customCategoryMap.get(baseLsid);
@@ -355,12 +339,12 @@ public class TasksResource {
                     }
                 }
                 else {
-                    categories=cu.getCategoriesFromManifest(taskInfo);
+                    categories=CategoryUtil.getCategoriesFromManifest(taskInfo);
                 }
-                
+
                 if (categories != null) {
                     for(final String category : categories) {
-                        if (_includeHidden ||  (!hiddenCategories.contains(category) && !cu.isHidden(category))) {
+                        if (_includeHidden ||  (!hiddenCategories.contains(category) && !CategoryUtil.isHidden(category))) {
                             filteredTasks.add( taskInfo );
                             filteredCategories.put( taskInfo.getLsid(), category );
                         }
@@ -393,7 +377,7 @@ public class TasksResource {
                 }
             }
 
-            // Return the JSON object 
+            // Return the JSON object
             JSONArray allCategories = initAllCategoriesJson(filteredCategories.values());
             JSONArray allSuites = initAllSuitesJson(suiteInfos);
             JSONObject kindToModules = initSendToModulesMap(filteredTasks);
@@ -439,7 +423,7 @@ public class TasksResource {
 
         return toReturn;
     }
-    
+
     private JSONArray initAllCategoriesJson(final Collection<String> categoryNames) {
         final JSONArray categoriesJson = new JSONArray();
         final SortedSet<String> sortedCategoryNames = new TreeSet<String>(new Comparator<String>() {
@@ -463,10 +447,10 @@ public class TasksResource {
             catch (JSONException e) {
                 log.error("Error processing category="+category, e);
             }
-        } 
+        }
         return categoriesJson;
     }
-    
+
     /**
      * Wrap a single string as a JSON object to be returned.
      * Currently used for wrapping module categories
@@ -481,7 +465,7 @@ public class TasksResource {
         jsonObj.put("tags", new JSONArray());
         return jsonObj;
     }
-    
+
     private Multimap<String,SuiteInfo> initSuiteInfoMap(final SuiteInfo[] suiteInfos) {
         final Multimap<String,SuiteInfo> map=HashMultimap.create();
         for(final SuiteInfo suiteInfo : suiteInfos) {
@@ -494,7 +478,7 @@ public class TasksResource {
         }
         return map;
     }
-    
+
     private JSONArray initAllSuitesJson(final SuiteInfo[] suiteInfos) throws JSONException {
         return SuiteResource.toJsonArray(suiteInfos);
     }
@@ -544,7 +528,7 @@ public class TasksResource {
 
     private JSONArray getTags(final TaskInfo taskInfo, GpContext userContext) {
         Set<Tag> tags = TagManager.instance().getTags(userContext, taskInfo);
-        
+
         JSONArray array = new JSONArray();
         for (Tag tag : tags) {
             try {
@@ -554,7 +538,7 @@ public class TasksResource {
                 log.error("Error adding tag to array: " + tag);
             }
         }
-        
+
         return array;
     }
 
@@ -594,13 +578,13 @@ public class TasksResource {
             taskInfo=getTaskInfo(taskNameOrLsid, userId);
         }
         catch (Throwable t) {
-            return Responses.notFound().entity(t.getLocalizedMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(t.getLocalizedMessage()).build();
         }
         if(taskInfo == null) {
             String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + userId;
-            return Responses.notFound().entity(errorMessage).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
         }
-        
+
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
@@ -620,7 +604,7 @@ public class TasksResource {
                     t.getLocalizedMessage();
             return Response.serverError().entity(errorMessage).build();
         }
-        return Response.ok().entity(jsonStr).build();        
+        return Response.ok().entity(jsonStr).build();
     }
 
     public static JSONObject createTaskNotFoundObject(JobSubmission js) throws JSONException {
@@ -657,8 +641,15 @@ public class TasksResource {
             jsonObj.put("quality", tia.get(GPConstants.QUALITY));
             // Command line
             jsonObj.put("command_line", tia.get(GPConstants.COMMAND_LINE));
+            // Task type
+            jsonObj.put(GPConstants.TASK_TYPE, tia.get(GPConstants.TASK_TYPE));
             // Categories
-            jsonObj.put("categories", tia.get(GPConstants.TASK_TYPE));
+            final List<String> categories=CategoryUtil.getCategoriesFromManifest(taskInfo);
+            JSONArray categoriesJson=new JSONArray();
+            for(final String cat : categories) {
+                categoriesJson.put(cat);
+            }
+            jsonObj.put("categories", categoriesJson);
             // CPU type
             jsonObj.put("cpu", tia.get(GPConstants.CPU_TYPE));
             // OS
@@ -764,7 +755,7 @@ public class TasksResource {
      *     GET /rest/v1/tasks/{taskNameOrLsid}/{parameterName}/choiceInfo.json
      *     GET /rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
      *     curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json
-     * 
+     *
      * Example response for a dynamic drop-down,
      * <pre>
        200 OK
@@ -772,7 +763,7 @@ public class TasksResource {
          "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json",
          "status":{"flag":"OK", "message": "A user message"},
          "choiceDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
-         "choiceAllowCustomValue":"true", 
+         "choiceAllowCustomValue":"true",
          "selectedValue": "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
          "choices": [
            {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
@@ -782,9 +773,9 @@ public class TasksResource {
            ]
        }
      * </pre>
-     * 
+     *
      * For a static drop-down, the 'choiceDir' will not be set.
-     * 
+     *
      * Example status messages,
      *     OK, Initialized from values param (old way)
      *     OK, Initialized from choices param (new way, not dynamic)
@@ -793,7 +784,7 @@ public class TasksResource {
      *     ERROR, Error in module manifest, didn't initialize choices.
      *     ERROR, Connection error to remote server (url)
      *     NOT_INITIALIZED, the dynamic drop-down was not initialized from the remote server
-     * 
+     *
      * @param uriInfo
      * @param taskNameOrLsid
      * @param pname
@@ -811,40 +802,40 @@ public class TasksResource {
     ) {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
         log.debug("pname="+pname);
-        
+
         final GpContext taskContext;
         try {
             taskContext=Util.getTaskContext(request, taskNameOrLsid);
         }
         catch (Throwable t) {
             log.debug(t);
-            return Responses.notFound().entity("Server error initializing taskContext for "+taskNameOrLsid).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Server error initializing taskContext for "+taskNameOrLsid).build();
         }
         if (taskContext.getTaskInfo()==null) {
             String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + taskContext.getUserId();
             log.debug(errorMessage);
-            return Responses.notFound().entity(errorMessage).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
         }
-        
+
         final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
         if (!paramInfoMap.containsKey(pname)) {
             String errorMessage="No parameter with name="+pname;
             log.debug(errorMessage);
-            return Responses.notFound().entity(errorMessage).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
         }
-        
+
         ParameterInfoRecord pinfoRecord=paramInfoMap.get(pname);
         if (!ChoiceInfo.hasChoiceInfo(pinfoRecord.getFormal())) {
             String errorMessage=taskContext.getTaskInfo().getName()+"."+pname + " does not have a choiceInfo";
             log.debug(errorMessage);
-            return Responses.notFound().entity(errorMessage).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
         }
-        
+
         ChoiceInfoParser parser=ChoiceInfo.getChoiceInfoParser(taskContext);
         ChoiceInfo choiceInfo=parser.initChoiceInfo(pinfoRecord.getFormal());
-        
+
         try {
-            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskContext.getTaskInfo(), choiceInfo);            
+            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskContext.getTaskInfo(), choiceInfo);
             final String choiceInfoStr=choiceInfoJson.toString();
 
             //return the JSON representation of the job
@@ -857,12 +848,12 @@ public class TasksResource {
             return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
         }
     }
-    
+
     /**
      * GET the JSON representation for the list of one or more End-user license agreement(s) (EULA) for the given module.
      * This is context dependent; the list of pendingEulas may differ for each current user.
      * A 'pending' eula is one for which the current user has not yet agreed. By default, only include pendingEulas.
-     * 
+     *
      * Optional request parameters:
      * <table>
      * <tr><td>all</td><td>When present, include allEulas in the response.</td></tr>
@@ -874,8 +865,8 @@ public class TasksResource {
      * <pre>
        curl -u test:test "http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2/eulaInfo.json?pending"
      * </pre>
-     * 
-     * 
+     *
+     *
      * Example JSON representation,
      * <pre>
 {
@@ -887,13 +878,13 @@ public class TasksResource {
           "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
           "moduleLsidVersion", "0.2",
           "content": "the full content of the license agreement, (may not be present, if there was an error).",
-          "contentError": "error message, (will only be present if there was an error initializing the content)" 
+          "contentError": "error message, (will only be present if there was an error initializing the content)"
         }
     ],
     # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
     "acceptType":"GET",
     "acceptUrl":"http://127.0.0.1:8080/gp/eula",
-    "acceptData": {  
+    "acceptData": {
         "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
 }
 
@@ -919,7 +910,7 @@ public class TasksResource {
         log.debug("taskNameOrLsid="+taskNameOrLsid);
         log.debug("all="+all);
         log.debug("pending="+pending);
-        
+
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
         TaskInfo taskInfo = null;
@@ -927,13 +918,13 @@ public class TasksResource {
             taskInfo=getTaskInfo(taskNameOrLsid, userId);
         }
         catch (Throwable t) {
-            return Responses.notFound().entity(t.getLocalizedMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(t.getLocalizedMessage()).build();
         }
         if(taskInfo == null) {
             String errorMessage="No task with task id: " + taskNameOrLsid + " found " + "for user " + userId;
-            return Responses.notFound().entity(errorMessage).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build();
         }
-        
+
         try {
             boolean includeAll= all != null;
             boolean includePending= !includeAll || pending != null;
@@ -950,8 +941,8 @@ public class TasksResource {
         }
     }
 
-    private TaskInfo getTaskInfo(final String taskLSID, final String username) 
-    throws WebServiceException 
+    private TaskInfo getTaskInfo(final String taskLSID, final String username)
+    throws WebServiceException
     {
         return new LocalAdminClient(username).getTask(taskLSID);
     }

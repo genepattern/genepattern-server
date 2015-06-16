@@ -1665,7 +1665,7 @@ function updatemodulecategories()
 
                 for(var i=0;i < result.length;i++)
                 {
-                    if(result[i] != "")
+                    if(result[i] !== "" && result[i] !== "Uncategorized")
                     {
                         mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
                     }
@@ -1675,11 +1675,6 @@ function updatemodulecategories()
                 if(module_editor.moduleCategories.length > 0)
                 {
                     mcat.val(module_editor.moduleCategories);
-                    mcat.multiselect("refresh");
-                }
-                else
-                {
-                    mcat.val(["Uncategorized"]);
                     mcat.multiselect("refresh");
                 }
             }

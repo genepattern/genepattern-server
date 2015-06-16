@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.io.File;
@@ -76,6 +79,7 @@ public class GpContext {
             AnalysisDAO dao = new AnalysisDAO();
             jobInfo = dao.getJobInfo(jobNumber);
             jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
+            jobInput.setLsid(jobInfo.getTaskLSID());
             taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
             taskName=taskInfo.getName();
             if (log.isDebugEnabled()) {
@@ -281,6 +285,16 @@ public class GpContext {
         }
         if (jobInfo != null) {
             return jobInfo.getTaskLSID();
+        }
+        return null;
+    }
+
+    public String getTaskName() {
+        if (taskInfo != null) {
+            return taskInfo.getName();
+        }
+        if (jobInfo != null) {
+            return jobInfo.getTaskName();
         }
         return null;
     }

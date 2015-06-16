@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
 import java.util.ArrayList;
@@ -527,7 +530,9 @@ public class ChoiceInfo {
         }
         //special-case: choices not initialized
         if (choices==null) {
-            log.warn("choices==null, for param.name="+param.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("choices==null, for param.name="+param.getName());
+            }
             return;
         }
         //special-case: no choices

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input;
 
 import java.io.File;
@@ -15,17 +18,22 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
+import org.genepattern.server.job.input.cache.CachedFile;
+import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -147,6 +155,7 @@ public class ParamListHelper {
     }
     
     //inputs
+    final GpConfig gpConfig;
     final GpContext jobContext;
     final ParameterInfoRecord parameterInfoRecord;
     final Param actualValues;
@@ -155,16 +164,28 @@ public class ParamListHelper {
     final GroupInfo groupInfo;
     final ListMode listMode;
 
+    /** @deprecated, should pass in a valid GpConfig. */
     public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
-        this(jobContext, parameterInfoRecord, inputValues, false);
+        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, false);
     }
+    /** @deprecated, should pass in a valid GpConfig. */
     public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, initDefault);
+    }
+    public ParamListHelper(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
+        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, false);
+    }
+    public ParamListHelper(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
+        }
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
         if (parameterInfoRecord==null) {
             throw new IllegalArgumentException("parameterInfoRecord==null");
         }
+        this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.parameterInfoRecord=parameterInfoRecord;
 
@@ -275,7 +296,6 @@ public class ParamListHelper {
         }
         
         //parse default_values param ... 
-        //TODO: implement support for default values as a list of values
         List<String> defaultValues=new ArrayList<String>();
         defaultValues.add(pinfo.getDefaultValue());
         return defaultValues;
@@ -446,7 +466,7 @@ public class ParamListHelper {
     }
     
     /**
-     * Convert user-supplied value for a file input paramter into a GpFilePath instance.
+     * Convert user-supplied value for a file input parameter into a GpFilePath instance.
      * 
      * @param paramValueIn
      * @return
@@ -471,11 +491,18 @@ public class ParamListHelper {
         return file;
     }
 
-    public boolean isPassByReference()
-    {
-        return parameterInfoRecord.getFormal()._isUrlMode();
+    public boolean isPassByReference() {
+        return isPassByReference(parameterInfoRecord.getFormal());
     }
 
+    public static boolean isPassByReference(ParameterInfo formalParam) {
+        if (formalParam==null) {
+            return false;
+        }
+        return formalParam._isUrlMode();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void updatePinfoValue() throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
@@ -492,25 +519,12 @@ public class ParamListHelper {
         if (createGroupFile) { 
             ParamGroupHelper pgh=new ParamGroupHelper.Builder(actualValues)
                 .jobContext(jobContext)
+                .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
                 .build();
             final GpFilePath toFile=pgh.createFilelist();
             parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
-            
-            //save the filelist and groupids to the parameter info CLOB
-            final List<GpFilePath> listOfValues=pgh.getGpFilePaths();
-            int idx=0;
-            for(final Entry<GroupId, ParamValue> entry : actualValues.getValuesAsEntries()) {
-                final String groupId = entry.getKey().getGroupId();
-                final GpFilePath gpFilePath=listOfValues.get(idx);
-                
-                final String key="values_"+idx;
-                final String value="<GenePatternURL>"+gpFilePath.getRelativeUri().toString();
-                parameterInfoRecord.getActual().getAttributes().put(key, value);
-                final String groupKey="valuesGroup_"+idx;
-                parameterInfoRecord.getActual().getAttributes().put(groupKey, groupId);
-                ++idx;
-            }
+            saveGroupedValuesToClob(pgh.getGpFilePaths());
         }
         else if (createFilelist)
         {
@@ -521,25 +535,7 @@ public class ParamListHelper {
             String filelist=filelistFile.getUrl().toExternalForm();
             parameterInfoRecord.getActual().setValue(filelist);
             
-            //TODO: fix this HACK
-            //    instead of storing the input values in the filelist or in the DB, store them in the parameter info CLOB
-            int idx=0;
-            for(GpFilePath inputValue : listOfValues) {
-                final String key="values_"+idx;
-                //String value=url.toExternalForm();
-                String value="";
-                if(downloadExternalFiles)
-                {
-                    value = "<GenePatternURL>"+inputValue.getRelativeUri().toString();
-                }
-                else
-                {
-                    //provide the url directly since the file was not downloaded
-                    value = inputValue.getUrl().toExternalForm();
-                }
-                parameterInfoRecord.getActual().getAttributes().put(key, value);
-                ++idx;
-            } 
+            saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
         }
         else if (numValues==0) {
             parameterInfoRecord.getActual().setValue("");
@@ -601,7 +597,6 @@ public class ParamListHelper {
                 //the value is a valid command line value
             }
             else if (choices.containsKey(origValue)) {
-                //TODO: log this?
                 String newValue=choices.get(origValue);
                 parameterInfoRecord.getActual().setValue(newValue);
             }
@@ -622,13 +617,52 @@ public class ParamListHelper {
         }
     }
 
-    //-----------------------------------------------------
-    //helper methods for creating parameter list files ...
-    //-----------------------------------------------------
-    private GpFilePath createFilelist(final List<GpFilePath> listOfValues) throws Exception {
-        return createFilelist(listOfValues, false);
+    /**
+     * Save the list of values to the parameter info CLOB
+     * @param downloadExternalFiles
+     * @param listOfValues
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    protected void saveListOfValuesToClob(final boolean downloadExternalFiles, final List<GpFilePath> listOfValues) throws Exception {
+        int idx=0;
+        for(GpFilePath inputValue : listOfValues) {
+            final String key="values_"+idx;
+            //String value=url.toExternalForm();
+            String value="";
+            if(downloadExternalFiles) {
+                value = "<GenePatternURL>"+inputValue.getRelativeUri().toString();
+            }
+            else {
+                //provide the url directly since the file was not downloaded
+                value = inputValue.getUrl().toExternalForm();
+            }
+            parameterInfoRecord.getActual().getAttributes().put(key, value);
+            ++idx;
+        }
     }
-        //-----------------------------------------------------
+
+    /**
+     * Save the filelist and groupids to the parameter info CLOB
+     * @param pgh
+     */
+    @SuppressWarnings("unchecked")
+    protected void saveGroupedValuesToClob(final List<GpFilePath> listOfValues) {
+        int idx=0;
+        for(final Entry<GroupId, ParamValue> entry : actualValues.getValuesAsEntries()) {
+            final String groupId = entry.getKey().getGroupId();
+            final GpFilePath gpFilePath=listOfValues.get(idx);
+            
+            final String key="values_"+idx;
+            final String value="<GenePatternURL>"+gpFilePath.getRelativeUri().toString();
+            parameterInfoRecord.getActual().getAttributes().put(key, value);
+            final String groupKey="valuesGroup_"+idx;
+            parameterInfoRecord.getActual().getAttributes().put(groupKey, groupId);
+            ++idx;
+        }
+    }
+
+    //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
     private GpFilePath createFilelist(final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
@@ -646,25 +680,33 @@ public class ParamListHelper {
         return gpFilePath;
     }
     
-    private List<GpFilePath> getListOfValues(final boolean downloadExternalFiles) throws Exception {
+    protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
+        return ParamListHelper.getListOfValues(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
+    }
+
+    /**
+     * Create a list of GpFilePath mapped, in the same order as the actualValues, optionally downloading external URLs to the 
+     * server file system.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param formalParam, initialized from the module manifest
+     * @param actualValues, the actual job input values
+     * @param downloadExternalUrl, when true download files and wait.
+     * @return
+     * @throws Exception
+     */
+    public static List<GpFilePath> getListOfValues(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(pval, downloadExternalFiles);
+            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval);
             tmpList.add(rec);
         }
         
         // If necessary, download data from external sites
-        if (downloadExternalFiles) {
+        if (downloadExternalUrl) {
             for(final Record rec : tmpList) {
-                // Handle GenomeSpace URLs
-                if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
-                    fileListGenomeSpaceToUploads(jobContext, rec.gpFilePath, rec.url);
-                }
-
-                // Handle external URLs
-                if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
-                    forFileListCopyExternalUrlToUserUploads(rec.gpFilePath, rec.url);
-                }
+                downloadFromRecord(gpConfig, jobContext, rec);
             }
         } 
 
@@ -674,46 +716,63 @@ public class ParamListHelper {
         }
         return values;
     }
-    
+
+    protected static void downloadFromRecord(final GpConfig gpConfig, final GpContext jobContext, final Record rec) throws Exception, JobDispatchException {
+        // Handle GenomeSpace URLs
+        if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
+            fileListGenomeSpaceToUploads(jobContext, rec.gpFilePath, rec.url);
+        }
+
+        // Handle external URLs
+        if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
+            if (rec.isCached) {
+                GpFilePath cached=FileCache.downloadCachedFile(gpConfig, jobContext, rec.url.toExternalForm());
+                rec.gpFilePath=cached;
+            }
+            else {
+                forFileListCopyExternalUrlToUserUploads(jobContext, rec.gpFilePath, rec.url);
+            }
+        }
+    }
+
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(jobContext, pval, false);
+        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    private Record initFromValue(final ParamValue pval, boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.initFromValue(jobContext, pval, downloadExternalUrl);
-    }
-
-    public static Record initFromValue(final GpContext jobContext, final ParamValue pval) throws Exception
-    {
-        return initFromValue(jobContext, pval, true);
-    }
-
-    public static Record initFromValue(final GpContext jobContext, final ParamValue pval, boolean downloadExternalUrl) throws Exception {
+    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
         URL externalUrl = JobInputHelper.initExternalUrl(value);
-
-        // Handle GenomeSpace URLs
-        if (externalUrl != null && GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
-
-            if (downloadExternalUrl) {
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+        final boolean isPassByReference=isPassByReference(formalParam);
+        
+        if (externalUrl != null) {
+            final boolean isCached=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, formalParam, externalUrl);
+            if (isPassByReference) {
+                // special-case: pass-by-reference
+                GpFilePath gpPath = new ExternalFile(externalUrl);
+                Record record=new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
+                record.isCached=isCached;
+                record.isPassByReference=isPassByReference;
+                return record;
+            }
+            else if (isCached) {
+                // special-case: 'cache.externalUrlDirs'
+                CachedFile cachedFile=FileCache.initCachedFileObj(gpConfig, jobContext, value);
+                Record record=new Record(Record.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
+                record.isCached=isCached;
+                record.isPassByReference=isPassByReference;
+                return record;
+            }
+            else if (GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
+                // special-case: GenomeSpace input
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
                 return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
             }
-        }
-        if (externalUrl != null) {
-
-            if (downloadExternalUrl)
-            { //this method does not do the file download
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(jobContext, externalUrl);
+            else {
+                // by default, external url inputs for file lists are cached on a per-user basis, in the user's tmp directory
+                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
                 return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
             }
-            else
-            {
-                //this section is for if the external file will not be downloaded
-                GpFilePath gpPath = new ExternalFile(externalUrl);
-                return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
-            }
-        }
+        }        
         LSID lsid=null;
         try {
             lsid=new LSID(jobContext.getLsid());
@@ -786,6 +845,8 @@ public class ParamListHelper {
         Type type;
         GpFilePath gpFilePath;
         URL url; //can be null
+        boolean isCached; // for external_url, when true it means download to global cache rather than per-user cache
+        boolean isPassByReference; // pass by reference values are not downloaded to the local file system; gpFilePath.serverPath is null
         
         public Record(final Type type, final GpFilePath gpFilePath, final URL url) {
             this.type=type;
@@ -807,27 +868,6 @@ public class ParamListHelper {
     /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
      * This method blocks until the data file has been transferred.
-     * 
-     * TODO: turn this into a task which can be cancelled.
-     * TODO: limit the size of the file which can be transferred
-     * TODO: implement a timeout
-     * 
-     * @param gpPath
-     * @param url
-     * @throws Exception
-     * 
-     * @deprecated - should replace this with a static call
-     */
-    private void forFileListCopyExternalUrlToUserUploads(final GpFilePath gpPath, final URL url) throws Exception {
-        forFileListCopyExternalUrlToUserUploads(jobContext, gpPath, url);
-    }
-    /**
-     * Copy data from an external URL into a file in the GP user's uploads directory.
-     * This method blocks until the data file has been transferred.
-     * 
-     * TODO: turn this into a task which can be cancelled.
-     * TODO: limit the size of the file which can be transferred
-     * TODO: implement a timeout
      * 
      * @param jobContext, must have a valid userId and should have a valid jobInfo
      * @param gpPath
@@ -857,8 +897,6 @@ public class ParamListHelper {
         final File dataFile=gpPath.getServerFile();
         if (dataFile.exists()) {
             //do nothing, assume the file has already been transferred
-            //TODO: should implement a more robust caching mechanism, using HTTP HEAD to see if we need to 
-            //    download a new copy
             log.debug("dataFile already exists: "+dataFile.getPath());
         }
         else {
@@ -896,7 +934,6 @@ public class ParamListHelper {
             final File dataFile = gpPath.getServerFile();
             if (dataFile.exists()) {
                 // Do nothing, assume the file has already been transferred
-                //TODO: should implement a more robust caching mechanism, using HTTP HEAD to see if we need to
                 log.debug("Downloaded GenomeSpace already exists: " + dataFile.getPath());
             }
             else {

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.dm.userupload;
 
 import java.io.File;
@@ -8,12 +11,13 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -44,7 +48,7 @@ public class MigrationTool {
      * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
      * are not in the correct location on the file system.
      */
-    public static void migrateJobUploads() {
+    public static void migrateJobUploads() throws DbException {
         final String gpVersion =  ServerConfigurationFactory.instance().getGenePatternVersion();
         if (gpVersion == null) {
             return;
@@ -52,7 +56,7 @@ public class MigrationTool {
 
         //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
         final String KEY = "sync.job.uploads.complete";
-        Props row=Props.selectRow(KEY);
+        PropsTable row=PropsTable.selectRow(KEY);
         if (row != null && gpVersion.equals(row.getValue())) {
             //if the flag is already set, exit
             log.debug("job upload files already migrated for gpVersion="+gpVersion);
@@ -62,7 +66,7 @@ public class MigrationTool {
         migrateJobUploadDirs();
 
         //finally) set the flag in the DB
-        Props.saveProp(KEY, gpVersion);        
+        PropsTable.saveProp(KEY, gpVersion);        
     }
     
     private static void migrateJobUploadDirs() {
@@ -132,26 +136,12 @@ public class MigrationTool {
      * @return true if 'sync.user.uploads.complete' is set to true for this version of GenePattern;
      *     also return true if there was some kind of DB connection error.
      */
-    protected static boolean checkDbForSyncUserUploadsComplete() {
-        try {
-            HibernateUtil.beginTransaction();
-            String hql = "select props.value from "+Props.class.getName()+" props where props.key = :key";
-            Query query=HibernateUtil.getSession().createQuery(hql);
-            query.setString("key", "sync.user.uploads.complete");
-            List<String> rval = query.list();
-            if (rval != null && rval.size() > 0) {
-                log.debug("sync.user.uploads.complete="+rval.get(0));
+    protected static boolean checkDbForSyncUserUploadsComplete() throws DbException {
+            PropsTable row=PropsTable.selectRow("sync.user.uploads.complete");
+            if (row != null) {
                 return true;
             }
-        }
-        catch (Throwable t) {
-            log.error("Server error: "+t.getLocalizedMessage(), t);
-            return true;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        return false;
+            return false;
     }
     
     /**
@@ -159,7 +149,7 @@ public class MigrationTool {
      * Store a record of this in the DB so that we only do this once.
      * This should be called from the StartupServlet after the DB is initialized.
      */
-    public static void migrateUserUploads() {
+    public static void migrateUserUploads() throws DbException {
         boolean dbcheck=checkDbForSyncUserUploadsComplete();
         if (dbcheck) {
             return;
@@ -183,25 +173,21 @@ public class MigrationTool {
         updatePrevJobInputParams();
         
         //6) finally, update the flag in the DB, so that we don't do this again
-        boolean success=Props.saveProp("sync.user.uploads.complete", "true");
+        boolean success=PropsTable.saveProp("sync.user.uploads.complete", "true");
         log.info("migrated="+success);
     }
 
     /**
-     * Update all previous jobs which have a user upload file as an input parameter.
-     * Replace the 3.3.2 style link with the 3.3.3 style link. E.g.,
-     * change 
-     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
-     * to
-     *     <GenePatternURL>users/admin/all_aml_test.gct
+     * Get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob.
      */
-    private static void updatePrevJobInputParams() {
-        //get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob
+    protected static List<Integer> getUserUploadsJobNos() {
         List<Integer> jobNos = new ArrayList<Integer>();
         try {
             HibernateUtil.beginTransaction();
-            String sql = "select job_no from analysis_job where parameter_info like '%user.uploads%' and deleted = 0";
-            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            final String hql = "select a.jobNo from "+AnalysisJob.class.getName()+" a where a.parameterInfo like :match and a.deleted = :isDeleted";
+            Query query = HibernateUtil.getSession().createQuery(hql);
+            query.setString("match", "%user.uploads%");
+            query.setBoolean("isDeleted", false);
             List<?> jobNoObjs = query.list();
             for(Object jobNoObj : jobNoObjs) {
                 int jobNo = -1;
@@ -223,12 +209,23 @@ public class MigrationTool {
         }
         catch (Throwable t) {
             log.error("Error getting list of jobIds with 'user.uploads' in PARAMETER_INFO clob", t);
-            return;
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-
+        return jobNos;
+    }
+    
+    /**
+     * Update all previous jobs which have a user upload file as an input parameter.
+     * Replace the 3.3.2 style link with the 3.3.3 style link. E.g.,
+     * change 
+     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
+     * to
+     *     <GenePatternURL>users/admin/all_aml_test.gct
+     */
+    private static void updatePrevJobInputParams() {
+        List<Integer> jobNos = getUserUploadsJobNos();
         int numJobsChanged = 0;
         int totalNumParamsChanged = 0;
         //for each job in the list, update input parameters which reference a GP 3.3.2 user upload file

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input;
 
 import java.io.File;
@@ -6,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -319,9 +323,9 @@ public class JobInputFileUtil {
         UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
     }
 
-    static public GpFilePath getDistinctPathForExternalUrl(final GpContext jobContext, final URL url) throws Exception {
+    static public GpFilePath getDistinctPathForExternalUrl(final GpConfig gpConfig, final GpContext jobContext, final URL url) throws Exception {
         File relPath=new File(DEFAULT_ROOT_PATH+"external/"+url.getHost()+"/"+url.getPath());
-        GpFilePath input=GpFileObjFactory.getUserUploadFile(jobContext, relPath);
+        GpFilePath input=GpFileObjFactory.getUserUploadFile(gpConfig, jobContext, relPath);
         return input;
     }
 

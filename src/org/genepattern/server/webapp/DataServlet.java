@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp;
 
 import java.io.File;
@@ -174,15 +177,15 @@ public class DataServlet extends HttpServlet implements Servlet {
         //1) require an authenticated GP user account
         String gpUserId = null;
         try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(request, response);
         }
         catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(response, e.getLocalizedMessage());
+            AuthenticationUtil.requestBasicAuth(response, e.getLocalizedMessage());
             return;
         }
         if (gpUserId == null) {
             log.error("Unexpected null gpUserId, AuthenticationException should have been thrown.");
-            BasicAuthUtil.requestAuthentication(request, response);
+            AuthenticationUtil.requestBasicAuth(request, response);
             return;
         }
 
@@ -210,7 +213,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         if (!gpUserCanRead) {
             String message = "The user '"+gpUserId+"' does not have permission to read the file '"+fileObj.getPath()+"'";
             log.debug(message);
-            BasicAuthUtil.requestAuthentication(response, message);
+            AuthenticationUtil.requestBasicAuth(response, message);
             return;
         }
 
@@ -278,15 +281,15 @@ public class DataServlet extends HttpServlet implements Servlet {
         //1) require an authenticated GP user account
         String gpUserId = null;
         try {
-            gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
+            gpUserId = AuthenticationUtil.getAuthenticatedUserId(request, response);
         }
         catch (AuthenticationException e) {
-            BasicAuthUtil.requestAuthentication(response, e.getLocalizedMessage());
+            AuthenticationUtil.requestBasicAuth(response, e.getLocalizedMessage());
             return;
         }
         if (gpUserId == null) {
             log.error("Unexpected null gpUserId, AuthenticationException should have been thrown.");
-            BasicAuthUtil.requestAuthentication(request, response);
+            AuthenticationUtil.requestBasicAuth(request, response);
             return;
         }
 
@@ -305,7 +308,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         if (!canRead) {
             String message = "The user '"+gpUserId+"' does not have permission to read the file '"+requestedFile.getRelativeUri()+"'";
             log.debug(message);
-            BasicAuthUtil.requestAuthentication(response, message);
+            AuthenticationUtil.requestBasicAuth(response, message);
             return;
         }
         

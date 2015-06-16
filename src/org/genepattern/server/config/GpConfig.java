@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.io.File;
@@ -189,10 +192,12 @@ public class GpConfig {
     private final File configFile;
     private final Properties dbProperties;
     private final String dbVendor;
+    private final File ant_1_8_HomeDir;
+
     /**
      *  Special-case, some properties can be set by convention rather than declared in a config file.
      *  For example,  patches=$GENEPATTERN_HOME$/patches
-     *  When this is the case, save the lookup into the subsitutionParams map when initializing the config.
+     *  When this is the case, save the lookup into the substitutionParams map when initializing the config.
      */
     private final Map<String,String> substitutionParams=new HashMap<String,String>();
     private final ValueLookup valueLookup;
@@ -200,6 +205,43 @@ public class GpConfig {
     public GpConfig(final Builder in) {
         GpContext gpContext=GpContext.getServerContext();
         this.webappDir=in.webappDir;
+        if (this.webappDir != null) {
+            ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
+            // <java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher
+            final String antJavaCmd="<java> -Dant.home=<ant-1.8_HOME>"
+                    +" -cp <ant-1.8_HOME>"+File.separator+"lib"+File.separator+"ant-launcher.jar"
+                    +" org.apache.tools.ant.launch.Launcher";
+            final String antScriptCmd="<ant-1.8_HOME>/bin/ant --noconfig";
+            // by default, launch ant as a java command (antScriptCmd is here for demonstration purposes only)
+            final String antCmd=antJavaCmd;
+                    
+            this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
+            this.substitutionParams.put("ant-1.8", antCmd);
+            this.substitutionParams.put("ant", antCmd);
+            this.substitutionParams.put("ant-java", antJavaCmd);
+            this.substitutionParams.put("ant-script", antScriptCmd);
+
+            this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
+            
+            // special-case, set execute flag for ant command
+            File antPath=new File(ant_1_8_HomeDir,"bin/ant");
+            if (!antPath.exists()) {
+                log.warn("<ant-1.8> path doesn't exist: "+antPath);
+            }
+            else {
+                if (!antPath.canExecute()) {
+                    log.warn("<ant-1.8> is not executable: "+antPath);
+                    log.warn("changing exec flag for <ant-1.8> to true");
+                    boolean success=antPath.setExecutable(true);
+                    if (!success) {
+                        log.warn("unable to set exec flag for <ant-1.8>");
+                    }
+                }
+            }
+        }
+        else {
+            ant_1_8_HomeDir=null;
+        } 
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
@@ -576,10 +618,17 @@ public class GpConfig {
     }
 
     public Value getValue(final GpContext context, final String key) {
-        if (valueLookup==null) {
-            return null;
+        Value value=null;
+        if (valueLookup!=null) {
+            value=valueLookup.getValue(context, key);
         }
-        return valueLookup.getValue(context, key);
+        if (value==null) {
+            String substitutionValue=this.substitutionParams.get(key);
+            if (substitutionValue!=null) {
+                value=new Value(substitutionValue);
+            }
+        }
+        return value;
     }
 
     public Value getValue(final GpContext context, final String key, final Value defaultValue) {
@@ -599,7 +648,7 @@ public class GpConfig {
     public String getGPProperty(final GpContext context, final String key) {
         final Value value = getValue(context, key);
         if (value == null) {
-            return this.substitutionParams.get(key);
+            return null;
         }
         if (value.getNumValues() > 1) {
             log.error("returning first item of a "+value.getNumValues()+" item list");
@@ -746,6 +795,10 @@ public class GpConfig {
      */
     protected File getWebappDir() {
         return this.webappDir;
+    }
+    
+    protected File getAntHomeDir() {
+        return this.ant_1_8_HomeDir;
     }
     
     /**

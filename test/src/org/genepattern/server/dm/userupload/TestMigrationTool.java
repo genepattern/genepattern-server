@@ -1,8 +1,11 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.dm.userupload;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.dm.userupload.MigrationTool;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +17,7 @@ public class TestMigrationTool {
         boolean check=MigrationTool.checkDbForSyncUserUploadsComplete();
         Assert.assertFalse("before update", check);
         
-        boolean success=Props.saveProp("sync.user.uploads.complete", "true");
+        boolean success=PropsTable.saveProp("sync.user.uploads.complete", "true");
         if (!success) {
             Assert.fail("Failed to save property to DB");
         }

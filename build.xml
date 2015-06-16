@@ -16,7 +16,7 @@
     <property location="src" name="src" />
     <property location="build" name="build" />
     <property location="." name="dist" />
-    <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
+    <property name="classpath" value="${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
 
     <property name="common-manifest" value="gp-common.mf" />
     <property name="uisupport-manifest" value="ui_support.mf" />
@@ -38,9 +38,13 @@
     &release_targets;
 
     <property name="clover.dest" location="${basedir}/build/clover" />
-    <property name="clover.home" location="${basedir}/lib/clover/clover-ant-3.2.0" />
-    <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
-    <clover-env/>
+    <property name="clover.home" location="${user.home}/.gp_build/clover/clover-ant-3.2.0" />
+    <available file="${clover.home}/lib/clover.jar" property="clover.enabled" />
+
+    <target name="init-clover" if="clover.enabled">
+        <taskdef resource="cloverlib.xml" classpath="${clover.home}/lib/clover.jar"/>
+        <clover-env/>
+    </target>
 
     <!-- Get all the files in the /lib directory and add them to the -->
     <!-- Classpath -->
@@ -50,7 +54,7 @@
         <echo>tag: tags entire repository prior to an official build</echo>
     </target>
 
-    <target name="init">
+    <target name="init" depends="init-clover">
         <tstamp />
 
         <property name="genepattern.root" value="${basedir}" />
@@ -102,14 +106,20 @@
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
             <pathelement location="test/src" />
-            <pathelement location="${clover.home}/lib/clover.jar"/>
+            <!-- pathelement location="${clover.home}/lib/clover.jar"/ -->
+            <fileset dir="${clover.home}/lib">
+                <include name="clover.jar" if="clover.enabled" />
+            </fileset>
         </path>
 
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
+        
+        <!-- for debugging only -->
+        <!-- echo message="My junit.classpath is ${toString:junit.classpath}" / -->
     </target>
 
-    <target name="clover.clean" description="Deletes the clover database.">
+    <target name="clover.clean" description="Deletes the clover database." depends="init" unless="clover.enabled">
         <clover-clean/>
     </target>
 
@@ -149,6 +159,38 @@
             destdir="${build}/junit/classes"
             srcdir="test/src"
         />
+    </target>
+
+    <target name="ensure-test-name" unless="test">
+        <fail message="You must run this target with -Dtest=TestName"/>
+    </target>
+
+    <target name="runtest" depends="ensure-test-name, compile-junit"
+        description="Runs the test you specify on the command line with -Dtest="> 
+        <property name="junit.report.dir" location="${build}/junit/reports" />
+        <mkdir dir="${junit.report.dir}" />
+        <mkdir dir="${junit.report.dir}/xml" />
+        <mkdir dir="${junit.report.dir}/html" />
+
+        <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
+            <formatter type="xml"/>
+            <classpath refid="junit.classpath" />
+            <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
+                <fileset dir="test/src">
+                    <exclude name="org/genepattern/junitutil/*.java" />
+                    <exclude name="**/RecordEulaStub.java" />
+                    <include name="**/${test}.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+
+        <junitreport todir="${junit.report.dir}">
+            <fileset dir="${junit.report.dir}/xml">
+                <include name="*.xml" />
+            </fileset>
+            <report format="frames" todir="${junit.report.dir}/html" />
+        </junitreport>
     </target>
 
     <target name="junit" depends="compile-junit">
@@ -266,7 +308,7 @@
     <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
         <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
+                <attribute name="Class-Path" value="./lib/axis.jar ./lib/commons-codec-1.6.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.16.jar ./lib/javax.mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
             </manifest>
         </jar>
 
@@ -274,7 +316,7 @@
             <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}" />
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="axis.jar commons-codec-1.6.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar javax.mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
             <zipfileset dir="clients/Java/doc" prefix="doc" />
         </zip>
     </target>
@@ -453,7 +495,7 @@
                          alias="${signjar.alias}"
                          storepass="${signjar.storepass}"
         />
-        <signjar jar="website/WEB-INF/lib/commons-codec-1.3.jar"
+        <signjar jar="website/WEB-INF/lib/commons-codec-1.6.jar"
                          keystore="${signjar.keystore}"
                          maxmemory="1024M"
                          alias="${signjar.alias}"
@@ -483,7 +525,6 @@
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
         <copy todir="${genepattern.build}/website/lib">
             <fileset dir="${lib}">
-                <include name="activation.jar" />
                 <include name="axis.jar" />
                 <include name="axis-ant.jar" />
                 <include name="commons-discovery-0.2.jar" />
@@ -497,7 +538,7 @@
                 <include name="jdom.jar" />
                 <include name="jspsmart.jar" />
                 <include name="log4j-1.2.8.jar" />
-                <include name="mail.jar" />
+                <include name="javax.mail.jar" />
                 <include name="PDFBox*.jar" />
                 <include name="saaj.jar" />
                 <include name="wsdl4j-1.5.1.jar" />

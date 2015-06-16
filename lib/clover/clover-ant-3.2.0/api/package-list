@@ -1,6 +1,0 @@
-com.atlassian.clover.api.ci
-com.atlassian.clover.api.instrumentation
-com.atlassian.clover.api.optimization
-com.atlassian.clover.api.registry
-com.atlassian.clover.spi.lang
-com.atlassian.clover.spi.reporters.html.source

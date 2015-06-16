@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input;
 
 import java.io.File;
@@ -6,6 +9,7 @@ import java.util.List;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskLoader;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
@@ -30,6 +34,7 @@ public class TestJobInputHelper {
     private static TaskLoader taskLoader;
     private static String adminUserId;
     private static GpContext userContext;
+    private static GpConfig gpConfig=null;
     
     final static String GP_URL="http://127.0.0.1:8080/gp";
     
@@ -78,7 +83,7 @@ public class TestJobInputHelper {
     public void testGpUrlValue() {
         final String initialValue=GP_URL+"/users/"+adminUserId+"/all_aml_test.cls";
 
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addValue("input.filename", initialValue);
         
     }
@@ -89,7 +94,7 @@ public class TestJobInputHelper {
     //////////////////////////////////////////
     @Test
     public void testAddGroupValue() throws GpServerException {
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addValue("input.filename", 
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
                 new GroupId("train"));
@@ -138,7 +143,7 @@ public class TestJobInputHelper {
     
     @Test
     public void testJobSubmit() throws GpServerException {
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addValue("input.filename", 
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls");
 
@@ -152,7 +157,7 @@ public class TestJobInputHelper {
     
     @Test
     public void testAddBatchValue() throws GpServerException {
-        JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.filename", 
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls");
         jobInputHelper.addBatchValue("input.filename", 
@@ -172,7 +177,7 @@ public class TestJobInputHelper {
      */
     @Test
     public void testAddBatchMultiParam() throws GpServerException {
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.file", createServerFilePathUrl("all_aml/all_aml_test.gct"));
         jobInputHelper.addBatchValue("cls.file", createServerFilePathUrl("all_aml/all_aml_test.cls"));
         jobInputHelper.addBatchValue("input.file", createServerFilePathUrl("all_aml/all_aml_train.gct"));
@@ -194,7 +199,7 @@ public class TestJobInputHelper {
      */
     @Test
     public void testAddBatchMultiParamOneValue() throws GpServerException {
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.file", createServerFilePathUrl("all_aml/all_aml_test.gct"));
         jobInputHelper.addBatchValue("cls.file", createServerFilePathUrl("all_aml/all_aml_test.cls"));
         
@@ -208,7 +213,7 @@ public class TestJobInputHelper {
     public void testAddBatchDirectory() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         Assert.assertEquals("num batch jobs", 7, inputs.size());
@@ -222,7 +227,7 @@ public class TestJobInputHelper {
     @Test
     public void testAddBatchDirMatchFileFormat() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
         //bogus value, but the module requires a cls file
         jobInputHelper.addValue("cls.file", FileUtil.getDataFile("all_aml/all_aml_test.cls").getAbsolutePath());
@@ -237,7 +242,7 @@ public class TestJobInputHelper {
     @Test
     public void testAddBatchDirMulti() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
         //bogus value, but the module requires a cls file
         jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
@@ -252,7 +257,7 @@ public class TestJobInputHelper {
     @Test
     public void testMatchBatchOfDirectories() throws GpServerException {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_02/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, listFilesLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, listFilesLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("dir", batchDir.getAbsolutePath());
         jobInputHelper.addValue("outputFilename", "<dir_file>_listing.txt");
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
@@ -267,7 +272,7 @@ public class TestJobInputHelper {
     public void testAddBatchDirMultiIntersect() throws GpServerException {
         final File gctDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/gct/");
         final File clsDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/cls/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.file", gctDir.getAbsolutePath());
         jobInputHelper.addBatchDirectory("cls.file", clsDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
@@ -282,7 +287,7 @@ public class TestJobInputHelper {
     @Test
     public void testMissingBatchInputParameter() {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/res/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
             jobInputHelper.addBatchDirectory("input.filename",  batchDir.getAbsolutePath());
             final List<JobInput> inputs=
@@ -300,7 +305,7 @@ public class TestJobInputHelper {
     @Test
     public void testEmptyBatchDir() {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class,"empty_batch_dir/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         try {
             jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
@@ -318,7 +323,7 @@ public class TestJobInputHelper {
     @Test
     public void testBatchDirNotExists() {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_dir_does_not_exist/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         try {
             jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
@@ -337,7 +342,7 @@ public class TestJobInputHelper {
     @Test
     public void testBatchDirNoMatch() {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
             jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
@@ -356,7 +361,7 @@ public class TestJobInputHelper {
     @Test
     public void testMultiBatchDirNoMatch() {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/");
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
             jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
             jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
@@ -381,7 +386,7 @@ public class TestJobInputHelper {
         final File file4 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/all_aml_test.cls");
         final File file5 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/03/i.txt");
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.filename", file1.getAbsolutePath());
         jobInputHelper.addBatchValue("input.filename", file2.getAbsolutePath());
         jobInputHelper.addBatchValue("input.filename", file3.getAbsolutePath());
@@ -403,7 +408,7 @@ public class TestJobInputHelper {
         final File dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/02/");
         final File dir3 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/03/");
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cleLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.filename", dir1.getAbsolutePath());
         jobInputHelper.addBatchDirectory("input.filename", dir2.getAbsolutePath());
         jobInputHelper.addBatchDirectory("input.filename", dir3.getAbsolutePath());
@@ -428,7 +433,7 @@ public class TestJobInputHelper {
         final File param2_file2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/all_aml_test.cls");
 
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchValue("input.file", param1_file1.getAbsolutePath());
         jobInputHelper.addBatchValue("input.file", param1_file2.getAbsolutePath());
         jobInputHelper.addBatchValue("input.file", param1_file3.getAbsolutePath());
@@ -453,7 +458,7 @@ public class TestJobInputHelper {
         final File param2_dir2 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/cls/");
 
 
-        final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+        final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
         jobInputHelper.addBatchDirectory("input.file", param1_dir2.getAbsolutePath());
         jobInputHelper.addBatchValue("cls.file", param2_dir1.getAbsolutePath());
@@ -481,7 +486,7 @@ public class TestJobInputHelper {
 
         try
         {
-            final JobInputHelper jobInputHelper=new JobInputHelper(userContext, cmsLsid, null, taskLoader);
+            final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
             jobInputHelper.addBatchDirectory("input.file", param1_file1.getAbsolutePath());
             jobInputHelper.addBatchDirectory("input.file", param1_file2.getAbsolutePath());
             jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
@@ -534,7 +539,7 @@ public class TestJobInputHelper {
         final TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
         Mockito.when(taskInfo.getParameterInfoArray()).thenReturn(pinfos);
 
-        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, null, taskInfo);
+        JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, lsid, null, taskInfo);
         
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/a_1.fastq"));
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/b_1.fastq"));
@@ -581,7 +586,7 @@ public class TestJobInputHelper {
         final TaskInfo taskInfo = Mockito.mock(TaskInfo.class);
         Mockito.when(taskInfo.getParameterInfoArray()).thenReturn(pinfos);
 
-        JobInputHelper jobInputHelper = new JobInputHelper(userContext, lsid, null, taskInfo);
+        JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, lsid, null, taskInfo);
         
         jobInputHelper.addBatchValue("input.file.1", createServerFilePathUrl("fastq/"));
         jobInputHelper.addBatchValue("input.file.2", createServerFilePathUrl("fastq/"));

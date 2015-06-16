@@ -137,50 +137,40 @@ $(function()
         //create the steps
         var steps = [
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> Selecting the properties for a module or pipeline will now display the properties information above the job submit form.',
+                element: ".toggle-btn",
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div>  The left panel can now be hidden using this toggle button.',
                 position: 'left',
                 scrollToElement: true
             },
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> The properties for a module includes details about the module such as the LSID,command-line,etc...',
-                position: 'left',
-                scrollToElement: true
-            },
-            {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> The properties for a pipeline includes the same information as a module, ' +
-                    'as well as information about the parameters for the individual steps in the pipeline.',
-                position: 'left',
-                scrollToElement: true
-            },
-            {
-                element: "#job-results",
-                intro: '<div class="tour-header"> Job Results Summary Page </div> The Job Results Summary Page now has additional search options.',
+                element: ".ui-layout-resizer",
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div> Once hidden, the left panel can be shown again by clicking this toggle bar. ',
                 position: 'right',
                 scrollToElement: true
             },
             {
-                element: "#jobTableSearch",
-                intro: '<div class="tour-header"> Job Results Search </div> Jobs can be searched for based on comments or tags.',
-                position: 'left',
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> The Job Results Summary Page now supports downloading of multiple job results.',
+                position: 'right',
                 scrollToElement: true
             },
             {
-                intro: '<div class="tour-header"> Job Results Table </div> There is a new <b>Tags</b> column which lists all the ' +
-                    'tags associated with a job. Clicking on any tag in the <b>Tags</b> column will open a ' +
-                    'new Job Results Page with all jobs that have this tag.',
-                position: 'left',
+                element: ".job-select-checkbox-master",
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> First select one or more jobs to download.',
+                position: 'right',
+                scrollToElement: true
+            },
+            {
+                element: "#downloadJobs",
+                intro: '<div class="tour-header"> Download Multiple Job Results </div> Afterwards click on the download button. Each job will be downloaded in a separate zip file.',
+                position: 'right',
                 scrollToElement: true
             },
             {
                 intro: '<div class="tour-header"> The End</div> This is the end of the tour. To learn more about what'
-                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.2" target="_blank">release notes</a>.',
-                position: 'left',
+                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.3" target="_blank">release notes</a>.',
                 scrollToElement: true
             }
-           ];
+        ];
 
         intro.setOptions({
         steps: steps,
@@ -191,60 +181,23 @@ $(function()
 
         intro.onbeforechange(function(targetElement)
         {
-            if(intro._currentStep == 0)
-            {
-                $("#main-pane").children().each(function()
-                {
-                    if($(this).is(":visible"))
-                    {
-                        $(this).addClass("wasVisibleBefore").hide();
-                    }
-                });
-
-                $("#main-pane").append("<div id='gpTourDiv'/>");
-                $("#gpTourDiv").load("/gp/pages/tour/properties_menu_item.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                        $("#otherOptionsMenu").show();
-                        $("#properties").focus();
-                    }
-                );
-            }
             if(intro._currentStep == 1)
             {
-                $("#gpTourDiv").load("/gp/pages/tour/module_properties_view.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                    }
-                );
+                $(".toggle-btn").click();
             }
             else if(intro._currentStep == 2)
             {
-                $("#gpTourDiv").load("/gp/pages/tour/pipeline_properties_view.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                    }
-                );
+                loadJobResults(true);
             }
             else if(intro._currentStep == 3)
             {
-                $("#gpTourDiv").remove();
-
-                $("#main-pane").children(".wasVisibleBefore").show();
-                $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
-
-                loadJobResults(true);
-            }
-            else if(intro._currentStep == 4)
-            {
-                $("#main-pane").scrollLeft(0);
+                $(".job-select-checkbox-master").click();
+                $(".job-select-checkbox").click();
             }
             else if(intro._currentStep == 5)
             {
-                $("#main-pane").scrollLeft(1000);
+                $('.job-select-checkbox-master').attr('checked', false);
+                $('.job-select-checkbox').attr('checked', false);
             }
         });
 
@@ -266,8 +219,6 @@ $(function()
 
         intro.oncomplete(function()
         {
-            introTourCleanup();
-            newTourCleanup();
 
             window.location.href = "/gp";
         });
@@ -280,12 +231,6 @@ $(function()
 
 function newTourCleanup()
 {
-    $("#runTaskSettingsDiv").remove();
-
-    $("#main-pane").children(".wasVisibleBefore").show();
-    $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
-
-    $("#jobTable").find(".summaryTitle").children("td").last().removeAttr("id");
 }
 
 function jqEscape(str) {

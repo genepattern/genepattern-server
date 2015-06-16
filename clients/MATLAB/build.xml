@@ -19,11 +19,10 @@
 			<fileset dir="../../website/WEB-INF/lib">
 				<include name="Jama-1.0.1.jar" />
 				<include name="MAGEstk-2003-10-24-v1.1-compatible.jar" />
-				<include name="activation.jar" />
 				<include name="axis.jar" />
 				<include name="commons-discovery-0.2.jar" />
 				<include name="commons-httpclient-3.1.jar" />
-				<include name="commons-codec-1.3.jar" />
+				<include name="commons-codec-1.6.jar" />
 				<include name="commons-logging.jar" />
 				<include name="gp-modules.jar" />
 				<include name="jakarta-oro-2.0.8.jar" />
@@ -31,7 +30,7 @@
 				<include name="jaxb-impl-2.2.3.jar" />
 				<include name="jaxrpc.jar" />
 				<include name="log4j-1.2.16.jar" />
-				<include name="mail.jar" />
+				<include name="javax.mail.jar" />
 				<include name="saaj.jar" />
 				<include name="trove.jar" />
 			</fileset>
