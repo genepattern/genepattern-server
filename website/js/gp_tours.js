@@ -139,12 +139,18 @@ $(function()
             {
                 element: ".toggle-btn",
                 intro: '<div class="tour-header"> Show/Hide Left Panel </div>  The left panel can now be hidden using this toggle button.',
-                position: 'left',
+                position: 'right',
                 scrollToElement: true
             },
+            /*{
+
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div>  Once hidden the left panel can be shown again.',
+                position: 'right',
+                scrollToElement: true
+            },*/
             {
                 element: ".ui-layout-resizer",
-                intro: '<div class="tour-header"> Show/Hide Left Panel </div> Once hidden, the left panel can be shown again by clicking this toggle bar. ',
+                intro: '<div class="tour-header"> Show/Hide Left Panel </div> This can be done by clicking anywhere on the toggle bar. ',
                 position: 'right',
                 scrollToElement: true
             },
@@ -179,22 +185,30 @@ $(function()
         tooltipClass: "tourStyle"
         });
 
-        intro.onbeforechange(function(targetElement)
+        intro.onbeforechange(function(targetElement, continueFunction)
         {
-            if(intro._currentStep == 1)
+            if(intro._currentStep === 0 && intro._direction==="backward")
+            {
+                $(".toggler").click();
+                $(".ui-layout-west").offset({ left: 0 });
+            }
+            if(intro._currentStep == 1 && intro._direction==="forward")
             {
                 $(".toggle-btn").click();
             }
-            else if(intro._currentStep == 2)
+            else if(intro._currentStep == 2 && intro._direction==="forward")
             {
-                loadJobResults(true);
+                if($("#jobResults").is(':empty'))
+                {
+                    loadJobResults(true);
+                }
             }
             else if(intro._currentStep == 3)
             {
                 $(".job-select-checkbox-master").click();
                 $(".job-select-checkbox").click();
             }
-            else if(intro._currentStep == 5)
+            else if(intro._currentStep == 4)
             {
                 $('.job-select-checkbox-master').attr('checked', false);
                 $('.job-select-checkbox').attr('checked', false);
@@ -204,10 +218,7 @@ $(function()
 
         /*intro.onafterchange(function(targetElement)
         {
-            if(intro._currentStep == 6)
-            {
-                $("#main-pane").scrollLeft(180);
-            }
+
         });*/
 
         intro.onexit(function()
