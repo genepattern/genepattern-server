@@ -207,10 +207,19 @@ public class GpConfig {
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
             ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
-            String antCmd="<ant-1.8_HOME>/bin/ant --noconfig";
+            // <java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher
+            final String antJavaCmd="<java> -Dant.home=<ant-1.8_HOME>"
+                    +" -cp <ant-1.8_HOME>"+File.separator+"lib"+File.separator+"ant-launcher.jar"
+                    +" org.apache.tools.ant.launch.Launcher";
+            final String antScriptCmd="<ant-1.8_HOME>/bin/ant --noconfig";
+            // by default, launch ant as a java command (antScriptCmd is here for demonstration purposes only)
+            final String antCmd=antJavaCmd;
+                    
             this.substitutionParams.put("ant-1.8_HOME", ant_1_8_HomeDir.getAbsolutePath());
             this.substitutionParams.put("ant-1.8", antCmd);
             this.substitutionParams.put("ant", antCmd);
+            this.substitutionParams.put("ant-java", antJavaCmd);
+            this.substitutionParams.put("ant-script", antScriptCmd);
 
             this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
             

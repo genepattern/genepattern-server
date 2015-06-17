@@ -7,7 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test/src"/>
-	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-junit-1.6.5.jar"/>
@@ -40,6 +39,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/el-ri.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/forms-1.0.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/gp-modules.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
+	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
+	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/itext-1.3.1.jar"/>
@@ -49,6 +51,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-2.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-extensions-1.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxen-1.1-beta-7.jar"/>
+	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxp-api.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-cache.jar"/>
@@ -60,6 +63,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgroups-2.2.8.jar"/>
+	<classpathentry kind="lib" path="test/lib/jmock-2.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jnet.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/js.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-api.jar"/>
@@ -90,6 +94,10 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oscache-2.3.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/PDFBox-0.6.7a.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/proxool-0.8.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/saaj.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/sax.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/snakeyaml-1.6.jar"/>
@@ -100,14 +108,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xalan.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
-	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
-	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
-	<classpathentry kind="lib" path="test/lib/jmock-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.3.3.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-io-2.0.1.jar"/>
@@ -133,7 +133,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-2.2.0-b21.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar" sourcepath="external-src/commons-exec-1.2/commons-exec-1.2-sources.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
 	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
