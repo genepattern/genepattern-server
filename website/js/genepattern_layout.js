@@ -30,4 +30,10 @@ $(function()
     {
         mainLayout.open("west");
     });
+
+    //add hover of resize when toogle is hovered
+    $(".toggler").hover(function()
+    {
+        $(".ui-layout-resizer").addClass("ui-layout-resizer-closed-hover");
+    });
 });
