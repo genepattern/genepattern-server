@@ -530,7 +530,9 @@ public class ChoiceInfo {
         }
         //special-case: choices not initialized
         if (choices==null) {
-            log.warn("choices==null, for param.name="+param.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("choices==null, for param.name="+param.getName());
+            }
             return;
         }
         //special-case: no choices

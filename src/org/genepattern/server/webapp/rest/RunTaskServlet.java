@@ -59,7 +59,6 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
@@ -105,9 +104,9 @@ public class RunTaskServlet extends HttpServlet
 
 
     /**
-	 * Inject details about the URI for this request
-	 */
-	@Context
+     * Inject details about the URI for this request
+     */
+    @Context
     UriInfo uriInfo;
 
     @GET
@@ -139,22 +138,17 @@ public class RunTaskServlet extends HttpServlet
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
 
             JobInput reloadJobInput = null;
-
-            if(reloadJobId != null && !reloadJobId.equals(""))
-            {
+            if (reloadJobId != null && !reloadJobId.equals("")) {
                 //This is a reloaded job
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJobId);
-                reloadJobInput = reloadJobHelper.getInputValues();
-
-                String reloadedLsidString = reloadJobInput.getLsid();
+                final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJobId));
+                reloadJobInput = reloadJobContext.getJobInput();
+                final String reloadedLsidString = reloadJobInput.getLsid();
 
                 //check if lsid is null
-                if(lsid == null)
-                {
+                if(lsid == null) {
                     lsid = reloadedLsidString;
                 }
-                else
-                {
+                else {
                     if (log.isDebugEnabled()) {
                         log.debug("reloadedLsidString="+reloadedLsidString);
                         log.debug("lsid="+lsid);
@@ -169,17 +163,14 @@ public class RunTaskServlet extends HttpServlet
             }
 
             //check if lsid is still null
-            if(lsid == null)
-            {
+            if(lsid == null) {
                 throw new Exception ("No lsid  received");
             }
 
             final TaskInfo taskInfo = getTaskInfo(lsid, userId);
 
-            if(taskInfo == null)
-            {
-                throw new Exception("No task with task id: " + lsid + " found " +
-                        "for user " + userId);
+            if(taskInfo == null) {
+                throw new Exception("No task with lsid=" + lsid + " found for user=" + userId);
             }
             userContext.setTaskInfo(taskInfo);
 
@@ -393,14 +384,14 @@ public class RunTaskServlet extends HttpServlet
             }
             return Response.ok().entity(jsonStr).build();
         }
-        catch(Exception e)
+        catch(Throwable t)
         {
             String message = "An error occurred while loading the module with lsid: \"" + lsid + "\"";
-            if(e.getMessage() != null)
+            if(t.getMessage() != null)
             {
-                message = e.getMessage();
+                message = t.getMessage();
             }
-            log.error(message);
+            log.error(message, t);
 
             if(message.contains("You do not have the required permissions"))
             {
@@ -419,7 +410,7 @@ public class RunTaskServlet extends HttpServlet
                 );
             }
         }
-	}
+    }
 
     @POST
     @Path("/upload")
@@ -867,12 +858,12 @@ public class RunTaskServlet extends HttpServlet
         if (reloadJob != null && !reloadJob.equals("")) {
             //This is a reloaded job
             try {
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJob);
-                reloadJobInput = reloadJobHelper.getInputValues();
+                final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJob));
+                reloadJobInput=reloadJobContext.getJobInput();
             }
-            catch (Exception e) {
-                log.error("Error initializing from reloadJob="+reloadJob, e);
-                return Response.serverError().entity(e.getLocalizedMessage()).build();
+            catch (Throwable t) {
+                log.error("Error initializing from reloadJob="+reloadJob, t);
+                return Response.serverError().entity(t.getLocalizedMessage()).build();
             }
         }
         if (lsid==null || lsid.length()==0) {

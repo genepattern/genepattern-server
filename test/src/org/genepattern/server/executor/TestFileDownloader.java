@@ -9,13 +9,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
+import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
-import org.genepattern.server.job.input.choice.TestChoiceInfo;
 import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -61,7 +61,7 @@ public class TestFileDownloader {
     @Test
     public void selectionFromDropDown()  throws JobDispatchException {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
-                TestChoiceInfo.initFtpParam(choiceDir) 
+                ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir) 
         });
         jobInput.addValue("input.file", selectedValue);
         
@@ -77,7 +77,7 @@ public class TestFileDownloader {
     @Test
     public void selectionFromDropDownDir() throws JobDispatchException {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
-                TestChoiceInfo.initFtpParam(choiceDir_dirListing) 
+                ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir_dirListing) 
         });
         jobInput.addValue("input.file", selectedDirValue);
 
@@ -92,7 +92,7 @@ public class TestFileDownloader {
     @SuppressWarnings("unchecked")
     @Test
     public void passByReference_ignoreDropdownSelection() throws JobDispatchException {
-        ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         // set to passByReference
         pinfo.getAttributes().put(GPConstants.PARAM_INFO_URL_MODE[0], "on");
         assertEquals("pinfo._isUrlMode()", true, pinfo._isUrlMode());
@@ -135,7 +135,7 @@ public class TestFileDownloader {
     @Test
     public void selectionFromCachedExternalUrl() throws JobDispatchException {
         taskInfo.setParameterInfoArray(new ParameterInfo[] { 
-                TestChoiceInfo.initFileParam("input.file", "", "an input file") 
+                ParameterInfoUtil.initFileParam("input.file", "", "an input file") 
         });
         jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct"); 
         when(gpConfig.getValue(jobContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL)).thenReturn(cacheExternalDirs);

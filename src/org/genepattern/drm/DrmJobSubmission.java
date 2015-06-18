@@ -393,11 +393,20 @@ public class DrmJobSubmission {
             this.jobContext=jobContext;
             return this;
         }
+        
         public Builder commandLine(final String[] commandLine) {
             if (this.commandLine != null) {
                 throw new IllegalArgumentException("commandLine already set, should only call this method once!");
             }
             this.commandLine=Arrays.asList(commandLine);
+            return this;
+        }
+        
+        public Builder commandLine(final List<String> commandLine) {
+            if (this.commandLine != null) {
+                throw new IllegalArgumentException("commandLine already set, should only call this method once!");
+            }
+            this.commandLine=ImmutableList.copyOf(commandLine);
             return this;
         }
         
