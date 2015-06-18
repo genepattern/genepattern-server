@@ -21,21 +21,6 @@ public class HibernateUtilTest {
     }
     
     @Test
-    public void getNextSequenceValue_legacy() throws Exception {
-        System.setProperty("database.vendor", "HSQL");
-
-        HibernateUtil.beginTransaction();
-        try {
-            final int seqVal=HibernateUtil.getNextSequenceValue(seqName);
-            assertEquals("nextSequenceVal="+seqVal+" for '"+seqName +"', nextSequenceVal>0", true, seqVal>0);
-        }
-        finally {
-            //Note: for HSQL, rollback has no effect on the sequence
-            HibernateUtil.rollbackTransaction();
-        }
-    }
-    
-    @Test
     public void getNextSequenceValue() {
         GpConfig gpConfig = new GpConfig.Builder().build();
         HibernateUtil.beginTransaction();
