@@ -45,7 +45,7 @@ public class AdminService implements IAdminService {
         GpContext serverContext = GpContext.getServerContext();
         
         serviceInfoMap.put("genepattern.version", 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, "GenePatternVersion"));
+                ServerConfigurationFactory.instance().getGenePatternVersion());
         serviceInfoMap.put("lsid.authority", 
                 ServerConfigurationFactory.instance().getGPProperty(serverContext, "lsid.authority"));
         serviceInfoMap.put("require.password", 
