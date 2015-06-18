@@ -174,6 +174,7 @@ public class GpConfig {
     private final File gpHomeDir;
     private final URL genePatternURL;
     private final String gpUrl;
+    private final String gpServletContext;
     private final String genePatternVersion;
     private final File logDir;
     private final File gpLogFile;
@@ -203,6 +204,7 @@ public class GpConfig {
     private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
+        this.gpServletContext=in.gpServletContext;
         GpContext gpContext=GpContext.getServerContext();
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
@@ -525,7 +527,6 @@ public class GpConfig {
 
     /**
      * Get the public facing URL for this GenePattern Server.
-     * Note: replaces <pre>System.getProperty("GenePatternURL");</pre>
      * @return
      */
     public URL getGenePatternURL() {
@@ -541,12 +542,11 @@ public class GpConfig {
     }
     
     /**
-     * Get the servlet path.
-     * Note: replaces <pre>System.getProperty("GP_Path", "/gp");</pre>
+     * Get the servlet context.
      * @return
      */
     public String getGpPath() {
-        return System.getProperty("GP_Path", "/gp");
+        return gpServletContext;
     }
 
     public String getGenePatternVersion() {
@@ -1102,6 +1102,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     public static final class Builder {
+        private String gpServletContext="/gp";
         private URL genePatternURL=null;
         private File webappDir=null;
         private File gpHomeDir=null;
@@ -1117,6 +1118,11 @@ $GENEPATTERN_HOME$/tasklib
         private List<Throwable> initErrors=null;
 
         public Builder() {
+        }
+        
+        public Builder gpServletContext(final String gpServletContext) {
+            this.gpServletContext=gpServletContext;
+            return this;
         }
 
         public Builder genePatternURL(final URL gpUrl) {

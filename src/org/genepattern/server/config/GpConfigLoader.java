@@ -124,8 +124,9 @@ public class GpConfigLoader {
         return builder.build();
     }
 
-    public static GpConfig createFromSystemProps(final File webappDir, final File gpHomeDir, final File gpWorkingDir, final File resourcesDir, final File logDir) {
+    public static GpConfig createFromSystemProps(final String gpServletContext, final File webappDir, final File gpHomeDir, final File gpWorkingDir, final File resourcesDir, final File logDir) {
         GpConfig.Builder builder=new GpConfig.Builder();
+        builder.gpServletContext(gpServletContext);
         builder.webappDir(webappDir);
         builder.gpHomeDir(gpHomeDir);
         builder.gpWorkingDir(gpWorkingDir);

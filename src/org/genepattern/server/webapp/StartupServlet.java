@@ -403,28 +403,39 @@ public class StartupServlet extends HttpServlet {
     }
     
     /**
+     * Set the servletContext; for Tomcat 5.5 this is set in the genepattern.properties file.
+     * 
+     * For newer versions (>= 2.5) of the Servlet Spec (not yet implemented) this can be derived form the 
+     * ServletConfig.
+     *     see: http://stackoverflow.com/questions/3120860/servletcontext-getcontextpath
+     *     
+     * @return the servlet context (e.g. "/gp").
+     */
+    protected String initGpServletContext(final ServletConfig servletConfig) {
+        // set the servlet context; 
+        String gpServletContext=System.getProperty("GP_Path", "/gp");
+        if (!gpServletContext.startsWith("/")) {
+            getLog().warn("appending '/' to gpServletContext");
+            gpServletContext = "/" + gpServletContext;
+        }
+        if (gpServletContext.endsWith("/")) {
+            getLog().warn("removing trailing '/' from gpServletContext");
+            gpServletContext = gpServletContext.substring(0, gpServletContext.length()-1);
+        }
+        ServerConfigurationFactory.setGpServletContext(gpServletContext);
+        return gpServletContext;
+    }
+    
+    /**
      * Set the GenePatternURL property dynamically using
      * the current canonical host name and servlet context path.
      * Dynamic lookup works for Tomcat but may not work on other containers... 
-     * Define GP_Path (to be used as the 'servletContextPath') in the genepattern.properties file to avoid dynamic lookup.
+     * Initialize the gpServletContext variable.
      * 
      * @param config
      */
     private void setServerURLs(ServletConfig config) {
-        //set the GP_Path property if it has not already been set
-        String contextPath = System.getProperty("GP_Path");
-        if (contextPath == null) {
-            contextPath = "/gp";
-        }
-        else {
-            if (!contextPath.startsWith("/")) {
-                contextPath = "/" + contextPath;
-            }
-            if (contextPath.endsWith("/")) {
-                contextPath = contextPath.substring(0, contextPath.length()-1);
-            }
-        }
-        System.setProperty("GP_Path", "/gp");
+        final String gpServletContext=initGpServletContext(config);
         String genePatternURL = System.getProperty("GenePatternURL", "");
         if (genePatternURL == null || genePatternURL.trim().length() == 0) {
             try {
@@ -436,8 +447,7 @@ public class StartupServlet extends HttpServlet {
                 if (portStr.length()>0) {
                     portStr = ":"+portStr;
                 }
-                contextPath = System.getProperty("GP_Path", "/gp");
-                String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
+                String genePatternServerURL = "http://" + host_address + portStr + gpServletContext + "/";
                 System.setProperty("GenePatternURL", genePatternServerURL);
                 getLog().error("setting GenePatternURL to " + genePatternServerURL);
             } 
