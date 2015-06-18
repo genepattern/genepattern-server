@@ -117,17 +117,17 @@ public class GpConfig {
     }
     
     /**
-     * Get the current version of GenePattern, (e.g. '3.9.1'). 
+     * Get the current version of GenePattern, (e.g. '3.9.4'). 
      * Automatic schema update is based on the difference between this value (as defined by the GP installation)
      * and the entry in the database.
      * 
      */
     protected String initGenePatternVersion(GpContext gpContext) {
-        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.2");
+        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.4");
         //for junit testing, if the property is not in ServerProperties, check System properties
         if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
             log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
-            gpVersion="3.9.1";
+            gpVersion="3.9.4";
         }
         return gpVersion;
     }
@@ -275,12 +275,7 @@ public class GpConfig {
             this.genePatternURL=initGpUrl(this.serverProperties);
         }
         this.gpUrl=this.genePatternURL.toExternalForm();
-        if (in.genePatternVersion==null || in.genePatternVersion.equals("$GENEPATTERN_VERSION$")) {
-            this.genePatternVersion=initGenePatternVersion(gpContext);
-        }
-        else {
-            this.genePatternVersion=in.genePatternVersion;
-        }
+        this.genePatternVersion=initGenePatternVersion(gpContext);
         if (in.initErrors==null) {
             this.initErrors=Collections.emptyList();
         }
@@ -432,8 +427,7 @@ public class GpConfig {
     /**
      * Convert the given file path into an absolute path if necessary.
      * If GP_HOME is set, assume the path is relative to GP_HOME,
-     * else if GP_WORKING_DIR is set, assume the path is relative to GP_WORKING_DIR,
-     * else assume the path is relative to the current working dir, System.getProperty("user.dir").
+     * else  assume the path is relative to GP_WORKING_DIR.
      * 
      * @param gpContext
      * @param pathOrRelativePath
@@ -444,11 +438,8 @@ public class GpConfig {
         if (this.gpHomeDir != null) {
             rootDir=this.gpHomeDir;
         }
-        else if (this.gpWorkingDir != null) {
-            rootDir=this.gpWorkingDir;
-        }
         else {
-            rootDir=new File(System.getProperty("user.dir"));
+            rootDir=this.gpWorkingDir;
         }
         File f = relativize(rootDir, pathOrRelativePath);
         f = new File(normalizePath(f.getPath()));
@@ -1112,7 +1103,6 @@ $GENEPATTERN_HOME$/tasklib
 
     public static final class Builder {
         private URL genePatternURL=null;
-        private String genePatternVersion=null;
         private File webappDir=null;
         private File gpHomeDir=null;
         private File logDir=null;
