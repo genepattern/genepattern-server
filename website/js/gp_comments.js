@@ -76,6 +76,10 @@ function updateCommentTotalAfterLoad(event)
 
                     hiddenTextArea.hide();
                     $(this).hide();
+
+                    //update the Cancel link if this was an edited comment
+                    var editCommentLinks = $(this).parents(".posted-comment-container").find(".post-edit");
+                    editCommentLinks.find("a").text("Edit");
                 });
 
                 $(this).after(editCommentBtn);
