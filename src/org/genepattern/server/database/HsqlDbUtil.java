@@ -34,7 +34,7 @@ public class HsqlDbUtil {
      * 
      * @return
      */
-    public static String[] initHsqlArgs(GpConfig gpConfig, GpContext gpContext) { 
+    public static String[] initHsqlArgs(GpConfig gpConfig, GpContext gpContext) throws DbException { 
         File dbFilePath=initDbFilePath(gpConfig);
         Value hsqlArgs=gpConfig.getValue(gpContext, "HSQL.args");
         if (hsqlArgs != null && hsqlArgs.getNumValues()==1) {
@@ -62,12 +62,10 @@ public class HsqlDbUtil {
         return initHsqlArgs(hsqlPort, dbFilePath);
     }
     
-    protected static File initDbFilePath(GpConfig gpConfig) {
+    protected static File initDbFilePath(GpConfig gpConfig) throws DbException {
         File resourcesDir=gpConfig.getResourcesDir();
         if (resourcesDir == null) {
-            log.warn("resourcesDir is not set!");
-            File workingDir=new File(System.getProperty("user.dir"));
-            resourcesDir=new File(workingDir.getParent(), "resources");
+            throw new DbException("resourcesDir is not set!");
         }
         return new File(resourcesDir,"GenePatternDB");
     }
