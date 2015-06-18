@@ -48,7 +48,6 @@ import org.genepattern.server.auth.AuthenticationException;
  * </pre>
  * 
  * @see LoginManager#login(HttpServletRequest, HttpServletResponse, boolean)
- * @see org.genepattern.util.LoginHttpClient#loginLatest(org.apache.commons.httpclient.HttpClient)
  * 
  * @author pcarr
  */
