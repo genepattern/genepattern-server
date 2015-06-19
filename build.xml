@@ -225,7 +225,7 @@
         <delete dir="${junit.report.dir}" />
     </target>
 
-    <target name="compile" depends="init" description="Compiles all the source.">
+    <target name="compile" depends="init, initBuildProperties" description="Compiles all the source.">
         <javac debug="true" source="${java.source}" target="${java.target}"
             classpathref="library.classpath"
             destdir="${genepattern.build}"
