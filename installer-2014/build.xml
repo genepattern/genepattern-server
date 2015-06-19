@@ -2,7 +2,7 @@
 <project basedir="." default="installer" name="ServerInstaller">
     <target name="installers" depends="installer"/>
     <target name="installer" depends="setVersionFile">
-        <property file="../resources/build.properties"/>
+        <property file="../website/WEB-INF/build.properties"/>
         <delete verbose="true" file="GP_serverlocales/custom_en"/>
 
         <copy file="server.iap_xml" tofile="GP_server.iap_xml">
@@ -70,7 +70,7 @@
     </target>
 
     <target name="setVersionFile">
-        <property file="../resources/build.properties"/>
+        <property file="../website/WEB-INF/build.properties"/>
         <echo>${version.major}</echo>
         <delete file="version.txt"/>
 

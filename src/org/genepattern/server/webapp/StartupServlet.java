@@ -275,7 +275,6 @@ public class StartupServlet extends HttpServlet {
         ServerConfigurationFactory.reloadConfiguration();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        String gpVersion=gpConfig.getGenePatternVersion();
 
         if ("HSQL".equals(gpConfig.getDbVendor())) {
             // automatically start the DB
@@ -310,9 +309,8 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            //Set<String> schemaEntries=servletConfig.getServletContext().getResourcePaths("/WEB-INF/schema");
             File schemaDir=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/schema"));
-            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpVersion); 
+            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpConfig.getGenePatternVersion()); 
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
@@ -556,10 +554,25 @@ public class StartupServlet extends HttpServlet {
     }
 
     /**
+     * Get the file from the WEB-INF/build.properties file.
+     * Circa GP <= 3.9.3, it was in resources directory.
+     * @return
+     */
+    protected File getBuildPropertiesFile(final ServletConfig servletConfig) {
+        File propFile=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/build.properties"));
+        if (!propFile.exists()) {
+            getLog().warn("did not find 'build.properties' in WEB-INF folder");
+            propFile=new File(this.gpResourcesDir, "build.properties");
+        }
+        return propFile;
+    }
+    
+    /**
      * Set System properties to the union of all settings in:
      * servlet init parameters
      * resources/genepattern.properties
-     * resources/build.properties
+     * resources/custom.properties
+     * WEB-INF/build.properties
      * 
      * @param config
      * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
@@ -615,14 +628,14 @@ public class StartupServlet extends HttpServlet {
                 sysProps.setProperty(key, val);
             }
 
-            if (propFile.exists()) {
-                propFile = new File(this.gpResourcesDir, "build.properties");
-                fis = new FileInputStream(propFile);
+            File buildPropFile=getBuildPropertiesFile(config);
+            if (buildPropFile.exists()) {
+                fis = new FileInputStream(buildPropFile);
                 props.load(fis);
-                getLog().info("\tloaded build.properties from " + propFile.getCanonicalPath());
+                getLog().info("\tloaded build.properties from " + buildPropFile.getAbsolutePath());
             }
             else {
-                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
+                getLog().error("\t"+buildPropFile.getAbsolutePath()+" (No such file or directory)");
             }
             if (fis != null) {
                 fis.close();

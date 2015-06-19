@@ -587,7 +587,7 @@
         description="Updates the build.properties file." >
 
         <property file="build.versionNumbers" />
-        <property name="build.properties.file" value="resources/build.properties" />
+        <property name="build.properties.file" value="website/WEB-INF/build.properties" />
         <propertyfile  file="${build.properties.file}" comment="Created by ANT; defines the build version, date etc.">
             <entry key="genepattern.version" type="string" value="${genepattern.version}" />
             <entry key="version.label" type="string" value="${version.label}" />
