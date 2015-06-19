@@ -893,22 +893,6 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189f1">
-											<property name="propertyValue">
-												<string><![CDATA[@buildtag@]]></string>
-											</property>
-											<property name="propertyName">
-												<string><![CDATA[buildtag]]></string>
-											</property>
-											<property name="passByValue">
-												<boolean>false</boolean>
-											</property>
-											<property name="substituteUnknownVariable">
-												<boolean>false</boolean>
-											</property>
-										</object>
-									</method>
-									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089f2">
 											<property name="propertyValue">
 												<string><![CDATA[false]]></string>

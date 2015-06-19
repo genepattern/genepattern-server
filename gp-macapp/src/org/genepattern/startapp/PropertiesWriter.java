@@ -219,9 +219,6 @@ public class PropertiesWriter {
             else if (line.contains("$HOST_ADDRESS$")) {
                 line = line.replaceAll("\\$HOST_ADDRESS\\$", hostAddress);
             }
-            else if (line.contains("$buildtag$")) {
-                line = line.replaceAll("\\$buildtag\\$", buildTag);
-            }
             else if (line.contains("$USER_INSTALL_DIR$")) {
                 line = line.replaceAll("\\$USER_INSTALL_DIR\\$", installDir);
             }

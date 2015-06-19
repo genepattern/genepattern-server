@@ -24,7 +24,6 @@
 			<replacefilter token="$JAVA$" value="${JAVA}" />
 			<replacefilter token="$R$" value="${R}" />
 			<replacefilter token="$LSID_AUTHORITY$" value="${LSID_AUTHORITY}" />
-			<replacefilter token="$buildtag$" value="${build.tag}" />
 
 			<replacefilter token="-database ../resources/GenePatternDB" value="-database ${INSTALL_DIR}/resources/GenePatternDB" />
 			<replacefilter token="HSQL.classPath=webapps/gp/WEB-INF/lib/hsqldb.jar" value="HSQL.classPath=${INSTALL_DIR}/WEB-INF/lib/hsqldb.jar" />
