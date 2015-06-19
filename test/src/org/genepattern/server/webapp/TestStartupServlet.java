@@ -132,29 +132,16 @@ public class TestStartupServlet {
         assertEquals(expectedResourcesDir, startupServlet.getGpResourcesDir());
     }
     
-    //test cases for loadProperties
     @Test
     public void loadProperties_gpHomeDir_isNull() throws ServletException {
         startupServlet.loadProperties(servletConfig);
     }
 
-    /**
-     * Validate the path to the build.properties file; this test requires that you run the ant "initBuildProperties" first.
-     * @throws ServletException
-     */
     @Test
-    public void loadBuildProperties() throws ServletException {
-        File webappDir=new File("website");
+    public void initWebappDir() throws ServletException {
+        File webappDir=new File("website").getAbsoluteFile();
         when(servletConfig.getServletContext()).thenReturn(servletContext);
         when(servletContext.getRealPath("")).thenReturn(webappDir.getAbsolutePath());
-        when(servletContext.getRealPath("/WEB-INF/build.properties")).thenReturn(new File(webappDir,"WEB-INF/build.properties").getAbsolutePath());
-        
-        File gpResourcesDir=new File("resources");
-        startupServlet.setGpResourcesDir(gpResourcesDir);
-        
-        File buildPropsFile = startupServlet.getBuildPropertiesFile(servletConfig);
-        assertNotNull(buildPropsFile);
-        assertEquals("startupServlet.buildPropertiesFile", new File("website/WEB-INF/build.properties").getAbsoluteFile(), buildPropsFile);
+        assertEquals("webappDir", webappDir, startupServlet.initWebappDir(servletConfig));
     }
-   
 }

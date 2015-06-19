@@ -31,14 +31,38 @@ import com.google.common.collect.ImmutableList;
 
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
-    
+   
     /**
-     * Define the GenePattern version in the 'WEB-INF/build.properties' file, e.g.
+     * Set the 'genepattern.version' in the 'WEB-INF/build.properties' file, e.g.
      * <pre>
-     * genepattern.version=3.9.4
+     * genepattern.version=3.9.3
      * </pre>
      */
     public static final String PROP_GENEPATTERN_VERSION="genepattern.version";
+
+    /**
+     * Set the 'version.label' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.label=
+     * </pre> 
+     */
+    public static final String PROP_VERSION_LABEL="version.label";
+
+    /**
+     * Set the 'version.revision.id' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.revision.id=89
+     * </pre>
+     */
+    public static final String PROP_VERSION_REVISION_ID="version.revision.id";
+
+    /**
+     * Set the 'version.build.date' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.build.date=2015-06-12 18:40
+     * </pre>
+     */
+    public static final String PROP_VERSION_BUILD_DATE="version.build.date";
     
     /**
      * Set the file system path for GenePattern data files.
@@ -200,6 +224,7 @@ public class GpConfig {
     private final ConfigYamlProperties yamlProperties;
     private final File configFile;
     private final Properties dbProperties;
+    private final Properties buildProperties;
     private final String dbVendor;
     private final File ant_1_8_HomeDir;
 
@@ -252,6 +277,7 @@ public class GpConfig {
         else {
             ant_1_8_HomeDir=null;
         } 
+        this.buildProperties=initBuildProperties();
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
@@ -307,6 +333,37 @@ public class GpConfig {
             this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", true);
         }
     }
+    
+    /**
+     * Get the file from the WEB-INF/build.properties file.
+     * Circa GP <= 3.9.3, it was in resources directory.
+     * @return
+     */
+    protected File getBuildPropertiesFile(final File webappDir) {
+        File propFile=new File(webappDir, "WEB-INF/build.properties");
+        if (!propFile.exists()) {
+            log.warn("did not find 'build.properties' in WEB-INF folder");
+            propFile=new File(resourcesDir, "build.properties");
+        }
+        return propFile;
+    }
+    
+    protected Properties initBuildProperties() {
+        if (webappDir==null) {
+            log.error("webappDir is null, can't initialize build.properties");
+            return new Properties();
+        }
+        File buildPropFile=getBuildPropertiesFile(this.webappDir);
+        if (buildPropFile.exists()) {
+            final Properties buildProps=GpServerProperties.loadProps(buildPropFile);
+            log.info("\tloaded build.properties from " + buildPropFile.getAbsolutePath());
+            return buildProps;
+        }
+        else {
+            log.error("\t"+buildPropFile.getAbsolutePath()+" (No such file or directory)");
+            return new Properties();
+        } 
+    } 
     
     /**
      * Initialize the database properties from the resources directory.

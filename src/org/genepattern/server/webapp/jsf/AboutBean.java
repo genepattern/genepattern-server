@@ -12,11 +12,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
  * 
  * @author pcarr
  */
-public class AboutBean {
-    public static final String PROP_VERSION_LABEL="version.label";
-    public static final String PROP_VERSION_REVISION_ID="version.revision.id";
-    public static final String PROP_VERSION_BUILD_DATE="version.build.date";
-    
+public class AboutBean { 
     private final GpConfig gpConfig;
     private final GpContext serverContext;
     
@@ -37,9 +33,9 @@ public class AboutBean {
         this.serverContext=serverContext;
         
         this.genepatternVersion = gpConfig.getGenePatternVersion();
-        this.versionLabel =  gpConfig.getGPProperty(serverContext, PROP_VERSION_LABEL, "");
-        this.versionRevision = gpConfig.getGPProperty(serverContext, PROP_VERSION_REVISION_ID, "");
-        this.versionBuildDate = gpConfig.getGPProperty(serverContext, PROP_VERSION_BUILD_DATE, "");
+        this.versionLabel =  gpConfig.getGPProperty(serverContext, GpConfig.PROP_VERSION_LABEL, "");
+        this.versionRevision = gpConfig.getGPProperty(serverContext, GpConfig.PROP_VERSION_REVISION_ID, "");
+        this.versionBuildDate = gpConfig.getGPProperty(serverContext, GpConfig.PROP_VERSION_BUILD_DATE, "");
         
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();
