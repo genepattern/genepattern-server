@@ -219,9 +219,6 @@ public class PropertiesWriter {
             else if (line.contains("$HOST_ADDRESS$")) {
                 line = line.replaceAll("\\$HOST_ADDRESS\\$", hostAddress);
             }
-            else if (line.contains("$GENEPATTERN_VERSION$")) {
-                line = line.replaceAll("\\$GENEPATTERN_VERSION\\$", gpVersion);
-            }
             else if (line.contains("$buildtag$")) {
                 line = line.replaceAll("\\$buildtag\\$", buildTag);
             }

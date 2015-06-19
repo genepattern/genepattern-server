@@ -24,7 +24,6 @@
 			<replacefilter token="$JAVA$" value="${JAVA}" />
 			<replacefilter token="$R$" value="${R}" />
 			<replacefilter token="$LSID_AUTHORITY$" value="${LSID_AUTHORITY}" />
-			<replacefilter token="$GENEPATTERN_VERSION$" value="${version.major}.${version.minor}" />
 			<replacefilter token="$buildtag$" value="${build.tag}" />
 
 			<replacefilter token="-database ../resources/GenePatternDB" value="-database ${INSTALL_DIR}/resources/GenePatternDB" />
