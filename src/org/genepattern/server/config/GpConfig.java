@@ -33,6 +33,14 @@ public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
     
     /**
+     * Define the GenePattern version in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * genepattern.version=3.9.4
+     * </pre>
+     */
+    public static final String PROP_GENEPATTERN_VERSION="genepattern.version";
+    
+    /**
      * Set the file system path for GenePattern data files.
      */
     public static final String PROP_GENEPATTERN_HOME="GENEPATTERN_HOME";
@@ -123,7 +131,7 @@ public class GpConfig {
      * 
      */
     protected String initGenePatternVersion(GpContext gpContext) {
-        String gpVersion=this.getGPProperty(gpContext, "GenePatternVersion", "3.9.4");
+        String gpVersion=this.getGPProperty(gpContext, PROP_GENEPATTERN_VERSION, "3.9.4");
         //for junit testing, if the property is not in ServerProperties, check System properties
         if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
             log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
