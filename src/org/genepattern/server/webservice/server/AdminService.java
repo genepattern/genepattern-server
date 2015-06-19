@@ -38,18 +38,21 @@ import org.genepattern.webservice.WebServiceException;
 
 public class AdminService implements IAdminService {
     private static Logger log = Logger.getLogger(AdminService.class);
+    private static final String PROP_GENEPATTERN_VERSION="genepattern.version";
+    private static final String PROP_LSID_AUTHORITY="lsid.authority";
+    private static final String PROP_REQUIRE_PASSWORD="require.password";
 
     private static Map<String, String> serviceInfoMap;
     static {
         serviceInfoMap = new HashMap<String, String>();
         GpContext serverContext = GpContext.getServerContext();
         
-        serviceInfoMap.put("genepattern.version", 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, "GenePatternVersion"));
-        serviceInfoMap.put("lsid.authority", 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, "lsid.authority"));
-        serviceInfoMap.put("require.password", 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, "require.password"));
+        serviceInfoMap.put(PROP_GENEPATTERN_VERSION, 
+                ServerConfigurationFactory.instance().getGenePatternVersion());
+        serviceInfoMap.put(PROP_LSID_AUTHORITY, 
+                ServerConfigurationFactory.instance().getGPProperty(serverContext, PROP_LSID_AUTHORITY));
+        serviceInfoMap.put(PROP_REQUIRE_PASSWORD, 
+                ServerConfigurationFactory.instance().getGPProperty(serverContext, PROP_REQUIRE_PASSWORD));
     }
 
 

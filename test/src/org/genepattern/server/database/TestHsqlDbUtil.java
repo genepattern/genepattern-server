@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
@@ -55,7 +56,7 @@ public class TestHsqlDbUtil {
      * This is what will be found in the default genepattern.properties file after installing GP <= 3.9.0.
      */
     @Test
-    public void initHsqlArgsFromConfig_default() {
+    public void initHsqlArgsFromConfig_default() throws DbException {
         gpConfig=new GpConfig.Builder()
             .resourcesDir(resourcesDir)
             .addProperty("HSQL_port", "9001")
@@ -70,7 +71,7 @@ public class TestHsqlDbUtil {
      * When 'HSQL.args is not set but HSQL_port is set.
      */
     @Test
-    public void initHsqlArgs_customPort() {
+    public void initHsqlArgs_customPort() throws DbException {
         gpConfig=new GpConfig.Builder()
             .resourcesDir(resourcesDir)
             .addProperty("HSQL_port", "9005")
@@ -86,7 +87,7 @@ public class TestHsqlDbUtil {
      * When HSQL.args is not set but the path to the 'resources' dir is set to a custom location.
      */
     @Test
-    public void initHsqlArgs_customResourcesDir() {
+    public void initHsqlArgs_customResourcesDir() throws DbException {
         File customResourcesDir=new File("resources").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .resourcesDir(customResourcesDir)
@@ -104,7 +105,7 @@ public class TestHsqlDbUtil {
      *     HSQL.args: [ "-port", "9001", "-database.0", ...,  ]
      */
     @Test
-    public void initHsqlArgsFromConfig_asList() {
+    public void initHsqlArgsFromConfig_asList() throws DbException {
         gpConfig=mock(GpConfig.class);
         when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
         when(gpConfig.getValue(gpContext, "HSQL.args")).thenReturn(defaultValues);
@@ -121,7 +122,7 @@ public class TestHsqlDbUtil {
      * 
      */
     @Test
-    public void intHsqlArgsFromConfig_notset() {
+    public void intHsqlArgsFromConfig_notset() throws DbException {
         File resourcesDir=GpConfig.relativize(null, "../resources");
         resourcesDir=new File(GpConfig.normalizePath(resourcesDir.getPath())); 
         gpConfig=new GpConfig.Builder()
@@ -136,11 +137,18 @@ public class TestHsqlDbUtil {
     }
 
     @Test
-    public void intHsqlArgsFromConfig_noResourcesDir() {
+    public void intHsqlArgsFromConfig_defaultResourcesDir() throws DbException {
         String[] actual=HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
         assertThat(actual, is(defaultExpected));
     }
     
+    @Test(expected=DbException.class)
+    public void intHsqlArgsFromConfig_resourcesDirConfigError() throws DbException {
+        gpConfig=mock(GpConfig.class);
+        when(gpConfig.getResourcesDir()).thenReturn(null);
+        HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
+    }
+
     @Test
     public void listSchemaFiles_nullDbSchemaVersion() {
         final String schemaPrefix="analysis_hypersonic-";

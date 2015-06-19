@@ -35,7 +35,7 @@ public class LoginHttpClient {
     }
 
     private String serverUrl = ""; //e.g. http://127.0.0.1:8080
-    private String contextPath = System.getProperty("GP_Path", "/gp");
+    private String contextPath = "/gp";
 
     private String username = "";
     private String password = null;

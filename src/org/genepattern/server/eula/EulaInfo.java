@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.HtmlEncoder;
 
 /**
@@ -184,9 +185,8 @@ public class EulaInfo implements Comparable<EulaInfo> {
      */
     public String getLink(String contextPath) {
         if (contextPath==null) {
-            //GP_Path=/gp
-            contextPath = System.getProperty("GP_Path", "/gp");
-            log.error("contextPath==null, using '"+contextPath+"'");
+            contextPath = ServerConfigurationFactory.instance().getGpPath();
+            log.warn("contextPath==null, using '"+contextPath+"'");
         }
         //http://gpbroad.broadinstitute.org:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&file=ComparativeMarkerSelection.pdf
         String htmlEncodedLicense = HtmlEncoder.htmlEncode(license);

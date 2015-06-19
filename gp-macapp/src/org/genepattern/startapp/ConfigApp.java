@@ -140,22 +140,6 @@ public class ConfigApp {
         File oldResourcesDir = new File("/Users/" + user + "/.genepattern/resources");
         File newPropFile = new File(newResourcesDir, "genepattern.properties");
         File oldPropFile = new File(oldResourcesDir, "genepattern.properties");
-        File oldBuildProperties = new File(oldResourcesDir, "build.properties");
-        File newBuildProperties = new File(newResourcesDir, "build.properties");
-
-        // Read build.properties to get version & tag
-        Properties properties = new Properties();
-        InputStream is = null;
-        try {
-            is = new FileInputStream(newBuildProperties);
-            properties.load(is);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String version = properties.getProperty("genepattern.version");
-        String tag = properties.getProperty("build.tag");
 
         // Write to genepattern.properties
         PropertiesWriter pw = new PropertiesWriter();
@@ -167,19 +151,10 @@ public class ConfigApp {
         pw.setR(rField.getText());
         pw.setR25(r25Field.getText());
         pw.setRequirePassword(Boolean.toString(yesRadioButton.isSelected()));
-        pw.setGpVersionUpgrade(version);
-        pw.setBuildTagUpgrade(tag);
 
         try {
             pw.writeUserTime(newPropFile);
             pw.writeUserTime(oldPropFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Copy over the new build.properties file
-        try {
-            FileUtils.copyFile(newBuildProperties, oldBuildProperties);
         } catch (IOException e) {
             e.printStackTrace();
         }
