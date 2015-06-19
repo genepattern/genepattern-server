@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -12,11 +13,9 @@ import org.genepattern.server.config.ServerConfigurationFactory;
  * 
  * @author pcarr
  */
-public class AboutBean {
-    public static final String PROP_VERSION_LABEL="version.label";
-    public static final String PROP_VERSION_REVISION_ID="version.revision.id";
-    public static final String PROP_VERSION_BUILD_DATE="version.build.date";
-    
+public class AboutBean { 
+    private static final Logger log = Logger.getLogger(AboutBean.class);
+
     private final GpConfig gpConfig;
     private final GpContext serverContext;
     
@@ -33,13 +32,21 @@ public class AboutBean {
     }
 
     public AboutBean(GpConfig gpConfig, GpContext serverContext) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
+        }
+        if (serverContext==null) {
+            log.warn("serverContext==null");
+            serverContext=GpContext.getServerContext();
+        }
+        
         this.gpConfig=gpConfig;
         this.serverContext=serverContext;
         
         this.genepatternVersion = gpConfig.getGenePatternVersion();
-        this.versionLabel =  gpConfig.getGPProperty(serverContext, PROP_VERSION_LABEL, "");
-        this.versionRevision = gpConfig.getGPProperty(serverContext, PROP_VERSION_REVISION_ID, "");
-        this.versionBuildDate = gpConfig.getGPProperty(serverContext, PROP_VERSION_BUILD_DATE, "");
+        this.versionLabel =  gpConfig.getBuildProperty(GpConfig.PROP_VERSION_LABEL, "");
+        this.versionRevision = gpConfig.getBuildProperty(GpConfig.PROP_VERSION_REVISION_ID, "");
+        this.versionBuildDate = gpConfig.getBuildProperty(GpConfig.PROP_VERSION_BUILD_DATE, "");
         
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();

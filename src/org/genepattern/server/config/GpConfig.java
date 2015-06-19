@@ -27,18 +27,45 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
 import org.genepattern.webservice.JobInfo;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class GpConfig {
     private static Logger log = Logger.getLogger(GpConfig.class);
-    
+   
     /**
-     * Define the GenePattern version in the 'WEB-INF/build.properties' file, e.g.
+     * Set the 'genepattern.version' in the 'WEB-INF/build.properties' file, e.g.
      * <pre>
-     * genepattern.version=3.9.4
+     * genepattern.version=3.9.3
      * </pre>
      */
     public static final String PROP_GENEPATTERN_VERSION="genepattern.version";
+
+    /**
+     * Set the 'version.label' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.label=
+     * </pre> 
+     */
+    public static final String PROP_VERSION_LABEL="version.label";
+
+    /**
+     * Set the 'version.revision.id' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.revision.id=89
+     * </pre>
+     */
+    public static final String PROP_VERSION_REVISION_ID="version.revision.id";
+
+    /**
+     * Set the 'version.build.date' in the 'WEB-INF/build.properties' file, e.g.
+     * <pre>
+     * version.build.date=2015-06-12 18:40
+     * </pre>
+     */
+    public static final String PROP_VERSION_BUILD_DATE="version.build.date";
     
     /**
      * Set the file system path for GenePattern data files.
@@ -131,13 +158,15 @@ public class GpConfig {
      * 
      */
     protected String initGenePatternVersion(GpContext gpContext) {
-        String gpVersion=this.getGPProperty(gpContext, PROP_GENEPATTERN_VERSION, "3.9.4");
-        //for junit testing, if the property is not in ServerProperties, check System properties
-        if ("$GENEPATTERN_VERSION$".equals(gpVersion)) {
-            log.info("GenePatternVersion=$GENEPATTERN_VERSION$, using hard-coded value");
-            gpVersion="3.9.4";
-        }
-        return gpVersion;
+        String gpVersion;
+        if (this.buildProperties!=null) {
+            gpVersion=this.buildProperties.get("genepattern.version");
+            if (!Strings.isNullOrEmpty(gpVersion)) {
+                return gpVersion;
+            }
+        } 
+        log.error("Error initializing genepattern.version from config, using hard-coded value");
+        return "3.9.4";
     }
     
     /**
@@ -200,6 +229,7 @@ public class GpConfig {
     private final ConfigYamlProperties yamlProperties;
     private final File configFile;
     private final Properties dbProperties;
+    private final Map<String,String> buildProperties;
     private final String dbVendor;
     private final File ant_1_8_HomeDir;
 
@@ -252,6 +282,7 @@ public class GpConfig {
         else {
             ant_1_8_HomeDir=null;
         } 
+        this.buildProperties=initBuildProperties();
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
             this.logDir=in.logDir;
@@ -285,6 +316,7 @@ public class GpConfig {
             this.genePatternURL=initGpUrl(this.serverProperties);
         }
         this.gpUrl=this.genePatternURL.toExternalForm();
+        // must call this after initBuildProperties, because the version is loaded from the build.properties file
         this.genePatternVersion=initGenePatternVersion(gpContext);
         if (in.initErrors==null) {
             this.initErrors=Collections.emptyList();
@@ -307,6 +339,37 @@ public class GpConfig {
             this.gpPluginDir=initRootDir(gpContext, PROP_PLUGIN_DIR, "patches", true);
         }
     }
+    
+    /**
+     * Get the file from the WEB-INF/build.properties file.
+     * Circa GP <= 3.9.3, it was in resources directory.
+     * @return
+     */
+    protected File getBuildPropertiesFile(final File webappDir) {
+        File propFile=new File(webappDir, "WEB-INF/build.properties");
+        if (!propFile.exists()) {
+            log.warn("did not find 'build.properties' in WEB-INF folder");
+            propFile=new File(resourcesDir, "build.properties");
+        }
+        return propFile;
+    }
+    
+    protected Map<String,String> initBuildProperties() {
+        if (webappDir==null) {
+            log.error("webappDir is null, can't initialize build.properties");
+            return Collections.emptyMap();
+        }
+        File buildPropFile=getBuildPropertiesFile(this.webappDir);
+        if (buildPropFile.exists()) {
+            final Properties buildProps=GpServerProperties.loadProps(buildPropFile);
+            log.info("\tloaded build.properties from " + buildPropFile.getAbsolutePath()); 
+            return ImmutableMap.copyOf(Maps.fromProperties(buildProps));
+        }
+        else {
+            log.error("\t"+buildPropFile.getAbsolutePath()+" (No such file or directory)");
+            return Collections.emptyMap();
+        } 
+    } 
     
     /**
      * Initialize the database properties from the resources directory.
@@ -584,6 +647,13 @@ public class GpConfig {
     }
 
     /**
+     * Get the read-only map of properties loaded from the WEB-INF/build.properties file.
+     */
+    public Map<String,String> getBuildProperties() {
+        return  buildProperties;
+    }
+    
+    /**
      * Get the database configuration properties loaded from the <resources>/database_default.properties and
      * optionally from the <resources>/database_custom.properties files.
      * @return
@@ -637,6 +707,32 @@ public class GpConfig {
         }
         return value;
     }
+
+    /**
+     * Get the value from the 'build.properties' file.
+     * @param key
+     * @return
+     */
+    public String getBuildProperty(final String key) {
+        return getBuildProperty(key, null);
+    }
+
+    /**
+     * Get the value from the 'build.properties' file, or the default value.
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public String getBuildProperty(final String key, final String defaultValue) {
+        if (this.buildProperties==null) {
+            return defaultValue;
+        }
+        String rval=this.buildProperties.get(key);
+        if (rval != null) {
+            return rval;
+        }
+        return defaultValue;
+    } 
 
     /**
      * @deprecated, use getValue instead, which supports lists.

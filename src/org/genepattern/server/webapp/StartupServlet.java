@@ -73,6 +73,10 @@ public class StartupServlet extends HttpServlet {
         return "GenePatternStartupServlet";
     }
     
+    protected File getWebappDir() {
+        return webappDir;
+    }
+    
     protected void setGpWorkingDir(final File gpWorkingDir) {
         this.gpWorkingDir=gpWorkingDir;
     }
@@ -103,6 +107,15 @@ public class StartupServlet extends HttpServlet {
     
     protected File getGpJobResultsDir() {
         return this.gpJobResultsDir;
+    }
+    
+    /**
+     * Initialize the webapp dir (e.g. ./Tomcat/webapps/gp) for the servlet.
+     * @return
+     */
+    protected File initWebappDir(final ServletConfig servletConfig) {
+        // implemented to work with Servlet spec <= 2.5, e.g. Tomcat-5.5
+        return new File(servletConfig.getServletContext().getRealPath(""));    
     }
     
     /**
@@ -247,7 +260,7 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        this.webappDir=new File(servletConfig.getServletContext().getRealPath(""));
+        this.webappDir=initWebappDir(servletConfig);
         ServerConfigurationFactory.setWebappDir(webappDir);
         this.gpHomeDir=initGpHomeDir(servletConfig);
         ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
@@ -554,25 +567,10 @@ public class StartupServlet extends HttpServlet {
     }
 
     /**
-     * Get the file from the WEB-INF/build.properties file.
-     * Circa GP <= 3.9.3, it was in resources directory.
-     * @return
-     */
-    protected File getBuildPropertiesFile(final ServletConfig servletConfig) {
-        File propFile=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/build.properties"));
-        if (!propFile.exists()) {
-            getLog().warn("did not find 'build.properties' in WEB-INF folder");
-            propFile=new File(this.gpResourcesDir, "build.properties");
-        }
-        return propFile;
-    }
-    
-    /**
      * Set System properties to the union of all settings in:
      * servlet init parameters
      * resources/genepattern.properties
      * resources/custom.properties
-     * WEB-INF/build.properties
      * 
      * @param config
      * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
@@ -628,15 +626,6 @@ public class StartupServlet extends HttpServlet {
                 sysProps.setProperty(key, val);
             }
 
-            File buildPropFile=getBuildPropertiesFile(config);
-            if (buildPropFile.exists()) {
-                fis = new FileInputStream(buildPropFile);
-                props.load(fis);
-                getLog().info("\tloaded build.properties from " + buildPropFile.getAbsolutePath());
-            }
-            else {
-                getLog().error("\t"+buildPropFile.getAbsolutePath()+" (No such file or directory)");
-            }
             if (fis != null) {
                 fis.close();
                 fis = null;
