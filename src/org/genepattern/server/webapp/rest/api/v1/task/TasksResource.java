@@ -569,7 +569,8 @@ public class TasksResource {
             final @PathParam("taskNameOrLsid") String taskNameOrLsid,
             final @Context HttpServletRequest request,
             @DefaultValue("true") @QueryParam("includeProperties") boolean includeProperties,
-            @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren
+            @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
+            @DefaultValue("true") @QueryParam("includeEula") boolean includeEula
             ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
@@ -588,7 +589,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren);
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -623,7 +624,8 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula) throws Exception {
+        GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         JSONObject jsonObj=new JSONObject();
         String href=getTaskInfoPath(request, taskInfo);
         jsonObj.put("href", href);
@@ -672,7 +674,7 @@ public class TasksResource {
                 for (JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren);
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula);
                         applyJobSubmission(childObject, js);
                         children.put(childObject);
                     }
@@ -685,6 +687,11 @@ public class TasksResource {
 
                 jsonObj.put("children", children);
             }
+        }
+
+        if (includeEula) {
+            JSONObject eulaInfo = getEulaForModuleJson(request, taskContext, taskInfo, false, false);
+            jsonObj.put("eulaInfo", eulaInfo);
         }
 
         try {
