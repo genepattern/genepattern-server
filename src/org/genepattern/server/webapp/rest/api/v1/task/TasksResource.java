@@ -690,7 +690,7 @@ public class TasksResource {
         }
 
         if (includeEula) {
-            JSONObject eulaInfo = getEulaForModuleJson(request, taskContext, taskInfo, false, false);
+            JSONObject eulaInfo = getEulaForModuleJson(request, taskContext, taskInfo, true, false);
             jsonObj.put("eulaInfo", eulaInfo);
         }
 
