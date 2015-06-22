@@ -29,6 +29,11 @@ public class ServerConfigurationFactory {
 
     private static GpConfig gpConfigSingleton=null;
     
+    private static String gpServletContext="/gp";
+    public static void setGpServletContext(final String gpServletContext) {
+       ServerConfigurationFactory.gpServletContext=gpServletContext;
+    }
+    
     private static File webappDir=null;
     public static void setWebappDir(final File webappDir) {
         ServerConfigurationFactory.webappDir=webappDir;
@@ -60,13 +65,13 @@ public class ServerConfigurationFactory {
     }
     
     synchronized public static void reloadConfiguration() {
-        setGpConfig(GpConfigLoader.createFromSystemProps(webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
+        setGpConfig(GpConfigLoader.createFromSystemProps(gpServletContext, webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
     }
 
     public static GpConfig instance() {
         // lazy init
         if (gpConfigSingleton==null) {
-            setGpConfig(GpConfigLoader.createFromSystemProps(webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
+            setGpConfig(GpConfigLoader.createFromSystemProps(gpServletContext, webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
         }
         return gpConfigSingleton;
     }

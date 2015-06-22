@@ -132,10 +132,16 @@ public class TestStartupServlet {
         assertEquals(expectedResourcesDir, startupServlet.getGpResourcesDir());
     }
     
-    //test cases for loadProperties
     @Test
     public void loadProperties_gpHomeDir_isNull() throws ServletException {
         startupServlet.loadProperties(servletConfig);
     }
-   
+
+    @Test
+    public void initWebappDir() throws ServletException {
+        File webappDir=new File("website").getAbsoluteFile();
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
+        when(servletContext.getRealPath("")).thenReturn(webappDir.getAbsolutePath());
+        assertEquals("webappDir", webappDir, startupServlet.initWebappDir(servletConfig));
+    }
 }

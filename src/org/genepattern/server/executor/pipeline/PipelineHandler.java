@@ -1266,7 +1266,6 @@ public class PipelineHandler {
                 return "";
             }
             attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-            String context = System.getProperty("GP_Path", "/gp");
             //special-case: handle space ' ' char in filename
             //TODO: make this more robust by using a standard method for transforming server files to URLs
             fileName = fileName.replaceAll(" ", "%20");

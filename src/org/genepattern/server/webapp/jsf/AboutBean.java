@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -12,7 +13,12 @@ import org.genepattern.server.config.ServerConfigurationFactory;
  * 
  * @author pcarr
  */
-public class AboutBean {
+public class AboutBean { 
+    private static final Logger log = Logger.getLogger(AboutBean.class);
+
+    private final GpConfig gpConfig;
+    private final GpContext serverContext;
+    
     private String full;
     
     //mapped from build.properties file
@@ -22,10 +28,25 @@ public class AboutBean {
     private String versionBuildDate = "";
 
     public AboutBean() {
-        this.genepatternVersion = System.getProperty("genepattern.version", "unknown");
-        this.versionLabel = System.getProperty("version.label", "");
-        this.versionRevision = System.getProperty("version.revision.id", "");
-        this.versionBuildDate = System.getProperty("version.build.date", "");
+        this(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+    }
+
+    public AboutBean(GpConfig gpConfig, GpContext serverContext) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
+        }
+        if (serverContext==null) {
+            log.warn("serverContext==null");
+            serverContext=GpContext.getServerContext();
+        }
+        
+        this.gpConfig=gpConfig;
+        this.serverContext=serverContext;
+        
+        this.genepatternVersion = gpConfig.getGenePatternVersion();
+        this.versionLabel =  gpConfig.getBuildProperty(GpConfig.PROP_VERSION_LABEL, "");
+        this.versionRevision = gpConfig.getBuildProperty(GpConfig.PROP_VERSION_REVISION_ID, "");
+        this.versionBuildDate = gpConfig.getBuildProperty(GpConfig.PROP_VERSION_BUILD_DATE, "");
         
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();
@@ -67,20 +88,16 @@ public class AboutBean {
      * @return the java version on which the server is running, <code>System.getProperty("java.version")</code>
      */
     public String getJavaVersion() {
-        String javaVersion = System.getProperty("java.version");
-        if (javaVersion == null) {
-            javaVersion = "";
-        }
+        String javaVersion = System.getProperty("java.version", "");
         return javaVersion;
     }
 
     public String getContactUs() {
         GpContext context = UIBeanHelper.getUserContext();
-        String link = ServerConfigurationFactory.instance().getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
+        String link = gpConfig.getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
         return link;
     }
     
-    private final GpContext serverContext=GpContext.getServerContext();
     /**
      * Configurable Google Analytics so that we don't have to manually edit the index.xhtml file after each GP server update.
      * Documentation is in the GpConfig file and in the config_default.yaml file.
@@ -95,12 +112,12 @@ public class AboutBean {
      * @return
      */
     public boolean isGoogleAnalyticsEnabled() {
-        boolean rval=ServerConfigurationFactory.instance().getGPBooleanProperty(serverContext, GpConfig.PROP_GA_ENABLED, false);
+        boolean rval=gpConfig.getGPBooleanProperty(serverContext, GpConfig.PROP_GA_ENABLED, false);
         return rval;
     }
 
     public String getGoogleAnalyticsTrackingId() {
-        return ServerConfigurationFactory.instance().getGPProperty(serverContext, GpConfig.PROP_GA_TRACKING_ID, "");
+        return gpConfig.getGPProperty(serverContext, GpConfig.PROP_GA_TRACKING_ID, "");
     }
 
 }

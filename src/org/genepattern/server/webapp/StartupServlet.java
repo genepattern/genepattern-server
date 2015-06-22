@@ -73,6 +73,10 @@ public class StartupServlet extends HttpServlet {
         return "GenePatternStartupServlet";
     }
     
+    protected File getWebappDir() {
+        return webappDir;
+    }
+    
     protected void setGpWorkingDir(final File gpWorkingDir) {
         this.gpWorkingDir=gpWorkingDir;
     }
@@ -103,6 +107,15 @@ public class StartupServlet extends HttpServlet {
     
     protected File getGpJobResultsDir() {
         return this.gpJobResultsDir;
+    }
+    
+    /**
+     * Initialize the webapp dir (e.g. ./Tomcat/webapps/gp) for the servlet.
+     * @return
+     */
+    protected File initWebappDir(final ServletConfig servletConfig) {
+        // implemented to work with Servlet spec <= 2.5, e.g. Tomcat-5.5
+        return new File(servletConfig.getServletContext().getRealPath(""));    
     }
     
     /**
@@ -247,7 +260,7 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        this.webappDir=new File(servletConfig.getServletContext().getRealPath(""));
+        this.webappDir=initWebappDir(servletConfig);
         ServerConfigurationFactory.setWebappDir(webappDir);
         this.gpHomeDir=initGpHomeDir(servletConfig);
         ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
@@ -275,7 +288,6 @@ public class StartupServlet extends HttpServlet {
         ServerConfigurationFactory.reloadConfiguration();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        String gpVersion=gpConfig.getGenePatternVersion();
 
         if ("HSQL".equals(gpConfig.getDbVendor())) {
             // automatically start the DB
@@ -310,9 +322,8 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            //Set<String> schemaEntries=servletConfig.getServletContext().getResourcePaths("/WEB-INF/schema");
             File schemaDir=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/schema"));
-            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpVersion); 
+            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpConfig.getGenePatternVersion()); 
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
@@ -403,28 +414,39 @@ public class StartupServlet extends HttpServlet {
     }
     
     /**
+     * Set the servletContext; for Tomcat 5.5 this is set in the genepattern.properties file.
+     * 
+     * For newer versions (>= 2.5) of the Servlet Spec (not yet implemented) this can be derived form the 
+     * ServletConfig.
+     *     see: http://stackoverflow.com/questions/3120860/servletcontext-getcontextpath
+     *     
+     * @return the servlet context (e.g. "/gp").
+     */
+    protected String initGpServletContext(final ServletConfig servletConfig) {
+        // set the servlet context; 
+        String gpServletContext=System.getProperty("GP_Path", "/gp");
+        if (!gpServletContext.startsWith("/")) {
+            getLog().warn("appending '/' to gpServletContext");
+            gpServletContext = "/" + gpServletContext;
+        }
+        if (gpServletContext.endsWith("/")) {
+            getLog().warn("removing trailing '/' from gpServletContext");
+            gpServletContext = gpServletContext.substring(0, gpServletContext.length()-1);
+        }
+        ServerConfigurationFactory.setGpServletContext(gpServletContext);
+        return gpServletContext;
+    }
+    
+    /**
      * Set the GenePatternURL property dynamically using
      * the current canonical host name and servlet context path.
      * Dynamic lookup works for Tomcat but may not work on other containers... 
-     * Define GP_Path (to be used as the 'servletContextPath') in the genepattern.properties file to avoid dynamic lookup.
+     * Initialize the gpServletContext variable.
      * 
      * @param config
      */
     private void setServerURLs(ServletConfig config) {
-        //set the GP_Path property if it has not already been set
-        String contextPath = System.getProperty("GP_Path");
-        if (contextPath == null) {
-            contextPath = "/gp";
-        }
-        else {
-            if (!contextPath.startsWith("/")) {
-                contextPath = "/" + contextPath;
-            }
-            if (contextPath.endsWith("/")) {
-                contextPath = contextPath.substring(0, contextPath.length()-1);
-            }
-        }
-        System.setProperty("GP_Path", "/gp");
+        final String gpServletContext=initGpServletContext(config);
         String genePatternURL = System.getProperty("GenePatternURL", "");
         if (genePatternURL == null || genePatternURL.trim().length() == 0) {
             try {
@@ -436,8 +458,7 @@ public class StartupServlet extends HttpServlet {
                 if (portStr.length()>0) {
                     portStr = ":"+portStr;
                 }
-                contextPath = System.getProperty("GP_Path", "/gp");
-                String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
+                String genePatternServerURL = "http://" + host_address + portStr + gpServletContext + "/";
                 System.setProperty("GenePatternURL", genePatternServerURL);
                 getLog().error("setting GenePatternURL to " + genePatternServerURL);
             } 
@@ -549,7 +570,7 @@ public class StartupServlet extends HttpServlet {
      * Set System properties to the union of all settings in:
      * servlet init parameters
      * resources/genepattern.properties
-     * resources/build.properties
+     * resources/custom.properties
      * 
      * @param config
      * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
@@ -605,15 +626,6 @@ public class StartupServlet extends HttpServlet {
                 sysProps.setProperty(key, val);
             }
 
-            if (propFile.exists()) {
-                propFile = new File(this.gpResourcesDir, "build.properties");
-                fis = new FileInputStream(propFile);
-                props.load(fis);
-                getLog().info("\tloaded build.properties from " + propFile.getCanonicalPath());
-            }
-            else {
-                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
-            }
             if (fis != null) {
                 fis.close();
                 fis = null;

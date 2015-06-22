@@ -1697,7 +1697,7 @@ public class GenePatternAnalysisTask {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
             JobInfoManager m = new JobInfoManager();
-            String contextPath = System.getProperty("GP_Path", "/gp");
+            String contextPath = ServerConfigurationFactory.instance().getGpPath();
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
