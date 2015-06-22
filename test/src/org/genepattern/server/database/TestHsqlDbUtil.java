@@ -179,6 +179,17 @@ public class TestHsqlDbUtil {
         assertEquals("num schema files, latest version", 40, schemaFiles.size());
     }
     
+    @Test
+    public void getLatestSchemaVersionFromSchemaDir() {
+        HsqlDbUtil.DbSchemaFilter f=new HsqlDbUtil.DbSchemaFilter("analysis_hypersonic-");
+        int c=f.compare(new File("analysis_hypersonic-3.9.3"), new File("analysis_hypersonic-3.9.3-a"));
+        assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
+        //Strings.
+        //assertEquals(
+        
+        //HsqlDbUtil.getLatestSchemaVersionFromSchemaDir(schemaDir, "");
+    }
+    
     @Ignore @Test
     public void initDbSchemaMysql() throws Throwable {
         

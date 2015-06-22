@@ -23,6 +23,35 @@ import org.hsqldb.Server;
 
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
+    
+    /**
+     * Helper class for filtering and sorting the list of database schema files
+     * (aka DDL scripts) in the WEB-INF/schema directory.
+     * 
+     * @author pcarr
+     *
+     */
+    public static final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
+        final String schemaPrefix;
+        public DbSchemaFilter() {
+            this("analysis_hypersonic-");
+        }
+        public DbSchemaFilter(final String schemaPrefix) {
+            this.schemaPrefix=schemaPrefix;
+        }
+
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".sql") && name.startsWith(schemaPrefix);
+        }
+
+        public int compare(File f1, File f2) {
+            String name1 = f1.getName();
+            String version1 = name1.substring(schemaPrefix.length(), name1.length() - ".sql".length());
+            String name2 = f2.getName();
+            String version2 = name2.substring(schemaPrefix.length(), name2.length() - ".sql".length());
+            return version1.compareToIgnoreCase(version2);
+        }
+    }
 
     /**
      * Initialize the arguments to the HSQL DB startup command.
@@ -161,22 +190,9 @@ public class HsqlDbUtil {
     protected static List<File> listSchemaFiles(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
         log.debug("listing schema files ... ");
         List<File> rval=new ArrayList<File>();
-        FilenameFilter schemaFilenameFilter = new FilenameFilter() {
-            // INNER CLASS !!!
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".sql") && name.startsWith(schemaPrefix);
-            }
-        };
+        final DbSchemaFilter schemaFilenameFilter = new DbSchemaFilter(schemaPrefix);
         File[] schemaFiles = resourceDir.listFiles(schemaFilenameFilter);
-        Arrays.sort(schemaFiles, new Comparator<File>() {
-            public int compare(File f1, File f2) {
-                String name1 = f1.getName();
-                String version1 = name1.substring(schemaPrefix.length(), name1.length() - ".sql".length());
-                String name2 = f2.getName();
-                String version2 = name2.substring(schemaPrefix.length(), name2.length() - ".sql".length());
-                return version1.compareToIgnoreCase(version2);
-            }
-        });
+        Arrays.sort(schemaFiles, schemaFilenameFilter);
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
