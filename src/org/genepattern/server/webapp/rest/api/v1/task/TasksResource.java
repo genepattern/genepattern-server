@@ -20,12 +20,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -248,10 +243,10 @@ public class TasksResource {
         }
 
         // return enough info to make an HTTP request as a callback to the server to accept all pending license(s) for the module
-        final String acceptUrl=EulaServlet.getServletPath(request);
+        String acceptUrl = getServletPath(request, taskInfo.getLsid());
         eulaObj.put("acceptUrl", acceptUrl);
-        eulaObj.put("acceptType", "GET");
-        final JSONObject acceptData=new JSONObject();
+        eulaObj.put("acceptType", "PUT");
+        final JSONObject acceptData = new JSONObject();
         acceptData.put("lsid", taskInfo.getLsid());
         eulaObj.put("acceptData", acceptData);
         return eulaObj;
@@ -935,8 +930,8 @@ public class TasksResource {
         try {
             boolean includeAll= all != null;
             boolean includePending= !includeAll || pending != null;
-            final JSONObject eulaInfoJson=TasksResource.getEulaForModuleJson(request, userContext, taskInfo, includePending, includeAll);
-            final String eulaInfoStr=eulaInfoJson.toString();
+            final JSONObject eulaInfoJson = TasksResource.getEulaForModuleJson(request, userContext, taskInfo, includePending, includeAll);
+            final String eulaInfoStr = eulaInfoJson.toString();
 
             //return the JSON representation
             return Response.ok()
@@ -946,6 +941,46 @@ public class TasksResource {
         catch (Throwable t) {
             return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
         }
+    }
+
+    @PUT
+    @Path("{taskNameOrLsid}/eulaAccept")
+    public Response acceptEula(@Context HttpServletRequest request, @PathParam("taskNameOrLsid") String taskNameOrLsid) {
+        TaskInfo taskInfo = null;
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            taskInfo = getTaskInfo(taskNameOrLsid, userContext.getUserId());
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.NOT_FOUND).entity(t.getLocalizedMessage()).build();
+        }
+
+        try {
+            userContext.setTaskInfo(taskInfo);
+            EulaManager.instance(userContext).recordEula(userContext);
+        }
+        catch (Throwable t) {
+            String message = "Error accepting EULA agreement in REST endpoint: "+t . getLocalizedMessage();
+            log.error(message, t);
+            return Response.status(500).entity("Error accepting EULA agreement in REST endpoint").build();
+        }
+
+        //success
+        return Response.ok().build();
+    }
+
+    private static String getServletPath(HttpServletRequest request, String lsid) {
+        String rootPath = UrlUtil.getGpUrl(request);
+        if (!rootPath.endsWith("/")) {
+            rootPath += "/";
+        }
+        try {
+            rootPath += "rest/" + URI_PATH + "/" + URLEncoder.encode(lsid, "UTF-8") + "/eulaAccept";
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return rootPath;
     }
 
     private TaskInfo getTaskInfo(final String taskLSID, final String username)
