@@ -97,6 +97,12 @@ $.widget("gp.module", {
         });
 
         this.tags = $('<div>', {
+            'class': 'module-html'
+        }).attr("onclick", "$(this).parent().module('showMenu').module('stopProp', event)")
+          .append(this.options.data.html).appendTo(this.element);
+
+
+        this.tags = $('<div>', {
             'class': 'module-tag'
         }).appendTo(this.element);
 
@@ -436,7 +442,7 @@ $.widget("gp.modulelist", {
     },
 
     filter: function(filter) {
-        var numberHidden = 0
+        var numberHidden = 0;
         for (var i = 0; i < this.listings.length; i++) {
             var listing = this.listings[i];
             var searchText = listing.find(".module-name, .module-description, .module-tag").text();
