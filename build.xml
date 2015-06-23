@@ -450,6 +450,21 @@
         </jar>
     </target>
 
+    <macrodef name="signjar" uri="http://genepattern.org/gp">
+        <attribute name="jarfile" />
+        <sequential>
+            <echo>signing @{jarfile} with keystore=${signjar.keystore}</echo>
+            <signjar jar="@{jarfile}"
+                preservelastmodified="true"
+                keystore="${signjar.keystore}"
+                maxmemory="1024M"
+                alias="${signjar.alias}"
+                storepass="${signjar.storepass}"
+                tsaurl="${signjar.tsaurl}"
+            />
+        </sequential>
+    </macrodef>
+
     <target name="init-signjar">
         <!-- load signjar.properties -->
         <property file="${user.home}/.gp_build/signjar.properties" />
@@ -465,6 +480,9 @@
         </input>
 
         <available file="${signjar.keystore}" property="keyStore.present" />
+        
+        <property name="signjar.tsaurl" value="https://timestamp.geotrust.com/tsa" />
+
     </target>
 
     <target name="makeKeystore" depends="init-signjar" unless="keyStore.present">
@@ -480,27 +498,14 @@
             </dname>
         </genkey>
     </target>
-
-    <target name="sign-visualizer-applet" depends="jar-visualizer-applet,init-signjar,makeKeystore">
-        <echo>signing visualizer applet with keystore=${signjar.keystore}</echo>
-        <signjar jar="${genepattern.build}/${runVisualizer-jarname}"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
-        <signjar jar="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
-        <signjar jar="website/WEB-INF/lib/commons-codec-1.6.jar"
-                         keystore="${signjar.keystore}"
-                         maxmemory="1024M"
-                         alias="${signjar.alias}"
-                         storepass="${signjar.storepass}"
-        />
+        
+    <target name="sign-visualizer-applet" depends="jar-visualizer-applet,init-signjar,makeKeystore"
+        description="Sign the visualizer applet jar files"
+        xmlns:gp="http://genepattern.org/gp"
+    >
+        <gp:signjar jarfile="${genepattern.build}/${runVisualizer-jarname}" />
+        <gp:signjar jarfile="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar" />
+        <gp:signjar jarfile="website/WEB-INF/lib/commons-codec-1.6.jar" />
     </target>
 
     <!-- =================================================================== -->
