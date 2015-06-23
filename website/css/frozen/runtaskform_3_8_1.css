@@ -688,3 +688,17 @@ div.tagsinput span.tag a
     direction: ltr;
     cursor: pointer;
 }
+
+table.missingTaskTable
+{
+    font-size: 12px;
+    width: 100%;
+    border: 2px solid #80a7d0;
+    border-collapse:collapse;
+    margin-bottom: 8px;
+}
+
+.missingTaskTable tr:nth-child(odd)
+{
+    background: #EFEFFF;
+}

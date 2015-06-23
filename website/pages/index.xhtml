@@ -481,22 +481,23 @@ function showFileInput(id) {
                     </form>
                 </div>
 
-                <div class="pHeaderTitleDiv top-level-background">
-                    <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
-                    Comments
-                </div>
-                <div class="commentsContent paramgroup-spacing">
-                    <textarea id="jobComment" placeholder="Add a comment..."/>
-                </div>
+                <div id="runTaskMiscDiv">
+                    <div class="pHeaderTitleDiv top-level-background">
+                        <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
+                        Comments
+                    </div>
+                    <div class="commentsContent paramgroup-spacing">
+                        <textarea id="jobComment" placeholder="Add a comment..."/>
+                    </div>
 
-               <div class="pHeaderTitleDiv top-level-background">
-                    <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
-                    Tags
+                   <div class="pHeaderTitleDiv top-level-background">
+                        <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
+                        Tags
+                    </div>
+                    <div class="tagsContent paramgroup-spacing">
+                        <input id="jobTags"/>
+                    </div>
                 </div>
-                <div class="tagsContent paramgroup-spacing">
-                    <input id="jobTags"/>
-                </div>
-
                 <hr/>
 
                 <div style="height: 40px;">
