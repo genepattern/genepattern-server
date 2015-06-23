@@ -702,3 +702,8 @@ table.missingTaskTable
 {
     background: #EFEFFF;
 }
+
+.missingTaskTable tr td
+{
+    padding: 5px;
+}
