@@ -713,3 +713,8 @@ table.missingTaskTable
     z-index: -9999;
 }
 
+#launchJSNewWinDiv
+{
+    font-size: 12px;
+}
+

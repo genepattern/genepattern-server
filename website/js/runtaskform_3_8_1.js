@@ -272,6 +272,15 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 else {
                     loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"], response["batchParams"]);
                 }
+
+                //add checkbox to specify whether to open in a new window
+                //if this is a Javascription visualizer
+                if(run_task_info.is_js_viewer)
+                {
+                    var launchDiv = $("<div id='launchJSNewWinDiv'/>");
+                    launchDiv.append("<label><input type='checkbox' id='launchJSNewWin'/>Launch in a new window</label>");
+                    $("#runTaskMiscDiv").prepend(launchDiv);
+                }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
                 $("#submitJob").show();
@@ -2300,7 +2309,15 @@ function submitTask() {
             }
             else
             {
-                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+                if(run_task_info.is_js_viewer && $("#launchJSNewWin").is(":checked"))
+                {
+                    window.open(response.launchUrl, "_blank");
+                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "");
+                }
+                else
+                {
+                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+                }
             }
 
             console.log("Response text: " + response.text);
