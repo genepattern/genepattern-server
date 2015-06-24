@@ -707,3 +707,9 @@ table.missingTaskTable
 {
     padding: 5px;
 }
+
+.uploadedinputfile
+{
+    z-index: -9999;
+}
+
