@@ -385,6 +385,7 @@
                             <div class="current-job-status">
                                 <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
+                            <button id="left-nav-files-refresh" onclick="refreshUploadTree();"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                         </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
 	                </div>

@@ -379,6 +379,10 @@ body {
     bottom: 85px;
 }
 
+#left-nav-files-refresh {
+   float: right;
+}
+
 #uploadTree {
     padding: 10px;
     position: absolute;
