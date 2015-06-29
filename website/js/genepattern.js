@@ -2646,7 +2646,11 @@ function loadJavascript(jobId, container, openInNewWindow) {
                 if (!openInNewWindow)
                 {
                     // Add to history so back button works
-                        var visualizerAppend = "&openVisualizers=" + openVisualizers;
+                    var visualizerAppend = "&openVisualizers=true";
+                    if(openVisualizers != null)
+                    {
+                        visualizerAppend = "&openVisualizers=" + openVisualizers;
+                    }
 
                     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
 
@@ -2681,6 +2685,9 @@ function loadJobStatus(jobId, forceVisualizers) {
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
     }
+
+    //remove any javascript visualizer divs
+    $(".jsViewerDiv").remove();
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");

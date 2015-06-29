@@ -49,7 +49,8 @@
         {
             var self = this;
 
-            var mainViewerPane = $("<div/>").attr("id", "mainJsViewerPane");
+            var mainViewerPane = $("<div/>").attr("id", "mainJsViewerPane").css("height", "100%").css("width", "100%");
+
             var headerString = self.options.taskName;
             var version = self._getTaskVersion();
             if(version != -1)
@@ -92,39 +93,56 @@
             self.element.append(mainViewerPane);
 
             mainViewerPane.block(
-                {
-                    message: '<h2><img src="../images/spin.gif" /> Loading...</h2>',
-                    css: {
-                        padding:        0,
-                        margin:         0,
-                        width:          '30%',
-                        top:            '40%',
-                        left:           '35%',
-                        textAlign:      'center',
-                        color:          '#000',
-                        border:         '2px solid #aaa',
-                        backgroundColor: '#fff',
-                        cursor:         'wait'
-                    },
-                    centerY: false,
-                    centerX: false,
-                    overlayCSS:  {
-                        backgroundColor: '#000',
-                        opacity:         0.1,
-                        cursor:          'wait'
-                    }
-                });
+            {
+                message: '<h2><img src="../images/spin.gif" /> Loading...</h2>',
+                css: {
+                    padding:        0,
+                    margin:         0,
+                    width:          '30%',
+                    top:            '40%',
+                    left:           '35%',
+                    textAlign:      'center',
+                    color:          '#000',
+                    border:         '2px solid #aaa',
+                    backgroundColor: '#fff',
+                    cursor:         'wait'
+                },
+                centerY: false,
+                centerX: false,
+                overlayCSS:  {
+                    backgroundColor: '#000',
+                    opacity:         0.1,
+                    cursor:          'wait'
+                }
+            });
 
             setTimeout(function(){
                 var jsViewerFrame = $("<iframe width='100%' height='500'  frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
-                    $("#mainJsViewerPane").unblock();
+                    mainViewerPane.unblock();
+
+                    $(this).height($("#content").height());
+                    //$(this).width($(this).contents().width());
                 });
-                var viewerDiv = $("<div/>").attr("id", "jsViewer");
-                viewerDiv.append(jsViewerFrame);
-                $("#mainJsViewerPane").append(viewerDiv);
+                //var viewerDiv = $("<div/>").attr("id", "jsViewer");
+                //viewerDiv.append(jsViewerFrame);
+                mainViewerPane.append(jsViewerFrame);
+                //$("#main-pane").append(jsViewerFrame);
+
+                /*var jsLayout = mainViewerPane.layout({
+                    spacing_closed: 0,
+                    spacing_open:   0,
+                    //north__paneSelector: ".jsViewerInfoBar",
+                    center__maskContents:		true // IMPORTANT - enable iframe masking
+                });*/
+
+                /*for(var property in jsLayout.panes){
+                    if(jsLayout.panes.hasOwnProperty(property)){
+                       // jsLayout.panes[property].css('border', 'none');
+                    }
+                }*/
             }, 2000 );
         },
         destroy: function() {

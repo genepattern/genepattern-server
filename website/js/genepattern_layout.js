@@ -21,8 +21,8 @@ $(function()
         ,	center__maskContents:		true // IMPORTANT - enable iframe masking
     });
 
+    mainLayout.panes.center.css({'border' : 'none'});
 
-    //var westSelector = "body > .ui-layout-west"; // outer-west pane
     $("<span></span>").addClass("toggle-btn").prependTo( ".ui-layout-west");
     mainLayout.addToggleBtn( ".ui-layout-west .toggle-btn", "west");
 
