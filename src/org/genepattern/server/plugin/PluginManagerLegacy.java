@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -169,9 +170,18 @@ public class PluginManagerLegacy {
         return obj.toString();
     }
 
-    // check that each patch listed in the TaskInfoAttributes for this task is installed.
-    // if not, download and install it.
-    // For any problems, throw an exception
+    /**
+     * Check that each patch listed in the TaskInfoAttributes for this task is installed.
+     * if not, download and install it.
+     * For any problems, throw an exception
+     * 
+     * @param taskInfo
+     * @param taskIntegrator
+     * 
+     * @throws Exception
+     * @throws MalformedURLException
+     * @throws JobDispatchException
+     */
     public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws Exception, MalformedURLException, JobDispatchException {
         List<PatchInfo> patchesToInstall=getPatchesToInstall(taskInfo);
         // no patches to install?
@@ -206,33 +216,100 @@ public class PluginManagerLegacy {
             taskIntegrator.statusMessage("Patch is already installed, patchLsid="+requiredPatchLSID);
             return;
         }
-        installPatch(requiredPatchLSID, requiredPatchURL, taskIntegrator);
-    }
-    
-    
-    protected static File getPatchDirectory(final String patchName) 
-    throws ConfigurationException
-    {
-        return getPatchDirectory(ServerConfigurationFactory.instance(), GpContext.getServerContext(), patchName);
-    }
+        boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
+        long expectedContentLength=-1;
+        if (wasNullURL) {
+            requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
+            HashMap<String,String> hmProps = fetchPatchInfoFromUrl(requiredPatchLSID, requiredPatchURL, taskIntegrator);
+            String result = (String) hmProps.get("result");
+            if (!result.equals("Success")) {
+                throw new JobDispatchException("Error requesting patch: " + result + " in request for " + requiredPatchURL);
+            }
+            requiredPatchURL = (String) hmProps.get("site_module.url");
+            try {
+                expectedContentLength = Long.parseLong((String) hmProps.get("site_module.zipfilesize"));
+            }
+            catch (NullPointerException npe) {
+                // ignore
+            } 
+            catch (NumberFormatException nfe) {
+                // ignore
+            }
+        }
+        installPatch(requiredPatchLSID, requiredPatchURL, expectedContentLength, taskIntegrator);
+    } 
 
-    protected static File getPatchDirectory(final GpConfig gpConfig, final GpContext gpContext, final String patchName) 
+    /**
+     * Get the location on the server file system for installing the patch.
+     * @param patchLSID
+     * @return
+     * @throws ConfigurationException, if there is no configured root plugin directory (e.g. '<GENEPATTERN_HOME>/patches')
+     */
+    protected File getPatchDirectory(final LSID patchLSID) 
     throws ConfigurationException
     {
+        final String patchDirName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
         File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
         if (rootPluginDir==null) {
             throw new ConfigurationException("Configuration error: Unable to get patch directory");
         }
-        return new File(rootPluginDir, patchName);
+        return new File(rootPluginDir, patchDirName);
     }
 
+    /**
+     * refactored from original (pre 3.9.4) implementation of 'installPatch'; When the module manifest does not include a patchURL,
+     * use the server configured location to initialize the patch meta-data.
+     * 
+     * @param requiredPatchLSID
+     * @param requiredPatchURL
+     * @param taskIntegrator
+     * @return the patch meta data
+     * @throws JobDispatchException
+     */
+    protected HashMap<String,String> fetchPatchInfoFromUrl(final String requiredPatchLSID, final String requiredPatchURL, final Status taskIntegrator) 
+    throws JobDispatchException
+    {
+        try {
+            final HashMap<String,String> hmProps = new HashMap<String,String>();
+            taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
+            final URL url = new URL(requiredPatchURL);
+            final URLConnection connection = url.openConnection();
+            connection.setUseCaches(false);
+            if (connection instanceof HttpURLConnection) {
+                connection.setDoOutput(true);
+                final PrintWriter pw = new PrintWriter(connection.getOutputStream());
+                final String[] patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
+                pw.print("patch");
+                pw.print("=");
+                pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
+                for (int p = 0; p < patchQualifiers.length; p++) {
+                    pw.print("&");
+                    pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
+                    pw.print("=");
+                    pw.print(URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8));
+                }
+                pw.close();
+            }
+            final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
+            final Element root = doc.getDocumentElement();
+            processNode(root, hmProps);
+            return hmProps;
+        }
+        catch (Throwable t) {
+            //catch MalformedURLException, IOException, UnsupportedEncodingException, SAXException, ParserConfigurationException 
+            String errorMessage="Error installing patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+t.getLocalizedMessage();
+            log.error(errorMessage, t);
+            throw new JobDispatchException(errorMessage, t);
+        }
+    }
+    
     /**
      * Install a specific patch, downloading a zip file with a manifest containing a command line, 
      * running that command line after substitutions, and recording the result 
      * in the genepattern.properties patch registry
      */
-    private void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
-        log.debug("installPatch, lsid="+requiredPatchLSID+", url="+requiredPatchURL);
+    protected void installPatch(final String requiredPatchLSID, final String requiredPatchURL, final long expectedContentLength, final Status taskIntegrator) throws JobDispatchException {
+        log.debug("installPatch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+", contentLength="+expectedContentLength);
         LSID patchLSID = null;
         try {
             patchLSID = new LSID(requiredPatchLSID);
@@ -240,67 +317,24 @@ public class PluginManagerLegacy {
         catch (MalformedURLException e) {
             throw new JobDispatchException("Error installing patch, requiredPatchLSID="+requiredPatchLSID, e);
         }
-        
-        boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
-        if (wasNullURL) {
-            requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
-        }
-        HashMap hmProps = new HashMap();
+        File patchDirectory = null; 
         try {
-            if (wasNullURL) {
-                taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
-                URL url = new URL(requiredPatchURL);
-                URLConnection connection = url.openConnection();
-                connection.setUseCaches(false);
-                if (connection instanceof HttpURLConnection) {
-                    connection.setDoOutput(true);
-                    PrintWriter pw = new PrintWriter(connection.getOutputStream());
-                    String[] patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
-                    pw.print("patch");
-                    pw.print("=");
-                    pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
-                    for (int p = 0; p < patchQualifiers.length; p++) {
-                        pw.print("&");
-                        pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
-                        pw.print("=");
-                        pw.print(URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8));
-                    }
-                    pw.close();
-                }
-                Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
-                Element root = doc.getDocumentElement();
-                processNode(root, hmProps);
-                String result = (String) hmProps.get("result");
-                if (!result.equals("Success")) {
-                    throw new JobDispatchException("Error requesting patch: " + result + " in request for " + requiredPatchURL);
-                }
-                requiredPatchURL = (String) hmProps.get("site_module.url");
-            }
+            patchDirectory = getPatchDirectory(patchLSID); 
         }
-        catch (Exception e) {
-            String errorMessage="Error installing patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+e.getLocalizedMessage();
-            log.error(errorMessage, e);
-            throw new JobDispatchException(errorMessage, e);
+        catch (Throwable t) {
+            throw new JobDispatchException(t.getLocalizedMessage(), t);
         }
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
         }
         String zipFilename = null;
         try {
-            zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps.get("site_module.zipfilesize"));
+            zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, expectedContentLength);
         }
         catch (IOException e) {
             String errorMessage="Error downloading patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+e.getLocalizedMessage();
             log.error(errorMessage, e);
             throw new JobDispatchException(errorMessage, e);
-        }
-        String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
-        File patchDirectory; 
-        try {
-            patchDirectory = getPatchDirectory(patchName);
-        }
-        catch (Throwable t) {
-            throw new JobDispatchException(t.getLocalizedMessage(), t);
         }
         
         if (taskIntegrator != null) {
@@ -326,6 +360,9 @@ public class PluginManagerLegacy {
             log.error(errorMessage, e);
             throw new JobDispatchException(errorMessage, e);
         }
+        
+        validatePatchLsid(requiredPatchLSID, props);
+        
         String nomDePatch = props.getProperty("name");
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
@@ -417,6 +454,23 @@ public class PluginManagerLegacy {
         }
     }
     
+    /**
+     * Check for patch LSID mismatch
+     * @param requiredPatchLSID, the patch LSID declared in the module manifest file
+     * @param patchProperties, the actual properties loaded from the manifest file for the patch
+     * @return
+     * @throws JobDispatchException iff the requiredPatchLSID does not match the LSID in the patch properties
+     */
+    protected static boolean validatePatchLsid(final String requiredPatchLSID, final Properties patchProperties) 
+    throws JobDispatchException
+    {
+         final String actualPatchLsid=patchProperties.getProperty("LSID");
+        if (!Objects.equals(actualPatchLsid, requiredPatchLSID)) {
+            throw new JobDispatchException("patch LSID mismatch, requiredPatchLSID="+requiredPatchLSID+" does not match the LSID in the patch manifest, patchLSID="+actualPatchLsid);
+        } 
+        return true;
+    }
+    
     protected static List<String> initCmdLineArray(final String cmdLine) {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext(); //TODO: <==== create a context for the patch
@@ -429,20 +483,17 @@ public class PluginManagerLegacy {
         return cmdLineArgs;
     }
 
-    // download the patch zip file from a URL
-    private static String downloadPatch(String url, Status taskIntegrator, String contentLength) throws IOException {
+    /**
+     * download the patch zip file from a URL
+     * @param url
+     * @param taskIntegrator
+     * @param expectedContentLength, the content length of the zip file or '-1'
+     * @return
+     * @throws IOException
+     */
+    private static String downloadPatch(String url, Status taskIntegrator, long expectedContentLength) throws IOException {
         try {
-            long len = -1;
-            try {
-                len = Long.parseLong(contentLength);
-            } 
-            catch (NullPointerException npe) {
-                // ignore
-            } 
-            catch (NumberFormatException nfe) {
-                // ignore
-            }
-            return GenePatternAnalysisTask.downloadTask(url, taskIntegrator, len, false);
+            return GenePatternAnalysisTask.downloadTask(url, taskIntegrator, expectedContentLength, false);
         } 
         catch (IOException ioe) {
             if (ioe.getCause() != null) {
@@ -505,7 +556,7 @@ public class PluginManagerLegacy {
     }
 
     // load the patch manifest file into a Properties object
-    private static Properties loadManifest(File patchDirectory) throws IOException {
+    protected static Properties loadManifest(File patchDirectory) throws IOException {
         File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
         if (!manifestFile.exists()) {
             throw new IOException(MANIFEST_FILENAME + " missing from patch " + patchDirectory.getName());
@@ -561,7 +612,7 @@ public class PluginManagerLegacy {
         return exitValue;
     }
     
-    protected static void processNode(Node node, HashMap hmProps) {
+    protected static void processNode(Node node, HashMap<String,String> hmProps) {
     if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element c_elt = (Element) node;
         String nodeValue = c_elt.getFirstChild().getNodeValue();

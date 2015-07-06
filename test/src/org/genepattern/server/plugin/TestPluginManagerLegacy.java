@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -95,17 +97,24 @@ public class TestPluginManagerLegacy {
     }
 
     @Test
-    public void getPatchDirectory() throws ConfigurationException {
-        assertEquals(new File(pluginDir, ANT), 
-                PluginManagerLegacy.getPatchDirectory(gpConfig, gpContext, ANT));
+    public void getPatchDirectory() throws Exception {
+        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        
+        assertEquals(new File(pluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
+                pluginMgr.getPatchDirectory(new LSID(ANT)));
     }
     
     @Test(expected=ConfigurationException.class)
-    public void getPatchDirectory_ConfigurationException() throws ConfigurationException {
+    public void getPatchDirectory_ConfigurationException() throws Exception {
         gpConfig=Mockito.mock(GpConfig.class);
         gpContext=Mockito.mock(GpContext.class);
         when(gpConfig.getRootPluginDir(gpContext)).thenReturn(null);
-        PluginManagerLegacy.getPatchDirectory(gpConfig, gpContext, ANT);
+        
+        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+
+        pluginMgr.getPatchDirectory(new LSID(ANT));
     }
     
     @Test
@@ -256,6 +265,39 @@ public class TestPluginManagerLegacy {
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertComparePatchInfo("some installed", expected, patchesToInstall);
+    }
+
+    @Test
+    public void lsidMatch() throws MalformedURLException, IOException, JobDispatchException {
+        // values from module manifest file
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2"; 
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/1/Bowtie_2_1_0.zip";
+        final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+        assertNotNull(patchInfoFromModuleManifest);
+
+        File patchManifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Bowtie_2.1.0.2/manifest");
+        File patchDirectory=patchManifest.getParentFile();
+        Properties patchProperties=PluginManagerLegacy.loadManifest(patchDirectory);
+        assertNotNull("has LSID", patchProperties.getProperty("LSID"));
+        PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
+    }
+
+    /**
+     * Test patch LSID mismatch
+     */
+    @Test(expected=JobDispatchException.class)
+    public void lsidMismatch() throws MalformedURLException, IOException, JobDispatchException {
+        // values from module manifest file
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2"; 
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip";
+        final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+        assertNotNull(patchInfoFromModuleManifest);
+
+        File patchManifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.SAMTools_0_1_19.2/manifest");
+        File patchDirectory=patchManifest.getParentFile();
+        Properties patchProperties=PluginManagerLegacy.loadManifest(patchDirectory);
+        assertNotNull("has LSID", patchProperties.getProperty("LSID"));
+        PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
     }
 
 }
