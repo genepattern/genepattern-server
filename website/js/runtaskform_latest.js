@@ -706,7 +706,8 @@ function loadModuleInfo(module) {
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
     $(".properties-commandline").text(module["commandLine"]);
-    $(".properties-tasktype").text(module["taskType"] + ";" + module["categories"]);
+    $(".properties-tasktype").text(module["taskType"]);
+    $(".properties-categories").text(module["categories"]);
     $(".properties-cpu").text(module["cpuType"]);
     $(".properties-os").text(module["os"]);
     $(".properties-language").text(module["language"]);
