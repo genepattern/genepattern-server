@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -266,38 +267,37 @@ public class TestPluginManagerLegacy {
         assertComparePatchInfo("some installed", expected, patchesToInstall);
     }
 
-    /**
-     * when the lsid in the patch manifest does not match the lsid in the module manifest, requiredPatchLSIDs
-     * 
-     * 
-     * Given a module with,
-     *     requiredPatchLSIDs=urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:1
-     *     requiredPatchURLs=http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/1/SAMTools_0_1_19.zip
-     * Where the LSID in the manifest of the requiredPatchURL does not match  
-     *     LSID=   
-     *     requiredPatchLSIDs=urn:lsid:broadinstitute.org:plugin:TopHat_2.0.8b:1
-     * e.g., module manifest,
-     *     required
-     *     
-     *     
-     *     
-     *         ./broadinstitute.org:plugin/SAMTools_0.1.19/2/manifest:LSID=urn\:lsid\:broadinstitute.org\:plugin\:SAMTools_0.1.19\:2
-
-               //TODO: implement this test
-     */
     @Test
-    public void lsidMismatch() throws MalformedURLException {
+    public void lsidMatch() throws MalformedURLException, IOException, JobDispatchException {
         // values from module manifest file
-        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:1"; 
-        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/1/SAMTools_0_1_19.zip";
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2"; 
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/1/Bowtie_2_1_0.zip";
         final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
         assertNotNull(patchInfoFromModuleManifest);
-        
 
-        
-        // when requiredPatchLSIDs=
-        // and requiredPatchURLs=<.zip>, contains a manifest file with a different LSID
-        
+        File patchManifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.Bowtie_2.1.0.2/manifest");
+        File patchDirectory=patchManifest.getParentFile();
+        Properties patchProperties=PluginManagerLegacy.loadManifest(patchDirectory);
+        assertNotNull("has LSID", patchProperties.getProperty("LSID"));
+        PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
+    }
+
+    /**
+     * Test patch LSID mismatch
+     */
+    @Test(expected=JobDispatchException.class)
+    public void lsidMismatch() throws MalformedURLException, IOException, JobDispatchException {
+        // values from module manifest file
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2"; 
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip";
+        final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+        assertNotNull(patchInfoFromModuleManifest);
+
+        File patchManifest=FileUtil.getDataFile("patches/broadinstitute.org.plugin.SAMTools_0_1_19.2/manifest");
+        File patchDirectory=patchManifest.getParentFile();
+        Properties patchProperties=PluginManagerLegacy.loadManifest(patchDirectory);
+        assertNotNull("has LSID", patchProperties.getProperty("LSID"));
+        PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
     }
 
 }

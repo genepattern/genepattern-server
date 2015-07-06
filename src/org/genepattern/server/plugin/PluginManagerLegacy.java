@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -169,9 +170,18 @@ public class PluginManagerLegacy {
         return obj.toString();
     }
 
-    // check that each patch listed in the TaskInfoAttributes for this task is installed.
-    // if not, download and install it.
-    // For any problems, throw an exception
+    /**
+     * Check that each patch listed in the TaskInfoAttributes for this task is installed.
+     * if not, download and install it.
+     * For any problems, throw an exception
+     * 
+     * @param taskInfo
+     * @param taskIntegrator
+     * 
+     * @throws Exception
+     * @throws MalformedURLException
+     * @throws JobDispatchException
+     */
     public boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws Exception, MalformedURLException, JobDispatchException {
         List<PatchInfo> patchesToInstall=getPatchesToInstall(taskInfo);
         // no patches to install?
@@ -307,6 +317,13 @@ public class PluginManagerLegacy {
         catch (MalformedURLException e) {
             throw new JobDispatchException("Error installing patch, requiredPatchLSID="+requiredPatchLSID, e);
         }
+        File patchDirectory = null; 
+        try {
+            patchDirectory = getPatchDirectory(patchLSID); 
+        }
+        catch (Throwable t) {
+            throw new JobDispatchException(t.getLocalizedMessage(), t);
+        }
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
         }
@@ -318,13 +335,6 @@ public class PluginManagerLegacy {
             String errorMessage="Error downloading patch, lsid="+requiredPatchLSID+", url="+requiredPatchURL+": "+e.getLocalizedMessage();
             log.error(errorMessage, e);
             throw new JobDispatchException(errorMessage, e);
-        }
-        File patchDirectory = null; 
-        try {
-            patchDirectory = getPatchDirectory(patchLSID); 
-        }
-        catch (Throwable t) {
-            throw new JobDispatchException(t.getLocalizedMessage(), t);
         }
         
         if (taskIntegrator != null) {
@@ -350,6 +360,9 @@ public class PluginManagerLegacy {
             log.error(errorMessage, e);
             throw new JobDispatchException(errorMessage, e);
         }
+        
+        validatePatchLsid(requiredPatchLSID, props);
+        
         String nomDePatch = props.getProperty("name");
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
@@ -441,6 +454,23 @@ public class PluginManagerLegacy {
         }
     }
     
+    /**
+     * Check for patch LSID mismatch
+     * @param requiredPatchLSID, the patch LSID declared in the module manifest file
+     * @param patchProperties, the actual properties loaded from the manifest file for the patch
+     * @return
+     * @throws JobDispatchException iff the requiredPatchLSID does not match the LSID in the patch properties
+     */
+    protected static boolean validatePatchLsid(final String requiredPatchLSID, final Properties patchProperties) 
+    throws JobDispatchException
+    {
+         final String actualPatchLsid=patchProperties.getProperty("LSID");
+        if (!Objects.equals(actualPatchLsid, requiredPatchLSID)) {
+            throw new JobDispatchException("patch LSID mismatch, requiredPatchLSID="+requiredPatchLSID+" does not match the LSID in the patch manifest, patchLSID="+actualPatchLsid);
+        } 
+        return true;
+    }
+    
     protected static List<String> initCmdLineArray(final String cmdLine) {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext(); //TODO: <==== create a context for the patch
@@ -526,7 +556,7 @@ public class PluginManagerLegacy {
     }
 
     // load the patch manifest file into a Properties object
-    private static Properties loadManifest(File patchDirectory) throws IOException {
+    protected static Properties loadManifest(File patchDirectory) throws IOException {
         File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
         if (!manifestFile.exists()) {
             throw new IOException(MANIFEST_FILENAME + " missing from patch " + patchDirectory.getName());
