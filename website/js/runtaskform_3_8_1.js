@@ -345,31 +345,24 @@ function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
 
     $("<div></div>")
         .addClass("license-center")
-        .append($("<form></form>")
+        .append($("<div></div>")
             .attr("name", "eula")
-            .attr("action", eula.acceptUrl)
-            .attr("method", eula.acceptType)
-            .append($('<input type="hidden"/>')
-                .attr("name", "lsid")
-                .attr("value", eula.currentLsid)
-        )
-            .append($("<input/>")
-                .attr("type", "hidden")
-                .attr("name", "initialQueryString")
-                .attr("value", initialQueryString)
-        )
-            .append($("<input/>")
-                .attr("type", "hidden")
-                .attr("name", "reloadJob")
-                .attr("value", "")
-        )
             .append(eula.pendingEulas.length > 1 ?
                 $("<p>Do you accept all the license agreements?</p>").addClass("license-agree-text") :
                 $("<p>Do you accept the license agreement?</p>").addClass("license-agree-text")
-        )
+            )
             .append($("<input/>")
                 .attr("type", "submit")
                 .attr("value", "OK")
+                .click(function() {
+                    $.ajax({
+                        method: eula.acceptType,
+                        url: eula.acceptUrl + "?taskNameOrLsid=" + encodeURIComponent(eula.currentLsid),
+                        success: function() {
+                            document.location = '/gp/pages/index.jsf?lsid=' + encodeURIComponent(eula.currentLsid);
+                        }
+                    });
+                })
         )
             .append($("<input/>")
                 .attr("type", "button")
