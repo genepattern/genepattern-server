@@ -228,26 +228,27 @@ public class PluginManagerLegacy {
         }
         installPatch(requiredPatchLSID, requiredPatchURL, expectedContentLength, taskIntegrator);
     } 
-    
-    protected static File getPatchDirectory(final String patchName) 
-    throws ConfigurationException
-    {
-        return getPatchDirectory(ServerConfigurationFactory.instance(), GpContext.getServerContext(), patchName);
-    }
 
-    protected static File getPatchDirectory(final GpConfig gpConfig, final GpContext gpContext, final String patchName) 
+    /**
+     * Get the location on the server file system for installing the patch.
+     * @param patchLSID
+     * @return
+     * @throws ConfigurationException, if there is no configured root plugin directory (e.g. '<GENEPATTERN_HOME>/patches')
+     */
+    protected File getPatchDirectory(final LSID patchLSID) 
     throws ConfigurationException
     {
+        final String patchDirName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
         File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
         if (rootPluginDir==null) {
             throw new ConfigurationException("Configuration error: Unable to get patch directory");
         }
-        return new File(rootPluginDir, patchName);
+        return new File(rootPluginDir, patchDirName);
     }
 
     /**
      * refactored from original (pre 3.9.4) implementation of 'installPatch'; When the module manifest does not include a patchURL,
-     * use the server configured location to initialized the patch meta-data.
+     * use the server configured location to initialize the patch meta-data.
      * 
      * @param requiredPatchLSID
      * @param requiredPatchURL
@@ -318,10 +319,9 @@ public class PluginManagerLegacy {
             log.error(errorMessage, e);
             throw new JobDispatchException(errorMessage, e);
         }
-        String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
-        File patchDirectory; 
+        File patchDirectory = null; 
         try {
-            patchDirectory = getPatchDirectory(patchName);
+            patchDirectory = getPatchDirectory(patchLSID); 
         }
         catch (Throwable t) {
             throw new JobDispatchException(t.getLocalizedMessage(), t);

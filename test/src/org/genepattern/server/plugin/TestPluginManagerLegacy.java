@@ -23,6 +23,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -95,17 +96,24 @@ public class TestPluginManagerLegacy {
     }
 
     @Test
-    public void getPatchDirectory() throws ConfigurationException {
-        assertEquals(new File(pluginDir, ANT), 
-                PluginManagerLegacy.getPatchDirectory(gpConfig, gpContext, ANT));
+    public void getPatchDirectory() throws Exception {
+        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        
+        assertEquals(new File(pluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
+                pluginMgr.getPatchDirectory(new LSID(ANT)));
     }
     
     @Test(expected=ConfigurationException.class)
-    public void getPatchDirectory_ConfigurationException() throws ConfigurationException {
+    public void getPatchDirectory_ConfigurationException() throws Exception {
         gpConfig=Mockito.mock(GpConfig.class);
         gpContext=Mockito.mock(GpContext.class);
         when(gpConfig.getRootPluginDir(gpContext)).thenReturn(null);
-        PluginManagerLegacy.getPatchDirectory(gpConfig, gpContext, ANT);
+        
+        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+
+        pluginMgr.getPatchDirectory(new LSID(ANT));
     }
     
     @Test
@@ -256,6 +264,40 @@ public class TestPluginManagerLegacy {
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertComparePatchInfo("some installed", expected, patchesToInstall);
+    }
+
+    /**
+     * when the lsid in the patch manifest does not match the lsid in the module manifest, requiredPatchLSIDs
+     * 
+     * 
+     * Given a module with,
+     *     requiredPatchLSIDs=urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:1
+     *     requiredPatchURLs=http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file\=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/1/SAMTools_0_1_19.zip
+     * Where the LSID in the manifest of the requiredPatchURL does not match  
+     *     LSID=   
+     *     requiredPatchLSIDs=urn:lsid:broadinstitute.org:plugin:TopHat_2.0.8b:1
+     * e.g., module manifest,
+     *     required
+     *     
+     *     
+     *     
+     *         ./broadinstitute.org:plugin/SAMTools_0.1.19/2/manifest:LSID=urn\:lsid\:broadinstitute.org\:plugin\:SAMTools_0.1.19\:2
+
+               //TODO: implement this test
+     */
+    @Test
+    public void lsidMismatch() throws MalformedURLException {
+        // values from module manifest file
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:1"; 
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/1/SAMTools_0_1_19.zip";
+        final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+        assertNotNull(patchInfoFromModuleManifest);
+        
+
+        
+        // when requiredPatchLSIDs=
+        // and requiredPatchURLs=<.zip>, contains a manifest file with a different LSID
+        
     }
 
 }
