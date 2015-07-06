@@ -63,6 +63,7 @@ public class ModuleJSON extends JSONObject {
         try {
             this.setId(id);
             this.setLsid(job.getLSID());
+            this.setName(job.getName());
             this.constructInputs(job.getParameters(), job.getRuntimePrompt());
         }
         catch (JSONException e) {

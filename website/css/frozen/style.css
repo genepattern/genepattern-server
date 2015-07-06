@@ -1183,3 +1183,8 @@ strong.filtered-number
 {
     cursor: pointer;
 }
+
+#jobResults
+{
+    padding-top: 3px;
+}

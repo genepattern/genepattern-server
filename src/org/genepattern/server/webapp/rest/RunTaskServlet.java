@@ -8,14 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +30,7 @@ import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -229,20 +223,44 @@ public class RunTaskServlet extends HttpServlet
                 // check for missing dependencies
                 // hint, all of the work is done in the constructor, including initialization of the
                 //    dependent tasks and missing task lsids
-                GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
-                if (getDependentTasks.getMissingTaskLsids().size()>0) {
-                    moduleObject.put("missing_tasks", true);
-                    if (log.isDebugEnabled()) {
-                        for(final LSID missingTaskLsid : getDependentTasks.getMissingTaskLsids()) {
-                            final String str=missingTaskLsid.toString();
-                            log.debug("missingTaskLsid: "+str);
+                JSONArray missingTasksList = new JSONArray();
+
+                PipelineModel model = PipelineUtil.getPipelineModel(lsid);
+                boolean pipelineWithMissingTasks = PipelineUtil.isMissingTasks(model, userId);
+
+                if (pipelineWithMissingTasks) {
+                    LinkedHashMap<LSID, PipelineUtil.MissingTaskRecord> missingTasks = PipelineUtil.getMissingTasks(model, userContext.getUserId());
+
+                    for(LSID missingLsid : missingTasks.keySet()) {
+                        String taskName = missingTasks.get(missingLsid).getName();
+                        //SortedSet<LSID> installedVersions = missingTasks.get(missingLsid).getInstalledVersions();
+
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("missingTaskLsid: "+ missingLsid.toString());
                         }
+
+                        JSONObject missingTaskObj = new JSONObject();
+                        missingTaskObj.put("name", taskName);
+                        missingTaskObj.put("version",missingLsid.getVersion());
+                        missingTaskObj.put("lsid", missingLsid.toStringNoVersion());
+
+                        SortedSet<LSID> installedVers = missingTasks.get(missingLsid).getInstalledVersions();
+                        JSONArray installedVersions = new JSONArray();
+                        for(LSID installedLsid: installedVers) {
+
+                            installedVersions.put(installedLsid.getVersion());
+                        }
+                        missingTaskObj.put("installedVersions", installedVersions);
+                        missingTasksList.put(missingTaskObj);
                     }
                 }
                 else {
-                    moduleObject.put("missing_tasks", false);
                 }
 
+                moduleObject.put("missing_tasks", missingTasksList);
+
+                GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
                 final Set<TaskInfo> privateTasks=getDependentTasks.getPrivateTasks();
                 if (privateTasks != null && privateTasks.size()>0) {
                     log.debug("current user, '"+userContext.getUserId()+"', doesn't have permission to run one of the dependent tasks");

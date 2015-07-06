@@ -89,6 +89,15 @@
 	margin-top: 2px;
 }
 
+.module-html {
+    font-size: 8pt;
+    color: #333366;
+    max-height: 26px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
 .module-tag {
     font-size:8pt;
     color: #000099 !important;
@@ -368,6 +377,10 @@ body {
     padding: 0px;
     /*width: 348px;*/
     bottom: 85px;
+}
+
+#left-nav-files-refresh {
+   float: right;
 }
 
 #uploadTree {
@@ -884,6 +897,12 @@ body {
     position: absolute;
     top: 25px;
     left: 50px;
+}
+
+.file-widget-actions .module-html, .job-widget-actions .module-html {
+    position: absolute;
+    top: 42px;
+    left: 47px;
 }
 
 #jobTable_wrapper {

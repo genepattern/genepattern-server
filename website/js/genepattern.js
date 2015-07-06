@@ -2260,7 +2260,8 @@ function createJobWidget(job) {
             "lsid": "",
             "name": "Relaunch",
             "description": "Launch the viewer using the same input.",
-            "version": "<span class='glyphicon glyphicon-off' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            "html":  "<label><input class='newWindow' type='checkbox'/>Launch in a new window</label>",
+            "version": "<span class='glyphicon glyphicon-refresh' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2340,7 +2341,8 @@ function createJobWidget(job) {
                 }
                 else if (relaunchAction)
                 {
-                    loadJavascript(job.jobId, $("#main-pane"), true);
+                    var launchInNewWindow = $(event.currentTarget).find(".newWindow").is(":checked");
+                    loadJavascript(job.jobId, $("#main-pane"), launchInNewWindow);
                 }
                 else {
                     console.log("ERROR: Executing click function for Job " + job.jobId);
@@ -2619,32 +2621,19 @@ function cleanUpPanels()
 }
 
  //this will load a javascript module
-function loadJavascript(jobId, container, openJavascript) {
+function loadJavascript(jobId, container, openInNewWindow) {
     // Abort if there is no job id
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
     }
 
-    var openVisualizers;
-    if (openJavascript !== undefined) {
-        openVisualizers = openJavascript;
-    }
-    else {
-        openVisualizers = getURLParameter("openVisualizers");
-    }
+    var openVisualizers = getURLParameter("openVisualizers");
 
     // if open visualizer is false then user most likely
     // intends to open job status page
-    if (!openVisualizers) {
+    /*if (!openVisualizers) {
         return;
-    }
-
-    // Add to history so back button works
-    var visualizerAppend = "&openVisualizers="+openVisualizers;
-
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
-
-    cleanUpPanels();
+    }*/
 
     $.ajax({
         type: "GET",
@@ -2653,12 +2642,31 @@ function loadJavascript(jobId, container, openJavascript) {
         success: function(data) {
             var job = data;
             if (job.launchUrl !== undefined && job.launchUrl !== null) {
-                container.gpJavascript({
+
+                if (!openInNewWindow)
+                {
+                    // Add to history so back button works
+                    var visualizerAppend = "&openVisualizers=true";
+                    if(openVisualizers != null)
+                    {
+                        visualizerAppend = "&openVisualizers=" + openVisualizers;
+                    }
+
+                    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
+
+                    cleanUpPanels();
+
+                    container.gpJavascript({
                         taskName: job.taskName,
                         taskLsid: job.taskLsid,
                         url: job.launchUrl  //The URL to the main javascript html file
-                });
-                mainLayout.close('west');
+                    });
+                    mainLayout.close('west');
+                }
+                else
+                {
+                    window.open(job.launchUrl, '_blank');
+                }
             }
         },
         error: function(data) {
@@ -2677,6 +2685,9 @@ function loadJobStatus(jobId, forceVisualizers) {
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
     }
+
+    //remove any javascript visualizer divs
+    $(".jsViewerDiv").remove();
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");

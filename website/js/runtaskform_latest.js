@@ -194,19 +194,60 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 loadModuleInfo(module);
 
                 //check if there are missing tasks (only applies to pipelines)
-                if (module["missing_tasks"]) {
+                if (module["missing_tasks"] != undefined && module["missing_tasks"].length > 0) {
 
-                    $("#missingTasksDiv").append("<p class='errorMessage'>WARNING: This pipeline requires modules or module " +
-                        "versions which are not installed on this server.</p>");
-                    var installTasksButton = $("<button> Install missing tasks</button>");
-                    installTasksButton.button().click(function () {
-                        window.location.replace("/gp/viewPipeline.jsp?name=" + run_task_info.lsid);
+                    $("#missingTasksDiv").append("<p class='errorMessage'>The following module versions do not exist on " +
+                        "this server. Before running this pipeline you will need to either install the required modules " +
+                        "or edit the pipeline to use the available module version.</p>");
+
+                    var missingTaskTable = $("<table class='missingTaskTable' border='1'/>");
+                    $("<tr class='missingTaskHeader'/>").append("<th align='left'> Name</th>")
+                        .append("<th align='left'> Required Version </th>")
+                        .append("<th align='left'> Installed Version </th>")
+                        .append("<th align='left'> LSID </th>").appendTo(missingTaskTable);
+
+                    //Output the list of missing tasks
+                    var form = $('<form method="post" action="/gp/pages/taskCatalog.jsf"/>');
+
+                    for(var m=0;m<module["missing_tasks"].length;m++)
+                    {
+                        var missingTaskObj = module["missing_tasks"][m];
+
+                        $("<tr/>").append('<td>'+ missingTaskObj.name +'</td>')
+                            .append("<td>" + missingTaskObj.version + "</td>")
+                            .append("<td>" + missingTaskObj.installedVersions.join(", ")+ "</td>")
+                            .append("<td>" + missingTaskObj.lsid + "</td>").appendTo(missingTaskTable);
+                        var missingTaskLSID = missingTaskObj.lsid + ":" + missingTaskObj.version;
+                        form.append("<input type='hidden' name='lsid' value='"+ missingTaskLSID+"'></input>");
+                    }
+
+                    $("#missingTasksDiv").append(missingTaskTable);
+
+                    var actionDiv = $("<div/>");
+
+                    var installFromZipBtn = $("<button>Install from Zip</button>")
+                        .button().click(function()
+                    {
+                        window.location.replace("/gp/pages/importTask.jsf");
+                    });
+                    actionDiv.append(installFromZipBtn);
+
+                    var installFromRepoBtn = $("<button>Install from Repository</button>")
+                        .button().click(function()
+                    {
+                         // data: { lsid: "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9" }
+                        form.submit();
                     });
 
-                    $("#missingTasksDiv").append(installTasksButton);
+                    if(module["editable"] !== undefined && module["editable"])
+                    {
+                        actionDiv.append(installFromRepoBtn);
+                    }
+
+                    $("#missingTasksDiv").append(actionDiv);
 
                     $(".submitControlsDiv").hide();
-
+                    $("#runTaskMiscDiv").hide();
                     $("#javaCode").parents("tr:first").hide();
                     $("#matlabCode").parents("tr:first").hide();
                     $("#rCode").parents("tr:first").hide();
@@ -230,6 +271,15 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 }
                 else {
                     loadParametersByGroup(module["parameter_groups"], response["parameters"], response["initialValues"], response["batchParams"]);
+                }
+
+                //add checkbox to specify whether to open in a new window
+                //if this is a Javascription visualizer
+                if(run_task_info.is_js_viewer)
+                {
+                    var launchDiv = $("<div id='launchJSNewWinDiv'/>");
+                    launchDiv.append("<label><input type='checkbox' id='launchJSNewWin'/>Launch in a new window</label>");
+                    $("#runTaskMiscDiv").prepend(launchDiv);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
@@ -2252,7 +2302,15 @@ function submitTask() {
             }
             else
             {
-                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+                if(run_task_info.is_js_viewer && $("#launchJSNewWin").is(":checked"))
+                {
+                    window.open(response.launchUrl, "_blank");
+                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "");
+                }
+                else
+                {
+                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
+                }
             }
 
             console.log("Response text: " + response.text);
