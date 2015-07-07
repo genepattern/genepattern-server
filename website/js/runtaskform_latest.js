@@ -696,6 +696,19 @@ function loadModuleInfo(module) {
         run_task_info.is_js_viewer = true;
     }
 
+    //Check if there is a newer Beta version of the module available
+    //module["betaVersion"] = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:999999999";
+    if(module["betaVersion"] && module["betaVersion"].length > 0)
+    {
+        var betaUrl = "/gp/pages/index.jsf?lsid=" + module["betaVersion"];
+        $("#betaInfoDiv").append(
+                "<a href='"+ betaUrl + "'>A new BETA version of the module is available. Click here to try it out. </a>");
+    }
+    else
+    {
+        $("#betaInfoDiv").hide();
+    }
+
     // Display properties
     $(".properties-name").text(module["name"]);
     $(".properties-lsid").text(module["LSID"]);

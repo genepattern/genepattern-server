@@ -718,3 +718,15 @@ table.missingTaskTable
     font-size: 12px;
 }
 
+#betaInfoDiv
+{
+    background-color: #99FFCC;
+    padding: 4px 0 4px 0;
+    width: 100%;
+    margin: 2px;
+    font-style: italic;
+    font-size: 12px;
+    text-indent: 6px;
+}
+
+

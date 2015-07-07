@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
@@ -385,6 +386,51 @@ public class AdminDAO extends BaseDAO {
                 LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes().get(GPConstants.LSID));
                 if (altLSID.compareTo(tiLSID) > 0) {
                     latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
+                }
+            }
+        }
+        return latestTasks;
+    }
+
+    /**
+     * Returns a map containing the latest version of each task in the input array which does not have the specified category. The keys for the map are the
+     * no-version LSIDs of the tasks.
+     *
+     * @param tasks
+     * @return
+     * @throws MalformedURLException
+     */
+    public static Map getLatestTasks(TaskInfo[] tasks, List<String> excludedCategories) throws MalformedURLException {
+        Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
+        for (int i = 0; i < tasks.length; i++) {
+            TaskInfo ti = tasks[i];
+            LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(GPConstants.LSID));
+            TaskInfo altTi = (TaskInfo) latestTasks.get(tiLSID.toStringNoVersion());
+
+            List<String> categories  = CategoryUtil.getCategoriesFromManifest(ti);
+            boolean skip = false;
+            if (altTi == null) {
+                latestTasks.put(tiLSID.toStringNoVersion(), ti);
+            }
+            else {
+                if(excludedCategories != null && excludedCategories.size() > 0)
+                {
+                    for (String category : categories) {
+                        for(String excludedCategory: excludedCategories)
+                        {
+                            if (category.equalsIgnoreCase(excludedCategory))
+                            {
+                                skip = true;
+                            }
+                        }
+                    }
+                }
+                if(!skip)
+                {
+                    LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes().get(GPConstants.LSID));
+                    if (altLSID.compareTo(tiLSID) > 0) {
+                        latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
+                    }
                 }
             }
         }

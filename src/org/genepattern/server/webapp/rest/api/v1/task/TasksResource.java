@@ -309,7 +309,10 @@ public class TasksResource {
             final AdminDAO adminDao = new AdminDAO();
             final TaskInfo[] allTasks;
             allTasks = adminDao.getAllTasksForUser(userId);
-            final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks);
+
+            List<String> excludedCategories = new ArrayList();
+            excludedCategories.add(".beta");
+            final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks, excludedCategories);
             //filter out the hidden tasks
             final CategoryUtil cu=new CategoryUtil();
             // multimap of <baseLsid,categoryNames>
