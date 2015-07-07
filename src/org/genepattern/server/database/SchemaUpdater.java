@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
-import org.genepattern.server.database.HsqlDbUtil.DbSchemaFilter;
 import org.genepattern.server.domain.PropsTable;
 import org.genepattern.webservice.OmnigeneException;
 

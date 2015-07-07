@@ -119,14 +119,14 @@ public class TestSchemaUpdater {
 
     @Test
     public void dbSchemaFilter_compare() {
-        HsqlDbUtil.DbSchemaFilter dbSchemaFilter=new HsqlDbUtil.DbSchemaFilter("analysis_hypersonic-");
+        DbSchemaFilter dbSchemaFilter=new DbSchemaFilter("analysis_hypersonic-");
         int c=dbSchemaFilter.compare(new File("analysis_hypersonic-3.9.3"), new File("analysis_hypersonic-3.9.3-a"));
         assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
     }
     
     @Test
     public void getLatestSchemaVersionFromSchemaDir() {
-        HsqlDbUtil.DbSchemaFilter f=new HsqlDbUtil.DbSchemaFilter("analysis_hypersonic-");
+        DbSchemaFilter f=new DbSchemaFilter("analysis_hypersonic-");
         int c=f.compare(new File("analysis_hypersonic-3.9.3"), new File("analysis_hypersonic-3.9.3-a"));
         assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
         //Strings.

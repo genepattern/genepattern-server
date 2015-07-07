@@ -6,10 +6,8 @@ package org.genepattern.server.database;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -23,35 +21,6 @@ import org.hsqldb.Server;
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
     
-    /**
-     * Helper class for filtering and sorting the list of database schema files
-     * (aka DDL scripts) in the WEB-INF/schema directory.
-     * 
-     * @author pcarr
-     *
-     */
-    public static final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
-        final String schemaPrefix;
-        public DbSchemaFilter() {
-            this("analysis_hypersonic-");
-        }
-        public DbSchemaFilter(final String schemaPrefix) {
-            this.schemaPrefix=schemaPrefix;
-        }
-
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".sql") && name.startsWith(schemaPrefix);
-        }
-
-        public int compare(File f1, File f2) {
-            String name1 = f1.getName();
-            String version1 = name1.substring(schemaPrefix.length(), name1.length() - ".sql".length());
-            String name2 = f2.getName();
-            String version2 = name2.substring(schemaPrefix.length(), name2.length() - ".sql".length());
-            return version1.compareToIgnoreCase(version2);
-        }
-    }
-
     /**
      * Initialize the arguments to the HSQL DB startup command.
      * 
