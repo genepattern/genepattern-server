@@ -131,10 +131,6 @@ public class HsqlDbUtil {
         log.debug("Starting HSQL Database...");
         Server.main(hsqlArgs);
     }
-    
-    public static void updateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
-        SchemaUpdater.updateSchema(HibernateUtil.instance(), resourceDir, schemaPrefix, expectedSchemaVersion);
-    }
 
     protected static List<String> appendIfNecessary(final List<String> argsList) {
         //prevent HSQLDB from calling System.exit when errors occur,

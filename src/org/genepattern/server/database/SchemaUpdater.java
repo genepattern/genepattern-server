@@ -34,7 +34,7 @@ import com.google.common.base.Strings;
 public class SchemaUpdater {
     private static final Logger log = Logger.getLogger(SchemaUpdater.class);
 
-    protected static void updateSchema(final HibernateSessionManager mgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
+    public static void updateSchema(final HibernateSessionManager mgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
     throws DbException
     {
         try {
