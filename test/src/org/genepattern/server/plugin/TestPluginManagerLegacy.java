@@ -271,7 +271,7 @@ public class TestPluginManagerLegacy {
     public void lsidMatch() throws MalformedURLException, IOException, JobDispatchException {
         // values from module manifest file
         final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2"; 
-        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/1/Bowtie_2_1_0.zip";
+        final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/2/Bowtie_2_1_0.zip";
         final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
         assertNotNull(patchInfoFromModuleManifest);
 
@@ -286,7 +286,7 @@ public class TestPluginManagerLegacy {
      * Test patch LSID mismatch
      */
     @Test(expected=JobDispatchException.class)
-    public void lsidMismatch() throws MalformedURLException, IOException, JobDispatchException {
+    public void lsidMismatchSAMToolsTypo() throws MalformedURLException, IOException, JobDispatchException {
         // values from module manifest file
         final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2"; 
         final String requiredPatchURL="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip";
@@ -297,6 +297,26 @@ public class TestPluginManagerLegacy {
         File patchDirectory=patchManifest.getParentFile();
         Properties patchProperties=PluginManagerLegacy.loadManifest(patchDirectory);
         assertNotNull("has LSID", patchProperties.getProperty("LSID"));
+        PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
+    }
+
+    /**
+     * Simulate a typo in the module manifest where the requiredPatchLSID does not match the requiredPatchURL
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws JobDispatchException
+     */
+    @Test(expected=JobDispatchException.class)
+    public void lsidMatchVersion() throws MalformedURLException, IOException, JobDispatchException {
+        // values from module manifest file
+        final String requiredPatchLSID="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2";   // <---- lsid is Bowtie v. 2
+        final String requiredPatchURL= // <---- url is Bowtie v. 1 (which has a different patch LSID)
+                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/1/Bowtie_2_1_0.zip";
+        final PatchInfo patchInfoFromModuleManifest=new PatchInfo(requiredPatchLSID, requiredPatchURL);
+        assertNotNull(patchInfoFromModuleManifest);
+
+        Properties patchProperties=new Properties();
+        patchProperties.put("LSID", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:1");
         PluginManagerLegacy.validatePatchLsid(requiredPatchLSID, patchProperties);
     }
 
