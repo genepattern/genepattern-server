@@ -899,51 +899,7 @@ public class RunTaskServlet extends HttpServlet
         }
         JSONObject content=new JSONObject();
         try {
-            IAdminClient adminClient = new LocalAdminClient(userId);
-            TaskInfo taskInfo = adminClient.getTask(lsid);
-            if (taskInfo == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("Module not found, lsid="+lsid).build();
-            }
-
-            ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
-
-
-            ParameterInfo[] jobParameters=null;
-            if (parameters != null) {
-                //JobInput initialValues= ParamListHelper.getInitialValues(
-                //        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
-                LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-                JobInput initialValues=loadModuleHelper.getInitialValues(
-                        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
-
-
-                jobParameters = new ParameterInfo[parameters.length];
-                int i=0;
-                for(ParameterInfo pinfo : parameters) {
-                    final String id=pinfo.getName();
-                    String value=null;
-                    if (initialValues.hasValue(id)) {
-                        Param p = initialValues.getParam(pinfo.getName());
-                        int numValues=p.getNumValues();
-                        if (numValues==0) {
-                        }
-                        else if (numValues==1) {
-                            value=p.getValues().get(0).getValue();
-                        }
-                        else {
-                            //TODO: can't initialize from a list of values
-                            log.error("can't initialize from a list of values, lsid="+lsid+
-                                    ", pname="+id+", numValues="+numValues);
-                        }
-                    }
-                    jobParameters[i++] = new ParameterInfo(id, value, "");
-                }
-            }
-
-            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, userContext.getUserId(), lsid, taskInfo.getName());
-            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
-            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
-            String code=CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+            String code = CodeGeneratorUtil.getTaskCode(language, lsid, userContext, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
             content.put("code", code);
             return Response.ok().entity(content.toString()).build();
         }
