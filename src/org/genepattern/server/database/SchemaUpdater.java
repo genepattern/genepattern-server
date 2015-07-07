@@ -10,10 +10,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
+import org.genepattern.server.database.HsqlDbUtil.DbSchemaFilter;
 import org.genepattern.server.domain.PropsTable;
 import org.genepattern.webservice.OmnigeneException;
 
@@ -96,6 +99,32 @@ public class SchemaUpdater {
     }
 
     /**
+     * Get the list of schema files to process for the given schemaPrefix, e
+     * @return
+     */
+    protected static List<File> listSchemaFiles(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
+        log.debug("listing schema files ... ");
+        List<File> rval=new ArrayList<File>();
+        final DbSchemaFilter schemaFilenameFilter = new DbSchemaFilter(schemaPrefix);
+        File[] schemaFiles = resourceDir.listFiles(schemaFilenameFilter);
+        Arrays.sort(schemaFiles, schemaFilenameFilter);
+        for (int f = 0; f < schemaFiles.length; f++) {
+            File schemaFile = schemaFiles[f];
+            String name = schemaFile.getName();
+            String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
+            if (expectedSchemaVersion==null || (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0)) {
+                log.debug("adding " + name + " (" + version + ")");
+                rval.add(schemaFile);
+            }
+            else {
+                log.debug("skipping " + name + " (" + version + ")");
+            }
+        }
+        log.debug("listing schema files ... Done!");
+        return rval;
+    }
+
+    /**
      * Query the database for the current schema version recorded in the database.
      * @return
      */
@@ -156,7 +185,7 @@ public class SchemaUpdater {
     private static void createSchema(final HibernateSessionManager sessionMgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) 
     throws DbException
     {
-        List<File> schemaFiles=HsqlDbUtil.listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
+        List<File> schemaFiles=SchemaUpdater.listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
         for(final File schemaFile : schemaFiles) {
             processSchemaFile(sessionMgr, schemaFile);
         }

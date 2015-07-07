@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.genepattern.server.DbException;
@@ -21,6 +22,7 @@ import org.junit.rules.TemporaryFolder;
  *
  */
 public class TestSchemaUpdater {
+    private File schemaDir=new File("website/WEB-INF/schema");
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
@@ -85,4 +87,53 @@ public class TestSchemaUpdater {
         
     }
 
+    @Test
+    public void listSchemaFiles_nullDbSchemaVersion() {
+        final String schemaPrefix="analysis_hypersonic-";
+        final String dbSchemaVersion=null;
+        List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
+    }
+
+    @Test
+    public void listSchemaFiles_emptyDbSchemaVersion() {
+        final String schemaPrefix="analysis_hypersonic-";
+        final String dbSchemaVersion="";
+        List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
+        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
+    }
+    
+    @Test
+    public void listSchemaFiles_update() {
+        final String schemaPrefix="analysis_hypersonic-";
+        List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", "3.9.1");
+        assertEquals("num schema files, updated install of 3.9.2", 1, schemaFiles.size());
+    }
+    
+    @Test
+    public void listSchemaFiles_default() {
+        final String schemaPrefix="analysis_hypersonic-";
+        List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, null);
+        assertEquals("num schema files, latest version", 40, schemaFiles.size());
+    }
+
+    @Test
+    public void dbSchemaFilter_compare() {
+        HsqlDbUtil.DbSchemaFilter dbSchemaFilter=new HsqlDbUtil.DbSchemaFilter("analysis_hypersonic-");
+        int c=dbSchemaFilter.compare(new File("analysis_hypersonic-3.9.3"), new File("analysis_hypersonic-3.9.3-a"));
+        assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
+    }
+    
+    @Test
+    public void getLatestSchemaVersionFromSchemaDir() {
+        HsqlDbUtil.DbSchemaFilter f=new HsqlDbUtil.DbSchemaFilter("analysis_hypersonic-");
+        int c=f.compare(new File("analysis_hypersonic-3.9.3"), new File("analysis_hypersonic-3.9.3-a"));
+        assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
+        //Strings.
+        //assertEquals(
+        
+        //HsqlDbUtil.getLatestSchemaVersionFromSchemaDir(schemaDir, "");
+    }
+    
+    
 }

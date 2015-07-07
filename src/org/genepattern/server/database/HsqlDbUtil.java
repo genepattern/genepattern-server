@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -179,32 +178,6 @@ public class HsqlDbUtil {
         }
     }
     
-    /**
-     * Get the list of schema files to process for the given schemaPrefix, e
-     * @return
-     */
-    protected static List<File> listSchemaFiles(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
-        log.debug("listing schema files ... ");
-        List<File> rval=new ArrayList<File>();
-        final DbSchemaFilter schemaFilenameFilter = new DbSchemaFilter(schemaPrefix);
-        File[] schemaFiles = resourceDir.listFiles(schemaFilenameFilter);
-        Arrays.sort(schemaFiles, schemaFilenameFilter);
-        for (int f = 0; f < schemaFiles.length; f++) {
-            File schemaFile = schemaFiles[f];
-            String name = schemaFile.getName();
-            String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
-            if (expectedSchemaVersion==null || (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0)) {
-                log.debug("adding " + name + " (" + version + ")");
-                rval.add(schemaFile);
-            }
-            else {
-                log.debug("skipping " + name + " (" + version + ")");
-            }
-        }
-        log.debug("listing schema files ... Done!");
-        return rval;
-    }
-
     /**
      * @param file
      * @return the contents of the file as a String
