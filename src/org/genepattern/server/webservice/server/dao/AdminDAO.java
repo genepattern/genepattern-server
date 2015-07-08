@@ -400,28 +400,26 @@ public class AdminDAO extends BaseDAO {
      * @return
      * @throws MalformedURLException
      */
-    public static Map getLatestTasks(TaskInfo[] tasks, List<String> excludedCategories) throws MalformedURLException {
+    public static Map getLatestTasks(TaskInfo[] tasks, List<String> excludedQualityLevels) throws MalformedURLException {
         Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo ti = tasks[i];
             LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(GPConstants.LSID));
             TaskInfo altTi = (TaskInfo) latestTasks.get(tiLSID.toStringNoVersion());
 
-            List<String> categories  = CategoryUtil.getCategoriesFromManifest(ti);
+            String taskQuality = ti.getTaskInfoAttributes().get("quality");
             boolean skip = false;
             if (altTi == null) {
                 latestTasks.put(tiLSID.toStringNoVersion(), ti);
             }
             else {
-                if(excludedCategories != null && excludedCategories.size() > 0)
+                if(excludedQualityLevels != null && excludedQualityLevels.size() > 0)
                 {
-                    for (String category : categories) {
-                        for(String excludedCategory: excludedCategories)
+                    for(String excludedQualityLevel: excludedQualityLevels)
+                    {
+                        if (excludedQualityLevel.equalsIgnoreCase(taskQuality))
                         {
-                            if (category.equalsIgnoreCase(excludedCategory))
-                            {
-                                skip = true;
-                            }
+                            skip = true;
                         }
                     }
                 }
