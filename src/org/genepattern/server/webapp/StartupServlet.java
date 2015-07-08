@@ -30,6 +30,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
@@ -322,8 +323,7 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            File schemaDir=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/schema"));
-            HsqlDbUtil.updateSchema(schemaDir, gpConfig.getDbSchemaPrefix(), gpConfig.getGenePatternVersion()); 
+            SchemaUpdater.updateSchema(gpConfig, HibernateUtil.instance());
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);

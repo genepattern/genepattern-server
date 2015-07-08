@@ -10,6 +10,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.SchemaUpdater;
 import org.hibernate.Query;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -107,7 +108,7 @@ public class DbUtil {
             try {
                 isDbInitialized = true;
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                HsqlDbUtil.updateSchema(schemaDir, "analysis_hypersonic-", gpVersion);
+                SchemaUpdater.updateSchema(HibernateUtil.instance(), schemaDir, "analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...
