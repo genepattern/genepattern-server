@@ -888,7 +888,7 @@ public class GpConfig {
      * The location for the web application files, e.g.
      *     /Applications/GenePatternServer/Tomcat/webapps/gp
      */
-    protected File getWebappDir() {
+    public File getWebappDir() {
         return this.webappDir;
     }
     
