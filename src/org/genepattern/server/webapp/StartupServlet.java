@@ -323,8 +323,7 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            File schemaDir=new File(servletConfig.getServletContext().getRealPath("/WEB-INF/schema"));
-            SchemaUpdater.updateSchema(HibernateUtil.instance(), schemaDir, gpConfig.getDbSchemaPrefix(), gpConfig.getGenePatternVersion()); 
+            SchemaUpdater.updateSchema(gpConfig, HibernateUtil.instance());
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
