@@ -170,7 +170,9 @@ public class PropsTable {
      * @param value
      * @return
      */
-    public static boolean saveProp(final String key, final String value) {
+    public static boolean saveProp(final String key, final String value) 
+    throws DbException
+    {
         return saveProp(HibernateUtil.instance(), key, value);
     }
     
@@ -180,7 +182,9 @@ public class PropsTable {
      * @param value
      * @return
      */
-    public static boolean saveProp(final HibernateSessionManager mgr, final String key, final String value) {
+    public static boolean saveProp(final HibernateSessionManager mgr, final String key, final String value) 
+    throws DbException
+    {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
@@ -201,9 +205,8 @@ public class PropsTable {
             return true;
         }
         catch (Throwable t) {
-            log.error("Error saving (key,value) to PROPS table in DB, ('"+key+"', '"+value+"')", t);
             mgr.rollbackTransaction();
-            return false;
+            throw new DbException("Error saving (key,value) to PROPS table in DB, ('"+key+"', '"+value+"')", t);
         }
     }
     

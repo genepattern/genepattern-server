@@ -107,7 +107,9 @@ public class MigratePlugins {
      * Update the db to indicate that the plugins have already been migrated.
      * @return
      */
-    protected boolean updateDb() {
+    protected boolean updateDb() 
+    throws DbException
+    {
         boolean success=PropsTable.saveProp(PROP_DB_CHECK, "true");
         return success;
     }

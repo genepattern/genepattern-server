@@ -323,7 +323,9 @@ public class RegisterServerBean {
         return PropsTable.selectKeys(key);
     }
 
-    protected static void saveIsRegistered() {
+    protected static void saveIsRegistered() 
+    throws DbException
+    {
         log.debug("saving registration");
         AboutBean about = new AboutBean();
         String genepatternVersion = about.getGenePatternVersion();
@@ -336,7 +338,9 @@ public class RegisterServerBean {
         saveIsRegistered(genepatternVersion);
     }
     
-    protected static boolean saveIsRegistered(final String genepatternVersion) {
+    protected static boolean saveIsRegistered(final String genepatternVersion) 
+    throws DbException
+    {
         return PropsTable.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
     }
 
