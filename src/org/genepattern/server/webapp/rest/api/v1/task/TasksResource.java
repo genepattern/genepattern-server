@@ -309,7 +309,11 @@ public class TasksResource {
             final AdminDAO adminDao = new AdminDAO();
             final TaskInfo[] allTasks;
             allTasks = adminDao.getAllTasksForUser(userId);
-            final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks);
+
+            //exclude development quality i.e BETA modules from the list
+            List<String> excludedQualityLevels = new ArrayList();
+            excludedQualityLevels.add("development");
+            final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks, excludedQualityLevels);
             //filter out the hidden tasks
             final CategoryUtil cu=new CategoryUtil();
             // multimap of <baseLsid,categoryNames>

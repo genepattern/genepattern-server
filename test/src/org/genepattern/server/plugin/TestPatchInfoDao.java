@@ -14,7 +14,8 @@ import java.util.List;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.DbUtil.DbType;
 import org.genepattern.server.DbException;
-import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.plugin.dao.PatchInfoDao;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -33,7 +34,7 @@ public class TestPatchInfoDao {
         File gpResourcesDir=new File("resources");
         String dbSchemaPrefix="analysis_mysql-";
         String gpVersion="3.9.2";
-        HsqlDbUtil.updateSchema(gpResourcesDir, dbSchemaPrefix, gpVersion);
+        SchemaUpdater.updateSchema(HibernateUtil.instance(), gpResourcesDir, dbSchemaPrefix, gpVersion);
         
         List<PatchInfo> expected = TestPluginRegistrySystemProps.initDefaultInstalledPatchInfos();
         assertEquals("before record patch, expecting default entries",

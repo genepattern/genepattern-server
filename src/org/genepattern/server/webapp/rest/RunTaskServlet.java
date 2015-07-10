@@ -37,6 +37,7 @@ import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -62,16 +63,13 @@ import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
-import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -181,6 +179,18 @@ public class RunTaskServlet extends HttpServlet
                 lsidVersions.put(moduleLsidVersion.toString());
             }
             moduleObject.put("lsidVersions", lsidVersions);
+
+            //check if there is a hidden beta version of the module available
+            LSID selectedTaskVersionLSID = new LSID(taskInfo.getLsid());
+            LSID latestTaskVersionLSID = new LSID((String)lsidVersions.get(0));
+            if(!selectedTaskVersionLSID.getVersion().equals(latestTaskVersionLSID.getVersion()))
+            {
+                TaskInfo latestTaskInfo = getTaskInfo(latestTaskVersionLSID.toString(), userId);
+                if(isHiddenBetaVersion(latestTaskInfo))
+                {
+                    moduleObject.put("betaVersion", lsidVersions.get(0));
+                }
+            }
 
             //check if user is allowed to edit the task
             final boolean editable=isEditable(userContext, taskInfo);
@@ -1033,5 +1043,16 @@ public class RunTaskServlet extends HttpServlet
             boolean editable = createPipelineAllowed && isMine && isAuthorityMine;
             return editable;
         }
+    }
+
+    private boolean isHiddenBetaVersion(TaskInfo taskInfo)
+    {
+        String taskQuality = taskInfo.getTaskInfoAttributes().get("quality");
+
+        if (taskQuality.equalsIgnoreCase("development")) {
+            return true;
+        }
+
+        return false;
     }
 }

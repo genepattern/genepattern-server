@@ -6,11 +6,8 @@ package org.genepattern.server.database;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -23,7 +20,7 @@ import org.hsqldb.Server;
 
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
-
+    
     /**
      * Initialize the arguments to the HSQL DB startup command.
      * 
@@ -102,10 +99,6 @@ public class HsqlDbUtil {
         log.debug("Starting HSQL Database...");
         Server.main(hsqlArgs);
     }
-    
-    public static void updateSchema(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) throws Throwable {
-        SchemaUpdater.updateSchema(HibernateUtil.instance(), resourceDir, schemaPrefix, expectedSchemaVersion);
-    }
 
     protected static List<String> appendIfNecessary(final List<String> argsList) {
         //prevent HSQLDB from calling System.exit when errors occur,
@@ -154,45 +147,6 @@ public class HsqlDbUtil {
         }
     }
     
-    /**
-     * Get the list of schema files to process for the given schemaPrefix, e
-     * @return
-     */
-    protected static List<File> listSchemaFiles(final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
-        log.debug("listing schema files ... ");
-        List<File> rval=new ArrayList<File>();
-        FilenameFilter schemaFilenameFilter = new FilenameFilter() {
-            // INNER CLASS !!!
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".sql") && name.startsWith(schemaPrefix);
-            }
-        };
-        File[] schemaFiles = resourceDir.listFiles(schemaFilenameFilter);
-        Arrays.sort(schemaFiles, new Comparator<File>() {
-            public int compare(File f1, File f2) {
-                String name1 = f1.getName();
-                String version1 = name1.substring(schemaPrefix.length(), name1.length() - ".sql".length());
-                String name2 = f2.getName();
-                String version2 = name2.substring(schemaPrefix.length(), name2.length() - ".sql".length());
-                return version1.compareToIgnoreCase(version2);
-            }
-        });
-        for (int f = 0; f < schemaFiles.length; f++) {
-            File schemaFile = schemaFiles[f];
-            String name = schemaFile.getName();
-            String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
-            if (expectedSchemaVersion==null || (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion!=null?dbSchemaVersion:"") > 0)) {
-                log.debug("adding " + name + " (" + version + ")");
-                rval.add(schemaFile);
-            }
-            else {
-                log.debug("skipping " + name + " (" + version + ")");
-            }
-        }
-        log.debug("listing schema files ... Done!");
-        return rval;
-    }
-
     /**
      * @param file
      * @return the contents of the file as a String

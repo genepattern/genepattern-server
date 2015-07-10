@@ -4,24 +4,19 @@
 package org.genepattern.server.database;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
-import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Test cases for initializing and launching the in-memory HSQL database.
@@ -33,7 +28,6 @@ public class TestHsqlDbUtil {
     private GpContext gpContext;
     private File workingDir=new File(System.getProperty("user.dir"));
     private File resourcesDir=new File(workingDir, "resources");
-    private File schemaDir=new File("website/WEB-INF/schema");
     private Value defaultValue;
     private Value defaultValues;
     private String[] defaultExpected=new String[] {
@@ -50,7 +44,6 @@ public class TestHsqlDbUtil {
         defaultValue=new Value("-port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
         defaultValues=new Value(Arrays.asList("-port", "9001", "-database.0", "file:../resources/GenePatternDB", "-dbname.0", "xdb"));
     }
-    
     
     /**
      * This is what will be found in the default genepattern.properties file after installing GP <= 3.9.0.
@@ -148,63 +141,5 @@ public class TestHsqlDbUtil {
         when(gpConfig.getResourcesDir()).thenReturn(null);
         HsqlDbUtil.initHsqlArgs(gpConfig, gpContext);
     }
-
-    @Test
-    public void listSchemaFiles_nullDbSchemaVersion() {
-        final String schemaPrefix="analysis_hypersonic-";
-        final String dbSchemaVersion=null;
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
-    }
-
-    @Test
-    public void listSchemaFiles_emptyDbSchemaVersion() {
-        final String schemaPrefix="analysis_hypersonic-";
-        final String dbSchemaVersion="";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
-    }
-    
-    @Test
-    public void listSchemaFiles_update() {
-        final String schemaPrefix="analysis_hypersonic-";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, "3.9.2", "3.9.1");
-        assertEquals("num schema files, updated install of 3.9.2", 1, schemaFiles.size());
-    }
-    
-    @Test
-    public void listSchemaFiles_default() {
-        final String schemaPrefix="analysis_hypersonic-";
-        List<File> schemaFiles = HsqlDbUtil.listSchemaFiles(schemaDir, schemaPrefix, null, null);
-        assertEquals("num schema files, latest version", 40, schemaFiles.size());
-    }
-    
-    @Ignore @Test
-    public void initDbSchemaMysql() throws Throwable {
-        
-        Properties p=new Properties();
-        ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
-
-        //loadProperties(mysqlProperties, new File("resources/database_default.properties"));
-        p.setProperty("database.vendor", "MySQL");
-        p.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        p.setProperty("hibernate.connection.url", "jdbc:mysql://127.0.0.1:3306/gpdev");
-        p.setProperty("hibernate.connection.username", "gpdev");
-        p.setProperty("hibernate.connection.password", "gpdev");
-        p.setProperty("hibernate.default_schema", "genepattern");
-        p.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-
-        
-        GpConfig gpConfig=Mockito.mock(GpConfig.class);
-        Mockito.when(gpConfig.getDbProperties()).thenReturn(p);
-        HibernateSessionManager mgr=HibernateUtil.initFromConfig(gpConfig, gpContext);
-        
-        
-        // TODO: pass in the mgr in the call to updateSchema
-        //HibernateUtil.setInstance(mgr);
-        //HsqlDbUtil.updateSchema(resourcesDir, "analysis_mysql", "3.9.2");
-    }
-    
-    
 
 }
