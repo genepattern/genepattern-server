@@ -6,6 +6,7 @@ package org.genepattern.server.config;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +31,7 @@ public class TestGetPluginDir {
     public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         serverContext=GpContext.getServerContext();
         userDir=new File(System.getProperty("user.dir"));
         // simulate 'patches=$USER_INSTALL_DIR$/patches' in genepattern.properties file
