@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Size;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.CpuTime;
@@ -19,7 +20,6 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.Memory;
-import org.hibernate.validator.Size;
 
 import com.google.common.base.Strings;
 

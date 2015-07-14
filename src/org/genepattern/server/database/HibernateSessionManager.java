@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.reflections.Reflections;
 
@@ -105,11 +104,11 @@ public final class HibernateSessionManager {
                 );
     }
 
-    protected static AnnotationConfiguration preInitAnnotationConfiguration(final boolean scan) {
+    protected static Configuration preInitAnnotationConfiguration(final boolean scan) {
         if (log.isDebugEnabled()) {
             log.debug("preparing hibernate annotation configuration ...");
         }
-        AnnotationConfiguration config = new AnnotationConfiguration();
+        Configuration config = new Configuration();
 
         // add mappings from xml files here, instead of in the .xml file
         if (log.isDebugEnabled()) {
@@ -174,7 +173,7 @@ public final class HibernateSessionManager {
      */
     public static SessionFactory createSessionFactory(Properties hibernateProperties) {
         boolean scanForClasses=getScanForAnnotationsFlag(hibernateProperties);
-        AnnotationConfiguration config = preInitAnnotationConfiguration(scanForClasses);
+        Configuration config = preInitAnnotationConfiguration(scanForClasses);
         config.addProperties(hibernateProperties);
         mergeSystemProperties(config);
         log.info("hibernate.connection.url="+config.getProperty("hibernate.connection.url"));
@@ -209,7 +208,7 @@ public final class HibernateSessionManager {
      * @return
      */
     public static SessionFactory createSessionFactory(String configResource, final String connectionUrl) {
-        AnnotationConfiguration config = preInitAnnotationConfiguration(true);
+        Configuration config = preInitAnnotationConfiguration(true);
         config.configure(configResource);
         mergeSystemProperties(config);
         if (connectionUrl != null) {
