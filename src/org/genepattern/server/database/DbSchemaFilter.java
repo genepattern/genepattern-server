@@ -2,7 +2,12 @@ package org.genepattern.server.database;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import com.google.common.collect.Range;
 
@@ -17,6 +22,8 @@ import com.google.common.collect.Range;
  *
  */
 public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
+    private static final Logger log = Logger.getLogger(DbSchemaFilter.class);
+
     final String schemaPrefix;
     // (a..b] = {schemaVersion | a < schemaVersion <= b}
     final Range<String> schemaRange;
@@ -74,6 +81,32 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
         final String name=schemaFile.getName();
         final String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
         return version;
+    }
+    
+    /**
+     * Get the list if DDL scripts to run, based on the contents of the given schemaDir.
+     * 
+     * @param schemaDir, the directory which contains the DDL scripts (e.g. '<webappDir>/WEB-INF/schema')
+     * @return
+     */
+    public List<File> listSchemaFiles(final File schemaDir) {   
+        final List<File> rval=new ArrayList<File>();
+        final File[] schemaFiles = schemaDir.listFiles(this);
+        Arrays.sort(schemaFiles, this);
+        for (int f = 0; f < schemaFiles.length; f++) {
+            final File schemaFile = schemaFiles[f];
+            final String name=schemaFile.getName();
+            final String schemaVersion=initSchemaVersion(schemaFile);
+            if (acceptSchemaVersion(schemaVersion)) {
+                log.debug("adding " + name + " (" + schemaVersion + ")");
+                rval.add(schemaFile);
+            }
+            else {
+                log.debug("skipping " + name + " (" + schemaVersion + ")");
+            }
+        }
+        log.debug("listing schema files ... Done!");
+        return rval;
     }
 
     public boolean accept(final File dir, final String name) {
