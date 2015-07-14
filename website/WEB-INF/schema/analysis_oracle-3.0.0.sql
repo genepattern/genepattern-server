@@ -238,7 +238,9 @@ INSERT INTO JOB_STATUS VALUES(4,'Error');
 INSERT INTO TASK_ACCESS VALUES(1,'public','public access');
 INSERT INTO TASK_ACCESS VALUES(2,'private','access only for the owner');
 
-INSERT INTO PROPS (KEY, VALUE) VALUES ('schemaVersion', '3.0.0');
+-- this is now taken care of by the GP server, if you run these scripts by hand
+-- you must set the correct schemaVersion in the DB
+-- INSERT INTO PROPS (KEY, VALUE) VALUES ('schemaVersion', '3.0.0');
 
 COMMIT;
 

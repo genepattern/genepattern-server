@@ -8,7 +8,7 @@ When the GenePattern Server starts up, it will automatically all new DDL scripts
 for the configured <database.vendor>. Scripts are run in case-insensitive alphabetical order.
 
 The list of scripts to run is based on two things:
-1) the 'database.vendor', e.g. 'analysis_mysql'; 
+1) the 'database.vendor', e.g. 'MySQL'; 
     Note: database.vendor=HSQLDB is shorthand for 'hypersonic'.
 2) the schemaVersion of the most recent DDL script which has been saved to the database;
     Hint: "select * from props where key='schemaVersion'"
@@ -28,19 +28,22 @@ Starting with 3.9.4, the db schemaVersion and the GenePatternVersion are no long
 required to be identical.
 
 Create and edit a new analysis_<database.vendor>-<schemaVersion>.sql file. Add the
-DDL scripts. At the end of each new file put a line like this. Make sure to replace
-the <schemaVersion> with your actual schemaVersion.
+DDL scripts.
+
+On server startup, the database schemaVersion will be automatically updated.
+If you choose to run the DDL scripts by hand make sure to set the 
+schemaVersion accordingly.
 
 -- update schema version 
 update props set value='<schemaVersion>' where key='schemaVersion';
 commit;
 
 
-Before completing your work, it is recommended that you add a similar
-DDL scripts for each of the supported database vendors.
+Before completing your work, it is recommended that you add DDL scripts 
+for each of the supported database vendors.
 You should also verify that the script is correct.
-This is done in an ad hoc manner; usually by initializing a new 
-GP instance which each of the vendors.
+This is done in an ad hoc manner by initializing a new 
+GP instance with each test database.
     
 Adding a new database vendor
 ----------------------------

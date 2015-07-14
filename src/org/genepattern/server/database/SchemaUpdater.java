@@ -36,11 +36,26 @@ import com.google.common.base.Strings;
 public class SchemaUpdater {
     private static final Logger log = Logger.getLogger(SchemaUpdater.class);
 
+    /**
+     * Key in the PROPS table for recording the version of last successfully installed DDL script.
+     * E.g.
+     *     select KEY,VALUE from PROPS where KEY='schemaVersion';
+     */
+    public static final String PROP_SCHEMA_VERSION="schemaVersion";
+
     public static void updateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr) 
     throws DbException
     {
+        // by default, set the expected schema version to the latest one in the list
+        final String expectedSchemaVersion=null;
+        updateSchema(gpConfig, mgr, expectedSchemaVersion);
+    }
+
+    public static void updateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr, final String expectedSchemaVersion) 
+    throws DbException
+    {
         final File schemaDir=new File(gpConfig.getWebappDir(), "WEB-INF/schema");
-        SchemaUpdater.updateSchema(mgr, schemaDir, gpConfig.getDbSchemaPrefix()); 
+        SchemaUpdater.updateSchema(mgr, schemaDir, gpConfig.getDbSchemaPrefix(), expectedSchemaVersion);
     }
     
     public static void updateSchema(final HibernateSessionManager mgr, final File schemaDir, final String schemaPrefix) 
@@ -50,13 +65,13 @@ public class SchemaUpdater {
         updateSchema(mgr, schemaDir, schemaPrefix, null);
     }
     
-    public static void updateSchema(final HibernateSessionManager mgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
+    public static void updateSchema(final HibernateSessionManager mgr, final File schemaDir, final String schemaPrefix, final String expectedSchemaVersion) 
     throws DbException
     {
         dbCheck(mgr);
         final String dbSchemaVersion=getDbSchemaVersion(mgr);
         try {
-            final List<File> schemaFiles=SchemaUpdater.listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
+            final List<File> schemaFiles=SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
             boolean upToDate=isUpToDate(schemaFiles);
             log.info("schema up-to-date=" + upToDate + ", expectedSchemaVersion=" + expectedSchemaVersion + ", current dbSchemaVersion=" + dbSchemaVersion);
             if (upToDate) {
@@ -71,7 +86,7 @@ public class SchemaUpdater {
 
             // run new DDL scripts to bring the DB up to date with the proposed schema version
             log.info("Updating schema from "+dbSchemaVersion+" to "+proposedSchemaVersion+" ...");        
-            createSchema(mgr, schemaFiles);
+            createSchema(mgr, schemaPrefix, schemaFiles);
 
             // validate that the DB version is up to date
             final String actualSchemaVersion=getDbSchemaVersion(mgr);
@@ -117,6 +132,9 @@ public class SchemaUpdater {
         catch (Throwable t) {
             // ... 1) can't even begin a transaction
             throw new DbException("Database connection error: "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            mgr.closeCurrentSession();
         }
     }
     
@@ -177,7 +195,7 @@ public class SchemaUpdater {
                 dbSchemaVersion="";
             }
             else {
-                dbSchemaVersion=PropsTable.selectValue(sessionMgr, "schemaVersion");
+                dbSchemaVersion=PropsTable.selectValue(sessionMgr, PROP_SCHEMA_VERSION);
             }
         }
         catch (Throwable t) {
@@ -192,6 +210,19 @@ public class SchemaUpdater {
         return dbSchemaVersion;
     }
 
+    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) 
+    throws DbException
+    {
+        final String schemaVersion=DbSchemaFilter.initSchemaVersionFromFilename(schemaPrefix, schemaFile);
+        updateDbSchemaVersion(sessionMgr, schemaVersion);
+    }
+
+    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaVersion) 
+    throws DbException
+    {
+        PropsTable.saveProp(sessionMgr, PROP_SCHEMA_VERSION, schemaVersion);
+    }
+    
     protected static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
         final boolean isInTransaction=sessionMgr.isInTransaction();
         try {
@@ -214,11 +245,11 @@ public class SchemaUpdater {
         return false;
     }
 
-    protected static void createSchema(final HibernateSessionManager sessionMgr, final List<File> schemaFiles) 
+    protected static void createSchema(final HibernateSessionManager sessionMgr, final String schemaPrefix, final List<File> schemaFiles) 
     throws DbException
     {
         for(final File schemaFile : schemaFiles) {
-            processSchemaFile(sessionMgr, schemaFile);
+            processSchemaFile(sessionMgr, schemaPrefix, schemaFile);
         }
     }
 
@@ -260,7 +291,7 @@ public class SchemaUpdater {
         return statements;
     }
     
-    protected static void processSchemaFile(final HibernateSessionManager sessionMgr, final File schemaFile) throws DbException {
+    protected static void processSchemaFile(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) throws DbException {
         log.info("updating database from schema " + schemaFile.getPath());
         
         final List<String> sqlStatements=extractSqlStatements(schemaFile);
@@ -277,33 +308,29 @@ public class SchemaUpdater {
                         "\n\t"+sql);
             }
         }
-        
-        //TODO: update dbSchemaVersion
+       
+        updateDbSchemaVersion(sessionMgr, schemaPrefix, schemaFile);
         log.debug("updating database from schema ... Done!");
     }
+
     
-    /**
-     * execute arbitrary SQL on database, returning int
-     * 
-     * @param sql
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return int number of rows returned
-     */
-    private static int executeUpdate(final HibernateSessionManager sessionMgr, final String sql) throws SQLException 
-    {
-        sessionMgr.getSession().flush();
-        sessionMgr.getSession().clear();
-    
-        Statement updateStatement = null;
-    
+    private static int executeUpdate(final HibernateSessionManager mgr, final String sql) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            updateStatement = sessionMgr.getSession().connection().createStatement();
-            return updateStatement.executeUpdate(sql);
+            mgr.beginTransaction();
+            int rval = mgr.getSession().createSQLQuery(sql).executeUpdate();
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+            return rval;
+        }
+        catch (Throwable t) {
+            mgr.rollbackTransaction();
+            throw t;
         }
         finally {
-            if (updateStatement != null) {
-                updateStatement.close();
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
             }
         }
     }

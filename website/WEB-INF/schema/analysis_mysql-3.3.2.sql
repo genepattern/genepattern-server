@@ -13,9 +13,6 @@ create table UPLOAD_FILE (
     -- ,  primary key (PATH)
 );
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.3.2' where `KEY` = 'schemaVersion';
-
 COMMIT;
 
 

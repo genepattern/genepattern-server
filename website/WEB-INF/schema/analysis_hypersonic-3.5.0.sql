@@ -15,7 +15,3 @@ create table eula_remote_queue (
 );
 
 create index idx_eula_remote_queue_url on eula_remote_queue (remote_url);
-
--- update schema version
-update props set value='3.5.0' where key='schemaVersion';
-

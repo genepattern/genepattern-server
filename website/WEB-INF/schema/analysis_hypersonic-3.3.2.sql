@@ -11,6 +11,3 @@ create table UPLOAD_FILE (
     FILE_LENGTH bigint, -- the length in bytes of the file
     LAST_MODIFIED timestamp -- the last modified date of the file
 );
-
--- update schema version
-update props set value='3.3.2' where key='schemaVersion';

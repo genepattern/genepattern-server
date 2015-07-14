@@ -18,7 +18,4 @@ alter table EULA_REMOTE_QUEUE
     FOREIGN KEY (eula_record_id) references eula_record(id)
     on delete cascade;
 
--- update schema version
-update props set value='3.8.1' where `key`='schemaVersion';
-
 commit;

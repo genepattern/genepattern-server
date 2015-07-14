@@ -41,6 +41,3 @@ CREATE TABLE JOB_SGE
 
 CREATE INDEX IDX_JOB_SGE_GP_JOB_NO ON JOB_SGE (GP_JOB_NO);
 CREATE INDEX IDX_SGE_JOB_ID on JOB_SGE (SGE_JOB_ID);
-
--- update schema version
-update props set value='3.3.3' where key='schemaVersion';

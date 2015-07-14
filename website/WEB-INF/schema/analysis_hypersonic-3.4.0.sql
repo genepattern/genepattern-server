@@ -14,8 +14,5 @@ create table job_queue (
 );
 
 -- updates for long path names in user upload dir
-alter table user_upload alter name varchar(512)
-alter table user_upload alter path varchar(4000)
-
--- update schema version
-update props set value='3.4.0' where key='schemaVersion';
+alter table user_upload alter name varchar(512);
+alter table user_upload alter path varchar(4000);

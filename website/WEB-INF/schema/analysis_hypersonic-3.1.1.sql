@@ -7,6 +7,3 @@ create table SYSTEM_MESSAGE (
     end_time TIMESTAMP null,
     deleteOnRestart BIT default 0 not null
 );
-
--- update schema version
-update props set value='3.1.1' where key='schemaVersion';

@@ -34,8 +34,4 @@ create table job_runner_job (
 );
 create index idx_jrj_ext_job_id on JOB_RUNNER_JOB (ext_job_id);
 
-
--- update schema version
-UPDATE PROPS SET VALUE = '3.7.6' where KEY = 'schemaVersion';
-
 commit;

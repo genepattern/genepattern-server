@@ -40,6 +40,3 @@ create table job_tag (
 create index idx_comment_text on job_comment(comment_text);
 
 create index idx_tag on tag(tag);
-
--- update schema version
-update props set value='3.9.1' where key='schemaVersion';

@@ -14,8 +14,5 @@ create table task_install (
 );
 
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.6.1' where KEY = 'schemaVersion';
-
 commit;
 
