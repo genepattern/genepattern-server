@@ -216,12 +216,10 @@ public class PlatformHSQLDialect extends HSQLDialect {
     }
 
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Set getKeywords() {
-        //Set<String> keywords=new HashSet<String>();
-        //keywords.add("key");
         Set rval=super.getKeywords();
-        //return keywords;
         return rval;
     }
 
@@ -243,6 +241,7 @@ public class PlatformHSQLDialect extends HSQLDialect {
         return rval;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Class getNativeIdentifierGeneratorClass() {
         Class rval=super.getNativeIdentifierGeneratorClass();
@@ -478,18 +477,19 @@ public class PlatformHSQLDialect extends HSQLDialect {
 
     @Override
     public boolean bindLimitParametersFirst() {
-        boolean rval=bindLimitParametersFirst();
+        boolean rval=super.bindLimitParametersFirst();
         return rval;
     }
 
     @Override
     public String getAddColumnString() {
-        String str=getAddColumnString();
+        String str=super.getAddColumnString();
         return str;
     }
 
     @Override
     public String[] getCreateSequenceStrings(String sequenceName) {
+        @SuppressWarnings("deprecation")
         String[] rval=super.getCreateSequenceStrings(sequenceName);
         return rval;
     }
