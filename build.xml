@@ -86,15 +86,16 @@
         </path>
 
         <path id="junit.classpath">
-            <pathelement location="lib/junit-4.8.2.jar" />
-            <pathelement location="lib/javax.servlet.jar" />
+            <fileset dir="lib">
+                <include name="*.jar" />
+            </fileset>
             <fileset dir="test/lib">
                 <include name="*.jar" />
             </fileset>
             <pathelement location="${build}/junit/classes" />
             <pathelement location="${build}" />
             <fileset dir="website/WEB-INF/lib">
-                <!-- exclude older version of ant, so that we can use junit4 -->
+                <!-- exclude older version of ant, so that we can use from the lib directory -->
                 <exclude name="ant-1.6.5.jar" />
                 <exclude name="ant-antlr-1.6.5.jar" />
                 <exclude name="ant-junit-1.6.5.jar" />
