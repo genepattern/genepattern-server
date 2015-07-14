@@ -142,16 +142,18 @@
         <!--</ant>-->
     </target>
 
-    <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
+    <target name="findbugs" depends="init, compile, common" description="Findbugs static code analysis">
+        <property name="findbugs.home" value="build_tools/findbugs-3.0.1" />
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
             <classpath>
-                <pathelement location="${basedir}/lib/findbugs-ant.jar"/>
+                <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>
             </classpath>
         </taskdef>
-        <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
+        <findbugs home="${findbugs.home}" output="xml" outputFile="findbugs.xml" excludeFilter="findbugsExcludeFilter.xml">
+            <auxClasspath path="${library.classpath}" />
             <sourcePath path="${basedir}/src" />
             <class location="${build}/${full-jarname}" />
-        </findbugs>
+          </findbugs>
     </target>
 
     <target name="compile-junit" depends="init,compile">
