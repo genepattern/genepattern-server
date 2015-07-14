@@ -18,8 +18,9 @@
     <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
     <property name="hibernate.connection.username">sa</property>
     <property name="hibernate.current_session_context_class">thread</property>
-    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
-
+    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
+    <!-- just for debugging -->
+    <!-- property name="hibernate.dialect">org.genepattern.server.database.PlatformHSQLDialect</property -->
 
     <!-- MySQL setup
     <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
