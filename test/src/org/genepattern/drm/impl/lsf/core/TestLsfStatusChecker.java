@@ -77,9 +77,9 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("exitCode", (Integer)0, jobStatus.getExitCode());
         assertEquals("statusMessage", "Successfully completed.", jobStatus.getJobStatusMessage());
         assertEquals("cpuTime", 140, jobStatus.getCpuTime().asMillis());
-        assertEquals("submitTime", new DateTime("2014-07-14T12:44:09").toDate(), jobStatus.getSubmitTime());
-        assertEquals("startTime", new DateTime("2014-07-14T12:44:14").toDate(), jobStatus.getStartTime());
-        assertEquals("endTime", new DateTime("2014-07-14T12:44:15").toDate(), jobStatus.getEndTime());
+        assertEquals("submitTime", new DateTime(year+"-07-14T12:44:09").toDate(), jobStatus.getSubmitTime());
+        assertEquals("startTime", new DateTime(year+"-07-14T12:44:14").toDate(), jobStatus.getStartTime());
+        assertEquals("endTime", new DateTime(year+"-07-14T12:44:15").toDate(), jobStatus.getEndTime());
         assertEquals("memory", Memory.fromString("3 mb"), jobStatus.getMemory());
         assertEquals("maxSwap", Memory.fromString("39 mb"), jobStatus.getMaxSwap());
         assertEquals("maxProcesses", (Integer)1, jobStatus.getMaxProcesses());
