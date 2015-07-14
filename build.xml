@@ -107,7 +107,7 @@
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
             <pathelement location="test/src" />
-            <fileset dir="${clover.home}/lib">
+            <fileset dir="${clover.home}/lib" erroronmissingdir="false">
                 <include name="clover.jar" if="clover.enabled" />
             </fileset>
         </path>
