@@ -17,9 +17,6 @@ CREATE SEQUENCE SYSTEM_MESSAGE_SEQ
   NOCACHE
   NOORDER;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.1.1' where KEY = 'schemaVersion';
-
 COMMIT;
 
 

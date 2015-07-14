@@ -48,6 +48,17 @@ public class TestPropsTable {
         PropsTable.removeProp(mgr, key);
         assertEquals("after 2nd delete", "",  PropsTable.selectValue(mgr, key));
         assertEquals("selectAllProps.size, after 2nd delete", 1, PropsTable.selectAllProps(mgr).size());
+        
+        // null insert means null value ....
+        PropsTable.saveProp(mgr, key, "FIRST_VALUE");
+        PropsTable.saveProp(mgr, key, "");
+        assertEquals("after setting value to empty string", "", PropsTable.selectRow(key).getValue());
+        PropsTable.saveProp(mgr, key, null);
+        assertEquals("after setting value to null", null, PropsTable.selectRow(key).getValue());
+        
+        // must remove to delete the row
+        PropsTable.removeProp(mgr, key);
+        assertEquals("after removing ", null, PropsTable.selectRow(key));
     }
 
 }

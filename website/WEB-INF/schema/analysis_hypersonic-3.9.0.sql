@@ -67,6 +67,3 @@ create table queue_congestion (
 );
 create index idx_queue_congestion_queue on queue_congestion (queue);
 
--- update schema version
-update props set value='3.9.0' where key='schemaVersion';
-

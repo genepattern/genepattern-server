@@ -11,5 +11,3 @@ create table eula_record (
 create index idx_eula_record_lsid on eula_record (lsid);
 create index idx_eula_record_user_id on eula_record (user_id); 
 
--- update schema version
-update props set value='3.4.2' where key='schemaVersion';

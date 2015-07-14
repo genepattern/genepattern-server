@@ -115,12 +115,12 @@ CREATE TABLE SEQUENCE_TABLE (
 insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
 insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_suite_identifier_seq', 1);
 
-/* PROPERTY TABLE */
+/* "KEY" is a reserved word in MySQL */
 CREATE TABLE PROPS
 (
-  -- "KEY" is a reserved word in MySQL
   `KEY` VARCHAR(255) NOT NULL UNIQUE,
-  `VALUE` VARCHAR(255)
+  VALUE VARCHAR(255),
+  PRIMARY KEY (`KEY`)
 );
 
 
@@ -179,7 +179,5 @@ INSERT INTO JOB_STATUS VALUES(4,'Error');
 
 INSERT INTO TASK_ACCESS VALUES(1,'public','public access');
 INSERT INTO TASK_ACCESS VALUES(2,'private','access only for the owner');
-
-INSERT INTO PROPS (`KEY`, VALUE) VALUES ('schemaVersion', '3.0.0');
-
 COMMIT;
+

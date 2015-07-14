@@ -5,7 +5,4 @@ create table PIN_MODULE (
     pin_position double precision,
     primary key (id));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.7.5' where `KEY` = 'schemaVersion';
-
 commit;

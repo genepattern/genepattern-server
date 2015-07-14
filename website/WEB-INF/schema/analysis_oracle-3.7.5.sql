@@ -14,8 +14,4 @@ CREATE SEQUENCE PIN_MODULE_SEQ
   NOCACHE
   NOORDER;
 
-
--- update schema version
-UPDATE PROPS SET VALUE = '3.7.5' where KEY = 'schemaVersion';
-
 commit;

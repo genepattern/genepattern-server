@@ -6,6 +6,4 @@ create table EULA_RECORD (
     primary key (id),
     unique (user_id, lsid));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.4.2' where `KEY` = 'schemaVersion';
 commit;

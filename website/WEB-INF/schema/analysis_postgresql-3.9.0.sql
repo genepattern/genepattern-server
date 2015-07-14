@@ -19,7 +19,7 @@ create table queue_congestion (
 );
 
 -- update schema version
-UPDATE PROPS SET VALUE = '3.9.0' where KEY = 'schemaVersion';
+-- UPDATE PROPS SET VALUE = '3.9.0' where KEY = 'schemaVersion';
 
 commit;
 

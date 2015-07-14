@@ -34,7 +34,7 @@ public class TestGpConfig {
     
     @Before
     public void setUp() throws FileNotFoundException, IOException {
-        webappDir=temp.newFolder("Tomcat/webapps/gp").getAbsoluteFile(); 
+        webappDir=temp.newFolder("Tomcat", "webapps", "gp").getAbsoluteFile(); 
 
         // mock 'WEB-INF/build.properties' file
         File webinfDir=new File(webappDir, "WEB-INF");

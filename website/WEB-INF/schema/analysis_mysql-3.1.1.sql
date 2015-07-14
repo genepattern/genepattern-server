@@ -8,9 +8,6 @@ create table SYSTEM_MESSAGE (
     deleteOnRestart bit,
     primary key (id));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.1.1' where `KEY` = 'schemaVersion';
-
 COMMIT;
 
 

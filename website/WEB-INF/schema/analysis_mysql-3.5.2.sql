@@ -27,7 +27,4 @@ create table JOB_RESULT (
     unique (job_id, name));
 create index IDX_JOB_RESULT_JOB_ID on JOB_RESULT (job_id);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.5.2' where `KEY` = 'schemaVersion';
-
 commit;

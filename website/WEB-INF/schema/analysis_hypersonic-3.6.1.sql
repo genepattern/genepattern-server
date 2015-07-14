@@ -13,6 +13,3 @@ create table task_install (
     primary key (lsid)
 );
 
--- update schema version
-update props set value='3.6.1' where key='schemaVersion';
-

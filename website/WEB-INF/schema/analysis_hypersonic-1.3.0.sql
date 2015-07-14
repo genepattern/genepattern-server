@@ -50,4 +50,7 @@ insert into dual values (0);
 create sequence lsid_identifier_seq as integer start with 1;
 
 create table props(key varchar(100) primary key, value varchar(256));
-insert into props (key, value) values ('schemaVersion', '1.3');
+
+-- this is now taken care of by the GP server, if you run these scripts by hand
+-- you must set the correct schemaVersion in the DB
+-- insert into props (key, value) values ('schemaVersion', '1.3.0');

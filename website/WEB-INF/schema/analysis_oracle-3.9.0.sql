@@ -47,8 +47,5 @@ create table queue_congestion (
 );
 create sequence queue_congestion_SEQ;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.9.0' where KEY = 'schemaVersion';
-
 commit;
 

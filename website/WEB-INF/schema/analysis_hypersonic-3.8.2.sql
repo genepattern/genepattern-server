@@ -57,6 +57,3 @@ insert into job_runner_job  select * from jrj_copy;
 
 drop table jrj_copy;
 
--- update schema version
-update props set value='3.8.2' where key='schemaVersion';
-
