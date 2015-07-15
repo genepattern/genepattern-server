@@ -32,9 +32,11 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.job.input.JobInputHelper;
+import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -521,11 +523,11 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
-    public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
-        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobInfo);
+    public static String generateLaunchURL(TaskInfo taskInfo, int jobNumber) throws Exception {
+        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobNumber);
     }
     
-    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final JobInfo jobInfo) throws Exception {
+    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final int jobNumber) throws Exception {
         String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
         if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
@@ -534,44 +536,22 @@ public class JobInfoManager {
             final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
             launchUrl = gpConfig.getGenePatternURL() + relativeUriStr;
             //add the job number
-            launchUrl += "?job.number=" + jobInfo.getJobNumber();
-            ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            if (parameterInfos != null) {
-                for (ParameterInfo parameterInfo : parameterInfos) {
-                    try {
-                        String value=parameterInfo.getValue();
+            launchUrl += "?job.number=" + jobNumber;
 
-                        if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
-                                && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
-                                || (parameterInfo.getAttributes().containsKey("type")
-                                        && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
-                        {
-                            if (value.endsWith(".list.txt")) {
-                                List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+            JobInput jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
 
-                                for (String fileUrl : fileList) {
-                                    launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                                }
-                            }
-                            else
-                            {
-                                URL fileUrl= JobInputHelper.initExternalUrl(value);
-                                if (fileUrl != null) {
-                                }
-                                else {
-                                    //it's an not an external or GenomeSpace URL
-                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
-                                }
-                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                            }
-                        }
-                        else {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + value;
-                        }
-                    } 
-                    catch (Exception io) {
-                        log.error(io);
-                    }
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+
+            for(ParameterInfoRecord pinfoRecord : paramInfoMap.values())
+            {
+                ParameterInfo formalParam = pinfoRecord.getFormal();
+                String paramName = formalParam.getName();
+
+                Param param = jobInput.getParam(paramName);
+                List<ParamValue> values = param.getValues();
+                for(ParamValue value: values)
+                {
+                    launchUrl += "&" + paramName + "=" + value.getValue();
                 }
             }
         }

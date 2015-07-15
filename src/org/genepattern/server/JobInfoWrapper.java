@@ -1208,7 +1208,7 @@ public class JobInfoWrapper implements Serializable {
             return "";
         }
 
-        return JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
+        return JobInfoManager.generateLaunchURL(taskInfo, jobInfo.getJobNumber());
     }
 
     public String getVisualizerAppletTag() {
