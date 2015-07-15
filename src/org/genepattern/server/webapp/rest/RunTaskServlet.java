@@ -48,13 +48,9 @@ import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
-import org.genepattern.server.job.input.GroupId;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.JobInputFileUtil;
-import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.LoadModuleHelper;
-import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.repository.SourceInfo;
@@ -606,8 +602,9 @@ public class RunTaskServlet extends HttpServlet
             result.addChild("jobId", jobId);
 
             try {
-                JobInfo jobInfo = new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
-                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
+                int jobNumber = Integer.parseInt(jobId);
+                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobNumber);
+
                 result.addChild("launchUrl", launchUrl);
             }
             catch (Exception e) {
