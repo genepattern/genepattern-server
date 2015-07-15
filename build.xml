@@ -15,6 +15,7 @@
 
     <property location="src" name="src" />
     <property location="build" name="build" />
+    <property name="junit.report.dir" location="${build}/junit/reports" />
     <property location="." name="dist" />
     <property name="classpath" value="${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
 
@@ -123,7 +124,7 @@
         <clover-clean />
     </target>
     
-    <target name="clean" depends="clean-junit, clover.clean">
+    <target name="clean" depends="init, clover.clean">
         <delete dir="applet-build" />
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
@@ -140,10 +141,10 @@
             <!--<property name="R.client.downloads" location="${R.client.downloads}" />-->
         <!--</ant>-->
         
+        <delete quiet="true" failonerror="false" dir="${junit.report.dir}" />
         <delete quiet="true" failonerror="false" dir="wartemp" />
         <delete quiet="true" failonerror="false" dir="ziptemp" />
         <delete quiet="true" failonerror="false" file="gp_war.zip" />
-
     </target>
 
     <target name="findbugs" depends="init, compile, common" description="Findbugs static code analysis">
@@ -168,46 +169,13 @@
         />
     </target>
 
-    <target name="ensure-test-name" unless="test">
-        <fail message="You must run this target with -Dtest=TestName"/>
-    </target>
-
-    <target name="runtest" depends="ensure-test-name, compile-junit"
-        description="Runs the test you specify on the command line with -Dtest="> 
-        <property name="junit.report.dir" location="${build}/junit/reports" />
-        <mkdir dir="${junit.report.dir}" />
-        <mkdir dir="${junit.report.dir}/xml" />
-        <mkdir dir="${junit.report.dir}/html" />
-
-        <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
-            <formatter type="xml"/>
-            <classpath refid="junit.classpath" />
-            <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
-                <fileset dir="test/src">
-                    <exclude name="org/genepattern/junitutil/*.java" />
-                    <exclude name="**/RecordEulaStub.java" />
-                    <include name="**/${test}.java" />
-                </fileset>
-            </batchtest>
-        </junit>
-
-        <junitreport todir="${junit.report.dir}">
-            <fileset dir="${junit.report.dir}/xml">
-                <include name="*.xml" />
-            </fileset>
-            <report format="frames" todir="${junit.report.dir}/html" />
-        </junitreport>
-    </target>
-
     <target name="junit" depends="compile-junit">
-        <property name="junit.report.dir" location="${build}/junit/reports" />
         <mkdir dir="${junit.report.dir}" />
         <mkdir dir="${junit.report.dir}/xml" />
         <mkdir dir="${junit.report.dir}/html" />
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="true" forkmode="once">
             <formatter type="xml"/>
             <classpath refid="junit.classpath" />
             <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
@@ -225,11 +193,6 @@
             </fileset>
             <report format="frames" todir="${junit.report.dir}/html" />
         </junitreport>
-    </target>
-
-    <target name="clean-junit">
-        <!-- cleanup -->
-        <delete dir="${junit.report.dir}" />
     </target>
 
     <target name="compile" depends="init, initBuildProperties" description="Compiles all the source.">
