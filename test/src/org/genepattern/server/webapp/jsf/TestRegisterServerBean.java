@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -63,7 +64,7 @@ public class TestRegisterServerBean {
     // only works when manually configured to connect to a MySQL server
     @Ignore 
     @Test
-    public void saveIsRegistered_hql_mysql() {
+    public void saveIsRegistered_hql_mysql() throws DbException {
         System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
         RegisterServerBean.saveIsRegistered("3.9.2");
     }

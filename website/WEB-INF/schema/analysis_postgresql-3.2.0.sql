@@ -24,9 +24,6 @@ CREATE TABLE JOB_GROUP
 )
 ;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.2.0' where KEY = 'schemaVersion';
-
 COMMIT;
 
 

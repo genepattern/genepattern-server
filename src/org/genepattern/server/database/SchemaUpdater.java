@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -37,11 +36,26 @@ import com.google.common.base.Strings;
 public class SchemaUpdater {
     private static final Logger log = Logger.getLogger(SchemaUpdater.class);
 
+    /**
+     * Key in the PROPS table for recording the version of last successfully installed DDL script.
+     * E.g.
+     *     select KEY,VALUE from PROPS where KEY='schemaVersion';
+     */
+    public static final String PROP_SCHEMA_VERSION="schemaVersion";
+
     public static void updateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr) 
     throws DbException
     {
+        // by default, set the expected schema version to the latest one in the list
+        final String expectedSchemaVersion=null;
+        updateSchema(gpConfig, mgr, expectedSchemaVersion);
+    }
+
+    public static void updateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr, final String expectedSchemaVersion) 
+    throws DbException
+    {
         final File schemaDir=new File(gpConfig.getWebappDir(), "WEB-INF/schema");
-        SchemaUpdater.updateSchema(mgr, schemaDir, gpConfig.getDbSchemaPrefix()); 
+        SchemaUpdater.updateSchema(mgr, schemaDir, gpConfig.getDbSchemaPrefix(), expectedSchemaVersion);
     }
     
     public static void updateSchema(final HibernateSessionManager mgr, final File schemaDir, final String schemaPrefix) 
@@ -51,18 +65,40 @@ public class SchemaUpdater {
         updateSchema(mgr, schemaDir, schemaPrefix, null);
     }
     
-    public static void updateSchema(final HibernateSessionManager mgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
+    public static void updateSchema(final HibernateSessionManager mgr, final File schemaDir, final String schemaPrefix, final String expectedSchemaVersion) 
     throws DbException
     {
+        dbCheck(mgr);
+        final String dbSchemaVersion=getDbSchemaVersion(mgr);
         try {
-            mgr.beginTransaction();
-        }
-        catch (Throwable t) {
-            // ... 1) can't even begin a transaction
-            throw new DbException("Database connection error: "+t.getLocalizedMessage(), t);
-        }
-        try {
-            innerUpdateSchema(mgr, resourceDir, schemaPrefix, expectedSchemaVersion);
+            final List<File> schemaFiles=SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
+            boolean upToDate=isUpToDate(schemaFiles);
+            log.info("schema up-to-date=" + upToDate + ", expectedSchemaVersion=" + expectedSchemaVersion + ", current dbSchemaVersion=" + dbSchemaVersion);
+            if (upToDate) {
+                return;
+            }
+        
+            String proposedSchemaVersion=""; 
+            if (schemaFiles != null && schemaFiles.size() > 0) {
+                File lastSchemaFile=schemaFiles.get( schemaFiles.size()-1 );
+                proposedSchemaVersion=DbSchemaFilter.initSchemaVersionFromFilename(schemaPrefix, lastSchemaFile);
+            }
+
+            // run new DDL scripts to bring the DB up to date with the proposed schema version
+            log.info("Updating schema from "+dbSchemaVersion+" to "+proposedSchemaVersion+" ...");        
+            createSchema(mgr, schemaPrefix, schemaFiles);
+
+            // validate that the DB version is up to date
+            final String actualSchemaVersion=getDbSchemaVersion(mgr);
+            if (!Strings.isNullOrEmpty(actualSchemaVersion) && !Strings.isNullOrEmpty(proposedSchemaVersion)) {
+                upToDate = (proposedSchemaVersion.compareTo(actualSchemaVersion) <= 0);
+            }
+            if (!upToDate) {
+                log.error("schema didn't have correct version after creating");
+                throw new DbException("schema didn't have correct version after creating, updateToSchemaVersion="+proposedSchemaVersion+", actual="+actualSchemaVersion);
+            }
+            log.info("Updating schema...Done!");
+
             mgr.commitTransaction();
         }
         catch (DbException e) {
@@ -80,6 +116,25 @@ public class SchemaUpdater {
             catch (Exception e) {
                 log.error("Exception thrown closing database connection: "+e.getLocalizedMessage(), e);
             }
+        }
+    }
+
+    /**
+     * This is a (potentially optional) validation step.
+     * 
+     * @param mgr
+     * @throws DbException, if we are unable to open a db connection.
+     */
+    protected static void dbCheck(final HibernateSessionManager mgr) throws DbException {
+        try {
+            mgr.beginTransaction();
+        }
+        catch (Throwable t) {
+            // ... 1) can't even begin a transaction
+            throw new DbException("Database connection error: "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            mgr.closeCurrentSession();
         }
     }
     
@@ -104,39 +159,6 @@ public class SchemaUpdater {
         }
         return false;
     }
-    
-    private static void innerUpdateSchema(final HibernateSessionManager sessionMgr, final File resourceDir, final String schemaPrefix, final String expectedSchemaVersion) 
-    throws DbException 
-    {
-        final String dbSchemaVersion=getDbSchemaVersion(sessionMgr);
-        final List<File> schemaFiles=SchemaUpdater.listSchemaFiles(resourceDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
-        boolean upToDate=isUpToDate(schemaFiles);
-        log.info("schema up-to-date=" + upToDate + ", expectedSchemaVersion=" + expectedSchemaVersion + ", current dbSchemaVersion=" + dbSchemaVersion);
-        if (upToDate) {
-            return;
-        }
-        
-        String proposedSchemaVersion=""; 
-        if (schemaFiles != null && schemaFiles.size() > 0) {
-            File lastSchemaFile=schemaFiles.get( schemaFiles.size()-1 );
-            proposedSchemaVersion=DbSchemaFilter.initSchemaVersionFromFilename(schemaPrefix, lastSchemaFile);
-        }
-
-        // run new DDL scripts to bring the DB up to date with the proposed schema version
-        log.info("Updating schema from "+dbSchemaVersion+" to "+proposedSchemaVersion+" ...");        
-        createSchema(sessionMgr, schemaFiles);
-
-        // validate that the DB version is up to date
-        final String actualSchemaVersion=getDbSchemaVersion(sessionMgr);
-        if (!Strings.isNullOrEmpty(actualSchemaVersion) && !Strings.isNullOrEmpty(proposedSchemaVersion)) {
-            upToDate = (proposedSchemaVersion.compareTo(actualSchemaVersion) <= 0);
-        }
-        if (!upToDate) {
-            log.error("schema didn't have correct version after creating");
-            throw new DbException("schema didn't have correct version after creating, updateToSchemaVersion="+proposedSchemaVersion+", actual="+actualSchemaVersion);
-        }
-        log.info("Updating schema...Done!");
-    }
 
     /**
      * Get the list of schema files to process for the given schemaPrefix, e
@@ -144,28 +166,12 @@ public class SchemaUpdater {
      */
     protected static List<File> listSchemaFiles(final File schemaDir, final String schemaPrefix, final String expectedSchemaVersion, final String dbSchemaVersion) {
         log.debug("listing schema files ... ");
-        List<File> rval=new ArrayList<File>();
-        final DbSchemaFilter schemaFilenameFilter = new DbSchemaFilter.Builder()
+        final DbSchemaFilter filter = new DbSchemaFilter.Builder()
             .schemaPrefix(schemaPrefix)
             .dbSchemaVersion(dbSchemaVersion)
             .maxSchemaVersion(expectedSchemaVersion)
         .build();
-        File[] schemaFiles = schemaDir.listFiles(schemaFilenameFilter);
-        Arrays.sort(schemaFiles, schemaFilenameFilter);
-        for (int f = 0; f < schemaFiles.length; f++) {
-            final File schemaFile = schemaFiles[f];
-            final String name=schemaFile.getName();
-            final String schemaVersion=schemaFilenameFilter.initSchemaVersion(schemaFile);
-            if (schemaFilenameFilter.acceptSchemaVersion(schemaVersion)) {
-                log.debug("adding " + name + " (" + schemaVersion + ")");
-                rval.add(schemaFile);
-            }
-            else {
-                log.debug("skipping " + name + " (" + schemaVersion + ")");
-            }
-        }
-        log.debug("listing schema files ... Done!");
-        return rval;
+        return filter.listSchemaFiles(schemaDir);
     }
 
     /**
@@ -189,7 +195,7 @@ public class SchemaUpdater {
                 dbSchemaVersion="";
             }
             else {
-                dbSchemaVersion=PropsTable.selectValue(sessionMgr, "schemaVersion");
+                dbSchemaVersion=PropsTable.selectValue(sessionMgr, PROP_SCHEMA_VERSION);
             }
         }
         catch (Throwable t) {
@@ -204,6 +210,19 @@ public class SchemaUpdater {
         return dbSchemaVersion;
     }
 
+    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) 
+    throws DbException
+    {
+        final String schemaVersion=DbSchemaFilter.initSchemaVersionFromFilename(schemaPrefix, schemaFile);
+        updateDbSchemaVersion(sessionMgr, schemaVersion);
+    }
+
+    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaVersion) 
+    throws DbException
+    {
+        PropsTable.saveProp(sessionMgr, PROP_SCHEMA_VERSION, schemaVersion);
+    }
+    
     protected static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
         final boolean isInTransaction=sessionMgr.isInTransaction();
         try {
@@ -226,24 +245,27 @@ public class SchemaUpdater {
         return false;
     }
 
-    protected static void createSchema(final HibernateSessionManager sessionMgr, final List<File> schemaFiles) 
+    protected static void createSchema(final HibernateSessionManager sessionMgr, final String schemaPrefix, final List<File> schemaFiles) 
     throws DbException
     {
         for(final File schemaFile : schemaFiles) {
-            processSchemaFile(sessionMgr, schemaFile);
+            processSchemaFile(sessionMgr, schemaPrefix, schemaFile);
         }
     }
 
-    protected static void processSchemaFile(final HibernateSessionManager sessionMgr, final File schemaFile) throws DbException {
-        log.info("updating database from schema " + schemaFile.getPath());
-        String all = null;
+    protected static List<String> extractSqlStatements(final File schemaFile) throws DbException {
         try {
-            all = HsqlDbUtil.readFile(schemaFile);
+            String all = HsqlDbUtil.readFile(schemaFile);
+            return extractSqlStatements(all);
         }
         catch (IOException e) {
             log.error("Error reading schema file=" + schemaFile.getPath(), e);
             throw new DbException("Error reading schema file="+schemaFile.getPath(), e);
         }
+    }
+
+    protected static List<String> extractSqlStatements(String all) {
+        final List<String> statements=new ArrayList<String>();
         while (!all.equals("")) {
             all = all.trim();
             int i = all.indexOf('\n');
@@ -264,9 +286,18 @@ public class SchemaUpdater {
                 all = "";
             }
             sql = sql.trim();
+            statements.add(sql);
+        }
+        return statements;
+    }
+    
+    protected static void processSchemaFile(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) throws DbException {
+        log.info("updating database from schema " + schemaFile.getPath());
+        
+        final List<String> sqlStatements=extractSqlStatements(schemaFile);
+        for(final String sql : sqlStatements) {
             log.info("apply SQL-> " + sql);
             try {
-                //BaseDAO dao = new BaseDAO();
                 executeUpdate(sessionMgr, sql);
             }
             catch (Throwable t) {
@@ -277,31 +308,29 @@ public class SchemaUpdater {
                         "\n\t"+sql);
             }
         }
+       
+        updateDbSchemaVersion(sessionMgr, schemaPrefix, schemaFile);
         log.debug("updating database from schema ... Done!");
     }
+
     
-    /**
-     * execute arbitrary SQL on database, returning int
-     * 
-     * @param sql
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return int number of rows returned
-     */
-    private static int executeUpdate(final HibernateSessionManager sessionMgr, final String sql) throws SQLException 
-    {
-        sessionMgr.getSession().flush();
-        sessionMgr.getSession().clear();
-    
-        Statement updateStatement = null;
-    
+    private static int executeUpdate(final HibernateSessionManager mgr, final String sql) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            updateStatement = sessionMgr.getSession().connection().createStatement();
-            return updateStatement.executeUpdate(sql);
+            mgr.beginTransaction();
+            int rval = mgr.getSession().createSQLQuery(sql).executeUpdate();
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+            return rval;
+        }
+        catch (Throwable t) {
+            mgr.rollbackTransaction();
+            throw t;
         }
         finally {
-            if (updateStatement != null) {
-                updateStatement.close();
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
             }
         }
     }

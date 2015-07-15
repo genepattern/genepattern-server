@@ -23,7 +23,4 @@ CREATE SEQUENCE BATCH_JOB_SEQ
   NOCACHE
   NOORDER;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.3.0' where KEY = 'schemaVersion';
-
 COMMIT;

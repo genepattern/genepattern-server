@@ -61,7 +61,7 @@ public class TestPluginManagerLegacy {
 
     
     @Before
-    public void setUp() throws MalformedURLException {
+    public void setUp() throws IOException {
         gpHomeDir=tmp.newFolder(".genepattern");
         pluginDir=tmp.newFolder("patches");
         resourcesDir=tmp.newFolder("resources");

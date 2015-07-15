@@ -114,7 +114,7 @@ public class AuthenticationUtil {
 
                 if (OAuthManager.instance().isTokenValid(accessToken)) {
                     String usernameFromToken = OAuthManager.instance().getUsernameFromToken(accessToken);
-                    authenticated = UserAccountManager.instance().getAuthentication().authenticate(usernameFromToken, password);
+                    authenticated = true;
                     gpUserId = usernameFromToken;
                 }
 

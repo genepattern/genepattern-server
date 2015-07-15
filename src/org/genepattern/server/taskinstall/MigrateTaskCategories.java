@@ -57,7 +57,9 @@ public class MigrateTaskCategories {
      * Update the db to indicate that this migration is complete.
      * @return
      */
-    protected boolean updateDb() {
+    protected boolean updateDb() 
+    throws DbException
+    {
         boolean success=PropsTable.saveProp(PROP_DB_CHECK, "true");
         return success;
     }

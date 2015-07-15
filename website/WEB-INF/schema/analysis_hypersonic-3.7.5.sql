@@ -6,7 +6,3 @@ create table PIN_MODULE (
     primary key (id)
 );
 create index idx_pin_module on PIN_MODULE (id);
-
--- update schema version
-update props set value='3.7.5' where key='schemaVersion';
-

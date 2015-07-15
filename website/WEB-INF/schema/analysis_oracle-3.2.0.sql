@@ -52,9 +52,6 @@ JOB_NO
 ) ENABLE
 ;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.2.0' where KEY = 'schemaVersion';
-
 COMMIT;
 
 

@@ -6,6 +6,7 @@ package org.genepattern.server.genepattern;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,11 +45,11 @@ public class TestCommandLineParser {
     
     @SuppressWarnings("deprecation")
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         gpAppDir=tmp.newFolder("GenePattern.app").getAbsoluteFile();
         resourcesDir=tmp.newFolder("resources").getAbsoluteFile();
-        uploadsDir=tmp.newFolder("users/test_user/uploads");
-        webappDir=tmp.newFolder("Tomcat/webapps/gp").getAbsoluteFile();
+        uploadsDir=tmp.newFolder("users", "test_user", "uploads");
+        webappDir=tmp.newFolder("Tomcat", "webapps", "gp").getAbsoluteFile();
         File tomcatCommonLib=new File(webappDir.getParentFile().getParentFile(), "common/lib").getAbsoluteFile();
         tomcatCommonLib_val=tomcatCommonLib.toString();
         
@@ -186,8 +187,9 @@ public class TestCommandLineParser {
                 "-rf/path/to/all_aml_train.gct"
                 );
         final List<String> actual=CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, gpatRuntimeProps, formalParameters);
-        assertThat(actual, Matchers.is(expected));
+        //arrayEquals(actual, expected);
         
+        assertThat(actual, Matchers.is(expected));
     }
     
 }

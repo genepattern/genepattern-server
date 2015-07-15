@@ -18,6 +18,4 @@ insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.ge
 insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1');
 insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1');
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.9.2' where KEY = 'schemaVersion';
 commit;

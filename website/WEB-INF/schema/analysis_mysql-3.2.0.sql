@@ -21,9 +21,6 @@ CREATE TABLE JOB_GROUP
   PERMISSION_FLAG integer NOT NULL references PERMISSION_FLAG(ID),
   primary key ( JOB_NO, GROUP_ID ));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.2.0' where `KEY` = 'schemaVersion';
-
 COMMIT;
 
 

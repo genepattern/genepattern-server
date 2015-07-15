@@ -28,7 +28,7 @@ import org.hibernate.Query;
  *
  */
 @Entity
-@Table(name="props")
+@Table(name="PROPS")
 public class PropsTable {
     private static final Logger log = Logger.getLogger(PropsTable.class);
     
@@ -74,7 +74,7 @@ public class PropsTable {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
-            final String hql="select p.key from "+PropsTable.class.getName()+" p where p.key like :key";
+            final String hql="select p.keyColumn from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", matchingKey);
             List<String> values=query.list();
@@ -109,7 +109,7 @@ public class PropsTable {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
-            final String hql="from "+PropsTable.class.getName()+" p where p.key like :key";
+            final String hql="from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", key);
             List<PropsTable> props=query.list();
@@ -145,11 +145,10 @@ public class PropsTable {
      * @throws DbException
      */
     public static List<PropsTable> selectAllProps(final HibernateSessionManager mgr) throws DbException {
-        // select value from props where `key`={key}
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
-            final String hql=" from "+PropsTable.class.getName();
+            final String hql="from "+PropsTable.class.getName();
             Query query = mgr.getSession().createQuery(hql);  
             List<PropsTable> rval=query.list();
             return rval;
@@ -170,43 +169,41 @@ public class PropsTable {
      * @param value
      * @return
      */
-    public static boolean saveProp(final String key, final String value) {
+    public static boolean saveProp(final String key, final String value) 
+    throws DbException
+    {
         return saveProp(HibernateUtil.instance(), key, value);
     }
-    
+
     /**
      * Save a key/value pair to the PROPS table.
      * @param key
      * @param value
      * @return
      */
-    public static boolean saveProp(final HibernateSessionManager mgr, final String key, final String value) {
+    public static boolean saveProp(final HibernateSessionManager mgr, final String key, final String value) 
+    throws DbException
+    {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
-            PropsTable props=selectRow(mgr, key);
-            if (props==null) {
-                props=new PropsTable();
-                props.setKey(key);
-                props.setValue(value);
-                mgr.getSession().save(props);
-            }
-            else {
-                props.setValue(value);
-                mgr.getSession().update(props);
-            } 
+            
+            PropsTable prop=new PropsTable();
+            prop.setKeyColumn(key);
+            prop.setValue(value);
+            mgr.getSession().saveOrUpdate(prop);
+            
             if (!isInTransaction) {
                 mgr.commitTransaction();
             }
             return true;
         }
         catch (Throwable t) {
-            log.error("Error saving (key,value) to PROPS table in DB, ('"+key+"', '"+value+"')", t);
             mgr.rollbackTransaction();
-            return false;
+            throw new DbException("Error saving (key,value) to PROPS table in DB, ('"+key+"', '"+value+"')", t);
         }
     }
-    
+
     /**
      * Remove an entry from the PROPS table.
      * @param key
@@ -224,7 +221,7 @@ public class PropsTable {
         try {
             mgr.beginTransaction();
             PropsTable props=new PropsTable();
-            props.setKey(key);
+            props.setKeyColumn(key);
             mgr.getSession().delete(props);
             if (!isInTransaction) {
                 mgr.commitTransaction();
@@ -236,22 +233,30 @@ public class PropsTable {
         }
     }
 
-    @Id
-    @Column(name="key")
-    private String key;
-    @Column
+    private String keyColumn;
+
     private String value;
     
-    public String getKey() {
-        return key;
-    }
-    public void setKey(final String key) {
-        this.key=key;
+    /** 
+     * Quoted the MySQL reserved word 'key' with back ticks ("`"). 
+     * The all upper-case name is required for compatibility with HSQLDB. 
+     * When column names are quoted in HSQLDB, it forces case-sensitive comparison.
+     */
+    @Id
+    @Column(name="`KEY`")
+    public String getKeyColumn() {
+        return keyColumn;
     }
     
+    public void setKeyColumn(final String key) {
+        this.keyColumn=key;
+    }
+
+    @Column
     public String getValue() {
         return this.value;
     }
+
     public void setValue(final String value) {
         this.value=value;
     }

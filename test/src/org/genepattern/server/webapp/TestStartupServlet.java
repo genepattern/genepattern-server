@@ -7,6 +7,7 @@ import static junit.framework.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 import javax.servlet.ServletConfig;
@@ -35,7 +36,7 @@ public class TestStartupServlet {
     private File expectedGpHomeDir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         workingDir=new File(System.getProperty("user.dir"));
         expectedGpHomeDir=tmp.newFolder("gp_home");
         servletContext=mock(ServletContext.class);
@@ -46,7 +47,7 @@ public class TestStartupServlet {
     }
     
     @Test
-    public void initGpWorkingDir() {
+    public void initGpWorkingDir() throws IOException {
         File gpInstallDir=tmp.newFolder("GenePatternServer");
         File tomcatDir=new File(gpInstallDir, "Tomcat"); // mock location for <GenePatternServer>/Tomcat directory
         tomcatDir.mkdirs();
@@ -62,7 +63,7 @@ public class TestStartupServlet {
     }
     
     @Test
-    public void initGpWorkingDir_fromSystemProp() {
+    public void initGpWorkingDir_fromSystemProp() throws IOException {
         File customGpWorkingDir=tmp.newFolder("customWorkingDir");
         File gpWorkingDir=startupServlet.initGpWorkingDir(customGpWorkingDir.getAbsolutePath(), servletConfig);
         assertEquals(customGpWorkingDir, gpWorkingDir);

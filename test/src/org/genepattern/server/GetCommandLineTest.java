@@ -20,7 +20,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.genepattern.junitutil.FileUtil;
-import org.genepattern.junitutil.MyLabelledParameterized;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
@@ -29,6 +28,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.yaml.snakeyaml.Yaml;
 
@@ -37,7 +37,7 @@ import org.yaml.snakeyaml.Yaml;
  * To add a new test case edit one of the testCaseFiles or add a new testCaseFile to the list.
  * @author pcarr
  */
-@RunWith(MyLabelledParameterized.class)
+@RunWith(Parameterized.class)
 public class GetCommandLineTest {
     private static String[] testCaseFiles={ 
         //"debug_test_case.yaml",
@@ -79,7 +79,7 @@ public class GetCommandLineTest {
      * This parameterized test runs a single unit test for each test case in the Collection of TestData.
      * @return
      */
-    @Parameters
+    @Parameters(name = "{0}" )
     public static Collection<TestData[]> data() {
         Properties emptyProps = new Properties();
         List<TestData> testCases = new ArrayList<TestData>();

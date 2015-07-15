@@ -20,11 +20,3 @@ create table job_runner_job (
     unique (jr_classname, jr_name, ext_job_id)
 );
 create index idx_jrj_ext_job_id on JOB_RUNNER_JOB (ext_job_id);
-
--- TODO: make sure to add a foreign key constraint
--- alter table job_runner_job add constraint gp_job_no_fk FOREIGN KEY (gp_job_no) references ANALYSIS_JOB(job_no) on delete cascade
---     , constraint gp_job_no_fk FOREIGN KEY (gp_job_no) references ANALYSIS_JOB(job_no)
-
--- update schema version
-update props set value='3.7.6' where key='schemaVersion';
-

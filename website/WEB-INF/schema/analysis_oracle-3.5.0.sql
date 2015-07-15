@@ -15,7 +15,5 @@ create table eula_remote_queue (
 
 create index idx_eula_record_id on eula_remote_queue (eula_record_id);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.5.0' where KEY = 'schemaVersion';
 commit;
 

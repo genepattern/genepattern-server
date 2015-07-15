@@ -25,5 +25,3 @@ create table JOB_TAG (
     tag_id integer not null references tag (tag_id),
     primary key (id));
 
--- update schema version
-update props set value='3.9.1' where `key`='schemaVersion';

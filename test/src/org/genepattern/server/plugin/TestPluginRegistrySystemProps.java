@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Properties;
@@ -43,7 +44,7 @@ public class TestPluginRegistrySystemProps {
     public TemporaryFolder temp=new TemporaryFolder();
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         // create a 'genepattern.properties' file
         resourcesDir=temp.newFolder("resources");
         File gpProps=new File(resourcesDir, "genepattern.properties");

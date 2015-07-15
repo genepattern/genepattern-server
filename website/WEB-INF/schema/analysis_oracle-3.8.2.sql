@@ -17,7 +17,4 @@ commit;
 -- then add the constraint
 alter table job_runner_job add constraint gp_job_no_fk FOREIGN KEY (gp_job_no) references ANALYSIS_JOB(job_no) on delete cascade;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.8.2' where KEY = 'schemaVersion';
-
 commit;

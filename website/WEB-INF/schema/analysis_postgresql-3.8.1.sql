@@ -8,7 +8,4 @@ create table job_input_value (
     primary key (gp_job_no, idx, pname)
 );
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.8.1' where KEY = 'schemaVersion';
-
 commit;

@@ -12,7 +12,5 @@ create table eula_remote_queue (
     primary key (eula_record_id, remote_url)
 );
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.5.0' where KEY = 'schemaVersion';
 commit;
 

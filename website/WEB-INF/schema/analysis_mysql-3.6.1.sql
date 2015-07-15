@@ -12,8 +12,5 @@ create table TASK_INSTALL (
     libdir varchar(255),
     primary key (lsid));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.6.1' where `KEY` = 'schemaVersion';
-
 commit;
 

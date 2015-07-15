@@ -314,7 +314,7 @@ public class StartupServlet extends HttpServlet {
                 cause = t;
             }
             getLog().error("Error connecting to the database: " + cause);
-            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.", t);
             throw new ServletException(t);
         }
         finally {
