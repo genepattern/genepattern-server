@@ -7,26 +7,8 @@
   --%>
 
 
-<%@ page import="java.io.IOException,
-                 java.util.Enumeration,
-                 java.util.HashMap,
-                 java.io.*,
-                 java.util.*,
-                 java.text.*,
-                 java.net.URLEncoder,
-                 org.genepattern.server.webservice.server.ProvenanceFinder,
-                 org.genepattern.server.webservice.server.local.*,
-                 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
-                 org.genepattern.webservice.TaskInfo,
-                 org.genepattern.webservice.TaskInfoAttributes,
-                 org.genepattern.webservice.ParameterFormatConverter,
-                 org.genepattern.webservice.ParameterInfo,
-                 org.genepattern.server.util.AccessManager,
-                 org.genepattern.util.LSID,
-                 org.genepattern.util.StringUtils,
-                 org.genepattern.util.GPConstants,
-                 org.genepattern.webservice.OmnigeneException,
-                 org.genepattern.data.pipeline.PipelineModel"
+<%@ page import="org.genepattern.server.webservice.server.ProvenanceFinder,
+                 org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult"
          session="false" contentType="text/html" language="Java" %>
 <%
 
@@ -45,7 +27,12 @@
     out.println("Pipe = " + pipename);
 
     ProvenanceFinder pf = new ProvenanceFinder(userID);
-    String lsid = pf.createProvenancePipeline(filename, pipename);
+    
+    ProvenancePipelineResult ppr = pf.createProvenancePipeline(filename, pipename);
+    String lsid="";
+    if (ppr != null) {
+        lsid = ppr.getLsid();
+    }
 
     response.sendRedirect("pipeline/index.jsf?lsid=" + lsid);
 %>
