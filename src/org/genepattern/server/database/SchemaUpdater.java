@@ -5,11 +5,8 @@ package org.genepattern.server.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.domain.PropsTable;
-import org.genepattern.webservice.OmnigeneException;
 
 import com.google.common.base.Strings;
 

@@ -67,7 +67,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-facelets.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-impl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jstl.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-log4j12-1.7.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jul-to-slf4j-1.7.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oromatcher.jar"/>
