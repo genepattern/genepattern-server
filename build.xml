@@ -164,7 +164,7 @@
         <delete quiet="true" failonerror="false" dir="ziptemp" />
         <delete quiet="true" failonerror="false" file="gp_war.zip" />
         
-        <delete>
+        <delete quiet="true" failoneerror="false">
             <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp" includes="**/*.class" />
             <fileset dir="${webapp.path}/WEB-INF/src/org/apache/jsp" includes="**/*.java" />
         </delete>
