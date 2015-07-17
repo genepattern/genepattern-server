@@ -673,6 +673,8 @@
     </target>
     
     <target name="compile-jspc" depends="jspc, compile" description="generate .class files from .jsp files">
+        <mkdir dir="${webapp.path}/WEB-INF/classes" />
+
         <javac 
             source="${java.source}" target="${java.target}"
             debug="${java.debug}" optimize="${java.optimize}"
