@@ -9,5 +9,3 @@ create table BATCH_ANALYSIS(
     BATCH_JOB int not null references BATCH_JOB(JOB_NO) on delete cascade,
     ANALYSIS_JOB int not null references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
--- update schema version
-update props set value='3.3.0' where key='schemaVersion';

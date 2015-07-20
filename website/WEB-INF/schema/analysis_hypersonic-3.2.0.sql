@@ -18,6 +18,3 @@ constraint jg_pk PRIMARY KEY (job_no, group_id),
 constraint jn_fk FOREIGN KEY (job_no) references ANALYSIS_JOB(job_no),
 constraint pf_fk FOREIGN KEY (permission_flag) references PERMISSION_FLAG(id)
 );
-
--- update schema version
-update props set value='3.2.0' where key='schemaVersion';

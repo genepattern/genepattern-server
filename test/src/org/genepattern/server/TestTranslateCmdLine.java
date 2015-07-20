@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class TestTranslateCmdLine {
     private File libdir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         // use example config file from resources directory
         gpConfig=new GpConfig.Builder()
             .configFile(new File("resources/config_local_job_runner.yaml"))

@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -25,6 +26,7 @@ public class TestLsfStatusChecker {
     private int gpJobNo=0;
     private String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     private DrmJobRecord jobRecord;
+    int year;
 
     /*
      * Example bjobs -W output
@@ -52,6 +54,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     
     @Before
     public void setUp() {
+        year = Calendar.getInstance().get(Calendar.YEAR);
         jobRecord=new DrmJobRecord.Builder(gpJobNo, cleLsid)
         .build();
     }
@@ -74,9 +77,9 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals("exitCode", (Integer)0, jobStatus.getExitCode());
         assertEquals("statusMessage", "Successfully completed.", jobStatus.getJobStatusMessage());
         assertEquals("cpuTime", 140, jobStatus.getCpuTime().asMillis());
-        assertEquals("submitTime", new DateTime("2014-07-14T12:44:09").toDate(), jobStatus.getSubmitTime());
-        assertEquals("startTime", new DateTime("2014-07-14T12:44:14").toDate(), jobStatus.getStartTime());
-        assertEquals("endTime", new DateTime("2014-07-14T12:44:15").toDate(), jobStatus.getEndTime());
+        assertEquals("submitTime", new DateTime(year+"-07-14T12:44:09").toDate(), jobStatus.getSubmitTime());
+        assertEquals("startTime", new DateTime(year+"-07-14T12:44:14").toDate(), jobStatus.getStartTime());
+        assertEquals("endTime", new DateTime(year+"-07-14T12:44:15").toDate(), jobStatus.getEndTime());
         assertEquals("memory", Memory.fromString("3 mb"), jobStatus.getMemory());
         assertEquals("maxSwap", Memory.fromString("39 mb"), jobStatus.getMaxSwap());
         assertEquals("maxProcesses", (Integer)1, jobStatus.getMaxProcesses());
@@ -86,8 +89,8 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     @Test
     public void parseRunningJob() throws InterruptedException {
         //expected date
-        DateTime expectedSubmitTime=new DateTime("2014-07-09T11:39:51");
-        DateTime expectedStartTime=new DateTime("2014-07-09T11:39:52");
+        DateTime expectedSubmitTime=new DateTime(year+"-07-09T11:39:51");
+        DateTime expectedStartTime=new DateTime(year+"-07-09T11:39:52");
         long expectedCpuUsage= (33L*60L*60L*1000L) + (23L*60*1000L) + (2L*1000L) +  570L;
         Memory expectedMemUsage=Memory.fromString("6395 mb");
         
@@ -108,7 +111,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
                 "1696266 gpdev   PEND  genepattern gpint01        -        66363      07/10-10:31:01 default    000:00:00.00 0      0       -  -  - ");
         assertEquals("jobState", DrmJobState.QUEUED, jobStatus.getJobState());
         assertEquals("drmJobId", "1696266", jobStatus.getDrmJobId());
-        assertEquals("submitTime", new DateTime("2014-07-10T10:31:01").toDate(), jobStatus.getSubmitTime());
+        assertEquals("submitTime", new DateTime(year+"-07-10T10:31:01").toDate(), jobStatus.getSubmitTime());
         assertEquals("startTime", null, jobStatus.getStartTime());
         assertEquals("endTime", null, jobStatus.getEndTime());
         assertEquals("cpuUsage", 0, jobStatus.getCpuTime().getTime());
@@ -147,9 +150,9 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
                 "1696266 gpdev   EXIT  genepattern gpint01        -        66363      07/10-10:31:01 default    000:00:00.00 0      0       -  -  07/10-10:46:11");
         assertEquals("jobState", DrmJobState.ABORTED, jobStatus.getJobState());
         assertEquals("drmJobId", "1696266", jobStatus.getDrmJobId());
-        assertEquals("submitTime", new DateTime("2014-07-10T10:31:01").toDate(), jobStatus.getSubmitTime());
+        assertEquals("submitTime", new DateTime(year+"-07-10T10:31:01").toDate(), jobStatus.getSubmitTime());
         assertEquals("startTime", null, jobStatus.getStartTime());
-        assertEquals("endTime", new DateTime("2014-07-10T10:46:11").toDate(), jobStatus.getEndTime());
+        assertEquals("endTime", new DateTime(year+"-07-10T10:46:11").toDate(), jobStatus.getEndTime());
         assertEquals("cpuUsage", 0, jobStatus.getCpuTime().getTime());
         assertEquals("memUsage", 0, jobStatus.getMemory().getNumBytes());
     }
@@ -162,9 +165,9 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
                 lsfLogFile);
         assertEquals("jobState", DrmJobState.CANCELLED, jobStatus.getJobState());
         assertEquals("drmJobId", "1702585", jobStatus.getDrmJobId());
-        assertEquals("submitTime", new DateTime("2014-07-10T12:31:23").toDate(), jobStatus.getSubmitTime());
-        assertEquals("startTime", new DateTime("2014-07-10T12:31:24").toDate(), jobStatus.getStartTime());
-        assertEquals("endTime", new DateTime("2014-07-10T12:32:15").toDate(), jobStatus.getEndTime());
+        assertEquals("submitTime", new DateTime(year+"-07-10T12:31:23").toDate(), jobStatus.getSubmitTime());
+        assertEquals("startTime", new DateTime(year+"-07-10T12:31:24").toDate(), jobStatus.getStartTime());
+        assertEquals("endTime", new DateTime(year+"-07-10T12:32:15").toDate(), jobStatus.getEndTime());
         assertEquals("cpuUsage", 2400, jobStatus.getCpuTime().getTime());
         assertEquals("memUsage", Memory.fromString("32mb"), jobStatus.getMemory());
     }

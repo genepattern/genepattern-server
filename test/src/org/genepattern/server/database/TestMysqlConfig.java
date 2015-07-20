@@ -13,44 +13,76 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.server.DbException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
- * Example junit test for validating a MySQL connection.
+ * Example junit test for validating a MySQL connection. These tests are Ignore'd by default.
+ * 
+ * On my MacOS X dev machine I installed and started MySQL via GUI.
+ * I created the DB from the command line:
+ * <pre>
+mysql -u admin
+create database gpdev;
+drop database gpdev;
+ * </pre>
+ * 
  * @author pcarr
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Ignore
 public class TestMysqlConfig {
-    private final String username="gpdev";
-    private final String password="gpdev";
-    private final String dbSchema="gpdev";
-    private final String jdbcUrl="jdbc:mysql://127.0.0.1:3306/gpdev";
+    private final static String username="gpdev";
+    private final static String password="gpdev";
+    private final static String dbSchema="gpdev";
+    private static final String jdbcUrl="jdbc:mysql://127.0.0.1:3306/gpdev";
     
-    private File resourcesDir;
+    private GpConfig gpConfig;
+    private static HibernateSessionManager mgr;
     
     @Before
-    public void setUp() {
+    public void setUp() throws FileNotFoundException, IOException {
         File workingDir=new File(System.getProperty("user.dir"));
-        resourcesDir=new File(workingDir, "resources");
+        File webappDir=new File(workingDir, "website");
+        
+        gpConfig = new GpConfig.Builder()
+            .webappDir(webappDir)
+            .addProperty(GpConfig.PROP_DATABASE_VENDOR, "MySQL")
+        .build();
+        
+        mgr=initSessionMgr();
     }
     
-    /**
-     * Install the Postgres.app Mac application.
-     * From the 'psql' command line:
-     * 
-     * 1) create a user
-     * create user genepattern;
-     * 
-     * 2) create a database
-     * create database genepattern with owner = genepattern;
-     * 
-     * @throws Throwable
-     */
-    @Ignore @Test
-    public void testMysqlConnection() throws Throwable {
+    // Note: http://stackoverflow.com/questions/4668063/hibernate-use-backticks-for-mysql-but-not-for-hsql
+    protected static HibernateSessionManager initSessionMgr() throws FileNotFoundException, IOException {
+        File resourcesDir=new File("resources");
+        Properties p=new Properties();
+        ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
+
+        //# MySQL DB specific settings
+        //# See more at: http://www.javabeat.net/configure-mysql-database-with-hibernate-mappings
+        p.setProperty("database.vendor", "MySQL");
+        p.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
+        p.setProperty("hibernate.connection.url", jdbcUrl);
+        p.setProperty("hibernate.connection.username", username);
+        p.setProperty("hibernate.connection.password", password);
+        p.setProperty("hibernate.default_schema", dbSchema);
+        p.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect"); 
+        p.setProperty("hibernate.show_sql", "false");
+        
+        HibernateSessionManager sessionMgr=new HibernateSessionManager(p);        
+        return sessionMgr;
+    }
+    
+    @Test
+    public void _01_driverManagerGetConnection() throws Throwable {
         Connection conn=null;
         try {
             conn = DriverManager.getConnection(jdbcUrl, username, password);
@@ -64,49 +96,58 @@ public class TestMysqlConfig {
             }
         }
     }
-    
-    protected HibernateSessionManager initSessionMgr() throws FileNotFoundException, IOException {
-        Properties p=new Properties();
-        ConfigUtil.loadPropertiesInto(p, new File(resourcesDir, "database_default.properties"));
 
-        //# MySQL DB specific settings
-        //# See more at: http://www.javabeat.net/configure-mysql-database-with-hibernate-mappings
-        p.setProperty("database.vendor", "MySQL");
-        p.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        p.setProperty("hibernate.connection.url", jdbcUrl);
-        p.setProperty("hibernate.connection.username", username);
-        p.setProperty("hibernate.connection.password", password);
-        p.setProperty("hibernate.default_schema", dbSchema);
-        p.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        p.setProperty("hibernate.show_sql", "true");
-        
-        HibernateSessionManager sessionMgr=new HibernateSessionManager(p);        
-        return sessionMgr;
-    }
-    
     /**
      * Manual SchemaUpdater test with MySQL. 
+     * @throws DbException 
+     * @throws IOException 
+     * @throws FileNotFoundException 
      *   
      * @throws Throwable
      */
-    @Ignore @Test
-    public void initDbSchemaMysql() throws Throwable {
-        final String fromVersion="";
-        final String toVersion="3.9.3";
+    @Test
+    public void _02_initDbSchemaMysql() throws DbException, FileNotFoundException, IOException {
+        // from empty string to null means run all DDL scripts
+        final String fromVersion=""; 
+        final String toVersion=null;
         
-        HibernateSessionManager sessionMgr=initSessionMgr();
-        String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(sessionMgr);
+        String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
         assertEquals("before update", fromVersion, dbSchemaVersion);
-        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(sessionMgr, "props"));
-        assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(sessionMgr, "PROPS"));
+        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(mgr, "props"));
+        assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
 
-        final String dbVendor="postgresql";
-        final File schemaDir=new File("website/WEB-INF/schema");
-        SchemaUpdater.updateSchema(sessionMgr, schemaDir, "analysis_"+dbVendor.toLowerCase()+"-", toVersion);
-        
+        SchemaUpdater.updateSchema(gpConfig, mgr, toVersion);
+    }
+    
+    @Test
+    public void _03_insertIntoPropsTable() throws DbException {
+        final String key="test_key_"+Math.random();
+        String value="TEST_INSERT";
+        assertEquals("before insert", null, PropsTable.selectRow(mgr, key));
+        assertEquals("before insert", "", PropsTable.selectValue(mgr, key));
+        PropsTable.saveProp(mgr, key, value);
+        assertEquals("after insert", value, PropsTable.selectValue(mgr, key));
+        PropsTable.saveProp(mgr, key, "TEST_UPDATE");
+        assertEquals("after update", "TEST_UPDATE", PropsTable.selectValue(mgr, key));
+    }
+    
+    @Test
+    public void _04_selectDbSchemaVersion() throws DbException {
         // do a test query
-        dbSchemaVersion=PropsTable.selectValue(sessionMgr, "schemaVersion");
-        assertEquals("after update", toVersion, dbSchemaVersion);
+        String dbSchemaVersion=PropsTable.selectValue(mgr, "schemaVersion");
+        assertEquals("after update", "3.9.3", dbSchemaVersion); 
+    }
+    
+    @Test
+    public void _05_updateDbSchemaVersion() throws FileNotFoundException, IOException, DbException {
+        final String origVersion=SchemaUpdater.getDbSchemaVersion(mgr);
+        final String schemaPrefix="analysis_mysql-";
+        final String updatedVersion="3.9.3-"+Math.random();
+        File mockSchemaFile=new File(schemaPrefix+updatedVersion+".sql");
+        
+        SchemaUpdater.updateDbSchemaVersion(mgr, schemaPrefix, mockSchemaFile);
+        assertEquals("after update", updatedVersion, SchemaUpdater.getDbSchemaVersion(mgr));
+        SchemaUpdater.updateDbSchemaVersion(mgr, origVersion);
     }
 
 }

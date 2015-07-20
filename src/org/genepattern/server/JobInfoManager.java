@@ -3,16 +3,10 @@
  *******************************************************************************/
 package org.genepattern.server;
 
+import static org.genepattern.util.GPConstants.JAVA_FLAGS;
 import static org.genepattern.util.GPConstants.TASKLOG;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -32,9 +26,13 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.job.input.JobInputHelper;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.JavascriptHandler;
+import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -521,12 +519,12 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
-    public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
-        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobInfo);
+    public static String generateLaunchURL(TaskInfo taskInfo, int jobNumber) throws Exception {
+        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobNumber);
     }
     
-    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final JobInfo jobInfo) throws Exception {
-        String launchUrl = null;
+    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final int jobNumber) throws Exception {
+        /*String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
         if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
             String mainFile = (String)taskInfo.getAttributes().get("commandLine");
@@ -534,47 +532,47 @@ public class JobInfoManager {
             final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
             launchUrl = gpConfig.getGenePatternURL() + relativeUriStr;
             //add the job number
-            launchUrl += "?job.number=" + jobInfo.getJobNumber();
-            ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            if (parameterInfos != null) {
-                for (ParameterInfo parameterInfo : parameterInfos) {
-                    try {
-                        String value=parameterInfo.getValue();
+            launchUrl += "?job.number=" + jobNumber;
 
-                        if (parameterInfo.getAttributes() != null && ((parameterInfo.getAttributes().containsKey(ParameterInfo.MODE)
-                                && parameterInfo.getAttributes().get(ParameterInfo.MODE).equals(ParameterInfo.URL_INPUT_MODE))
-                                || (parameterInfo.getAttributes().containsKey("type")
-                                        && parameterInfo.getAttributes().get("type").equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE))))
-                        {
-                            if (value.endsWith(".list.txt")) {
-                                List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
+            JobInput jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
 
-                                for (String fileUrl : fileList) {
-                                    launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                                }
-                            }
-                            else
-                            {
-                                URL fileUrl= JobInputHelper.initExternalUrl(value);
-                                if (fileUrl != null) {
-                                }
-                                else {
-                                    //it's an not an external or GenomeSpace URL
-                                    fileUrl = GpFileObjFactory.getRequestedGpFileObj(value).getUrl();
-                                }
-                                launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                            }
-                        }
-                        else {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + value;
-                        }
-                    } 
-                    catch (Exception io) {
-                        log.error(io);
-                    }
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+
+            for(ParameterInfoRecord pinfoRecord : paramInfoMap.values())
+            {
+                ParameterInfo formalParam = pinfoRecord.getFormal();
+                String paramName = formalParam.getName();
+
+                Param param = jobInput.getParam(paramName);
+                List<ParamValue> values = param.getValues();
+                for(ParamValue value: values)
+                {
+                    launchUrl += "&" + paramName + "=" + value.getValue();
                 }
             }
+        } */
+
+        StringBuffer launchUrl = new StringBuffer();
+        String jobDir = GenePatternAnalysisTask.getJobDir(String.valueOf(jobNumber));
+        BufferedReader reader = null;
+        try
+        {
+            File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+            reader = new BufferedReader(new FileReader(launchUrlFile));
+
+            String line= null;
+            while((line = reader.readLine()) != null)
+            {
+                launchUrl.append(line);
+            }
         }
-        return launchUrl;
+        finally {
+            if(reader != null)
+            {
+                reader.close();
+            }
+        }
+
+        return launchUrl.toString();
     }
 }

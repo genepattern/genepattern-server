@@ -29,6 +29,4 @@ create index idx_comment_text on job_comment(comment_text);
 
 create index idx_tag on tag(tag);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.9.1' where KEY = 'schemaVersion';
 commit;

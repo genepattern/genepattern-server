@@ -16,5 +16,3 @@ drop table task_type;
 
 delete from job_status where status_name='Timed Out';
 update job_status set status_name='Pending' where status_name='Not Started';
-
-update props set value='1.4.0' where key='schemaVersion';

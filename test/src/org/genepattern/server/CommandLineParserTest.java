@@ -53,7 +53,7 @@ public class CommandLineParserTest {
     private File rootTasklibDir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         rootTasklibDir=tmp.newFolder("taskLib");
     }
 

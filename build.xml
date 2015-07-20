@@ -8,13 +8,16 @@
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.7" />
     <property name="java.source" value="1.7" />
-    <property name="java.visualizer.target" value="1.7" /> <!-- was 1.1 -->
-    <property name="java.visualizer.source" value="1.7" /> <!-- was 1.2 -->
+    <property name="java.debug" value="off" /> 
+    <property name="java.optimize" value="on" />
+    <property name="java.visualizer.target" value="1.7" /> 
+    <property name="java.visualizer.source" value="1.7" /> 
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
 
     <property location="src" name="src" />
     <property location="build" name="build" />
+    <property name="junit.report.dir" location="${build}/junit/reports" />
     <property location="." name="dist" />
     <property name="classpath" value="${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
 
@@ -54,6 +57,7 @@
         <echo>tag: tags entire repository prior to an official build</echo>
     </target>
 
+    <property name="tomcat.home" location="./installer-2014/gpdist/Tomcat" />
     <target name="init" depends="init-clover">
         <tstamp />
 
@@ -86,15 +90,16 @@
         </path>
 
         <path id="junit.classpath">
-            <pathelement location="lib/junit-4.8.2.jar" />
-            <pathelement location="lib/javax.servlet.jar" />
+            <fileset dir="lib">
+                <include name="*.jar" />
+            </fileset>
             <fileset dir="test/lib">
                 <include name="*.jar" />
             </fileset>
             <pathelement location="${build}/junit/classes" />
             <pathelement location="${build}" />
             <fileset dir="website/WEB-INF/lib">
-                <!-- exclude older version of ant, so that we can use junit4 -->
+                <!-- exclude older version of ant, so that we can use from the lib directory -->
                 <exclude name="ant-1.6.5.jar" />
                 <exclude name="ant-antlr-1.6.5.jar" />
                 <exclude name="ant-junit-1.6.5.jar" />
@@ -106,10 +111,24 @@
             </fileset>
             <!-- include src on classpath for tests which call getResourceAsStream -->
             <pathelement location="test/src" />
-            <!-- pathelement location="${clover.home}/lib/clover.jar"/ -->
-            <fileset dir="${clover.home}/lib">
+            <fileset dir="${clover.home}/lib" erroronmissingdir="false">
                 <include name="clover.jar" if="clover.enabled" />
             </fileset>
+        </path>
+        
+        <path id="jspc.classpath">
+            <pathelement location="${java.home}/../lib/tools.jar" />
+            <fileset dir="${tomcat.home}/bin">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="${tomcat.home}/server/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="${tomcat.home}/common/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="build" includes="gp-full.jar" />
+            <fileset dir="lib" includes="*.jar" />
         </path>
 
         <mkdir dir="${build}" />
@@ -119,11 +138,11 @@
         <!-- echo message="My junit.classpath is ${toString:junit.classpath}" / -->
     </target>
 
-    <target name="clover.clean" description="Deletes the clover database." depends="init" unless="clover.enabled">
-        <clover-clean/>
+    <target name="clover.clean" description="Deletes the clover database." depends="init" if="clover.enabled">
+        <clover-clean />
     </target>
-
-    <target name="clean" depends="clean-junit, clover.clean">
+    
+    <target name="clean" depends="init, clover.clean">
         <delete dir="applet-build" />
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
@@ -139,18 +158,30 @@
         <!--<ant antfile="build.xml" dir="clients/R" target="clean" >-->
             <!--<property name="R.client.downloads" location="${R.client.downloads}" />-->
         <!--</ant>-->
+        
+        <delete quiet="true" failonerror="false" dir="${junit.report.dir}" />
+        <delete quiet="true" failonerror="false" dir="wartemp" />
+        <delete quiet="true" failonerror="false" dir="ziptemp" />
+        <delete quiet="true" failonerror="false" file="gp_war.zip" />
+        
+        <delete quiet="true" failonerror="false">
+            <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp" includes="**/*.class" />
+            <fileset dir="${webapp.path}/WEB-INF/src/org/apache/jsp" includes="**/*.java" />
+        </delete>
     </target>
 
-    <target name="findbugs" depends="init, compile, common" description="Findbugs Test">
+    <target name="findbugs" depends="init, compile, common" description="Findbugs static code analysis">
+        <property name="findbugs.home" value="build_tools/findbugs-3.0.1" />
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
             <classpath>
-                <pathelement location="${basedir}/lib/findbugs-ant.jar"/>
+                <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>
             </classpath>
         </taskdef>
-        <findbugs home="${basedir}/findbugs" output="xml" outputFile="findbugs.xml" >
+        <findbugs home="${findbugs.home}" output="xml" outputFile="findbugs.xml" excludeFilter="findbugsExcludeFilter.xml">
+            <auxClasspath path="${library.classpath}" />
             <sourcePath path="${basedir}/src" />
             <class location="${build}/${full-jarname}" />
-        </findbugs>
+          </findbugs>
     </target>
 
     <target name="compile-junit" depends="init,compile">
@@ -161,46 +192,13 @@
         />
     </target>
 
-    <target name="ensure-test-name" unless="test">
-        <fail message="You must run this target with -Dtest=TestName"/>
-    </target>
-
-    <target name="runtest" depends="ensure-test-name, compile-junit"
-        description="Runs the test you specify on the command line with -Dtest="> 
-        <property name="junit.report.dir" location="${build}/junit/reports" />
-        <mkdir dir="${junit.report.dir}" />
-        <mkdir dir="${junit.report.dir}/xml" />
-        <mkdir dir="${junit.report.dir}/html" />
-
-        <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
-            <formatter type="xml"/>
-            <classpath refid="junit.classpath" />
-            <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
-                <fileset dir="test/src">
-                    <exclude name="org/genepattern/junitutil/*.java" />
-                    <exclude name="**/RecordEulaStub.java" />
-                    <include name="**/${test}.java" />
-                </fileset>
-            </batchtest>
-        </junit>
-
-        <junitreport todir="${junit.report.dir}">
-            <fileset dir="${junit.report.dir}/xml">
-                <include name="*.xml" />
-            </fileset>
-            <report format="frames" todir="${junit.report.dir}/html" />
-        </junitreport>
-    </target>
-
     <target name="junit" depends="compile-junit">
-        <property name="junit.report.dir" location="${build}/junit/reports" />
         <mkdir dir="${junit.report.dir}" />
         <mkdir dir="${junit.report.dir}/xml" />
         <mkdir dir="${junit.report.dir}/html" />
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="yes" forkmode="perTest" >
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="true" forkmode="once">
             <formatter type="xml"/>
             <classpath refid="junit.classpath" />
             <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
@@ -218,11 +216,6 @@
             </fileset>
             <report format="frames" todir="${junit.report.dir}/html" />
         </junitreport>
-    </target>
-
-    <target name="clean-junit">
-        <!-- cleanup -->
-        <delete dir="${junit.report.dir}" />
     </target>
 
     <target name="compile" depends="init, initBuildProperties" description="Compiles all the source.">
@@ -321,7 +314,7 @@
         </zip>
     </target>
 
-    <target depends="init,compile" name="common">
+    <target depends="init,compile,compile-jspc" name="common">
         <!-- Makes gp-common.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" includes="org/**/*.class" jarfile="${genepattern.build}/${common-jarname}" />
 
@@ -666,32 +659,34 @@
         <!-- 2. load the modules since the installer doesn't - once we can start the server -->
     </target>
 
-    <target name="jspc">
-        <property name="webapp.path" value="website" />
-        <property name="tomcat.home" value="installer-2014/gpdist/Tomcat" />
+    <property name="webapp.path" value="website" />
+    <target name="jspc" depends="init" description="generate .java files from .jsp files">
         <property name="output.dir" value="${webapp.path}/WEB-INF/src" />
         <mkdir dir="${webapp.path}/WEB-INF/src" />
         <delete>
             <fileset dir="${output.dir}" includes="**" />
         </delete>
 
-        <taskdef classname="org.apache.jasper.JspC" name="jasper2">
-            <classpath id="jspc.classpath">
-                <pathelement location="${java.home}/../lib/tools.jar" />
-                <fileset dir="${tomcat.home}/bin">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="${tomcat.home}/server/lib">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="${tomcat.home}/common/lib">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="build" includes="gp-full.jar" />
-                <fileset dir="lib" includes="*.jar" />
-            </classpath>
-        </taskdef>
+        <taskdef classname="org.apache.jasper.JspC" name="jasper2" classpathref="jspc.classpath" />
 
-        <jasper2 validateXml="false" uriroot="${webapp.path}" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}" />
+        <jasper2 validateXml="false" uriroot="${webapp.path}" addWebXmlMappings="true" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}"  />
     </target>
+    
+    <target name="compile-jspc" depends="jspc, compile" description="generate .class files from .jsp files">
+        <mkdir dir="${webapp.path}/WEB-INF/classes" />
+
+        <javac 
+            source="${java.source}" target="${java.target}"
+            debug="${java.debug}" optimize="${java.optimize}"
+            destdir="${webapp.path}/WEB-INF/classes"
+            srcdir="${webapp.path}/WEB-INF/src"
+        >
+            <classpath>
+                <path refid="library.classpath" />
+                <path refid="jspc.classpath" />
+                <pathelement location="${genepattern.build}" />
+            </classpath>
+            </javac>
+    </target>
+
 </project>

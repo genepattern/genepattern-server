@@ -16,9 +16,6 @@ constraint uf_fk foreign key (USER_ID) references GP_USER(USER_ID)
 
 CREATE INDEX IDX_UF_USER_ID ON UPLOAD_FILE (USER_ID);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.3.2' where KEY = 'schemaVersion';
-
 COMMIT;
 
 

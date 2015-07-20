@@ -11,7 +11,5 @@ create table EULA_REMOTE_QUEUE (
     date_recorded timestamp not null default now(),
     primary key (eula_record_id, remote_url));
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.5.0' where `KEY` = 'schemaVersion';
 commit;
 

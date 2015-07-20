@@ -51,7 +51,7 @@ create table job_completion_event
   completion_date date,
   elapsed_time bigint,
   primary key (id)
-)
+);
 
 
 /* Index status on analysis job */
@@ -63,7 +63,5 @@ create index idx_gp_user_prop_key on gp_user_prop(key);
 alter table suite add user_id varchar(255);
 
 update  suite set user_id = owner where user_id is null;
-
-update props set value='3.0' where key='schemaVersion';
 
 

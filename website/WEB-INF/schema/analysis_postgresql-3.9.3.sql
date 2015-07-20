@@ -9,6 +9,4 @@ create table task_install_category (
     category_id integer not null references category(category_id) on delete cascade
 );
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.9.3' where KEY = 'schemaVersion';
 commit;

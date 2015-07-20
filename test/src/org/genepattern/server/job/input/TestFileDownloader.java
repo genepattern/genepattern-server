@@ -64,7 +64,7 @@ public class TestFileDownloader {
     private GpContext gpContext;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         tmpDir=temp.newFolder("tmp");
         userDir=temp.newFolder("users");
         gpConfig=new GpConfig.Builder()

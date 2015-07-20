@@ -27,6 +27,7 @@ import com.google.common.collect.Range;
 public class TestSchemaUpdater {
     private final File schemaDir=new File("website/WEB-INF/schema");
     private final String schemaPrefix="analysis_hypersonic-";
+    private final int numSchemaFiles=25;
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
@@ -56,27 +57,39 @@ public class TestSchemaUpdater {
         HibernateSessionManager mgr=new HibernateSessionManager(p);
         return mgr;
     }
-    
-    @Test
-    public void initDbSchemaHsqlDb() throws DbException, Throwable {
-        final File workingDir=new File(System.getProperty("user.dir"));
-        final File resourcesDir=new File(workingDir, "resources");
 
-        // path to load the schema files (e.g. ./resources/analysis_hypersonic-1.3.1.sql)
-        File schemaDir=resourcesDir;
-        // path to load the hsql db files (e.g. ./resources/GenePatternDB.script and ./resources/GenePatternDB.properties)
+    
+    
+    private HibernateSessionManager initTmpHsqlDb() throws FileNotFoundException, IOException {
         final File hsqlDbDir=tmp.newFolder("junitdb");
         final String hsqlDbName="GenePatternDB";
-
         HibernateSessionManager mgr=initSessionMgr(hsqlDbDir, hsqlDbName);
-
+        return mgr;
+    }
+    
+    /**
+     * Collect all DB integration tests into one unit test
+     * @throws DbException
+     * @throws Throwable
+     */
+    @Test
+    public void initDbSchemaHsqlDb() throws DbException, Throwable {
+        // path to load the schema files (e.g. ./resources/analysis_hypersonic-1.3.1.sql)
+        final File schemaDir=new File("website/WEB-INF/schema");
+        HibernateSessionManager mgr=null;
         try {
+            mgr=initTmpHsqlDb();
+            
             String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
-            assertEquals("before update", "", dbSchemaVersion);
+            assertEquals("before update, dbSchemaVersion", "", dbSchemaVersion);
             assertEquals("before update, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(mgr, "props"));
             assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
             
-            schemaDir=new File("website/WEB-INF/schema");
+            // test auto-generate
+            SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-", "1.3.0");
+            assertEquals("after update, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(mgr));
+            
+            
             SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-", "3.9.2");
             assertEquals("after update", "3.9.2", SchemaUpdater.getDbSchemaVersion(mgr));
         }
@@ -96,7 +109,7 @@ public class TestSchemaUpdater {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion=null;
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
+        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles, schemaFiles.size());
     }
 
     @Test
@@ -104,7 +117,7 @@ public class TestSchemaUpdater {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion="";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", 40, schemaFiles.size());
+        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles, schemaFiles.size());
     }
     
     @Test
@@ -125,7 +138,7 @@ public class TestSchemaUpdater {
     public void listSchemaFiles_default() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, null);
-        assertEquals("num schema files, latest version", 40, schemaFiles.size());
+        assertEquals("num schema files, latest version", numSchemaFiles, schemaFiles.size());
     }
     
     @Test

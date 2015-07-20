@@ -12,8 +12,5 @@ create table TASK_CATEGORY (
 -- insert into task_category(category,task) values
 --    ( 'MIT_701X', 'urn:lsid:8086.jtriley.starapp.mit.edu:genepatternmodules:11'  )
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.7.3' where `KEY` = 'schemaVersion';
-
 commit;
 

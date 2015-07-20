@@ -85,7 +85,7 @@ public class TestJobInfoManager {
                 // expected
                 "http://127.0.0.1:8080/gp/tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+fileUrl,
                 // actual
-                JobInfoManager.generateLaunchURL(gpConfig,taskInfo, jobInfo)
+                JobInfoManager.generateLaunchURL(gpConfig,taskInfo, jobInfo.getJobNumber())
                 );
     }
 
@@ -97,7 +97,7 @@ public class TestJobInfoManager {
                 // expected
                 "http://127.0.0.1:8080/gp/tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+fileUrl,
                 // actual
-                JobInfoManager.generateLaunchURL(gpConfig,taskInfo, jobInfo)
+                JobInfoManager.generateLaunchURL(gpConfig,taskInfo, jobInfo.getJobNumber())
                 );
     }
     

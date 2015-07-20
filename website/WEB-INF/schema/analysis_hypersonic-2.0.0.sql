@@ -9,5 +9,3 @@ create index idx_suite_modules_lsid on suite_modules(lsid);
 create index idx_modules_suite_lsid on suite_modules(module_lsid);
 
 create sequence lsid_suite_identifier_seq as integer start with 1;
-
-update props set value='2.0.0' where key='schemaVersion';

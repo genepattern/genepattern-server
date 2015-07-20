@@ -15,9 +15,6 @@ create table UPLOAD_FILE (
 
 CREATE INDEX IDX_UF_USER_ID ON UPLOAD_FILE (USER_ID);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.3.2' where KEY = 'schemaVersion';
-
 COMMIT;
 
 

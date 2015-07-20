@@ -15,7 +15,4 @@ create table job_queue (
 alter table user_upload alter column name type text;
 alter table user_upload alter column path type TEXT;
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.4.0' where KEY = 'schemaVersion';
-
 commit;

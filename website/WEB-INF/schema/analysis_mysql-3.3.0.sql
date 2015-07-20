@@ -12,7 +12,4 @@ create table BATCH_ANALYSIS (
     BATCH_JOB integer not null references BATCH_JOB (JOB_NO) on delete cascade,
     ANALYSIS_JOB integer not null references ANALYSIS_JOB (JOB_NO) on delete cascade);
 
--- update schema version
-UPDATE PROPS SET VALUE = '3.3.0' where `KEY` = 'schemaVersion';
-
 COMMIT;
