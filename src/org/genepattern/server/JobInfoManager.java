@@ -3,16 +3,10 @@
  *******************************************************************************/
 package org.genepattern.server;
 
+import static org.genepattern.util.GPConstants.JAVA_FLAGS;
 import static org.genepattern.util.GPConstants.TASKLOG;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -32,6 +26,8 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.server.job.input.*;
 import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
@@ -528,7 +524,7 @@ public class JobInfoManager {
     }
     
     public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final int jobNumber) throws Exception {
-        String launchUrl = null;
+        /*String launchUrl = null;
         TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
         if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
             String mainFile = (String)taskInfo.getAttributes().get("commandLine");
@@ -554,7 +550,29 @@ public class JobInfoManager {
                     launchUrl += "&" + paramName + "=" + value.getValue();
                 }
             }
+        } */
+
+        StringBuffer launchUrl = new StringBuffer();
+        String jobDir = GenePatternAnalysisTask.getJobDir(String.valueOf(jobNumber));
+        BufferedReader reader = null;
+        try
+        {
+            File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+            reader = new BufferedReader(new FileReader(launchUrlFile));
+
+            String line= null;
+            while((line = reader.readLine()) != null)
+            {
+                launchUrl.append(line);
+            }
         }
-        return launchUrl;
+        finally {
+            if(reader != null)
+            {
+                reader.close();
+            }
+        }
+
+        return launchUrl.toString();
     }
 }
