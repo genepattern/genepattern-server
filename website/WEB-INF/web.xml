@@ -4,6 +4,350 @@
 
  <display-name>GenePattern</display-name>
  
+ <!-- JSPC servlet mappings start -->
+
+    <servlet>
+        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.addTask_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.askInclude_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.askInclude_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.cannotRunPipeline_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.cannotRunPipeline_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.createReport_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.footer_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getCatalog_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getCatalog_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getFile_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getParkedFile_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getParkedFile_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getTaskDoc_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getTaskDocCatalog_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getTaskDocCatalog_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getTaskDocError_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.help_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.help_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.index_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.installFrame_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.installFrame_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.installLog_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.installNav_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.installNav_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.internalError_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.internalError_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.makePipeline_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.makePipeline_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.makeZip_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.navbar_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.navbarHead_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.parkFile_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.parkFile_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.provenanceFinder_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.provenanceFinder_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.requestReport_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.runPipeline_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.runPipeline_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.runTaskMissingParams_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.runTaskMissingParams_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.saveTask_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.sql_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.unknownPipeline_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.unknownPipeline_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.viewPipeline_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.viewPipeline_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.viewReports_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.viewReports_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.pages.index_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.pages.index_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.pages.genomespace.error_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.modules.createhelp_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.modules.createhelp_jsp</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
+        <url-pattern>/addTask.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.askInclude_jsp</servlet-name>
+        <url-pattern>/askInclude.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.cannotRunPipeline_jsp</servlet-name>
+        <url-pattern>/cannotRunPipeline.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
+        <url-pattern>/createReport.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
+        <url-pattern>/footer.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getCatalog_jsp</servlet-name>
+        <url-pattern>/getCatalog.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
+        <url-pattern>/getFile.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getParkedFile_jsp</servlet-name>
+        <url-pattern>/getParkedFile.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
+        <url-pattern>/getTaskDoc.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getTaskDocCatalog_jsp</servlet-name>
+        <url-pattern>/getTaskDocCatalog.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
+        <url-pattern>/getTaskDocError.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.help_jsp</servlet-name>
+        <url-pattern>/help.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
+        <url-pattern>/index.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.installFrame_jsp</servlet-name>
+        <url-pattern>/installFrame.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
+        <url-pattern>/installLog.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.installNav_jsp</servlet-name>
+        <url-pattern>/installNav.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.internalError_jsp</servlet-name>
+        <url-pattern>/internalError.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.makePipeline_jsp</servlet-name>
+        <url-pattern>/makePipeline.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
+        <url-pattern>/makeZip.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
+        <url-pattern>/navbar.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
+        <url-pattern>/navbarHead.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.parkFile_jsp</servlet-name>
+        <url-pattern>/parkFile.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.provenanceFinder_jsp</servlet-name>
+        <url-pattern>/provenanceFinder.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
+        <url-pattern>/requestReport.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.runPipeline_jsp</servlet-name>
+        <url-pattern>/runPipeline.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.runTaskMissingParams_jsp</servlet-name>
+        <url-pattern>/runTaskMissingParams.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
+        <url-pattern>/saveTask.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
+        <url-pattern>/sql.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.unknownPipeline_jsp</servlet-name>
+        <url-pattern>/unknownPipeline.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.viewPipeline_jsp</servlet-name>
+        <url-pattern>/viewPipeline.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.viewReports_jsp</servlet-name>
+        <url-pattern>/viewReports.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.pages.index_jsp</servlet-name>
+        <url-pattern>/pages/index.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
+        <url-pattern>/pages/genomespace/error.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.modules.createhelp_jsp</servlet-name>
+        <url-pattern>/modules/createhelp.jsp</url-pattern>
+    </servlet-mapping>
+
+<!-- JSPC servlet mappings end -->
+
  <error-page>
     <error-code>500</error-code>
     <location>/internalError.jsp</location>

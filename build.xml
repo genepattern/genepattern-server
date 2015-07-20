@@ -8,8 +8,10 @@
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.7" />
     <property name="java.source" value="1.7" />
-    <property name="java.visualizer.target" value="1.7" /> <!-- was 1.1 -->
-    <property name="java.visualizer.source" value="1.7" /> <!-- was 1.2 -->
+    <property name="java.debug" value="off" /> 
+    <property name="java.optimize" value="on" />
+    <property name="java.visualizer.target" value="1.7" /> 
+    <property name="java.visualizer.source" value="1.7" /> 
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
 
@@ -55,6 +57,7 @@
         <echo>tag: tags entire repository prior to an official build</echo>
     </target>
 
+    <property name="tomcat.home" location="./installer-2014/gpdist/Tomcat" />
     <target name="init" depends="init-clover">
         <tstamp />
 
@@ -112,6 +115,21 @@
                 <include name="clover.jar" if="clover.enabled" />
             </fileset>
         </path>
+        
+        <path id="jspc.classpath">
+            <pathelement location="${java.home}/../lib/tools.jar" />
+            <fileset dir="${tomcat.home}/bin">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="${tomcat.home}/server/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="${tomcat.home}/common/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="build" includes="gp-full.jar" />
+            <fileset dir="lib" includes="*.jar" />
+        </path>
 
         <mkdir dir="${build}" />
         <mkdir dir="${build}/jars" />
@@ -145,6 +163,11 @@
         <delete quiet="true" failonerror="false" dir="wartemp" />
         <delete quiet="true" failonerror="false" dir="ziptemp" />
         <delete quiet="true" failonerror="false" file="gp_war.zip" />
+        
+        <delete quiet="true" failonerror="false">
+            <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp" includes="**/*.class" />
+            <fileset dir="${webapp.path}/WEB-INF/src/org/apache/jsp" includes="**/*.java" />
+        </delete>
     </target>
 
     <target name="findbugs" depends="init, compile, common" description="Findbugs static code analysis">
@@ -291,7 +314,7 @@
         </zip>
     </target>
 
-    <target depends="init,compile" name="common">
+    <target depends="init,compile,compile-jspc" name="common">
         <!-- Makes gp-common.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" includes="org/**/*.class" jarfile="${genepattern.build}/${common-jarname}" />
 
@@ -636,32 +659,34 @@
         <!-- 2. load the modules since the installer doesn't - once we can start the server -->
     </target>
 
-    <target name="jspc">
-        <property name="webapp.path" value="website" />
-        <property name="tomcat.home" value="installer-2014/gpdist/Tomcat" />
+    <property name="webapp.path" value="website" />
+    <target name="jspc" depends="init" description="generate .java files from .jsp files">
         <property name="output.dir" value="${webapp.path}/WEB-INF/src" />
         <mkdir dir="${webapp.path}/WEB-INF/src" />
         <delete>
             <fileset dir="${output.dir}" includes="**" />
         </delete>
 
-        <taskdef classname="org.apache.jasper.JspC" name="jasper2">
-            <classpath id="jspc.classpath">
-                <pathelement location="${java.home}/../lib/tools.jar" />
-                <fileset dir="${tomcat.home}/bin">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="${tomcat.home}/server/lib">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="${tomcat.home}/common/lib">
-                    <include name="*.jar" />
-                </fileset>
-                <fileset dir="build" includes="gp-full.jar" />
-                <fileset dir="lib" includes="*.jar" />
-            </classpath>
-        </taskdef>
+        <taskdef classname="org.apache.jasper.JspC" name="jasper2" classpathref="jspc.classpath" />
 
-        <jasper2 validateXml="false" uriroot="${webapp.path}" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}" />
+        <jasper2 validateXml="false" uriroot="${webapp.path}" addWebXmlMappings="true" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}"  />
     </target>
+    
+    <target name="compile-jspc" depends="jspc, compile" description="generate .class files from .jsp files">
+        <mkdir dir="${webapp.path}/WEB-INF/classes" />
+
+        <javac 
+            source="${java.source}" target="${java.target}"
+            debug="${java.debug}" optimize="${java.optimize}"
+            destdir="${webapp.path}/WEB-INF/classes"
+            srcdir="${webapp.path}/WEB-INF/src"
+        >
+            <classpath>
+                <path refid="library.classpath" />
+                <path refid="jspc.classpath" />
+                <pathelement location="${genepattern.build}" />
+            </classpath>
+            </javac>
+    </target>
+
 </project>
