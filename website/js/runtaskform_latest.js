@@ -721,7 +721,7 @@ function loadModuleInfo(module) {
     {
         var betaUrl = "/gp/pages/index.jsf?lsid=" + module["betaVersion"];
         $("#betaInfoDiv").append(
-                "<a href='"+ betaUrl + "'>A beta version of the module is available. Click here to try it out. </a>");
+                "<a href='"+ betaUrl + "'>A beta version of this module is available. Click here to try it out. </a>");
     }
     //check if this module has development i.e BETA quality level set
     else if(inArrayCaseInsensitive(".beta", categories) != -1 || inArrayCaseInsensitive("beta", categories) != -1)
