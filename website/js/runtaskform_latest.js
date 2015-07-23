@@ -501,6 +501,24 @@ function sendToParamForMenu(paramList) {
     });
 }
 
+/**
+ * Iterates over an array of items to return the index of the first item that matches the
+ * provided item in a case-insensitive way.  Returns -1 if no match found.
+ * @param item - value to look for
+ * @param array - array to search for item in
+ * @returns index of first item match
+ */
+function inArrayCaseInsensitive(item, array){
+    var defaultResult = -1;
+    var result = defaultResult;
+    $.each(array, function(index, value) {
+        if (result == defaultResult && value.toLowerCase() == item.toLowerCase()) {
+            result = index;
+        }
+    });
+    return result;
+}
+
 function loadModuleInfo(module) {
     run_task_info.lsid = module["LSID"];
     run_task_info.name = module["name"];
@@ -696,6 +714,7 @@ function loadModuleInfo(module) {
         run_task_info.is_js_viewer = true;
     }
 
+    var categories = module["categories"].split(";");
     //Check if there is a newer Beta version of the module available
     //module["betaVersion"] = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:999999999";
     if(module["betaVersion"] && module["betaVersion"].length > 0)
@@ -705,9 +724,9 @@ function loadModuleInfo(module) {
                 "<a href='"+ betaUrl + "'>A beta version of the module is available. Click here to try it out. </a>");
     }
     //check if this module has development i.e BETA quality level set
-    else if(module["quality"] && (module["quality"] === "development" || module["quality"] === "preproduction"))
+    else if(inArrayCaseInsensitive(".beta", categories) != -1 || inArrayCaseInsensitive("beta", categories) != -1)
     {
-        $("#betaInfoDiv").append("This module is currently in beta release.");
+        $("#betaInfoDiv").append("This module is currently in beta.");
     }
     else
     {

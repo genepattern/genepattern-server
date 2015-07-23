@@ -1044,12 +1044,13 @@ public class RunTaskServlet extends HttpServlet
 
     private boolean isHiddenBetaVersion(TaskInfo taskInfo)
     {
-        String taskQuality = taskInfo.getTaskInfoAttributes().get("quality");
+        final List<String> categories = CategoryUtil.getCategoriesFromManifest(taskInfo);
 
-        if (taskQuality.equalsIgnoreCase("development")) {
-            return true;
+        for(final String category : categories) {
+            if (category.equalsIgnoreCase(".beta")) {
+                return true;
+            }
         }
-
         return false;
     }
 }
