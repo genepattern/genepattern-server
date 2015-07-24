@@ -524,33 +524,6 @@ public class JobInfoManager {
     }
     
     public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final int jobNumber) throws Exception {
-        /*String launchUrl = null;
-        TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-        if(tia.get(GPConstants.TASK_TYPE).contains(GPConstants.TASK_TYPE_JAVASCRIPT)) {
-            String mainFile = (String)taskInfo.getAttributes().get("commandLine");
-            mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
-            final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
-            launchUrl = gpConfig.getGenePatternURL() + relativeUriStr;
-            //add the job number
-            launchUrl += "?job.number=" + jobNumber;
-
-            JobInput jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
-
-            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-
-            for(ParameterInfoRecord pinfoRecord : paramInfoMap.values())
-            {
-                ParameterInfo formalParam = pinfoRecord.getFormal();
-                String paramName = formalParam.getName();
-
-                Param param = jobInput.getParam(paramName);
-                List<ParamValue> values = param.getValues();
-                for(ParamValue value: values)
-                {
-                    launchUrl += "&" + paramName + "=" + value.getValue();
-                }
-            }
-        } */
 
         StringBuffer launchUrl = new StringBuffer();
         String jobDir = GenePatternAnalysisTask.getJobDir(String.valueOf(jobNumber));
