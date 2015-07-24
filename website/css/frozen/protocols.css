@@ -32,6 +32,7 @@
 
 .protocol_list_item {
 	clear: both;
+    min-height: 50px;
 }
 
 .protocol_list_img {
