@@ -406,7 +406,7 @@ function generateEulas(eula, reloadId, sendFromKind, sendFromUrl) {
                 .attr("value", "OK")
                 .click(function() {
                     $.ajax({
-                        method: eula.acceptType,
+                        type: eula.acceptType,
                         url: eula.acceptUrl + "?taskNameOrLsid=" + encodeURIComponent(eula.currentLsid),
                         success: function() {
                             document.location = '/gp/pages/index.jsf?lsid=' + encodeURIComponent(eula.currentLsid);
