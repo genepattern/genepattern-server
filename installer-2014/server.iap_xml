@@ -16443,13 +16443,13 @@ and any path to a file to read from that file]]></string>
 																		<string><![CDATA[Excludes]]></string>
 																	</property>
 																	<property name="matchString">
-																		<string><![CDATA[.class]]></string>
+																		<string><![CDATA[.gitignore]]></string>
 																	</property>
 																	<property name="ignoresCase">
 																		<string><![CDATA[Yes]]></string>
 																	</property>
 																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
+																		<string><![CDATA[Files]]></string>
 																	</property>
 																</object>
 															</method>
@@ -16703,13 +16703,13 @@ and any path to a file to read from that file]]></string>
 																		<string><![CDATA[Excludes]]></string>
 																	</property>
 																	<property name="matchString">
-																		<string><![CDATA[.class]]></string>
+																		<string><![CDATA[.gitignore]]></string>
 																	</property>
 																	<property name="ignoresCase">
 																		<string><![CDATA[Yes]]></string>
 																	</property>
 																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
+																		<string><![CDATA[Files]]></string>
 																	</property>
 																</object>
 															</method>
