@@ -137,14 +137,14 @@ $(function()
         //create the steps
         var steps = [
             {
-                element: "#left-nav-files-refresh",
-                intro: '<div class="tour-header"> Refresh Files Tab </div>  The files in the Files tab can now be refreshed using this button.',
-                position: 'right'
-            },
-            {
                 element: "#cite-gp",
                 intro: '<div class="tour-header"> Cite GenePattern </div> The GenePattern citation is available here. ',
                 position: 'top'
+            },
+            {
+                element: "#left-nav-files-refresh",
+                intro: '<div class="tour-header"> Refresh Files Tab </div>  The files in the Files tab can now be refreshed using the <i>Refresh</i>.',
+                position: 'right'
             },
             {
                 element: "#betaInfoDiv",
@@ -171,33 +171,23 @@ $(function()
 
         intro.onbeforechange(function(targetElement)
         {
-            if(intro._currentStep === 0 )
+            if(intro._currentStep === 0)
             {
                 $( "#left-nav" ).tabs( "option", "active", 2 );
 
-
                 $('#main-pane').animate({
                     scrollTop: ($('#cite-gp').offset().top)
-                }, 20);
+                }, 0);
             }
-            else if(intro._currentStep === 2 && intro._direction==="forward")
+            else if(intro._currentStep === 1 && intro._direction==="forward")
             {
                 mainPaneHtml = $("#main-pane").html();
                 $("#main-pane").html(getBetaMainPaneHtml());
 
                 $('#main-pane').animate({
-                    scrollTop: ($('#betaInfoDiv').offset().top)
-                }, 0);
-
+                 scrollTop: ($('#betaInfoDiv').offset().top)
+                 }, 0);
             }
-            /*else if(intro._currentStep === 1 && intro._direction==="backward")
-            {
-                $("#main-pane").html(mainPaneHtml);
-
-                $('#main-pane').animate({
-                    scrollTop: ($('#cite-gp').offset().top)
-                }, 0);
-            }*/
         });
 
 
@@ -209,7 +199,6 @@ $(function()
         intro.onexit(function()
         {
             introTourCleanup();
-            newTourCleanup();
             window.location.href = "/gp";
         });
 
@@ -225,9 +214,6 @@ $(function()
     });
 });
 
-function newTourCleanup()
-{
-}
 
 function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
