@@ -239,7 +239,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                         form.submit();
                     });
 
-                    if(module["editable"] !== undefined && module["editable"])
+                    if(adminServerAllowed)
                     {
                         actionDiv.append(installFromRepoBtn);
                     }
