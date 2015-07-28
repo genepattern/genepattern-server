@@ -3,7 +3,12 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
+import static org.genepattern.util.GPConstants.INPUT_BASENAME;
+import static org.genepattern.util.GPConstants.INPUT_EXTENSION;
+import static org.genepattern.util.GPConstants.INPUT_FILE;
+
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +21,7 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.webservice.ParameterInfo;
 
 import com.google.common.base.Joiner;
@@ -245,6 +251,10 @@ public class CommandLineParser {
                     value = gpConfig.getGPProperty(gpContext, paramName);
                 }
             }
+            // special-case for <<param>_basename>
+            else if (paramName.endsWith("_basename")) {
+                
+            }
             else {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
@@ -285,6 +295,77 @@ public class CommandLineParser {
             rval.add(substitutedValue);
         }
         return rval;
+    }
+    
+    protected static String getBasenameSubstitution(final GpConfig gpConfig, final GpContext gpContext, final String paramName, final Map<String,ParameterInfo> parameterInfoMap) {
+        if (paramName == null) {
+            return null;
+        }
+        
+        if (paramName.endsWith("_basename")) {
+            int endIndex=paramName.lastIndexOf("_basename");
+            Param matchingParam = getParam(gpContext, paramName.substring(0, endIndex));
+            if (matchingParam != null) {
+                if (matchingParam.getNumValues()>0) {
+                    Properties fileProps=initFileProps(matchingParam.getParamId().getFqName(), matchingParam.getValues().get(0).getValue());
+                    return fileProps.getProperty(paramName);
+                }
+            }
+        }
+        return paramName;
+    }
+    
+    protected static Properties initFileProps(final String inputParamName, final String inputFilename) {
+        Properties props=new Properties();
+        if (inputFilename == null || inputFilename.length() == 0) {
+            return props;
+        }
+        
+        String filePath;
+        try {
+            URL urlValue=new URL(inputFilename);
+            filePath=urlValue.getPath();
+        }
+        catch (Throwable t) {
+            // expected
+            filePath=inputFilename;
+        }           
+        String fileName=new File(filePath).getName();
+        if (fileName.startsWith("Axis")) {
+            // strip off the AxisNNNNNaxis_ prefix
+            if (fileName.indexOf("_") != -1) {
+                fileName = fileName.substring(fileName.indexOf("_") + 1);
+            }
+        }
+
+        props.put(inputParamName, fileName);
+        //TODO: props.put(inputParamName + INPUT_PATH, new String(outDirName));
+
+        // filename without path
+        props.put(inputParamName + INPUT_FILE, fileName);
+        int j = fileName.lastIndexOf(".");
+        if (j != -1) {
+            props.put(inputParamName + INPUT_EXTENSION, new String(fileName.substring(j + 1)));
+            final String baseName = fileName.substring(0, j);
+            // filename without path or extension
+            props.put(inputParamName + INPUT_BASENAME, baseName);
+        } 
+        else {
+            props.put(inputParamName + INPUT_BASENAME, fileName);
+            props.put(inputParamName + INPUT_EXTENSION, "");
+        }
+                                
+        return props;
+    }
+    
+    protected static Param getParam(final GpContext gpContext, final String pname) {
+        if (gpContext==null) {
+            return null;
+        }
+        if (gpContext.getJobInput()==null) {
+            return null;
+        }
+        return gpContext.getJobInput().getParam(pname);
     }
 
     public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine) {
