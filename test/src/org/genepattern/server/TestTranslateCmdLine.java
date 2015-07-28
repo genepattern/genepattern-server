@@ -177,5 +177,15 @@ public class TestTranslateCmdLine {
                Arrays.asList("echo", "Value One"),
                CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo <arg1>", parameterInfoMap));
     }
+    
+    @Test
+    public void substitute_GenePatternVersion() {
+        gpConfig=new GpConfig.Builder()
+            .webappDir(new File("website"))
+        .build();
+        assertEquals(
+                Arrays.asList("echo", "genepattern.version=3.9.4", "GenePatternVersion=3.9.4"),
+                CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo genepattern.version=<genepattern.version> GenePatternVersion=<GenePatternVersion>", parameterInfoMap));
+    }
 
 }

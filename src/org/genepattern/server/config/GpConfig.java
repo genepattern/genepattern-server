@@ -42,6 +42,12 @@ public class GpConfig {
      * </pre>
      */
     public static final String PROP_GENEPATTERN_VERSION="genepattern.version";
+    
+    /**
+     * For backwards compatibility with patches which use the <GenePatternVersion> command line substitution.
+     * Fix for GP-5805
+     */
+    public static final String PROP_GENEPATTERN_VERSION_LEGACY="GenePatternVersion";
 
     /**
      * Set the 'version.label' in the 'WEB-INF/build.properties' file, e.g.
@@ -318,6 +324,8 @@ public class GpConfig {
         this.gpUrl=this.genePatternURL.toExternalForm();
         // must call this after initBuildProperties, because the version is loaded from the build.properties file
         this.genePatternVersion=initGenePatternVersion(gpContext);
+        this.substitutionParams.put(PROP_GENEPATTERN_VERSION, genePatternVersion);
+        this.substitutionParams.put(PROP_GENEPATTERN_VERSION_LEGACY, genePatternVersion);
         if (in.initErrors==null) {
             this.initErrors=Collections.emptyList();
         }
