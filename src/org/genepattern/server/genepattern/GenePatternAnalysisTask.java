@@ -3430,11 +3430,18 @@ public class GenePatternAnalysisTask {
      * @param jobNumber, the job number whose storage directory is being sought
      * @return String directory name on server of this job's files
      * @author Jim Lerner
+     * 
+     * @deprecated - should pass in a valid GpConfig and GpContext
      */
-    public static String getJobDir(String jobNumber) {
+    public static String getJobDir(final String jobNumber) {
+        GpConfig gpConfig = ServerConfigurationFactory.instance();
         GpContext context = GpContext.getServerContext();
+        return getJobDir(gpConfig, context, jobNumber);
+    }
+
+    public static String getJobDir(final GpConfig gpConfig, final GpContext jobContext, final String jobNumber) {
         try {
-            File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
+            File rootJobDir = gpConfig.getRootJobDir(jobContext);
             String tmpDir = rootJobDir.getPath();
             if (!tmpDir.endsWith(File.separator)) {
                 tmpDir = tmpDir + "/";
