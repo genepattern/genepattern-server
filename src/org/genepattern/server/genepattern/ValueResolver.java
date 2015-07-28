@@ -217,9 +217,9 @@ public class ValueResolver {
     }
 
 
-    public static HashMap getParamValues(final GpConfig gpConfig, final GpContext jobContext, Properties props, ParameterInfo[] formalParameters)throws Exception
+    public static HashMap<String,List<String>> getParamValues(final GpConfig gpConfig, final GpContext jobContext, Properties props, ParameterInfo[] formalParameters)throws Exception
     {
-        HashMap<String, List> paramValueMap = new HashMap<String, List>();
+        HashMap<String, List<String>> paramValueMap = new HashMap<String, List<String>>();
 
         JobInput jobInput = jobContext.getJobInput();
 
@@ -237,7 +237,7 @@ public class ValueResolver {
                     List<String> paramValueList = paramValueMap.get(paramName);
                     if(paramValueList == null)
                     {
-                        paramValueList = new ArrayList();
+                        paramValueList = new ArrayList<String>();
                         paramValueMap.put(paramName , paramValueList);
                     }
 
