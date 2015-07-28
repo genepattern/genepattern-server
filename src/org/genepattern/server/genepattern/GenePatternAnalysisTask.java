@@ -1495,8 +1495,11 @@ public class GenePatternAnalysisTask {
             try
             {
                 //For javascript modules, output the launch url as a hidden file to the jobResultsDirectory
-                HashMap<String, List> substituteParamValuesMap = ValueResolver.getParamValues(gpConfig, jobContext, props, formalParameters);
-                String launchUrl = JavascriptHandler.generatelaunchUrl(gpConfig, taskInfo, outDir, substituteParamValuesMap);
+                HashMap<String, List<String>> substituteParamValuesMap = ValueResolver.getParamValues(gpConfig, jobContext, props, formalParameters);
+                String launchUrl = JavascriptHandler.saveLaunchUrl(gpConfig, taskInfo, outDir, substituteParamValuesMap);
+                if (log.isDebugEnabled()) {
+                    log.debug("jobId="+jobId+", launchUrl="+launchUrl);
+                }
                 GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
             }
             catch (Exception e) {

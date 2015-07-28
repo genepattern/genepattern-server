@@ -18,12 +18,12 @@ import org.junit.Test;
 public class TestConfigLoader {
     
 
-    @Test
-    public void testFromSystemProps() {
-        GpConfig config=GpConfigLoader.createFromSystemProps();
-        Assert.assertNull("expecting null config.resourcesDir", config.getResourcesDir());
-        Assert.assertEquals("num init errors", 2, config.getInitializationErrors().size());
-    }
+//    @Test
+//    public void testFromSystemProps() {
+//        GpConfig config=GpConfigLoader.createFromSystemProps();
+//        Assert.assertNull("expecting null config.resourcesDir", config.getResourcesDir());
+//        Assert.assertEquals("num init errors", 2, config.getInitializationErrors().size());
+//    }
     
     @Test
     public void testFromResourcesDir() {
