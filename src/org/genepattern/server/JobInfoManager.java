@@ -3,36 +3,35 @@
  *******************************************************************************/
 package org.genepattern.server;
 
-import static org.genepattern.util.GPConstants.JAVA_FLAGS;
 import static org.genepattern.util.GPConstants.TASKLOG;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
-import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.genepattern.JavascriptHandler;
-import org.genepattern.server.job.input.*;
-import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
-import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -519,33 +518,24 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
-    public static String generateLaunchURL(TaskInfo taskInfo, int jobNumber) throws Exception {
-        return generateLaunchURL(ServerConfigurationFactory.instance(), taskInfo, jobNumber);
+    public static String getLaunchUrl(final JobRunnerJob job) throws IOException {
+        if (job==null) {
+            log.debug("jobRunnerJob==null");
+            return "";
+        }
+        if (job.getWorkingDir()==null) {
+            log.debug("jobRunnerJob.workingDir==null");
+            return "";
+        } 
+        final File workingDir=new File(job.getWorkingDir());
+        final File launchUrlFile=getLaunchUrlFile(workingDir);
+        String launchUrl = FileUtils.readFileToString(launchUrlFile);
+        return launchUrl;
     }
     
-    public static String generateLaunchURL(final GpConfig gpConfig, final TaskInfo taskInfo, final int jobNumber) throws Exception {
-
-        StringBuffer launchUrl = new StringBuffer();
-        String jobDir = GenePatternAnalysisTask.getJobDir(String.valueOf(jobNumber));
-        BufferedReader reader = null;
-        try
-        {
-            File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
-            reader = new BufferedReader(new FileReader(launchUrlFile));
-
-            String line= null;
-            while((line = reader.readLine()) != null)
-            {
-                launchUrl.append(line);
-            }
-        }
-        finally {
-            if(reader != null)
-            {
-                reader.close();
-            }
-        }
-
-        return launchUrl.toString();
+    protected static File getLaunchUrlFile(final File jobDir) {
+        File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+        return launchUrlFile;
     }
+    
 }

@@ -246,7 +246,7 @@ public class GetPipelineJobLegacy implements GetJob {
                 if(taskInfo != null && taskInfo.getTaskInfoAttributes() != null
                         &&TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes()))
                 {
-                    job.put("launchUrl", JobInfoManager.generateLaunchURL(taskInfo, jobInfo.getJobNumber()));
+                    job.put("launchUrl", JobInfoManager.getLaunchUrl(jobStatusRecord));
                 }
             }
             catch (Exception e)

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -51,6 +52,20 @@ public class JobManager {
         GpContext jobContext = GpContext.getContextForJob(jobInfo);
         File rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(jobContext);
         jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
+        return jobDir;
+    }
+
+    /**
+     * Get the working directory for the given job.
+     * In GP 3.3.2 and earlier, this is hard-coded based on a configured property.
+     * In future releases, the working directory is configurable, and must be stored in the DB.
+     * @param jobInfo
+     * @return
+     */
+    public static File getWorkingDirectory(final GpConfig gpConfig, final GpContext jobContext) throws Exception {
+        File jobDir = null;
+        File rootJobDir = gpConfig.getRootJobDir(jobContext);
+        jobDir = new File(rootJobDir, ""+jobContext.getJobNumber());
         return jobDir;
     }
 

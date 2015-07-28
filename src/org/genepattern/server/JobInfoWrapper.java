@@ -28,6 +28,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.status.Status;
@@ -1201,14 +1203,21 @@ public class JobInfoWrapper implements Serializable {
         this.visualizerAppletTag = tag;
     }
 
-    public String getLaunchUrl()throws Exception
+    public String getLaunchUrl()
     {
         if(taskInfo == null || jobInfo == null)
         {
             return "";
+        }        
+        JobRunnerJob jobStatusRecord=null;
+        try {
+            jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+            return JobInfoManager.getLaunchUrl(jobStatusRecord);
         }
-
-        return JobInfoManager.generateLaunchURL(taskInfo, jobInfo.getJobNumber());
+        catch (Throwable t) {
+            log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
+        }
+        return "";
     }
 
     public String getVisualizerAppletTag() {
