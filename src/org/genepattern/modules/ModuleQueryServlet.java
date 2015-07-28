@@ -4,9 +4,13 @@
 
 package org.genepattern.modules;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +34,6 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpVersion;
 import org.apache.commons.httpclient.methods.MultipartPostMethod;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
@@ -60,9 +63,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /**
  * based on PipelineQueryServer class in the org.genepattern.pipelines class
@@ -663,33 +664,6 @@ public class ModuleQueryServlet extends HttpServlet {
             }
             sendError(response, "An error occurred while saving the module. " + message);
         }
-    }
-
-    private boolean validateAdvancedParametersFile(File file) {
-        boolean result = false;
-
-        try
-        {
-            String advancedParametersStr = FileUtils.readFileToString(file);
-            JSONTokener tokener = new JSONTokener( advancedParametersStr);
-            while(tokener.more())
-            {
-                Object value = tokener.nextValue();
-            }
-
-            //if you get here then the file was parsed successfully
-            result = true;
-        }
-        catch(IOException e)
-        {
-            log.error("Could not find file: " + file.getAbsolutePath());
-        }
-        catch(JSONException je)
-        {
-            log.error(je);
-        }
-
-        return result;
     }
 
     private void deleteRemovedFiles(String[] files, File copyTo) throws Exception
