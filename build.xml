@@ -196,9 +196,11 @@
         <mkdir dir="${junit.report.dir}" />
         <mkdir dir="${junit.report.dir}/xml" />
         <mkdir dir="${junit.report.dir}/html" />
+        
+        <property name="junit.forkmode" value="perTest" /> <!-- set forkmode=once to create only a single JVM -->
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
-        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="true" forkmode="once">
+        <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="true" forkmode="${junit.forkmode}">
             <formatter type="xml"/>
             <classpath refid="junit.classpath" />
             <batchtest todir="${junit.report.dir}/xml" filtertrace="on">
