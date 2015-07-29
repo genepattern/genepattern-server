@@ -251,10 +251,10 @@ public class CommandLineParser {
                     value = gpConfig.getGPProperty(gpContext, paramName);
                 }
             }
-            // special-case for <<param>_basename>
-            else if (paramName.endsWith("_basename")) {
-                
-            }
+            // TODO: special-case for <<param>_basename>
+            //else if (paramName.endsWith("_basename")) {
+            //    
+            //}
             else {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
