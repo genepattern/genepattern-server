@@ -24,11 +24,12 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
@@ -518,24 +519,22 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
-    public static String getLaunchUrl(final JobRunnerJob job) throws IOException {
-        if (job==null) {
-            log.debug("jobRunnerJob==null");
-            return "";
-        }
-        if (job.getWorkingDir()==null) {
-            log.debug("jobRunnerJob.workingDir==null");
-            return "";
-        } 
-        final File workingDir=new File(job.getWorkingDir());
-        final File launchUrlFile=getLaunchUrlFile(workingDir);
-        String launchUrl = FileUtils.readFileToString(launchUrlFile);
-        return launchUrl;
+    /** @deprecated */
+    public static String getLaunchUrl(final int jobNumber) throws IOException {
+        GpConfig gpConfig = ServerConfigurationFactory.instance();
+        GpContext context = GpContext.getServerContext();
+        return getLaunchUrl(gpConfig, context, jobNumber);
     }
     
-    protected static File getLaunchUrlFile(final File jobDir) {
-        File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
-        return launchUrlFile;
+    public static String getLaunchUrl(final GpConfig gpConfig, final GpContext jobContext, final int jobNumber) throws IOException {
+        final File jobDir=new File(GenePatternAnalysisTask.getJobDir(gpConfig, jobContext, ""+jobNumber));
+        return getLaunchUrlFromJobDir(jobDir);        
+    } 
+    
+    public static String getLaunchUrlFromJobDir(final File jobDir) throws IOException {
+        final File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+        final String launchUrl = FileUtils.readFileToString(launchUrlFile);
+        return launchUrl;
     }
     
 }

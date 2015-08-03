@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -19,7 +18,7 @@ import java.util.Map;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
@@ -37,7 +36,7 @@ import org.junit.rules.TemporaryFolder;
 public class TestJobInfoManager {
     final String gpUrl="http://127.0.0.1:8080/gp/";
     private GpConfig gpConfig;
-    private JobRunnerJob job;
+    private GpContext gpContext;
     private Map<String, List<String>> substitutedValues=new LinkedHashMap<String,List<String>>();
 
     private static final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:999999999";
@@ -48,11 +47,15 @@ public class TestJobInfoManager {
     public TemporaryFolder temp= new TemporaryFolder();
 
     @Before
-    public void setUp() throws MalformedURLException {
-        substitutedValues.put("job.number", Arrays.asList(""+jobNo));
+    public void setUp() throws IOException {
+        File rootJobDir=FileUtil.getDataFile("jobResults");
+        gpConfig=new GpConfig.Builder()
+            .genePatternURL(new URL(gpUrl))
+            .addProperty(GpConfig.PROP_JOBS, rootJobDir.getAbsolutePath())
+        .build();
+        gpContext=new GpContext.Builder().build();
 
-        job=mock(JobRunnerJob.class);
-        gpConfig=new GpConfig.Builder().genePatternURL(new URL(gpUrl)).build();
+        substitutedValues.put("job.number", Arrays.asList(""+jobNo));
 
         final TaskInfoAttributes tia = new TaskInfoAttributes();
         tia.put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_JAVASCRIPT);
@@ -63,55 +66,37 @@ public class TestJobInfoManager {
         when(taskInfo.getAttributes()).thenReturn(tia);
     }
     
-    @Test
-    public void getLaunchUrl_nullJobRunnerJob() throws Exception {
-        job=null;
-        assertEquals(
-                // expected
-                "",
-                // actual
-                JobInfoManager.getLaunchUrl(job)
-                );
-    }
-    
-    @Test
-    public void getLaunchUrl_workingDirNull() throws Exception {
-        when(job.getWorkingDir()).thenReturn(null);
-        assertEquals(
-                // expected
-                "",
-                // actual
-                JobInfoManager.getLaunchUrl(job)
-                );
+    @Test(expected=FileNotFoundException.class)
+    public void getLaunchUrl_rootJobDirNotExists() throws Exception {
+        File rootJobDir=temp.newFolder("_"+Math.random());
+        gpConfig=new GpConfig.Builder()
+            .genePatternURL(new URL(gpUrl))
+            .addProperty(GpConfig.PROP_JOBS, rootJobDir.getAbsolutePath())
+        .build();
+        JobInfoManager.getLaunchUrl(gpConfig, gpContext, 695);
     }
 
     @Test(expected=FileNotFoundException.class)
-    public void getLaunchUrl_workingDirNotExists() throws Exception {
-        String workingDir=new File("_"+Math.random()).getAbsolutePath();
-        when(job.getWorkingDir()).thenReturn(workingDir);
+    public void getLaunchUrl_jobDirNotExists() throws Exception {
         assertEquals(
                 // expected
                 "",
                 // actual
-                JobInfoManager.getLaunchUrl(job)
+                JobInfoManager.getLaunchUrl(gpConfig, gpContext, 1)
                 );
     }
     
     @Test(expected=FileNotFoundException.class)
-    public void getLaunchUrl_hiddenFileNotExists() throws IOException {
-        final int jobId=1;
-        final File workingDir=temp.newFolder(""+jobId);
-        when(job.getWorkingDir()).thenReturn(workingDir.getAbsolutePath());
-        JobInfoManager.getLaunchUrl(job);
+    public void getLaunchUrl_launchUrlFileNotExists() throws IOException {
+        final int jobId=0;
+        JobInfoManager.getLaunchUrl(gpConfig, gpContext, jobId);
     }
 
     @Test
     public void getLaunchUrl() throws IOException {
-        File workingDir = FileUtil.getDataFile("jobResults/695");
-        when(job.getWorkingDir()).thenReturn(workingDir.getAbsolutePath());
         assertEquals(
                 gpUrl+"tasklib/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:3.3/clsfilecreator.html?input.file=http://127.0.0.1:8080/gp/users/admin/all_aml_test.gct&",
-                JobInfoManager.getLaunchUrl(job)
+                JobInfoManager.getLaunchUrl(gpConfig, gpContext, 695)
         );
     }
 

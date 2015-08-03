@@ -28,8 +28,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
-import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.status.Status;
@@ -48,7 +46,10 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.*;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Wrapper class to access JobInfo from JSF formatted pages.
@@ -1205,17 +1206,14 @@ public class JobInfoWrapper implements Serializable {
 
     public String getLaunchUrl()
     {
-        if(taskInfo == null || jobInfo == null)
-        {
+        if (outputDir==null) {
             return "";
-        }        
-        JobRunnerJob jobStatusRecord=null;
+        }
         try {
-            jobStatusRecord=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
-            return JobInfoManager.getLaunchUrl(jobStatusRecord);
+            return JobInfoManager.getLaunchUrlFromJobDir(outputDir);
         }
         catch (Throwable t) {
-            log.error("Unexpected error initializing jobStatusRecord from jobId="+jobInfo.getJobNumber(), t);
+            log.error("Unexpected error getting launchUrl for jobId="+jobInfo.getJobNumber(), t);
         }
         return "";
     }
