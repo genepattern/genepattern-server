@@ -224,6 +224,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     $("#missingTasksDiv").append(missingTaskTable);
 
                     var actionDiv = $("<div/>");
+                    actionDiv.append(form);
 
                     var installFromZipBtn = $("<button>Install from Zip</button>")
                         .button().click(function()
@@ -235,7 +236,6 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                     var installFromRepoBtn = $("<button>Install from Repository</button>")
                         .button().click(function()
                     {
-                         // data: { lsid: "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9" }
                         form.submit();
                     });
 
