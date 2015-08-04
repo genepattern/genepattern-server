@@ -279,7 +279,7 @@ function loadModule(taskId, reloadId, sendFromKind, sendFromUrl) {
                 {
                     var launchDiv = $("<div id='launchJSNewWinDiv'/>");
                     launchDiv.append("<label><input type='checkbox' id='launchJSNewWin'/>Launch in a new window</label>");
-                    $("#runTaskMiscDiv").prepend(launchDiv);
+                    $("#paramsListingDiv").prepend(launchDiv);
                 }
                 //the parameter form elements have been created now make the form visible
                 $("#protocols").hide();
