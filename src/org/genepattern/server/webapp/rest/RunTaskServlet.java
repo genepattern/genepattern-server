@@ -8,7 +8,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +43,6 @@ import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
-import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
@@ -45,12 +52,15 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
-import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.GroupId;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.JobInputFileUtil;
+import org.genepattern.server.job.input.JobInputHelper;
+import org.genepattern.server.job.input.LoadModuleHelper;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
-import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.repository.SourceInfo;
@@ -66,7 +76,6 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -101,7 +110,7 @@ public class RunTaskServlet extends HttpServlet
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadModule(
-            @QueryParam("lsid") String lsid,
+            @QueryParam("lsid") String taskNameOrLsid,
             @QueryParam("reloadJob") String reloadJobId,
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
@@ -115,7 +124,7 @@ public class RunTaskServlet extends HttpServlet
             if (userId == null) {
                 throw new Exception("User not logged in");
             }
-            if (lsid == null && reloadJobId == null) {
+            if (taskNameOrLsid == null && reloadJobId == null) {
                 throw new Exception ("No lsid or job number to reload received");
             }
 
@@ -132,18 +141,18 @@ public class RunTaskServlet extends HttpServlet
                 reloadJobInput = reloadJobContext.getJobInput();
                 final String reloadedLsidString = reloadJobInput.getLsid();
 
-                //check if lsid is null
-                if(lsid == null) {
-                    lsid = reloadedLsidString;
+                //check if taskNameOrLsid is null
+                if(taskNameOrLsid == null) {
+                    taskNameOrLsid = reloadedLsidString;
                 }
                 else {
                     if (log.isDebugEnabled()) {
                         log.debug("reloadedLsidString="+reloadedLsidString);
-                        log.debug("lsid="+lsid);
-                        if (!reloadedLsidString.equals(lsid)) {
+                        log.debug("lsid="+taskNameOrLsid);
+                        if (!reloadedLsidString.equals(taskNameOrLsid)) {
                             //warn if the reloaded job lsid and given lsid do not match
                             //but continue execution
-                            log.warn("The given lsid " + lsid + " does not match " +
+                            log.warn("The given lsid " + taskNameOrLsid + " does not match " +
                                     "the lsid of the reloaded job " + reloadedLsidString);
                         }
                     }
@@ -151,14 +160,14 @@ public class RunTaskServlet extends HttpServlet
             }
 
             //check if lsid is still null
-            if(lsid == null) {
+            if(taskNameOrLsid == null) {
                 throw new Exception ("No lsid  received");
             }
 
-            final TaskInfo taskInfo = getTaskInfo(lsid, userId);
+            final TaskInfo taskInfo = getTaskInfo(taskNameOrLsid, userId);
 
             if(taskInfo == null) {
-                throw new Exception("No task with lsid=" + lsid + " found for user=" + userId);
+                throw new Exception("No task with lsid=" + taskNameOrLsid + " found for user=" + userId);
             }
             userContext.setTaskInfo(taskInfo);
 
@@ -231,8 +240,8 @@ public class RunTaskServlet extends HttpServlet
                 //    dependent tasks and missing task lsids
                 JSONArray missingTasksList = new JSONArray();
 
-                PipelineModel model = PipelineUtil.getPipelineModel(lsid);
-                boolean pipelineWithMissingTasks = PipelineUtil.isMissingTasks(model, userId);
+                final PipelineModel model = PipelineUtil.getPipelineModel(taskInfo);
+                final boolean pipelineWithMissingTasks = PipelineUtil.isMissingTasks(model, userId);
 
                 if (pipelineWithMissingTasks) {
                     LinkedHashMap<LSID, PipelineUtil.MissingTaskRecord> missingTasks = PipelineUtil.getMissingTasks(model, userContext.getUserId());
@@ -329,7 +338,7 @@ public class RunTaskServlet extends HttpServlet
             }
 
             final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-            final JobInput initialValues=loadModuleHelper.getInitialValues(lsid,
+            final JobInput initialValues=loadModuleHelper.getInitialValues(taskNameOrLsid,
                     taskInfo.getParameterInfoArray(),
                     reloadJobInput,
                     _fileParam,
@@ -374,7 +383,7 @@ public class RunTaskServlet extends HttpServlet
                 TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
                 String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
                 if (serializedModel != null && serializedModel.length() > 0) {
-                    PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+                    final PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
 
                     JSONArray children = new JSONArray();
                     for (JobSubmission js : model.getTasks()) {
@@ -410,7 +419,7 @@ public class RunTaskServlet extends HttpServlet
         }
         catch(Throwable t)
         {
-            String message = "An error occurred while loading the module with lsid: \"" + lsid + "\"";
+            String message = "An error occurred while loading the module with lsid: \"" + taskNameOrLsid + "\"";
             if(t.getMessage() != null)
             {
                 message = t.getMessage();
