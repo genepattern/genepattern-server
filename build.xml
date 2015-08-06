@@ -311,7 +311,7 @@
             <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}" />
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="axis.jar commons-codec-1.6.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar javax.mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="axis.jar commons-codec-1.6.jar commons-discovery-0.2.jar commons-httpclient-3.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.16.jar javax.mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar  guava-15.0.jar" />
             <zipfileset dir="clients/Java/doc" prefix="doc" />
         </zip>
     </target>
