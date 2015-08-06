@@ -21,6 +21,9 @@ var parameter_and_val_groups = {};
 //contains all the file upload requests
 var fileUploadRequests = [];
 
+//keep track of when parameter sections where modified and should be expanded
+var expandParameterSection = false;
+
 //the field is used to assign unique ids to each file provided for a file input parameter
 //in order to make it easier to delete files
 var fileId = 0;
@@ -1704,25 +1707,63 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
             curHeaderDiv = $("#" + pHeadingId);
         }
 
+        var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
+
         //check if the new section should be hidden
         if (parameterGroups[i].hidden !== undefined && parameterGroups[i].hidden !== null
-            && parameterGroups[i].hidden) {
+            && parameterGroups[i].hidden & !isNonDefaultValues(parameterGroups[i].parameters)) {
             curHeaderDiv.prev().find(".paramSectionToggle").click();
         }
 
-        var paramTable = createParamTable(parameterGroups[i].parameters, initialValues);
         curHeaderDiv.append(paramTable);
     }
+}
+
+/**
+ *
+ * @param parameterNames , list of parameters in a section
+ * @returns {boolean}, returns true if any of the parameters
+ *  has an initial value that is not the default
+ */
+function isNonDefaultValues(parameterNames)
+{
+    for(var i=0;i<parameterNames.length;i++)
+    {
+        var parameterName = parameterNames[i];
+
+        var defaultValue = run_task_info.params[parameterName].default_value;
+        var initialValues = run_task_info.params[parameterName].initialValues;
+
+        if(initialValues !== undefined && initialValues !== null)
+        {
+            for(var n=0;n<initialValues.length;n++)
+            {
+                 var values = initialValues[n].values;
+
+                 //it must non default value if the number of values > 1 since default value
+                //is currently only one value
+                 if(initialValues.length.length > 1 || values.length > 1
+                     || (values.length==1 && values[0] !== defaultValue))
+                 {
+                     return true;
+                 }
+            }
+        }
+
+        return false;
+    }
+
+    return false;
 }
 
 function createParamTable(parameterNames, initialValues) {
     var paramsTable = $("<table class='paramsTable'/>");
 
     //return empty paramsTable if no parameter names were specified
-    if (parameterNames === undefined || parameterNames === null) {
+    if (parameterNames === undefined || parameterNames === null)
+    {
         return paramsTable;
     }
-
 
     for (var q = 0; q < parameterNames.length; q++) {
         var parameterName = parameterNames[q];
