@@ -111,6 +111,9 @@ default.properties:
 
     # The following property can be set to override the "Contact Us" links
     # contact.link: /gp/pages/contactUs.jsf
+
+    # Turn off the auto-creation of accounts with GenomeSpace
+    # genomeSpaceAutoCreate: false
     
 
 # a list of command executors
