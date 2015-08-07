@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.io.File;
@@ -15,12 +18,12 @@ import org.junit.Test;
 public class TestConfigLoader {
     
 
-    @Test
-    public void testFromSystemProps() {
-        GpConfig config=GpConfigLoader.createFromSystemProps();
-        Assert.assertNull("expecting null config.resourcesDir", config.getResourcesDir());
-        Assert.assertEquals("num init errors", 2, config.getInitializationErrors().size());
-    }
+//    @Test
+//    public void testFromSystemProps() {
+//        GpConfig config=GpConfigLoader.createFromSystemProps();
+//        Assert.assertNull("expecting null config.resourcesDir", config.getResourcesDir());
+//        Assert.assertEquals("num init errors", 2, config.getInitializationErrors().size());
+//    }
     
     @Test
     public void testFromResourcesDir() {

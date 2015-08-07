@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.plugin;
 
 import java.io.File;
@@ -14,14 +17,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.domain.Props;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import org.genepattern.server.domain.PropsTable;
 
 /**
  * Helper class for migrating the list of installed plugins (aka patches) into the GP database.
@@ -47,9 +48,6 @@ public class MigratePlugins {
     private final GpContext gpContext;
     private PluginRegistry pluginRegistry;
     private List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
-    
-    // multimap of patchLsid -> custom prop file
-    private Multimap<String,File> filemap=HashMultimap.create();
 
     public MigratePlugins(GpConfig gpConfig, GpContext gpContext) {
         this(gpConfig, 
@@ -88,14 +86,16 @@ public class MigratePlugins {
     }
     
     /**
-     * Check the db, has the '' flag already been set to true.
-     * 
-     * @param gpConfig
-     * @param gpContext
-     * @return true if the plugins have already been migrated.
+     * Check the db, has the {@link #PROP_DB_CHECK} flag already been set.
      */
     protected boolean checkDb() {
-        String val=Props.selectValue(PROP_DB_CHECK);
+        String val="";
+        try {
+            val=PropsTable.selectValue(PROP_DB_CHECK);
+        }
+        catch (DbException e) {
+            val="";
+        }
         Boolean isComplete=Boolean.valueOf(val);
         if (isComplete) {
             return true;
@@ -107,8 +107,10 @@ public class MigratePlugins {
      * Update the db to indicate that the plugins have already been migrated.
      * @return
      */
-    protected boolean updateDb() {
-        boolean success=Props.saveProp(PROP_DB_CHECK, "true");
+    protected boolean updateDb() 
+    throws DbException
+    {
+        boolean success=PropsTable.saveProp(PROP_DB_CHECK, "true");
         return success;
     }
 

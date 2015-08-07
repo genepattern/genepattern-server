@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server;
 
 import static org.junit.Assert.assertEquals;
@@ -50,7 +53,7 @@ public class CommandLineParserTest {
     private File rootTasklibDir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         rootTasklibDir=tmp.newFolder("taskLib");
     }
 

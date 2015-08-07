@@ -1,8 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -30,7 +34,7 @@ public class TestGetRootDir {
     public TemporaryFolder temp = new TemporaryFolder();
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         javaWorkingDir=new File(System.getProperty("user.dir"));
         //Note: see StartupServlet for how GENEPATTERN_HOME gets passed from the command line to the GpConfig
         gpHomeDir=temp.newFolder("genepattern_home").getAbsoluteFile();
@@ -53,7 +57,7 @@ public class TestGetRootDir {
     }
 
     @Test
-    public void getGpWorkingDir_custom() {
+    public void getGpWorkingDir_custom() throws IOException {
         File gpWorkingDir=temp.newFolder("custom_gp_working_dir");
         gpConfig=new GpConfig.Builder()
             .gpWorkingDir(gpWorkingDir)
@@ -78,7 +82,7 @@ public class TestGetRootDir {
     }
     
     @Test
-    public void rootUserDir_custom() {
+    public void rootUserDir_custom() throws IOException {
         File customDir=temp.newFolder("custom_user_dir").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)
@@ -105,7 +109,7 @@ public class TestGetRootDir {
     }
 
     @Test
-    public void userDir_custom() {
+    public void userDir_custom() throws IOException {
         File customDir=temp.newFolder("custom_user_dir").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)
@@ -133,7 +137,7 @@ public class TestGetRootDir {
     }
     
     @Test
-    public void rootJobDir_custom() throws ServerConfigurationException {
+    public void rootJobDir_custom() throws ServerConfigurationException, IOException {
         File customDir=temp.newFolder("custom_job_results").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .addProperty(GpConfig.PROP_JOBS, customDir.toString())
@@ -159,7 +163,7 @@ public class TestGetRootDir {
     }
     
     @Test
-    public void rootSoapAttachmentDir_custom() throws  ServerConfigurationException {
+    public void rootSoapAttachmentDir_custom() throws  ServerConfigurationException, IOException {
         File customDir=temp.newFolder("custom_soap_attachments").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .addProperty(GpConfig.PROP_SOAP_ATT_DIR, customDir.toString())
@@ -174,7 +178,7 @@ public class TestGetRootDir {
     }
 
     @Test
-    public void gpTempDir_gpHomeNotSet() throws ServerConfigurationException {
+    public void gpTempDir_gpHomeNotSet() throws ServerConfigurationException, IOException {
         File gpWorkingDir=temp.newFolder("gp_working_dir").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .gpWorkingDir(gpWorkingDir)
@@ -184,7 +188,7 @@ public class TestGetRootDir {
     }
     
     @Test
-    public void gpTempDir_custom_gpTmpdir() throws ServerConfigurationException {
+    public void gpTempDir_custom_gpTmpdir() throws ServerConfigurationException, IOException {
         File custom=temp.newFolder("custom_tmpdir").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .addProperty(GpConfig.PROP_GP_TMPDIR, custom.toString())

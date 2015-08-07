@@ -1,8 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.genepattern;
 
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,11 +45,11 @@ public class TestCommandLineParser {
     
     @SuppressWarnings("deprecation")
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         gpAppDir=tmp.newFolder("GenePattern.app").getAbsoluteFile();
         resourcesDir=tmp.newFolder("resources").getAbsoluteFile();
-        uploadsDir=tmp.newFolder("users/test_user/uploads");
-        webappDir=tmp.newFolder("Tomcat/webapps/gp").getAbsoluteFile();
+        uploadsDir=tmp.newFolder("users", "test_user", "uploads");
+        webappDir=tmp.newFolder("Tomcat", "webapps", "gp").getAbsoluteFile();
         File tomcatCommonLib=new File(webappDir.getParentFile().getParentFile(), "common/lib").getAbsoluteFile();
         tomcatCommonLib_val=tomcatCommonLib.toString();
         
@@ -74,6 +78,21 @@ public class TestCommandLineParser {
     }
     
     //TODO: implement support for _basename substitution in the resolveValue method
+    @Test
+    public void basenameSub() {
+        String userId="test_user";
+        String gpUrl="http://127.0.0.1:8080/gp/";
+        // set up job context
+        JobInput jobInput=new JobInput();
+        jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test.cls");
+        GpContext gpContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        assertEquals(
+                "all_aml_test", 
+                CommandLineParser.getBasenameSubstitution(gpConfig, gpContext, "input.filename_basename", parameterInfoMap));
+    }
+    
     @Ignore @Test
     public void resolveValue_basename() {
         String userId="test_user";
@@ -183,8 +202,9 @@ public class TestCommandLineParser {
                 "-rf/path/to/all_aml_train.gct"
                 );
         final List<String> actual=CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, gpatRuntimeProps, formalParameters);
-        assertThat(actual, Matchers.is(expected));
+        //arrayEquals(actual, expected);
         
+        assertThat(actual, Matchers.is(expected));
     }
     
 }

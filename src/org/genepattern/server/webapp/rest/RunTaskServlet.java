@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp.rest;
 
 import java.io.File;
@@ -5,33 +8,50 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
-import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.domain.*;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
-import org.genepattern.server.job.JobInfoLoaderDefault;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.GroupId;
@@ -40,7 +60,6 @@ import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ReloadJobHelper;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
@@ -50,24 +69,23 @@ import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobBean;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
-import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
-import org.genepattern.webservice.*;
-import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
+import org.genepattern.webservice.WebServiceException;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * Created by IntelliJ IDEA.
@@ -83,16 +101,16 @@ public class RunTaskServlet extends HttpServlet
 
 
     /**
-	 * Inject details about the URI for this request
-	 */
-	@Context
+     * Inject details about the URI for this request
+     */
+    @Context
     UriInfo uriInfo;
 
     @GET
     @Path("/load")
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadModule(
-            @QueryParam("lsid") String lsid,
+            @QueryParam("lsid") String taskNameOrLsid,
             @QueryParam("reloadJob") String reloadJobId,
             @QueryParam("_file") String sendFromFile,
             @QueryParam("_format") String sendFromFormat,
@@ -106,7 +124,7 @@ public class RunTaskServlet extends HttpServlet
             if (userId == null) {
                 throw new Exception("User not logged in");
             }
-            if (lsid == null && reloadJobId == null) {
+            if (taskNameOrLsid == null && reloadJobId == null) {
                 throw new Exception ("No lsid or job number to reload received");
             }
 
@@ -117,29 +135,24 @@ public class RunTaskServlet extends HttpServlet
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
 
             JobInput reloadJobInput = null;
-
-            if(reloadJobId != null && !reloadJobId.equals(""))
-            {
+            if (reloadJobId != null && !reloadJobId.equals("")) {
                 //This is a reloaded job
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJobId);
-                reloadJobInput = reloadJobHelper.getInputValues();
+                final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJobId));
+                reloadJobInput = reloadJobContext.getJobInput();
+                final String reloadedLsidString = reloadJobInput.getLsid();
 
-                String reloadedLsidString = reloadJobInput.getLsid();
-
-                //check if lsid is null
-                if(lsid == null)
-                {
-                    lsid = reloadedLsidString;
+                //check if taskNameOrLsid is null
+                if(taskNameOrLsid == null) {
+                    taskNameOrLsid = reloadedLsidString;
                 }
-                else
-                {
+                else {
                     if (log.isDebugEnabled()) {
                         log.debug("reloadedLsidString="+reloadedLsidString);
-                        log.debug("lsid="+lsid);
-                        if (!reloadedLsidString.equals(lsid)) {
+                        log.debug("lsid="+taskNameOrLsid);
+                        if (!reloadedLsidString.equals(taskNameOrLsid)) {
                             //warn if the reloaded job lsid and given lsid do not match
                             //but continue execution
-                            log.warn("The given lsid " + lsid + " does not match " +
+                            log.warn("The given lsid " + taskNameOrLsid + " does not match " +
                                     "the lsid of the reloaded job " + reloadedLsidString);
                         }
                     }
@@ -147,17 +160,14 @@ public class RunTaskServlet extends HttpServlet
             }
 
             //check if lsid is still null
-            if(lsid == null)
-            {
+            if(taskNameOrLsid == null) {
                 throw new Exception ("No lsid  received");
             }
 
-            final TaskInfo taskInfo = getTaskInfo(lsid, userId);
+            final TaskInfo taskInfo = getTaskInfo(taskNameOrLsid, userId);
 
-            if(taskInfo == null)
-            {
-                throw new Exception("No task with task id: " + lsid + " found " +
-                        "for user " + userId);
+            if(taskInfo == null) {
+                throw new Exception("No task with lsid=" + taskNameOrLsid + " found for user=" + userId);
             }
             userContext.setTaskInfo(taskInfo);
 
@@ -174,6 +184,18 @@ public class RunTaskServlet extends HttpServlet
                 lsidVersions.put(moduleLsidVersion.toString());
             }
             moduleObject.put("lsidVersions", lsidVersions);
+
+            //check if there is a hidden beta version of the module available
+            LSID selectedTaskVersionLSID = new LSID(taskInfo.getLsid());
+            LSID latestTaskVersionLSID = new LSID((String)lsidVersions.get(0));
+            if(!selectedTaskVersionLSID.getVersion().equals(latestTaskVersionLSID.getVersion()))
+            {
+                TaskInfo latestTaskInfo = getTaskInfo(latestTaskVersionLSID.toString(), userId);
+                if(isHiddenBetaVersion(latestTaskInfo))
+                {
+                    moduleObject.put("betaVersion", lsidVersions.get(0));
+                }
+            }
 
             //check if user is allowed to edit the task
             final boolean editable=isEditable(userContext, taskInfo);
@@ -216,20 +238,44 @@ public class RunTaskServlet extends HttpServlet
                 // check for missing dependencies
                 // hint, all of the work is done in the constructor, including initialization of the
                 //    dependent tasks and missing task lsids
-                GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
-                if (getDependentTasks.getMissingTaskLsids().size()>0) {
-                    moduleObject.put("missing_tasks", true);
-                    if (log.isDebugEnabled()) {
-                        for(final LSID missingTaskLsid : getDependentTasks.getMissingTaskLsids()) {
-                            final String str=missingTaskLsid.toString();
-                            log.debug("missingTaskLsid: "+str);
+                JSONArray missingTasksList = new JSONArray();
+
+                final PipelineModel model = PipelineUtil.getPipelineModel(taskInfo);
+                final boolean pipelineWithMissingTasks = PipelineUtil.isMissingTasks(model, userId);
+
+                if (pipelineWithMissingTasks) {
+                    LinkedHashMap<LSID, PipelineUtil.MissingTaskRecord> missingTasks = PipelineUtil.getMissingTasks(model, userContext.getUserId());
+
+                    for(LSID missingLsid : missingTasks.keySet()) {
+                        String taskName = missingTasks.get(missingLsid).getName();
+                        //SortedSet<LSID> installedVersions = missingTasks.get(missingLsid).getInstalledVersions();
+
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("missingTaskLsid: "+ missingLsid.toString());
                         }
+
+                        JSONObject missingTaskObj = new JSONObject();
+                        missingTaskObj.put("name", taskName);
+                        missingTaskObj.put("version",missingLsid.getVersion());
+                        missingTaskObj.put("lsid", missingLsid.toStringNoVersion());
+
+                        SortedSet<LSID> installedVers = missingTasks.get(missingLsid).getInstalledVersions();
+                        JSONArray installedVersions = new JSONArray();
+                        for(LSID installedLsid: installedVers) {
+
+                            installedVersions.put(installedLsid.getVersion());
+                        }
+                        missingTaskObj.put("installedVersions", installedVersions);
+                        missingTasksList.put(missingTaskObj);
                     }
                 }
                 else {
-                    moduleObject.put("missing_tasks", false);
                 }
 
+                moduleObject.put("missing_tasks", missingTasksList);
+
+                GetIncludedTasks getDependentTasks = new GetIncludedTasks(userContext, taskInfo);
                 final Set<TaskInfo> privateTasks=getDependentTasks.getPrivateTasks();
                 if (privateTasks != null && privateTasks.size()>0) {
                     log.debug("current user, '"+userContext.getUserId()+"', doesn't have permission to run one of the dependent tasks");
@@ -292,7 +338,7 @@ public class RunTaskServlet extends HttpServlet
             }
 
             final LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-            final JobInput initialValues=loadModuleHelper.getInitialValues(lsid,
+            final JobInput initialValues=loadModuleHelper.getInitialValues(taskNameOrLsid,
                     taskInfo.getParameterInfoArray(),
                     reloadJobInput,
                     _fileParam,
@@ -337,13 +383,13 @@ public class RunTaskServlet extends HttpServlet
                 TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
                 String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
                 if (serializedModel != null && serializedModel.length() > 0) {
-                    PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+                    final PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
 
                     JSONArray children = new JSONArray();
                     for (JobSubmission js : model.getTasks()) {
                         try {
                             TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true);
+                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true);
                             TasksResource.applyJobSubmission(childObject, js);
                             children.put(childObject);
                         }
@@ -371,14 +417,14 @@ public class RunTaskServlet extends HttpServlet
             }
             return Response.ok().entity(jsonStr).build();
         }
-        catch(Exception e)
+        catch(Throwable t)
         {
-            String message = "An error occurred while loading the module with lsid: \"" + lsid + "\"";
-            if(e.getMessage() != null)
+            String message = "An error occurred while loading the module with lsid: \"" + taskNameOrLsid + "\"";
+            if(t.getMessage() != null)
             {
-                message = e.getMessage();
+                message = t.getMessage();
             }
-            log.error(message);
+            log.error(message, t);
 
             if(message.contains("You do not have the required permissions"))
             {
@@ -397,7 +443,7 @@ public class RunTaskServlet extends HttpServlet
                 );
             }
         }
-	}
+    }
 
     @POST
     @Path("/upload")
@@ -459,16 +505,18 @@ public class RunTaskServlet extends HttpServlet
     @POST
     @Path("/addJob")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response addJob(
         JobSubmitInfo jobSubmitInfo,
         @Context HttpServletRequest request)
     {
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
-        return addJob(userContext, jobSubmitInfo, request);
+        return addJob(gpConfig, userContext, jobSubmitInfo, request);
     }
 
     @POST
@@ -478,12 +526,13 @@ public class RunTaskServlet extends HttpServlet
             JobSubmitInfo jobSubmitInfo,
             @Context HttpServletRequest request)
     {
+        final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext userContext = Util.getUserContext(request);
 
         if (checkDiskQuota(userContext))
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
+            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
 
-        return launchJsViewer(userContext, jobSubmitInfo, request);
+        return launchJsViewer(gpConfig, userContext, jobSubmitInfo, request);
     }
 
     /**
@@ -492,12 +541,12 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response launchJsViewer(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response launchJsViewer(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
 
@@ -561,16 +610,17 @@ public class RunTaskServlet extends HttpServlet
             }
             result.addChild("jobId", jobId);
 
-            try {
-                JobInfo jobInfo = new JobInfoLoaderDefault().getJobInfo(userContext, jobId);
-                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobInfo);
+            /*try {
+                int jobNumber = Integer.parseInt(jobId);
+                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobNumber);
+
                 result.addChild("launchUrl", launchUrl);
             }
             catch (Exception e) {
                 log.error(e);
                 throw new Exception("Could not generate launch url found for Javascript visualizer: " + taskInfo.getName()
                 + e.getMessage());
-            }
+            }*/
 
             int gpJobNo = Integer.parseInt(jobId);
             //check if there was a comment specified for job and add it to database
@@ -605,7 +655,7 @@ public class RunTaskServlet extends HttpServlet
             if(e.getMessage() != null) {
                 message = message + ": " + e.getMessage();
             }
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(message).build();
         }
         catch(Throwable t) {
             String message = "An error occurred while submitting the job";
@@ -647,12 +697,12 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response addJob(final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response addJob(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
@@ -748,7 +798,7 @@ public class RunTaskServlet extends HttpServlet
             if(e.getMessage() != null) {
                 message = message + ": " + e.getMessage();
             }
-            return Response.status(ClientResponse.Status.FORBIDDEN).entity(message).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(message).build();
         }
         catch(Throwable t) {
             String message = "An error occurred while submitting the job";
@@ -842,12 +892,12 @@ public class RunTaskServlet extends HttpServlet
         if (reloadJob != null && !reloadJob.equals("")) {
             //This is a reloaded job
             try {
-                ReloadJobHelper reloadJobHelper=new ReloadJobHelper(userContext, reloadJob);
-                reloadJobInput = reloadJobHelper.getInputValues();
+                final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJob));
+                reloadJobInput=reloadJobContext.getJobInput();
             }
-            catch (Exception e) {
-                log.error("Error initializing from reloadJob="+reloadJob, e);
-                return Response.serverError().entity(e.getLocalizedMessage()).build();
+            catch (Throwable t) {
+                log.error("Error initializing from reloadJob="+reloadJob, t);
+                return Response.serverError().entity(t.getLocalizedMessage()).build();
             }
         }
         if (lsid==null || lsid.length()==0) {
@@ -865,51 +915,7 @@ public class RunTaskServlet extends HttpServlet
         }
         JSONObject content=new JSONObject();
         try {
-            IAdminClient adminClient = new LocalAdminClient(userId);
-            TaskInfo taskInfo = adminClient.getTask(lsid);
-            if (taskInfo == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("Module not found, lsid="+lsid).build();
-            }
-
-            ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
-
-
-            ParameterInfo[] jobParameters=null;
-            if (parameters != null) {
-                //JobInput initialValues= ParamListHelper.getInitialValues(
-                //        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
-                LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
-                JobInput initialValues=loadModuleHelper.getInitialValues(
-                        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
-
-
-                jobParameters = new ParameterInfo[parameters.length];
-                int i=0;
-                for(ParameterInfo pinfo : parameters) {
-                    final String id=pinfo.getName();
-                    String value=null;
-                    if (initialValues.hasValue(id)) {
-                        Param p = initialValues.getParam(pinfo.getName());
-                        int numValues=p.getNumValues();
-                        if (numValues==0) {
-                        }
-                        else if (numValues==1) {
-                            value=p.getValues().get(0).getValue();
-                        }
-                        else {
-                            //TODO: can't initialize from a list of values
-                            log.error("can't initialize from a list of values, lsid="+lsid+
-                                    ", pname="+id+", numValues="+numValues);
-                        }
-                    }
-                    jobParameters[i++] = new ParameterInfo(id, value, "");
-                }
-            }
-
-            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, userContext.getUserId(), lsid, taskInfo.getName());
-            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
-            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
-            String code=CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+            String code = CodeGeneratorUtil.getTaskCode(language, lsid, userContext, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
             content.put("code", code);
             return Response.ok().entity(content.toString()).build();
         }
@@ -1043,5 +1049,17 @@ public class RunTaskServlet extends HttpServlet
             boolean editable = createPipelineAllowed && isMine && isAuthorityMine;
             return editable;
         }
+    }
+
+    private boolean isHiddenBetaVersion(TaskInfo taskInfo)
+    {
+        final List<String> categories = CategoryUtil.getCategoriesFromManifest(taskInfo);
+
+        for(final String category : categories) {
+            if (category.equalsIgnoreCase(".beta")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

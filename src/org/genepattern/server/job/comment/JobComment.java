@@ -1,14 +1,26 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.comment;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
-import org.hibernate.validator.Size;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.Size;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.persistence.*;
 import java.util.Date;
 
 

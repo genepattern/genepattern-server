@@ -1,0 +1,8 @@
+<FindBugsFilter>
+    <Match>
+        <Package name="org.apache.xml.xml_soap" />
+    </Match>
+    <Match>
+        <Package name="org.json" />
+    </Match>
+</FindBugsFilter>

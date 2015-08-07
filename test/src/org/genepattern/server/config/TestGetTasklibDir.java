@@ -1,8 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +29,7 @@ public class TestGetTasklibDir {
     public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         serverContext=GpContext.getServerContext();
         userDir=new File(System.getProperty("user.dir"));
         userInstallDir=tmp.newFolder("GenePatternServer");
@@ -45,7 +49,7 @@ public class TestGetTasklibDir {
     } 
     
     @Test
-    public void getRootTasklibDirCustomAbsolutePath() {
+    public void getRootTasklibDirCustomAbsolutePath() throws IOException {
         File customTasklibDir=tmp.newFolder("customTaskLib");
         GpConfig gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)

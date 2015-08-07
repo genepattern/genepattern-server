@@ -234,6 +234,8 @@
                         }	// Prevent submitting if no file is selected
 
                         var groupId = jq("#dialogUrlDiv").data("groupId");
+
+                        selectedUrl = encodeURI(selectedUrl);
                         setParameter(selectedInput, selectedUrl, groupId);
                     }));
 

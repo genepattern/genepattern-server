@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
@@ -60,7 +63,12 @@ public class CorsFilter implements Filter {
             response.setHeader("Access-Control-Allow-Origin", "*");
         }
 
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        String reqMethods = request.getHeader("Access-Control-Request-Method");
+        if (reqMethods == null) {
+            reqMethods = "GET, POST, OPTIONS";
+        }
+
+        response.setHeader("Access-Control-Allow-Methods", reqMethods);
 
         String reqHead = request.getHeader("Access-Control-Request-Headers");
 

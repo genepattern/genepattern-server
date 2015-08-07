@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.message;
 
 import java.util.Date;
@@ -62,8 +65,9 @@ class SystemAlertHibernate implements ISystemAlert {
         //delete from SYSTEM_MESSAGE where deleteOnRestart is true
       HibernateUtil.beginTransaction();
        try {
-            Query query = HibernateUtil.getSession().createQuery("delete from SystemMessage where deleteOnRestart != 0");
-            query.executeUpdate();
+           Query query = HibernateUtil.getSession().createQuery("delete from SystemMessage where deleteOnRestart = :deleteOnRestart");
+           query.setBoolean("deleteOnRestart", true);
+           query.executeUpdate();
             HibernateUtil.commitTransaction();
         }
         catch (HibernateException e) {

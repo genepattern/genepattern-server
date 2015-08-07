@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input.cache;
 
 import java.net.URL;
@@ -22,5 +25,12 @@ public interface CachedFile {
      * @throws DownloadException
      */
     GpFilePath download() throws DownloadException;
+
+    //TODO" add isDirectory to interface
+//    /**
+//     * Is this a file or a directory.
+//     * @return
+//     */
+//    boolean isDirectory();
 
 }

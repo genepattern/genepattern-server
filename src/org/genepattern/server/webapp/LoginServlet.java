@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
@@ -45,7 +48,6 @@ import org.genepattern.server.auth.AuthenticationException;
  * </pre>
  * 
  * @see LoginManager#login(HttpServletRequest, HttpServletResponse, boolean)
- * @see org.genepattern.util.LoginHttpClient#loginLatest(org.apache.commons.httpclient.HttpClient)
  * 
  * @author pcarr
  */

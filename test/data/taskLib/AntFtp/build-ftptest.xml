@@ -1,0 +1,27 @@
+<project basedir="." default="build" name="ftptest">
+    <property name="ftp.server" value="gpftp.broadinstitute.org" />
+    <property name="ftp.remotedir" value="example_data/datasets/all_aml" />
+    <property name="ftp.filename" value="all_aml_test.gct" />
+    <property name="download.dir" value="${user.dir}" />
+
+    <!-- the set.is64bit target comes from ant-checkos.xml and is used to detect the OS/architecture -->
+    <target name="build">
+        <echo>using ftp task to download ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct</echo>
+        <echo>user.dir=${user.dir}</echo>
+        <echo>download.dir=${download.dir}</echo>
+        <ftp action="get" 
+            server="${ftp.server}" 
+            userid="anonymous" 
+            password="gp-help@broadinstitute.org"
+            passive="yes" 
+            retriesAllowed="3" 
+            remotedir="${ftp.remotedir}" 
+            verbose="yes">
+           <fileset dir="${download.dir}">
+               <include name="${ftp.filename}"/>
+           </fileset>
+        </ftp>
+
+    </target>
+
+</project>

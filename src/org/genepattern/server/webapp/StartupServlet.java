@@ -1,14 +1,6 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
-
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.server.webapp;
 
@@ -38,11 +30,13 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.plugin.MigratePlugins;
 import org.genepattern.server.purger.PurgerFactory;
+import org.genepattern.server.taskinstall.MigrateTaskCategories;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 import org.genepattern.webservice.TaskInfoCache;
@@ -80,6 +74,10 @@ public class StartupServlet extends HttpServlet {
         return "GenePatternStartupServlet";
     }
     
+    protected File getWebappDir() {
+        return webappDir;
+    }
+    
     protected void setGpWorkingDir(final File gpWorkingDir) {
         this.gpWorkingDir=gpWorkingDir;
     }
@@ -110,6 +108,15 @@ public class StartupServlet extends HttpServlet {
     
     protected File getGpJobResultsDir() {
         return this.gpJobResultsDir;
+    }
+    
+    /**
+     * Initialize the webapp dir (e.g. ./Tomcat/webapps/gp) for the servlet.
+     * @return
+     */
+    protected File initWebappDir(final ServletConfig servletConfig) {
+        // implemented to work with Servlet spec <= 2.5, e.g. Tomcat-5.5
+        return new File(servletConfig.getServletContext().getRealPath(""));    
     }
     
     /**
@@ -254,7 +261,7 @@ public class StartupServlet extends HttpServlet {
     
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        this.webappDir=new File(servletConfig.getServletContext().getRealPath(""));
+        this.webappDir=initWebappDir(servletConfig);
         ServerConfigurationFactory.setWebappDir(webappDir);
         this.gpHomeDir=initGpHomeDir(servletConfig);
         ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
@@ -282,7 +289,6 @@ public class StartupServlet extends HttpServlet {
         ServerConfigurationFactory.reloadConfiguration();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         GpContext gpContext=GpContext.getServerContext();
-        String gpVersion=gpConfig.getGenePatternVersion();
 
         if ("HSQL".equals(gpConfig.getDbVendor())) {
             // automatically start the DB
@@ -308,7 +314,7 @@ public class StartupServlet extends HttpServlet {
                 cause = t;
             }
             getLog().error("Error connecting to the database: " + cause);
-            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            getLog().error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.", t);
             throw new ServletException(t);
         }
         finally {
@@ -317,12 +323,11 @@ public class StartupServlet extends HttpServlet {
 
         try {
             getLog().info("\tinitializing database schema ...");
-            HsqlDbUtil.updateSchema(gpResourcesDir, gpConfig.getDbSchemaPrefix(), gpVersion);
+            SchemaUpdater.updateSchema(gpConfig, HibernateUtil.instance());
         }
         catch (Throwable t) {
             getLog().error("Error initializing DB schema", t);
         }
-        
         
         //load the configuration file
         try {
@@ -341,8 +346,14 @@ public class StartupServlet extends HttpServlet {
         catch (Throwable t) {
             getLog().error("error initializing taskInfo cache", t);
         }
-        
-        CommandManagerFactory.startJobQueue();
+
+        try {
+            getLog().info("\tstarting job queue...");
+            CommandManagerFactory.startJobQueue();
+        }
+        catch (Throwable t) {
+            getLog().error("error starting job queue", t);
+        }
         
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
@@ -384,6 +395,18 @@ public class StartupServlet extends HttpServlet {
             getLog().error("Error migrating installed plugins: " + t.getLocalizedMessage(), t);
         }
         
+        // copy task categories from CLOB
+        try {
+            MigrateTaskCategories mtc=new MigrateTaskCategories();
+            if (!mtc.isComplete()) {
+                getLog().info("\tcopying categories from CLOB into task_install_category table ...");
+                mtc.copyCategoriesFromClobs();
+            }
+        }
+        catch (Throwable t) {
+            getLog().error("Error copying module categories: " + t.getLocalizedMessage(), t);
+        }
+        
         //start the JobPurger
         PurgerFactory.instance().start();
 
@@ -391,28 +414,39 @@ public class StartupServlet extends HttpServlet {
     }
     
     /**
+     * Set the servletContext; for Tomcat 5.5 this is set in the genepattern.properties file.
+     * 
+     * For newer versions (>= 2.5) of the Servlet Spec (not yet implemented) this can be derived form the 
+     * ServletConfig.
+     *     see: http://stackoverflow.com/questions/3120860/servletcontext-getcontextpath
+     *     
+     * @return the servlet context (e.g. "/gp").
+     */
+    protected String initGpServletContext(final ServletConfig servletConfig) {
+        // set the servlet context; 
+        String gpServletContext=System.getProperty("GP_Path", "/gp");
+        if (!gpServletContext.startsWith("/")) {
+            getLog().warn("appending '/' to gpServletContext");
+            gpServletContext = "/" + gpServletContext;
+        }
+        if (gpServletContext.endsWith("/")) {
+            getLog().warn("removing trailing '/' from gpServletContext");
+            gpServletContext = gpServletContext.substring(0, gpServletContext.length()-1);
+        }
+        ServerConfigurationFactory.setGpServletContext(gpServletContext);
+        return gpServletContext;
+    }
+    
+    /**
      * Set the GenePatternURL property dynamically using
      * the current canonical host name and servlet context path.
      * Dynamic lookup works for Tomcat but may not work on other containers... 
-     * Define GP_Path (to be used as the 'servletContextPath') in the genepattern.properties file to avoid dynamic lookup.
+     * Initialize the gpServletContext variable.
      * 
      * @param config
      */
     private void setServerURLs(ServletConfig config) {
-        //set the GP_Path property if it has not already been set
-        String contextPath = System.getProperty("GP_Path");
-        if (contextPath == null) {
-            contextPath = "/gp";
-        }
-        else {
-            if (!contextPath.startsWith("/")) {
-                contextPath = "/" + contextPath;
-            }
-            if (contextPath.endsWith("/")) {
-                contextPath = contextPath.substring(0, contextPath.length()-1);
-            }
-        }
-        System.setProperty("GP_Path", "/gp");
+        final String gpServletContext=initGpServletContext(config);
         String genePatternURL = System.getProperty("GenePatternURL", "");
         if (genePatternURL == null || genePatternURL.trim().length() == 0) {
             try {
@@ -424,8 +458,7 @@ public class StartupServlet extends HttpServlet {
                 if (portStr.length()>0) {
                     portStr = ":"+portStr;
                 }
-                contextPath = System.getProperty("GP_Path", "/gp");
-                String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
+                String genePatternServerURL = "http://" + host_address + portStr + gpServletContext + "/";
                 System.setProperty("GenePatternURL", genePatternServerURL);
                 getLog().error("setting GenePatternURL to " + genePatternServerURL);
             } 
@@ -537,7 +570,7 @@ public class StartupServlet extends HttpServlet {
      * Set System properties to the union of all settings in:
      * servlet init parameters
      * resources/genepattern.properties
-     * resources/build.properties
+     * resources/custom.properties
      * 
      * @param config
      * @param workingDir, the root directory for resolving relative paths defined in the 'genepattern.properties' file
@@ -593,15 +626,6 @@ public class StartupServlet extends HttpServlet {
                 sysProps.setProperty(key, val);
             }
 
-            if (propFile.exists()) {
-                propFile = new File(this.gpResourcesDir, "build.properties");
-                fis = new FileInputStream(propFile);
-                props.load(fis);
-                getLog().info("\tloaded build.properties from " + propFile.getCanonicalPath());
-            }
-            else {
-                getLog().error("\t"+propFile.getAbsolutePath()+" (No such file or directory)");
-            }
             if (fis != null) {
                 fis.close();
                 fis = null;

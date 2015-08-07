@@ -1,21 +1,16 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.server.database;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -29,24 +24,26 @@ import org.hibernate.StatelessSession;
 
 public class HibernateUtil {
     private static final Logger log = Logger.getLogger(HibernateUtil.class);
-    private static HibernateSessionManager instance;
     
-    public static synchronized void setInstance(HibernateSessionManager mgr) {
-        instance=mgr;
+    public static HibernateSessionManager instance() {
+        return SessionMgr.INSTANCE;
     }
     
-    private static synchronized HibernateSessionManager instance() {
-        if (instance==null) {
+    private static class SessionMgr {
+        private static final HibernateSessionManager INSTANCE=init();
+        
+        private static final HibernateSessionManager init() {
             log.debug("initializing hibernate session ...");
             GpContext serverContext=GpContext.getServerContext();
             GpConfig gpConfig=ServerConfigurationFactory.instance();
-            instance=initFromConfig(gpConfig, serverContext);
+            return initFromConfig(gpConfig, serverContext);
         }
         
-        return instance;
+        private SessionMgr() {
+        }
     }
     
-    protected static HibernateSessionManager initFromConfig(GpConfig gpConfig, GpContext gpContext) {
+    protected static HibernateSessionManager initFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
         Properties hibProps=gpConfig.getDbProperties();
         
         if (hibProps==null) {
@@ -115,16 +112,32 @@ public class HibernateUtil {
         return instance().isInTransaction();
     }
 
-    /**
-     * @deprecated - no longer rely on System properties for DB configuration.
-     * @param sequenceName
-     * @return
-     */
-    public static int getNextSequenceValue(String sequenceName) {
-        String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
-        return getNextSequenceValue(dbVendor, sequenceName);
+    public static void executeSQL(final HibernateSessionManager mgr, final String sql) throws DbException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            } 
+            Statement updateStatement = null;
+            updateStatement = mgr.getSession().connection().createStatement();
+            int rval=updateStatement.executeUpdate(sql);
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+        catch (SQLException e) {
+            throw new DbException("Unexpected SQLException executing sql='"+sql+"': "+e.getLocalizedMessage(), e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error executing sql='"+sql+"': "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
     }
-    
+
     public static int getNextSequenceValue(GpConfig gpConfig, String sequenceName) {
         final String dbVendor=gpConfig.getDbVendor();
         return getNextSequenceValue(dbVendor, sequenceName);

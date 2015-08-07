@@ -1,14 +1,22 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.startapp;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.CopyOption;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,7 +57,7 @@ public class ConfigApp {
         ConfigApp._instance = frame;
 
         // Set the working directory
-        String workingString = "/Users/tabor/workspace/genepattern/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        String workingString = "/Users/tabor/workspace/genepattern-server/gp-macapp/dist/GenePattern.app/Contents/Resources";
         if (args.length >= 1) {
             workingString = args[0];
         }
@@ -126,6 +134,14 @@ public class ConfigApp {
      * Write the config selected by the user to the properties file
      */
     public void writeConfig() {
+        // Get file references
+        File newResourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
+        String user = System.getProperty("user.name");
+        File oldResourcesDir = new File("/Users/" + user + "/.genepattern/resources");
+        File newPropFile = new File(newResourcesDir, "genepattern.properties");
+        File oldPropFile = new File(oldResourcesDir, "genepattern.properties");
+
+        // Write to genepattern.properties
         PropertiesWriter pw = new PropertiesWriter();
         pw.setEmail(emailField.getText());
         pw.setDaysPurge(daysPurgeField.getText());
@@ -136,12 +152,9 @@ public class ConfigApp {
         pw.setR25(r25Field.getText());
         pw.setRequirePassword(Boolean.toString(yesRadioButton.isSelected()));
 
-        //File resourcesDir = new File(workingDir.getParent(), "Resources/GenePatternServer/resources");
-        String user = System.getProperty("user.name");
-        File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
-        File propFile = new File(resourcesDir, "genepattern.properties");
         try {
-            pw.writeUserTime(propFile);
+            pw.writeUserTime(newPropFile);
+            pw.writeUserTime(oldPropFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

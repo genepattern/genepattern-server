@@ -3,6 +3,13 @@
  */
 
 var gpUtil = function() {
+
+    /**
+     * helper function to test if an object is a string
+     */
+    function isString(s) {
+        return typeof(s) === 'string' || s instanceof String;
+    }
     
     /**
      * Pretty print the date for display on the job status page in "month day, h:mm am/pm" format, E.g.
@@ -30,7 +37,7 @@ var gpUtil = function() {
     }
 
     function pad(num) {
-        norm = Math.abs(Math.floor(num));
+        var norm = Math.abs(Math.floor(num));
         return (norm < 10 ? '0' : '') + norm;
     }
 
@@ -114,6 +121,62 @@ var gpUtil = function() {
         }
     }
 
+    /**
+     * Parse the given query string of the form '?{name1}={value}&{name2}={value}&{flag}
+     * @param the query string from a URL, for example window.location.search
+     *        If it is empty then it defaults to window.location.search
+     * @return a hash of decoded values, where the rhs value is an array. E.g.
+     *     '?myFlag', { myFlag: [ "" ] }
+     *     '?param=val, { param: [ "val" ] }
+     *     '?params=val1&params=val2, { params : [ "val1", "val2" ] }
+     */
+    function parseQueryString( queryString ) {
+        if (!queryString) {
+            queryString= window.location.search;
+        }
+        // strip leading '?'
+        if (queryString.charAt(0) == '?') {
+            queryString=queryString.substring(1);
+        }
+        if (!queryString) {
+            return {};
+        }
+        
+        var params = {}, queries, temp, i, l;
+     
+        // Split into key/value pairs
+        queries = queryString.split("&");
+     
+        // Convert the array of strings into an object
+        for ( i = 0, l = queries.length; i < l; i++ ) {
+            temp = queries[i].split('=');
+            var key=decodeURIComponent(temp[0]);
+            var val=""; // undefined value will be set to a string, e.g. '?myFlag' with no equal sign
+            if (temp[1]) {
+                val=decodeURIComponent(temp[1]); 
+            }
+
+            var myArray=params[key];
+            if (!myArray) {
+                myArray = new Array();
+                params[key]=myArray;
+            }
+            myArray.push(val);
+        }     
+        return params;
+    }
+
+    /**
+     * Check whether the string ends with the specified text
+     * @param string - the string to search for the suffix
+     * @param suffix - the text to search for
+     * @returns {boolean}
+     */
+    function endsWith(string, suffix) {
+        return string.length >= suffix.length
+            && string.substr(string.length - suffix.length) === suffix;
+    }
+
     // declare 'public' functions
     return {
         formatTimezone:formatTimezone,
@@ -121,6 +184,8 @@ var gpUtil = function() {
         formatDate:formatDate,
         formatTimeOfDay:formatTimeOfDay,
         initToggleDiv:initToggleDiv,
-        toggleDiv:toggleDiv
+        toggleDiv:toggleDiv,
+        parseQueryString:parseQueryString,
+        endsWith: endsWith
     };
 }();

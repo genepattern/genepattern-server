@@ -1,9 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.drm;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -438,7 +442,7 @@ public class TestDrmJobSubmission {
     }
     
     @Test
-    public void testLogfileAbsolute() {
+    public void testLogfileAbsolute() throws IOException {
         File allLogFiles = temp.newFolder("allLogFiles");
         File absLogFile = new File(allLogFiles, jobNo+"_lsfLog.txt").getAbsoluteFile();
         DrmJobSubmission job=new DrmJobSubmission.Builder(workingDir)

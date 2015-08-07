@@ -1,14 +1,6 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
-
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.webservice;
 
@@ -378,9 +370,9 @@ public class TaskInfo implements Serializable {
 
     public static boolean isJavascript(TaskInfoAttributes tia)
     {
-        if (tia != null && tia.get(GPConstants.CATEGORIES) != null)
+        if (tia != null && tia.get(GPConstants.TASK_TYPE) != null)
         {
-            return (tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER));
+            return (tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_JAVASCRIPT));
         }
 
         return false;

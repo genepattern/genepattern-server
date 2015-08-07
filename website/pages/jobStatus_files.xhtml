@@ -88,6 +88,22 @@
                     </span>
                 </p>
             </h:outputText>
+            <h:outputText rendered="#{jobInfo.javascript and jobInfo.status == 'Finished'}">
+                <p class="narrow">
+                    <t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+                        <h:outputText rendered="#{ancestorIndex gt 0 and ancestorIndex lt 10}">
+                            <img src="/gp/images/blank.gif" />
+                        </h:outputText>
+                    </t:dataList>
+                    <span id="runJavascriptLink_#{jobInfo.jobNumber}" style="display: #{jobStatusBean.jobInfo.finished ? 'visible' : 'none'};">
+			    	    <a href='#{jobInfo.launchUrl}' target="_blank">
+                        <img src="/gp/images/visualizer.gif" border="0" alt="indent spacer"/> Open Visualization</a>
+                        <script type="text/javascript">
+                            openJavascript('#{jobInfo.jobNumber}', '#{jobInfo.taskName}', '#{jobInfo.taskLSID}', '#{jobInfo.launchUrl}');
+                        </script>
+                    </span>
+                </p>
+            </h:outputText>
         </div>
 
     </ui:composition>

@@ -1,6 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
@@ -22,7 +26,7 @@ public class TestGpServerProperties {
     }
     
     @Test
-    public void testResourcesDirNotExist() {
+    public void testResourcesDirNotExist() throws IOException {
         File resourcesDir=temp.newFolder("resources");
         boolean deleted=resourcesDir.delete();
         Assert.assertEquals("deleted tmp resourcesDir", true, deleted);
@@ -137,7 +141,7 @@ public class TestGpServerProperties {
     }
     
     @Test
-    public void loadProps_fileDoesNotExist() {
+    public void loadProps_fileDoesNotExist() throws IOException {
         File parent=temp.newFolder("temp_resources");
         File customPropsFile=new File(parent, "custom.properties");
         assertFalse("before test, 'custom.properties' should not exist, customPropsFile="+customPropsFile, customPropsFile.exists());

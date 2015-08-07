@@ -1059,7 +1059,7 @@ var editor = {
     },
 
     _loadModules: function(modules) {
-//        var givenAlert = false;
+        var givenAlert = false;
 
         var i = 0;
         while (modules[i.toString()] !== undefined) {
@@ -1082,21 +1082,21 @@ var editor = {
             var added = this.loadModule(module.lsid, module.id, top, left);
 
             if (added === null) {
-                self.location="/gp/viewPipeline.jsp?name=" + editor.workspace["pipelineLsid"];
-                editor.makeClean();
-                throw "Stop Loading";
+                //self.location="/gp/viewPipeline.jsp?name=" + editor.workspace["pipelineLsid"];
+                //editor.makeClean();
+                //throw "Stop Loading";
 
                 // Old handling of modules that are not installed
-//                added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
-//                if (!givenAlert) {
-//                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
-//                        "You may view what the Pipeline Designer could load of the pipeline, but will be unable to save this pipeline.");
-//                    $("#saveButton").button("disable");
-//                    $("#runButton").button("disable");
-//                    givenAlert = true;
-//                }
-//                i++;
-//                continue;
+                added = this._addBlackBoxModule(library._createBlackBoxModule(module.name, module.lsid), module.id, module.top, module.left);
+                if (!givenAlert) {
+                    editor.showDialog("Problem Loading Pipeline", "Unable to load one or more of the modules in the pipeline.  " +
+                        "You may view what the Pipeline Designer could load of the pipeline, but will be unable to save this pipeline.");
+                    // $("#saveButton").button("disable");
+                    // $("#runButton").button("disable");
+                    givenAlert = true;
+                }
+                i++;
+                continue;
             }
 
             // Set the correct properties for the module
@@ -1113,6 +1113,12 @@ var editor = {
             var outputId = pipes[i]["outputPort"];
             var inputId = pipes[i]["inputPort"];
 
+            if((this.workspace[inputModule.id] !== undefined && this.workspace[inputModule.id].blackBox)
+                || (this.workspace[outputModule.id] !== undefined && this.workspace[outputModule.id].blackBox))
+            {
+                continue;
+            }
+
             // Unescape the IDs if necessary
             outputId = $('<div/>').html(outputId).text();
             inputId = $('<div/>').html(inputId).text();
@@ -1128,9 +1134,11 @@ var editor = {
             var inputPort = inputModule.getInputByPointer(inputId);
 
             // Mark the input param as used
-            inputModule.getInputByName(inputId).makeUsed(inputPort);
-
-            editor.addPipe(inputPort, outputPort);
+            if(inputPort !== null && outputPort !== null)
+            {
+                inputModule.getInputByName(inputId).makeUsed(inputPort);
+                editor.addPipe(inputPort, outputPort);
+            }
         }
     },
 
@@ -1202,6 +1210,7 @@ var editor = {
             type: "POST",
             url: "/gp/PipelineDesigner/load",
             data: { "lsid" : lsid },
+            cache: false,
             success: function(response) {
                 var error = response["ERROR"];
                 if (error !== undefined) {
@@ -3739,7 +3748,7 @@ function Module(moduleJSON) {
         // Display black box warning
         if (this.blackBox) {
             showAlertDisplay = true;
-            this.alerts[this.name] = new Alert("Missing Module", "WARNING", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
+            this.alerts[this.name] = new Alert("Missing Module", "ERROR", "GenePattern is unable to load this module.  You will be unable to change settings on this module or otherwise work with it.");
         }
 
         // Check for incompatible kinds
@@ -5133,9 +5142,12 @@ function Input(module, param) {
         pointer = param;
     }
 
-    var port = new Port(module, pointer, input, input.id);
-    port.type = "input";
-    port.init();
+    var port = null;
+    if(input !== null) {
+        port = new Port(module, pointer, input, input.id);
+        port.type = "input";
+        port.init();
+    }
     return port;
 }
 

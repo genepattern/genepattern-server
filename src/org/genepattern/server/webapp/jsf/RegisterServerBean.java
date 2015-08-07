@@ -1,14 +1,6 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.server.webapp.jsf;
 
@@ -36,8 +28,9 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.domain.Props;
+import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.util.GPConstants;
 
@@ -282,7 +275,13 @@ public class RegisterServerBean {
         log.debug("checking registration");
         AboutBean about = new AboutBean();
         final String genepatternVersion = about.getGenePatternVersion();
-        String dbRegisteredVersion = getDbRegisteredVersion(genepatternVersion);
+        String dbRegisteredVersion = null;
+        try {
+            dbRegisteredVersion = getDbRegisteredVersion(genepatternVersion);
+        }
+        catch (DbException e) {
+            //ignore, it's already been logged
+        }
         if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
             return false;
         }
@@ -306,11 +305,11 @@ public class RegisterServerBean {
         return false;
     }
 
-    protected static String getDbRegisteredVersion(final String genepatternVersion) {
+    protected static String getDbRegisteredVersion(final String genepatternVersion) throws DbException {
         log.debug("getting registration info from database");
         // select value from props where `key`='registeredVersion'+genepatternVersion
         String key="registeredVersion"+genepatternVersion;
-        return Props.selectValue(key);
+        return PropsTable.selectValue(key);
     }
 
     /**
@@ -321,10 +320,12 @@ public class RegisterServerBean {
     protected static List<String> getDbRegisteredVersions() {
         log.debug("getting registration info from database");
         String key="registeredVersion%";
-        return Props.selectKeys(key);
+        return PropsTable.selectKeys(key);
     }
 
-    protected static void saveIsRegistered() {
+    protected static void saveIsRegistered() 
+    throws DbException
+    {
         log.debug("saving registration");
         AboutBean about = new AboutBean();
         String genepatternVersion = about.getGenePatternVersion();
@@ -337,8 +338,10 @@ public class RegisterServerBean {
         saveIsRegistered(genepatternVersion);
     }
     
-    protected static boolean saveIsRegistered(final String genepatternVersion) {
-        return Props.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
+    protected static boolean saveIsRegistered(final String genepatternVersion) 
+    throws DbException
+    {
+        return PropsTable.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
     }
 
     public void setRegistrationUrl(String url) {

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.util.ArrayList;
@@ -122,7 +125,7 @@ public class ConfigYamlProperties {
         return getValue(context, key, drmCustomProps, cmdExecId);
     }
 
-    private Value getValue(final GpContext context, final String key, final Value drmCustomProps, final String cmdExecId) {
+    protected Value getValue(final GpContext context, final String key, final Value drmCustomProps, final String cmdExecId) {
         Value rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context

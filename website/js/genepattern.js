@@ -2255,12 +2255,13 @@ function createJobWidget(job) {
         });
     }
 
-    if (job.launchUrl != undefined && job.launchUrl != null) {
+    if (job.launchUrl !== undefined && job.launchUrl !== null) {
         actionData.push({
             "lsid": "",
             "name": "Relaunch",
             "description": "Launch the viewer using the same input.",
-            "version": "<span class='glyphicon glyphicon-off' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+            "html":  "<label><input class='newWindow' type='checkbox'/>Launch in a new window</label>",
+            "version": "<span class='glyphicon glyphicon-refresh' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
         });
     }
 
@@ -2283,7 +2284,7 @@ function createJobWidget(job) {
                 var url = listObject.attr("data-url");
 
                 if (statusAction) {
-                    loadJobStatus(job.jobId);
+                    loadJobStatus(job.jobId, false);
                 }
 
                 else if (downloadAction) {
@@ -2340,8 +2341,8 @@ function createJobWidget(job) {
                 }
                 else if (relaunchAction)
                 {
-                    openJsViewer(job.taskName, job.launchUrl);
-                    $(".search-widget:visible").searchslider("hide");
+                    var launchInNewWindow = $(event.currentTarget).find(".newWindow").is(":checked");
+                    loadJavascript(job.jobId, $("#main-pane"), launchInNewWindow);
                 }
                 else {
                     console.log("ERROR: Executing click function for Job " + job.jobId);
@@ -2368,6 +2369,12 @@ function createJobWidget(job) {
             "name": "View R Code",
             "description": "View the code for referencing this job programmatically from R.",
             "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
+        },
+        {
+            "lsid": "",
+            "name": "View Python Code",
+            "description": "View the code for referencing this job programmatically from Python.",
+            "version": "", "documentation": "", "categories": [], "suites": [], "tags": []
         }
     ];
 
@@ -2382,6 +2389,7 @@ function createJobWidget(job) {
                 var javaAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Java") === 0;
                 var matlabAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View MATLAB") === 0;
                 var rAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View R") === 0;
+                var pythonAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("View Python") === 0;
 
                 if (javaAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Java");
@@ -2395,6 +2403,11 @@ function createJobWidget(job) {
 
                 else if (rAction) {
                     window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=R");
+                    $(".search-widget:visible").searchslider("hide");
+                }
+
+                else if (pythonAction) {
+                    window.open("/gp/rest/v1/jobs/" + job.jobId + "/code?language=Python");
                     $(".search-widget:visible").searchslider("hide");
                 }
 
@@ -2592,11 +2605,89 @@ function getURLParameter(sParam) {
     return null;
 }
 
+function cleanUpPanels()
+{
+    // Hide the search slider if it is open
+    $(".search-widget").searchslider("hide");
+
+    // Hide the protocols, run task form & eula, if visible
+    $("#protocols").hide();
+    var submitJob = $("#submitJob").hide();
+    $("#eula-block").hide();
+    $("#jobResults").hide();
+    $("#infoMessageDiv").hide();
+    $("#errorMessageDiv").hide();
+    $("#mainViewerPane").remove();
+}
+
+ //this will load a javascript module
+function loadJavascript(jobId, container, openInNewWindow) {
+    // Abort if there is no job id
+    if (jobId === undefined || jobId === null || jobId === '') {
+        return;
+    }
+
+    var openVisualizers = getURLParameter("openVisualizers");
+
+    // if open visualizer is false then user most likely
+    // intends to open job status page
+    /*if (!openVisualizers) {
+        return;
+    }*/
+
+    $.ajax({
+        type: "GET",
+        url: "/gp/rest/v1/jobs/" + jobId,
+        cache: false,
+        success: function(data) {
+            var job = data;
+            if (job.launchUrl !== undefined && job.launchUrl !== null) {
+
+                if (!openInNewWindow)
+                {
+                    // Add to history so back button works
+                    var visualizerAppend = "&openVisualizers=true";
+                    if(openVisualizers != null)
+                    {
+                        visualizerAppend = "&openVisualizers=" + openVisualizers;
+                    }
+
+                    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
+
+                    cleanUpPanels();
+
+                    container.gpJavascript({
+                        taskName: job.taskName,
+                        taskLsid: job.taskLsid,
+                        url: job.launchUrl  //The URL to the main javascript html file
+                    });
+                    mainLayout.close('west');
+                }
+                else
+                {
+                    window.open(job.launchUrl, '_blank');
+                }
+            }
+        },
+        error: function(data) {
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+
+            showErrorMessage(data);
+        },
+        dataType: "json"
+    });
+}
+
 function loadJobStatus(jobId, forceVisualizers) {
     // Abort if no job to load
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
     }
+
+    //remove any javascript visualizer divs
+    $(".jsViewerDiv").remove();
 
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
@@ -2605,6 +2696,9 @@ function loadJobStatus(jobId, forceVisualizers) {
     $("#protocols").hide();
     var submitJob = $("#submitJob").hide();
     $("#eula-block").hide();
+
+    //hide the Javascript Visualizer Div
+    $("#mainViewerPane").hide();
 
     // Clean the Run Task Form for future loads
     if (Request.cleanJobSubmit === null) { Request.cleanJobSubmit = submitJob.clone(); }
@@ -2642,6 +2736,17 @@ function loadJobStatus(jobId, forceVisualizers) {
         visualizerAppend = openVisualizers;
     }
     history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
+
+    //make the job results page a tabbed page
+    /*var jobResultsTab = $("<div/>");
+    $("#main-pane").prepend(jobResultsTab);
+    jobResultsTab.w2tabs({
+        name: 'jobResultsTab',
+        active: 'jobResults',
+        tabs: [
+            { id: 'jobResults', caption: 'Job Results' }
+        ]
+    });*/
 
     $.ajax({
         type: "GET",
@@ -2744,7 +2849,7 @@ function populateJobResultsTable(settings, callback) {
     };
     var _buildDelete = function(job) {
         var del = $("<input />")
-            .addClass("job-delete-checkbox")
+            .addClass("job-select-checkbox")
             .attr("name", job.jobId)
             .attr("type", "checkbox")
             .attr("value", job.jobId);
@@ -2932,9 +3037,9 @@ function populateJobResultsTable(settings, callback) {
             var row = [];
 
             // Append the cells
+            row.push(_buildDelete(job));
             row.push(_buildStatus(job));
             row.push(_buildJobId(job));
-            row.push(_buildDelete(job));
             row.push(_buildMain(job));
             row.push(_buildSize(job));
             row.push(_buildSubmission(job));
@@ -2950,8 +3055,8 @@ function populateJobResultsTable(settings, callback) {
         toReturn.data = rows;
     };
     var _columnToName = function(col) {
-        if (col === 0) return "status";              // Status
-        if (col === 1) return "jobId";               // Job ID
+        if (col === 1) return "status";              // Status
+        if (col === 2) return "jobId";               // Job ID
         if (col === 3) return "taskName";            // Task
         if (col === 5) return "dateSubmitted";       // Submitted
         if (col === 6) return "dateCompleted";       // Completed
@@ -3215,68 +3320,90 @@ function buildJobResultsPage() {
         .append(
         $("<thead></thead>")
             .append(
+            //add header row with buttons for deleting and downloading job
+            $("<tr></tr>")
+                .append($("<td colspan='4'></td>")
+                    .append(
+                        $("<button>Delete</button>")
+                            .click(function(){
+                                // Gather the jobs to delete
+                                var jobsDelete = [];
+                                $(".job-select-checkbox:checked").each(function(index, element) {
+                                    var id = $(element).val();
+                                    jobsDelete.push(id);
+                                });
+
+                                if (confirm("Are you sure you want to delete these " + jobsDelete.length + " jobs?")) {
+                                // Make the Delete AJAX call
+                                     $.ajax({
+                                         type: "DELETE",
+                                         url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
+                                         cache: false,
+                                         dataType: "text",
+                                         success: function (data) {
+                                             var filter = getJobFilter();
+                                             if (!filter) filter = true;
+                                             loadJobResults(filter);
+                                             showSuccessMessage(data);
+                                         },
+                                         error: function (data) {
+                                             var filter = getJobFilter();
+                                             if (!filter) filter = true;
+                                             loadJobResults(filter);
+                                             showErrorMessage(data);
+                                         }
+                                     });
+                                }
+                            })
+                ).append(
+                    $("<button id='downloadJobs' style='margin-left: 6px'>Download</button>")
+                        .click(function(){
+                            // Gather the jobs to download
+                            var jobsDownload = [];
+                            $(".job-select-checkbox:checked").each(function(index, element) {
+                                var id = $(element).val();
+                                jobsDownload.push(id);
+                            });
+
+                            //warn the url if the number of jobs to download is greater than 20
+                            if (jobsDownload.length < 20 || (jobsDownload.length > 20 && confirm("Are you sure you want to download these " + jobsDownload.length + " jobs?"))) {
+                                // Make the Download AJAX call
+                                //remove any existing downloadFrame
+                                $(".downloadFrame").remove();
+                                for(var j=0;j<jobsDownload.length;j++)
+                                {
+                                    var jobId = jobsDownload[j];
+                                    var download_end_point = '/gp/rest/v1/jobs/' + jobId + '/download';
+
+                                    $('<iframe class="downloadDrame" style="display:none"></iframe>')
+                                        .attr("src", download_end_point).appendTo("body");
+                                }
+                            }
+                        }
+            )))).append(
             $("<tr></tr>")
                 .addClass("summaryTitle")
                 .append(
                 $("<td></td>")
                     .addClass("header-sm")
+                    .append(
+                    $("<input/>")
+                        .addClass("job-select-checkbox-master")
+                        .attr("type", "checkbox")
+                        .click(function() {
+                            var isChecked = $(".job-select-checkbox-master").prop('checked');
+                            $(".job-select-checkbox").prop('checked', isChecked);
+                        })
+                )
+                ).append(
+                $("<td></td>")
+                    .addClass("header-sm")
                     .text("Status")
-            )
-                .append(
+                ).append(
                 $("<td></td>")
                     .addClass("header-sm")
                     .text("Job")
-            )
-                .append(
-                $("<td></td>")
-                    .addClass("header-sm")
-                    .append(
-                    $("<a></a>")
-                        .addClass("delete-job-action")
-                        .attr("href", "#")
-                        .text("Delete")
-                        .click(function() {
-                            // Gather the jobs to delete
-                            var jobsDelete = [];
-                            $(".job-delete-checkbox:checked").each(function(index, element) {
-                                var id = $(element).val();
-                                jobsDelete.push(id);
-                            });
-
-                            if (confirm("Are you sure you want to delete these " + jobsDelete.length + " jobs?")) {
-                                // Make the Delete AJAX call
-                                $.ajax({
-                                    type: "DELETE",
-                                    url: "/gp/rest/v1/jobs/delete?jobs=" + jobsDelete.join(","),
-                                    cache: false,
-                                    dataType: "text",
-                                    success: function(data) {
-                                        var filter = getJobFilter();
-                                        if (!filter) filter = true;
-                                        loadJobResults(filter);
-                                        showSuccessMessage(data);
-                                    },
-                                    error: function(data) {
-                                        var filter = getJobFilter();
-                                        if (!filter) filter = true;
-                                        loadJobResults(filter);
-                                        showErrorMessage(data);
-                                    }
-                                });
-                            }
-                        })
-                )
-                    .append(
-                    $("<input />")
-                        .addClass("job-delete-checkbox-master")
-                        .attr("type", "checkbox")
-                        .click(function() {
-                            var isChecked = $(".job-delete-checkbox-master").prop('checked');
-                            $(".job-delete-checkbox").prop('checked', isChecked);
-                        })
-                )
-            )
-                .append(
+                ).append(
                 $("<td></td>")
                     .css("min-width", "255px")
                     .append(
@@ -3357,9 +3484,9 @@ function buildJobResultsPage() {
         "ajax": function(data, callback) {
             populateJobResultsTable(data, callback);
         },
-        "order": [[1, "desc"]],
+        "order": [[2, "desc"]],
         "columnDefs": [
-            { "orderable": false, "targets": [2, 4, 7, 8] }
+            { "orderable": false, "targets": [0, 4, 7, 8, 9] }
         ],
         "searching": false,
         "oLanguage": {
@@ -3388,7 +3515,7 @@ function buildJobResultsPage() {
                     var myIndex = $(this).index();
 
                     var tagSearch = $("#jobSearchTag").is(":checked");
-                    if(tagSearch && myIndex != 0 && myIndex % 9 == 0) //column 9
+                    if(tagSearch && $(this).text() != "Tags" && myIndex % 9 == 0) //column 9
                     {
                         $(this).highlight(searchTerm);
                     }

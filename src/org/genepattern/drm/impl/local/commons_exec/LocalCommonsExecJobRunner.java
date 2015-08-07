@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.drm.impl.local.commons_exec;
 
 import java.io.BufferedWriter;
@@ -9,6 +12,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +25,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -124,6 +129,10 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
         else {
             b.jobState(DrmJobState.FAILED);
+            String message=exception.getMessage();
+            if (message != null) {
+                b.jobStatusMessage(message);
+            }
         }
         b.endTime(new Date());
         statusMap.put(gpJobNo, b.build());
@@ -283,9 +292,21 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
     }
 
-    private CommandLine initCommand(final DrmJobSubmission gpJob) {
+    protected static CommandLine initCommand(final DrmJobSubmission gpJob) {
+        if (gpJob==null) {
+            throw new IllegalArgumentException("gpJob==null");
+        }
+        return initCommand(gpJob.getCommandLine());
+    }
+    
+    protected static CommandLine initCommand(final List<String> gpCommand) {
+        if (gpCommand==null) {
+            throw new IllegalArgumentException("gpJob.commandLine==null");
+        }
+        if (gpCommand.size()==0) {
+            throw new IllegalArgumentException("gpJob.commandLine.size==0");
+        }
         boolean handleQuoting=false;
-        List<String> gpCommand = gpJob.getCommandLine();
         CommandLine cl=new CommandLine(gpCommand.get(0));
         for(int i=1; i<gpCommand.size(); ++i) {
             cl.addArgument(gpCommand.get(i), handleQuoting);
@@ -293,7 +314,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return cl;
     }
 
-    private Executor initExecutorForJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+    protected static Executor initExecutorForJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         File outfile = gpJob.getRelativeFile(gpJob.getStdoutFile());
         File errfile = gpJob.getRelativeFile(gpJob.getStderrFile());
         File infile = gpJob.getRelativeFile(gpJob.getStdinFile());
@@ -325,17 +346,16 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
-        exec.execute(cl, resultHandler);
-        
+        final Map<String,String> cmdEnv=null;
+        exec.execute(cl, cmdEnv, resultHandler);
         return exec;
     }
     
-    private void runJobAndWait(final DrmJobSubmission gpJob) throws InterruptedException, ExecutionException, IOException {
+    protected static Executor runJobNoWait(final DrmJobSubmission gpJob, Map<String,String> cmdEnv, ExecuteResultHandler resultHandler) throws ExecutionException, IOException {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
-        final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
-        exec.execute(cl, resultHandler);
-        resultHandler.waitFor();
+        exec.execute(cl, cmdEnv, resultHandler);
+        return exec;
     }
     
     /**

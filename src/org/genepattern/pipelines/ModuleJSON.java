@@ -1,10 +1,6 @@
-/*
- * Copyright 2003-2014 The Broad Institute, Inc.
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- *
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.pipelines;
 
@@ -67,6 +63,7 @@ public class ModuleJSON extends JSONObject {
         try {
             this.setId(id);
             this.setLsid(job.getLSID());
+            this.setName(job.getName());
             this.constructInputs(job.getParameters(), job.getRuntimePrompt());
         }
         catch (JSONException e) {

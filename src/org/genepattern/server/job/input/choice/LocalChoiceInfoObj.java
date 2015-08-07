@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
 import java.io.File;
@@ -8,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.cache.MapLocalEntry;
 
 /**
@@ -99,7 +104,7 @@ public class LocalChoiceInfoObj {
      * @param choiceDir
      * @param choiceDirFilter
      */
-    public LocalChoiceInfoObj(final String choiceDir, final DirFilter dirFilter) {
+    public LocalChoiceInfoObj(final GpConfig gpConfig, final GpContext gpContext, final String choiceDir, final DirFilter dirFilter) {
         this.choiceDir=choiceDir;
         //this.choiceDirFilter=choiceDirFilter;
         this.dirFilter=dirFilter;
@@ -107,7 +112,7 @@ public class LocalChoiceInfoObj {
             mapLocalEntry=null;
         }
         else {
-            this.mapLocalEntry=MapLocalEntry.initLocalChoiceDir(choiceDir);
+            this.mapLocalEntry=MapLocalEntry.initLocalChoiceDir(gpConfig, gpContext, choiceDir);
         }
         if (mapLocalEntry==null) {
             this.localChoiceDir=null;

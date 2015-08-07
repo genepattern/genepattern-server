@@ -1,0 +1,110 @@
+GenePattern is distributed, in part, under and subject to the provisions of licenses for:
+
+DD Smooth Menu, Copyright © 2014 Dynamic Drive. All rights reserved.
+(http://www.dynamicdrive.com/dynamicindex1/ddlevelsmenu/).
+highlight v4, Copyright © 2002–2015 Johann Burkard. All rights reserved.
+(http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html).
+PDFBox, Copyright © 2009–2015 The Apache Software Foundation.  All rights reserved.
+(https://pdfbox.apache.org/).
+Tomcat 5.5, Copyright © 1999-2015 The Apache Software Foundation. All rights reserved.
+(http://tomcat.apache.org/download-55.cgi).
+Apache Commons, Copyright © 2015 The Apache Software Foundation. All rights reserved.
+(http://commons.apache.org/).
+Apache Commons HttpClient, Copyright © 2001-2011 The Apache Software Foundation.  All rights reserved.
+(http://hc.apache.org/httpclient-3.x/).
+Ant, Copyright © 2000-2014 The Apache Software Foundation. All rights reserved. (http://ant.apache.org/).
+Axis, Copyright © 2000-2005 The Apache Software Foundation. All rights reserved. (http://ws.apache.org/axis/).
+Cglib, (http://cglib.sourceforge.net/).
+Apache MyFaces, Copyright © 2015 The Apache Software Foundation. All rights reserved. (http://myfaces.apache.org/).
+Groovy (required for Broad Core), Copyright © 2003-2015 The Groovy project, (http://groovy.codehaus.org/).
+Jakarta Ora (retired), (http://jakarta.apache.org/ora/).
+XML Builder, (https://github.com/jmurty/java-xmlbuilder).
+JetS3t (for GenomeSpace), Copyright © 2006-2014 James Murty.  All rights reserved. (http://jets3t.s3.amazonaws.com/downloads.html).
+Jettison (for GenomeSpace), Copyright © 2006 Envoi Solutions LLC. All rights reserved.  (http://jettison.codehaus.org/).
+Jakarta Taglibs, (http://jakarta.apache.org/taglibs/doc/standard-doc/intro.html).
+Apache Log4j, Copyright © 1999-2012 The Apache Software Foundation.  All rights reserved. (http://logging.apache.org/log4j/1.2/download.html).
+NekoHTML, Copyright © 2002-2013 Andy Clark, Marc Guillemot. All rights reserved. (http://nekohtml.sourceforge.net/).
+SnakeYaml, (http://code.google.com/p/snakeyaml/downloads/list).
+JSP Standard Taglibs, Copyright © 2000-2015 The Apache Software Foundation. All rights reserved.
+(http://tomcat.apache.org/taglibs/standard/).
+StAX, Copyright © 2003-2006 Codehaus. All rights reserved. (http://stax.codehaus.org/).
+Apache MyFaces Tomahawk, Copyright © 2012 The Apache Software Foundation. All rights reserved.
+(http://myfaces.apache.org/tomahawk/index.html).
+Xalan-Java, Copyright © 2006 The Apache Software Foundation. All rights reserved. (http://xml.apache.org/xalan-j/).
+Xerces2 Java Parser, Copyright © 1999-2010 The Apache Software Foundation. All rights reserved.
+(http://xerces.apache.org/xerces2-j/). 
+Google Guava, (https://code.google.com/p/guava-libraries/).
+Guice, (https://code.google.com/p/google-guice/).
+Jakarta, Copyright © 1999-2011 The Apache Software Foundation. All rights reserved. (http://jakarta.apache.org/).
+OpenID4Java, (https://code.google.com/p/openid4java/).
+Joda-Time, Copyright © 2002-2015 Joda.org. All rights reserved. (http://www.joda.org/joda-time/).
+AWS SDK for Java, Copyright © 2015 Amazon Web Services, Inc. or its affiliates. All rights reserved. (http://aws.amazon.com/sdk-for-java/).
+JDom, Copyright © 2000-2012 Jason Hunter & Brett McLaughlin. All rights reserved. (http://www.jdom.org/).
+Antlr, Copyright © 2014 ANTLR / Terence Parr.  All rights reserved. (http://www.antlr.org/download.html).
+Scala, Copyright © 2002-2015 École Polytechnique Fédérale de Lausanne (EPFL). All rights reserved. (http://www.scala-lang.org/downloads).
+dom4j, Copyright © 2001-2005 MetaStuff, Ltd. All rights reserved. (http://dom4j.sourceforge.net/dom4j-1.6.1/).
+Java SE Security, Copyright © 2015 Oracle Corporation. All rights reserved. (http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html).
+Jersey, for GS integration, Copyright © 2010-2015 Oracle Corporation.  All rights reserved. (http://jersey.java.net/).
+JAXB, Copyright © 2013-2015.  All rights reserved. (https://jaxb.java.net/).
+NetBeans, Copyright © 2012 Oracle Corporation and/or its affiliates. All rights reserved. (http://plugins.netbeans.org/PluginPortal/).
+JSF, Copyright © 2015 Oracle Corporation and/or its affiliates. All rights reserved.
+(http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html).
+Web Services Definition Language, (http://sourceforge.net/projects/wsdl4j/files/WSDL4J/).
+Broad Core, Copyright © 2015 Broad Institute, Inc.  All rights reserved. 
+(https://svn.broadinstitute.org/BroadCore/trunk/src/main/edu/mit/broad/core).
+Junit, Copyright © 2002-2004 Junit.  All rights reserved. (http://junit.org/).
+ASM, Copyright © 2000-2011 INRIA, France Telecom.  All rights reserved. (http://asm.ow2.org/).
+Colt, Copyright © 1999 CERN, European Organization for Nuclear Research. All rights reserved. (http://acs.lbl.gov/software/colt/).
+HSQLDB, Copyright © 2001-2010 The HSQL Development Group. All rights reserved. (http://hsqldb.org/).
+MySQL Connector, Copyright © 2015 Oracle Corporation and/or its affiliates. All rights reserved.
+(http://dev.mysql.com/downloads/connector/j/).
+Version Check, (https://code.google.com/p/versioncheck/).
+Jaxson: JSON Processor, Copyright © 2003-2008 Codehaus. All rights reserved. (http://jaxson.codehaus.org/).
+jaxen: universal Java XPath engine, Copyright © 2001-2013 Codehaus. All rights reserved. (http://jaxen.codehaus.org/).
+JCommon, Copyright © 2007-2014 Object Refinery Limited. All rights reserved. (http://www.jfree.org/jcommon/).
+jGraphT, Copyright © 2003-2015 Barak Naveh and Contributors. All rights reserved. (http://www.jgrapht.org).
+iText, Copyright © 2007-2015 Rogue Wave Software. All rights reserved.  (http://olex.openlogic.com/packages/itext/1.3.1).
+EDT FTP, (http://www.enterprisedt.com/products/edtftpj).
+GenomeSpace CDK, Copyright © 2013-2015 Broad Institute, Inc.  All rights reserved. (http://www.genomespace.org/genomespace/sites/genomespacefiles/files/GenomeSpace_CDK_beta4.0.zip).
+JBoss Common, Copyright © 2015 Red Hat, Inc. All rights reserved. (http://community.jboss.org/wiki/JBossCacheDownloadsPage).
+JBoss Common, Copyright © 2015 Red Hat, Inc. All rights reserved. (http://www.jboss.org/jboss-common/).
+JBoss, Copyright © 2015 Red Hat, Inc. All rights reserved. (http://www.jboss.org/).
+JGroups, Copyright © 2002-2015 Red Hat, Inc. All rights reserved. (http://www.jgroups.org/).
+RichFaces, Copyright © 2015 Red Hat, Inc. All rights reserved. (http://www.jboss.org/richfaces).
+Trove: high performance collections for Java, Copyright © 1999 CERN - European Organization for Nuclear Research. All rights reserved. (http://trove.starlight-systems.com/).
+Hibernate (v3), Copyright © 2015. TIBCO Software, Inc. All rights reserved. (http://www.hibernate.org/downloads).
+Jasper, Copyright © 2015 TIBCO Software, Inc. All rights reserved.
+(https://community.jaspersoft.com/project/jasperreports-library).
+FindBugs, Copyright © 2015 University of Maryland. All rights reserved. (http://findbugs.sourceforge.net/).
+JOpt Simple, Copyright © 2015.  All rights reserved. (https://pholser.github.io/jopt-simple/).
+slf4j (Included with Hibernate), Copyright © 2004-2015 QOS.ch. All rights reserved. (http://www.slf4j.org/).
+jQuery, Copyright © 2015 The jQuery Foundation. All rights reserved. (http://jquery.com/).
+jQuery UI, Copyright © 2015 The jQuery Foundation. All rights reserved. (http://jqueryui.com/).
+jsPlumb, (https://github.com/sporritt/jsplumb/).
+Intro.js, Copyright © 2012 Afshin Mehrabani. All rights reserved. (https://github.com/usablica/intro.js).
+jMenu, Copyright © 2013 MyjqueryPlugins.  All rights reserved. (www.myjqueryplugins.com).
+jQuery blockUI plugin, (http://malsup.com/jquery/block/).
+jQuery contextMenu, (http://medialize.github.com/jQuery-contextMenu/).
+jQuery Cookie Plugin, Copyright © 2015 The JQuery Foundation.  All rights reserved. 
+(https://plugins.jquery.com/cookie/).
+jQuery Cookie Plugin v1.2, Copyright © 2014 Klaus Hartl. All rights reserved.
+(https://github.com/carhartl/jquery-cookie).
+DataTables 1.10.0, Copyright © 2007-2015 SpryMedia Ltd. All rights reserved. (http://datatables.net/).
+jquery-dialogextend 2.0.3, Copyright © 2013 Crab, ROMB. All rights reserved. (http://plugins.jquery.com/dialogextend/2.0.3/).
+iframe post form, Copyright © 2010 - 2011 Ewen Elder. All rights reserved.
+(https://code.google.com/p/saftalk/source/browse/trunk/saftalk/Saftalk/war/content/js/jquery.iframe-post-form.js?r=162).
+jsTree 1.0-rc3, (http://jstree.com/).
+jTruncate, (http://www.jeremymartin.name/projects.php?project=jTruncate).
+jquery.layout 1.3.0, ( https://github.com/allpro/layout).
+jQuery MultiSelect UI Widget, (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/).
+jQuery Tags Input Plugin 1.3.3, (ttps://github.com/xoxco/jQuery-Tags-Input). 
+jQuery Tools v1.2.6, (http://jquerytools.github.io/download/).
+jQuery Validation Plugin, Copyright © Jörn Zaefferer.  All rights reserved. (https://github.com/jzaefferer/jquery-validation).
+JAXP, Copyright © 2013-2015. All rights reserved. (https://jaxp.java.net/).
+Jama: Java Matrix Package, (http://math.nist.gov/javanumerics/jama/).
+SGE drmaa library, (http://sourceforge.net/projects/gridscheduler/).
+JGoodies Forms, Copyright © 2015 JGoodies. All rights reserved. (http://www.jgoodies.com/freeware/libraries/forms/).
+OpenSymphony, (http://www.opensymphony.com/).
+DOM Test Suite, (http://www.w3.org/DOM/Test/).
+Proxool, Copyright © 2002-2003 Proxool.  All rights reserved. (http://proxool.sourceforge.net/).
+JDBC, Copyright © 2015 Oracle Corporation and/or its affiliates.  All rights reserved. (http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-database-419422.html).

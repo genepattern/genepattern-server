@@ -387,7 +387,7 @@ if ( typeof Object.create !== 'function' ) {
 
 				var edit = $('<a>Edit</a>');
 				edit.attr('href','#');
-				edit.attr('title','Edit');
+				//edit.attr('title','Edit'); commented out by Marc-Danie
 
 				edit_container.append(edit);
 

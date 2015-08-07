@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.genomespace;
 
 import org.apache.log4j.Logger;
@@ -35,6 +38,7 @@ public class GenomeSpaceClient {
         else {
             GsSession session;
             try {
+                GsSession.setGSToolName("GenePattern");
                 session = new GsSession(token);
             }
             catch (InternalServerException e) {
@@ -61,6 +65,7 @@ public class GenomeSpaceClient {
 
         try {
            ConfigurationUrls.init(env);
+           GsSession.setGSToolName("GenePattern");
            GsSession gsSession = new GsSession();
            User gsUser = gsSession.login(username, password);
 
@@ -98,6 +103,7 @@ public class GenomeSpaceClient {
         
         try {
             ConfigurationUrls.init(env);
+            GsSession.setGSToolName("GenePattern");
             GsSession gsSession = new GsSession(token);
             
             // Make a simple call to GenomeSpace to test the validity of the token
@@ -155,6 +161,7 @@ public class GenomeSpaceClient {
 
         try {
             ConfigurationUrls.init(env);
+            GsSession.setGSToolName("GenePattern");
             GsSession gsSession = new GsSession();
             gsSession.registerUser(username, password, regEmail);
         }
@@ -454,7 +461,7 @@ public class GenomeSpaceClient {
             if (tool.getName().equals(toolName)) {
                 List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(tool.getFileParameters(), metadata);
                 try {
-                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers);
+                    return gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(tool, wrappers, true);
                 }
                 catch (InternalServerException e) {
                     log.error("Error getting the tool URL for the tool: " + tool.getName() + " file: " + file.getName());

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.eula.remote;
 
 import java.io.IOException;
@@ -38,7 +41,7 @@ public class TestPostToBroad {
             post.doPost();
         }
         catch (Throwable t) {
-            Assert.fail(""+t.getLocalizedMessage());
+            Assert.fail("Error posting to "+RecordEulaDefault.REMOTE_URL_DEFAULT+": "+t.getLocalizedMessage());
         }
     }
     

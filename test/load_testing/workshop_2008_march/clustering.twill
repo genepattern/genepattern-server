@@ -42,7 +42,7 @@ url /gp/preRunVisualizer.jsp
 # download the applet jar files
 go /gp/downloads/runVisualizer.jar
 code 200
-go /gp/downloads/commons-codec-1.3.jar
+go /gp/downloads/commons-codec-1.6.jar
 code 200
 go /gp/downloads/commons-httpclient.jar
 code 200

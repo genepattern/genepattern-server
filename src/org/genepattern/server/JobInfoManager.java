@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server;
 
 import static org.genepattern.util.GPConstants.TASKLOG;
@@ -14,23 +17,20 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFileObjFactory;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.serverfile.ServerFilePath;
-import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.dm.webupload.WebUploadPath;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.pipeline.PipelineHandler;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.UserDAO;
@@ -295,7 +295,7 @@ public class JobInfoManager {
             //appletTag.append("<applet ");
             appletTag.append(" name=\"" + jobInfoWrapper.getVisualizerAppletName() + "\" id=\"" + jobInfoWrapper.getVisualizerAppletId() + "\" code=\""
                     + org.genepattern.visualizer.RunVisualizerApplet.class.getName()
-                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
+                    + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.6.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
             appletTag.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
             appletTag.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(os, "UTF-8") + "\">");
@@ -519,37 +519,22 @@ public class JobInfoManager {
         w.writeOutputFilesToZip(zipStream);
     }
 
-    public static String generateLaunchURL(TaskInfo taskInfo, JobInfo jobInfo) throws Exception {
-        String launchUrl = null;
-        TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-        if(tia.get(GPConstants.CATEGORIES).contains(GPConstants.TASK_CATEGORY_JSVIEWER)) {
-            String mainFile = (String)taskInfo.getAttributes().get("commandLine");
-            mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
-            TasklibPath tasklibPath = new TasklibPath(taskInfo, mainFile);
-            launchUrl = ServerConfigurationFactory.instance().getGenePatternURL() + tasklibPath.getRelativeUri().toString();
-            ParameterInfo[] parameterInfos = jobInfo.getParameterInfoArray();
-            for (ParameterInfo parameterInfo : parameterInfos)
-            {
-                try {
-                    String value=parameterInfo.getValue();
-
-                    if (value.endsWith(".list.txt")) {
-                        List<String> fileList = PipelineHandler.parseFileList(GpFileObjFactory.getRequestedGpFileObj(value).getServerFile());
-
-                        for (String fileUrl : fileList) {
-                            launchUrl += "&" + parameterInfo.getName() + "=" + fileUrl;
-                        }
-                    }
-                    else
-                    {
-                        launchUrl += "&" + parameterInfo.getName() + "=" + value;
-                    }
-
-                } catch (Exception io) {
-                    log.error(io);
-                }
-            }
-        }
+    /** @deprecated */
+    public static String getLaunchUrl(final int jobNumber) throws IOException {
+        GpConfig gpConfig = ServerConfigurationFactory.instance();
+        GpContext context = GpContext.getServerContext();
+        return getLaunchUrl(gpConfig, context, jobNumber);
+    }
+    
+    public static String getLaunchUrl(final GpConfig gpConfig, final GpContext jobContext, final int jobNumber) throws IOException {
+        final File jobDir=new File(GenePatternAnalysisTask.getJobDir(gpConfig, jobContext, ""+jobNumber));
+        return getLaunchUrlFromJobDir(jobDir);        
+    } 
+    
+    public static String getLaunchUrlFromJobDir(final File jobDir) throws IOException {
+        final File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
+        final String launchUrl = FileUtils.readFileToString(launchUrlFile);
         return launchUrl;
     }
+    
 }

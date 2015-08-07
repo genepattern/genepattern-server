@@ -1,0 +1,51 @@
+<project name="signjar" basedir="." default="signjar"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+>
+<!--
+  Example build script for signing an individual jar file.
+  command line:
+    jarsigner -tsa https://timestamp.geotrust.com/tsa keystore genepattern-codesign.jks runVisualizer.jar codesign
+  -->
+    <property name="signjar.tsaurl" value="https://timestamp.geotrust.com/tsa" />
+    <macrodef name="signjar" uri="http://genepattern.org/gp">
+        <attribute name="jarfile" default="${jarfile}" />
+        <sequential>
+            <signjar jar="@{jarfile}"
+                preservelastmodified="true"
+                keystore="${signjar.keystore}"
+                maxmemory="1024M"
+                alias="${signjar.alias}"
+                storepass="${signjar.storepass}"
+                tsaurl="${signjar.tsaurl}"
+            />
+        </sequential>
+    </macrodef>
+
+    <!-- requires ant >= 1.9, because of the "if:true" conditional attributes -->
+    <!-- just for demo purposes, biggest drawback is that in verbose mode the storepass is logged in clear text --> 
+    <macrodef name="signJar_asExec">
+        <attribute name="jarfile" default="${jarfile}" />
+        <sequential>
+            <condition property="tsaurl.set" else="false">
+                <isset property="signjar.tsaurl"/>
+            </condition>
+            <exec executable="jarsigner">
+                <arg line="-tsa" if:true="${tsaurl.set}" />
+                <arg line="${signjar.tsaurl}" if:true="${tsaurl.set}" />
+                <arg line="keystore" />
+                <arg line="${signjar.keystore}" />
+                <arg line="-storepass" />
+                <arg line="${signjar.storepass}" />
+                <arg line="${jarfile}" />
+                <arg line="${signjar.alias}" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="signjar"
+        xmlns:gp="http://genepattern.org/gp"
+    >
+        <gp:signjar jarfile="${jarfile}" />
+    </target>
+</project>

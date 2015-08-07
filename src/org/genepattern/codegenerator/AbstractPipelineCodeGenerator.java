@@ -1,14 +1,6 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
-
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 
 package org.genepattern.codegenerator;
 
@@ -91,17 +83,17 @@ public abstract class AbstractPipelineCodeGenerator {
     }
 
     public static String generateCommandLine(PipelineModel model) {
-        StringBuffer commandLine = new StringBuffer("<java> -cp <pipeline.cp>");
+        StringBuffer commandLine = new StringBuffer("<java> ");
 
         // System properties
         commandLine.append(" -Dgenepattern.properties=<resources>");
         commandLine.append(" -D" + GPConstants.LSID + "=<LSID>");
         commandLine.append(" -D" + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=<"
                 + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + ">");
-        commandLine.append(" " + System.getProperty("pipeline.vmargs", "") + " ");
+        commandLine.append(" -DGenePatternURL=<GenePatternURL> ");
 
         // class to run
-        commandLine.append(" <pipeline.main>");
+        commandLine.append(" org.genepattern.server.webapp.RunPipelineSoap");
 
         // script name
         commandLine.append(" <GenePatternURL>getPipelineModel.jsp?");

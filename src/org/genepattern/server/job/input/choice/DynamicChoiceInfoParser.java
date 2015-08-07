@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
 import java.util.Date;
@@ -6,7 +9,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.job.input.cache.CachedFtpDir;
+import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.choice.ChoiceInfo.Status.Flag;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
@@ -41,6 +44,10 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
 
     @Override
     public ChoiceInfo initChoiceInfo(final ParameterInfo param) {
+        if (param==null) {
+            log.error("param==null");
+            return null;
+        }
         final List<Choice> choiceList;
         //the new way (>= 3.7.0), check for remote ftp directory
         final String choiceDir = (String) param.getAttributes().get(ChoiceInfo.PROP_CHOICE_DIR);
@@ -132,7 +139,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         final DirFilter dirFilter=new DirFilter(param);
         
         //special-case, local.choiceDir
-        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(ftpDir, dirFilter);
+        final LocalChoiceInfoObj localChoice = new LocalChoiceInfoObj(gpConfig, jobContext, ftpDir, dirFilter);
         if (localChoice.hasLocalChoiceDir()) {
             for(final Choice choice : localChoice.getLocalChoices()) {
                 choiceInfo.add(choice);
@@ -162,7 +169,7 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
     }
     
     private ChoiceInfo initChoiceInfoEntriesFromFtp(final ParameterInfo param, final String ftpDir, final ChoiceInfo choiceInfo, final DirFilter dirFilter) {
-        final FtpDirLister ftpDirLister=CachedFtpDir.initDirListerFromConfig(gpConfig, jobContext);
+        final FtpDirLister ftpDirLister=CachedFtpFileFactory.initDirListerFromConfig(gpConfig, jobContext);
         List<FtpEntry> ftpEntries=null;
         try {
             ftpEntries=ftpDirLister.listFiles(ftpDir, dirFilter);

@@ -829,22 +829,6 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089ef">
-											<property name="propertyValue">
-												<string><![CDATA[@version.major@.@version.minor@]]></string>
-											</property>
-											<property name="propertyName">
-												<string><![CDATA[GENEPATTERN_VERSION]]></string>
-											</property>
-											<property name="passByValue">
-												<boolean>false</boolean>
-											</property>
-											<property name="substituteUnknownVariable">
-												<boolean>false</boolean>
-											</property>
-										</object>
-									</method>
-									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189ef">
 											<property name="propertyValue">
 												<string><![CDATA[23:00]]></string>
@@ -899,22 +883,6 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[builddate]]></string>
-											</property>
-											<property name="passByValue">
-												<boolean>false</boolean>
-											</property>
-											<property name="substituteUnknownVariable">
-												<boolean>false</boolean>
-											</property>
-										</object>
-									</method>
-									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189f1">
-											<property name="propertyValue">
-												<string><![CDATA[@buildtag@]]></string>
-											</property>
-											<property name="propertyName">
-												<string><![CDATA[buildtag]]></string>
 											</property>
 											<property name="passByValue">
 												<boolean>false</boolean>
@@ -16475,13 +16443,13 @@ and any path to a file to read from that file]]></string>
 																		<string><![CDATA[Excludes]]></string>
 																	</property>
 																	<property name="matchString">
-																		<string><![CDATA[.class]]></string>
+																		<string><![CDATA[.gitignore]]></string>
 																	</property>
 																	<property name="ignoresCase">
 																		<string><![CDATA[Yes]]></string>
 																	</property>
 																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
+																		<string><![CDATA[Files]]></string>
 																	</property>
 																</object>
 															</method>
@@ -16735,13 +16703,13 @@ and any path to a file to read from that file]]></string>
 																		<string><![CDATA[Excludes]]></string>
 																	</property>
 																	<property name="matchString">
-																		<string><![CDATA[.class]]></string>
+																		<string><![CDATA[.gitignore]]></string>
 																	</property>
 																	<property name="ignoresCase">
 																		<string><![CDATA[Yes]]></string>
 																	</property>
 																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
+																		<string><![CDATA[Files]]></string>
 																	</property>
 																</object>
 															</method>
@@ -22585,7 +22553,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="existingFilePath">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$commons-codec-1.3.jar]]></string>
+												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$WEB-INF$/$lib$/$commons-codec-1.6.jar]]></string>
 											</property>
 											<property name="destination">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$downloads$/$]]></string>

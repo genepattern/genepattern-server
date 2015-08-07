@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.config;
 
 import java.io.File;
@@ -25,6 +28,11 @@ public class ServerConfigurationFactory {
     public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
 
     private static GpConfig gpConfigSingleton=null;
+    
+    private static String gpServletContext="/gp";
+    public static void setGpServletContext(final String gpServletContext) {
+       ServerConfigurationFactory.gpServletContext=gpServletContext;
+    }
     
     private static File webappDir=null;
     public static void setWebappDir(final File webappDir) {
@@ -57,13 +65,13 @@ public class ServerConfigurationFactory {
     }
     
     synchronized public static void reloadConfiguration() {
-        setGpConfig(GpConfigLoader.createFromSystemProps(webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
+        setGpConfig(GpConfigLoader.createFromSystemProps(gpServletContext, webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
     }
 
     public static GpConfig instance() {
         // lazy init
         if (gpConfigSingleton==null) {
-            setGpConfig(GpConfigLoader.createFromSystemProps(webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
+            setGpConfig(GpConfigLoader.createFromSystemProps(gpServletContext, webappDir, gpHomeDir, gpWorkingDir, resourcesDir, logDir));
         }
         return gpConfigSingleton;
     }

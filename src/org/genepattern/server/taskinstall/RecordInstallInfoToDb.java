@@ -1,91 +1,120 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.taskinstall;
 
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.taskinstall.dao.Category;
 import org.genepattern.server.taskinstall.dao.TaskInstall;
+import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
 
 public class RecordInstallInfoToDb implements RecordInstallInfo {
-    static Logger log = Logger.getLogger(RecordInstallInfoToDb.class);
+    private static final Logger log = Logger.getLogger(RecordInstallInfoToDb.class);
+    
+    private final HibernateSessionManager mgr;
+    
+    public RecordInstallInfoToDb() {
+        this(HibernateUtil.instance());
+    }
+    public RecordInstallInfoToDb(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }    
 
     @Override
-    public void save(final InstallInfo installInfo) 
-    throws Exception
-    {
+    public void save(final InstallInfo installInfo) throws DbException {
         if (installInfo==null) {
             throw new IllegalArgumentException("installInfo==null");
         }
-
-        TaskInstall record=new TaskInstall();
-        record.setSourceType(installInfo.getType().name());
-        record.setLsid(installInfo.getLsid().toString());
-        record.setUserId(installInfo.getUserId());
-        record.setDateInstalled(installInfo.getDateInstalled());
-        if (installInfo.getRepositoryUrl() != null) {
-            record.setRepoUrl(installInfo.getRepositoryUrl().toExternalForm());
-        }
-
-        // TODO: save zip file
-        // TODO: save prev lsid
-        // TODO: save libdir
-        //if (installInfo.getLibdir() != null) {
-        //    record.setInstallDir(installInfo.getLibdir().getServerFile().toString());
-        //}
-
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().saveOrUpdate( record );
+            mgr.beginTransaction();
+
+            TaskInstall record=new TaskInstall();
+            record.setSourceType(installInfo.getType().name());
+            record.setLsid(installInfo.getLsid().toString());
+            record.setUserId(installInfo.getUserId());
+            record.setDateInstalled(installInfo.getDateInstalled());
+            if (installInfo.getRepositoryUrl() != null) {
+                record.setRepoUrl(installInfo.getRepositoryUrl().toExternalForm());
+            }
+            if (installInfo.getCategories().size()>0) {
+                Set<Category> categories=new LinkedHashSet<Category>();
+                for(final String name : installInfo.getCategories()) {
+                    Category category = (Category) mgr.getSession().createCriteria(Category.class).add(Restrictions.eq("name", name)).uniqueResult();
+                    if (category==null) {
+                        category = new Category(name);
+                        mgr.getSession().saveOrUpdate(category);
+                    } 
+                    categories.add(category);
+                }
+                record.setCategories(categories);
+            }
+
+            // TODO: save zip file
+            // TODO: save prev lsid
+            // TODO: save libdir
+            //if (installInfo.getLibdir() != null) {
+            //    record.setInstallDir(installInfo.getLibdir().getServerFile().toString());
+            //}
+
+            mgr.getSession().saveOrUpdate( record );
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             log.error("Error saving InstallInfo for lsid="+installInfo.getLsid(), t);
-            HibernateUtil.rollbackTransaction();
-            throw new Exception("Error saving InstallInfo for lsid="+installInfo.getLsid()+": "+t.getLocalizedMessage());
+            mgr.rollbackTransaction();
+            throw new DbException("Error saving InstallInfo for lsid="+installInfo.getLsid()+": "+t.getLocalizedMessage(), t);
         }
     }
     
     @Override
     public int delete(final String lsid) throws Exception {
         int numDeleted=0;
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String hql = "delete "+TaskInstall.class.getName()+" ti where ti.lsid = :lsid";
-            final Query query = HibernateUtil.getSession().createQuery( hql );
+            final Query query = mgr.getSession().createQuery( hql );
             query.setString("lsid", lsid);
             numDeleted = query.executeUpdate();
             log.debug("deleted "+numDeleted+" records for lsid="+lsid);
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             log.error("Error deleting record, lsid="+lsid, t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new Exception("Error deleting record, lsid="+lsid+": "+t.getLocalizedMessage());
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         return numDeleted;
     }
     
     public TaskInstall query(final String lsid) throws Exception {
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         TaskInstall record=null;
         try {
             String hql = "from "+TaskInstall.class.getName()+" tir where tir.lsid = :lsid";
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
+            mgr.beginTransaction();
+            Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setString("lsid", lsid);
             List<TaskInstall> records = query.list();
@@ -104,10 +133,13 @@ public class RecordInstallInfoToDb implements RecordInstallInfo {
                 log.error("Found more than on record for lsid="+lsid+", records.size="+records.size());
                 record=records.get(0);
             }
+            if (record != null) {
+                Hibernate.initialize(record.getCategories());
+            }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         return record;

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.drm;
 
 import java.text.NumberFormat;
@@ -215,6 +218,21 @@ public class Memory {
         else {
             return Math.max(0, Math.ceil(size / 1024.0)) + " KB";
         }
+    }
+
+    /**
+     * Get the max value of the two args.
+     * @param arg0
+     * @param arg1
+     * @return
+     */
+    public static final Memory max(final Memory arg0, final Memory arg1) {
+        if (arg0==null) { return arg1; }
+        if (arg1==null) { return arg0; }
+        if (arg0.getNumBytes()>=arg1.getNumBytes()) {
+            return arg0;
+        }
+        return arg1;
     }
 
     private final double value;

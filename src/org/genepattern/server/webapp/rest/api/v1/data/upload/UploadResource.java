@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
 import java.io.BufferedOutputStream;
@@ -12,12 +15,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -32,6 +30,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONArray;
@@ -396,6 +395,92 @@ public class UploadResource {
         catch (Throwable t) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
+    }
+
+    /**
+     * Post a file to the upload resource
+     * @param request - The HttpServletRequest
+     * @param path
+     * @return
+     */
+    @POST
+    @Path("/whole")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response writeUpload(
+            @QueryParam("path") String path,
+            @Context HttpServletRequest request)
+    {
+        try {
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);
+
+            // Get the file we will be uploading to
+            if (log.isDebugEnabled()) {
+                log.debug("path="+path);
+            }
+
+            GpFilePath file = getUploadFile(userContext, path);
+            if(file.getServerFile() != null && file.getServerFile().exists())
+            {
+                throw new FileUploadException("File already exists: " + file.getServerFile().getName());
+            }
+
+            // Get the temp directory for the upload
+            File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
+
+            // Create the file to write
+            File toWrite = File.createTempFile("cls", null, fileTempDir);
+
+            // Write the file to temporary location
+
+            InputStream inputStream = request.getInputStream();
+            appendPartition(inputStream, toWrite);
+
+            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, toWrite.length());
+
+            //now move the file to it's permanent location
+            boolean success = toWrite.renameTo(file.getServerFile());
+            if(success)
+            {
+                //update the user uploads database
+                JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
+                fileUtil.updateUploadsDb(file);
+            }
+            else
+            {
+                throw new Exception("Error saving file: " + file.getName());
+            }
+
+            JSONObject toReturn = new JSONObject();
+            toReturn.append("success", true);
+            // Return the status object
+            return Response.ok().entity(toReturn.toString()).build();
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+    // save uploaded file to new location
+    private void writeToFile(InputStream uploadedInputStream,
+                             File uploadedFileLocation) {
+
+        try {
+            OutputStream out = new FileOutputStream(uploadedFileLocation);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+
+            out = new FileOutputStream(uploadedFileLocation);
+            while ((read = uploadedInputStream.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
     }
 
     private void checkDiskQuota(GpConfig gpConfig, GpContext userContext, long fileSizeBytes) throws Exception

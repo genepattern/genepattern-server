@@ -1,9 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +44,7 @@ public class TestTranslateCmdLine {
     private File libdir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         // use example config file from resources directory
         gpConfig=new GpConfig.Builder()
             .configFile(new File("resources/config_local_job_runner.yaml"))
@@ -172,6 +176,16 @@ public class TestTranslateCmdLine {
         assertEquals(
                Arrays.asList("echo", "Value One"),
                CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo <arg1>", parameterInfoMap));
+    }
+    
+    @Test
+    public void substitute_GenePatternVersion() {
+        gpConfig=new GpConfig.Builder()
+            .webappDir(new File("website"))
+        .build();
+        assertEquals(
+                Arrays.asList("echo", "genepattern.version=3.9.4", "GenePatternVersion=3.9.4"),
+                CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo genepattern.version=<genepattern.version> GenePatternVersion=<GenePatternVersion>", parameterInfoMap));
     }
 
 }

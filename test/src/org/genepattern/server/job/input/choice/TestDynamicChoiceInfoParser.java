@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
 import static org.hamcrest.Matchers.is;
@@ -8,12 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.job.input.TestLoadModuleHelper;
-import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.cache.CachedFtpFileType;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
@@ -206,7 +210,7 @@ public class TestDynamicChoiceInfoParser {
     @Test
     public void testFtpFileDropdown_defaultClient() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         
@@ -227,10 +231,10 @@ public class TestDynamicChoiceInfoParser {
     @Test
     public void testFtpFileDropdown_edtFtpJClient() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         
         GpServerProperties serverProperties=new GpServerProperties.Builder()
-            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
+            .addCustomProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name())
             .build();
         GpConfig gpConfig=new GpConfig.Builder()
             .serverProperties(serverProperties)
@@ -257,13 +261,13 @@ public class TestDynamicChoiceInfoParser {
     @Test
     public void testFtpFileDropdown_commonsNetClient() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         
         // , 
         //        // set custom.properties to use a 30 second timeout 
         GpServerProperties serverProperties=new GpServerProperties.Builder()
             //.addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.EDT_FTP_J.name())
-            .addCustomProperty(CachedFtpFile.Type.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFile.Type.COMMONS_NET_3_3.name())
+            .addCustomProperty(CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.COMMONS_NET_3_3.name())
             //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_DATA_TIMEOUT, "30000")
             //.addCustomProperty(CommonsNet_3_3_DirLister.PROP_FTP_SOCKET_TIMEOUT, "30000")
             .build();
@@ -297,7 +301,7 @@ public class TestDynamicChoiceInfoParser {
     public void testFtpFileDropdown_noListing() {
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext, false);
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
         Assert.assertNotNull("choiceInfo.choices", choiceInfo.getChoices());
@@ -315,7 +319,7 @@ public class TestDynamicChoiceInfoParser {
     @SuppressWarnings("unchecked")
     public void testDynamicDropdownGsea() {
         final String choiceDir="ftp://gseaftp.broadinstitute.org/pub/gsea/annotations/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         final String choiceDirFilter="*.chip";
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
 
@@ -366,7 +370,7 @@ public class TestDynamicChoiceInfoParser {
     @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_requiredWithDefaultValue() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
 
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
@@ -390,7 +394,7 @@ public class TestDynamicChoiceInfoParser {
     @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_optionalWithDefaultValue() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"a.txt");
         pinfo.getAttributes().put("optional", "on");
         
@@ -415,7 +419,7 @@ public class TestDynamicChoiceInfoParser {
     @SuppressWarnings("unchecked")
     public void testFtpFileDropdown_defaultValue_noMatch() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("default_value", choiceDir+"no_match.txt");
 
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
@@ -437,7 +441,7 @@ public class TestDynamicChoiceInfoParser {
     public void testFtpDirectoryDropdown() {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String choiceDirFilter="type=dir";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
 
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
@@ -469,7 +473,7 @@ public class TestDynamicChoiceInfoParser {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String valueNoSlash="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A";
         final String choiceDirFilter="type=dir";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
         final ChoiceInfo choiceInfo = choiceInfoParser.initChoiceInfo(pinfo);
         
@@ -486,7 +490,7 @@ public class TestDynamicChoiceInfoParser {
         final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/";
         final String value="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/";
         final String choiceDirFilter="type=dir";
-        final ParameterInfo pinfo=TestChoiceInfo.initFtpParam(choiceDir);
+        final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam("input.file", choiceDir);
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
         final ChoiceInfo choiceInfo = choiceInfoParser.initChoiceInfo(pinfo);
         

@@ -1,14 +1,5 @@
 /*******************************************************************************
- * The Broad Institute
- * SOFTWARE COPYRIGHT NOTICE AGREEMENT
- * This software and its documentation are copyright (2003-2011) by the
- * Broad Institute/Massachusetts Institute of Technology. All rights are
- * reserved.
- *
- * This software is supplied without any warranty or guaranteed support
- * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- * use, misuse, or functionality.
- *
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
  *******************************************************************************/
 package org.genepattern.codegenerator;
 
@@ -22,9 +13,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.LoadModuleHelper;
+import org.genepattern.server.job.input.Param;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
@@ -37,9 +33,10 @@ public class CodeGeneratorUtil {
     private static Map<String, TaskCodeGenerator> languageToCodeGenerator;
     static {
         languageToCodeGenerator = new HashMap<String, TaskCodeGenerator>();
-        languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator());
-        languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator());
-        languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
+        languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("R", new RPipelineCodeGenerator(UIBeanHelper.getServer()));
+        languageToCodeGenerator.put("Python", new PythonPipelineCodeGenerator(UIBeanHelper.getServer()));
     }
 
     public static String getJobResultFileName(JobInfo job, int parameterInfoIndex) {
@@ -169,5 +166,52 @@ public class CodeGeneratorUtil {
             code = codeGenerator.generateTask(job, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
         }
         return code;
+    }
+
+    public static String getTaskCode(String language, String lsid, GpContext userContext, JobInput reloadJobInput, String _fileParam, String _formatParam, Map paramMap) throws Exception {
+        IAdminClient adminClient = new LocalAdminClient(userContext.getUserId());
+        TaskInfo taskInfo = adminClient.getTask(lsid);
+        if (taskInfo == null) {
+            throw new Exception("Module not found, lsid=" + lsid);
+        }
+
+        ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+
+        ParameterInfo[] jobParameters = null;
+        if (parameters != null) {
+            //JobInput initialValues= ParamListHelper.getInitialValues(
+            //        lsid, parameters, reloadJobInput, _fileParam, _formatParam, request.getParameterMap());
+            LoadModuleHelper loadModuleHelper = new LoadModuleHelper(userContext);
+            JobInput initialValues = loadModuleHelper.getInitialValues(
+                    lsid, parameters, reloadJobInput, _fileParam, _formatParam, paramMap);
+
+
+            jobParameters = new ParameterInfo[parameters.length];
+            int i=0;
+            for(ParameterInfo pinfo : parameters) {
+                final String id=pinfo.getName();
+                String value=null;
+                if (initialValues.hasValue(id)) {
+                    Param p = initialValues.getParam(pinfo.getName());
+                    int numValues=p.getNumValues();
+                    if (numValues==0) {
+                    }
+                    else if (numValues==1) {
+                        value=p.getValues().get(0).getValue();
+                    }
+                    else {
+                        //TODO: can't initialize from a list of values
+                        log.error("can't initialize from a list of values, lsid="+lsid+
+                                ", pname="+id+", numValues="+numValues);
+                    }
+                }
+                jobParameters[i++] = new ParameterInfo(id, value, "");
+            }
+        }
+
+        JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, userContext.getUserId(), lsid, taskInfo.getName());
+        boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+        AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
+        return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
     }
 }

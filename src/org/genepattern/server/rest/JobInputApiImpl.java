@@ -1,6 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.rest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.job.input.JobInput;
@@ -27,32 +31,16 @@ import org.genepattern.server.job.input.JobInput;
 public class JobInputApiImpl implements JobInputApi {
     final static private Logger log = Logger.getLogger(JobInputApiImpl.class);
     
+    private final GpConfig gpConfig;
     private GetTaskStrategy getTaskStrategy;
     /**
      * special-case, as a convenience, for input parameters which have not been set, initialize them from their default value.
      * By default, this value is false.
      */
     private boolean initDefault=false;
-    protected JobInputApiImpl() {
-    }
-    protected JobInputApiImpl(final boolean initDefault) {
+    protected JobInputApiImpl(final GpConfig gpConfig, final boolean initDefault) {
+        this.gpConfig=gpConfig;
         this.initDefault=initDefault;
-    }
-    protected JobInputApiImpl(final GetTaskStrategy getTaskStrategy) {
-        this.getTaskStrategy=getTaskStrategy;
-    }
-    protected JobInputApiImpl(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
-        this.getTaskStrategy=getTaskStrategy;
-        this.initDefault=initDefault;
-    }
-    
-    /**
-     * Optionally set the strategy for initializing a TaskInfo from a task lsid.
-     * 
-     * @param impl, an object which implements this interface, can be null.
-     */
-    public void setGetTaskStrategy(final GetTaskStrategy getTaskStrategy) {
-        this.getTaskStrategy=getTaskStrategy;
     }
 
     @Override
@@ -70,7 +58,7 @@ public class JobInputApiImpl implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(jobContext, jobInput, getTaskStrategy, initDefault);
+            JobInputApiLegacy jobInputHelper=new JobInputApiLegacy(gpConfig, jobContext, jobInput, getTaskStrategy, initDefault);
             final String jobId=jobInputHelper.submitJob();
             return jobId;
         }

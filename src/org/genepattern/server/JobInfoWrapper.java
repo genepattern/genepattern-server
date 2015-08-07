@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server;
 
 import java.io.File;
@@ -43,7 +46,10 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.*;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Wrapper class to access JobInfo from JSF formatted pages.
@@ -1131,6 +1137,16 @@ public class JobInfoWrapper implements Serializable {
         return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
 
+    //support for javascript
+    public boolean isJavascript()
+    {
+        if (taskInfo != null) {
+            return TaskInfo.isJavascript(taskInfo.getTaskInfoAttributes());
+        }
+
+        return false;
+    }
+
     /**
      * The value of the 'id' attribute to the applet tag for this visualizer, so that you can access the visualizer with JavaScript.
      * E.g. Document.getElementById().
@@ -1172,9 +1188,34 @@ public class JobInfoWrapper implements Serializable {
     	}
     	return false;
     }
-    
+
+    public boolean getHasJavascript() {
+        if (isPipeline()) {
+            for (JobInfoWrapper child : children) {
+                if (child.isJavascript()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void setVisualizerAppletTag(String tag) {
         this.visualizerAppletTag = tag;
+    }
+
+    public String getLaunchUrl()
+    {
+        if (outputDir==null) {
+            return "";
+        }
+        try {
+            return JobInfoManager.getLaunchUrlFromJobDir(outputDir);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error getting launchUrl for jobId="+jobInfo.getJobNumber(), t);
+        }
+        return "";
     }
 
     public String getVisualizerAppletTag() {

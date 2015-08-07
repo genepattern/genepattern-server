@@ -1,9 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp;
 
 import static junit.framework.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 import javax.servlet.ServletConfig;
@@ -32,7 +36,7 @@ public class TestStartupServlet {
     private File expectedGpHomeDir;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         workingDir=new File(System.getProperty("user.dir"));
         expectedGpHomeDir=tmp.newFolder("gp_home");
         servletContext=mock(ServletContext.class);
@@ -43,7 +47,7 @@ public class TestStartupServlet {
     }
     
     @Test
-    public void initGpWorkingDir() {
+    public void initGpWorkingDir() throws IOException {
         File gpInstallDir=tmp.newFolder("GenePatternServer");
         File tomcatDir=new File(gpInstallDir, "Tomcat"); // mock location for <GenePatternServer>/Tomcat directory
         tomcatDir.mkdirs();
@@ -59,7 +63,7 @@ public class TestStartupServlet {
     }
     
     @Test
-    public void initGpWorkingDir_fromSystemProp() {
+    public void initGpWorkingDir_fromSystemProp() throws IOException {
         File customGpWorkingDir=tmp.newFolder("customWorkingDir");
         File gpWorkingDir=startupServlet.initGpWorkingDir(customGpWorkingDir.getAbsolutePath(), servletConfig);
         assertEquals(customGpWorkingDir, gpWorkingDir);
@@ -129,10 +133,16 @@ public class TestStartupServlet {
         assertEquals(expectedResourcesDir, startupServlet.getGpResourcesDir());
     }
     
-    //test cases for loadProperties
     @Test
     public void loadProperties_gpHomeDir_isNull() throws ServletException {
         startupServlet.loadProperties(servletConfig);
     }
-   
+
+    @Test
+    public void initWebappDir() throws ServletException {
+        File webappDir=new File("website").getAbsoluteFile();
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
+        when(servletContext.getRealPath("")).thenReturn(webappDir.getAbsolutePath());
+        assertEquals("webappDir", webappDir, startupServlet.initWebappDir(servletConfig));
+    }
 }

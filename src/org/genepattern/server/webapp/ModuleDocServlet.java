@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.webapp;
 
 import java.io.BufferedInputStream;
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -60,6 +64,7 @@ import org.genepattern.webservice.WebServiceException;
  *
  */
 public class ModuleDocServlet extends HttpServlet implements Servlet {
+    private static final Logger log = Logger.getLogger(ModuleDocServlet.class);
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -71,22 +76,67 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
         processRequest(request, response);
     }
     
+    /**
+     * Parse the taskNameOrLsid and the filePath from the PathInfo of the HTTP request.
+     * 
+     * @param request
+     * @return a String[2], where String[0] is the module name or lsid, 
+     *     and String[1] is the relative path.
+     */
+    protected static String[] splitPathInfo(HttpServletRequest request) {
+        
+        final String[] NOT_SET=new String[]{"", null};
+        
+        String pathInfo=request.getPathInfo();
+        if (pathInfo==null) {
+            log.error("HttpServletRequest returned null pathInfo");
+            return NOT_SET;
+        }
+        if (pathInfo.startsWith("/")) {
+            pathInfo=pathInfo.substring(1);
+        }
+        else {
+            log.error("Expecting '/' as first character in pathInfo");
+            pathInfo="/"+pathInfo;
+            return NOT_SET;
+        }
+        final String DELIM="\\Q/\\E";  // <=== equivalent of Pattern.quote("/");
+        String[] rval=pathInfo.split(DELIM, 2);
+        if (rval==null || rval.length==0) {
+            return NOT_SET;
+        }
+        else if (rval.length==1) {
+            return new String[]{rval[0], null};
+        }
+        return rval;
+    }
+    
+    /**
+     * Sanitize the filepath, to avoid getting access to files by absolute path,
+     * or in a parent directory.
+     * @param filename
+     * @return
+     */
+    protected static String sanitizePath(String filename) {
+        if (filename.startsWith("/") || filename.contains("../")) {
+            log.error("invalid filepath="+filename);
+            //filename must be in the taskLibDir
+            // e.g. ignore something like ../../genepattern.properties
+            int i = filename.lastIndexOf('/');
+            if (i >= 0) {
+                filename = filename.substring(i+1,filename.length());
+            }
+        }
+        return filename;
+    }
+    
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException { 
         String userID = (String) request.getSession().getAttribute(GPConstants.USERID);
         LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, null);
-
-        String moduleId = ""; //a module LSID or name
-        String pathInfo = request.getPathInfo();
-        if (pathInfo.startsWith("/") && pathInfo.length() > 1) {
-                moduleId = pathInfo.substring(1);
-        }
-
-        String filename = null;
-        int idx = moduleId.lastIndexOf('/');
-        if (idx >= 0) {
-            filename = moduleId.substring(idx+1);
-            moduleId = moduleId.substring(0, idx);
-        }
+        
+        String[] split=splitPathInfo(request);
+        String moduleId=split[0]; //a module LSID or name
+        String filename=split[1]; //a file path, relative to the libdir of the module
 
         TaskInfo ti;
         TaskInfoAttributes tia;
@@ -115,14 +165,7 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
             showError("No documentation for module: "+moduleId, request, response);
             return;
         }
-        if (filename.indexOf("/") != -1) {
-            //filename must be in the taskLibDir
-            // e.g. ignore something like ../../genepattern.properties
-            int i = filename.lastIndexOf('/');
-            if (i >= 0) {
-                filename = filename.substring(i+1,filename.length());
-            }
-        }
+        filename=sanitizePath(filename);
         File in = null;
         File taskLibDir = null;
         try {
@@ -134,8 +177,6 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
             }
             else {
                 in = new File(taskLibDir, filename);
-                //really restrict to files in the taskLibDir
-                in = new File(taskLibDir, in.getName());
             }
 
             if (in == null || !in.exists() || !in.canRead()) {

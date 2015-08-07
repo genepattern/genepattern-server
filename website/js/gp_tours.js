@@ -137,156 +137,83 @@ $(function()
         //create the steps
         var steps = [
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> Selecting the properties for a module or pipeline will now display the properties information above the job submit form.',
-                position: 'left',
-                scrollToElement: true
+                element: "#cite-gp",
+                intro: '<div class="tour-header"> Cite GenePattern </div> The GenePattern citation is available here. ',
+                position: 'top'
             },
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> The properties for a module includes details about the module such as the LSID,command-line,etc...',
-                position: 'left',
-                scrollToElement: true
+                element: "#left-nav-files-refresh",
+                intro: '<div class="tour-header"> Refresh Files Tab </div>  The files in the Files tab can now be refreshed using the <i>Refresh</i>.',
+                position: 'right'
             },
             {
-                element: "#main-pane",
-                intro: '<div class="tour-header"> Module Properties </div> The properties for a pipeline includes the same information as a module, ' +
-                    'as well as information about the parameters for the individual steps in the pipeline.',
-                position: 'left',
-                scrollToElement: true
-            },
-            {
-                element: "#job-results",
-                intro: '<div class="tour-header"> Job Results Summary Page </div> The Job Results Summary Page now has additional search options.',
-                position: 'right',
-                scrollToElement: true
-            },
-            {
-                element: "#jobTableSearch",
-                intro: '<div class="tour-header"> Job Results Search </div> Jobs can be searched for based on comments or tags.',
-                position: 'left',
-                scrollToElement: true
-            },
-            {
-                intro: '<div class="tour-header"> Job Results Table </div> There is a new <b>Tags</b> column which lists all the ' +
-                    'tags associated with a job. Clicking on any tag in the <b>Tags</b> column will open a ' +
-                    'new Job Results Page with all jobs that have this tag.',
-                position: 'left',
-                scrollToElement: true
+                element: "#betaInfoDiv",
+                intro: '<div class="tour-header"> Beta Modules </div> A label is now displayed for modules which are in beta release. ',
+                position: 'bottom'
             },
             {
                 intro: '<div class="tour-header"> The End</div> This is the end of the tour. To learn more about what'
-                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.2" target="_blank">release notes</a>.',
-                position: 'left',
-                scrollToElement: true
+                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.4" target="_blank">release notes</a>.',
             }
-           ];
+        ];
+
+        var mainPaneHtml;
 
         intro.setOptions({
-        steps: steps,
-        showStepNumbers: false,
-        skipLabel: "End Tour",
-        tooltipClass: "tourStyle"
+            steps: steps,
+            showStepNumbers: false,
+            skipLabel: "End Tour",
+            tooltipClass: "tourStyle",
+            scrollToElement: false,
+            prevLabel: "",
+            showBullets: false
         });
 
         intro.onbeforechange(function(targetElement)
         {
-            if(intro._currentStep == 0)
+            if(intro._currentStep === 0)
             {
-                $("#main-pane").children().each(function()
-                {
-                    if($(this).is(":visible"))
-                    {
-                        $(this).addClass("wasVisibleBefore").hide();
-                    }
-                });
+                $( "#left-nav" ).tabs( "option", "active", 2 );
 
-                $("#main-pane").append("<div id='gpTourDiv'/>");
-                $("#gpTourDiv").load("/gp/pages/tour/properties_menu_item.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                        $("#otherOptionsMenu").show();
-                        $("#properties").focus();
-                    }
-                );
+                $('#main-pane').animate({
+                    scrollTop: ($('#cite-gp').offset().top)
+                }, 0);
             }
-            if(intro._currentStep == 1)
+            else if(intro._currentStep === 1 && intro._direction==="forward")
             {
-                $("#gpTourDiv").load("/gp/pages/tour/module_properties_view.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                    }
-                );
-            }
-            else if(intro._currentStep == 2)
-            {
-                $("#gpTourDiv").load("/gp/pages/tour/pipeline_properties_view.html",
-                    function()
-                    {
-                        $(this).find(".uploadedinputfile").hide();
-                    }
-                );
-            }
-            else if(intro._currentStep == 3)
-            {
-                $("#gpTourDiv").remove();
+                mainPaneHtml = $("#main-pane").html();
+                $("#main-pane").html(getBetaMainPaneHtml());
 
-                $("#main-pane").children(".wasVisibleBefore").show();
-                $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
-
-                loadJobResults(true);
-            }
-            else if(intro._currentStep == 4)
-            {
-                $("#main-pane").scrollLeft(0);
-            }
-            else if(intro._currentStep == 5)
-            {
-                $("#main-pane").scrollLeft(1000);
+                $('#main-pane').animate({
+                 scrollTop: ($('#betaInfoDiv').offset().top)
+                 }, 0);
             }
         });
 
 
         /*intro.onafterchange(function(targetElement)
         {
-            if(intro._currentStep == 6)
-            {
-                $("#main-pane").scrollLeft(180);
-            }
+
         });*/
 
         intro.onexit(function()
         {
             introTourCleanup();
-            newTourCleanup();
             window.location.href = "/gp";
         });
 
         intro.oncomplete(function()
         {
-            introTourCleanup();
-            newTourCleanup();
 
             window.location.href = "/gp";
         });
 
-        last_left_nav_tab_new =  $("#left-nav").tabs( "option", "active");
+        //last_left_nav_tab_new =  $("#left-nav").tabs( "option", "active");
 
         intro.start();
     });
 });
 
-function newTourCleanup()
-{
-    $("#runTaskSettingsDiv").remove();
-
-    $("#main-pane").children(".wasVisibleBefore").show();
-    $("#main-pane").children(".wasVisibleBefore").removeClass("wasVisibleBefore");
-
-    $("#jobTable").find(".summaryTitle").children("td").last().removeAttr("id");
-}
 
 function jqEscape(str) {
     return str.replace(/([;&,\.\+\*\~':"\!\^$%@\[\]\(\)=>\|])/g, '\\$1');
@@ -329,4 +256,131 @@ function launchTour()
      //while($("#jobTable_paginate".length == 0)){}
      introJobRes.start();
      }*/
+}
+
+
+function getBetaMainPaneHtml()
+{
+    return  ' <table class="group" cellpadding="2" cellspacing="0" width="100%">\
+    <tbody>\
+        <tr class="vertAlignTop">\
+            <td class="buttonCol"><table cellpadding="2" cellspacing="2" width="100%">\
+                <tbody>\
+                    <tr class="vertAlignTop">\
+                        <td class="leftAlignCol"><span style="font-weight:bold; color:red;"></span></td>\
+                    </tr>\
+                    <tr class="vertAlignTop">\
+                        <td class="leftAlignCol"><table></table></td>\
+                    </tr>\
+                </tbody>\
+            </table>\
+            </td>\
+        </tr>\
+    </tbody>\
+    </table>\
+    <div id="submitJob" style="">\
+    <div id="submitForm">\
+        <div id="runTaskSettingsDiv">\
+            <div class="task_header" id="taskHeaderDiv">\
+                <span id="task_name" class="module_header ">ClsFileCreator</span>\
+                <span id="task_version_main">\
+                    <label for="task_versions">\
+                    version\
+                    </label>\
+                    <span class="normal">3.7</span>\
+                </span>\
+                <div id="otherOptionsDiv" class="floatRight">\
+                    <img id="otherOptions" alt="other options" src="/gp/images/gear_blue_and_white.png" height="20">\
+                        <ul id="otherOptionsMenu" class="module-menu ui-menu ui-widget ui-widget-content ui-corner-all" style="position: absolute; top: 22px; left: -164px; display: none;" role="menu" tabindex="0" aria-activedescendant="clone">\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="properties" href="#" onclick="jq("#otherOptionsMenu").hide();showProperties();" class="ui-corner-all" tabindex="-1" role="menuitem">Properties</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="clone" href="#" onclick="jq("#otherOptionsMenu").hide();cloneTask();" class="ui-corner-all" tabindex="-1" role="menuitem">Clone</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="export" target="_blank" onclick="jq("#otherOptionsMenu").hide();" href="/gp/makeZip.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:3.7" class="ui-corner-all" tabindex="-1" role="menuitem">Export</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="javaCode" class="viewCode ui-corner-all" href="#" onclick="jq("#otherOptionsMenu").hide();" tabindex="-1" role="menuitem">Java code</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="matlabCode" class="viewCode ui-corner-all" href="#" onclick="jq("#otherOptionsMenu").hide();" tabindex="-1" role="menuitem">MATLAB code</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="rCode" class="viewCode ui-corner-all" href="#" onclick="jq("#otherOptionsMenu").hide();" tabindex="-1" role="menuitem">R code</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a id="pythonCode" class="viewCode ui-corner-all" href="#" onclick="jq("#otherOptionsMenu").hide();" tabindex="-1" role="menuitem">Python code</a>\
+                            </li>\
+                            <li class="ui-menu-item" role="presentation">\
+                                <a onclick="jq("#otherOptionsMenu").hide();" id="ui-id-53" class="ui-corner-all" tabindex="-1" role="menuitem">\
+                                    <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked">\
+                                        <label for="toggleDesc">\
+                                        Show parameter descriptions\
+                                        </label>\
+                                    </a>\
+                                </li>\
+                            </ul>\
+                        </div>\
+                        <a class="floatRight" id="documentation" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:3.7" target="_blank">Documentation</a>\
+                    </div>\
+                    <div id="betaInfoDiv">This module is currently in beta.</div>\
+                    <table id="description_main">\
+                        <tbody>\
+                            <tr>\
+                                <td id="mod_description">\
+                                A tool to create a class label (CLS) file.</td>\
+                                <td id="source_info">Source: <img src="/gp/images/winzip_icon.png" width="18" height="16">\
+                                    <div id="source_info_tooltip" style="display: none; position: absolute; top: 120px; right: 20px;"></div>\
+                                Installed from zip</td>\
+                                </tr>\
+                            </tbody>\
+                        </table>\
+                        <hr class="clear">\
+                            <div>\
+                                <span class="otherControlsDiv">\
+                                * required field\
+                                </span>\
+                                <span class="submitControlsDiv floatRight">\
+                                    <button class="Reset ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"> Reset </span></button>\
+                                        <button class="Run ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text"><img src="/gp/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"> Run </span></button>\
+                                        </span>\
+                                    </div>\
+                                    <hr class="clear">\
+                                       <div id="paramsListingDiv">\
+                                            <form id="runTaskForm" action="#">\
+                                                <table id="paramsTable"></table>\
+                                            </form>\
+                                            <div id="paramGroup_0_0" class="paramGroupSection"><table class="paramsTable"><tbody><tr id="input.file" class="pRow"><td class="pTitle"><div class="pTitleDiv">input file*</div></td>\
+                                            <td class="paramValueTd"><div class="valueEntryDiv"><div class="fileDiv mainDivBorder ui-droppable" id="fileDiv-input.file-1">\
+                                                <div class="fileUploadDiv"><button class="uploadBtn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" type="button" role="button" aria-disabled="false"><span class="ui-button-text">Upload File...</span></button><div class="inputFileBtn"><input class="uploadedinputfile requiredParam" type="file"></div>\
+                                                <button type="button" class="urlButton ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">Add Path or URL...</span></button><span class="drop-box">Drag Files Here</span><div class="fileSizeCaption"> 2GB file upload limit using the Upload File... button. For files &gt; 2GB upload from the Files tab. </div></div><div class="fileListingDiv"></div></div></div></td></tr><tr class="paramDescription"><td></td><td colspan="3">A dataset - .gct</td></tr></tbody></table></div></div>\
+                                            <div id="runTaskMiscDiv"><div id="launchJSNewWinDiv"><label><input type="checkbox" id="launchJSNewWin">Launch in a new window</label></div>\
+                                                <div class="pHeaderTitleDiv top-level-background">\
+                                                    <img src="/gp/images/toggle_collapse.png" alt="toggle image" width="19" height="19" class="paramSectionToggle">\
+                                                    Comments\
+                                                    </div>\
+                                                    <div class="commentsContent paramgroup-spacing">\
+                                                        <textarea id="jobComment" placeholder="Add a comment..."></textarea>\
+                                                    </div>\
+                                                    <div class="pHeaderTitleDiv top-level-background">\
+                                                        <img src="/gp/images/toggle_collapse.png" alt="toggle image" width="19" height="19" class="paramSectionToggle">\
+                                                        Tags\
+                                                        </div>\
+                                                        <div class="tagsContent paramgroup-spacing">\
+                                                            <hr>\
+                                                                <div style="height: 40px;">\
+                                                                    <span class="floatLeft otherControlsDiv">\
+                                                                    </span>\
+                                                                    <span class="floatRight submitControlsDiv">\
+                                                                        <button class="Reset ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">\
+                                                                            <img src="/gp/images/reset.gif" width="16" height="16" alt="Reset" class="buttonIcon"> Reset </span></button>\
+                                                                            <button class="Run ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><span class="ui-button-text">\
+                                                                                <img src="/gp/images/run-green.gif" width="16" height="16" alt="Run" class="buttonIcon"> Run </span></button>\
+                                                                            </span>\
+                                                                        </div>\
+                                                                    </div>\
+                                                                </div>\
+                                                            </div>';
 }

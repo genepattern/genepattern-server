@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.drm;
 
 import java.io.File;
@@ -13,6 +16,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.genepattern.CustomXmxFlags;
 import org.genepattern.webservice.JobInfo;
 
 import com.google.common.collect.ImmutableList;
@@ -95,11 +99,48 @@ public class DrmJobSubmission {
         
         this.queue=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE);
         this.queueId=this._gpConfig.getQueueId(jobContext);
-        this.memory=this._gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        this.memory=initQueueMemory(this._gpConfig, jobContext);
         this.walltimeStr=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME);
         this.nodeCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT);
         this.cpuCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
         this.extraArgs=this._gpConfig.getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
+    }
+    
+    /**
+     * initialize the amount of memory to request from the Queue, taking into account config settings:
+     *     job.memory, job.javaXmx, job.javaXmxPad
+     * @param gpConfig
+     * @param jobContext
+     * @return
+     */
+    protected static Memory initQueueMemory(GpConfig gpConfig, GpContext jobContext) {
+        // by default, use the job.memory from the config
+        Memory jobMemory=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY);
+        if (!CustomXmxFlags.isJavaCmd(jobContext)) {
+            return jobMemory;
+        }
+
+        // special-case for java modules
+        if (log.isDebugEnabled()) {
+            log.debug("initializing memory for java module: "+jobContext.getJobNumber()+", "+jobContext.getTaskName());
+        }
+        Memory queueMemory=jobMemory;
+        Memory xmxMem=CustomXmxFlags.getXmxValueFromConfig(gpConfig, jobContext);
+        Memory javaXmxPad=gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_JAVA_XMX_PAD);
+        if (xmxMem != null) {
+            if (javaXmxPad != null) {
+                Memory paddedMem = Memory.fromSizeInBytes( xmxMem.getNumBytes() + javaXmxPad.getNumBytes() );
+                queueMemory=Memory.max(jobMemory, paddedMem);
+            }
+            else {
+                queueMemory=Memory.max(jobMemory, xmxMem);
+            }
+        }
+        else if (javaXmxPad != null) {
+            //special-case, java modules with no Xmx but with padding will still be padded
+            queueMemory=Memory.max(jobMemory, javaXmxPad);
+        }
+        return queueMemory;
     }
     
     /**
@@ -352,11 +393,20 @@ public class DrmJobSubmission {
             this.jobContext=jobContext;
             return this;
         }
+        
         public Builder commandLine(final String[] commandLine) {
             if (this.commandLine != null) {
                 throw new IllegalArgumentException("commandLine already set, should only call this method once!");
             }
             this.commandLine=Arrays.asList(commandLine);
+            return this;
+        }
+        
+        public Builder commandLine(final List<String> commandLine) {
+            if (this.commandLine != null) {
+                throw new IllegalArgumentException("commandLine already set, should only call this method once!");
+            }
+            this.commandLine=ImmutableList.copyOf(commandLine);
             return this;
         }
         

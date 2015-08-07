@@ -29,7 +29,7 @@
 
 <c:choose>
     <c:when test="#{uiBean.parameterGroups}">
-        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform_3_8_1.css?version=#{aboutBean.buildTag}" />
+        <link type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform_latest.css?version=#{aboutBean.buildTag}" />
     </c:when>
     <c:otherwise>
         <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/runtaskform.css?version=#{aboutBean.buildTag}" />
@@ -349,6 +349,9 @@ function showFileInput(id) {
                                     <a id="rCode" class="viewCode" href="#" onclick="jq('#otherOptionsMenu').hide();">R code</a>
                                 </li>
                                 <li>
+                                    <a id="pythonCode" class="viewCode" href="#" onclick="jq('#otherOptionsMenu').hide();">Python code</a>
+                                </li>
+                                <li>
                                     <a onclick="jq('#otherOptionsMenu').hide();">
                                     <input name="toggleDesc" id="toggleDesc" type="checkbox" checked="checked" />
                                     <label for="toggleDesc">
@@ -405,8 +408,12 @@ function showFileInput(id) {
                             <td class="properties-commandline"></td>
                         </tr>
                         <tr>
-                            <td class="properties-label">Categories</td>
+                            <td class="properties-label">Task Type</td>
                             <td class="properties-tasktype"></td>
+                        </tr>
+                        <tr>
+                            <td class="properties-label">Categories</td>
+                            <td class="properties-categories"></td>
                         </tr>
                         <tr>
                             <td class="properties-label">CPU Type</td>
@@ -436,6 +443,7 @@ function showFileInput(id) {
                     <div class="properties-children"></div>
                 </div>
 
+                <div id="betaInfoDiv"></div>
                 <table id="description_main">
                     <tbody>
                     <tr>
@@ -478,22 +486,23 @@ function showFileInput(id) {
                     </form>
                 </div>
 
-                <div class="pHeaderTitleDiv top-level-background">
-                    <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
-                    Comments
-                </div>
-                <div class="commentsContent paramgroup-spacing">
-                    <textarea id="jobComment" placeholder="Add a comment..."/>
-                </div>
+                <div id="runTaskMiscDiv">
+                    <div class="pHeaderTitleDiv top-level-background">
+                        <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
+                        Comments
+                    </div>
+                    <div class="commentsContent paramgroup-spacing">
+                        <textarea id="jobComment" placeholder="Add a comment..."/>
+                    </div>
 
-               <div class="pHeaderTitleDiv top-level-background">
-                    <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
-                    Tags
+                   <div class="pHeaderTitleDiv top-level-background">
+                        <img src ='#{facesContext.externalContext.requestContextPath}/images/toggle_collapse.png' alt='toggle image' width='19' height='19' class='paramSectionToggle'/>
+                        Tags
+                    </div>
+                    <div class="tagsContent paramgroup-spacing">
+                        <input id="jobTags"/>
+                    </div>
                 </div>
-                <div class="tagsContent paramgroup-spacing">
-                    <input id="jobTags"/>
-                </div>
-
                 <hr/>
 
                 <div style="height: 40px;">

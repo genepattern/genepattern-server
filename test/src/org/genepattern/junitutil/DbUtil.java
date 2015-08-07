@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.junitutil;
 
 import java.io.File;
@@ -7,6 +10,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.SchemaUpdater;
 import org.hibernate.Query;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -14,6 +18,7 @@ import org.junit.Ignore;
 @Ignore
 public class DbUtil {
     private static boolean isDbInitialized = false;
+    public static final File schemaDir=new File("website/WEB-INF/schema");
     
     public enum DbType {
         HSQLDB,
@@ -59,7 +64,7 @@ public class DbUtil {
     protected static void initDbDefault() throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
-        final String gpVersion="3.9.2";
+        final String gpVersion="3.9.3";
         initDb(hsqlDbDir, hsqlDbName, gpVersion);
     }
 
@@ -87,7 +92,7 @@ public class DbUtil {
             }
             
             final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
-            String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
+            final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
 
             final String hibernateConfigFile="hibernate.junit.cfg.xml";
             final String hibernateConnectionUrl="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb";
@@ -103,7 +108,7 @@ public class DbUtil {
             try {
                 isDbInitialized = true;
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                HsqlDbUtil.updateSchema(new File(pathToResourceDir), "analysis_hypersonic-", gpVersion);
+                SchemaUpdater.updateSchema(HibernateUtil.instance(), schemaDir, "analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...
@@ -113,6 +118,16 @@ public class DbUtil {
         }
     }
 
+    public static void startDb(final File hsqlDbDir, final String hsqlDbName) throws Throwable {
+        if (isDbInitialized) {
+            return;
+        }
+        isDbInitialized = true;
+        final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
+        final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
+        HsqlDbUtil.startDatabase(hsqlArgs);
+    }
+    
     public static void shutdownDb() {
         if (!isDbInitialized) {
             return;

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.rest;
 
 import java.util.ArrayList;
@@ -6,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
@@ -21,19 +25,21 @@ import org.genepattern.webservice.TaskInfo;
 public class JobInputApiLegacy {
     final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
 
+    private final GpConfig gpConfig;
     private GpContext userContext;
     private JobInput jobInput;
     private TaskInfo taskInfo;
     private final boolean initDefault;
     
 
-    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput) {
-        this(userContext, jobInput, null);
+    public JobInputApiLegacy(final GpConfig gpConfig, final GpContext userContext, final JobInput jobInput) {
+        this(gpConfig, userContext, jobInput, null);
     }
-    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
-        this(userContext, jobInput, getTaskStrategyIn, false);
+    public JobInputApiLegacy(final GpConfig gpConfig, final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn) {
+        this(gpConfig, userContext, jobInput, getTaskStrategyIn, false);
     }
-    public JobInputApiLegacy(final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+    public JobInputApiLegacy(final GpConfig gpConfig, final GpContext userContext, final JobInput jobInput, final GetTaskStrategy getTaskStrategyIn, final boolean initDefault) {
+        this.gpConfig=gpConfig;
         this.userContext=userContext;
         this.jobInput=jobInput;
         this.initDefault=initDefault;
@@ -69,7 +75,7 @@ public class JobInputApiLegacy {
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(userContext, entry.getValue(), inputParam, initDefault);
+            ParamListHelper plh=new ParamListHelper(gpConfig, userContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }

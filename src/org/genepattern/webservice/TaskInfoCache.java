@@ -1,3 +1,6 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.webservice;
 
 import java.io.File;
@@ -415,7 +418,7 @@ public class TaskInfoCache {
         return taskInfoArray;        
     }
     
-    private List<TaskInfo> getTasksAsList(List<Integer> taskIds) {
+    public List<TaskInfo> getTasksAsList(List<Integer> taskIds) {
         List<TaskInfo> allTaskInfos = new ArrayList<TaskInfo>();
         for(Integer taskId : taskIds) {
             try {

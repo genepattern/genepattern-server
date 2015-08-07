@@ -1,7 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.webservice;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Helper class for the *Proxy classes.
@@ -26,7 +31,7 @@ public class ProxyUtil {
         if (inputUrl.getPort() != -1) {
             portStr = ":" + inputUrl.getPort();
         }
-        String context = (String) System.getProperty("GP_Path", "/gp");
+        String context = ServerConfigurationFactory.instance().getGpPath();
         if (!context.startsWith("/")) {
             context = "/" + context;
         }

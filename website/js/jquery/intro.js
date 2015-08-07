@@ -570,7 +570,10 @@
 
       //remove old classes
       var oldShowElement = document.querySelector('.introjs-showElement');
-      oldShowElement.className = oldShowElement.className.replace(/introjs-[a-zA-Z]+/g, '').replace(/^\s+|\s+$/g, '');
+      if(oldShowElement !== null)
+      {
+          oldShowElement.className = oldShowElement.className.replace(/introjs-[a-zA-Z]+/g, '').replace(/^\s+|\s+$/g, '');
+      }
       //we should wait until the CSS3 transition is competed (it's 0.3 sec) to prevent incorrect `height` and `width` calculation
       if (self._lastShowElementTimer) {
         clearTimeout(self._lastShowElementTimer);
@@ -675,16 +678,19 @@
       nextTooltipButton.innerHTML = this._options.nextLabel;
 
       //previous button
-      var prevTooltipButton = document.createElement('a');
+      var prevTooltipButton = null;
+      if(this._options.prevLabel.length > 0) {
+          prevTooltipButton = document.createElement('a');
 
-      prevTooltipButton.onclick = function() {
-        if (self._currentStep != 0) {
-          _previousStep.call(self);
-        }
-      };
+          prevTooltipButton.onclick = function () {
+              if (self._currentStep != 0) {
+                  _previousStep.call(self);
+              }
+          };
 
-      prevTooltipButton.href = 'javascript:void(0);';
-      prevTooltipButton.innerHTML = this._options.prevLabel;
+          prevTooltipButton.href = 'javascript:void(0);';
+          prevTooltipButton.innerHTML = this._options.prevLabel;
+      }
 
       //skip button
       var skipTooltipButton = document.createElement('a');
@@ -708,7 +714,11 @@
 
       //in order to prevent displaying next/previous button always
       if (this._introItems.length > 1) {
-        buttonsLayer.appendChild(prevTooltipButton);
+
+        if(prevTooltipButton !== null)
+        {
+            buttonsLayer.appendChild(prevTooltipButton);
+        }
         buttonsLayer.appendChild(nextTooltipButton);
       }
 
@@ -719,15 +729,24 @@
     }
 
     if (this._currentStep == 0 && this._introItems.length > 1) {
-      prevTooltipButton.className = 'introjs-button introjs-prevbutton introjs-disabled';
+      if(prevTooltipButton !== null)
+      {
+        prevTooltipButton.className = 'introjs-button introjs-prevbutton introjs-disabled';
+      }
       nextTooltipButton.className = 'introjs-button introjs-nextbutton';
       skipTooltipButton.innerHTML = this._options.skipLabel;
     } else if (this._introItems.length - 1 == this._currentStep || this._introItems.length == 1) {
-      skipTooltipButton.innerHTML = this._options.doneLabel;
-      prevTooltipButton.className = 'introjs-button introjs-prevbutton';
+        skipTooltipButton.innerHTML = this._options.doneLabel;
+        if (prevTooltipButton !== null)
+        {
+            prevTooltipButton.className = 'introjs-button introjs-prevbutton';
+        }
       nextTooltipButton.className = 'introjs-button introjs-nextbutton introjs-disabled';
     } else {
-      prevTooltipButton.className = 'introjs-button introjs-prevbutton';
+        if(prevTooltipButton !== null)
+        {
+            prevTooltipButton.className = 'introjs-button introjs-prevbutton';
+        }
       nextTooltipButton.className = 'introjs-button introjs-nextbutton';
       skipTooltipButton.innerHTML = this._options.skipLabel;
     }
@@ -913,18 +932,21 @@
     //calculate element top and left
     var _x = 0;
     var _y = 0;
-    while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+
+      /*Marc-Danie - while loop commented out for 3.9.4 tour
+      while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
       _x += element.offsetLeft;
       _y += element.offsetTop;
       element = element.offsetParent;
-    }
+    }*/
+
     //set top
-    elementPosition.top = _y;
+    elementPosition.top = $(element).offset().top //Commented out by Marc-Danie (3.9.4 tour) _y;
     //set left
-    elementPosition.left = _x;
+    elementPosition.left = $(element).offset().left //Commented out by Marc-Danie (3.9.4 tour) _x;
 
     return elementPosition;
-  }
+ }
 
   /**
    * Overwrites obj1's values with obj2's and adds obj2's if non existent in obj1

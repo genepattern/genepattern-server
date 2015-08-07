@@ -35,6 +35,7 @@
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/GP_DK.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/glyphicon/glyphicon.css?version=#{aboutBean.buildTag}" />
             <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/new-layout.css?version=#{aboutBean.buildTag}" />
+            <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/layout-default-1.4.0.css?version=#{aboutBean.buildTag}" />
             <link rel="shortcut icon" href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" />
 
             <!-- Must load the skin CSS file last -->
@@ -76,9 +77,11 @@
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/commons-validator-1.3.0.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/protocol.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/menu.js?version=#{aboutBean.buildTag}" />
-            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_3_8_1.js?version=#{aboutBean.buildTag}"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/runtaskform_latest.js?version=#{aboutBean.buildTag}"></script>
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jsViewer.js?version=#{aboutBean.buildTag}"></script>
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/createChoiceDiv.js?version=#{aboutBean.buildTag}"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.layout-1.4.0.js?version=#{aboutBean.buildTag}"></script>
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern_layout.js?version=#{aboutBean.buildTag}"></script>
 
             <script type="text/javascript" language="javascript">
             	/* <![CDATA[ */
@@ -286,8 +289,6 @@
                                 <li><a class="gp_tours" href="#">Tour of GenePatttern UI</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
-
-                                <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
@@ -325,7 +326,7 @@
             <div id="content" class="content">
             
             	<!-- Insert the left nav -->
-            	<div id="left-nav">
+            	<div id="left-nav" class="ui-layout-west">
             		<ul id="left-nav-tabs">
 	                    <li id="left-nav-modules-tab"><a href="#left-nav-modules">Modules</a></li>
 	                    <li id="left-nav-jobs-tab"><a href="#left-nav-jobs">Jobs</a></li>
@@ -384,6 +385,7 @@
                             <div class="current-job-status">
                                 <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
+                            <button id="left-nav-files-refresh" onclick="refreshUploadTree();"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                         </div>
 	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
 	                </div>
@@ -403,7 +405,7 @@
                 <div id="menus-genomespace"></div>
                 <div id="menus-inputs"></div>
 	
-	            <div id="main-pane">
+	            <div id="main-pane" class="ui-layout-center">
 	            	<!-- Error message area -->
 	            	<div id="errorMessageDiv" style="display:none;">
 		            	<span id="errorMessageHeader" style="font-weight:bold">

@@ -1,11 +1,15 @@
+/*******************************************************************************
+ * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ *******************************************************************************/
 package org.genepattern.server.tag;
 
 import org.apache.log4j.Logger;
-import org.hibernate.validator.Size;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
+
 import java.util.Date;
 
 /**
