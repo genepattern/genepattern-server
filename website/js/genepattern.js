@@ -2421,8 +2421,12 @@ function createJobWidget(job) {
     var widget = $("<div></div>")
         .attr("name", "job_" + job.jobId)
         .attr("class", "search-widget file-widget")
-        .searchslider({
-            lists: [actionList, codeList]});
+        .searchslider(
+        {
+            lists: [actionList, codeList],
+            relativeTo: "#left-nav"
+        }
+    );
 
     $("#menus-jobs").append(widget);
 }

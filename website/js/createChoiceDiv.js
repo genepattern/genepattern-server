@@ -168,56 +168,44 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
         var noneSelectedText = "Select an option";
 
-        var cMinWidth = Math.log(longChars) * 83;
+        var cMinWidth = Math.log(longChars) * 90;
 
         if(cMinWidth == 0)
         {
-            cMinWidth = Math.log(noneSelectedText.length) * 83;
+            cMinWidth = Math.log(noneSelectedText.length) * 90;
         }
 
-        choice.multiselect({
-            multiple: paramDetails.allowMultiple,
-            header: paramDetails.allowMultiple,
-            selectedList: 2,
-            minWidth: cMinWidth,
-            noneSelectedText: noneSelectedText,
-            classes: 'mSelect'
-        });
-
-        choice.multiselect("refresh");
-
-        //disable if no choices are found
-        if(choiceInfo.choices.length == 0)
+        if(cMinWidth < 300)
         {
-            choice.multiselect("disable");
+            cMinWidth = 300;
         }
 
-        choice.data("maxValue", paramDetails.maxValue);
-        choice.change(function ()
-                {
+        var validateSelectionFunc = function (element)
+        {
             var valueList = [];
 
-            var value = $(this).val();
+            var value = $(element).val();
 
             //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
-            if($(this).multiselect("option", "multiple"))
+            if($(element).multiselect("option", "multiple"))
             {
-                var maxVal = parseInt($(this).data("maxValue"));
-                if(!isNaN(maxVal) && value.length() > maxVal)
+                var maxVal = parseInt($(element).data("maxValue"));
+                var numSelected = $(element).multiselect("widget").find("input:checked").length;
+                if(!isNaN(maxVal) && numSelected > maxVal)
                 {
                     //remove the last selection since it will exceed max allowed
                     if(value.length == 1)
                     {
-                        $(this).val([]);
+                        $(element).val([]);
                     }
                     else
                     {
                         value.pop();
-                        $(this).val(value);
+                        $(element).val(value);
                     }
 
-                    alert("The maximum number of selections is " + $(this).data("maxValue"));
-                    return;
+                    alert("The maximum number of selections allowed is " + $(element).data("maxValue"));
+                    return false;
                 }
                 valueList = value;
             }
@@ -229,12 +217,45 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             }
 
-            var paramName = $(this).data("pname");
+            var paramName = $(element).data("pname");
 
-            var groupId = getGroupId($(this));
+            var groupId = getGroupId($(element));
             updateValuesForGroup(groupId, paramName, valueList);
-                });
 
+            return true;
+        };
+
+        choice.multiselect({
+            multiple: paramDetails.allowMultiple,
+            header: paramDetails.allowMultiple,
+            selectedList: 2,
+            minWidth: cMinWidth,
+            noneSelectedText: noneSelectedText,
+            classes: 'mSelect',
+            checkAll: function() {
+                var result = validateSelectionFunc(this);
+
+                if(result == false)
+                {
+                    //unselect everything since it is over limit
+                    $(this).multiselect("uncheckAll");
+                }
+            },
+            click: function()
+            {
+                return validateSelectionFunc(this);
+            }
+        });
+
+        choice.multiselect("refresh");
+
+        //disable if no choices are found
+        if(choiceInfo.choices.length == 0)
+        {
+            choice.multiselect("disable");
+        }
+
+        choice.data("maxValue", paramDetails.maxValue);
         //set the default value
         choice.children("option").each(function()
                 {

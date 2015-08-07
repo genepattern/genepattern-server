@@ -729,4 +729,10 @@ table.missingTaskTable
     text-indent: 6px;
 }
 
+.urlEntry
+{
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
 

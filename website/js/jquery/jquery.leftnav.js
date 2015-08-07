@@ -574,7 +574,8 @@ $.widget("gp.modulelist", {
 $.widget("gp.searchslider", {
     // default options
     options: {
-        lists: []
+        lists: [],
+        relativeTo: "" //the element this slide-out menu should be to the right of
     },
 
     // the constructor
@@ -633,6 +634,26 @@ $.widget("gp.searchslider", {
         });
         var shown = this.element;
         this.element.css("z-index", 3002);
+
+        if(this.options.relativeTo !== undefined && this.options.relativeTo !== null
+            && this.options.relativeTo.length > 0)
+        {
+            var relativeElement = $(this.options.relativeTo);
+            if(relativeElement !== undefined && relativeElement !== null
+                && relativeElement.length > 0)
+            {
+                //default position is left = 20
+                var relativeElementWidth = 20;
+
+                //if the element is visible the use its width
+                if(relativeElement.is(":visible"))
+                {
+                    relativeElementWidth = relativeElement.width() + 1;
+                }
+                this.element.css("left", relativeElementWidth);
+            }
+        }
+
         this.element.show('slide', {}, 400);
         setTimeout(function() {
             visible.each(function(id, slider) {
