@@ -616,8 +616,13 @@ You can also combine name and type filters. The following is an example of filte
 For a dynamic drop-down list, there is also the option of having an alternative static drop-down list. This alternative static drop-down list will only be displayed in the event that
 there was an error in obtaining the list of files in the ftp directory URL. This alternative static drop-down list works the same way as described above.
 
-<a name="fileList"></a><h4>Multiple File Inputs</h4>
-Indicate the number of files that a parameter accepts. You must specify a minimum number of files which can be zero. The maximum number of files allowed can be set to unlimited. The input to the parameter will be a text file containing local paths to the input files. There will be one file path per line.
+<a name="multipleInputs"></a><h4>Multiple Inputs</h4>
+
+Indicate the number of inputs that can be provided to a parameter. You must specify a minimum number of inputs which can be zero.
+The maximum number of inputs allowed can be set to unlimited. For a non-file parameter the input to the parameter will be a comma separated list of input values.
+
+<br>
+For a file parameter, the input to the parameter will be one text file containing local paths to the input files. There will be one file path per line.
 
 <a name="fileGroup"></a><h4>Group Input Files</h4>
 Specify how the input files for a parameter should be grouped. The input to the parameter will be a three-column tab delimited text file.
