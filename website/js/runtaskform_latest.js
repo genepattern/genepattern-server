@@ -975,17 +975,23 @@ function addSendToParam(parameterInfo) {
 }
 
 function createTextDiv(parameterName, groupId, initialValuesList) {
-    var textDiv = $("<div class='textDiv'/>");
+    var textDiv = $("<div class='textDiv tagsContent'/>");
 
     var paramDetails = run_task_info.params[parameterName];
 
     var textField = null;
     var isPassword = $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) !== -1;
+    var tagFieldId = parameterName.replace(".", "_") + "Text";
+
     if (isPassword) {
-        textField = $("<input type='password' class='pValue' />");
+        textField = $("<input type='password' class='pValue' id='" + tagFieldId + "' style='width:100px;'/>");
+    }
+    else if(run_task_info.params[parameterName].allowMultiple)
+    {
+        textField = $("<input class='pValue' id='" + tagFieldId + "'/>");
     }
     else {
-        textField = $("<input type='text' class='pValue' />");
+        textField = $("<input type='text' class='pValue' id='" + tagFieldId + "'/>");
     }
 
     textField.data("pname", parameterName);
@@ -1003,14 +1009,19 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
         $(this).trigger("change");
     }, true);
 
-    textField.change(function () {
+    var textValChange= function(element)
+    {
         var valueList = [];
-        valueList.push($(this).val());
+        valueList.push($(element).val());
 
-        var paramName = $(this).data("pname");
+        var paramName = $(element).data("pname");
 
-        var groupId = $(this).data("groupId");
+        var groupId = $(element).data("groupId");
         updateValuesForGroup(groupId, paramName, valueList);
+    };
+
+    textField.change(function () {
+        textValChange(this);
     });
     textField.val(paramDetails.default_value);
     textField.data("groupId", groupId);
@@ -1043,6 +1054,27 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
     }
 
     textDiv.append(textField);
+
+    if(!isPassword && run_task_info.params[parameterName].allowMultiple)
+    {
+        $("#runTaskSettingsDiv").append(textDiv);
+        textField.tagsInput(
+        {
+            'defaultText': 'Add value and press enter...',
+            width: '97%',
+            height: '40px',
+            interactive: true,
+            placeholderColor: '#CCC',
+            onChange: function()
+            {
+                textValChange(this);
+            }
+        });
+
+        //replace the textDiv with the new tags input div
+        textDiv.detach();
+    }
+
     return textDiv;
 }
 
