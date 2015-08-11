@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.job.input.JobInput;
@@ -62,8 +62,13 @@ public class AnalysisJobUtil {
         return addJobToDb(taskContext.getUserId(), taskContext.getTaskInfo(), parameterInfoArray, parentJobNumber); 
     }
     
+    /** @deprecated */
     public JobInfo fetchJobInfoFromDb(final int jobNumber) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        return fetchJobInfoFromDb(org.genepattern.server.database.HibernateUtil.instance(), jobNumber);
+    }
+    
+    public JobInfo fetchJobInfoFromDb(final HibernateSessionManager mgr, final int jobNumber) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
             AnalysisDAO dao = new AnalysisDAO();
             JobInfo jobInfo = dao.getJobInfo(jobNumber);
@@ -71,27 +76,32 @@ public class AnalysisJobUtil {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
+    /** @deprecated */
     public int deleteJobFromDb(final int jobNo) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        return deleteJobFromDb(org.genepattern.server.database.HibernateUtil.instance(), jobNo);
+    }
+    
+    public int deleteJobFromDb(final HibernateSessionManager mgr, final int jobNo) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String hqlDelete = "delete "+AnalysisJob.class.getName()+" a where a.jobNo = :jobNo";
-            int deletedEntities = HibernateUtil.getSession().createQuery( hqlDelete )
+            int deletedEntities = mgr.getSession().createQuery( hqlDelete )
                     .setInteger( "jobNo", jobNo )
                     .executeUpdate();
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return deletedEntities;
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -141,14 +151,19 @@ public class AnalysisJobUtil {
         return addJobToDb(userContext, parentJobId);
     }
 
+    /** @deprecated */
+    public Integer addJobToDb(final GpContext userContext, final int parentJobId) {
+        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userContext, parentJobId);
+    }
+    
     /**
      * Create a new entry in the analysis_job table, used primarily to generate a new job_id.
      * @param userContext, optionally set userId, taskName, and taskLsid
      * @param parentJobId, when parentJobId >= 0 set this as a child step in a pipeline
      * @return
      */
-    public Integer addJobToDb(final GpContext userContext, final int parentJobId) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+    public Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext, final int parentJobId) {
+        final boolean isInTransaction=mgr.isInTransaction();
         Integer jobId = null;
         try {
             String parameter_info = ""; //empty CLOB
@@ -172,32 +187,38 @@ public class AnalysisJobUtil {
             js.setStatusName(JobStatus.PENDING);
             aJob.setJobStatus(js);
 
-            HibernateUtil.beginTransaction();
-            jobId = (Integer) HibernateUtil.getSession().save(aJob);
+            mgr.beginTransaction();
+            jobId = (Integer) mgr.getSession().save(aJob);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         
         return jobId;
     }
+
     
+    /** @deprecated */
     public Integer addJobToDb(final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
+        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userId, taskInfo, parameterInfoArray, parentJobNumber);
+    }
+    
+    public Integer addJobToDb(final HibernateSessionManager mgr, final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
         if (taskInfo.getID() < 0) {
             //force arbitrary task_id
             taskInfo.setID(1);
         }
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
             AnalysisDAO ds = new AnalysisDAO();
             Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return jobNo;
         }
@@ -209,16 +230,21 @@ public class AnalysisJobUtil {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
+    /** @deprecated */
     public void setStatusInDb(final int jobNo, final int statusId) throws Exception {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        setStatusInDb(org.genepattern.server.database.HibernateUtil.instance(), jobNo, statusId);
+    }
+    
+    public void setStatusInDb(final HibernateSessionManager mgr, final int jobNo, final int statusId) throws Exception {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            Query query = HibernateUtil.getSession().createQuery("update org.genepattern.server.domain.AnalysisJob set status_id = :statusId where job_no = :jobNo");
+            mgr.beginTransaction();
+            Query query = mgr.getSession().createQuery("update org.genepattern.server.domain.AnalysisJob set status_id = :statusId where job_no = :jobNo");
             query.setInteger("jobNo", jobNo);
             query.setInteger("statusId", statusId);
             int result = query.executeUpdate();
@@ -227,7 +253,7 @@ public class AnalysisJobUtil {
             }
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Exception e) {
@@ -238,7 +264,7 @@ public class AnalysisJobUtil {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
