@@ -4,7 +4,10 @@
 package org.genepattern.junitutil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
@@ -23,6 +26,51 @@ public class DbUtil {
     public enum DbType {
         HSQLDB,
         MYSQL;
+    }
+    
+    /**
+     * Create a new HSQL DB connection to a "Memory-Only Database". The db is not persistent and exists entirely in RAM. 
+     * No need to start it up or shut it down.
+     * 
+     * @param inMemId, a unique name for the database, to allow for multiple instances in the same JVM. Must be a lower-case single-word identifier.
+     * @return
+     * @throws IOException
+     * @throws FileNotFoundException
+     */
+    public static HibernateSessionManager initSessionMgrHsqlInMemory(final String inMemId) throws IOException, FileNotFoundException {
+        final String connectionUrl="jdbc:hsqldb:mem:"+inMemId;
+        return initSessionMgrHsql(connectionUrl);
+    }
+    
+    /**
+     * Create a new HSQL DB connection in "In-Process (Standalone) Mode". The DB is saved directly to the file system
+     * without any network I/O. This is suitable for testing.
+     * 
+     * @param dbDir, a directory for saving HSQL DB database files.
+     * @param dbName, a unique name for the database, default is "GenePatternDB"
+     * @return
+     */
+    protected static HibernateSessionManager initSessionMgrHsqlInProcess(final File dbDir, final String dbName) throws IOException, FileNotFoundException {
+        final File hsqlDbFile=new File(dbDir, dbName);
+        final String connectionUrl="jdbc:hsqldb:file:"+hsqlDbFile;
+        return initSessionMgrHsql(connectionUrl);
+    }
+    
+    protected static HibernateSessionManager initSessionMgrHsql(final String connectionUrl) throws IOException, FileNotFoundException {
+        // init common properties
+        final Properties p=new Properties();
+        p.setProperty("hibernate.current_session_context_class", "thread");
+        p.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver");
+        p.setProperty("hibernate.username", "sa");
+        p.setProperty("hibernate.password", "");
+        p.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
+        p.setProperty("hiberate.default_schema", "PUBLIC");
+        p.setProperty("database.vendor", "HSQL");
+        // custom connectionUrl
+        p.setProperty("hibernate.connection.url", connectionUrl);
+
+        HibernateSessionManager mgr=new HibernateSessionManager(p);
+        return mgr;
     }
 
     /** @deprecated */

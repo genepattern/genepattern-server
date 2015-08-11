@@ -6,12 +6,10 @@ package org.genepattern.server.database;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.junit.Test;
 
@@ -28,51 +26,6 @@ public class TestSchemaUpdater {
     private final int numSchemaFiles=25;
 
     /**
-     * Create a new HSQL DB connection to a "Memory-Only Database". The db is not persistent and exists entirely in RAM. 
-     * No need to start it up or shut it down.
-     * 
-     * @param inMemId, a unique name for the database, to allow for multiple instances in the same JVM. Must be a lower-case single-word identifier.
-     * @return
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    protected HibernateSessionManager initSessionMgrHsqlInMemory(final String inMemId) throws IOException, FileNotFoundException {
-        final String connectionUrl="jdbc:hsqldb:mem:"+inMemId;
-        return initSessionMgrHsql(connectionUrl);
-    }
-    
-    /**
-     * Create a new HSQL DB connection in "In-Process (Standalone) Mode". The DB is saved directly to the file system
-     * without any network I/O. This is suitable for testing.
-     * 
-     * @param dbDir, a directory for saving HSQL DB database files.
-     * @param dbName, a unique name for the database, default is "GenePatternDB"
-     * @return
-     */
-    protected static HibernateSessionManager initSessionMgrHsqlInProcess(final File dbDir, final String dbName) throws IOException, FileNotFoundException {
-        final File hsqlDbFile=new File(dbDir, dbName);
-        final String connectionUrl="jdbc:hsqldb:file:"+hsqlDbFile;
-        return initSessionMgrHsql(connectionUrl);
-    }
-    
-    protected static HibernateSessionManager initSessionMgrHsql(final String connectionUrl) throws IOException, FileNotFoundException {
-        // init common properties
-        final Properties p=new Properties();
-        p.setProperty("hibernate.current_session_context_class", "thread");
-        p.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver");
-        p.setProperty("hibernate.username", "sa");
-        p.setProperty("hibernate.password", "");
-        p.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
-        p.setProperty("hiberate.default_schema", "PUBLIC");
-        p.setProperty("database.vendor", "HSQL");
-        // custom connectionUrl
-        p.setProperty("hibernate.connection.url", connectionUrl);
-
-        HibernateSessionManager mgr=new HibernateSessionManager(p);
-        return mgr;
-    }
-    
-    /**
      * Collect all DB integration tests into one unit test
      * @throws DbException
      * @throws Throwable
@@ -83,43 +36,33 @@ public class TestSchemaUpdater {
         final File schemaDir=new File("website/WEB-INF/schema");
         HibernateSessionManager db1=null;
         HibernateSessionManager db2=null;
-        try {
-            db1=initSessionMgrHsqlInMemory("db1");
-            db2=initSessionMgrHsqlInMemory("db2");
-            
-            String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db1);
-            assertEquals("before update db1, dbSchemaVersion", "", dbSchemaVersion);
-            assertEquals("before update db1, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db1, "props"));
-            assertEquals("before update db1, 'PROPS' table exists", false, SchemaUpdater.tableExists(db1, "PROPS"));
-            
-            // test auto-generate
-            SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "1.3.0");
-            assertEquals("after update, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db1));
-            
-            SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "3.9.2");
-            assertEquals("after update", "3.9.2", SchemaUpdater.getDbSchemaVersion(db1));
-            
-            dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db2);
-            assertEquals("before update db2, dbSchemaVersion", "", dbSchemaVersion);
-            assertEquals("before update db2, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db2, "props"));
-            assertEquals("before update db2, 'PROPS' table exists", false, SchemaUpdater.tableExists(db2, "PROPS"));
 
-            // test auto-generate
-            SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "1.3.0");
-            assertEquals("after update db2, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db2));
-            
-            SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "3.9.2");
-            assertEquals("after update db2", "3.9.2", SchemaUpdater.getDbSchemaVersion(db2));
-        }
-        finally {
-            // We create a new in-process DB for each test and then delete its directory it after the test completes
-            // there is no need to properly close the DB
-            // If this ever changes ...
-            //if (mgr != null) {
-            //    HsqlDbUtil.shutdownDatabase(mgr);
-            //}
-        } 
-        
+        db1=DbUtil.initSessionMgrHsqlInMemory("db1");
+        db2=DbUtil.initSessionMgrHsqlInMemory("db2");
+
+        String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db1);
+        assertEquals("before update db1, dbSchemaVersion", "", dbSchemaVersion);
+        assertEquals("before update db1, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db1, "props"));
+        assertEquals("before update db1, 'PROPS' table exists", false, SchemaUpdater.tableExists(db1, "PROPS"));
+
+        // test auto-generate
+        SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "1.3.0");
+        assertEquals("after update, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db1));
+
+        SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "3.9.2");
+        assertEquals("after update", "3.9.2", SchemaUpdater.getDbSchemaVersion(db1));
+
+        dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db2);
+        assertEquals("before update db2, dbSchemaVersion", "", dbSchemaVersion);
+        assertEquals("before update db2, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db2, "props"));
+        assertEquals("before update db2, 'PROPS' table exists", false, SchemaUpdater.tableExists(db2, "PROPS"));
+
+        // test auto-generate
+        SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "1.3.0");
+        assertEquals("after update db2, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db2));
+
+        SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "3.9.2");
+        assertEquals("after update db2", "3.9.2", SchemaUpdater.getDbSchemaVersion(db2));
     }
 
     @Test
