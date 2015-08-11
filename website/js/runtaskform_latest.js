@@ -2324,28 +2324,6 @@ function buildBatchList() {
     return batchParams;
 }
 
-function launchViewerInNewWindow(jobId)
-{
-    $.ajax({
-        type: "GET",
-        url: "/gp/rest/v1/jobs/" + jobId,
-        cache: false,
-        success: function(data) {
-            var job = data;
-            if (job.launchUrl !== undefined && job.launchUrl !== null) {
-                window.open(job.launchUrl, '_blank');
-            }
-
-            window.location.replace("/gp/pages/index.jsf?jobid=" + jobId + "");
-        },
-        error: function(data) {
-            if (typeof data === 'object') {
-                data = data.responseText;
-            }
-        },
-        dataType: "json"
-    });
-}
 function submitTask() {
     setAllFileParamValues();
 
@@ -2435,17 +2413,14 @@ function submitTask() {
             }
             else
             {
+                var openInNewWindow = "";
                 if(run_task_info.is_js_viewer && $("#launchJSNewWin").is(":checked"))
                 {
-                    launchViewerInNewWindow(response.jobId);
+                    openInNewWindow = "&openNewWindow=true";
                 }
-                else
-                {
-                    window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true");
-                }
-            }
 
-            console.log("Response text: " + response.text);
+                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true" + openInNewWindow);
+            }
         },
         error: function (xhr, ajaxOptions, thrownError) {
             alert("Error: \n" + xhr.responseText);
