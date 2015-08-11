@@ -1,0 +1,34 @@
+#Mon, 03 Feb 2014 14:30:04 -0500
+name=InstallRPackages
+commandLine=<R.execution.environment> --no-save --quiet --slave --no-restore <libdir>installPackages.R <r.package.info>
+license=
+taskDoc=doc.html
+fileFormat=txt
+taskType=Administration
+os=any
+language=R2.15.3
+cpuType=any
+privacy=public
+description=Install R packages
+version=
+
+p1_default_value=<R2.15_Rscript_dev>
+p1_description=
+p1_name=R.execution.environment
+p1_optional=
+p1_prefix_when_specified=
+p1_type=java.lang.String
+p1_value=<R2.15_Rscript_dev>\=R 2.15;<R2.14_Rscript_dev>\=R 2.14
+
+p2_default_value=
+p2_description=
+p2_name=r.package.info
+p2_optional=
+p2_prefix_when_specified=
+p2_type=java.lang.String
+p2_TYPE=FILE
+p2_type=java.io.File
+p2_value=
+
+requiredPatchLSIDs=
+requiredPatchURLs=
