@@ -8,7 +8,7 @@ import java.io.FilenameFilter;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.database.SchemaUpdater;
 import org.hibernate.Query;
@@ -25,6 +25,16 @@ public class DbUtil {
         MYSQL;
     }
 
+    /** @deprecated */
+    public static void initDb() throws Exception {
+        initDb(DbType.HSQLDB);
+    }
+
+    /** @deprecated */
+    public static void initDb(DbType dbType) throws Exception {
+        initDb( org.genepattern.server.database.HibernateUtil.instance(), dbType);
+    }
+
     /**
      * To help with debugging turn off batch mode by setting this property before you call initDb.
      * <pre>
@@ -32,8 +42,8 @@ public class DbUtil {
      * </pre>
      * @throws Exception
      */
-    public static void initDb() throws Exception {
-        initDb(DbType.HSQLDB);
+    public static void initDb(HibernateSessionManager mgr) throws Exception {
+        initDb( mgr, DbType.HSQLDB);
     }
     
     /**
@@ -41,9 +51,9 @@ public class DbUtil {
      * @param dbType
      * @throws Exception
      */
-    public static void initDb(DbType dbType) throws Exception {
+    private static void initDb(final HibernateSessionManager mgr, DbType dbType) throws Exception {
         if (dbType==DbType.HSQLDB) {
-            DbUtil.initDbDefault();
+            DbUtil.initDbDefault(mgr);
         }
         else if (dbType==DbType.MYSQL) {
             System.setProperty("hibernate.configuration.file", "hibernate.mysql.cfg.xml");
@@ -61,14 +71,16 @@ public class DbUtil {
         }
     }
     
-    protected static void initDbDefault() throws Exception { 
+    protected static void initDbDefault(final HibernateSessionManager mgr) throws Exception { 
         final File hsqlDbDir=new File("junitdb");
         final String hsqlDbName="GenePatternDB";
         final String gpVersion="3.9.3";
-        initDb(hsqlDbDir, hsqlDbName, gpVersion);
+        initDb(mgr, hsqlDbDir, hsqlDbName, gpVersion);
     }
 
-    protected static void initDb(final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
+//    protected static void initDb(final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
+//    }
+    protected static void initDb(final HibernateSessionManager mgr, final File hsqlDbDir, final String hsqlDbName, final String gpVersion) throws Exception {
         //some of the classes being tested require a Hibernate Session connected to a GP DB
         if (!isDbInitialized) { 
             final boolean deleteDbFiles=true;
@@ -108,7 +120,7 @@ public class DbUtil {
             try {
                 isDbInitialized = true;
                 HsqlDbUtil.startDatabase(hsqlArgs);
-                SchemaUpdater.updateSchema(HibernateUtil.instance(), schemaDir, "analysis_hypersonic-", gpVersion);
+                SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-", gpVersion);
             }
             catch (Throwable t) {
                 //the unit tests can pass even if db initialization fails, so ...
@@ -118,16 +130,16 @@ public class DbUtil {
         }
     }
 
-    public static void startDb(final File hsqlDbDir, final String hsqlDbName) throws Throwable {
-        if (isDbInitialized) {
-            return;
-        }
-        isDbInitialized = true;
-        final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
-        final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
-        HsqlDbUtil.startDatabase(hsqlArgs);
-    }
-    
+//    public static void startDb(final File hsqlDbDir, final String hsqlDbName) throws Throwable {
+//        if (isDbInitialized) {
+//            return;
+//        }
+//        isDbInitialized = true;
+//        final String path=hsqlDbDir.getPath()+"/"+hsqlDbName;
+//        final String hsqlArgs=" -port 9001  -database.0 file:"+path+" -dbname.0 xdb";
+//        HsqlDbUtil.startDatabase(hsqlArgs);
+//    }
+//    
     public static void shutdownDb() {
         if (!isDbInitialized) {
             return;
@@ -142,9 +154,14 @@ public class DbUtil {
             //log.error("Error stopoping HSQLDB: "+t.getLocalizedMessage(), t);
         }
     }
-    
+
+    /** @deprecated */
     static public String addUserToDb(final String gp_username) {
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        return addUserToDb(org.genepattern.server.database.HibernateUtil.instance(), gp_username);
+    }
+    
+    static public String addUserToDb(final HibernateSessionManager mgr, final String gp_username) {
+        final boolean isInTransaction = mgr.isInTransaction();
         final boolean userExists=UserAccountManager.instance().userExists(gp_username);
         final String gp_email=null; //can be null
         final String gp_password=null; //can be null
@@ -153,7 +170,7 @@ public class DbUtil {
             try {
                 UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
                 if (!isInTransaction) {
-                    HibernateUtil.commitTransaction();
+                    mgr.commitTransaction();
                 }
             }
             catch (AuthenticationException e) {
@@ -161,11 +178,16 @@ public class DbUtil {
             }
             finally {
                 if (!isInTransaction) {
-                    HibernateUtil.closeCurrentSession();
+                    mgr.closeCurrentSession();
                 }
             }
         } 
         return gp_username;
+    }
+    
+    /** @deprecated */
+    public static int deleteAllRows(final Class<?> entityClass) throws Exception {
+        return deleteAllRows(org.genepattern.server.database.HibernateUtil.instance(), entityClass);
     }
     
     /**
@@ -175,25 +197,25 @@ public class DbUtil {
      * @return
      * @throws Exception
      */
-    public static int deleteAllRows(Class<?> entityClass) throws Exception {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+    public static int deleteAllRows(final HibernateSessionManager mgr, final Class<?> entityClass) throws Exception {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
             final String hql="delete from "+entityClass.getSimpleName();
-            HibernateUtil.beginTransaction();
-            final Query query=HibernateUtil.getSession().createQuery(hql);
+            mgr.beginTransaction();
+            final Query query=mgr.getSession().createQuery(hql);
             int numDeleted=query.executeUpdate();
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return numDeleted;
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new Exception("Error deleting items from entityClass="+entityClass.getSimpleName(), t);
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
