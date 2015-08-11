@@ -13,19 +13,24 @@ import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Created by nazaire on 2/11/14.
  */
 public class TestParameterGrouping
 {
-    final static private String userId="test";
     final static private String adminUserId="admin";
     private static GpContext userContext;
     private static TaskLoader taskLoader;
     final static private String tBAdvancedParamsLsid ="urn:lsid:8080.nazaire.69.173.118.131:genepatternmodules:6:4";
     final static private String moduleZipFile = "TestBasicAdvancedParameters_v4.zip";
+    
+    @Rule
+    public TemporaryFolder temp= new TemporaryFolder();
+
 
     @BeforeClass
     static public void beforeClass()
@@ -52,7 +57,7 @@ public class TestParameterGrouping
            Assert.fail("Could not open file paramgroups.json");
         }
 
-        File paramGroupsFile = new File("paramgroups.json");
+        File paramGroupsFile = temp.newFile("paramgroups.json");
         TaskUtil.writeSupportFileToFile(paramGroupsInputStream, paramGroupsFile);
 
         LoadModuleHelper loadModuleHelper = new LoadModuleHelper(userContext);
