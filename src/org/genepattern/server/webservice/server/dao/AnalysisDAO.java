@@ -17,11 +17,11 @@ import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -52,7 +52,12 @@ import org.hibernate.criterion.*;
 public class AnalysisDAO extends BaseDAO {
     public static Logger log = Logger.getLogger(AnalysisDAO.class);
 
+    /** @deprecated */
     public AnalysisDAO() {
+    }
+
+    public AnalysisDAO(HibernateSessionManager mgr) {
+        super(mgr);
     }
 
     /**
@@ -568,7 +573,9 @@ public class AnalysisDAO extends BaseDAO {
             aJob.setParent(parentJobNumber);
             aJob.setTaskLsid(taskInfo.getLsid());
 
-            JobStatus js = (new JobStatusDAO()).findById(JobStatus.JOB_PENDING);
+            final JobStatus js=new JobStatus();
+            js.setStatusId(JobStatus.JOB_PENDING);
+            js.setStatusName(JobStatus.PENDING);
             aJob.setJobStatus(js);
 
             jobId = (Integer) getSession().save(aJob);
