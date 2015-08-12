@@ -51,6 +51,7 @@ import org.hibernate.criterion.*;
  */
 public class AnalysisDAO extends BaseDAO {
     public static Logger log = Logger.getLogger(AnalysisDAO.class);
+    
 
     /** @deprecated */
     public AnalysisDAO() {
@@ -88,11 +89,12 @@ public class AnalysisDAO extends BaseDAO {
         query.setString("userId", userId);
         
         // Within the last 30 days
-        Date date = new Date();
+        //Date date = new Date();
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -30);
         query.setDate("date", cal.getTime());
 
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list(); 
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -109,6 +111,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public List<JobInfo> getAllPagedJobsForAdmin(final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getAllPagedJobs", pageNum, pageSize, jobSortOrder, ascending);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -129,6 +132,7 @@ public class AnalysisDAO extends BaseDAO {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsForUser", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("userId", userId);
         query.setParameterList("groupIds", groupIds);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -147,6 +151,7 @@ public class AnalysisDAO extends BaseDAO {
     public List<JobInfo> getPagedJobsOwnedByUser(final String userId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("userId", userId);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -187,6 +192,7 @@ public class AnalysisDAO extends BaseDAO {
             query.setMaxResults(maxResults);
             query.setString("batchId", batchId);
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> jobTags = query.list();
 
             jobInfos = new ArrayList<JobInfo>(jobTags.size());
@@ -223,6 +229,7 @@ public class AnalysisDAO extends BaseDAO {
                     Projections.alias(Projections.distinct(
                             Projections.property("jobtag.analysisJob")), sortOrder.getPropertyName()));
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = criteria.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -356,6 +363,7 @@ public class AnalysisDAO extends BaseDAO {
             query.setMaxResults(maxResults);
             query.setString("batchId", batchId);
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = query.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -393,6 +401,7 @@ public class AnalysisDAO extends BaseDAO {
                     Projections.alias(Projections.distinct(
                             Projections.property("jobComment.analysisJob")), sortOrder.getPropertyName()));
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = criteria.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -469,6 +478,7 @@ public class AnalysisDAO extends BaseDAO {
     public List<JobInfo> getPagedJobsInGroup(final String groupId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsForGroup", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("groupId", groupId);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -593,6 +603,7 @@ public class AnalysisDAO extends BaseDAO {
         String sqlString = "select group_id, permission_flag from job_group where job_no = :jobId";
         Query sqlQuery = getSession().createSQLQuery(sqlString);
         sqlQuery.setInteger("jobId", jobId);
+        @SuppressWarnings("unchecked")
         List<Object[]> results = sqlQuery.list();
         Set<GroupPermission> rval = new HashSet<GroupPermission>();
         for(Object[] tuple : results) {
@@ -618,6 +629,7 @@ public class AnalysisDAO extends BaseDAO {
     public void setGroupPermissions(int jobId, Set<GroupPermission> groupPermissions) {
         Query sqlQuery = HibernateUtil.getSession().createSQLQuery("delete from JOB_GROUP where job_no = :jobId");
         sqlQuery.setInteger("jobId", jobId);
+        @SuppressWarnings("unused")
         int numDeleted = sqlQuery.executeUpdate();
         
         if (groupPermissions == null) {
@@ -729,6 +741,7 @@ public class AnalysisDAO extends BaseDAO {
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobId);
         query.setFetchSize(50);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
             try {
@@ -753,6 +766,7 @@ public class AnalysisDAO extends BaseDAO {
         String hql = "select a.parent from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
+        @SuppressWarnings("unchecked")
         List<Integer> rval = query.list();
         if (rval.size() != 1) {
             log.error("getRootJobNumber("+jobNo+"): couldn't query AnalysisJob.parent from database");
@@ -769,6 +783,7 @@ public class AnalysisDAO extends BaseDAO {
         String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
+        @SuppressWarnings("unchecked")
         List<String> rval = query.list();
         if (rval.size() != 1) {
             log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
@@ -815,6 +830,7 @@ public class AnalysisDAO extends BaseDAO {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
+        @SuppressWarnings("unchecked")
         List<Integer> jobIds = query.list();
         return jobIds;
         
@@ -827,6 +843,7 @@ public class AnalysisDAO extends BaseDAO {
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
         query.setString("userId", userId);
+        @SuppressWarnings("unchecked")
         List<Integer> jobIds = query.list();
         return jobIds;
         
@@ -838,6 +855,7 @@ public class AnalysisDAO extends BaseDAO {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         return aJobs;
     }
@@ -1098,6 +1116,7 @@ public class AnalysisDAO extends BaseDAO {
         }
 
         List<JobInfo> results = new ArrayList<JobInfo>();
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
             JobInfo ji = new JobInfo(aJob);
@@ -1397,7 +1416,7 @@ public class AnalysisDAO extends BaseDAO {
 	log.debug("/tSetting job status");
 
 	job.setJobStatus(js);
-	getSession().update(job); // Not really neccessary
+	getSession().update(job); // Not really necessary
 	return 1;
 
     }
@@ -1581,6 +1600,7 @@ public class AnalysisDAO extends BaseDAO {
 
     private static class SortOrder extends Order
     {
+        private static final long serialVersionUID = 4717635978676124641L;
         private String propertyName;
 
         protected SortOrder(String propertyName, boolean ascending)
