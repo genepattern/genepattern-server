@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 public abstract class BaseDAO {
     private static final Logger log = Logger.getLogger(BaseDAO.class);
 
-    private final HibernateSessionManager mgr;
+    protected final HibernateSessionManager mgr;
     
     /** @deprecated */
     public BaseDAO() {
@@ -21,14 +21,14 @@ public abstract class BaseDAO {
      * the call to beginTransaction does nothing.
      *
      */
-    public BaseDAO(final HibernateSessionManager mgr) {
-        if (mgr==null) {
+    public BaseDAO(final HibernateSessionManager mgrIn) {
+        if (mgrIn==null) {
             this.mgr=HibernateUtil.instance();
         }
         else {
-            this.mgr=mgr;
+            this.mgr=mgrIn;
         }
-        mgr.beginTransaction();
+        this.mgr.beginTransaction();
     }
 
     public void delete(Object persistentInstance) {

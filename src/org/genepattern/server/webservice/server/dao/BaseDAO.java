@@ -32,7 +32,7 @@ public class BaseDAO {
 
     public static final int UNPROCESSABLE_TASKID = -1;
 
-    private final HibernateSessionManager mgr;
+    protected final HibernateSessionManager mgr;
 
     /** @deprecated */
     public BaseDAO() {
@@ -44,14 +44,14 @@ public class BaseDAO {
      * the call to beginTransaction does nothing.
      *
      */
-    public BaseDAO(final HibernateSessionManager mgr) {
-        if (mgr==null) {
+    public BaseDAO(final HibernateSessionManager mgrIn) {
+        if (mgrIn==null) {
             this.mgr=HibernateUtil.instance();
         }
         else {
-            this.mgr=mgr;
+            this.mgr=mgrIn;
         }
-        mgr.beginTransaction();
+        this.mgr.beginTransaction();
     }
 
     
