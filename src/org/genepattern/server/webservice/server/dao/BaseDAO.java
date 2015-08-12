@@ -18,6 +18,7 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -27,17 +28,35 @@ import org.genepattern.webservice.SuiteInfo;
 import org.hibernate.Session;
 
 public class BaseDAO {
-    private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
+    private static final Logger log = Logger.getLogger(BaseDAO.class);
 
     public static final int UNPROCESSABLE_TASKID = -1;
 
+    private final HibernateSessionManager mgr;
+
+    /** @deprecated */
     public BaseDAO() {
-    	// Start a transaction if not begun already
-    	HibernateUtil.beginTransaction();
+        this(null);
     }
     
+    /**
+     * Constructor.  Conditionally starts a transaction,  if a transaction is already underway
+     * the call to beginTransaction does nothing.
+     *
+     */
+    public BaseDAO(final HibernateSessionManager mgr) {
+        if (mgr==null) {
+            this.mgr=HibernateUtil.instance();
+        }
+        else {
+            this.mgr=mgr;
+        }
+        mgr.beginTransaction();
+    }
+
+    
     protected Session getSession() {
-        return HibernateUtil.getSession();
+        return mgr.getSession();
     }
 
     protected java.sql.Date now() {
@@ -83,12 +102,12 @@ public class BaseDAO {
             try {
                 conn.close();
             }
-            catch (SQLException x) {
-                log.error(x);
-            }
+        catch (SQLException x) {
+            log.error(x);
+        }
 
     }
-  
+
     protected SuiteInfo suiteInfoFromSuite(final Suite suite) throws OmnigeneException {
         String lsid = suite.getLsid();
         int access_id = suite.getAccessId();
