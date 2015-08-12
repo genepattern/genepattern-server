@@ -14,14 +14,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.webservice.*;
-import org.hibernate.*;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.SuiteInfo;
 
-import com.sun.rowset.CachedRowSetImpl;
+import org.hibernate.Session;
 
 public class BaseDAO {
     private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
@@ -94,7 +97,7 @@ public class BaseDAO {
         String owner = suite.getUserId();
         String author = suite.getAuthor();
 
-        ArrayList docs = new ArrayList();
+        final ArrayList<String> docs = new ArrayList<String>();
         try {
             boolean alwaysMkdirs=false;
             File suiteDir = DirectoryManager.getSuiteLibDir(name, lsid, owner, alwaysMkdirs);
@@ -111,7 +114,7 @@ public class BaseDAO {
             log.error(e);
         }
 
-        List mods = suite.getModules();
+        final List<String> mods = suite.getModules();
 
         SuiteInfo suiteInfo = new SuiteInfo(lsid, name, description, author, owner, mods, access_id, docs);
         suiteInfo.setContact(suite.getContact());
@@ -141,7 +144,7 @@ public class BaseDAO {
             Connection conn = getSession().connection();
             stat = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             resultSet = stat.executeQuery(sql);
-            CachedRowSetImpl crs = new CachedRowSetImpl();
+            CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
             crs.populate(resultSet);
             return crs;
         }
