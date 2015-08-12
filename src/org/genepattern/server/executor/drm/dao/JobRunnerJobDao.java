@@ -74,7 +74,7 @@ public class JobRunnerJobDao {
                 log.error("No existing record for "+gpJobNo);
                 return;
             }
-            updateJobStatus(existing, drmJobStatus);
+            updateJobStatus(mgr, existing, drmJobStatus);
             if (!isInTransaction) {
                 mgr.commitTransaction();
             }
@@ -118,7 +118,7 @@ public class JobRunnerJobDao {
                 .drmJobStatus(jobStatus)
             .build();
         }
-        saveOrUpdate(update);
+        saveOrUpdate(mgr, update);
         return update;
     }
 
