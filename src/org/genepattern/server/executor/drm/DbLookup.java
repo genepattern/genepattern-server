@@ -13,7 +13,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.DbException;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.hibernate.Query;
@@ -26,17 +26,19 @@ import org.hibernate.Query;
 public class DbLookup implements DrmLookup {
     private static final Logger log = Logger.getLogger(DbLookup.class);
 
+    private final HibernateSessionManager mgr;
     private final String jobRunnerClassname;
     private final String jobRunnerName;
-    
-    public DbLookup(final String jobRunnerClassname, final String jobRunnerName) {
+
+    public DbLookup(final HibernateSessionManager mgr, final String jobRunnerClassname, final String jobRunnerName) {
+        this.mgr=mgr;
         this.jobRunnerClassname=jobRunnerClassname;
         this.jobRunnerName=jobRunnerName;
     }
 
     @Override
     public List<DrmJobRecord> getRunningDrmJobRecords() {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         final String[] runningJobStates = {
                 DrmJobState.QUEUED.name(),
                 DrmJobState.QUEUED_HELD.name(),
@@ -46,13 +48,13 @@ public class DbLookup implements DrmLookup {
                 DrmJobState.REQUEUED_HELD.name()
         };
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String hql="from "+JobRunnerJob.class.getName()
                     +" where jobRunnerClassname = :jobRunnerClassname and jobRunnerName = :jobRunnerName "
                     +" and jobState in (:runningJobStates)"
                     +" order by gpJobNo";
 
-            Query query=HibernateUtil.getSession().createQuery(hql);
+            Query query=mgr.getSession().createQuery(hql);
             query.setString("jobRunnerClassname", jobRunnerClassname);
             query.setString("jobRunnerName", jobRunnerName);
             query.setParameterList("runningJobStates", runningJobStates);
@@ -73,7 +75,7 @@ public class DbLookup implements DrmLookup {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -93,25 +95,30 @@ public class DbLookup implements DrmLookup {
     @Override
     public void insertJobRecord(final DrmJobSubmission jobSubmission) {
         final JobRunnerJob job = new JobRunnerJob.Builder(jobRunnerClassname, jobSubmission).jobRunnerName(jobRunnerName).build();
-        insertJobRunnerJob(job);
+        insertJobRunnerJob(mgr, job);
     }
     
     @Override
     public void updateJobStatus(final DrmJobRecord drmJobRecord, final DrmJobStatus drmJobStatus) {
         try {
-            new JobRunnerJobDao().updateJobStatus(drmJobRecord.getGpJobNo(), drmJobStatus);
+            new JobRunnerJobDao().updateJobStatus(mgr, drmJobRecord.getGpJobNo(), drmJobStatus);
         }
         catch (DbException e) {
             //ignore, exception logged in JobRunnerJobDao
         }
     }
 
-    public static void insertJobRunnerJob(final JobRunnerJob jobRecord) {
-        new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
+    public static void insertJobRunnerJob(final HibernateSessionManager mgr, final JobRunnerJob jobRecord) {
+        new JobRunnerJobDao().insertJobRunnerJob(mgr, jobRecord);
     }
-    
+
+    /** @deprecated */
     public JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) throws DbException {
         return new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+    }
+
+    public JobRunnerJob selectJobRunnerJob(final HibernateSessionManager mgr, final Integer gpJobNo) throws DbException {
+        return new JobRunnerJobDao().selectJobRunnerJob(mgr, gpJobNo);
     }
     
 }
