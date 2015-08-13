@@ -13,6 +13,7 @@ import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -40,6 +41,11 @@ public class UserUploadManager {
         return GpFileObjFactory.getUserUploadDir(userContext);
     }
     
+    static public GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpContext userContext, final File relativePath, final boolean initMetaData) throws Exception {
+        final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+        return getUploadFileObj(mgr, userContext, uploadFilePath, initMetaData);
+    }
+     
     /**
      * Create an instance of a GpFilePath object for the user upload file. 
      * If there is already a record in the DB, initialize the file meta data.
@@ -49,16 +55,11 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUploadFileObj(final GpContext userContext, final File relativePath, final boolean initMetaData) throws Exception {
-        final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
-        return getUploadFileObj(userContext, uploadFilePath, initMetaData);
-    }
-        
-    static public GpFilePath getUploadFileObj(final GpContext userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
+    static public GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
         //if there is a record in the DB ... 
         boolean isInTransaction = false;
         try {
-            isInTransaction = HibernateUtil.isInTransaction();
+            isInTransaction = mgr.isInTransaction();
         }
         catch (Throwable t) {
             String message = "DB connection error: "+t.getLocalizedMessage();
@@ -67,14 +68,14 @@ public class UserUploadManager {
         }
         
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
 
             if (initMetaData && fromDb != null) {
                 initMetadata(uploadFilePath, fromDb);
             }
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return uploadFilePath;
         }
@@ -85,16 +86,16 @@ public class UserUploadManager {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
-    static public boolean isUploadInDB(final GpContext userContext, final GpFilePath uploadFilePath) throws Exception {
+    static public boolean isUploadInDB(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath) throws Exception {
         // if there is a record in the DB ...
         boolean isInTransaction = false;
         try {
-            isInTransaction = HibernateUtil.isInTransaction();
+            isInTransaction = mgr.isInTransaction();
         }
         catch (Throwable t) {
             String message = "DB connection error: "+t.getLocalizedMessage();
@@ -103,10 +104,10 @@ public class UserUploadManager {
         }
 
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return fromDb != null;
         }
@@ -117,7 +118,7 @@ public class UserUploadManager {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -163,8 +164,8 @@ public class UserUploadManager {
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @throws Exception if a duplicate entry for the file is found in the database
      */
-    static public UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts) throws Exception {
-        return createUploadFile(userContext, gpFileObj, numParts, false);
+    static public UserUpload createUploadFile(HibernateSessionManager mgr, GpContext userContext, GpFilePath gpFileObj, int numParts) throws Exception {
+        return createUploadFile(mgr, userContext, gpFileObj, numParts, false);
     }
     
     /**
@@ -173,19 +174,20 @@ public class UserUploadManager {
      * Iff the current thread is not already in a DB transaction, this method will commit the transaction. 
      * Otherwise, it is up to the calling method to commit or rollback the transaction.
      * 
+     * @param mgr, database session
      * @param userContext, requires a valid userId,
      * @param gpFileObj, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
      */
-    public static UserUpload createUploadFile(GpContext userContext, GpFilePath gpFileObj, int numParts, boolean modDuplicate) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction(); 
+    public static UserUpload createUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFileObj, final int numParts, final boolean modDuplicate) throws Exception {
+        final boolean inTransaction = mgr.isInTransaction(); 
         log.debug("inTransaction="+inTransaction);
         try {
             // constructor begins a DB connection
-            HibernateUtil.beginTransaction();
-            UserUploadDao dao = new UserUploadDao();
+            mgr.beginTransaction();
+            UserUploadDao dao = new UserUploadDao(mgr);
             UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
             if (uu != null && !modDuplicate) {
                 log.error("Duplicate entry found in the database for relativePath=" + gpFileObj.getRelativePath());
@@ -196,20 +198,20 @@ public class UserUploadManager {
                 uu.setNumParts(numParts);
                 dao.saveOrUpdate( uu );
                 if (!inTransaction) {
-                    HibernateUtil.commitTransaction();
+                    mgr.commitTransaction();
                 }
                 
                 return uu;
             }
             catch (Throwable t) {
                 log.error("Error in createUploadFile() for relativePath="+gpFileObj.getRelativePath(), t);
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
                 throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
             }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -226,10 +228,10 @@ public class UserUploadManager {
      * @param totalParts
      * @throws Exception, if a part is received out of order.
      */
-    static public void updateUploadFile(GpContext userContext, GpFilePath gpFilePath, int partNum, int totalParts) throws Exception {
-        boolean inTransaction = HibernateUtil.isInTransaction();
+    static public void updateUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFilePath, final int partNum, final int totalParts) throws Exception {
+        boolean inTransaction = mgr.isInTransaction();
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFilePath);
             if (uu.getNumParts() != totalParts) {
                 throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
@@ -242,20 +244,20 @@ public class UserUploadManager {
             uu.init(gpFilePath.getServerFile());
             dao.saveOrUpdate(uu);
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new Exception("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
-    
+
     /**
      * Delete the record of the user upload file from the database, only if there is one.
      * 
@@ -263,23 +265,23 @@ public class UserUploadManager {
      * @return the number of records which were deleted, usually 0 or 1.
      * @throws Exception
      */
-    static public int deleteUploadFile(final GpFilePath gpFilePath) throws Exception {
-        boolean inTransaction = HibernateUtil.isInTransaction();
+    static public int deleteUploadFile(final HibernateSessionManager mgr, final GpFilePath gpFilePath) throws Exception {
+        boolean inTransaction = mgr.isInTransaction();
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             int numDeleted=dao.deleteUserUpload(gpFilePath.getOwner(), gpFilePath);
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return numDeleted;
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new Exception("Error deleting upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -296,11 +298,12 @@ public class UserUploadManager {
         return getFileTree(gpConfig, userContext);
     }
     static public GpDirectoryNode getFileTree(final GpConfig gpConfig, final GpContext userContext) throws Exception { 
+        final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
         final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
         //get the list from the DB
-        final List<UserUpload> all = getAllFiles(userContext);
+        final List<UserUpload> all = getAllFiles(mgr, userContext);
         
         //initialize the list of GpFilePath objects
         final SortedMap<String,GpDirectoryNode> allDirs = new TreeMap<String,GpDirectoryNode>();
@@ -384,11 +387,11 @@ public class UserUploadManager {
      * @param userContext
      * @return
      */
-    static private List<UserUpload> getAllFiles(final GpContext userContext) {
+    static private List<UserUpload> getAllFiles(final HibernateSessionManager mgr, final GpContext userContext) {
         final String userId=userContext.getUserId();
         final boolean hideTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
         final boolean includeTempFiles=!hideTmp;
-        UserUploadDao dao = new UserUploadDao();
+        UserUploadDao dao = new UserUploadDao(mgr);
         return dao.selectAllUserUpload(userId, includeTempFiles);
     }
     

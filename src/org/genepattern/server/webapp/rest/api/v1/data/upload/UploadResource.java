@@ -27,6 +27,8 @@ import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -384,8 +386,9 @@ public class UploadResource {
 
 
             // Update the database
-            UserUploadManager.createUploadFile(userContext, file, fileList.length);
-            UserUploadManager.updateUploadFile(userContext, file, fileList.length, fileList.length);
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            UserUploadManager.createUploadFile(mgr, userContext, file, fileList.length);
+            UserUploadManager.updateUploadFile(mgr, userContext, file, fileList.length, fileList.length);
 
             // Delete the temp directory, since we no longer need it
             FileUtils.deleteDirectory(uploadDir);
@@ -444,7 +447,7 @@ public class UploadResource {
             {
                 //update the user uploads database
                 JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
-                fileUtil.updateUploadsDb(file);
+                fileUtil.updateUploadsDb(HibernateUtil.instance(), file);
             }
             else
             {
@@ -459,28 +462,6 @@ public class UploadResource {
         catch (Throwable t) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
-    }
-
-    // save uploaded file to new location
-    private void writeToFile(InputStream uploadedInputStream,
-                             File uploadedFileLocation) {
-
-        try {
-            OutputStream out = new FileOutputStream(uploadedFileLocation);
-            int read = 0;
-            byte[] bytes = new byte[1024];
-
-            out = new FileOutputStream(uploadedFileLocation);
-            while ((read = uploadedInputStream.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
-
     }
 
     private void checkDiskQuota(GpConfig gpConfig, GpContext userContext, long fileSizeBytes) throws Exception

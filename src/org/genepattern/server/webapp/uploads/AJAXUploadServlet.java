@@ -12,6 +12,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -64,6 +65,7 @@ public class AJAXUploadServlet extends HttpServlet {
                 throw new FileUploadException("No user ID attached to session");
             }
 
+            @SuppressWarnings("deprecation")
             GpContext userContext = GpContext.getContextForUser(userId);
 
             final int partitionCount = Integer.parseInt(request.getHeader("partitionCount"));
@@ -168,14 +170,11 @@ public class AJAXUploadServlet extends HttpServlet {
         final File relativeFile = new File(uploadDir, name);
 
         try {
-            boolean initMetaData = !first;
             //special-case, block 'tmp'
             final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativeFile);
             if (DataManager.isTmpDir(uploadFilePath)) {
                 throw new FileUploadException("Can't save file with reserved filename: "+relativeFile.getPath());
             }
-
-            //final GpFilePath uploadFile = UserUploadManager.getUploadFileObj(userContext, uploadFilePath, initMetaData);
             return uploadFilePath;
         }
         catch (Exception e) {
@@ -211,7 +210,7 @@ public class AJAXUploadServlet extends HttpServlet {
 
         if (first) {
             try {
-                UserUploadManager.createUploadFile(userContext, file, count);
+                UserUploadManager.createUploadFile(HibernateUtil.instance(), userContext, file, count);
             }
             catch (Throwable t) {
                 log.error("Error creating entry in DB for '" + file.getName() + "': " + t.getLocalizedMessage(), t);
@@ -228,7 +227,7 @@ public class AJAXUploadServlet extends HttpServlet {
         }
 
         try {
-            UserUploadManager.updateUploadFile(userContext, file, index + 1, count);
+            UserUploadManager.updateUploadFile(HibernateUtil.instance(), userContext, file, index + 1, count);
         }
         catch (Throwable t) {
             log.error("Error updating database after file chunk appended '" + file.getName() + "': " + t.getLocalizedMessage(), t);

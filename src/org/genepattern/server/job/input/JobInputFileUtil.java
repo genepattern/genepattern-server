@@ -11,6 +11,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UserUploadFile;
@@ -215,12 +217,17 @@ public class JobInputFileUtil {
         return input;
     }
 
+    /** @deprecated */
+    public void updateUploadsDb(final GpFilePath gpFilePath) throws Exception {
+        updateUploadsDb(org.genepattern.server.database.HibernateUtil.instance(), gpFilePath);
+    }
+    
     /**
      * Save a record in the GP DB for the newly created user upload file.
      * @param gpFilePath
      */
-    public void updateUploadsDb(GpFilePath gpFilePath) throws Exception {
-        _addUploadFileToDb(gpFilePath);
+    public void updateUploadsDb(final HibernateSessionManager mgr, final GpFilePath gpFilePath) throws Exception {
+        _addUploadFileToDb(mgr, gpFilePath);
     }
 
     /**
@@ -230,7 +237,7 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    private void _addUploadFileToDb(final GpFilePath gpFilePath) throws Exception {
+    private void _addUploadFileToDb(final HibernateSessionManager mgr, final GpFilePath gpFilePath) throws Exception {
         if (!(gpFilePath instanceof UserUploadFile)) {
             throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }
@@ -248,11 +255,11 @@ public class JobInputFileUtil {
             parentPath += (dirname+"/");
             //create a new record for the directory, if necessary
             GpFilePath parent = GpFileObjFactory.getUserUploadFile(context, new File(parentPath));
-            UserUploadManager.createUploadFile(context, parent, 1, true);
-            UserUploadManager.updateUploadFile(context, parent, 1, 1);
+            UserUploadManager.createUploadFile(mgr, context, parent, 1, true);
+            UserUploadManager.updateUploadFile(mgr, context, parent, 1, 1);
         }
-        UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
-        UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+        UserUploadManager.createUploadFile(mgr, context, gpFilePath, 1, true);
+        UserUploadManager.updateUploadFile(mgr, context, gpFilePath, 1, 1);
     }
 
     /**
@@ -278,17 +285,19 @@ public class JobInputFileUtil {
         }
 
         final String userId=userUploadFile.getOwner();
+        final HibernateSessionManager mgr=HibernateUtil.instance();
+        @SuppressWarnings("deprecation")
         final GpContext userContext=GpContext.getContextForUser(userId);
         String parentPath="";
         for(String dirname : dirs) {
             parentPath += (dirname+"/");
             //create a new record for the directory, if necessary
             GpFilePath parent = GpFileObjFactory.getUserUploadFile(userContext, new File(parentPath));
-            UserUploadManager.createUploadFile(userContext, parent, 1, true);
-            UserUploadManager.updateUploadFile(userContext, parent, 1, 1);
+            UserUploadManager.createUploadFile(mgr, userContext, parent, 1, true);
+            UserUploadManager.updateUploadFile(mgr, userContext, parent, 1, 1);
         }
-        UserUploadManager.createUploadFile(userContext, userUploadFile, 1, true);
-        UserUploadManager.updateUploadFile(userContext, userUploadFile, 1, 1);
+        UserUploadManager.createUploadFile(mgr, userContext, userUploadFile, 1, true);
+        UserUploadManager.updateUploadFile(mgr, userContext, userUploadFile, 1, 1);
     }
 
     /**
@@ -311,16 +320,17 @@ public class JobInputFileUtil {
             f=f.getParentFile();
         }
 
+        final HibernateSessionManager mgr=HibernateUtil.instance();        
         String parentPath="";
         for(String dirname : dirs) {
             parentPath += (dirname+"/");
             //create a new record for the directory, if necessary
             GpFilePath parent = GpFileObjFactory.getUserUploadFile(context, new File(parentPath));
-            UserUploadManager.createUploadFile(context, parent, 1, true);
-            UserUploadManager.updateUploadFile(context, parent, 1, 1);
+            UserUploadManager.createUploadFile(mgr, context, parent, 1, true);
+            UserUploadManager.updateUploadFile(mgr, context, parent, 1, 1);
         }
-        UserUploadManager.createUploadFile(context, gpFilePath, 1, true);
-        UserUploadManager.updateUploadFile(context, gpFilePath, 1, 1);
+        UserUploadManager.createUploadFile(mgr, context, gpFilePath, 1, true);
+        UserUploadManager.updateUploadFile(mgr, context, gpFilePath, 1, 1);
     }
 
     static public GpFilePath getDistinctPathForExternalUrl(final GpConfig gpConfig, final GpContext jobContext, final URL url) throws Exception {
