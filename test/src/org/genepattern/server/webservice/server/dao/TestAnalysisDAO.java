@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -46,6 +45,7 @@ public class TestAnalysisDAO {
     private static File zipFile;
     private static TaskInfo taskInfo;
     
+    private GpConfig gpConfig;
     private GpContext gpContext;
     //private AnalysisJobUtil jobUtil;
 
@@ -69,7 +69,7 @@ public class TestAnalysisDAO {
         jobInput.addValue("input.filename", 
                 "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls");
         boolean initDefault=true;
-        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpContext, jobInput, parentJobId, initDefault);
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, parentJobId, initDefault);
         jobs.add(jobNo);
         return jobNo;
     }
@@ -111,6 +111,7 @@ public class TestAnalysisDAO {
         jobs=new ArrayList<Integer>();
         
         //jobUtil=new AnalysisJobUtil();
+        gpConfig=new GpConfig.Builder().build();
         gpContext=new GpContext.Builder()
             .userId(testUser)
             .taskInfo(taskInfo)

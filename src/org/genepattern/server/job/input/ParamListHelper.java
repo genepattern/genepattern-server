@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -155,6 +156,7 @@ public class ParamListHelper {
     }
     
     //inputs
+    final HibernateSessionManager mgr;
     final GpConfig gpConfig;
     final GpContext jobContext;
     final ParameterInfoRecord parameterInfoRecord;
@@ -164,18 +166,14 @@ public class ParamListHelper {
     final GroupInfo groupInfo;
     final ListMode listMode;
 
-    /** @deprecated, should pass in a valid GpConfig. */
-    public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
-        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, false);
+    public ParamListHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
+        this(mgr, gpConfig, jobContext, parameterInfoRecord, inputValues, false);
     }
-    /** @deprecated, should pass in a valid GpConfig. */
-    public ParamListHelper(final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
-        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, initDefault);
-    }
-    public ParamListHelper(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
-        this(ServerConfigurationFactory.instance(), jobContext, parameterInfoRecord, inputValues, false);
-    }
-    public ParamListHelper(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+
+    public ParamListHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+        if (mgr==null) {
+            throw new IllegalArgumentException("mgr==null");
+        }
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
         }
@@ -185,6 +183,7 @@ public class ParamListHelper {
         if (parameterInfoRecord==null) {
             throw new IllegalArgumentException("parameterInfoRecord==null");
         }
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.parameterInfoRecord=parameterInfoRecord;
@@ -530,7 +529,7 @@ public class ParamListHelper {
         {
             final boolean downloadExternalFiles = !passByReference;
             final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
-            final GpFilePath filelistFile=createFilelist(listOfValues, passByReference);
+            final GpFilePath filelistFile=createFilelist(mgr, listOfValues, passByReference);
 
             String filelist=filelistFile.getUrl().toExternalForm();
             parameterInfoRecord.getActual().setValue(filelist);
@@ -665,7 +664,7 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    private GpFilePath createFilelist(final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
+    private GpFilePath createFilelist(final HibernateSessionManager mgr, final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
         final int index=-1;
@@ -676,12 +675,12 @@ public class ParamListHelper {
         //write the file list
         ParamListWriter writer=new ParamListWriter.Default();
         writer.writeParamList(gpFilePath, listOfValues, urlMode);
-        fileUtil.updateUploadsDb(gpFilePath);
+        fileUtil.updateUploadsDb(mgr, gpFilePath);
         return gpFilePath;
     }
     
     protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.getListOfValues(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
+        return ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
     }
 
     /**
@@ -696,7 +695,7 @@ public class ParamListHelper {
      * @return
      * @throws Exception
      */
-    public static List<GpFilePath> getListOfValues(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
+    public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
             final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval);
@@ -706,7 +705,7 @@ public class ParamListHelper {
         // If necessary, download data from external sites
         if (downloadExternalUrl) {
             for(final Record rec : tmpList) {
-                downloadFromRecord(gpConfig, jobContext, rec);
+                downloadFromRecord(mgr, gpConfig, jobContext, rec);
             }
         } 
 
@@ -717,10 +716,10 @@ public class ParamListHelper {
         return values;
     }
 
-    protected static void downloadFromRecord(final GpConfig gpConfig, final GpContext jobContext, final Record rec) throws Exception, JobDispatchException {
+    protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final Record rec) throws Exception, JobDispatchException {
         // Handle GenomeSpace URLs
         if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
-            fileListGenomeSpaceToUploads(jobContext, rec.gpFilePath, rec.url);
+            fileListGenomeSpaceToUploads(mgr, jobContext, rec.gpFilePath, rec.url);
         }
 
         // Handle external URLs
@@ -917,7 +916,7 @@ public class ParamListHelper {
      * @param url
      * @throws Exception
      */
-    public static void fileListGenomeSpaceToUploads(GpContext jobContext, GpFilePath gpPath, URL url) throws Exception {
+    protected static void fileListGenomeSpaceToUploads(final HibernateSessionManager mgr, final GpContext jobContext, final GpFilePath gpPath, URL url) throws Exception {
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
             // Make sure the user is logged into GenomeSpace
             GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
@@ -944,7 +943,7 @@ public class ParamListHelper {
 
                 //add a record of the file to the DB, so that a link will appear in the Uploads tab
                 JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
-                jobInputFileUtil.updateUploadsDb(gpPath);
+                jobInputFileUtil.updateUploadsDb(mgr, gpPath);
             }
         }
         else {

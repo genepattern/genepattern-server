@@ -1091,7 +1091,7 @@ public class GenePatternAnalysisTask {
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
                                     inputParam.addValue(new ParamValue(pinfo.getValue()));
-                                    ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
+                                    ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
                                         gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
@@ -1532,7 +1532,7 @@ public class GenePatternAnalysisTask {
         final String pname=pinfoRecord.getFormal().getName();
         final Param inputParam=new Param(new ParamId(pname), false);
         inputParam.addValue(new ParamValue(pinfo.getValue()));
-        ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
+        ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
         GpFilePath directory=null;
         try {
             directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));

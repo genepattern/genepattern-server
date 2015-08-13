@@ -148,7 +148,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                 // validate num values
                 // and initialize input file (or parameter) lists as needed
                 Param inputParam=jobInput.getParam( entry.getKey() );
-                ParamListHelper plh=new ParamListHelper(gpConfig, taskContext, entry.getValue(), inputParam, initDefault);
+                ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, taskContext, entry.getValue(), inputParam, initDefault);
                 plh.validateNumValues();
                 plh.updatePinfoValue();
             }
@@ -220,7 +220,7 @@ public class JobInputApiImplV2 implements JobInputApi {
         ) throws JobSubmissionException
         {
             try {
-                AnalysisDAO ds = new AnalysisDAO();
+                AnalysisDAO ds = new AnalysisDAO(HibernateUtil.instance());
                 Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
                 if (jobNo == null) {
                     throw new JobSubmissionException(

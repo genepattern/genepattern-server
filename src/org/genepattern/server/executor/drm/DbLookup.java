@@ -84,7 +84,7 @@ public class DbLookup implements DrmLookup {
     public DrmJobRecord lookupJobRecord(final Integer gpJobNo) {
         JobRunnerJob jobRunnerJob=null;
         try {
-            jobRunnerJob=selectJobRunnerJob(gpJobNo);
+            jobRunnerJob=selectJobRunnerJob(mgr, gpJobNo);
         }
         catch (DbException e) {
             //ignore
@@ -110,11 +110,6 @@ public class DbLookup implements DrmLookup {
 
     public static void insertJobRunnerJob(final HibernateSessionManager mgr, final JobRunnerJob jobRecord) {
         new JobRunnerJobDao().insertJobRunnerJob(mgr, jobRecord);
-    }
-
-    /** @deprecated */
-    public JobRunnerJob selectJobRunnerJob(final Integer gpJobNo) throws DbException {
-        return new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
     }
 
     public JobRunnerJob selectJobRunnerJob(final HibernateSessionManager mgr, final Integer gpJobNo) throws DbException {

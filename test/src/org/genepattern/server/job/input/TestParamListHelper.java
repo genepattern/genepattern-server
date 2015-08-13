@@ -11,6 +11,7 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.job.input.ParamListHelper.Record;
 import org.genepattern.server.job.input.cache.FileCache;
@@ -32,6 +33,7 @@ public class TestParamListHelper {
     private String ftpValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
     private String httpValue="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls";
 
+    private HibernateSessionManager mgr;
     GpConfig gpConfig;
     GpContext jobContext;
     ParameterInfo formalParam;
@@ -46,6 +48,7 @@ public class TestParamListHelper {
 
     @Before
     public void setUp() throws Exception {
+        mgr=DbUtil.getTestDbSession();
         formalParam= ParameterInfoUtil.initFilelistParam("input.files");
         jobInput=new JobInput();
         jobInput.addValue("input.files", ftpValue);
@@ -137,7 +140,7 @@ public class TestParamListHelper {
                 record.getGpFilePath().getServerFile().exists());
 
         DbUtil.initDb();
-        ParamListHelper.downloadFromRecord(gpConfig, mockContext, record);
+        ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,
                 record.getGpFilePath().getServerFile().exists());
@@ -159,7 +162,7 @@ public class TestParamListHelper {
                 record.getGpFilePath().getServerFile());
         
         DbUtil.initDb();
-        ParamListHelper.downloadFromRecord(gpConfig, mockContext, record);
+        ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,
                 record.getGpFilePath().getServerFile().exists());
