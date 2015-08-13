@@ -8,9 +8,13 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
+import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.database.SchemaUpdater;
@@ -18,27 +22,55 @@ import org.hibernate.Query;
 import org.junit.Assert;
 import org.junit.Ignore;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 @Ignore
 public class DbUtil {
     private static boolean isDbInitialized = false;
     public static final File schemaDir=new File("website/WEB-INF/schema");
+    private static LoadingCache<String,HibernateSessionManager> testDbCache=initTestDbCache();
+    private static LoadingCache<String,HibernateSessionManager> initTestDbCache() {
+        return CacheBuilder.newBuilder().build(
+                new CacheLoader<String,HibernateSessionManager>() {
+                    public HibernateSessionManager load(String key) throws DbException {
+                        return initTestDbSession(key);
+                    }
+                }
+                );
+    }
     
     public enum DbType {
         HSQLDB,
         MYSQL;
     }
     
+    public static HibernateSessionManager getTestDbSession() throws ExecutionException {
+        return getTestDbSession("testdb");
+    }
+    
+    public static HibernateSessionManager getTestDbSession(final String dbName) throws ExecutionException {
+        return testDbCache.get(dbName);
+    }
+    
+    public static HibernateSessionManager initTestDbSession(final String dbName) throws DbException {
+        HibernateSessionManager mgr=initSessionMgrHsqlInMemory(dbName);
+        SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-");
+        return mgr;
+    }
+    
     /**
      * Create a new HSQL DB connection to a "Memory-Only Database". The db is not persistent and exists entirely in RAM. 
      * No need to start it up or shut it down.
      * 
-     * @param inMemId, a unique name for the database, to allow for multiple instances in the same JVM. Must be a lower-case single-word identifier.
+     * @param dbName, a unique name for the database, to allow for multiple instances in the same JVM. Must be a lower-case single-word identifier.
      * @return
      * @throws IOException
      * @throws FileNotFoundException
      */
-    public static HibernateSessionManager initSessionMgrHsqlInMemory(final String inMemId) throws IOException, FileNotFoundException {
-        final String connectionUrl="jdbc:hsqldb:mem:"+inMemId;
+    public static HibernateSessionManager initSessionMgrHsqlInMemory(final String dbName) {
+        final String connectionUrl="jdbc:hsqldb:mem:"+dbName;
         return initSessionMgrHsql(connectionUrl);
     }
     
@@ -56,7 +88,7 @@ public class DbUtil {
         return initSessionMgrHsql(connectionUrl);
     }
     
-    protected static HibernateSessionManager initSessionMgrHsql(final String connectionUrl) throws IOException, FileNotFoundException {
+    protected static HibernateSessionManager initSessionMgrHsql(final String connectionUrl) {
         // init common properties
         final Properties p=new Properties();
         p.setProperty("hibernate.current_session_context_class", "thread");
@@ -73,7 +105,7 @@ public class DbUtil {
         return mgr;
     }
 
-    /** @deprecated */
+    /** @deprecated, TODO: make private, remove from project */
     public static void initDb() throws Exception {
         initDb(DbType.HSQLDB);
     }
@@ -205,18 +237,18 @@ public class DbUtil {
 
     /** @deprecated */
     static public String addUserToDb(final String gp_username) {
-        return addUserToDb(org.genepattern.server.database.HibernateUtil.instance(), gp_username);
+        return addUserToDb(ServerConfigurationFactory.instance(), org.genepattern.server.database.HibernateUtil.instance(), gp_username);
     }
     
-    static public String addUserToDb(final HibernateSessionManager mgr, final String gp_username) {
+    static public String addUserToDb(final GpConfig gpConfig, final HibernateSessionManager mgr, final String gp_username) {
         final boolean isInTransaction = mgr.isInTransaction();
-        final boolean userExists=UserAccountManager.instance().userExists(gp_username);
+        final boolean userExists=UserAccountManager.userExists(mgr, gp_username);
         final String gp_email=null; //can be null
         final String gp_password=null; //can be null
         
         if (!userExists) {
             try {
-                UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
+                UserAccountManager.createUser(gpConfig, mgr, gp_username, gp_password, gp_email);
                 if (!isInTransaction) {
                     mgr.commitTransaction();
                 }
