@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -29,7 +31,7 @@ public class AnalysisJobUtil {
     }
     
     public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext taskContext, final JobInput jobInput, final boolean initDefault) throws Exception {
-        return addJobToDb(mgr, taskContext, jobInput, -1, initDefault);
+        return addJobToDb(mgr, ServerConfigurationFactory.instance(), taskContext, jobInput, -1, initDefault);
     }
 
     /** @deprecated */
@@ -39,7 +41,7 @@ public class AnalysisJobUtil {
 
     /** @deprecated */
     public static Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final Integer parentJobNumber, final boolean initDefault) throws Exception {
-        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), taskContext, jobInput, parentJobNumber, initDefault);         
+        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), ServerConfigurationFactory.instance(), taskContext, jobInput, parentJobNumber, initDefault);         
     }
     
     /**
@@ -53,7 +55,7 @@ public class AnalysisJobUtil {
      * @return
      * @throws Exception
      */
-    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext taskContext, final JobInput jobInput, final Integer parentJobNumber, final boolean initDefault) throws Exception {
+    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext taskContext, final JobInput jobInput, final Integer parentJobNumber, final boolean initDefault) throws Exception {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -63,7 +65,7 @@ public class AnalysisJobUtil {
         if (taskContext.getTaskInfo()==null) {
             throw new IllegalArgumentException("taskContext.taskInfo must be set");
         }
-        final ParameterInfo[] parameterInfoArray=initParameterValues(taskContext, jobInput, taskContext.getTaskInfo(), initDefault);
+        final ParameterInfo[] parameterInfoArray=initParameterValues(mgr, gpConfig, taskContext, jobInput, taskContext.getTaskInfo(), initDefault);
         return addJobToDb(mgr, taskContext.getUserId(), taskContext.getTaskInfo(), parameterInfoArray, parentJobNumber); 
     }
     
@@ -114,7 +116,7 @@ public class AnalysisJobUtil {
      * @return
      * @throws Exception
      */
-    public static ParameterInfo[] initParameterValues(final GpContext userContext, final JobInput jobInput, final TaskInfo taskInfo, final boolean initDefault) throws Exception {
+    public static ParameterInfo[] initParameterValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobInput jobInput, final TaskInfo taskInfo, final boolean initDefault) throws Exception {
         if (jobInput==null) {
             throw new IllegalArgumentException("jobInput==null");
         }
@@ -130,7 +132,7 @@ public class AnalysisJobUtil {
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(userContext, entry.getValue(), inputParam, initDefault);
+            ParamListHelper plh=new ParamListHelper(mgr, gpConfig, userContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }

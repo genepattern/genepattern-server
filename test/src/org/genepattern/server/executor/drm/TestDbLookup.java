@@ -22,6 +22,7 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.DbException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
@@ -63,6 +64,7 @@ public class TestDbLookup {
     };
 
     private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
     private DrmJobSubmission jobSubmission;
     private DbLookup dbLookup;
     private File jobResultsDir;
@@ -75,7 +77,7 @@ public class TestDbLookup {
         .build();
         final AnalysisJobUtil jobUtil=new AnalysisJobUtil();
         final boolean initDefault=true;
-        final int jobNumber=AnalysisJobUtil.addJobToDb(mgr, taskContext, jobInput, -1, initDefault);
+        final int jobNumber=AnalysisJobUtil.addJobToDb(mgr, gpConfig, taskContext, jobInput, -1, initDefault);
         final JobInfo jobInfo=jobUtil.fetchJobInfoFromDb(mgr, jobNumber);
         final GpContext jobContext=new GpContext.Builder()
             .userId(userId)
@@ -92,16 +94,9 @@ public class TestDbLookup {
         .build();
         return jobSubmission;
     }
-    
-    private void deleteJob(final int jobId) throws Exception {
-        final AnalysisJobUtil jobUtil=new AnalysisJobUtil();
-        jobUtil.deleteJobFromDb(mgr, jobId);
-    }
 
     @BeforeClass
     public static void beforeClass() throws Exception{
-        //DbUtil.initDb();
-        
         final String cleZip="modules/ConvertLineEndings_v2.zip";
         final File zipFile=FileUtil.getDataFile(cleZip);
         cle=TaskUtil.getTaskInfoFromZip(zipFile);
@@ -113,7 +108,7 @@ public class TestDbLookup {
     @Before
     public void before() throws Exception {
         mgr=DbUtil.getTestDbSession();
-        //DbUtil.deleteAllRows(JobRunnerJob.class);
+        gpConfig=new GpConfig.Builder().build();
         DbUtil.deleteAllRows(mgr, JobRunnerJob.class);
         jobSubmission=addJob(cle, cleInput, cleCmdLine);
         dbLookup = new DbLookup(mgr, jobRunnerClassname, jobRunnerName);
@@ -211,7 +206,8 @@ public class TestDbLookup {
         
         //test cascade delete
         int gpJobNo_01=jobSubmission_01.getJobInfo().getJobNumber();
-        deleteJob(gpJobNo_01);
+        AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo_01);
+
         Assert.assertNull("cascade", dbLookup.lookupJobRecord(gpJobNo_01));
     }
     
