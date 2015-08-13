@@ -364,7 +364,7 @@ public class MigrationTool {
         } 
         
         for(String userId : userIds) {
-            DataManager.syncUploadFiles(userId);
+            DataManager.syncUploadFiles(HibernateUtil.instance(), userId);
         }
     }
     

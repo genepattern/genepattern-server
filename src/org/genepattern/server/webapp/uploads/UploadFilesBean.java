@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.Node;
@@ -77,9 +78,11 @@ public class UploadFilesBean {
     public final String SELECTED_TAB = "selectedTab";
     
     public UploadFilesBean() {
+        mgr=org.genepattern.server.database.HibernateUtil.instance();
         initUserUploadTree();
     }
 
+    private final HibernateSessionManager mgr;
     private List<FileInfoWrapper> files;
     private List<DirectoryInfoWrapper> directories;
     private DirectoryInfoWrapper rootDir;
@@ -264,6 +267,7 @@ public class UploadFilesBean {
         UIBeanHelper.getSession().setAttribute("uploadPath", filePath);
     }
     
+    @SuppressWarnings("deprecation")
     public File getUserUploadDir() {
         return ServerConfigurationFactory.instance().getUserUploadDir(GpContext.getContextForUser(UIBeanHelper.getUserId()));
     }
@@ -273,6 +277,7 @@ public class UploadFilesBean {
         files = new ArrayList<FileInfoWrapper>();
         directories = new ArrayList<DirectoryInfoWrapper>();
         try {
+            @SuppressWarnings("deprecation")
             GpContext userContext = GpContext.getContextForUser(currentUser);
             GpDirectoryNode userUploadRoot = UserUploadManager.getFileTree(userContext);
             rootDir = initFilesFromDir(userUploadRoot);
@@ -371,6 +376,7 @@ public class UploadFilesBean {
         }
         parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
         
+        @SuppressWarnings("deprecation")
         GpContext userContext = GpContext.getContextForUser(UIBeanHelper.getUserId());
         final File relativePath=DataManager.initSubdirectory(parentPath, subdirName);
         //special-case: don't allow creation of top-level tmp directory
@@ -380,7 +386,7 @@ public class UploadFilesBean {
             return;
         }
         
-        boolean success = DataManager.createSubdirectory(userContext, relativePath);
+        boolean success = DataManager.createSubdirectory(mgr, userContext, relativePath);
         if (success) {
             UIBeanHelper.setInfoMessage("Subdirectory " + subdirName + " successfully created");
             files = null;
@@ -405,7 +411,7 @@ public class UploadFilesBean {
         if (passedId == null) {
             passedId = UIBeanHelper.getUserId();
         }
-        DataManager.syncUploadFiles(passedId);
+        DataManager.syncUploadFiles(mgr, passedId);
     }
     
     public void setSelectedTab(String selected) {
@@ -413,11 +419,13 @@ public class UploadFilesBean {
     }
     
     public int getPartitionLength() {
+        @SuppressWarnings("deprecation")
         GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
         return ServerConfigurationFactory.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
     }
     
     public long getMaxUploadSize() {
+        @SuppressWarnings("deprecation")
         GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
         return ServerConfigurationFactory.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
     }
@@ -429,6 +437,7 @@ public class UploadFilesBean {
     
     public boolean getUploadEnabled() {
         String userId = UIBeanHelper.getUserId();
+        @SuppressWarnings("deprecation")
         GpContext userContext = GpContext.getContextForUser(userId);
         return ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
@@ -796,7 +805,7 @@ public class UploadFilesBean {
                 return false;
             }
             
-            boolean deleted = DataManager.deleteUserUploadFile(currentUser, file);
+            boolean deleted = DataManager.deleteUserUploadFile(mgr, currentUser, file);
             if (deleted) {
                 UIBeanHelper.setInfoMessage("Deleted file: " + file.getName());
                 return true;
