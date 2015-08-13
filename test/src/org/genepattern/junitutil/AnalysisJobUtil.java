@@ -150,7 +150,7 @@ public class AnalysisJobUtil {
         return addJobToDb(GpContext.getServerContext());
     }
     
-    public Integer addJobToDb(HibernateSessionManager mgr) {
+    public static Integer addJobToDb(HibernateSessionManager mgr) {
         return addJobToDb(mgr, GpContext.getServerContext());
     }
     
@@ -159,7 +159,7 @@ public class AnalysisJobUtil {
         return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userContext);
     }
 
-    public Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext) {
+    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext) {
         final int parentJobId=-1;
         return addJobToDb(mgr, userContext, parentJobId);
     }
