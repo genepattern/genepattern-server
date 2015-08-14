@@ -11,11 +11,6 @@ import org.genepattern.server.database.HibernateSessionManager;
 public class JobRunnerJobDao {
     private static final Logger log = Logger.getLogger(JobRunnerJobDao.class);
 
-    /** @deprecated */
-    public void insertJobRunnerJob(final JobRunnerJob jobRecord) {
-        insertJobRunnerJob(org.genepattern.server.database.HibernateUtil.instance(), jobRecord);
-    }
-
     public void insertJobRunnerJob(final HibernateSessionManager mgr, final JobRunnerJob jobRecord) {
 
         final boolean isInTransaction=mgr.isInTransaction();
