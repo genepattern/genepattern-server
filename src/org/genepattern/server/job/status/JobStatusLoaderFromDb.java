@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.output.JobOutputFile;
@@ -23,20 +23,32 @@ import org.genepattern.server.job.output.dao.JobOutputDao;
 public class JobStatusLoaderFromDb implements JobStatusLoader {
     private static final Logger log = Logger.getLogger(JobStatusLoaderFromDb.class);
 
+    private final HibernateSessionManager mgr;
     private final String gpUrl;
-    private JobRunnerJobDao jobRunnerJobDao;
-    private JobOutputDao jobOutputDao;
+    private final JobRunnerJobDao jobRunnerJobDao;
+    private final JobOutputDao jobOutputDao;
+    
+    /** @deprecated */
+    public JobStatusLoaderFromDb(final String gpUrl) {
+        this(org.genepattern.server.database.HibernateUtil.instance(), gpUrl);
+    }
     
     /**
      * Create default instance.
      * @param gpUrl, requires a valid gpUrl to initialize links to log files
      *     e.g.  "http://127.0.0.1:8080/gp/"
      */
-    public JobStatusLoaderFromDb(final String gpUrl) {
-        this(gpUrl, new JobRunnerJobDao(), new JobOutputDao());
+    public JobStatusLoaderFromDb(final HibernateSessionManager mgr,final String gpUrl) {
+        this(mgr, gpUrl, new JobRunnerJobDao(), new JobOutputDao(mgr));
     }
 
+    /** @deprecated */
     public JobStatusLoaderFromDb(final String gpUrl, final JobRunnerJobDao jobRunnerJobDao, final JobOutputDao jobOutputDao) {
+        this(org.genepattern.server.database.HibernateUtil.instance(), gpUrl, jobRunnerJobDao, jobOutputDao);
+    }
+
+    public JobStatusLoaderFromDb(final HibernateSessionManager mgr, final String gpUrl, final JobRunnerJobDao jobRunnerJobDao, final JobOutputDao jobOutputDao) {
+        this.mgr=mgr;
         this.gpUrl=gpUrl;
         this.jobRunnerJobDao=jobRunnerJobDao;
         this.jobOutputDao=jobOutputDao;
@@ -50,10 +62,10 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
         String executionLogLocation=null;
         String stderrLocation=null;
 
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
             try {
-                jobStatusRecord=jobRunnerJobDao.selectJobRunnerJob(gpJobNo);
+                jobStatusRecord=jobRunnerJobDao.selectJobRunnerJob(mgr, gpJobNo);
             }
             catch (DbException e) {
                 // error logged in calling method
@@ -96,7 +108,7 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
