@@ -232,6 +232,8 @@ public class UserAccountManager {
      * 
      * @param username
      * @throws AuthenticationException - if the user is already registered.
+     * 
+     * @deprecated should pass in valid HibernateSessionManager and GpConfig
      */
     public void createUser(String username) throws AuthenticationException {
         String password = "";
