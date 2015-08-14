@@ -9,11 +9,14 @@ import java.util.List;
 
 import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit tests for the UserUploadDao class.
@@ -30,16 +33,26 @@ public class TestUserUploadDao {
 
     static String adminUser;
     static String testUser;
+    
+    private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
      
-    @BeforeClass
-    static public void beforeClass() throws Exception {
-        DbUtil.initDb();
-        adminUser=DbUtil.addUserToDb("admin");
-        testUser=DbUtil.addUserToDb("test");
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+    
+    @Before
+    public void setUp() throws Exception {
+        mgr=DbUtil.getTestDbSession();
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
+        adminUser=DbUtil.addUserToDb(gpConfig, mgr, "admin");
+        testUser=DbUtil.addUserToDb(gpConfig, mgr, "test");
         
         //initialize by adding a bunch of records
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             
             //-------------------------
             // admin acount
@@ -89,10 +102,10 @@ public class TestUserUploadDao {
             createUserUploadRecord(testUser, new File("all_aml_test.gct"), new Date());
             createUserUploadRecord(testUser, new File("all_aml_test.cls"), new Date());
 
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
@@ -106,12 +119,12 @@ public class TestUserUploadDao {
 
         //query for tmp files
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(adminUser, oneDayAgo);
             Assert.assertEquals("num tmpFiles", 7, tmpFiles.size());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
@@ -122,12 +135,12 @@ public class TestUserUploadDao {
     public void testSelectTmpUserUploadsToPurgeTimestamp() {
         //query for tmp files
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             List<UserUpload> tmpFiles = dao.selectTmpUserUploadsToPurge(testUser, oneDayAgo);
             Assert.assertEquals("num tmpFiles", 6, tmpFiles.size());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
 
@@ -139,15 +152,14 @@ public class TestUserUploadDao {
     public void testSelectAllUserUploadExceptTmpFiles() {
         //set up
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             final boolean includeTempFiles=false;
             List<UserUpload> userUploads=dao.selectAllUserUpload(adminUser, includeTempFiles);
             Assert.assertEquals("num files not including tmp", 7, userUploads.size());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
-        
     }
 
     /**
@@ -158,15 +170,14 @@ public class TestUserUploadDao {
     public void testSelectAllUserUploadIncludeTmpFiles() {
         //set up
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             final boolean includeTempFiles=true;
             List<UserUpload> userUploads=dao.selectAllUserUpload(adminUser, includeTempFiles);
             Assert.assertEquals("num files including tmp", 18, userUploads.size());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
-
     }
 
     /**
@@ -177,13 +188,13 @@ public class TestUserUploadDao {
     public void testGetSizeOfUserUploadExceptTmpFiles() {
         //set up
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             final boolean includeTempFiles=false;
             Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
             Assert.assertEquals("size of files excluding tmp", 60, size.getNumBytes());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
 
@@ -195,17 +206,17 @@ public class TestUserUploadDao {
     public void testGetSizeOfUserUploadIncludeTmpFiles() {
         //set up
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             final boolean includeTempFiles=true;
             Memory size = dao.sizeOfAllUserUploads(adminUser, includeTempFiles);
             Assert.assertEquals("size of files including tmp", 150, size.getNumBytes());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
 
-    static private void createUserUploadRecord(final String userId, final File relativeFile) {
+    private void createUserUploadRecord(final String userId, final File relativeFile) {
         final Date date;
         if (relativeFile.exists()) {
             date=new Date(relativeFile.lastModified());
@@ -216,11 +227,11 @@ public class TestUserUploadDao {
         createUserUploadRecord(userId, relativeFile, date);
     }
     
-    static private void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) {
+    private void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) {
         createUserUploadRecord(userId, relativeFile, new Date(System.currentTimeMillis() - timeOffset));
     }
 
-    static private void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) {
+    private void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) {
         UserUpload uu = new UserUpload();
         uu.setUserId(userId);
         uu.setPath(relativeFile.getPath());
@@ -243,20 +254,20 @@ public class TestUserUploadDao {
 
         uu.setFileLength(10);
 
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            new UserUploadDao().saveOrUpdate(uu);
+            mgr.beginTransaction();
+            new UserUploadDao(mgr).saveOrUpdate(uu);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
