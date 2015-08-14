@@ -13,11 +13,10 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * junit test cases for recording job output files.
@@ -25,6 +24,7 @@ import org.junit.Test;
  *
  */
 public class TestJobOutputRecorder {
+    private HibernateSessionManager mgr;
     private GpConfig gpConfig=null;
     private GpContext gpContext=null;
 
@@ -33,8 +33,8 @@ public class TestJobOutputRecorder {
     
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
-        gpJobNo=new AnalysisJobUtil().addJobToDb();
+        mgr=DbUtil.getTestDbSession();
+        gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         jobDir=FileUtil.getDataFile("jobResults/0/").getAbsoluteFile();
         gpContext=new GpContext.Builder()
             .jobNumber(gpJobNo)
@@ -43,18 +43,18 @@ public class TestJobOutputRecorder {
 
     @Test
     public void onJobCompletion() throws Exception {
-        JobOutputRecorder.recordOutputFilesToDb(gpConfig, gpContext, jobDir);
+        JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, gpContext, jobDir);
 
         List<JobOutputFile> results;
         boolean includeHidden=true;
         boolean includeDeleted=false;
         try {
-            HibernateUtil.beginTransaction();
-            JobOutputDao dao=new JobOutputDao();
+            mgr.beginTransaction();
+            JobOutputDao dao=new JobOutputDao(mgr);
             results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         
         assertEquals("number of records in database", 15, results.size());
@@ -72,14 +72,14 @@ public class TestJobOutputRecorder {
         assertEquals("total file size in bytes", 3533748, totalFileSize); 
         
         // test cascade delete
-        new AnalysisJobUtil().deleteJobFromDb(gpJobNo);
+        AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
         try {
-            HibernateUtil.beginTransaction();
-            JobOutputDao dao=new JobOutputDao();
+            mgr.beginTransaction();
+            JobOutputDao dao=new JobOutputDao(mgr);
             results=dao.selectOutputFiles(gpJobNo, includeHidden, includeDeleted);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         assertEquals("results.size after cascade delete", 0, results.size());
     }
