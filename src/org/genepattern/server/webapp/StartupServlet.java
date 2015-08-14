@@ -388,7 +388,7 @@ public class StartupServlet extends HttpServlet {
         // import installed plugins (aka patches) from the root plugin directory into the GP database
         try {
             getLog().info("\tmigrating installed plugins ...");
-            MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext);
+            MigratePlugins migratePlugins=new MigratePlugins(HibernateUtil.instance(), gpConfig, gpContext);
             migratePlugins.migratePlugins();
         }
         catch (Throwable t) {
