@@ -4,7 +4,7 @@
 package org.genepattern.server.tag.dao;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.tag.Tag;
 import org.hibernate.Query;
 
@@ -17,6 +17,12 @@ import java.util.List;
 public class TagDao
 {
     private static final Logger log = Logger.getLogger(TagDao.class);
+    
+    private final HibernateSessionManager mgr;
+    
+    public TagDao(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
 
     public void insertTag(final Tag tag)
     {
@@ -25,36 +31,36 @@ public class TagDao
             return;
         }
 
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().save(tag);
+            mgr.beginTransaction();
+            mgr.getSession().save(tag);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t)
         {
             log.error("Error adding tag=" + tag.getTag(), t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
     public Tag selectTagById(final int tagId) {
         Tag tag = null;
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            tag = (Tag)HibernateUtil.getSession().get(Tag.class, tagId);
+            mgr.beginTransaction();
+            tag = (Tag)mgr.getSession().get(Tag.class, tagId);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
@@ -62,45 +68,18 @@ public class TagDao
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
         return tag;
     }
 
-    public List<Tag> selectAllTags(final boolean includePrivate) {
-        List<Tag> tagList = new ArrayList();
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-
-            String hql = "from "+Tag.class.getName()+" jt";
-            if(!includePrivate)
-            {
-                hql += " where jt.privateTag = :includePrivate";
-            }
-
-            Query query = HibernateUtil.getSession().createQuery( hql );
-            tagList = query.list();
-        }
-        catch (Throwable t) {
-            log.error("Error getting tags",t);
-        }
-        finally {
-            if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-
-        return tagList;
-    }
-
+    @SuppressWarnings("unchecked")
     public List<Tag> selectTagsAvailableToUser(final String userId, final boolean includePublicTags) {
-        List<Tag> tagList = new ArrayList();
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
 
             String hql = "from "+ Tag.class.getName()+" jt where jt.userId = :userId";
             if(includePublicTags)
@@ -108,7 +87,7 @@ public class TagDao
                 hql += " or jt.publicTag = :publicTag";
             }
 
-            Query query = HibernateUtil.getSession().createQuery( hql );
+            Query query = mgr.getSession().createQuery( hql );
             query.setString("userId", userId);
 
             if(includePublicTags)
@@ -116,28 +95,30 @@ public class TagDao
                 query.setBoolean("publicTag", includePublicTags);
             }
 
-            tagList = query.list();
+            final List<Tag> rval=query.list();
+            return rval;
         }
         catch (Throwable t) {
             log.error("Error getting tags available to user " + userId,t);
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
+        final List<Tag> tagList = new ArrayList<Tag>();
         return tagList;
     }
 
     public boolean deleteTag(final int id)
     {
         boolean deleted = false;
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
 
-            Tag tag = (Tag)HibernateUtil.getSession().get(Tag.class, Integer.valueOf(id));
+            Tag tag = (Tag)mgr.getSession().get(Tag.class, Integer.valueOf(id));
             if(tag == null)
             {
                 //log error and do nothing
@@ -145,21 +126,21 @@ public class TagDao
                 return deleted;
             }
 
-            HibernateUtil.getSession().delete(tag);
+            mgr.getSession().delete(tag);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
 
             deleted = true;
         }
         catch (Throwable t) {
             log.error("Error deleting tag wih id="+id, t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
