@@ -16,6 +16,7 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.output.GpFileType;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class TestJobStatusLoaderFromDb {
+    private HibernateSessionManager mgr;
     private String gpUrl="http://127.0.0.1:8080/gp/";
     private GpContext jobContext;
     private final Integer gpJobNo=0;
@@ -41,7 +43,7 @@ public class TestJobStatusLoaderFromDb {
     
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
         jobDir=FileUtil.getDataFile("jobResults/"+gpJobNo+"/");
 
         jobInfo=mock(JobInfo.class);
@@ -61,10 +63,10 @@ public class TestJobStatusLoaderFromDb {
      */
     @Test
     public void fromJobInfo_nullJobRunnerJob_pending() throws DbException {
-        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenThrow(new DbException());
+        when(jobRunnerDao.selectJobRunnerJob(mgr, gpJobNo)).thenThrow(new DbException());
         when(jobInfo.getStatus()).thenReturn(org.genepattern.server.domain.JobStatus.PENDING);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         
         assertNotNull("expecting non-null status", status); 
@@ -80,10 +82,10 @@ public class TestJobStatusLoaderFromDb {
      */
     @Test
     public void fromJobInfo_nullJobRunnerJob_processing() throws DbException {
-        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenThrow(new DbException());
+        when(jobRunnerDao.selectJobRunnerJob(mgr, gpJobNo)).thenThrow(new DbException());
         when(jobInfo.getStatus()).thenReturn(org.genepattern.server.domain.JobStatus.PROCESSING);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         
         assertNotNull("expecting non-null status", status); 
@@ -99,10 +101,10 @@ public class TestJobStatusLoaderFromDb {
      */
     @Test
     public void fromJobInfo_nullJobRunnerJob_finished() throws DbException {
-        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenThrow(new DbException());
+        when(jobRunnerDao.selectJobRunnerJob(mgr, gpJobNo)).thenThrow(new DbException());
         when(jobInfo.getStatus()).thenReturn(org.genepattern.server.domain.JobStatus.FINISHED);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         
         assertNotNull("expecting non-null status", status); 
@@ -118,10 +120,10 @@ public class TestJobStatusLoaderFromDb {
      */
     @Test
     public void fromJobInfo_nullJobRunnerJob_error() throws DbException {
-        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenThrow(new DbException());
+        when(jobRunnerDao.selectJobRunnerJob(mgr, gpJobNo)).thenThrow(new DbException());
         when(jobInfo.getStatus()).thenReturn(org.genepattern.server.domain.JobStatus.ERROR);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         
         assertNotNull("expecting non-null status", status); 
@@ -145,8 +147,8 @@ public class TestJobStatusLoaderFromDb {
         JobRunnerJob jobRunnerJob=Mockito.mock(JobRunnerJob.class);
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
         when(jobRunnerJob.getQueueId()).thenReturn("genepattern_long");
-        when(jobRunnerDao.selectJobRunnerJob(gpJobNo)).thenReturn(jobRunnerJob);
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        when(jobRunnerDao.selectJobRunnerJob(mgr, gpJobNo)).thenReturn(jobRunnerJob);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         assertNotNull("expecting non-null status", status); 
         assertEquals("hasError", false, status.isHasError());
@@ -178,7 +180,7 @@ public class TestJobStatusLoaderFromDb {
                "rel": "gp_job"
            }
          */ 
-        JobStatusLoaderFromDb loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoaderFromDb loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         assertEquals("links.size", 2, status.getLinks().size());
         assertEquals("links[0].href", gpUrl+"rest/v1/jobs/"+gpJobNo+"/status.json", status.getLinks().get(0).getHref());
@@ -195,7 +197,7 @@ public class TestJobStatusLoaderFromDb {
         executionLogs.add(executionLog);
         Mockito.when(jobOutputDao.selectGpExecutionLogs(gpJobNo)).thenReturn(executionLogs);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         assertEquals("status.executionLogLocation", gpUrl+"jobResults/"+gpJobNo+"/gp_execution_log.txt", status.getExecutionLogLocation());
     }
@@ -207,7 +209,7 @@ public class TestJobStatusLoaderFromDb {
         stderrFiles.add(stderrFile);
         Mockito.when(jobOutputDao.selectStderrFiles(gpJobNo)).thenReturn(stderrFiles);
         
-        JobStatusLoader loader=new JobStatusLoaderFromDb(gpUrl, jobRunnerDao, jobOutputDao);
+        JobStatusLoader loader=new JobStatusLoaderFromDb(mgr, gpUrl, jobRunnerDao, jobOutputDao);
         Status status = loader.loadJobStatus(jobContext);
         assertEquals("status.stderrLocation", gpUrl+"jobResults/"+gpJobNo+"/stderr.txt", status.getStderrLocation());
     }
