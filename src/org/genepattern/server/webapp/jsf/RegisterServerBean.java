@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.util.GPConstants;
@@ -341,7 +342,7 @@ public class RegisterServerBean {
     protected static boolean saveIsRegistered(final String genepatternVersion) 
     throws DbException
     {
-        return PropsTable.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
+        return PropsTable.saveProp(HibernateUtil.instance(), "registeredVersion"+genepatternVersion, genepatternVersion);
     }
 
     public void setRegistrationUrl(String url) {

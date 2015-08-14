@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -19,8 +18,7 @@ public class TestPropsTable {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        DbUtil.initDb();
-        mgr=HibernateUtil.instance();
+        mgr=DbUtil.getTestDbSession();
     }
     
     /**
@@ -34,7 +32,7 @@ public class TestPropsTable {
         
         String key="NEW_KEY";
         assertEquals("selectValue, before save", "",  PropsTable.selectValue(mgr, key));
-        assertEquals("selectKeys, before save", Arrays.asList(), PropsTable.selectKeys("NEW_KEY"));
+        assertEquals("selectKeys, before save", Arrays.asList(), PropsTable.selectKeys(mgr, "NEW_KEY"));
         PropsTable.saveProp(mgr, key, "FIRST_VALUE");
         assertEquals("selectValue, after save", "FIRST_VALUE",  PropsTable.selectValue(mgr, key));
         assertEquals("selectKeys, after save", Arrays.asList(key), PropsTable.selectKeys(mgr, "NEW_KEY"));
@@ -52,13 +50,13 @@ public class TestPropsTable {
         // null insert means null value ....
         PropsTable.saveProp(mgr, key, "FIRST_VALUE");
         PropsTable.saveProp(mgr, key, "");
-        assertEquals("after setting value to empty string", "", PropsTable.selectRow(key).getValue());
+        assertEquals("after setting value to empty string", "", PropsTable.selectRow(mgr, key).getValue());
         PropsTable.saveProp(mgr, key, null);
-        assertEquals("after setting value to null", null, PropsTable.selectRow(key).getValue());
+        assertEquals("after setting value to null", null, PropsTable.selectRow(mgr, key).getValue());
         
         // must remove to delete the row
         PropsTable.removeProp(mgr, key);
-        assertEquals("after removing ", null, PropsTable.selectRow(key));
+        assertEquals("after removing ", null, PropsTable.selectRow(mgr, key));
     }
 
 }

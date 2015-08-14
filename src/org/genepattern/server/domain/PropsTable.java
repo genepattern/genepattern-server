@@ -72,6 +72,7 @@ public class PropsTable {
             final String hql="select p.keyColumn from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", matchingKey);
+            @SuppressWarnings("unchecked")
             List<String> values=query.list();
             return values;
         }
@@ -84,11 +85,6 @@ public class PropsTable {
                 mgr.closeCurrentSession();
             }
         }
-    }
-
-    /** @deprecated */
-    public static PropsTable selectRow(final String key) throws DbException {
-        return selectRow(org.genepattern.server.database.HibernateUtil.instance(), key);
     }
 
     /**
@@ -108,6 +104,7 @@ public class PropsTable {
             final String hql="from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", key);
+            @SuppressWarnings("unchecked")
             List<PropsTable> props=query.list();
             if (props==null || props.size()==0) {
                 return null;
@@ -129,11 +126,6 @@ public class PropsTable {
         }
     }
 
-    /** @deprecated */
-    public static List<PropsTable> selectAllProps() throws DbException {
-        return selectAllProps(org.genepattern.server.database.HibernateUtil.instance());
-    }
-
     /**
      * Get all entries from the PROPS table.
      * 
@@ -147,6 +139,7 @@ public class PropsTable {
             mgr.beginTransaction();
             final String hql="from "+PropsTable.class.getName();
             Query query = mgr.getSession().createQuery(hql);  
+            @SuppressWarnings("unchecked")
             List<PropsTable> rval=query.list();
             return rval;
         }
@@ -158,13 +151,6 @@ public class PropsTable {
                 mgr.closeCurrentSession();
             }
         }
-    }
-
-    /** @deprecated */
-    public static boolean saveProp(final String key, final String value) 
-    throws DbException
-    {
-        return saveProp(org.genepattern.server.database.HibernateUtil.instance(), key, value);
     }
 
     /**
