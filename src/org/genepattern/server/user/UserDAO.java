@@ -24,6 +24,7 @@ import org.hibernate.criterion.Restrictions;
  * @author Hibernate Tools
  */
 public class UserDAO extends BaseDAO {
+    /** @deprecated */
     public UserDAO() {
     }
     
