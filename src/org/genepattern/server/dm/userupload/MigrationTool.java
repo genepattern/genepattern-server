@@ -12,9 +12,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.PropsTable;
@@ -42,38 +43,38 @@ import org.hibernate.SQLQuery;
  */
 public class MigrationTool {
     private static Logger log = Logger.getLogger(MigrationTool.class);
-    
+
     /**
      * added this with the 3.3.3 release to correct a bug (which also exists in previous versions of GP) in the installer.
      * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
      * are not in the correct location on the file system.
      */
-    public static void migrateJobUploads() throws DbException {
-        final String gpVersion =  ServerConfigurationFactory.instance().getGenePatternVersion();
+    public static void migrateJobUploads(final HibernateSessionManager mgr, final GpConfig gpConfig) throws DbException {
+        final String gpVersion =  gpConfig.getGenePatternVersion();
         if (gpVersion == null) {
             return;
         }
 
         //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
         final String KEY = "sync.job.uploads.complete";
-        PropsTable row=PropsTable.selectRow(KEY);
+        PropsTable row=PropsTable.selectRow(mgr, KEY);
         if (row != null && gpVersion.equals(row.getValue())) {
             //if the flag is already set, exit
             log.debug("job upload files already migrated for gpVersion="+gpVersion);
             return;
         }
         
-        migrateJobUploadDirs();
+        final GpContext serverContext = GpContext.getServerContext();
+        migrateJobUploadDirs(mgr, gpConfig, serverContext);
 
         //finally) set the flag in the DB
-        PropsTable.saveProp(KEY, gpVersion);        
+        PropsTable.saveProp(mgr, KEY, gpVersion);        
     }
     
-    private static void migrateJobUploadDirs() {
+    private static void migrateJobUploadDirs(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext) {
         File jobResultsDir = null;
-        GpContext serverContext = GpContext.getServerContext();
         try {
-            jobResultsDir = ServerConfigurationFactory.instance().getRootJobDir(serverContext);
+            jobResultsDir = gpConfig.getRootJobDir(serverContext);
         }
         catch (Throwable t) {
             log.error(t);
@@ -90,7 +91,7 @@ public class MigrationTool {
             return;
         }
         
-        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
+        String str = gpConfig.getTempDir(serverContext).getAbsolutePath();
         File webUploadDir = new File(str);
         if (!webUploadDir.canRead()) {
             log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());
@@ -136,8 +137,8 @@ public class MigrationTool {
      * @return true if 'sync.user.uploads.complete' is set to true for this version of GenePattern;
      *     also return true if there was some kind of DB connection error.
      */
-    protected static boolean checkDbForSyncUserUploadsComplete() throws DbException {
-            PropsTable row=PropsTable.selectRow("sync.user.uploads.complete");
+    protected static boolean checkDbForSyncUserUploadsComplete(final HibernateSessionManager mgr) throws DbException {
+            PropsTable row=PropsTable.selectRow(mgr, "sync.user.uploads.complete");
             if (row != null) {
                 return true;
             }
@@ -149,8 +150,8 @@ public class MigrationTool {
      * Store a record of this in the DB so that we only do this once.
      * This should be called from the StartupServlet after the DB is initialized.
      */
-    public static void migrateUserUploads() throws DbException {
-        boolean dbcheck=checkDbForSyncUserUploadsComplete();
+    public static void migrateUserUploads(final HibernateSessionManager mgr) throws DbException {
+        boolean dbcheck=checkDbForSyncUserUploadsComplete(mgr);
         if (dbcheck) {
             return;
         }
@@ -158,34 +159,34 @@ public class MigrationTool {
         log.info("migrating user upload directories ...");
         
         //1) clean up old partial uploads
-        deleteAllPartialUploads();
+        deleteAllPartialUploads(mgr);
         
         //2) set up GP 3.3.3 user upload directories
-        migrateUserUploadDirs();
+        migrateUserUploadDirs(mgr);
         
         //3) resync the DB entries
-        syncUserUploadFiles();
+        syncUserUploadFiles(mgr);
         
         //4) clear the legacy UPLOAD_FILE table
-        deleteAllOldUploadFileRecords();
+        deleteAllOldUploadFileRecords(mgr);
         
         //5) update prev job input parameters
-        updatePrevJobInputParams();
+        updatePrevJobInputParams(mgr);
         
         //6) finally, update the flag in the DB, so that we don't do this again
-        boolean success=PropsTable.saveProp("sync.user.uploads.complete", "true");
+        boolean success=PropsTable.saveProp(mgr, "sync.user.uploads.complete", "true");
         log.info("migrated="+success);
     }
 
     /**
      * Get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob.
      */
-    protected static List<Integer> getUserUploadsJobNos() {
+    protected static List<Integer> getUserUploadsJobNos(final HibernateSessionManager mgr) {
         List<Integer> jobNos = new ArrayList<Integer>();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String hql = "select a.jobNo from "+AnalysisJob.class.getName()+" a where a.parameterInfo like :match and a.deleted = :isDeleted";
-            Query query = HibernateUtil.getSession().createQuery(hql);
+            Query query = mgr.getSession().createQuery(hql);
             query.setString("match", "%user.uploads%");
             query.setBoolean("isDeleted", false);
             List<?> jobNoObjs = query.list();
@@ -211,7 +212,7 @@ public class MigrationTool {
             log.error("Error getting list of jobIds with 'user.uploads' in PARAMETER_INFO clob", t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         return jobNos;
     }
@@ -224,8 +225,8 @@ public class MigrationTool {
      * to
      *     <GenePatternURL>users/admin/all_aml_test.gct
      */
-    private static void updatePrevJobInputParams() {
-        List<Integer> jobNos = getUserUploadsJobNos();
+    private static void updatePrevJobInputParams(final HibernateSessionManager mgr) {
+        List<Integer> jobNos = getUserUploadsJobNos(mgr);
         int numJobsChanged = 0;
         int totalNumParamsChanged = 0;
         //for each job in the list, update input parameters which reference a GP 3.3.2 user upload file
@@ -233,7 +234,7 @@ public class MigrationTool {
             try {
                 boolean save_update = false;
                 int numParamsChanged = 0;
-                AnalysisDAO dao = new AnalysisDAO();
+                AnalysisDAO dao = new AnalysisDAO(mgr);
                 JobInfo jobInfo = dao.getJobInfo(jobNo);
                 if (jobInfo == null) {
                     log.error("jobInfo is null, for jobNo: "+jobNo);
@@ -264,8 +265,8 @@ public class MigrationTool {
                     AnalysisJob aJob = analysisJobDao.findById(jobNo);
                     String paramString = jobInfo.getParameterInfo();
                     aJob.setParameterInfo(paramString);
-                    HibernateUtil.getSession().update(aJob);
-                    HibernateUtil.commitTransaction();
+                    mgr.getSession().update(aJob);
+                    mgr.commitTransaction();
                     log.info("committed change to DB");
                     ++numJobsChanged;
                     totalNumParamsChanged += numParamsChanged;
@@ -273,10 +274,10 @@ public class MigrationTool {
             }
             catch (Throwable t) { 
                 log.error("Error updating parameterInfo for jobNo="+jobNo, t);
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
             }
             finally {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         
@@ -347,10 +348,10 @@ public class MigrationTool {
         return newValue;
     }
     
-    private static void syncUserUploadFiles() {
+    private static void syncUserUploadFiles(HibernateSessionManager mgr) {
         List<String> userIds = new ArrayList<String>();
         try {
-            UserDAO userDao = new UserDAO();
+            UserDAO userDao = new UserDAO(mgr);
             List<User> users = userDao.getAllUsers();
             for(User user : users) {
                 userIds.add( user.getUserId() );
@@ -360,11 +361,11 @@ public class MigrationTool {
             log.error(t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         } 
         
         for(String userId : userIds) {
-            DataManager.syncUploadFiles(HibernateUtil.instance(), userId);
+            DataManager.syncUploadFiles(mgr, userId);
         }
     }
     
@@ -404,10 +405,10 @@ public class MigrationTool {
      * TODO: should only need this when updating from 3.3.2. But we don't have a simple way of knowing this from within this method.
      * 
      */
-    private static void migrateUserUploadDirs() {
+    private static void migrateUserUploadDirs(final HibernateSessionManager mgr) {
         List<String> userIds = new ArrayList<String>();
         try {
-            UserDAO userDao = new UserDAO();
+            UserDAO userDao = new UserDAO(mgr);
             List<User> users = userDao.getAllUsers();
             for(User user : users) {
                 userIds.add( user.getUserId() );
@@ -417,7 +418,7 @@ public class MigrationTool {
             log.error(t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         } 
         
         for(String userId : userIds) {
@@ -446,6 +447,7 @@ public class MigrationTool {
      * @return
      */
     private static StatusCode migrateUserUploadDir(String userId) {
+        @SuppressWarnings("deprecation")
         GpContext userContext = GpContext.getContextForUser(userId);
         File userDir = ServerConfigurationFactory.instance().getUserDir(userContext);
         if (userDir == null) {
@@ -521,12 +523,12 @@ public class MigrationTool {
     /**
      * Remove all partially uploaded files listed in the GP 3.3.2 UPLOAD_FILE table.
      */
-    public static void deleteAllPartialUploads() {
+    protected static void deleteAllPartialUploads(final HibernateSessionManager mgr) {
         int numRecordsDeleted = 0;
         int numFilesDeleted = 0;
         
         log.info("deleting all partial uploads from GP 3.3.2 server ...");
-        List<String> paths = getAllPartialUploads();
+        List<String> paths = getAllPartialUploads(mgr);
         log.info("numRecords: "+paths.size());
         for(String path : paths) {
             boolean deleted = false;
@@ -552,7 +554,7 @@ public class MigrationTool {
             }
             
             if (deleted) {
-                boolean recordDeleted = deleteUploadFileRecord(path);
+                boolean recordDeleted = deleteUploadFileRecord(mgr, path);
                 if (recordDeleted) {
                     ++numRecordsDeleted;
                 }
@@ -566,11 +568,12 @@ public class MigrationTool {
      * get the list of partial upload files from the GP 3.3.2 UPLOAD_FILE table.
      * @return
      */
-    private static List<String> getAllPartialUploads() {
+    private static List<String> getAllPartialUploads(final HibernateSessionManager mgr) {
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String sql = "select path from upload_file where status != 0";
-            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            SQLQuery query = mgr.getSession().createSQLQuery(sql);
+            @SuppressWarnings("unchecked")
             List<String> paths = query.list();
             return paths;
         }
@@ -578,7 +581,7 @@ public class MigrationTool {
             log.error("Error getting all partial uploads from GP 3.3.2 UPLOAD_FILE table: "+t.getLocalizedMessage(), t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         return Collections.emptyList();
     }
@@ -587,18 +590,18 @@ public class MigrationTool {
      * Delete the record from the DB.
      * @param path
      */
-    private static boolean deleteUploadFileRecord(final String path) {
+    private static boolean deleteUploadFileRecord(final HibernateSessionManager mgr, final String path) {
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String sqlDel = "delete from upload_file where path = :path";
-            SQLQuery delQuery = HibernateUtil.getSession().createSQLQuery(sqlDel);
+            SQLQuery delQuery = mgr.getSession().createSQLQuery(sqlDel);
             delQuery.setString("path", path);
             int numDeleted = delQuery.executeUpdate();
             if (numDeleted != 1) {
                 log.error("Error deleting record from UPLOAD_FILE, path="+path+", numDeleted="+numDeleted);
             }
             else {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
                 return true;
             }
         }
@@ -606,7 +609,7 @@ public class MigrationTool {
             log.error("Error deleting record from UPLOAD_FILE, path="+path+", Error: "+t.getLocalizedMessage(), t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         return false;
     }
@@ -615,14 +618,14 @@ public class MigrationTool {
      * Delete the record from the DB.
      * @param path
      */
-    private static boolean deleteAllOldUploadFileRecords() {
+    private static boolean deleteAllOldUploadFileRecords(final HibernateSessionManager mgr) {
         log.info("deleting all records from old UPLOAD_FILE table ...");
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String sqlDel = "delete from upload_file";
-            SQLQuery delQuery = HibernateUtil.getSession().createSQLQuery(sqlDel);
+            SQLQuery delQuery = mgr.getSession().createSQLQuery(sqlDel);
             int numDeleted = delQuery.executeUpdate();
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
             log.info("deleted "+numDeleted+" records");
             return true;
         }
@@ -630,7 +633,7 @@ public class MigrationTool {
             log.error("Error deleting all records from UPLOAD_FILE table, Error: "+t.getLocalizedMessage(), t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         return false;
     }
