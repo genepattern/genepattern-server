@@ -227,7 +227,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                             "addJobToQueue: Operation failed, null value returned for JobInfo");
                 }
                 final JobInfo jobInfo = ds.getJobInfo(jobNo);
-                new JobInputValueRecorder().saveJobInput(jobNo, jobInput);
+                new JobInputValueRecorder(HibernateUtil.instance()).saveJobInput(jobNo, jobInput);
 
                 createJobDirectory(taskContext, jobNo);
 
