@@ -13,12 +13,14 @@ import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.DbException;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestJobOutputDao {
+    private HibernateSessionManager mgr;
 
     private Integer gpJobNo=null;
     private File jobDir;
@@ -45,8 +47,9 @@ public class TestJobOutputDao {
 
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
-        gpJobNo=new AnalysisJobUtil().addJobToDb();
+        //DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
+        gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         jobDir=FileUtil.getDataFile("jobResults/0/").getAbsoluteFile();
         JobResultsLister lister=new JobResultsLister(""+gpJobNo, jobDir, new DefaultGpFileTypeFilter());
         lister.walkFiles();
@@ -56,13 +59,13 @@ public class TestJobOutputDao {
     @After
     public void tearDown() {
         if (gpJobNo != null) {
-            new AnalysisJobUtil().deleteJobFromDb(gpJobNo);
+            AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
         }
     }
 
     @Test
     public void recordOutputFiles() throws DbException {
-        JobOutputDao dao=new JobOutputDao();
+        JobOutputDao dao=new JobOutputDao(mgr);
         
         // Create
         assertEquals("num items to save", 15, jobOutputFiles.size());

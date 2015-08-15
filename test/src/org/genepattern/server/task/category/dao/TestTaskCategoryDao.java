@@ -4,11 +4,12 @@
 package org.genepattern.server.task.category.dao;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
-import org.junit.AfterClass;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -18,15 +19,11 @@ import org.junit.Test;
  *
  */
 public class TestTaskCategoryDao {
+    private HibernateSessionManager mgr;
     
-    @BeforeClass
-    static public void beforeClass() throws Exception {
-        DbUtil.initDb();
-    }
-
-    @AfterClass
-    static public void afterClass() throws Exception {
-        DbUtil.shutdownDb();
+    @Before
+    public void setUp() throws ExecutionException {
+        mgr=DbUtil.getTestDbSession();
     }
 
     /**
@@ -40,7 +37,7 @@ public class TestTaskCategoryDao {
         final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002";
         final String hiddenLsid="urn:lsid:broad.mit.edu:gptest:00001";
 
-        TaskCategoryRecorder recorder=new TaskCategoryRecorder();
+        TaskCategoryRecorder recorder=new TaskCategoryRecorder(mgr);
         recorder.save(baseLsid, "MIT_701X"); //custom category
         recorder.save(cleLsid, ""); //empty category
         recorder.save(hiddenLsid, ".hiddenCategory");

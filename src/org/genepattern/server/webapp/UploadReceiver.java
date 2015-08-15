@@ -29,6 +29,8 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -113,7 +115,7 @@ public class UploadReceiver extends HttpServlet {
                 throw new FileUploadException("Can't save file with reserved filename: "+relativeFile.getPath());
             }
 
-            final GpFilePath uploadFile = UserUploadManager.getUploadFileObj(userContext, uploadFilePath, initMetaData);
+            final GpFilePath uploadFile = UserUploadManager.getUploadFileObj(HibernateUtil.instance(), userContext, uploadFilePath, initMetaData);
             return uploadFile;
         }
         catch (Exception e) {
@@ -159,7 +161,7 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    private String writeFile(final GpContext userContext, final HttpServletRequest request, final List<FileItem> postParameters, final int index, final int count, final String userId) throws FileUploadException { 
+    private String writeFile(final HibernateSessionManager mgr, final GpContext userContext, final HttpServletRequest request, final List<FileItem> postParameters, final int index, final int count, final String userId) throws FileUploadException { 
         final boolean first = index == 0;
         String responseText = "";
         for(FileItem fileItem : postParameters) {
@@ -173,7 +175,7 @@ public class UploadReceiver extends HttpServlet {
                 
                 if (first) {
                     try { 
-                        UserUploadManager.createUploadFile(userContext, file, count); 
+                        UserUploadManager.createUploadFile(mgr, userContext, file, count); 
                     } 
                     catch (Throwable t) { 
                         throw new FileUploadException("Error creating entry in DB for '"+file.getName()+"': "+t.getLocalizedMessage()); 
@@ -188,7 +190,7 @@ public class UploadReceiver extends HttpServlet {
                 }
                 
                 try {
-                    UserUploadManager.updateUploadFile(userContext, file, index + 1, count);
+                    UserUploadManager.updateUploadFile(mgr, userContext, file, index + 1, count);
                 }
                 catch (Throwable t) {
                     throw new FileUploadException(t.getLocalizedMessage());
@@ -226,7 +228,7 @@ public class UploadReceiver extends HttpServlet {
                 List<FileItem> postParameters = upload.parseRequest(reqContext);
                 final int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
                 final int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
-                responseText = writeFile(userContext, request, postParameters, partitionIndex, partitionCount, userId); 
+                responseText = writeFile(HibernateUtil.instance(), userContext, request, postParameters, partitionIndex, partitionCount, userId); 
             }
             else {
                 // This servlet wasn't called by a multi-file uploader. Return an error page.

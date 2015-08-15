@@ -96,7 +96,13 @@ public class JobInfo implements Serializable {
         this.lsid = aJob.getTaskLsid();
         this.taskName = aJob.getTaskName();
 
-        this.parentJobNo = aJob.getParent();
+        if (aJob.getParent()==null) {
+            this.parentJobNo=-1;
+            log.debug("aJob.parent is null, setting to -1");
+        }
+        else {
+            this.parentJobNo = aJob.getParent();
+        }
         this.deleted = aJob.getDeleted();
     }
 

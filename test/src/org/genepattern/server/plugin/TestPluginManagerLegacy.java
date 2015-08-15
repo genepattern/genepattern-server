@@ -16,12 +16,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -40,6 +43,7 @@ public class TestPluginManagerLegacy {
     final String SAMTools_0_1_19="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2";
     final String TopHat_2_0_11="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4";
     
+    private HibernateSessionManager mgr;
     private GpConfig gpConfig;
     private GpContext gpContext;
     private File gpHomeDir;
@@ -61,7 +65,8 @@ public class TestPluginManagerLegacy {
 
     
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, ExecutionException {
+        mgr=DbUtil.getTestDbSession();
         gpHomeDir=tmp.newFolder(".genepattern");
         pluginDir=tmp.newFolder("patches");
         resourcesDir=tmp.newFolder("resources");
@@ -99,7 +104,7 @@ public class TestPluginManagerLegacy {
     @Test
     public void getPatchDirectory() throws Exception {
         PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
         
         assertEquals(new File(pluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
                 pluginMgr.getPatchDirectory(new LSID(ANT)));
@@ -112,7 +117,7 @@ public class TestPluginManagerLegacy {
         when(gpConfig.getRootPluginDir(gpContext)).thenReturn(null);
         
         PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
 
         pluginMgr.getPatchDirectory(new LSID(ANT));
     }
@@ -218,7 +223,7 @@ public class TestPluginManagerLegacy {
         GpConfig gpConfig=mock(GpConfig.class);
         GpContext gpContext=new GpContext.Builder().build();
         PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
         
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
@@ -261,7 +266,7 @@ public class TestPluginManagerLegacy {
             }
         };
         
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertComparePatchInfo("some installed", expected, patchesToInstall);

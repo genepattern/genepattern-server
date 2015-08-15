@@ -14,7 +14,6 @@ import javax.persistence.Table;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
 
 /**
@@ -31,16 +30,10 @@ import org.hibernate.Query;
 @Table(name="PROPS")
 public class PropsTable {
     private static final Logger log = Logger.getLogger(PropsTable.class);
-    
-    /**
-     * Get the value for the given key in the PROPS table.
-     * 
-     * @param key
-     * @return
-     * @throws DbException
-     */
+
+    /** @deprecated */
     public static String selectValue(final String key) throws DbException {
-        return selectValue(HibernateUtil.instance(), key);
+        return selectValue(org.genepattern.server.database.HibernateUtil.instance(), key);
     }
     
     /**
@@ -59,17 +52,19 @@ public class PropsTable {
         return row.getValue();
     }
     
+    /** @deprecated */
+    public static List<String> selectKeys(final String matchingKey) {
+        return selectKeys(org.genepattern.server.database.HibernateUtil.instance(), matchingKey);
+    }
+
     /**
      * Get the list of keys from the PROPS table which match the given matchingKey.
      * To get more than one result pass in a '%' wildcard character, e.g.
      *     matchingKey='registeredVersion%'
+     * @param mgr
      * @param matchingKey
      * @return
      */
-    public static List<String> selectKeys(final String matchingKey) {
-        return selectKeys(HibernateUtil.instance(), matchingKey);
-    }
-
     public static List<String> selectKeys(final HibernateSessionManager mgr, final String matchingKey) {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
@@ -77,6 +72,7 @@ public class PropsTable {
             final String hql="select p.keyColumn from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", matchingKey);
+            @SuppressWarnings("unchecked")
             List<String> values=query.list();
             return values;
         }
@@ -89,10 +85,6 @@ public class PropsTable {
                 mgr.closeCurrentSession();
             }
         }
-    }
-
-    public static PropsTable selectRow(final String key) throws DbException {
-        return selectRow(HibernateUtil.instance(), key);
     }
 
     /**
@@ -112,6 +104,7 @@ public class PropsTable {
             final String hql="from "+PropsTable.class.getName()+" p where p.keyColumn like :key";
             Query query = mgr.getSession().createQuery(hql);  
             query.setString("key", key);
+            @SuppressWarnings("unchecked")
             List<PropsTable> props=query.list();
             if (props==null || props.size()==0) {
                 return null;
@@ -133,10 +126,6 @@ public class PropsTable {
         }
     }
 
-    public static List<PropsTable> selectAllProps() throws DbException {
-        return selectAllProps(HibernateUtil.instance());
-    }
-
     /**
      * Get all entries from the PROPS table.
      * 
@@ -150,6 +139,7 @@ public class PropsTable {
             mgr.beginTransaction();
             final String hql="from "+PropsTable.class.getName();
             Query query = mgr.getSession().createQuery(hql);  
+            @SuppressWarnings("unchecked")
             List<PropsTable> rval=query.list();
             return rval;
         }
@@ -165,18 +155,7 @@ public class PropsTable {
 
     /**
      * Save a key/value pair to the PROPS table.
-     * @param key
-     * @param value
-     * @return
-     */
-    public static boolean saveProp(final String key, final String value) 
-    throws DbException
-    {
-        return saveProp(HibernateUtil.instance(), key, value);
-    }
-
-    /**
-     * Save a key/value pair to the PROPS table.
+     * @param mgr
      * @param key
      * @param value
      * @return
@@ -204,12 +183,9 @@ public class PropsTable {
         }
     }
 
-    /**
-     * Remove an entry from the PROPS table.
-     * @param key
-     */
+    /** @deprecated */
     public static void removeProp(final String key) {
-        removeProp(HibernateUtil.instance(), key);
+        removeProp(org.genepattern.server.database.HibernateUtil.instance(), key);
     }
     
     /**

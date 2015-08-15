@@ -3,18 +3,14 @@
  *******************************************************************************/
 package org.genepattern.server.job.comment.dao;
 
-import org.apache.log4j.Logger;
-import org.genepattern.server.DbException;
-import org.genepattern.server.job.comment.JobComment;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.job.tag.JobTag;
-import org.hibernate.Query;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.job.comment.JobComment;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 
 /**
  * Created by nazaire on 9/30/14.
@@ -22,24 +18,29 @@ import java.util.List;
 public class JobCommentDao
 {
     private static final Logger log = Logger.getLogger(JobCommentDao.class);
+    private final HibernateSessionManager mgr;
+
+    public JobCommentDao(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
 
     public void insertJobComment(final JobComment jobComment) {
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().save(jobComment);
+            mgr.beginTransaction();
+            mgr.getSession().save(jobComment);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             log.error("Error adding comment for gpJobNo="+jobComment.getAnalysisJob().getJobNo(), t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -47,24 +48,24 @@ public class JobCommentDao
     public boolean updateJobComment(JobComment jobComment)
     {
         boolean updated = false;
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().saveOrUpdate(jobComment);
+            mgr.beginTransaction();
+            mgr.getSession().saveOrUpdate(jobComment);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
 
             updated = true;
         }
         catch (Throwable t) {
             log.error("Error updating comment", t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
@@ -73,11 +74,11 @@ public class JobCommentDao
 
     public List<JobComment> selectJobComments(final Integer gpJobNo) {
         List<JobComment> jobCommentList = new ArrayList();
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
 
-            jobCommentList = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+            jobCommentList = mgr.getSession().createCriteria(JobComment.class, "jobComment")
                     .createAlias("jobComment.analysisJob", "analysisJob")
                     .add(Restrictions.eq("analysisJob.jobNo", gpJobNo)).addOrder(Order.desc("postedDate")).list();
         }
@@ -86,7 +87,7 @@ public class JobCommentDao
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
@@ -96,11 +97,11 @@ public class JobCommentDao
     public boolean deleteJobComment(int id)
     {
         boolean deleted = false;
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
 
-            JobComment jobComment = (JobComment)HibernateUtil.getSession().get(JobComment.class, Integer.valueOf(id));
+            JobComment jobComment = (JobComment)mgr.getSession().get(JobComment.class, Integer.valueOf(id));
             if(jobComment == null)
             {
                 //log error and do nothing
@@ -108,21 +109,21 @@ public class JobCommentDao
                 return deleted;
             }
 
-            HibernateUtil.getSession().delete(jobComment);
+            mgr.getSession().delete(jobComment);
 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
 
             deleted = true;
         }
         catch (Throwable t) {
             log.error("Error deleting comment wih id="+id, t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 

@@ -19,6 +19,7 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.webservice.JobInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 public class TestJobRunnerJobDao {
     final String jrClassname=CmdLineLsfRunner.class.getName();
     final String jrName="CmdLineLsfRunner";
+    private HibernateSessionManager mgr;
     private JobRunnerJobDao dao;
     private DrmJobSubmission.Builder builder;
     
@@ -49,9 +51,9 @@ public class TestJobRunnerJobDao {
     
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
         // because of FK relation, must add an entry to the analysis_job table
-        gpJobNo=new AnalysisJobUtil().addJobToDb();
+        gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         jobInfo=mock(JobInfo.class);
         when(jobInfo.getJobNumber()).thenReturn(gpJobNo);
         when(jobInfo.getTaskLSID()).thenReturn(cleLsid);
@@ -72,7 +74,7 @@ public class TestJobRunnerJobDao {
     
     @After
     public void tearDown() {
-        new AnalysisJobUtil().deleteJobFromDb(gpJobNo);
+        AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
     }
     
     /**
@@ -85,9 +87,9 @@ public class TestJobRunnerJobDao {
     public void insertFromDrmJobSubmission() throws DbException {
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
 
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("gpJobNo", gpJobNo, query.getGpJobNo());
         assertEquals("lsid", cleLsid, query.getLsid());
         assertEquals("max_mem", null, query.getMaxMemory());
@@ -104,9 +106,9 @@ public class TestJobRunnerJobDao {
 
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
 
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("req_mem", (Long) requestedMemory.getNumBytes(), (Long) query.getRequestedMemory());
     }
     
@@ -120,9 +122,9 @@ public class TestJobRunnerJobDao {
 
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
 
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("req_cpu_count", (Integer) cpuCount, (Integer) query.getRequestedCpuCount());
     }
 
@@ -136,9 +138,9 @@ public class TestJobRunnerJobDao {
 
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
 
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("req_node_count", (Integer) nodeCount, (Integer) query.getRequestedNodeCount());
     }
     
@@ -152,9 +154,9 @@ public class TestJobRunnerJobDao {
 
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
         
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("req_walltime", walltime.toString(), query.getRequestedWalltime());
     }
     
@@ -168,9 +170,9 @@ public class TestJobRunnerJobDao {
         
         final DrmJobSubmission drmJobSubmission=builder.build();
         final JobRunnerJob jobRecord = new JobRunnerJob.Builder(jrClassname, drmJobSubmission).jobRunnerName(jrName).build();
-        dao.insertJobRunnerJob(jobRecord);
+        dao.insertJobRunnerJob(mgr, jobRecord);
         
-        JobRunnerJob query=dao.selectJobRunnerJob(gpJobNo);
+        JobRunnerJob query=dao.selectJobRunnerJob(mgr, gpJobNo);
         assertEquals("req_queue", queue, query.getRequestedQueue());
     }
 

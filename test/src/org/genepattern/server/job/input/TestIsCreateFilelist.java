@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.TaskLoader;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
@@ -18,7 +20,9 @@ import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit tests for initializing numValues from a ParameterInfo.
@@ -26,6 +30,9 @@ import org.junit.Test;
  *
  */
 public class TestIsCreateFilelist {
+    private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
+    
     private static TaskInfo taskInfo;
     private static Map<String,ParameterInfoRecord> paramInfoMap;
     private static GpContext jobContext;
@@ -35,6 +42,9 @@ public class TestIsCreateFilelist {
 
     final static private String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00006:0.7";
     final static private String ftpFile="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
+    
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @BeforeClass
     static public void beforeClass() {
@@ -48,8 +58,12 @@ public class TestIsCreateFilelist {
     @Before
     public void setUp() throws Exception
     {
-        DbUtil.initDb();
-        otherUser = DbUtil.addUserToDb("otherUser");
+        mgr=DbUtil.getTestDbSession();
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
+        otherUser = DbUtil.addUserToDb(gpConfig, mgr, "otherUser");
     }
 
     @Test
@@ -61,7 +75,7 @@ public class TestIsCreateFilelist {
         jobInput.addValue(paramName, ftpFile);
 
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
@@ -73,7 +87,7 @@ public class TestIsCreateFilelist {
         final JobInput jobInput = new JobInput();
         jobInput.addValue(paramName, ftpFile);
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
@@ -84,7 +98,7 @@ public class TestIsCreateFilelist {
         final ParameterInfoRecord record=paramInfoMap.get(paramName);
         final JobInput jobInput = new JobInput();
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
@@ -179,7 +193,7 @@ public class TestIsCreateFilelist {
         jobInput.addValue(paramName, genomeSpaceURL);
 
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
 
         Assert.assertTrue(paramName + " accepts list" , plh.acceptsList());
         Assert.assertTrue(paramName+".isCreateFilelist", plh.isCreateFilelist());
@@ -205,7 +219,7 @@ public class TestIsCreateFilelist {
             jobInput.addValue(formalParam.getName(), "arg_"+i);
         }
         final Param param=jobInput.getParam(formalParam.getName());
-        final ParamListHelper plh = new ParamListHelper(jobContext, record, param);
+        final ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
         Assert.assertEquals("isCreateFilelist", expectedCreateFilelist, plh.isCreateFilelist());
     }
 

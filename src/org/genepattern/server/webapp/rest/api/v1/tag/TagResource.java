@@ -110,7 +110,7 @@ public class TagResource {
 
             JSONArray result = new JSONArray();
 
-            List<Tag> tags = TagManager.selectAllJobTags(userContext.getUserId(), true);
+            List<Tag> tags = TagManager.selectAllJobTags(HibernateUtil.instance(), userContext.getUserId(), true);
             for(Tag tag: tags)
             {
                 JSONObject tagObj = new JSONObject();

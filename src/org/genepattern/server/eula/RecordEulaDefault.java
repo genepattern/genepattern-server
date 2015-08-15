@@ -10,10 +10,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.dao.RecordEulaToDb;
 import org.genepattern.server.eula.remote.RecordEulaToRemoteServerAsync;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
@@ -50,21 +50,24 @@ public class RecordEulaDefault implements RecordEula {
     /** the default remoteUrl, on,y accessible from behind the Broad's firewall. */
     final static public String REMOTE_URL_PRIVATE="http://vgpweb01.broadinstitute.org:3000/eulas";
     
+    private final HibernateSessionManager mgr;
     private RecordEula local;
-    
-    public RecordEulaDefault() {
-        local=new RecordEulaToDb();
+
+    public RecordEulaDefault(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+        this.local=new RecordEulaToDb(this.mgr);
     }
     
-    public RecordEulaDefault(RecordEula localDb) {
+    public RecordEulaDefault(final HibernateSessionManager mgr, final RecordEula localDb) {
+        this.mgr=mgr;
         this.local=localDb;
     }
     
     private User getUser(final String userId) {
         //this method requires active local DB, with valid users 
-        final boolean inTransaction=HibernateUtil.isInTransaction();
+        final boolean inTransaction=mgr.isInTransaction();
         try {
-            UserDAO dao=new UserDAO();
+            UserDAO dao=new UserDAO(mgr);
             User user=dao.findById(userId);
             return user;
         }
@@ -73,7 +76,7 @@ public class RecordEulaDefault implements RecordEula {
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         
@@ -81,6 +84,7 @@ public class RecordEulaDefault implements RecordEula {
     }
 
     private GpContext getContextForEula(final String userId, final EulaInfo eula) {
+        @SuppressWarnings("deprecation")
         GpContext eulaContext=GpContext.getContextForUser(userId);
         TaskInfo taskInfo = new TaskInfo();
         taskInfo.giveTaskInfoAttributes().put(GPConstants.LSID, eula.getModuleLsid());
@@ -102,16 +106,15 @@ public class RecordEulaDefault implements RecordEula {
         return val.getValues();
     }
 
-    //@Override
     public void recordLicenseAgreement(final String userId, final EulaInfo eula) throws Exception {
         log.debug("recordLicenseAgreement("+userId+","+eula.getModuleLsid()+")");
         
         List<String> remoteUrls=getRemoteUrls(userId, eula);
 
         //within one transaction,
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             //1) first, record local record,
             local.recordLicenseAgreement(userId, eula);
             //2) add DB entry to the 'eula_remote_queue'
@@ -119,22 +122,22 @@ public class RecordEulaDefault implements RecordEula {
                 local.addToRemoteQueue(userId, eula, remoteUrl);
             }
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             else {
                 log.debug("committing hibernate transaction, even though it was started before this method");
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             String message="Error recording eula to local GP server: "+t.getLocalizedMessage();
             log.error(message,t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new Exception(message);
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 
@@ -147,25 +150,21 @@ public class RecordEulaDefault implements RecordEula {
         }
     }
 
-    //@Override
     public boolean hasUserAgreed(final String userId, final EulaInfo eula) throws Exception {
         log.debug("delegating to local.hasUserAgreed");
         return local.hasUserAgreed(userId, eula);
     }
 
-    //@Override
     public Date getUserAgreementDate(final String userId, final EulaInfo eula) throws Exception {
         log.debug("delegating to local.getUserAgreementDate");
         return local.getUserAgreementDate(userId, eula);
     }
 
-    //@Override
     public void addToRemoteQueue(final String userId, final EulaInfo eula, final String remoteUrl) throws Exception {
         log.debug("delegating to local.addToRemoteQueue");
         local.addToRemoteQueue(userId, eula, remoteUrl);
     }
 
-    //@Override
     public void updateRemoteQueue(String userId, EulaInfo eula, String remoteUrl, boolean success) throws Exception {
         log.debug("delegating to local.updateRemoteQueue");
         local.updateRemoteQueue(userId, eula, remoteUrl, success);

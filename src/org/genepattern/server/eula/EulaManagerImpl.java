@@ -9,6 +9,7 @@ import java.util.SortedSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -69,7 +70,7 @@ public class EulaManagerImpl implements IEulaManager {
         if (recordEulaStrategy != null) {
             return recordEulaStrategy;
         }
-        return new RecordEulaDefault();
+        return new RecordEulaDefault(HibernateUtil.instance());
     }
     
     /**

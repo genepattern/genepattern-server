@@ -5,6 +5,8 @@ package org.genepattern.server.genomespace;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -509,11 +511,13 @@ public class GenomeSpaceManager {
 
         // Update Database
         try {
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            @SuppressWarnings("deprecation")
             GpContext context = GpContext.getContextForUser(gpUser);
             File relativeFile = new File(directory.getRelativeFile(), name);
-            GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(context, relativeFile, true);
-            UserUploadManager.createUploadFile(context, asUploadFile, 1, true);
-            UserUploadManager.updateUploadFile(context, asUploadFile, 1, 1);
+            GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(mgr, context, relativeFile, true);
+            UserUploadManager.createUploadFile(mgr, context, asUploadFile, 1, true);
+            UserUploadManager.updateUploadFile(mgr, context, asUploadFile, 1, 1);
         }
         catch (Exception e) {
             // FIXME: UIBeanHelper.setErrorMessage("Unable to update database to include new file");

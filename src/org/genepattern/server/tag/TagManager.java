@@ -3,10 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.tag;
 
-import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.tag.dao.TagDao;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,12 +13,10 @@ import java.util.List;
  */
 public class TagManager
 {
-    private static Logger log = Logger.getLogger(TagManager.class);
 
-    static public List<Tag> selectAllJobTags(String userId, boolean isPublic)
+    public static List<Tag> selectAllJobTags(final HibernateSessionManager mgr, final String userId, final boolean isPublic)
     {
-        TagDao tagDao  = new TagDao();
-
+        TagDao tagDao  = new TagDao(mgr);
         return tagDao.selectTagsAvailableToUser(userId, isPublic);
     }
 

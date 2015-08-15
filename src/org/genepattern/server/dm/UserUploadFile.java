@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 
@@ -101,7 +102,7 @@ public class UserUploadFile extends GpFilePath {
     public boolean canRead(final GpContext userContext, final String inputValue) {
         String userId=userContext.getUserId();
         try {
-            List<String> matchingGroups=new JobInputValueRecorder().fetchMatchingGroups(inputValue);
+            List<String> matchingGroups=new JobInputValueRecorder(HibernateUtil.instance()).fetchMatchingGroups(inputValue);
             if (matchingGroups.size()==0) {
                 return false;
             }

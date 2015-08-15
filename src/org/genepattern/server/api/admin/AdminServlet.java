@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import org.genepattern.server.DataManager;
 import org.genepattern.server.api.ApiUtil;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.util.GPConstants;
 
@@ -116,7 +117,7 @@ public class AdminServlet extends HttpServlet {
             return;
         }
         try {
-            DataManager.syncUploadFiles(userid);
+            DataManager.syncUploadFiles(HibernateUtil.instance(), userid);
             ApiUtil.handleSuccess(resp);
         }
         catch (Throwable t) {

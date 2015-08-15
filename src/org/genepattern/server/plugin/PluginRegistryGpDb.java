@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.plugin.dao.PatchInfoDao;
 
 /**
@@ -20,13 +21,24 @@ import org.genepattern.server.plugin.dao.PatchInfoDao;
  */
 public class PluginRegistryGpDb implements PluginRegistry {
     private static final Logger log = Logger.getLogger(PluginRegistryGpDb.class);
+    
+    private final HibernateSessionManager mgr;
+
+    /** @deprecated */
+    public PluginRegistryGpDb() {
+        this(org.genepattern.server.database.HibernateUtil.instance());
+    }
+
+    public PluginRegistryGpDb(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
 
     @Override
     public List<PatchInfo> getInstalledPatches(GpConfig gpConfig, GpContext gpContext) throws Exception {
         if (log.isDebugEnabled()) {
             log.debug("getting installed patches...");
         }
-        return new PatchInfoDao().getInstalledPatches();
+        return new PatchInfoDao(mgr).getInstalledPatches();
     }
 
     @Override
@@ -34,7 +46,7 @@ public class PluginRegistryGpDb implements PluginRegistry {
         if (log.isDebugEnabled()) {
             log.debug("isInstalled, patchLsid="+patchInfo);
         }
-        PatchInfo inDb=new PatchInfoDao().selectPatchInfoByLsid(patchInfo.getLsid());
+        PatchInfo inDb=new PatchInfoDao(mgr).selectPatchInfoByLsid(patchInfo.getLsid());
         if (inDb!=null) {
             return true;
         }
@@ -46,7 +58,7 @@ public class PluginRegistryGpDb implements PluginRegistry {
         if (log.isDebugEnabled()) {
             log.debug("recordPatch, patchLsid="+patchInfo);
         }
-        new PatchInfoDao().recordPatch(patchInfo);
+        new PatchInfoDao(mgr).recordPatch(patchInfo);
         if (patchInfo.hasCustomProps()) {
             if (log.isDebugEnabled()) {
                 log.debug("updating custom.properties for patch, patchLsid="+patchInfo);

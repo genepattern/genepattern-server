@@ -76,9 +76,9 @@ public class GpContext {
         final String taskName;
         final File taskLibDir;
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(HibernateUtil.instance());
             jobInfo = dao.getJobInfo(jobNumber);
-            jobInput = new JobInputValueRecorder().fetchJobInput(jobNumber);
+            jobInput = new JobInputValueRecorder(HibernateUtil.instance()).fetchJobInput(jobNumber);
             jobInput.setLsid(jobInfo.getTaskLSID());
             taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
             taskName=taskInfo.getName();

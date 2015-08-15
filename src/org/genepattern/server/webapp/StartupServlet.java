@@ -370,7 +370,7 @@ public class StartupServlet extends HttpServlet {
         //attempt to migrate user upload files from GP 3.3.2 to GP 3.3.3
         try {
             getLog().info("\tinitializing user upload directories ...");
-            MigrationTool.migrateUserUploads();
+            MigrationTool.migrateUserUploads(HibernateUtil.instance());
         }
         catch (Throwable t) {
             getLog().error("Error initializing user upload directories: " + t.getLocalizedMessage(), t);
@@ -379,7 +379,7 @@ public class StartupServlet extends HttpServlet {
         //attempt to migrate job upload files from GP 3.3.2 (and earlier) to GP 3.3.3
         try {
             getLog().info("\tmigrating job upload directories ...");
-            MigrationTool.migrateJobUploads();
+            MigrationTool.migrateJobUploads(HibernateUtil.instance(), ServerConfigurationFactory.instance());
         }
         catch (Throwable t) {
             getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
@@ -388,7 +388,7 @@ public class StartupServlet extends HttpServlet {
         // import installed plugins (aka patches) from the root plugin directory into the GP database
         try {
             getLog().info("\tmigrating installed plugins ...");
-            MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext);
+            MigratePlugins migratePlugins=new MigratePlugins(HibernateUtil.instance(), gpConfig, gpContext);
             migratePlugins.migratePlugins();
         }
         catch (Throwable t) {

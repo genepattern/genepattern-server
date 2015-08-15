@@ -16,8 +16,11 @@ import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
 import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -98,6 +101,17 @@ public class UserAccountManager {
         this.userGroups=userGroups;
     }
 
+    /** @deprecated */
+    public static void validateNewUsername(final String username) throws AuthenticationException {
+        validateNewUsername(HibernateUtil.instance(), username);
+    }
+
+    /** @deprecated, should pass in a valid GpConfig and userContext */
+    public static void validateNewUsername(final HibernateSessionManager mgr, final String username) throws AuthenticationException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        validateNewUsername(gpConfig, mgr, username);
+    }
+
     /**
      * Validate the username before creating a new account.
      * Prohibit creating new user accounts whose names differ only by case.
@@ -106,19 +120,19 @@ public class UserAccountManager {
      * @param username
      * @throws AuthenticationException
      */
-    public void validateNewUsername(String username) throws AuthenticationException {
+    public static void validateNewUsername(final GpConfig gpConfig, final HibernateSessionManager mgr, final String username) throws AuthenticationException {
         //1) is it a valid username
         validateUsername(username);
         //2) is it a unique username
-        User user = (new UserDAO()).findByIdIgnoreCase(username);
+        User user = (new UserDAO(mgr)).findByIdIgnoreCase(username);
         if (user != null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "User already registered: "+user.getUserId());
         }
         //3) can create user dir for user
-        GpContext userContext = GpContext.getContextForUser(username);
         try {
-            File userDir = ServerConfigurationFactory.instance().getUserDir(userContext);
+            final GpContext userContext = GpContext.getContextForUser(username);
+            final File userDir = gpConfig.getUserDir(userContext);
             log.info("creating user dir: "+userDir.getPath());
         }
         catch (Throwable t) {
@@ -197,14 +211,19 @@ public class UserAccountManager {
         }
     }
 
+    /** @deprecated */
+    public static boolean userExists(final String username) {
+        return userExists(HibernateUtil.instance(), username);
+    }
+
     /**
      * Is there already a GenePattern user account with this username.
      * 
      * @param username
      * @return
      */
-    public boolean userExists(String username) {
-        User user = (new UserDAO()).findByIdIgnoreCase(username);
+    public static boolean userExists(final HibernateSessionManager mgr, final String username) {
+        final User user = (new UserDAO(mgr)).findByIdIgnoreCase(username);
         return user != null;
     }
 
@@ -213,6 +232,8 @@ public class UserAccountManager {
      * 
      * @param username
      * @throws AuthenticationException - if the user is already registered.
+     * 
+     * @deprecated should pass in valid HibernateSessionManager and GpConfig
      */
     public void createUser(String username) throws AuthenticationException {
         String password = "";
@@ -231,6 +252,11 @@ public class UserAccountManager {
         createUser(username, password, email);
     }
     
+    /** @deprecated */
+    public static void createUser(final String username, final String passwordOrNull, final String email) throws AuthenticationException {
+        createUser(ServerConfigurationFactory.instance(), HibernateUtil.instance(), username, passwordOrNull, email);
+    }
+    
     /**
      * Create a new GenePattern user account.
      * 
@@ -239,26 +265,22 @@ public class UserAccountManager {
      * @param email, can be null
      * @throws AuthenticationException - if the user is already registered.
      */
-    public void createUser(String username, String password, String email) throws AuthenticationException {
-        validateNewUsername(username);
+    public static void createUser(final GpConfig gpConfig, final HibernateSessionManager mgr, final String username, final String passwordOrNull, final String email) throws AuthenticationException {
+        validateNewUsername(gpConfig, mgr, username);
 
-        if (password == null) {
-            password = "";
-        }
-
-        User newUser = new User();
+        final User newUser = new User();
         newUser.setUserId(username);
         newUser.setRegistrationDate(new Date());
         if (email != null) {
             newUser.setEmail(email);
         }
         try {
-            newUser.setPassword(EncryptionUtil.encrypt(password));
+            newUser.setPassword(EncryptionUtil.encrypt(passwordOrNull));
         } 
         catch (NoSuchAlgorithmException e) {
             log.error(e);
         }
-        (new UserDAO()).save(newUser);
+        (new UserDAO(mgr)).save(newUser);
     }
     
     /**
