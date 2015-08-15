@@ -11,7 +11,6 @@ import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,11 +106,6 @@ public class TestUserUploadDao {
         finally {
             mgr.closeCurrentSession();
         }
-    }
-    
-    @AfterClass
-    static public void afterClass() throws Exception {
-        DbUtil.shutdownDb();
     }
     
     @Test

@@ -44,7 +44,6 @@ public class TestRegisterServerBean {
         assertEquals("num dbRegisteredVersions", 2, actual.size());
         assertTrue("startsWith('registeredVersion')", actual.get(0).startsWith("registeredVersion"));
         
-        DbUtil.shutdownDb();
     }
 
     // only works when manually configured to connect to a MySQL server
