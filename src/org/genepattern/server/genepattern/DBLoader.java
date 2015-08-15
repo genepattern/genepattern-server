@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.cm.CategoryUtil;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -269,7 +270,7 @@ public abstract class DBLoader {
             log.debug("initializing categories...");
             initCategories();
             log.debug("saving to db ...");
-            new RecordInstallInfoToDb().save(installInfo);
+            new RecordInstallInfoToDb(HibernateUtil.instance()).save(installInfo);
             log.debug("done!");
         }
         catch (Throwable t) {
@@ -297,7 +298,7 @@ public abstract class DBLoader {
         }
         log.debug("deleting from db ...");
         try {
-            int numDeleted=new RecordInstallInfoToDb().delete(lsid.toString());
+            int numDeleted=new RecordInstallInfoToDb(HibernateUtil.instance()).delete(lsid.toString());
             log.debug("done! numDeleted="+numDeleted);
         }
         catch (Throwable t) {

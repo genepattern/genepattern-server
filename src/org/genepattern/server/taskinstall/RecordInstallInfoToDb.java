@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.taskinstall.dao.Category;
 import org.genepattern.server.taskinstall.dao.TaskInstall;
 import org.hibernate.Hibernate;
@@ -24,9 +23,6 @@ public class RecordInstallInfoToDb implements RecordInstallInfo {
     
     private final HibernateSessionManager mgr;
     
-    public RecordInstallInfoToDb() {
-        this(HibernateUtil.instance());
-    }
     public RecordInstallInfoToDb(final HibernateSessionManager mgr) {
         this.mgr=mgr;
     }    
