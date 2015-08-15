@@ -139,7 +139,6 @@ public class TestParamListHelper {
                 false,
                 record.getGpFilePath().getServerFile().exists());
 
-        DbUtil.initDb();
         ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,
@@ -161,7 +160,6 @@ public class TestParamListHelper {
                 new File(gpHomeDir,"users/"+userId+"/uploads/tmp/external/www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls"),
                 record.getGpFilePath().getServerFile());
         
-        DbUtil.initDb();
         ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,

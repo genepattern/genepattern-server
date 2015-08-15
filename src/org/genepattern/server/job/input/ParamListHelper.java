@@ -729,7 +729,7 @@ public class ParamListHelper {
                 rec.gpFilePath=cached;
             }
             else {
-                forFileListCopyExternalUrlToUserUploads(jobContext, rec.gpFilePath, rec.url);
+                forFileListCopyExternalUrlToUserUploads(mgr, jobContext, rec.gpFilePath, rec.url);
             }
         }
     }
@@ -873,9 +873,8 @@ public class ParamListHelper {
      * @param url
      * @throws Exception
      * 
-     * @deprecated - should replace this with a static call
      */
-    public static void forFileListCopyExternalUrlToUserUploads(final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
+    protected static void forFileListCopyExternalUrlToUserUploads(final HibernateSessionManager mgr, final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
         // for GP-5153
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
             if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
@@ -904,7 +903,7 @@ public class ParamListHelper {
 
             //add a record of the file to the DB, so that a link will appear in the Uploads tab
             JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
-            jobInputFileUtil.updateUploadsDb(gpPath);
+            jobInputFileUtil.updateUploadsDb(mgr, gpPath);
         }
     }
 
