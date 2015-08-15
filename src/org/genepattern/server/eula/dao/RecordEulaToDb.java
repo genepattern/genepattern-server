@@ -24,10 +24,6 @@ public class RecordEulaToDb implements RecordEula {
     
     private final HibernateSessionManager mgr;
 
-    /** @deprecated */
-    public RecordEulaToDb() {
-        this(org.genepattern.server.database.HibernateUtil.instance());
-    }
     public RecordEulaToDb(final HibernateSessionManager mgr) {
         this.mgr=mgr;
     }
@@ -297,7 +293,6 @@ public class RecordEulaToDb implements RecordEula {
         } 
     }
     
-    //@Override
     public void updateRemoteQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl, final boolean success) throws Exception {
         final boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);

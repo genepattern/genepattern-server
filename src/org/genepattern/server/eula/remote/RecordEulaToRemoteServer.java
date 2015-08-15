@@ -39,7 +39,7 @@ public class RecordEulaToRemoteServer {
         if (recordEula != null) {
             return recordEula;
         }
-        return new RecordEulaToDb();
+        return new RecordEulaToDb(org.genepattern.server.database.HibernateUtil.instance());
     }
     
     public RecordEulaToRemoteServer(final String remoteUrl) {
