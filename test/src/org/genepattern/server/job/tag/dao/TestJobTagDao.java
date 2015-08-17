@@ -65,7 +65,7 @@ public class TestJobTagDao
     }
 
     @After
-    public void tearDown()
+    public void tearDown() throws DbException
     {
         AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
     }

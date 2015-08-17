@@ -3,7 +3,11 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,9 +22,8 @@ import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -75,6 +78,13 @@ public class TestJobInputHelper {
         taskLoader.addTask(TestJobInputHelper.class, "ListFiles_v0.7.zip");
     }
     
+    @Before
+    public void setUp() throws MalformedURLException {
+        gpConfig=new GpConfig.Builder()
+            .genePatternURL(new URL("http://127.0.0.1:8080/gp/"))
+        .build();
+    }
+    
     //////////////////////////////////////////
     // test cases for input file values
     //
@@ -85,7 +95,6 @@ public class TestJobInputHelper {
 
         JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addValue("input.filename", initialValue);
-        
     }
 
     //////////////////////////////////////////
@@ -115,25 +124,25 @@ public class TestJobInputHelper {
                 new GroupId("test"));
         
         List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num jobs", 1, inputs.size());
+        assertEquals("num jobs", 1, inputs.size());
         JobInput jobInput=inputs.get(0);
         Param param=jobInput.getParam("input.filename");
-        Assert.assertEquals("numGroups", 2, param.getNumGroups());
-        Assert.assertEquals("numValues", 6, param.getNumValues());
+        assertEquals("numGroups", 2, param.getNumGroups());
+        assertEquals("numValues", 6, param.getNumValues());
         
         
         //verify the groupings
         final GroupId train=new GroupId("train");
         final GroupId test=new GroupId("test");
-        Assert.assertEquals("group[0]", new GroupId("train"), param.getGroups().get(0));
-        Assert.assertEquals("group[1]", new GroupId("test"), param.getGroups().get(1));
+        assertEquals("group[0]", new GroupId("train"), param.getGroups().get(0));
+        assertEquals("group[1]", new GroupId("test"), param.getGroups().get(1));
         
-        Assert.assertEquals("group[0][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls", param.getValue(train, 0).getValue());
-        Assert.assertEquals("group[0][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct", param.getValue(train, 1).getValue());
-        Assert.assertEquals("group[0][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res", param.getValue(train, 2).getValue());
-        Assert.assertEquals("group[1][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls", param.getValue(test, 0).getValue());
-        Assert.assertEquals("group[1][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct", param.getValue(test, 1).getValue());
-        Assert.assertEquals("group[1][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.res", param.getValue(test, 2).getValue());
+        assertEquals("group[0][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls", param.getValue(train, 0).getValue());
+        assertEquals("group[0][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct", param.getValue(train, 1).getValue());
+        assertEquals("group[0][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res", param.getValue(train, 2).getValue());
+        assertEquals("group[1][0]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls", param.getValue(test, 0).getValue());
+        assertEquals("group[1][1]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct", param.getValue(test, 1).getValue());
+        assertEquals("group[1][2]", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.res", param.getValue(test, 2).getValue());
     }
     
     //////////////////////////////////////////
@@ -148,10 +157,10 @@ public class TestJobInputHelper {
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls");
 
         List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num jobs", 1, inputs.size());
+        assertEquals("num jobs", 1, inputs.size());
         JobInput jobInput=inputs.get(0);
         Param param=jobInput.getParam("input.filename");
-        Assert.assertEquals("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
+        assertEquals("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls",
                 param.getValues().get(0).getValue());
     }
     
@@ -168,7 +177,7 @@ public class TestJobInputHelper {
                 "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct");
 
         List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 4, inputs.size());
+        assertEquals("num batch jobs", 4, inputs.size());
     }
 
     /**
@@ -184,13 +193,13 @@ public class TestJobInputHelper {
         jobInputHelper.addBatchValue("cls.file", createServerFilePathUrl("all_aml/all_aml_train.cls"));
         
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num jobs", 2, inputs.size());
+        assertEquals("num jobs", 2, inputs.size());
         
         //first batch
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_test.gct"), inputs.get(0).getParam("input.file").getValues().get(0).getValue());
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_test.cls"), inputs.get(0).getParam("cls.file").getValues().get(0).getValue());
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_train.gct"), inputs.get(1).getParam("input.file").getValues().get(0).getValue());
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_train.cls"), inputs.get(1).getParam("cls.file").getValues().get(0).getValue());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_test.gct"), inputs.get(0).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_test.cls"), inputs.get(0).getParam("cls.file").getValues().get(0).getValue());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_train.gct"), inputs.get(1).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_train.cls"), inputs.get(1).getParam("cls.file").getValues().get(0).getValue());
     }
     
     /**
@@ -204,9 +213,9 @@ public class TestJobInputHelper {
         jobInputHelper.addBatchValue("cls.file", createServerFilePathUrl("all_aml/all_aml_test.cls"));
         
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num jobs", 1, inputs.size());
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_test.gct"), inputs.get(0).getParam("input.file").getValues().get(0).getValue());
-        Assert.assertEquals(createServerFilePathUrl("all_aml/all_aml_test.cls"), inputs.get(0).getParam("cls.file").getValues().get(0).getValue()); 
+        assertEquals("num jobs", 1, inputs.size());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_test.gct"), inputs.get(0).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(createServerFilePathUrl("all_aml/all_aml_test.cls"), inputs.get(0).getParam("cls.file").getValues().get(0).getValue()); 
     }
 
     @Test
@@ -216,7 +225,7 @@ public class TestJobInputHelper {
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 7, inputs.size());
+        assertEquals("num batch jobs", 7, inputs.size());
     }
 
     /**
@@ -232,7 +241,7 @@ public class TestJobInputHelper {
         //bogus value, but the module requires a cls file
         jobInputHelper.addValue("cls.file", FileUtil.getDataFile("all_aml/all_aml_test.cls").getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 4, inputs.size());
+        assertEquals("num batch jobs", 4, inputs.size());
     }
 
     /**
@@ -247,7 +256,7 @@ public class TestJobInputHelper {
         //bogus value, but the module requires a cls file
         jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 2, inputs.size());
+        assertEquals("num batch jobs", 2, inputs.size());
     }
     
     /**
@@ -261,7 +270,7 @@ public class TestJobInputHelper {
         jobInputHelper.addBatchDirectory("dir", batchDir.getAbsolutePath());
         jobInputHelper.addValue("outputFilename", "<dir_file>_listing.txt");
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 3, inputs.size());
+        assertEquals("num batch jobs", 3, inputs.size());
     }
 
     /**
@@ -276,7 +285,7 @@ public class TestJobInputHelper {
         jobInputHelper.addBatchDirectory("input.file", gctDir.getAbsolutePath());
         jobInputHelper.addBatchDirectory("cls.file", clsDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 2, inputs.size());
+        assertEquals("num batch jobs", 2, inputs.size());
     }
     
     /**
@@ -292,7 +301,7 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchDirectory("input.filename",  batchDir.getAbsolutePath());
             final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: empty batch directory");
+            fail("Expecting GpServerException: empty batch directory");
         }
         catch (GpServerException e) {
             //expected
@@ -310,7 +319,7 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: empty batch directory");
+            fail("Expecting GpServerException: empty batch directory");
         }
         catch (GpServerException e) {
             //expected
@@ -328,7 +337,7 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: batch directory doesn't exist");
+            fail("Expecting GpServerException: batch directory doesn't exist");
         }
         catch (GpServerException e) {
             //expected
@@ -347,7 +356,7 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: empty batch directory");
+            fail("Expecting GpServerException: empty batch directory");
         }
         catch (GpServerException e) {
             //expected
@@ -367,7 +376,7 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: empty batch directory");
+            fail("Expecting GpServerException: empty batch directory");
         }
         catch (GpServerException e) {
             //expected
@@ -395,7 +404,7 @@ public class TestJobInputHelper {
 
         //Here we expect 5 batch jobs to be created
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 5, inputs.size());
+        assertEquals("num batch jobs", 5, inputs.size());
     }
 
     /**
@@ -415,7 +424,7 @@ public class TestJobInputHelper {
 
         //Here we expect 9 batch jobs to be created, one for each file in the directory
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 9, inputs.size());
+        assertEquals("num batch jobs", 9, inputs.size());
     }
 
 
@@ -442,7 +451,7 @@ public class TestJobInputHelper {
 
         //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 2, inputs.size());
+        assertEquals("num batch jobs", 2, inputs.size());
     }
 
     /**
@@ -466,7 +475,7 @@ public class TestJobInputHelper {
 
         //Here we expect 2 batch jobs to be created since there are only two pairs of matching file base names
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
-        Assert.assertEquals("num batch jobs", 4, inputs.size());
+        assertEquals("num batch jobs", 4, inputs.size());
     }
 
     /**
@@ -494,22 +503,23 @@ public class TestJobInputHelper {
             jobInputHelper.addBatchValue("cls.file", param2_file2.getAbsolutePath());
 
             jobInputHelper.prepareBatch();
-            Assert.fail("Expecting GpServerException: No matching input files for batch parameter");
+            fail("Expecting GpServerException: No matching input files for batch parameter");
         }
         catch(GpServerException e)
         {
             String errMsg = e.getLocalizedMessage();
             if(errMsg != null)
             {
-                Assert.assertTrue(errMsg.contains("No matching input files for batch parameter"));
+                assertTrue(errMsg.contains("No matching input files for batch parameter"));
             }
             else
             {
-                Assert.fail("Expecting GpServerException: No matching input files for batch parameter");
+                fail("Expecting GpServerException: No matching input files for batch parameter");
             }
         }
     }
     
+    @SuppressWarnings("unchecked")
     private ParameterInfo makeFileParam(String pname) {
         ParameterInfo pinfo = new ParameterInfo(pname, "", "");
         pinfo.setAttributes(new HashMap<String,String>());
@@ -526,7 +536,7 @@ public class TestJobInputHelper {
         GpFilePath inputDir=new ServerFilePath(batchDir.getAbsoluteFile());
         
         List<GpFilePath> batchFiles=BatchInputFileHelper.getBatchInputFiles(pinfo, inputDir);
-        Assert.assertEquals(6, batchFiles.size());
+        assertEquals(6, batchFiles.size());
     }
     
     @Test
@@ -550,23 +560,23 @@ public class TestJobInputHelper {
         
         List<JobInput> batchJobs=jobInputHelper.prepareBatch();
         
-        Assert.assertEquals("# batch jobs", 3, batchJobs.size());
-        Assert.assertEquals( "batch[0].input.file.1", 
+        assertEquals("# batch jobs", 3, batchJobs.size());
+        assertEquals( "batch[0].input.file.1", 
                 createServerFilePathUrl("fastq/a_1.fastq"),
                 batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[1].input.file.1", 
+        assertEquals( "batch[1].input.file.1", 
                 createServerFilePathUrl("fastq/b_1.fastq"),
                 batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[2].input.file.1", 
+        assertEquals( "batch[2].input.file.1", 
                 createServerFilePathUrl("fastq/c_1.fastq"),
                 batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[0].input.file.2", 
+        assertEquals( "batch[0].input.file.2", 
                 createServerFilePathUrl("fastq/a_2.fastq"),
                 batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[1].input.file.2", 
+        assertEquals( "batch[1].input.file.2", 
                 createServerFilePathUrl("fastq/b_2.fastq"),
                 batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[2].input.file.2", 
+        assertEquals( "batch[2].input.file.2", 
                 createServerFilePathUrl("fastq/c_2.fastq"),
                 batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue());
 
@@ -593,23 +603,23 @@ public class TestJobInputHelper {
 
         List<JobInput> batchJobs=jobInputHelper.prepareBatch();
 
-        Assert.assertEquals("# batch jobs", 3, batchJobs.size());
-        Assert.assertEquals( "batch[0].input.file.1", 
+        assertEquals("# batch jobs", 3, batchJobs.size());
+        assertEquals( "batch[0].input.file.1", 
                 createServerFilePathUrl("fastq/a_1.fastq"),
                 batchJobs.get(0).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[1].input.file.1", 
+        assertEquals( "batch[1].input.file.1", 
                 createServerFilePathUrl("fastq/b_1.fastq"),
                 batchJobs.get(1).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[2].input.file.1", 
+        assertEquals( "batch[2].input.file.1", 
                 createServerFilePathUrl("fastq/c_1.fastq"),
                 batchJobs.get(2).getParam("input.file.1").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[0].input.file.2", 
+        assertEquals( "batch[0].input.file.2", 
                 createServerFilePathUrl("fastq/a_2.fastq"),
                 batchJobs.get(0).getParam("input.file.2").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[1].input.file.2", 
+        assertEquals( "batch[1].input.file.2", 
                 createServerFilePathUrl("fastq/b_2.fastq"),
                 batchJobs.get(1).getParam("input.file.2").getValues().get(0).getValue());
-        Assert.assertEquals( "batch[2].input.file.2", 
+        assertEquals( "batch[2].input.file.2", 
                 createServerFilePathUrl("fastq/c_2.fastq"),
                 batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue());
     }

@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.webservice.JobInfo;
@@ -72,8 +74,9 @@ public class JobSubmitter implements Runnable {
         boolean interrupted=false;
         try {
             log.debug("submitting job "+jobId);
-            GpConfig gpConfig=ServerConfigurationFactory.instance();
-            FileDownloader fd=startDownloadAndWait(gpConfig, jobContext);
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            FileDownloader fd=startDownloadAndWait(mgr, gpConfig, jobContext);
             log.debug("calling genePattern.onJob("+jobId+")");
             genePattern.onJob(jobId);
         }
@@ -102,8 +105,8 @@ public class JobSubmitter implements Runnable {
         }
     }
     
-    private FileDownloader startDownloadAndWait(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
-        FileDownloader downloader=FileDownloader.fromJobContext(gpConfig, jobContext);
+    private FileDownloader startDownloadAndWait(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException, ExecutionException, InterruptedException {
+        FileDownloader downloader=FileDownloader.fromJobContext(mgr, gpConfig, jobContext);
         downloader.startDownloadAndWait(gpConfig, jobContext);
         return downloader;
     }

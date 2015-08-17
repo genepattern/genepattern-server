@@ -5,6 +5,8 @@ package org.genepattern.server.job.input.choice;
 
 import static org.hamcrest.Matchers.is;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,8 +71,10 @@ public class TestDynamicChoiceInfoParser {
 
     
     @Before
-    public void beforeTest() {
-        gpConfig=new GpConfig.Builder().build();
+    public void beforeTest() throws MalformedURLException {
+        gpConfig=new GpConfig.Builder()
+            .genePatternURL(new URL("http://127.0.0.1:8080/gp/"))
+        .build();
         gpContext=new GpContext.Builder().build();
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
     }

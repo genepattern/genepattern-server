@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
@@ -23,9 +24,9 @@ import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.webapp.jsf.ContactUsBean;
 import org.genepattern.webservice.JobInfo;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -36,19 +37,17 @@ import org.mockito.Mockito;
  * @author pcarr
  */
 public class CommandManagerFactoryTest {
+    private HibernateSessionManager mgr;
     private IGroupMembershipPlugin groupInfo;
     
     @Before
     public void setUp() throws Exception {
+        mgr=DbUtil.getTestDbSession();
         File userGroups=FileUtil.getSourceFile(this.getClass(), "userGroups.xml");
         // wrapper adds the '*' wildcard group
         groupInfo=new GroupMembershipWrapper(
                 new XmlGroupMembership(userGroups));
 
-    }
-    
-    @After
-    public void tearDown() throws Exception {
     }
     
     /**
@@ -108,7 +107,7 @@ public class CommandManagerFactoryTest {
     public void defaultConfig() {
         File resourcesDir=new File("resources");
         GpConfig gpConfig=GpConfigLoader.createFromResourcesDir(resourcesDir);
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateDefaultConfig(gpConfig, cmdMgr);
     }
 
@@ -117,7 +116,7 @@ public class CommandManagerFactoryTest {
      */
     @Test
     public void nullGpConfig() {
-        BasicCommandManager cmdMgr=CommandManagerFactory.createCommandManager(null);
+        BasicCommandManager cmdMgr=CommandManagerFactory.createCommandManager(mgr, null);
         validateDefaultConfig(null, cmdMgr, false);
     }
 
@@ -131,7 +130,7 @@ public class CommandManagerFactoryTest {
             .configFile(configFile)
         .build();
         assertEquals("expecting initialization errors", 1, gpConfig.getInitializationErrors().size());
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateDefaultConfig(gpConfig, cmdMgr, false);
     }
     
@@ -140,7 +139,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=Mockito.mock(GpConfig.class);
         Mockito.when(gpConfig.getJobConfiguration()).thenReturn(null);
         assertNull("expecting null jobConfiguration", gpConfig.getJobConfiguration());
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateDefaultConfig(gpConfig, cmdMgr);
     }
     
@@ -153,7 +152,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateExampleJobConfig(gpConfig, cmdMgr);
     }
 
@@ -208,7 +207,7 @@ public class CommandManagerFactoryTest {
             .configFile(configFile)
             .groupInfo(groupInfo)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateCommandManager(gpConfig, cmdMgr);
         assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
         validateYamlConfig(gpConfig, cmdMgr);
@@ -243,7 +242,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         validateCommandManager(gpConfig, cmdMgr);
         assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
         validateYamlConfig(gpConfig, cmdMgr);
@@ -353,7 +352,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("ComparativeMarkerSelection");
@@ -371,7 +370,7 @@ public class CommandManagerFactoryTest {
             .configFile(configFile)
             .groupInfo(groupInfo)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
 
         
         JobInfo jobInfo = new JobInfo();
@@ -409,7 +408,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
@@ -433,7 +432,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("test");
@@ -472,7 +471,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
 
         assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
         CommandExecutor runtimeExec=cmdMgr.getCommandExecutorsMap().get("RuntimeExec");
@@ -489,7 +488,7 @@ public class CommandManagerFactoryTest {
         GpConfig gpConfig=new GpConfig.Builder()
             .configFile(configFile)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("admin");
         
@@ -682,7 +681,7 @@ public class CommandManagerFactoryTest {
             .configFile(configFile)
             .groupInfo(groupInfo)
         .build();
-        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(gpConfig);
+        BasicCommandManager cmdMgr = CommandManagerFactory.createCommandManager(mgr, gpConfig);
 
         List<Throwable> errors = gpConfig.getInitializationErrors();
         for(Throwable t : errors) {

@@ -20,6 +20,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.JobDispatchException;
 
@@ -85,9 +86,9 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    public static CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
+    public static CachedFile initCachedFileObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
         boolean isRemoteDir=externalUrl.endsWith("/");
-        return initCachedFileObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+        return initCachedFileObj(mgr, gpConfig, jobContext, externalUrl, isRemoteDir);
     }
     
     /**
@@ -106,7 +107,7 @@ public class FileCache {
      * @param externalUrl
      * @return
      */
-    public static CachedFile initCachedFileObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+    public static CachedFile initCachedFileObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
         final File mappedFile=MapLocalEntry.initLocalFileSelection(gpConfig, jobContext, externalUrl);
         if (mappedFile!=null) {
             if (!mappedFile.exists()) {
@@ -130,10 +131,10 @@ public class FileCache {
          *     ftpDownloader.type: EDT_FTP_J_SIMPLE
          */
         if (!isRemoteDir) {
-            return CachedFtpFileFactory.instance().newCachedFtpFile(gpConfig, jobContext, externalUrl);
+            return CachedFtpFileFactory.instance().newCachedFtpFile(mgr, gpConfig, jobContext, externalUrl);
         }
         else {
-            return new CachedFtpDir(gpConfig, jobContext, externalUrl);
+            return new CachedFtpDir(mgr, gpConfig, jobContext, externalUrl);
         }
     }
     
@@ -145,9 +146,9 @@ public class FileCache {
      * @return
      * @throws JobDispatchException
      */
-    public static GpFilePath downloadCachedFile(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
+    public static GpFilePath downloadCachedFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) throws JobDispatchException {
         final boolean isRemoteDir=externalUrl.endsWith("/");
-        return downloadCachedFile(gpConfig, jobContext, externalUrl, isRemoteDir);
+        return downloadCachedFile(mgr, gpConfig, jobContext, externalUrl, isRemoteDir);
     }
 
     /**
@@ -162,11 +163,11 @@ public class FileCache {
      * @return
      * @throws JobDispatchException
      */
-    public static GpFilePath downloadCachedFile(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
+    public static GpFilePath downloadCachedFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) throws JobDispatchException {
         final GpFilePath cachedFile;
         try {
             // this method waits, if necessary, for the file to be transferred to a local path
-            Future<CachedFile> f = FileCache.instance().getFutureObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+            Future<CachedFile> f = FileCache.instance().getFutureObj(mgr, gpConfig, jobContext, externalUrl, isRemoteDir);
             cachedFile=f.get().getLocalPath();
         }
         catch (Throwable t) {
@@ -223,13 +224,13 @@ public class FileCache {
         }
     }
 
-    public synchronized Future<CachedFile> getFutureObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
-        final CachedFile obj = initCachedFileObj(gpConfig, jobContext, externalUrl);
+    public synchronized Future<CachedFile> getFutureObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl) {
+        final CachedFile obj = initCachedFileObj(mgr, gpConfig, jobContext, externalUrl);
         return getFutureObj(obj);
     }
     
-    public synchronized Future<CachedFile> getFutureObj(final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
-        final CachedFile obj = initCachedFileObj(gpConfig, jobContext, externalUrl, isRemoteDir);
+    public synchronized Future<CachedFile> getFutureObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String externalUrl, final boolean isRemoteDir) {
+        final CachedFile obj = initCachedFileObj(mgr, gpConfig, jobContext, externalUrl, isRemoteDir);
         return getFutureObj(obj);
     }
     

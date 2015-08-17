@@ -197,7 +197,7 @@ public class UrlPrefixFilter {
             // must be a File or a Directory param
             return false;
         }
-        URL externalUrl=JobInputHelper.initExternalUrl(paramValue);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, paramValue);
         if (externalUrl==null) {
             // must be an external url
             return false;

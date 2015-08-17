@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +18,6 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.SchemaUpdater;
 import org.hibernate.Query;
-import org.junit.Assert;
 import org.junit.Ignore;
 
 import com.google.common.cache.CacheBuilder;
@@ -96,28 +97,36 @@ public class DbUtil {
         return mgr;
     }
     
-    public static String addUserToDb(final GpConfig gpConfig, final HibernateSessionManager mgr, final String gp_username) {
+    public static String addUserToDb(final GpConfig gpConfig, final HibernateSessionManager mgr, final String gp_username)
+    throws DbException
+    {
         final boolean isInTransaction = mgr.isInTransaction();
-        final boolean userExists=UserAccountManager.userExists(mgr, gp_username);
-        final String gp_email=null; //can be null
-        final String gp_password=null; //can be null
-        
-        if (!userExists) {
-            try {
+        boolean doClose=!isInTransaction;
+        try {
+            mgr.beginTransaction();
+            final boolean userExists=UserAccountManager.userExists(mgr, gp_username);
+            final String gp_email=null; //can be null
+            final String gp_password=null; //can be null
+            if (!userExists) {
                 UserAccountManager.createUser(gpConfig, mgr, gp_username, gp_password, gp_email);
                 if (!isInTransaction) {
                     mgr.commitTransaction();
                 }
+            } 
+        }
+        catch (AuthenticationException e) {
+            doClose=true;
+            fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
+        }
+        catch (Throwable t) {
+            doClose=true;
+            throw new DbException("Error adding user to db, gp_username="+gp_username, t);
+        }
+        finally {
+            if (doClose) {
+                mgr.closeCurrentSession();
             }
-            catch (AuthenticationException e) {
-                Assert.fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
-            }
-            finally {
-                if (!isInTransaction) {
-                    mgr.closeCurrentSession();
-                }
-            }
-        } 
+        }
         return gp_username;
     }
     

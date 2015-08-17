@@ -9,11 +9,12 @@ import java.util.List;
 
 import org.genepattern.drm.Memory;
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -30,24 +31,26 @@ public class TestUserUploadDao {
     final static Date oneDayAgo=new Date(now.getTime() - DAY_IN_MS);
     final static Date eightDaysAgo=new Date(now.getTime() - 8 * DAY_IN_MS);
 
+    static int dbNum=1;
     static String adminUser;
     static String testUser;
     
-    private HibernateSessionManager mgr;
-    private GpConfig gpConfig;
+    private static HibernateSessionManager mgr;
+    private static GpConfig gpConfig;
      
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder temp = new TemporaryFolder();
     
-    @Before
-    public void setUp() throws Exception {
-        mgr=DbUtil.getTestDbSession();
+    @BeforeClass
+    public static void setUp() throws Exception {
+        final String dbName="testdb"+dbNum;
+        mgr=DbUtil.getTestDbSession(dbName);
         final String userDir=temp.newFolder("users").getAbsolutePath();
         gpConfig=new GpConfig.Builder()
             .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
         .build();
-        adminUser=DbUtil.addUserToDb(gpConfig, mgr, "admin");
-        testUser=DbUtil.addUserToDb(gpConfig, mgr, "test");
+        adminUser=DbUtil.addUserToDb(gpConfig, mgr, "admin_"+now.getTime());
+        testUser=DbUtil.addUserToDb(gpConfig, mgr, "test_"+now.getTime());
         
         //initialize by adding a bunch of records
         try {
@@ -210,7 +213,7 @@ public class TestUserUploadDao {
         }
     }
 
-    private void createUserUploadRecord(final String userId, final File relativeFile) {
+    private static void createUserUploadRecord(final String userId, final File relativeFile) throws DbException {
         final Date date;
         if (relativeFile.exists()) {
             date=new Date(relativeFile.lastModified());
@@ -221,48 +224,54 @@ public class TestUserUploadDao {
         createUserUploadRecord(userId, relativeFile, date);
     }
     
-    private void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) {
+    private static void createUserUploadRecord(final String userId, final File relativeFile, final long timeOffset) 
+    throws DbException
+    {
         createUserUploadRecord(userId, relativeFile, new Date(System.currentTimeMillis() - timeOffset));
     }
 
-    private void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) {
-        UserUpload uu = new UserUpload();
-        uu.setUserId(userId);
-        uu.setPath(relativeFile.getPath());
-        final String name=relativeFile.getName();
-        uu.setName(name);
-        if (relativeFile.isDirectory()) {
-            uu.setKind("directory");
-        }
-        else {
-            int idx=name.lastIndexOf(".");
-            if (idx>0 && idx<name.length()) {
-                String extension=name.substring(idx);
-                uu.setExtension(extension);
-                uu.setKind(extension);
-            }
-        }
-        uu.setLastModified(lastModified);
-        uu.setNumParts(1);
-        uu.setNumPartsRecd(1);
-
-        uu.setFileLength(10);
-
+    private static void createUserUploadRecord(final String userId, final File relativeFile, final Date lastModified) 
+    throws DbException
+    {
         final boolean isInTransaction=mgr.isInTransaction();
+        boolean doClose=!isInTransaction;
         try {
             mgr.beginTransaction();
+            UserUpload uu = new UserUpload();
+            uu.setUserId(userId);
+            uu.setPath(relativeFile.getPath());
+            final String name=relativeFile.getName();
+            uu.setName(name);
+            if (relativeFile.isDirectory()) {
+                uu.setKind("directory");
+            }
+            else {
+                int idx=name.lastIndexOf(".");
+                if (idx>0 && idx<name.length()) {
+                    String extension=name.substring(idx);
+                    uu.setExtension(extension);
+                    uu.setKind(extension);
+                }
+            }
+            uu.setLastModified(lastModified);
+            uu.setNumParts(1);
+            uu.setNumPartsRecd(1);
+
+            uu.setFileLength(10);
             new UserUploadDao(mgr).saveOrUpdate(uu);
-            if (!isInTransaction) {
+            if (doClose) {
                 mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
+            doClose=true;
             mgr.rollbackTransaction();
+            throw new DbException("Error creating user upload record, for userId="+userId+", path="+relativeFile, t);
         }
         finally {
-            if (!isInTransaction) {
+            if (doClose) {
                 mgr.closeCurrentSession();
-            }
+            } 
         }
     }
 }

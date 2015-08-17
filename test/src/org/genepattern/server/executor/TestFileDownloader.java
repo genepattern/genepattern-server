@@ -8,11 +8,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
@@ -31,6 +34,9 @@ import org.junit.Test;
  *
  */
 public class TestFileDownloader {
+    final String gpUrl="http://127.0.0.1:8080/gp/";
+    
+    private HibernateSessionManager mgr;
     private GpConfig gpConfig;
     private GpContext jobContext;
     private TaskInfo taskInfo = new TaskInfo();
@@ -48,8 +54,10 @@ public class TestFileDownloader {
             "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/"));
 
     @Before
-    public void setUp() {
+    public void setUp() throws ExecutionException {
+        mgr=DbUtil.getTestDbSession();
         gpConfig=mock(GpConfig.class);
+        when(gpConfig.getGpUrl()).thenReturn(gpUrl);
         jobContext=mock(GpContext.class);
         jobInfo = mock(JobInfo.class);
         jobInput=new JobInput();
@@ -65,7 +73,7 @@ public class TestFileDownloader {
         });
         jobInput.addValue("input.file", selectedValue);
         
-        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext);
+        FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext);
         assertTrue("Expecting a choice selection", downloader.hasFilesToCache());
         
         CachedFile cachedFile=downloader.getFilesToCache().get(0);
@@ -81,7 +89,7 @@ public class TestFileDownloader {
         });
         jobInput.addValue("input.file", selectedDirValue);
 
-        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext); 
+        FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext); 
         assertTrue("Expecting a choice selection", downloader.hasFilesToCache());
         assertEquals("selectedChoices[0].value",
                 selectedDirValue, 
@@ -102,7 +110,7 @@ public class TestFileDownloader {
         });
         jobInput.addValue("input.file", selectedValue);
 
-        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext);
+        FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext);
         assertFalse("ignore passByReference selection", downloader.hasFilesToCache());
     }
     
@@ -140,7 +148,7 @@ public class TestFileDownloader {
         jobInput.addValue("input.file", "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct"); 
         when(gpConfig.getValue(jobContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL)).thenReturn(cacheExternalDirs);
 
-        FileDownloader downloader = FileDownloader.fromJobContext(gpConfig, jobContext); 
+        FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext); 
         Assert.assertEquals("hasFilesToDownload", true, downloader.hasFilesToCache());
         Assert.assertEquals("filesToDownload[0].value",
                 "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct", 

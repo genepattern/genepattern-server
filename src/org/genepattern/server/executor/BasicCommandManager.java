@@ -17,7 +17,7 @@ import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.JobExecutor;
@@ -38,13 +38,11 @@ public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
 
     private AnalysisJobScheduler analysisTaskScheduler = null;
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     
-    public BasicCommandManager() {
-        this(null);
-    }
-
-    public BasicCommandManager(final GpConfig gpConfig) {
+    public BasicCommandManager(final HibernateSessionManager mgr, final GpConfig gpConfig) {
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
     }
     
@@ -119,35 +117,35 @@ public class BasicCommandManager implements CommandManager {
     private void setJobStatus(JobInfo jobInfo, int jobStatus) {
         String jobId = ""+jobInfo.getJobNumber();
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             dao.updateJobStatus(jobInfo.getJobNumber(), jobStatus);
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         catch (Exception e) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             log.error("Unable to set status to "+jobStatus+" for job #"+jobId);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         } 
     }
 
     private List<MyJobInfoWrapper> getOpenJobs() {
         List<MyJobInfoWrapper> openJobs = new ArrayList<MyJobInfoWrapper>();
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             int numRunningJobs = -1;
             List<Integer> statusIds = new ArrayList<Integer>();
             //statusIds.add(JobStatus.JOB_DISPATCHING);
             statusIds.add(JobStatus.JOB_PROCESSING);
-            openJobs = getJobsWithStatusId(statusIds, dao, numRunningJobs);
+            openJobs = getJobsWithStatusId(mgr, statusIds, dao, numRunningJobs);
         }
         catch (Throwable t) {
             log.error("error getting list of running jobs from the server", t);
             return new ArrayList<MyJobInfoWrapper>();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         
         //sort the open jobs ....
@@ -187,9 +185,9 @@ public class BasicCommandManager implements CommandManager {
     /**
      * Get the list of jobs whose status is running or dispatching
      */
-    private static List<MyJobInfoWrapper> getJobsWithStatusId(List<Integer> statusIds, AnalysisDAO dao, int maxJobCount) {
+    private static List<MyJobInfoWrapper> getJobsWithStatusId(final HibernateSessionManager mgr, List<Integer> statusIds, AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
-        Session session = HibernateUtil.getSession();
+        Session session = mgr.getSession();
         final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId in ( :statusIds ) and deleted = :isDeleted order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
@@ -197,6 +195,7 @@ public class BasicCommandManager implements CommandManager {
         }
         query.setBoolean("isDeleted", false);
         query.setParameterList("statusIds", statusIds);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {
             JobInfo singleJobInfo = new JobInfo(aJob);

@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +37,7 @@ public class TestHibernateUtil {
     }
     
     @Test
-    public void mappingFromHbmXmlFile_User() {
+    public void mappingFromHbmXmlFile_User() throws DbException {
         String gp_username="test_user";
         DbUtil.addUserToDb(gpConfig, mgr, gp_username);
     }

@@ -67,7 +67,7 @@ public class TestJobCommentDao
     }
 
     @After
-    public void tearDown()
+    public void tearDown() throws DbException 
     {
         AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
     }
