@@ -10,6 +10,7 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.JobInputHelper;
@@ -23,14 +24,16 @@ import org.genepattern.server.job.input.JobInputHelper;
 abstract public class CachedFtpFile implements CachedFile {
     private static final Logger log = Logger.getLogger(CachedFtpFile.class);
     
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final URL url;
     private final GpFilePath localPath;
     
-    protected CachedFtpFile(final GpConfig gpConfigIn, final String urlString) {
+    protected CachedFtpFile(final HibernateSessionManager mgr, final GpConfig gpConfigIn, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
+        this.mgr=mgr;
         if (gpConfigIn==null) {
             this.gpConfig=ServerConfigurationFactory.instance();
         }
@@ -78,7 +81,7 @@ abstract public class CachedFtpFile implements CachedFile {
     @Override
     public GpFilePath download() throws DownloadException {
         try {
-            doDownload(localPath, url);
+            doDownload(mgr, localPath, url);
             return localPath;
         }
         catch (DownloadException e) {
@@ -130,7 +133,7 @@ abstract public class CachedFtpFile implements CachedFile {
      * @param url
      * @throws Exception
      */
-    private void doDownload(final GpFilePath realPath, final URL url) throws DownloadException, InterruptedException {
+    private void doDownload(final HibernateSessionManager mgr, final GpFilePath realPath, final URL url) throws DownloadException, InterruptedException {
         // If the real path exists, assume it's up to date
         final File realFile = realPath.getServerFile();
         if (realFile.exists()) {
@@ -180,7 +183,7 @@ abstract public class CachedFtpFile implements CachedFile {
 
         // Add it to the database
         try {
-            JobInputFileUtil.__addUploadFileToDb(realPath);
+            JobInputFileUtil.__addUploadFileToDb(mgr, realPath);
         }
         catch (Throwable t) {
             //ignore this, because we don't rely on the DB entry for managing cached data files

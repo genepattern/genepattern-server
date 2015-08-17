@@ -802,7 +802,7 @@ public class GenePatternAnalysisTask {
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file drop-down param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);
@@ -811,7 +811,7 @@ public class GenePatternAnalysisTask {
                 }
                 else if (isCachedValue) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, pinfo.getValue());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, pinfo.getValue());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);

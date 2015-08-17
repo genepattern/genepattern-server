@@ -10,12 +10,13 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 
 public final class CommonsNet_3_3_Impl extends CachedFtpFile {
     private static final Logger log = Logger.getLogger(CommonsNet_3_3_Impl.class);
 
-    public CommonsNet_3_3_Impl(final GpConfig gpConfig, final String urlString) {
-        super(gpConfig, urlString);
+    public CommonsNet_3_3_Impl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        super(mgr, gpConfig, urlString);
     }
 
     public boolean isDirectory() throws SocketException, IOException {

@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.choice.ftp.FtpDirLister;
 import org.genepattern.server.job.input.choice.ftp.FtpDirListerCommonsNet_3_3;
 import org.genepattern.server.job.input.choice.ftp.FtpDirListerEdtFtpJ;
@@ -29,7 +30,7 @@ public class CachedFtpFileFactory {
         interruptionService.shutdownNow();
     }
     
-    public CachedFtpFile newCachedFtpFile(final GpConfig gpConfig, final GpContext gpContext, final String urlString) {
+    public CachedFtpFile newCachedFtpFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String urlString) {
         String str=gpConfig.getGPProperty(gpContext, CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name());
         CachedFtpFileType type=null;
         try {
@@ -39,15 +40,15 @@ public class CachedFtpFileFactory {
             log.error(t);
             type=CachedFtpFileType.EDT_FTP_J;
         }
-        return newCachedFtpFile(type, gpConfig, urlString);
+        return newCachedFtpFile(type, mgr, gpConfig, urlString);
     }
 
-    public CachedFtpFile newCachedFtpFile(final CachedFtpFileType type, final GpConfig gpConfig, final String urlString) {
+    public CachedFtpFile newCachedFtpFile(final CachedFtpFileType type, final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
         if (type==null) {
             log.error("type==null");
-            return CachedFtpFileType.EDT_FTP_J.newCachedFtpFile(gpConfig, urlString);
+            return CachedFtpFileType.EDT_FTP_J.newCachedFtpFile(mgr, gpConfig, urlString);
         }
-        return type.newCachedFtpFile(gpConfig, urlString);
+        return type.newCachedFtpFile(mgr, gpConfig, urlString);
     }
 
     /**
@@ -55,13 +56,8 @@ public class CachedFtpFileFactory {
      * @param urlString
      * @return
      */
-    public CachedFtpFile newStdJava6Impl(final GpConfig gpConfig, final String urlString) {
-        return new StdJava_6_Impl(gpConfig, urlString);
-    }
-    
-    /** @deprecated, should pass in a GpConfig */
-    public CachedFtpFile newApacheCommonsImpl(final String urlString) {
-        return newApacheCommonsImpl(ServerConfigurationFactory.instance(), urlString);
+    public CachedFtpFile newStdJava6Impl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        return new StdJava_6_Impl(mgr, gpConfig, urlString);
     }
     
     /**
@@ -69,8 +65,8 @@ public class CachedFtpFileFactory {
      * @param urlString
      * @return
      */
-    public CachedFtpFile newApacheCommonsImpl(final GpConfig gpConfig, final String urlString) {
-        return new CommonsNet_3_3_Impl(gpConfig, urlString);
+    public CachedFtpFile newApacheCommonsImpl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        return new CommonsNet_3_3_Impl(mgr, gpConfig, urlString);
     }
     
     /**
@@ -80,8 +76,8 @@ public class CachedFtpFileFactory {
      * @param urlString
      * @return
      */
-    public CachedFtpFile newEdtFtpJImpl(final GpConfig gpConfig, final String urlString) {
-        return new EdtFtpJImpl(gpConfig, urlString, interruptionService);
+    public CachedFtpFile newEdtFtpJImpl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        return new EdtFtpJImpl(mgr, gpConfig, urlString, interruptionService);
     }
     
     /**
@@ -92,8 +88,8 @@ public class CachedFtpFileFactory {
      * @param urlString
      * @return
      */
-    public CachedFtpFile newEdtFtpJImpl_simple(final GpConfig gpConfig, final String urlString) {
-        return new EdtFtpJ_simple(gpConfig, urlString);
+    public CachedFtpFile newEdtFtpJImpl_simple(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        return new EdtFtpJ_simple(mgr, gpConfig, urlString);
     }
 
     public static FtpDirLister initDirListerFromConfig(GpConfig gpConfig, GpContext gpContext, final boolean passiveMode) {

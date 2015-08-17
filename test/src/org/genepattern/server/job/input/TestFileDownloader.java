@@ -13,12 +13,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
@@ -60,13 +63,15 @@ public class TestFileDownloader {
     public TemporaryFolder temp = new TemporaryFolder();
     private File tmpDir;
     private File userDir;
+    private HibernateSessionManager mgr;
     private GpConfig gpConfig;
     private GpContext gpContext;
     
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, ExecutionException {
         tmpDir=temp.newFolder("tmp");
         userDir=temp.newFolder("users");
+        mgr=DbUtil.getTestDbSession();
         gpConfig=new GpConfig.Builder()
             .addProperty("user.root.dir", userDir.getAbsolutePath())  // <---- the root directory into which user files are saved
             // for reference, the following properties are FTP client settings 
@@ -131,7 +136,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(mgr, gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -148,7 +153,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(mgr, gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
@@ -165,7 +170,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(mgr, gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -182,7 +187,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl_simple(gpConfig, fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl_simple(mgr, gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -199,7 +204,7 @@ public class TestFileDownloader {
         final URL fromUrl=new URL(smallFileUrl);
         final File toFile=new File(tmpDir, fromUrl.getFile());
         try {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(mgr, gpConfig, fromUrl.toExternalForm());
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
@@ -224,7 +229,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(gpConfig, fromUrl.toExternalForm());
+            CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newStdJava6Impl(mgr, gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -245,7 +250,7 @@ public class TestFileDownloader {
         cancellationTest(false, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newApacheCommonsImpl(mgr, gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -271,7 +276,7 @@ public class TestFileDownloader {
         cancellationTest(true, toFile, new Callable<File>() {
             @Override
             public File call() throws Exception {
-                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(gpConfig, fromUrl.toExternalForm());
+                CachedFtpFile cachedFtpFile = CachedFtpFileFactory.instance().newEdtFtpJImpl(mgr, gpConfig, fromUrl.toExternalForm());
                 cachedFtpFile.downloadFile(fromUrl, toFile);
                 return toFile;
             }
@@ -280,7 +285,7 @@ public class TestFileDownloader {
 
     @Test
     public void testCachedFtpDir_getFilesToDownload() throws DownloadException, ListFtpDirException {
-        final CachedFtpDir cachedFtpDir=new CachedFtpDir(gpConfig, gpContext, dirUrl);
+        final CachedFtpDir cachedFtpDir=new CachedFtpDir(mgr, gpConfig, gpContext, dirUrl);
         final List<FtpEntry> files=cachedFtpDir.getFilesToDownload();
         
         final List<FtpEntry> expected=new ArrayList<FtpEntry>();
@@ -298,7 +303,7 @@ public class TestFileDownloader {
      */
     @Test
     public void testDirectoryDownload() throws DownloadException {
-        final CachedFtpDir cachedFtpDir = new CachedFtpDir(gpConfig, gpContext, dirUrl);
+        final CachedFtpDir cachedFtpDir = new CachedFtpDir(mgr, gpConfig, gpContext, dirUrl);
 
         Assert.assertFalse("cachedFtpDir is already downloaded, localPath="+cachedFtpDir.getLocalPath().getServerFile(), cachedFtpDir.isDownloaded());
         final GpFilePath localDirPath=cachedFtpDir.download();
@@ -322,11 +327,11 @@ public class TestFileDownloader {
     public void isDir_edtFtpJ() throws Exception {
         ExecutorService ex=Executors.newCachedThreadPool();
         try {
-            EdtFtpJImpl ftpFile=new EdtFtpJImpl(gpConfig, dirUrl, ex);
+            EdtFtpJImpl ftpFile=new EdtFtpJImpl(mgr, gpConfig, dirUrl, ex);
             boolean isDirectory=ftpFile.isDirectory();
             assertEquals(true, isDirectory);
             
-            ftpFile=new EdtFtpJImpl(gpConfig, fileUrl, ex);
+            ftpFile=new EdtFtpJImpl(mgr, gpConfig, fileUrl, ex);
             isDirectory=ftpFile.isDirectory();
             assertEquals(false, isDirectory);
         }
@@ -337,11 +342,11 @@ public class TestFileDownloader {
 
     @Test
     public void isDir_commons_net() throws Exception {
-        CommonsNet_3_3_Impl ftpFile=new CommonsNet_3_3_Impl(gpConfig, dirUrl);
+        CommonsNet_3_3_Impl ftpFile=new CommonsNet_3_3_Impl(mgr, gpConfig, dirUrl);
         boolean isDirectory=ftpFile.isDirectory();
         assertEquals(true, isDirectory);
 
-        ftpFile=new CommonsNet_3_3_Impl(gpConfig, fileUrl);
+        ftpFile=new CommonsNet_3_3_Impl(mgr, gpConfig, fileUrl);
         isDirectory=ftpFile.isDirectory();
         assertEquals(false, isDirectory);
     }

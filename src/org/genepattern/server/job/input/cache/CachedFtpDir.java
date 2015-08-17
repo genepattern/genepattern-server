@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.choice.DirFilter;
@@ -63,6 +64,7 @@ public class CachedFtpDir implements CachedFile {
         }
     }
 
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final URL url;
@@ -71,10 +73,11 @@ public class CachedFtpDir implements CachedFile {
     // check for completed downloads after a server restart
     private final GpFilePath tmpDir;
 
-    public CachedFtpDir(final GpConfig gpConfigIn, final GpContext jobContextIn, final String urlString) {
+    public CachedFtpDir(final HibernateSessionManager mgr, final GpConfig gpConfigIn, final GpContext jobContextIn, final String urlString) {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
+        this.mgr=mgr;
         if (gpConfigIn==null) {
             this.gpConfig=ServerConfigurationFactory.instance();
         }
@@ -146,7 +149,7 @@ public class CachedFtpDir implements CachedFile {
         try {
             for(final FtpEntry ftpEntry : ftpEntries) {
                 try {
-                    final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
+                    final Future<?> f = FileCache.instance().getFutureObj(mgr, gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
                     f.get(100, TimeUnit.MILLISECONDS);
                 }
                 catch (TimeoutException e) {
@@ -156,7 +159,7 @@ public class CachedFtpDir implements CachedFile {
             }
             // now loop through all of the files and wait for each download to complete
             for(final FtpEntry ftpEntry : ftpEntries) {
-                final Future<?> f = FileCache.instance().getFutureObj(gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
+                final Future<?> f = FileCache.instance().getFutureObj(mgr, gpConfig, jobContext, ftpEntry.getValue(), ftpEntry.isDir());
                 f.get();
             }
         }

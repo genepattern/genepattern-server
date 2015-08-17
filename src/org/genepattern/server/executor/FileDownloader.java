@@ -20,6 +20,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.Param;
@@ -81,10 +82,11 @@ public class FileDownloader {
      * @return
      * @throws JobDispatchException
      */
-    public static final FileDownloader fromJobContext(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
-        return new FileDownloader(gpConfig, jobContext);
+    public static final FileDownloader fromJobContext(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+        return new FileDownloader(mgr, gpConfig, jobContext);
     }
     
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final Map<String,ParameterInfoRecord> paramInfoMap;
@@ -93,11 +95,11 @@ public class FileDownloader {
     private final UrlPrefixFilter cacheFilter;
     private List<CachedFile> filesToCache=null;
 
-    private FileDownloader(final GpConfig gpConfig, final GpContext jobContext) {
-        this(gpConfig, jobContext, null);
+    private FileDownloader(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) {
+        this(mgr, gpConfig, jobContext, null);
     }
 
-    private FileDownloader(final GpConfig gpConfig, final GpContext jobContext, Map<String,ParameterInfoRecord> paramInfoMapIn) {
+    private FileDownloader(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, Map<String,ParameterInfoRecord> paramInfoMapIn) {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
         }
@@ -110,6 +112,7 @@ public class FileDownloader {
         else {
             this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(jobContext.getTaskInfo());
         }
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.jobInput=jobContext.getJobInput();
@@ -146,7 +149,7 @@ public class FileDownloader {
         }
         List<CachedFile> cachedFiles=new ArrayList<CachedFile>();
         for(final FileValue fv : fileValues) {
-            cachedFiles.add(FileCache.initCachedFileObj(gpConfig, jobContext, fv.getValue(), fv.isRemoteDir()));
+            cachedFiles.add(FileCache.initCachedFileObj(mgr, gpConfig, jobContext, fv.getValue(), fv.isRemoteDir()));
         }
         return cachedFiles;
     }
