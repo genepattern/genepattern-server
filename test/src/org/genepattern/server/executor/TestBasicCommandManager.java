@@ -3,18 +3,24 @@
  *******************************************************************************/
 package org.genepattern.server.executor;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner;
 import org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner;
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.config.ConfigurationException;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.JobExecutor;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestBasicCommandManager {
+    HibernateSessionManager mgr;
+    GpConfig gpConfig;
     BasicCommandManager cmdMgr;
     JobExecutor localExec;
     JobExecutor lsfExec;
@@ -23,8 +29,10 @@ public class TestBasicCommandManager {
     CommandExecutor runtimeExec;
     
     @Before
-    public void setUp() throws ConfigurationException {
-        cmdMgr=new BasicCommandManager();
+    public void setUp() throws ConfigurationException, ExecutionException {
+        mgr=DbUtil.getTestDbSession();
+        gpConfig=new GpConfig.Builder().build();
+        cmdMgr=new BasicCommandManager(mgr, gpConfig);
         lsfExec=mock(JobExecutor.class);
         when(lsfExec.getJobRunnerClassname()).thenReturn(CmdLineLsfRunner.class.getName());
         when(lsfExec.getJobRunnerName()).thenReturn(CmdLineLsfRunner.class.getSimpleName());
@@ -61,13 +69,13 @@ public class TestBasicCommandManager {
     
     @Test
     public void validIdNotAJobExecutorInstance() {
-        Assert.assertNull(cmdMgr.lookupJobExecutorByJobRunnerName("RuntimeExec"));
+        assertNull(cmdMgr.lookupJobExecutorByJobRunnerName("RuntimeExec"));
     }
     
     @Test
     public void noExecutorWithId() {
-        cmdMgr=new BasicCommandManager();
-        Assert.assertNull(cmdMgr.lookupJobExecutorByJobRunnerName("RuntimeExec"));
+        cmdMgr=new BasicCommandManager(mgr, gpConfig);
+        assertNull(cmdMgr.lookupJobExecutorByJobRunnerName("RuntimeExec"));
     }
     
     /** Expecting an exception */
