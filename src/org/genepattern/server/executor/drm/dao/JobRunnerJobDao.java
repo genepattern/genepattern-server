@@ -55,11 +55,6 @@ public class JobRunnerJobDao {
         }
     }
     
-    /** @deprecated */
-    public void updateJobStatus(final Integer gpJobNo, final DrmJobStatus drmJobStatus) throws DbException {
-        updateJobStatus(org.genepattern.server.database.HibernateUtil.instance(), gpJobNo, drmJobStatus);
-    }
-    
     public void updateJobStatus(final HibernateSessionManager mgr, final Integer gpJobNo, final DrmJobStatus drmJobStatus) throws DbException {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
@@ -86,11 +81,6 @@ public class JobRunnerJobDao {
         }
     }
 
-    /** @deprecated */
-    public JobRunnerJob updateJobStatus(final JobRunnerJob existing, final DrmJobStatus jobStatus) { 
-        return updateJobStatus(org.genepattern.server.database.HibernateUtil.instance(), existing, jobStatus);
-    }
-    
     /**
      * Update the existing job_runner_job entry with new values from the given jobStatus.
      * @param existing
@@ -115,11 +105,6 @@ public class JobRunnerJobDao {
         }
         saveOrUpdate(mgr, update);
         return update;
-    }
-
-    /** @deprecated */
-    public void saveOrUpdate(final JobRunnerJob jobRunnerJob) {
-        saveOrUpdate(org.genepattern.server.database.HibernateUtil.instance(), jobRunnerJob);
     }
 
     public void saveOrUpdate(final HibernateSessionManager mgr, final JobRunnerJob jobRunnerJob) {
