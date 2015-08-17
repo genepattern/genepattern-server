@@ -11,6 +11,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -40,26 +41,34 @@ import org.genepattern.webservice.TaskInfo;
 public class BatchInputFileHelper {
     private static final Logger log = Logger.getLogger(BatchInputFileHelper.class);
 
+    /** @deprecated should pass in a valid GpConfig */
+    public static GpFilePath initGpFilePath(final String value, final boolean includeExternalUrl) {
+        return initGpFilePath(ServerConfigurationFactory.instance(), value, includeExternalUrl);
+    }
+    
     /**
-     * Get the GpFilePath for a batch input directory, if and only if, the given value
-     * is a valid batch input directory. Otherwise, return null.
+     * by default, includeExternalUrl is false.
+     * @param gpConfig
      * @param value
      * @return
      */
-    public static GpFilePath initGpFilePath(final String value) {
+    public static GpFilePath initGpFilePath(final GpConfig gpConfig, final String value) {
         final boolean includeExternalUrl=false;
-        return initGpFilePath(value, includeExternalUrl);
+        return initGpFilePath(gpConfig, value, includeExternalUrl);
     }
 
     /**
      * Get the GpFilePath for a batch input directory, if and only if, the given value
      * is a valid batch input directory. Otherwise, return null.
+     * 
+     * @param gpConfig
      * @param value
+     * @param includeExternalUrl
      * @return
      */
-    public static GpFilePath initGpFilePath(final String value, final boolean includeExternalUrl) {
+    public static GpFilePath initGpFilePath(final GpConfig gpConfig, final String value, final boolean includeExternalUrl) {
         GpFilePath gpPath=null;
-        URL externalUrl=JobInputHelper.initExternalUrl(value);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, value);
         if (externalUrl!=null) {
             //it's an externalURL
             if (!includeExternalUrl) {
@@ -283,14 +292,14 @@ public class BatchInputFileHelper {
      * @param id
      * @param value
      */
-    public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
-        URL externalUrl=JobInputHelper.initExternalUrl(value);
+    public void addBatchValue(final GpConfig gpConfig, final ParamId paramId, final String value) throws GpServerException {
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, value);
         if (externalUrl != null) {
             addBatchExternalUrl(paramId, externalUrl);
             return;
         }
 
-        final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(value);
+        final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, value);
         if (gpPath == null) {
             throw new GpServerException("batch input not supported for param="+paramId.getFqName()+", value="+value);
         }

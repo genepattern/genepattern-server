@@ -75,17 +75,17 @@ public class CachedFtpDir implements CachedFile {
         if (log.isDebugEnabled()) {
             log.debug("Initializing CachedFtpFile, type="+this.getClass().getName());
         }
-        this.url=JobInputHelper.initExternalUrl(urlString);
-        if (url==null) {
-            throw new IllegalArgumentException("value is not an external url: "+urlString);
-        }
-        
         if (gpConfigIn==null) {
             this.gpConfig=ServerConfigurationFactory.instance();
         }
         else {
             this.gpConfig=gpConfigIn;
         }
+        this.url=JobInputHelper.initExternalUrl(this.gpConfig, urlString);
+        if (url==null) {
+            throw new IllegalArgumentException("value is not an external url: "+urlString);
+        }
+        
         if (jobContextIn==null) {
             this.jobContext=GpContext.getServerContext();
         }

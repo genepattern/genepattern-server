@@ -37,7 +37,7 @@ abstract public class CachedFtpFile implements CachedFile {
         else {
             this.gpConfig=gpConfigIn;
         }
-        this.url=JobInputHelper.initExternalUrl(urlString);
+        this.url=JobInputHelper.initExternalUrl(gpConfig, urlString);
         if (url==null) {
             throw new IllegalArgumentException("value is not an external url: "+urlString);
         }

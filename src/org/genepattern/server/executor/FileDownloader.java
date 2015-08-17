@@ -29,7 +29,6 @@ import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.util.UrlPrefixFilter;
-//import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -178,9 +177,9 @@ public class FileDownloader {
      * @param cacheFilter
      * @return
      */
-    protected static boolean isCachedValue(final String paramValue, UrlPrefixFilter dropDownFilter, UrlPrefixFilter cacheFilter) {
+    protected static boolean isCachedValue(final GpConfig gpConfig, final String paramValue, UrlPrefixFilter dropDownFilter, UrlPrefixFilter cacheFilter) {
         // only if it's an external url
-        URL externalUrl=JobInputHelper.initExternalUrl(paramValue);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, paramValue);
         if (externalUrl==null) {
             return false;
         }
@@ -203,7 +202,7 @@ public class FileDownloader {
         // filter values by prefix
         Set<FileValue> rval=null;
         for(ParamValue value : param.getValues()) {
-            final boolean accepted=isCachedValue(value.getValue(), dropDownFilter, cacheFilter);
+            final boolean accepted=isCachedValue(gpConfig, value.getValue(), dropDownFilter, cacheFilter);
             if (accepted) {
                 if (rval==null) {
                     // lazy-init rval

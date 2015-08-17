@@ -740,7 +740,7 @@ public class ParamListHelper {
 
     public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl = JobInputHelper.initExternalUrl(value);
+        URL externalUrl = JobInputHelper.initExternalUrl(gpConfig, value);
         final boolean isPassByReference=isPassByReference(formalParam);
         
         if (externalUrl != null) {
