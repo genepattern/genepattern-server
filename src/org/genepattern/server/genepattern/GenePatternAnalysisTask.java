@@ -144,10 +144,7 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -3097,7 +3094,10 @@ public class GenePatternAnalysisTask {
                             break;
                         }
                     }
-                    if (!foundActual) {
+
+                    String listMode = hmAttributes != null ? (String)hmAttributes.get(NumValues.PROP_LIST_MODE) : null;
+                    //only verify if list mode is not CMD or CMD_OPT
+                    if (!foundActual && hmAttributes != null && listMode != null && !listMode.equalsIgnoreCase("cmd") && !listMode.equalsIgnoreCase("cmd_opt")) {
                         if (actualValue != null && actualValue.length() > 0) {
                             // only a problem if it's not an empty string
                             vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
