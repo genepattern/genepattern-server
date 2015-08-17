@@ -2,7 +2,7 @@
 /**
  * Initialize the choiceDiv. This method is called the first time the job input form is loaded.
  * The buildChoiceDiv is called after a dynamic choice is initialized from the GP server.
- * 
+ *
  * @param paramaterName
  * @param groupId
  * @param initialValuesList
@@ -19,10 +19,10 @@ function initChoiceDiv(parameterName, groupId, initialValuesList)
 /**
  * Helper method, for the given choiceInfo, are there any matching values in the
  * given list of initialValues.
- * 
+ *
  * @param choiceInfo
  * @param initialValues
- * 
+ *
  * @return an empty array if there are no matches.
  */
 
@@ -46,7 +46,7 @@ function removeItemsFromArray(fromArray, value) {
 /**
  * Helper method, for the given choiceInfo, are there any items
  * which match the given value.
- * 
+ *
  * @param choiceInfo
  * @param value
  * @returns {Boolean}
@@ -62,19 +62,19 @@ function hasMatchingValue(choiceInfo, value) {
 
 /**
  * Helper method, for the given choiceInfo, are there any custom values
- * in the given list of initialValues. 
+ * in the given list of initialValues.
  * A custom value is defined as anything which is not in the 'choiceInfo.choices'
  * drop-down menu.
- * 
+ *
  * Special-case: Ignore the empty string if it is in the list of initialValues.
- * 
+ *
  * For example, given a drop-down menu containing:
  *     "A.txt", "B.txt", "C.txt"
- *     
+ *
  * Given initialValues=A.txt, return []
  * Given initialValues=D.txt, return [ D.txt ]
  * Given initialValues="" (empty string), return [], empty array
- * 
+ *
  * @param choiceInfo
  * @param initialValues
  * @returns
@@ -86,7 +86,7 @@ function getCustomChoices(choiceInfo, initialValues) {
     if (!choiceInfo || !choiceInfo.choices || choiceInfo.length==0) {
         return [];
     }
-    
+
     // check for matching items from the list of initial values
     // ignore empty string values
     var custom=[];
@@ -115,7 +115,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 var downloadingChoicesDiv = $("<p><img src='/gp/images/ajax.gif' height='24' width='24' alt='Dowloading drop-down menu' />Downloading drop-down menu ... </p>");
                 selectChoiceDiv.append(downloadingChoicesDiv);
             }
-            else {             
+            else {
                 var errorDetailsLink = $("<a href='#'> (more...)</a>");
 
                 var errorMessageDiv = $("<p><span class='errorMessage'>No dynamic file selections available</span></p>");
@@ -180,11 +180,15 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             cMinWidth = 300;
         }
 
-        var validateSelectionFunc = function (element)
+        var validateSelectionFunc = function (element, val)
         {
             var valueList = [];
 
-            var value = $(element).val();
+            var value = val;
+            if(val == undefined)
+            {
+                val = $(element).val();
+            }
 
             //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
             if($(element).multiselect("option", "multiple"))
@@ -233,7 +237,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             noneSelectedText: noneSelectedText,
             classes: 'mSelect',
             checkAll: function() {
-                var result = validateSelectionFunc(this);
+                var result = validateSelectionFunc(this, $(this).val());
 
                 if(result == false)
                 {
@@ -241,9 +245,26 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     $(this).multiselect("uncheckAll");
                 }
             },
-            click: function()
-            {
-                return validateSelectionFunc(this);
+            click: function (event, ui) {
+                var values = $(event.target).val();
+
+                if(values === undefined || values === null)
+                {
+                    values = [];
+                }
+
+                if(ui.checked)
+                {
+                    //add the value
+                    values.push(ui.value);
+                }
+                else
+                {
+                    //remove the value
+                    var index = $.inArray(ui.value, values);
+                    values.splice(index, 1);
+                }
+                return validateSelectionFunc(this, values);
             }
         });
 
@@ -258,14 +279,14 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         choice.data("maxValue", paramDetails.maxValue);
         //set the default value
         choice.children("option").each(function()
-                {
+        {
             if(paramDetails.default_value != "" && $(this).val() == paramDetails.default_value)
             {
                 $(this).parent().val(paramDetails.default_value);
                 $(this).parent().data("default_value", paramDetails.default_value);
                 $(this).parent().multiselect("refresh");
             }
-                });
+        });
 
         //select initial values if there are any
         if( initialValuesList != undefined &&  initialValuesList != null)
@@ -274,23 +295,23 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             for(var n=0;n<initialValuesList.length;n++)
             {
                 choice.find("option").each(function()
-                        {
+                {
                     if(initialValuesList[n] == $(this).val())
                     {
                         matchingValueList.push(initialValuesList[n]);
                     }
-                        });
+                });
             }
 
             //should only be one item in the list for now
             //but handle case when there is more than one item
-            if(choice.multiselect("option", "multiple"))
+            if(paramDetails.allowMultiple)
             {
                 if(matchingValueList.length > 0)
                 {
                     //indicate initial value was found in drop-down list
                     //run_task_info.params[parameterName].initialChoiceValues = true;
-                    paramDetails.initialChoiceValues = true; 
+                    paramDetails.initialChoiceValues = true;
                 }
 
                 choice.val(matchingValueList);
@@ -302,7 +323,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 if(initialValuesList.length > 0)
                 {
                     //run_task_info.params[parameterName].initialChoiceValues = false;
-                    paramDetails.initialChoiceValues = false; 
+                    paramDetails.initialChoiceValues = false;
 
                     if(!(paramDetails.default_value == "" && initialValuesList[0] == "")
                             && $.inArray(initialValuesList[0], matchingValueList) != -1)
@@ -315,7 +336,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     {
                         //indicate initial value was found in drop-down list
                         //run_task_info.params[parameterName].initialChoiceValues = true;
-                        paramDetails.initialChoiceValues = true; 
+                        paramDetails.initialChoiceValues = true;
                     }
                 }
             }
@@ -325,13 +346,19 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         else
         {
             //run_task_info.params[parameterName].initialChoiceValues = true;
-            paramDetails.initialChoiceValues = true; 
+            paramDetails.initialChoiceValues = true;
         }
 
         var valueList = [];
         if(choice.val() != null && choice.val() != "")
         {
-            valueList.push(choice.val());
+            if(paramDetails.allowMultiple)
+            {
+                valueList = choice.val(); //already a list of values
+            }
+            else{
+                valueList.push(choice.val());
+            }
         }
         updateValuesForGroup(groupId, parameterName, valueList);
     }
@@ -344,10 +371,10 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
     {
         selectChoiceDiv.hide();
     }
-    
+
     if (doLoadChoiceDiv === true) {
         // HACK: ignore previously selected custom values
-        paramDetails.initialChoiceValues = true; 
+        paramDetails.initialChoiceValues = true;
         reloadChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
     }
 
@@ -357,19 +384,19 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 /**
  * Ajax call to list the contents of a remote directory, for building a dynamic drop-down menu.
  * @param {choiceDir} choiceDir, the choiceDir object returned by the GP server.
- *     
+ *
  * @returns a choiceInfo object
  */
 function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, initialValuesList) {
-    $.getJSON( choiceInfoIn.href, 
+    $.getJSON( choiceInfoIn.href,
         function( choiceInfo ) {
             if (window.console) {
-                console.log("drop-down loaded from: " + choiceInfo.href); 
+                console.log("drop-down loaded from: " + choiceInfo.href);
                 console.log("status: " + JSON.stringify(choiceInfo.status, null, 2));
             }
             $(selectChoiceDiv).empty();
             buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
-            
+
             //if it's a custom value then do the same as a send to parameter
             var customChoices=getCustomChoices(choiceInfo, initialValuesList);
             if (customChoices && customChoices.length>0) {
@@ -378,7 +405,7 @@ function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterN
                     setInputField(parameterName, customChoices[0], groupId);
                 }
             }
-        } 
+        }
     );
 }
 

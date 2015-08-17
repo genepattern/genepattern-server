@@ -2,7 +2,9 @@ var field_types = {
     FILE: 1,
     CHOICE: 2,
     TEXT: 4,
-    PASSWORD: 5
+    PASSWORD: 5,
+    INTEGER: 6,
+    FLOAT: 7
 };
 
 //contains info about the current selected task
@@ -845,6 +847,7 @@ function setParamFieldType(parameterInfo) {
     var isChoice = false;
     var isPassword = false;
     var isText = false;
+    var isNumeric = false;
 
     var allowCustomChoice = true;
     if (parameterInfo.choiceInfo !== undefined && parameterInfo.choiceInfo !== null && parameterInfo.choiceInfo !== '') {
@@ -870,7 +873,32 @@ function setParamFieldType(parameterInfo) {
             if (parameterInfo.type === "PASSWORD") {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
-            run_task_info.params[parameterInfo.name].type.push(field_types.TEXT);
+            else if(parameterInfo.minRange !== undefined || parameterInfo.maxRange !== undefined)
+            {
+                if(parameterInfo.type === "java.lang.Integer")
+                {
+                    run_task_info.params[parameterInfo.name].type.push(field_types.INTEGER);
+                }
+
+                if(parameterInfo.type === "java.lang.Float")
+                {
+                    run_task_info.params[parameterInfo.name].type.push(field_types.FLOAT);
+                }
+
+                if(parameterInfo.minRange != undefined)
+                {
+                    run_task_info.params[parameterInfo.name].minRange = parseFloat(parameterInfo.minRange);
+                }
+
+                if(parameterInfo.maxRange != undefined)
+                {
+                    run_task_info.params[parameterInfo.name].maxRange = parseInt(parameterInfo.maxRange);
+                }
+            }
+            else
+            {
+                run_task_info.params[parameterInfo.name].type.push(field_types.TEXT);
+            }
         }
     }
 }
@@ -972,6 +1000,185 @@ function addSendToParam(parameterInfo) {
 
         run_task_info.sendTo["directory"].push(parameterInfo.name);
     }
+}
+
+function createNumericDiv(parameterName, groupId, initialValuesList)
+{
+    var numericDiv = $("<div class='numericDiv'/>");
+    $("#runTaskSettingsDiv").append(numericDiv);
+
+    var paramDetails = run_task_info.params[parameterName];
+
+    var isFloat = false;
+    if($.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) != -1)
+    {
+        isFloat = true;
+    }
+
+    //select initial values if there are any
+    if (initialValuesList !== undefined && initialValuesList !== null) {
+        for (var v = 0; v < initialValuesList.length; v++) {
+            var inputFieldValue = initialValuesList[v];
+
+            if(isFloat)
+            {
+                parseFloat(inputFieldValue);
+            }
+            else
+            {
+                parseInt(inputFieldValue);
+            }
+
+            var allowDelete = false;
+            if(v > 0 )
+            {
+                allowDelete = true;
+            }
+
+            createNumericInput(parameterName, groupId, numericDiv, allowDelete, inputFieldValue);
+        }
+    }
+    else
+    {
+        createNumericInput(parameterName, groupId, numericDiv, false);
+    }
+
+    if(paramDetails.allowMultiple)
+    {
+        //add a button to add additional spinners
+        var addMoreBtn = $("<button>Add</button>");
+        addMoreBtn.button().click(function()
+        {
+            var groupId = getGroupId($(this));
+            var parent = $(this).parents("tr").first();
+            var paramName = parent.data("pname");
+
+            var div = $("<div/>");
+
+            createNumericInput(paramName, groupId, div, true, "");
+
+            $(this).before(div);
+        });
+
+        $("<div/>").append(addMoreBtn).appendTo(numericDiv);
+    }
+    numericDiv.detach();
+    return numericDiv;
+}
+
+function createNumericInput(parameterName, groupId, container, allowDelete, value)
+{
+    var isFloat = false;
+    if($.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) != -1)
+    {
+        isFloat = true;
+    }
+
+    var div = $("<div/>");
+    container.append(div);
+
+    var nField = $("<input name='numericInput' class='numericInput' />");
+    div.append(nField);
+
+    if(allowDelete)
+    {
+        //add a delete button
+        var deleteBtn = $("<button class='deleteBtn'>X</button>");
+        deleteBtn.button().click(function()
+        {
+            var parent = $(this).parents("tr").first();
+            var paramName = parent.data("pname");
+
+            var groupId = getGroupId($(this));
+
+            var index = $(this).parents(".numericDiv").first().find(".deleteBtn").index($(this));
+            var valueList = getValuesForGroup(groupId, paramName);
+
+            index = index + 1;
+            valueList.splice(index, 1);
+
+            updateValuesForGroup(groupId, paramName, valueList);
+
+            $(this).parents("div").first().remove();
+        });
+
+        div.append(deleteBtn);
+    }
+
+    var paramDetails = run_task_info.params[parameterName];
+
+    nField = nField.spinner();
+
+    if(isFloat)
+    {
+        nField.spinner( "option", "numberFormat", "n");
+        nField.spinner( "option", "step", 0.01);
+    }
+
+    if($.isNumeric(paramDetails.minRange))
+    {
+        nField.spinner( "option","min", paramDetails.minRange);
+    }
+
+    if($.isNumeric(paramDetails.maxRange))
+    {
+        nField.spinner( "option","max", paramDetails.maxRange);
+    }
+
+    if(value != undefined && value != null)
+    {
+        var valueList = getValuesForGroup(groupId, parameterName);
+        nField.spinner("value", value);
+
+        valueList.push(value);
+        updateValuesForGroup(groupId, parameterName, valueList);
+    }
+
+    nField.on("spinchange", function(event, ui)
+    {
+        var parent = $(this).parents("tr").first();
+
+        var paramName = parent.data("pname");
+
+        //check that the value > than minimum range and < than the maximum range
+        var minRange = run_task_info.params[paramName].minRange;
+        var maxRange = run_task_info.params[paramName].maxRange;
+
+        if(!$.isNumeric($(this).val()))
+        {
+            alert("Invalid value: " + $(this).val() + ". Value must be numeric.");
+            $(this).val("");
+            return;
+        }
+
+        if(minRange != undefined && $(this).val() < minRange)
+        {
+            alert("Invalid value: " + $(this).val() + ". Value must be greater than or equal to " + minRange);
+            $(this).val("");
+
+            return;
+        }
+
+        if(maxRange != undefined && $(this).val() > maxRange)
+        {
+            alert("Invalid value: " + $(this).val() + ". Value must be less than or equal to " + maxRange);
+            $(this).val("");
+
+            return;
+        }
+
+
+        var valueList = [];
+
+        //get all the numeric values set for this parameter
+        parent.find("input[name='numericInput']").each(function()
+        {
+            valueList.push($(this).val());
+        });
+
+        var groupId = getGroupId($(this));
+        updateValuesForGroup(groupId, paramName, valueList);
+    });
 }
 
 function createTextDiv(parameterName, groupId, initialValuesList) {
@@ -1194,10 +1401,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 updateFilesForGroup(groupId, paramName, []);
                 updateParamFileTable(paramName, $(this).closest(".fileDiv"));
 
-                var maxNum = run_task_info.params[paramName].maxValue;
+                var maxValue = run_task_info.params[paramName].maxValue;
 
                 //disable multiselect for this param if it is not file list param
-                if (maxNum <= 1) {
+                if (maxValue <= 1) {
                     $(this).parents(".fileDiv").find(".uploadedinputfile").removeAttr("multiple");
                 }
 
@@ -1515,6 +1722,20 @@ function getFilesForGroup(groupId, paramName) {
     return parameter_and_val_groups[paramName].groups[groupId].files;
 }
 
+function getValuesForGroup(groupId, paramName) {
+    if (parameter_and_val_groups[paramName].groups[groupId] === undefined
+        || parameter_and_val_groups[paramName].groups[groupId] === null) {
+        javascript_abort("Error retrieving group Id " + groupId + " for parameter " + paramName);
+    }
+
+    if (parameter_and_val_groups[paramName].groups[groupId].values === undefined ||
+        parameter_and_val_groups[paramName].groups[groupId].values === null) {
+        parameter_and_val_groups[paramName].groups[groupId].values = [];
+    }
+
+    return parameter_and_val_groups[paramName].groups[groupId].values;
+}
+
 function updateFilesForGroup(groupId, paramName, filesList) {
     if (parameter_and_val_groups[paramName].groups[groupId] === undefined
         || parameter_and_val_groups[paramName].groups[groupId] === null) {
@@ -1624,6 +1845,12 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
     if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
         contentDiv.append(createTextDiv(parameterName, groupId, initialValues));
+    }
+
+    if ($.inArray(field_types.INTEGER, run_task_info.params[parameterName].type) !== -1
+        || $.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) !== -1) {
+        //this must be a text entry
+        contentDiv.append(createNumericDiv(parameterName, groupId, initialValues));
     }
 
     if (run_task_info.params[parameterName].type.length > 1) {

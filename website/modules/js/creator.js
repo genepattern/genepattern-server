@@ -2729,7 +2729,7 @@ jQuery(document).ready(function() {
         }
     });
 
-    $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
+    $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("keyup", function()
     {
         var parameterParent = $(this).parents(".parameter");
 

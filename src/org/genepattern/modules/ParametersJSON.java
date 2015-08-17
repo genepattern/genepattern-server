@@ -12,9 +12,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.job.input.GroupInfo;
-import org.genepattern.server.job.input.NumValues;
-import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
@@ -190,7 +188,44 @@ public class ParametersJSON extends JSONObject {
             log.error("Error initializing group info for param="+pinfo.getName(), t);
         }
     }
-    
+
+    /**
+     * Helper method to parse the optional numRange attribute for the given parameter.
+     * @param pInfo
+     */
+    public void addNumRangeInfo(final ParameterInfo pInfo) {
+        if (pInfo == null ) {
+            throw new IllegalArgumentException("pInfo==null");
+        }
+
+        HashMap<String, String> attributes = pInfo.getAttributes();
+        if (attributes == null ) {
+            throw new IllegalArgumentException("pInfo.getAttributes()==null");
+        }
+
+        String numRangeString = attributes.get("numRange");
+        if(numRangeString != null)
+        {
+            try {
+                final NumValuesParser nvParser=new NumValuesParserImpl();
+                final NumValues numRange = nvParser.parseNumValues(numRangeString);
+
+                if (numRange.getMin() != null) {
+                    this.put("minRange", numRange.getMin());
+                }
+                if (numRange.getMax() != null) {
+                    this.put("maxRange", numRange.getMax());
+                }
+            }
+            catch (JSONException e) {
+                log.error("Error creating parameter JSON from ParameterInfo object");
+            }
+            catch (Exception e) {
+                log.error("Error getting valid ranges from ParameterInfo object");
+            }
+        }
+    }
+
     public void initChoice(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pInfo, final boolean initDropdown) {
         try {
             final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo, initDropdown);
