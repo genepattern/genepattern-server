@@ -45,7 +45,7 @@ public class TestPluginManagerLegacy {
     
     private HibernateSessionManager mgr;
     private GpConfig gpConfig;
-    private GpContext gpContext;
+    private GpContext serverContext;
     private File gpHomeDir;
     private File pluginDir;
     private File resourcesDir;
@@ -81,7 +81,7 @@ public class TestPluginManagerLegacy {
             .resourcesDir(resourcesDir)
             .addProperties(systemProps)
         .build();
-        gpContext=GpContext.getServerContext();
+        serverContext=GpContext.getServerContext();
         
         expected=Arrays.asList(
             java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val, "-f", "installAnt.xml", "-Dresources="+resourcesDir.getAbsolutePath(), "-Dplugin.dir="+pluginDir.getAbsolutePath(), "-Dant-1.8_HOME=");
@@ -104,7 +104,7 @@ public class TestPluginManagerLegacy {
     @Test
     public void getPatchDirectory() throws Exception {
         PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
         
         assertEquals(new File(pluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
                 pluginMgr.getPatchDirectory(new LSID(ANT)));
@@ -113,18 +113,18 @@ public class TestPluginManagerLegacy {
     @Test(expected=ConfigurationException.class)
     public void getPatchDirectory_ConfigurationException() throws Exception {
         gpConfig=Mockito.mock(GpConfig.class);
-        gpContext=Mockito.mock(GpContext.class);
-        when(gpConfig.getRootPluginDir(gpContext)).thenReturn(null);
+        serverContext=Mockito.mock(GpContext.class);
+        when(gpConfig.getRootPluginDir(serverContext)).thenReturn(null);
         
         PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
 
         pluginMgr.getPatchDirectory(new LSID(ANT));
     }
     
     @Test
     public void createPluginCmdLine() {
-        List<String> actual=PluginManagerLegacy.initCmdLineArray(gpConfig, gpContext, cmdLine);
+        List<String> actual=PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine);
         assertEquals(expected, actual);
     }
     
@@ -135,7 +135,7 @@ public class TestPluginManagerLegacy {
         gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)
         .build();
-        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, gpContext, cmdLine));
+        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine));
     }
     
     @Test
@@ -145,14 +145,14 @@ public class TestPluginManagerLegacy {
         gpConfig=new GpConfig.Builder()
             .gpHomeDir(gpHomeDir)
         .build();
-        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, gpContext, cmdLine));
+        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine));
     }
     
     @Test
     public void requiredPatches_none() throws Exception {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         List<PatchInfo> expected=Collections.emptyList();
         assertEquals("no '"+GPConstants.REQUIRED_PATCH_LSIDS+"' in manifest",
@@ -166,7 +166,7 @@ public class TestPluginManagerLegacy {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, "");
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         List<PatchInfo> expected=Collections.emptyList();
         assertEquals("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
@@ -180,7 +180,7 @@ public class TestPluginManagerLegacy {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, BWA);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(BWA, null)),
@@ -193,7 +193,7 @@ public class TestPluginManagerLegacy {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, ANT+","+BWA);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(ANT, null), new PatchInfo(BWA, null)),
@@ -204,7 +204,7 @@ public class TestPluginManagerLegacy {
     public void requiredPatches_TopHat() throws Exception { 
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         List<PatchInfo> actual=pluginMgr.getRequiredPatches(taskInfo);
         assertNotNull(actual);
         assertComparePatchInfo("", topHatPatchInfos, actual);
@@ -214,7 +214,7 @@ public class TestPluginManagerLegacy {
     public void requiredPatches_mismatchedLsidAndUrl() throws Exception {
         String requiredPatchLSIDs=ANT+","+Check_Python_2_6;
         String requiredPatchURLs="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy();
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         pluginMgr.getRequiredPatches(requiredPatchLSIDs, requiredPatchURLs);
     }
     
@@ -266,7 +266,7 @@ public class TestPluginManagerLegacy {
             }
         };
         
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
 
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertComparePatchInfo("some installed", expected, patchesToInstall);
