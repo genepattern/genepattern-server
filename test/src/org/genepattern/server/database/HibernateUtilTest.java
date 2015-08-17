@@ -33,7 +33,7 @@ public class HibernateUtilTest {
         }
         finally {
             //Note: for HSQL, rollback has no effect on the sequence
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
     }
 
