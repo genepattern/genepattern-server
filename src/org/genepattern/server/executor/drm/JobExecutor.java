@@ -193,6 +193,10 @@ public class JobExecutor implements CommandExecutor2 {
         this( HibernateUtil.instance(), JobEventBus.instance() );
     }
     
+    public JobExecutor(final HibernateSessionManager mgr) {
+        this(mgr, JobEventBus.instance());
+    }
+    
     public JobExecutor(final EventBus eventBus) {
         this(HibernateUtil.instance(), eventBus);
     }
