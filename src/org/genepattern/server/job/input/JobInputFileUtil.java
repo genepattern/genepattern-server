@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UserUploadFile;
@@ -269,7 +268,7 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    public static void __addUploadFileToDb(final GpFilePath _gpFilePath) throws Exception {
+    public static void __addUploadFileToDb(final HibernateSessionManager mgr, final GpFilePath _gpFilePath) throws Exception {
         if (!(_gpFilePath instanceof UserUploadFile)) {
             throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }
@@ -285,7 +284,6 @@ public class JobInputFileUtil {
         }
 
         final String userId=userUploadFile.getOwner();
-        final HibernateSessionManager mgr=HibernateUtil.instance();
         @SuppressWarnings("deprecation")
         final GpContext userContext=GpContext.getContextForUser(userId);
         String parentPath="";
@@ -307,7 +305,7 @@ public class JobInputFileUtil {
      * 
      * @param relativePath
      */
-    static public void addUploadFileToDb(final GpContext context, final GpFilePath gpFilePath) throws Exception {
+    static public void addUploadFileToDb(final HibernateSessionManager mgr, final GpContext context, final GpFilePath gpFilePath) throws Exception {
         if (!(gpFilePath instanceof UserUploadFile)) {
             throw new IllegalArgumentException("Expecting a GpFilePath instance of type UserUploadFile");
         }
@@ -320,7 +318,6 @@ public class JobInputFileUtil {
             f=f.getParentFile();
         }
 
-        final HibernateSessionManager mgr=HibernateUtil.instance();        
         String parentPath="";
         for(String dirname : dirs) {
             parentPath += (dirname+"/");
