@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.RecordEula;
 import org.hibernate.Query;
@@ -21,6 +21,12 @@ import org.hibernate.Session;
  */
 public class RecordEulaToDb implements RecordEula {
     final static private Logger log = Logger.getLogger(RecordEulaToDb.class);
+    
+    private final HibernateSessionManager mgr;
+
+    public RecordEulaToDb(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
 
     public boolean hasUserAgreed(String userId, EulaInfo eula) throws Exception {
         Date userAgreementDate = getUserAgreementDate(userId, eula);
@@ -32,9 +38,9 @@ public class RecordEulaToDb implements RecordEula {
             throw new IllegalArgumentException("eula==null");
         }
         final String lsid=eula.getModuleLsid();
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             Date userAgreementDate = getUserAgreementDate(userId, lsid);
             if (userAgreementDate != null) {
                 log.warn("Found duplicate record, userId="+userId+", lsid="+lsid+", date="+userAgreementDate);
@@ -43,14 +49,14 @@ public class RecordEulaToDb implements RecordEula {
             EulaRecord record = new EulaRecord();
             record.setUserId(userId);
             record.setLsid(lsid);
-            HibernateUtil.getSession().save( record );
+            mgr.getSession().save( record );
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Exception e) {
             log.error("Error recording licenseAgreenet, userId="+userId+", lsid="+lsid, e);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             //some of the hibernate exceptions are convoluted, therefore throw the cause if possible
             if (e.getCause() != null) {
                 Throwable t = e.getCause();
@@ -64,7 +70,7 @@ public class RecordEulaToDb implements RecordEula {
         finally {
             if (!isInTransaction) {
                 //make sure to close the connection, if we find a duplicate record
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -95,15 +101,16 @@ public class RecordEulaToDb implements RecordEula {
             throw new IllegalArgumentException("userId not set");
         }
         log.debug("getUserAgreementDate, userId="+userId+", lsid="+lsid);
-        boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
             String hql = "from "+EulaRecord.class.getName()+" ur where ur.userId = :userId and ur.lsid = :lsid";
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
+            mgr.beginTransaction();
+            Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setString("userId", userId);
             query.setString("lsid", lsid);
+            @SuppressWarnings("unchecked")
             List<EulaRecord> records = query.list();
             if (records == null) {
                 log.error("Unexpected result: records == null; userId="+userId+", lsid="+lsid);
@@ -129,7 +136,7 @@ public class RecordEulaToDb implements RecordEula {
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -137,10 +144,10 @@ public class RecordEulaToDb implements RecordEula {
         
     // methods for adding a remote POST to the queue 
     private EulaRemoteQueue getEulaRemoteQueueEntry(final String userId, final EulaInfo eulaInfo, final String remoteUrl) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
+        final boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRecord eulaRecord=getEulaRecord(userId, eulaInfo.getModuleLsid());
             if (eulaRecord==null) {
                 return null;
@@ -151,52 +158,52 @@ public class RecordEulaToDb implements RecordEula {
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
     public void addToRemoteQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
+        final boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRemoteQueue entry = getEulaRemoteQueueEntry(userId, eulaInfo, remoteUrl);
             if (entry==null) {
                 // manually enforce foreign key constraint
                 throw new Exception("No entry in 'eula_record' for userId="+userId+", lsid="+eulaInfo.getModuleLsid());
             }
-            HibernateUtil.getSession().saveOrUpdate( entry );
+            mgr.getSession().saveOrUpdate( entry );
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public void removeFromQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean inTransaction = mgr.isInTransaction();
+        mgr.beginTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRemoteQueue entry = getEulaRemoteQueueEntry(userId, eulaInfo, remoteUrl);
             if (entry==null) {
                 log.error("No entry in 'eula_record' for userId="+userId+", lsid="+eulaInfo.getModuleLsid());
                 return;
             }
-            HibernateUtil.getSession().delete(entry);
+            mgr.getSession().delete(entry);
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -209,15 +216,16 @@ public class RecordEulaToDb implements RecordEula {
             throw new IllegalArgumentException("userId not set");
         }
         log.debug("getQueueEntries, userId="+userId+", lsid="+eulaInfo.getModuleLsid());
-        boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRecord eulaRecord=getEulaRecord(userId, eulaInfo.getModuleLsid());
             String hql = "from "+EulaRemoteQueue.class.getName()+" q where q.eulaRecordId = :eulaRecordId";
-            Session session = HibernateUtil.getSession();
+            Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setLong("eulaRecordId", eulaRecord.getId());
+            @SuppressWarnings("unchecked")
             List<EulaRemoteQueue> records = query.list();
             if (records == null) {
                 log.error("Unexpected result: records == null; userId="+userId+", lsid="+eulaInfo.getModuleLsid());
@@ -236,7 +244,7 @@ public class RecordEulaToDb implements RecordEula {
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -249,18 +257,19 @@ public class RecordEulaToDb implements RecordEula {
             throw new IllegalArgumentException("userId not set");
         }
         log.debug("getQueueEntries, userId="+userId+", lsid="+eulaInfo.getModuleLsid()+", remoteUrl="+remoteUrl);
-        boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRecord eulaRecord=getEulaRecord(userId, eulaInfo.getModuleLsid());
             
             
             String hql = "from "+EulaRemoteQueue.class.getName()+" q where q.eulaRecordId = :eulaRecordId and q.remoteUrl = :remoteUrl";
-            Session session = HibernateUtil.getSession();
+            Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setLong("eulaRecordId", eulaRecord.getId());
             query.setString("remoteUrl", remoteUrl);
+            @SuppressWarnings("unchecked")
             List<EulaRemoteQueue> records = query.list();
             if (records == null) {
                 log.error("Unexpected result: records == null; userId="+userId+", lsid="+eulaInfo.getModuleLsid());
@@ -279,18 +288,16 @@ public class RecordEulaToDb implements RecordEula {
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         } 
     }
     
-    //@Override
     public void updateRemoteQueue(final String userId, final EulaInfo eulaInfo, final String remoteUrl, final boolean success) throws Exception {
-        final boolean inTransaction = HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean inTransaction = mgr.isInTransaction();
         log.debug("inTransaction="+inTransaction);
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             EulaRemoteQueue entry = getEulaRemoteQueueEntry(userId, eulaInfo, remoteUrl);
             if (entry==null) {
                 // manually enforce foreign key constraint
@@ -300,14 +307,14 @@ public class RecordEulaToDb implements RecordEula {
             entry.setRecorded(success);
             entry.setDateRecorded(new Date());
             entry.setNumAttempts( entry.getNumAttempts()+1 );
-            HibernateUtil.getSession().saveOrUpdate( entry );
+            mgr.getSession().saveOrUpdate( entry );
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }

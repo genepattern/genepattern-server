@@ -46,7 +46,7 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
         final boolean inTransaction=HibernateUtil.isInTransaction();
         TaskInstall taskInstall=null;
         try {
-            taskInstall=new RecordInstallInfoToDb().query(taskInfo.getLsid());
+            taskInstall=new RecordInstallInfoToDb(HibernateUtil.instance()).query(taskInfo.getLsid());
         }
         catch (Throwable t) {
             log.error("error getting 'task_install' record from DB for lsid="+taskInfo.getLsid(), t);

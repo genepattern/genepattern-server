@@ -45,7 +45,7 @@ import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -69,25 +69,27 @@ import org.w3c.dom.NodeList;
 public class PluginManagerLegacy {
     private static Logger log = Logger.getLogger(PluginManagerLegacy.class);
     
+    private final HibernateSessionManager mgr;
     private GpConfig gpConfig;
     private final GpContext gpContext;
     private final PluginRegistry pluginRegistry;
     
     public PluginManagerLegacy() {
-        this(ServerConfigurationFactory.instance(),
+        this(org.genepattern.server.database.HibernateUtil.instance(), ServerConfigurationFactory.instance(),
                 GpContext.getServerContext());
     }
-    public PluginManagerLegacy(GpConfig gpConfig, GpContext gpContext) {
-        this(gpConfig, gpContext, initDefaultPluginRegistry(gpConfig, gpContext));
+    public PluginManagerLegacy(HibernateSessionManager mgr, GpConfig gpConfig, GpContext gpContext) {
+        this(mgr, gpConfig, gpContext, initDefaultPluginRegistry(mgr, gpConfig, gpContext));
     }
-    public PluginManagerLegacy(GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
+    public PluginManagerLegacy(HibernateSessionManager mgr, GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.gpContext=gpContext;
         this.pluginRegistry=pluginRegistry;
     }
     
-    public static PluginRegistry initDefaultPluginRegistry(GpConfig gpConfig, GpContext gpContext) {
-        return new PluginRegistryGpDb();
+    public static PluginRegistry initDefaultPluginRegistry(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
+        return new PluginRegistryGpDb(mgr);
     }
     
     /**
@@ -206,10 +208,10 @@ public class PluginManagerLegacy {
      * @throws Exception
      */
     protected void checkInstallPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws Exception {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        if (HibernateUtil.isInTransaction()) {
+        final boolean isInTransaction=mgr.isInTransaction();
+        if (mgr.isInTransaction()) {
             log.debug("isInTransaction="+isInTransaction+", closeCurrentSession");
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         boolean isInstalled=pluginRegistry.isInstalled(gpConfig, gpContext, new PatchInfo(requiredPatchLSID, requiredPatchURL));
         if (isInstalled) {

@@ -7,17 +7,21 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -54,6 +58,7 @@ public class TestMigratePlugins {
         }
     }
     
+    HibernateSessionManager mgr;
     GpConfig gpConfig;
     GpContext gpContext;
     PluginRegistry pluginRegistry;
@@ -61,14 +66,15 @@ public class TestMigratePlugins {
     MigratePlugins migratePlugins;
     
     @Before
-    public void setUp() {
+    public void setUp() throws ExecutionException {
+        mgr=DbUtil.getTestDbSession();
         rootPluginDir=FileUtil.getDataFile("patches").getAbsoluteFile();
         gpConfig=new GpConfig.Builder()
             .rootPluginDir(rootPluginDir)
         .build();
         gpContext=new GpContext.Builder().build();
         pluginRegistry=new PluginRegistryInMemory();
-        migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
+        migratePlugins=new MigratePlugins(mgr, gpConfig, gpContext, pluginRegistry);
     }
     
     /**
@@ -102,17 +108,16 @@ public class TestMigratePlugins {
         
     @Test
     public void dbCheck() throws Exception {
-        DbUtil.initDb();
         assertEquals("checkDb before migrate", false, migratePlugins.checkDb());
         
         migratePlugins.updateDb();
         assertEquals("checkDb after migrate", true, migratePlugins.checkDb());
         
-        PropsTable.saveProp(MigratePlugins.PROP_DB_CHECK, "false");
+        PropsTable.saveProp(mgr, MigratePlugins.PROP_DB_CHECK, "false");
         assertEquals("after Props.saveProp(...,'false')", false, migratePlugins.checkDb());
         
         // cleanup
-        PropsTable.removeProp(MigratePlugins.PROP_DB_CHECK);
+        PropsTable.removeProp(mgr, MigratePlugins.PROP_DB_CHECK);
         assertEquals("checkDb after Props.removeProp", false, migratePlugins.checkDb());
     }
     
@@ -182,14 +187,24 @@ public class TestMigratePlugins {
     
     @Test
     public void scanRootPluginDir() throws Exception {
-        MigratePlugins migratePlugins=new MigratePlugins(gpConfig, gpContext, pluginRegistry);
+        MigratePlugins migratePlugins=new MigratePlugins(mgr, gpConfig, gpContext, pluginRegistry);
         File rootPluginDir=FileUtil.getDataFile("patches").getAbsoluteFile();
         migratePlugins.scanPluginDir(rootPluginDir);
         assertEquals("patchInfos.size", 5, migratePlugins.getPatchInfos().size()); 
         PatchInfo[] patchInfos=migratePlugins.getPatchInfos().toArray(new PatchInfo[0]);
+        
+        // sort alphabetically to simply checking results
+        Arrays.sort(patchInfos, new Comparator<PatchInfo>() {
+
+            @Override
+            public int compare(PatchInfo o1, PatchInfo o2) {
+                return o1.getLsid().compareTo(o2.getLsid());
+            }
+        });
+        
         assertEquals("patchInfos[0]", "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1", patchInfos[0].getLsid());
-        assertEquals("patchInfos[1]", "urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2", patchInfos[1].getLsid());
-        assertEquals("patchInfos[2]", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2", patchInfos[2].getLsid());
+        assertEquals("patchInfos[1]", "urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2", patchInfos[1].getLsid());
+        assertEquals("patchInfos[2]", "urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2", patchInfos[2].getLsid());
         assertEquals("patchInfos[3]", "urn:lsid:broadinstitute.org:plugin:SAMTools_0.1.19:2", patchInfos[3].getLsid());
         assertEquals("patchInfos[4]", "urn:lsid:broadinstitute.org:plugin:TopHat_2.0.9:3", patchInfos[4].getLsid());
         

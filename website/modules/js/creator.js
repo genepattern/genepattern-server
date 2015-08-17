@@ -513,17 +513,17 @@ function addparameter()
     $("input[name='p_optional']").live("click", function()
     {
         //if parameter is not optional then minimum number of files should be at least 1
-        var minNumFile = $(this).parents(".parameter").find("input[name='minNumFile']");
-        if(minNumFile.length > 0) {
+        var minNumValues = $(this).parents(".parameter").find("input[name='minNumValues']");
+        if(minNumValues.length > 0) {
             if ($(this).is(":checked"))
             {
-                minNumFile.spinner("value", 0);
+                minNumValues.spinner("value", 0);
             }
             else
             {
-                if (minNumFile.val() < 1)
+                if (minNumValues.val() < 1)
                 {
-                    minNumFile.spinner("value", 1);
+                    minNumValues.spinner("value", 1);
                 }
             }
         }
@@ -1411,56 +1411,58 @@ function changeParameterType(element)
 
     typeDetailsTable.append(specifyChoicesRow);
 
+    //add row to allow setting of number of allowed values
+    var specifyMinValuesRow = $("<tr/>");
+    var specifyMinValuesTd = $("<td/>");
+    specifyMinValuesTd.append('Minimum number of values:<br/>');
+    var minNumValues = $('<input name="minNumValues" value="0"/>');
+    specifyMinValuesTd.append(minNumValues);
+    minNumValues.spinner({
+        min: 0,
+        incremental: true,
+        change: function(event, ui)
+        {
+            setDirty(true);
+        }
+    });
+    specifyMinValuesRow.append(specifyMinValuesTd);
+    typeDetailsTable.append(specifyMinValuesRow);
+
+    var helpImgSrc = $(".helpbutton").first().attr("src");
+    specifyMinValuesTd.append("<a href='createhelp.jsp#multipleInputs' target='help'> " +
+        " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
+        + "</a>");
+
+    var specifyMaxValuesRow = $("<tr/>");
+    var specifyMaValuesTd = $("<td/>");
+    specifyMaValuesTd.append('Maximum number of values:<br/>');
+    var maxValues = $('<input name="maxNumValues" value="1"/>');
+
+    specifyMaValuesTd.append(maxValues);
+    maxValues.spinner({
+        min: 1,
+        incremental: true,
+        change: function(event, ui)
+        {
+            setDirty(true);
+        }
+    });
+    var unlimitedValues = $('<input name="unlimitedNumValues" type="checkbox" />');
+    unlimitedValues.click(function () {
+        if ($(this).is(":checked")) {
+            $(this).parent("td").find("input[name='maxNumValues']").spinner("disable");
+        }
+        else {
+            $(this).parent("td").find("input[name='maxNumValues']").spinner("enable");
+        }
+    });
+    specifyMaValuesTd.append(unlimitedValues);
+    specifyMaValuesTd.append("unlimited");
+    specifyMaxValuesRow.append(specifyMaValuesTd);
+    typeDetailsTable.append(specifyMaxValuesRow);
+
+
     if(value == "Input File") {
-        var specifyMinFilesRow = $("<tr/>");
-        var specifyMinFilesTd = $("<td/>");
-        specifyMinFilesTd.append('Minimum number of files:<br/>');
-        var minFiles = $('<input name="minNumFile" value="0"/>');
-        specifyMinFilesTd.append(minFiles);
-        minFiles.spinner({
-            min: 0,
-            incremental: true,
-            change: function(event, ui)
-            {
-                setDirty(true);
-            }
-        });
-        specifyMinFilesRow.append(specifyMinFilesTd);
-        typeDetailsTable.append(specifyMinFilesRow);
-
-        var helpImgSrc = $(".helpbutton").first().attr("src");
-        specifyMinFilesTd.append("<a href='createhelp.jsp#fileList' target='help'> " +
-            " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
-            + "</a>");
-
-        var specifyMaxFilesRow = $("<tr/>");
-        var specifyMaxFilesTd = $("<td/>");
-        specifyMaxFilesTd.append('Maximum number of files:<br/>');
-        var maxFiles = $('<input name="maxNumFile" value="1"/>');
-
-        specifyMaxFilesTd.append(maxFiles);
-        maxFiles.spinner({
-            min: 1,
-            incremental: true,
-            change: function(event, ui)
-            {
-                setDirty(true);
-            }
-        });
-        var unlimitedFiles = $('<input name="unlimitedNumFile" type="checkbox" />');
-        unlimitedFiles.click(function () {
-            if ($(this).is(":checked")) {
-                $(this).parent("td").find("input[name='maxNumFile']").spinner("disable");
-            }
-            else {
-                $(this).parent("td").find("input[name='maxNumFile']").spinner("enable");
-            }
-        });
-        specifyMaxFilesTd.append(unlimitedFiles);
-        specifyMaxFilesTd.append("unlimited");
-        specifyMaxFilesRow.append(specifyMaxFilesTd);
-        typeDetailsTable.append(specifyMaxFilesRow);
-
         //specify file grouping
         var specifyGroupsRow = $("<tr class='fileGroups'/>");
 
@@ -2203,17 +2205,17 @@ function loadParameterInfo(parameters)
 
         if(parameters[i].minValue != undefined && parameters[i].minValue != null)
         {
-            newParameter.find('input[name="minNumFile"]').spinner( "value", parameters[i].minValue);
+            newParameter.find('input[name="minNumValues"]').spinner( "value", parameters[i].minValue);
         }
 
         if(parameters[i].maxValue != undefined && parameters[i].maxValue != null && parameters[i].maxValue != -1)
         {
-            newParameter.find('input[name="maxNumFile"]').spinner("value", parameters[i].maxValue);
+            newParameter.find('input[name="maxNumValues"]').spinner("value", parameters[i].maxValue);
         }
         else
         {
-            newParameter.find('input[name="maxNumFile"]').spinner( "disable" );
-            newParameter.find('input[name="unlimitedNumFile"]').prop('checked', true);
+            newParameter.find('input[name="maxNumValues"]').spinner( "disable" );
+            newParameter.find('input[name="unlimitedNumValues"]').prop('checked', true);
         }
 
         if(parameters[i].groupInfo != undefined && parameters[i].groupInfo !== null)
@@ -2336,28 +2338,32 @@ function getParametersJSON()
         }
 
         var parameter = {};
+
+        var minValue = $(this).find('input[name="minNumValues"]').val();
+        var maxValue = $(this).find('input[name="maxNumValues"]').val();
+        if($(this).find('input[name="maxNumValues"]').is(':disabled'))
+        {
+            maxValue = -1;
+        }
+
+        if(maxValue != -1 && minValue > maxValue)
+        {
+            saveError("Maximum number of values must be greater than minimum number of " +
+                "values for parameter " + pname);
+            throw("Maximum number of values must be greater than minimum number of values for parameter " + pname);
+        }
+
+        parameter.minValue = minValue;
+        parameter.maxValue = maxValue;
+
         //this is an input file type
+
         if(type === "Input File")
         {
             mode = "IN";
             type = "FILE";
 
-            var minValue = $(this).find('input[name="minNumFile"]').val();
-            var maxValue = $(this).find('input[name="maxNumFile"]').val();
-            if($(this).find('input[name="maxNumFile"]').is(':disabled'))
-            {
-                maxValue = -1;
-            }
 
-            if(maxValue != -1 && minValue > maxValue)
-            {
-                saveError("Maximum number of files must be greater than minimum number of " +
-                    "files for parameter " + pname);
-                throw("Maximum number of files must be greater than minimum number of files for parameter " + pname);
-            }
-
-            parameter.minValue = minValue;
-            parameter.maxValue = maxValue;
 
             //add file group info if available
             var minNumGroups = $(this).data("minNumGroups");

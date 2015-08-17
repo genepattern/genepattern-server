@@ -67,6 +67,7 @@ public class VisualizerStatusBean implements Serializable {
 
     private JobInfoWrapper jobInfo = null;
     private boolean openVisualizers = false;
+    private boolean openNewWindow = false;
     
     public VisualizerStatusBean() {
         //this is here because the openVisualizers parameter may or may not be set
@@ -74,6 +75,11 @@ public class VisualizerStatusBean implements Serializable {
         String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
         if ("true".equalsIgnoreCase(openVisualizersParameter)) {
             this.openVisualizers = true;
+        }
+
+        String newWindowParameter = UIBeanHelper.getRequest().getParameter("openNewWindow");
+        if ("true".equalsIgnoreCase(newWindowParameter)) {
+            this.openNewWindow = true;
         }
     }
     
@@ -98,7 +104,17 @@ public class VisualizerStatusBean implements Serializable {
     public boolean isOpenVisualizers() {
         return this.openVisualizers;
     }
-    
+
+    public void setOpenNewWindow(String val) {
+        if (val != null && "true".equals(val)) {
+            this.openNewWindow = true;
+        }
+    }
+
+    public boolean isOpenNewWindow() {
+        return this.openNewWindow;
+    }
+
     //map from index to job number, e.g. the first visualizer on the page has index 0 and a null job number
     //    once the visualizer is available for rendering assign job number to the correct value
     //    use that value to render the visualizer applet tag once and only once

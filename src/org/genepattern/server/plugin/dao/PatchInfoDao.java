@@ -7,12 +7,23 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.plugin.PatchInfo;
 import org.hibernate.Query;
 
 public class PatchInfoDao {
     private static final Logger log = Logger.getLogger(PatchInfoDao.class);
+    
+    private final HibernateSessionManager mgr;
+    
+    /** @deprecated */
+    public PatchInfoDao() {
+        this(org.genepattern.server.database.HibernateUtil.instance());
+    }
+    
+    public PatchInfoDao(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
     
     protected void validatePatchInfo(final PatchInfo patchInfo) throws IllegalArgumentException {
         if (patchInfo==null) {
@@ -39,12 +50,13 @@ public class PatchInfoDao {
      * @throws Exception
      */
     public PatchInfo selectPatchInfoByLsid(final String patchLsid) throws DbException {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             final String hql = "from " + PatchInfo.class.getName() + " pi where pi.lsid = :lsid";
-            final Query query = HibernateUtil.getSession().createQuery(hql);
+            final Query query = mgr.getSession().createQuery(hql);
             query.setString("lsid", patchLsid);
+            @SuppressWarnings("unchecked")
             List<PatchInfo> list = query.list();
             if (list==null || list.isEmpty()) {
                 log.debug("no entry in table for patchLsid="+patchLsid);
@@ -61,17 +73,18 @@ public class PatchInfoDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
     public List<PatchInfo> getInstalledPatches() throws DbException {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             String hql = "from " + PatchInfo.class.getName() + " pi";
-            Query query = HibernateUtil.getSession().createQuery(hql);
+            Query query = mgr.getSession().createQuery(hql);
+            @SuppressWarnings("unchecked")
             List<PatchInfo> rval = query.list();
             return rval;
         }
@@ -81,25 +94,25 @@ public class PatchInfoDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public void recordPatch(final PatchInfo patchInfo) throws IllegalArgumentException, DbException {
         validatePatchInfo(patchInfo);
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             PatchInfo existing=selectPatchInfoByLsid(patchInfo.getLsid());
             if (existing!=null) {
                 patchInfo.setId(existing.getId());
                 // need to evict to avoid problems with implementation of hashCode and equals in the PatchInfo class
-                HibernateUtil.getSession().evict(existing);
+                mgr.getSession().evict(existing);
             } 
-            HibernateUtil.getSession().saveOrUpdate(patchInfo);
+            mgr.getSession().saveOrUpdate(patchInfo);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
@@ -108,7 +121,7 @@ public class PatchInfoDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -119,16 +132,16 @@ public class PatchInfoDao {
     }
     
     protected boolean removePatchByLsid(final String patchLsid) throws DbException {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             final String hql = "delete from " + PatchInfo.class.getName() + " pi where pi.lsid = :lsid";
-            final Query query = HibernateUtil.getSession().createQuery(hql);
+            final Query query = mgr.getSession().createQuery(hql);
             query.setString("lsid", patchLsid);
             int numDeleted=query.executeUpdate();
             log.debug("numDeleted="+numDeleted);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             if (numDeleted==1) {
                 return true;
@@ -142,7 +155,7 @@ public class PatchInfoDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }

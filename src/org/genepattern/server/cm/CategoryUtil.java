@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.task.category.dao.TaskCategory;
 import org.genepattern.server.task.category.dao.TaskCategoryRecorder;
 import org.genepattern.util.GPConstants;
@@ -174,7 +175,7 @@ public class CategoryUtil {
      */
     public List<String> getCustomCategoriesFromDb(final TaskInfo taskInfo) {
         try {
-            final TaskCategoryRecorder recorder=new TaskCategoryRecorder();
+            final TaskCategoryRecorder recorder=new TaskCategoryRecorder(HibernateUtil.instance());
             final LSID lsid=new LSID(taskInfo.getLsid());
             final String baseLsid=lsid.toStringNoVersion();
             final List<TaskCategory> categories=recorder.query(baseLsid);
@@ -221,7 +222,7 @@ public class CategoryUtil {
      *      categories to be used instead of the category defined in the manifest file for the module.
      */
     public Multimap<String,String> getCustomCategoriesFromDb() {
-        final TaskCategoryRecorder recorder=new TaskCategoryRecorder();
+        final TaskCategoryRecorder recorder=new TaskCategoryRecorder(HibernateUtil.instance());
         final List<TaskCategory> records=recorder.getAllCustomCategories();
         final Multimap<String,String> customCategoryMap=HashMultimap.create(records.size(), 1);
         for(final TaskCategory record : records) {

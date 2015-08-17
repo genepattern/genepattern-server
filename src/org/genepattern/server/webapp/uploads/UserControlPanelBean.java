@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -93,7 +94,7 @@ public class UserControlPanelBean {
     }
     
     public void syncFiles() {
-        DataManager.syncUploadFiles(username);
+        DataManager.syncUploadFiles(HibernateUtil.instance(), username);
     }
 
 }

@@ -737,7 +737,7 @@ public class GenePatternAnalysisTask {
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
         validateOS(expected, "run " + taskName);
         try {
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, jobContext);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(HibernateUtil.instance(), gpConfig, jobContext);
             pluginManager.validatePatches(taskInfo, null);
         }
         catch (Exception e) {
@@ -1091,7 +1091,7 @@ public class GenePatternAnalysisTask {
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
                                     inputParam.addValue(new ParamValue(pinfo.getValue()));
-                                    ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
+                                    ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
                                         gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
@@ -1532,7 +1532,7 @@ public class GenePatternAnalysisTask {
         final String pname=pinfoRecord.getFormal().getName();
         final Param inputParam=new Param(new ParamId(pname), false);
         inputParam.addValue(new ParamValue(pinfo.getValue()));
-        ParamListHelper plh=new ParamListHelper(gpConfig, jobContext, pinfoRecord, inputParam);
+        ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
         GpFilePath directory=null;
         try {
             directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
@@ -3303,7 +3303,7 @@ public class GenePatternAnalysisTask {
             //if necessary, install patches
             GpConfig gpConfig=ServerConfigurationFactory.instance();
             GpContext gpContext=GpContext.getServerContext();
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy(gpConfig, gpContext);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(HibernateUtil.instance(), gpConfig, gpContext);
             pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
             final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);

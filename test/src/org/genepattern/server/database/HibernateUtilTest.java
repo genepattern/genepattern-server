@@ -5,7 +5,8 @@
 package org.genepattern.server.database;
 
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.*;
+
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateUtil;
@@ -14,18 +15,20 @@ import org.junit.Test;
 
 
 public class HibernateUtilTest {
-    private final String seqName="lsid_identifier_seq";
+    private static final String seqName="lsid_identifier_seq";
+    private HibernateSessionManager mgr;
+    
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
     }
     
     @Test
     public void getNextSequenceValue() {
         GpConfig gpConfig = new GpConfig.Builder().build();
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
         try {
-            final int seqVal=HibernateUtil.getNextSequenceValue(gpConfig, seqName);
+            final int seqVal=HibernateUtil.getNextSequenceValue(mgr, gpConfig, seqName);
             assertEquals("nextSequenceVal="+seqVal+" for '"+seqName +"', nextSequenceVal>0", true, seqVal>0);
         }
         finally {

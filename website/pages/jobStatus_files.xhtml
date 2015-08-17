@@ -98,9 +98,6 @@
                     <span id="runJavascriptLink_#{jobInfo.jobNumber}" style="display: #{jobStatusBean.jobInfo.finished ? 'visible' : 'none'};">
 			    	    <a href='#{jobInfo.launchUrl}' target="_blank">
                         <img src="/gp/images/visualizer.gif" border="0" alt="indent spacer"/> Open Visualization</a>
-                        <script type="text/javascript">
-                            openJavascript('#{jobInfo.jobNumber}', '#{jobInfo.taskName}', '#{jobInfo.taskLSID}', '#{jobInfo.launchUrl}');
-                        </script>
                     </span>
                 </p>
             </h:outputText>

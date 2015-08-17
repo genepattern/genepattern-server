@@ -14,6 +14,7 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.events.JobCompletedEvent;
 import org.genepattern.server.executor.events.JobStartedEvent;
@@ -26,6 +27,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 public class TestJobExecutorEvents {
+    private HibernateSessionManager mgr;
     private EventBus eventBus;
     private JobExecutor jobExecutor;
     private DrmLookup jobLookupTable;
@@ -68,7 +70,8 @@ public class TestJobExecutorEvents {
     
     @Before
     public void setUp() throws Exception {
-        DbUtil.initDb();
+        //DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
         List<DrmJobRecord> runningDrmJobs=Collections.emptyList();
         jobLookupTable=mock(DrmLookup.class);
         when(jobLookupTable.getRunningDrmJobRecords()).thenReturn(runningDrmJobs);
@@ -79,7 +82,7 @@ public class TestJobExecutorEvents {
         eventBus.register(jobStartedListener);
         eventBus.register(jobCompletedListener);
         
-        jobExecutor=new JobExecutor(eventBus);
+        jobExecutor=new JobExecutor(mgr, eventBus);
         jobExecutor.setJobLookupTable(jobLookupTable);
         jobExecutor.start();
         

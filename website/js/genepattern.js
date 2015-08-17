@@ -2724,11 +2724,21 @@ function loadJobStatus(jobId, forceVisualizers) {
     else {
         openVisualizers = getURLParameter("openVisualizers");
     }
+
     if (openVisualizers) {
         openVisualizers = "&openVisualizers=true";
     }
     else {
         openVisualizers = "&openVisualizers=false";
+    }
+
+    var openNewWindow = getURLParameter("openNewWindow");
+
+    if (openNewWindow) {
+        openNewWindow = "&openNewWindow=true";
+    }
+    else {
+        openNewWindow = "&openNewWindow=false";
     }
 
     // Hide the send to parameter list
@@ -2739,22 +2749,17 @@ function loadJobStatus(jobId, forceVisualizers) {
     if (getURLParameter("openVisualizers")) {
         visualizerAppend = openVisualizers;
     }
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend);
 
-    //make the job results page a tabbed page
-    /*var jobResultsTab = $("<div/>");
-    $("#main-pane").prepend(jobResultsTab);
-    jobResultsTab.w2tabs({
-        name: 'jobResultsTab',
-        active: 'jobResults',
-        tabs: [
-            { id: 'jobResults', caption: 'Job Results' }
-        ]
-    });*/
+    var openNewWindowAppend = "";
+    if (openNewWindow) {
+        openNewWindowAppend = openNewWindow;
+    }
+
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend + openNewWindowAppend);
 
     $.ajax({
         type: "GET",
-        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers,
+        url: "/gp/pages/jobResult.jsf?jobNumber=" + jobId + openVisualizers + openNewWindow,
         cache: false,
         success: function(data) {
             var jobResults = $("#jobResults");

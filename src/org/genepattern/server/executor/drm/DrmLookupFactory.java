@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.server.database.HibernateSessionManager;
 
 public class DrmLookupFactory {
     private static final Logger log = Logger.getLogger(DrmLookupFactory.class);
@@ -19,17 +20,13 @@ public class DrmLookupFactory {
         DB;
     }
 
-    public static final DrmLookup initializeDrmLookup(final String jobRunnerClassname, final String jobRunnerName) {
-        return initializeDrmLookup(Type.HASHMAP, jobRunnerClassname, jobRunnerName);
-    }
-    
-    public static final DrmLookup initializeDrmLookup(final Type type, final String jobRunnerClassname, final String jobRunnerName) {
+    public static final DrmLookup initializeDrmLookup(final HibernateSessionManager mgr, final Type type, final String jobRunnerClassname, final String jobRunnerName) {
         log.debug("Initializing drmLookup, type="+type+", jobRunnerClassname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
         if (type==Type.HASHMAP) {
             return new HashMapLookup(jobRunnerClassname, jobRunnerName);
         }
         else if (type==Type.DB) {
-            return new DbLookup(jobRunnerClassname, jobRunnerName);
+            return new DbLookup(mgr, jobRunnerClassname, jobRunnerName);
         }
         
         log.error("Unspecified DrmLookup Type, creating anonymous default implementation");   

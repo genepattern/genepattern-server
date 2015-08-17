@@ -3,7 +3,10 @@
  *******************************************************************************/
 package org.genepattern.server.dm.userupload;
 
+import static org.junit.Assert.*;
+
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.Assert;
@@ -13,15 +16,16 @@ public class TestMigrationTool {
     
     @Test
     public void checkDbForSyncUploadsComplete() throws Exception {
-        DbUtil.initDb();
-        boolean check=MigrationTool.checkDbForSyncUserUploadsComplete();
-        Assert.assertFalse("before update", check);
+        HibernateSessionManager mgr=DbUtil.getTestDbSession();
         
-        boolean success=PropsTable.saveProp("sync.user.uploads.complete", "true");
+        boolean check=MigrationTool.checkDbForSyncUserUploadsComplete(mgr);
+        assertFalse("before update", check);
+        
+        boolean success=PropsTable.saveProp(mgr, "sync.user.uploads.complete", "true");
         if (!success) {
             Assert.fail("Failed to save property to DB");
         }
-        Assert.assertTrue("after update", MigrationTool.checkDbForSyncUserUploadsComplete());
+        assertTrue("after update", MigrationTool.checkDbForSyncUserUploadsComplete(mgr));
     }
     
 }

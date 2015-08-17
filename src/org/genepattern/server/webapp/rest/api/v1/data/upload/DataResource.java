@@ -216,7 +216,7 @@ public class DataResource {
                 File toFile = extractUsersPath(userContext, to);
                 GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
 
-                boolean copied = DataManager.copyToUserUpload(userContext.getUserId(), fromPath, toPath);
+                boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
 
                 if (copied) {
                     return Response.ok().entity("Copied " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
@@ -321,7 +321,7 @@ public class DataResource {
                     return Response.status(500).entity("Could not rename " + fileToRename.getName() + ". File already exists.").build();
                 }
 
-                boolean renamed = DataManager.renameUserUpload(userContext.getUserId(), fileToRename, name);
+                boolean renamed = DataManager.renameUserUpload(HibernateUtil.instance(), userContext.getUserId(), fileToRename, name);
 
                 if (renamed) {
                     return Response.ok().entity("Renamed " + fileToRename.getName() + " to " + name).build();
@@ -382,7 +382,7 @@ public class DataResource {
                 File toFile = extractUsersPath(userContext, to);
                 GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
 
-                boolean moved = DataManager.moveToUserUpload(userContext.getUserId(), fromPath, toPath);
+                boolean moved = DataManager.moveToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
 
                 if (moved) {
                     return Response.ok().entity("Moved " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
@@ -421,7 +421,7 @@ public class DataResource {
                 final File uploadFilePath=extractUsersPath(userContext, path);
                 final GpFilePath uploadFileToDelete = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
 
-                boolean deleted = DataManager.deleteUserUploadFile(userContext.getUserId(), uploadFileToDelete);
+                boolean deleted = DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), uploadFileToDelete);
 
                 if (deleted) {
                     return Response.ok().entity("Deleted " + uploadFileToDelete.getName()).build();
@@ -518,7 +518,7 @@ public class DataResource {
             }
 
             // Create the directory
-            boolean success = DataManager.createSubdirectory(userContext, relativePath);
+            boolean success = DataManager.createSubdirectory(HibernateUtil.instance(), userContext, relativePath);
 
             if (success) {
                 return Response.ok().entity("Created " + relativePath.getName()).build();

@@ -22,6 +22,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.PropsTable;
 
 /**
@@ -44,18 +45,21 @@ public class MigratePlugins {
      */
     public static final String PROP_DB_CHECK="sync.installedPatchLSIDs.complete";
 
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext gpContext;
     private PluginRegistry pluginRegistry;
     private List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
 
-    public MigratePlugins(GpConfig gpConfig, GpContext gpContext) {
-        this(gpConfig, 
-                gpContext, 
-                PluginManagerLegacy.initDefaultPluginRegistry(gpConfig, gpContext));
+    public MigratePlugins(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
+        this.mgr=mgr;
+        this.gpConfig=gpConfig;
+        this.gpContext=gpContext;
+        this.pluginRegistry=PluginManagerLegacy.initDefaultPluginRegistry(mgr, gpConfig, gpContext);
     }
 
-    public MigratePlugins(GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
+    public MigratePlugins(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final PluginRegistry pluginRegistry) {
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.gpContext=gpContext;
         this.pluginRegistry=pluginRegistry;
@@ -91,7 +95,7 @@ public class MigratePlugins {
     protected boolean checkDb() {
         String val="";
         try {
-            val=PropsTable.selectValue(PROP_DB_CHECK);
+            val=PropsTable.selectValue(mgr, PROP_DB_CHECK);
         }
         catch (DbException e) {
             val="";
@@ -110,7 +114,7 @@ public class MigratePlugins {
     protected boolean updateDb() 
     throws DbException
     {
-        boolean success=PropsTable.saveProp(PROP_DB_CHECK, "true");
+        boolean success=PropsTable.saveProp(mgr, PROP_DB_CHECK, "true");
         return success;
     }
 

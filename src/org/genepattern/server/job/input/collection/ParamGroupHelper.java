@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -85,7 +86,7 @@ public class ParamGroupHelper {
         this.filenameSuffix=in.filenameSuffix;
         this.downloadExternalFiles=in.downloadExternalFiles;
         try {
-            this.gpFilePaths=ParamListHelper.getListOfValues(gpConfig, jobContext, formalParam, param, downloadExternalFiles);
+            this.gpFilePaths=ParamListHelper.getListOfValues(HibernateUtil.instance(), gpConfig, jobContext, formalParam, param, downloadExternalFiles);
         }
         catch (Exception e) {
             log.error(e);

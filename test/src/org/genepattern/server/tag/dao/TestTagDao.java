@@ -4,7 +4,8 @@
 package org.genepattern.server.tag.dao;
 
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.tag.Tag;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -19,9 +20,8 @@ import static org.junit.Assert.*;
  */
 public class TestTagDao
 {
+    private HibernateSessionManager mgr;
     private TagDao dao;
-
-    private GpContext userContext;
 
     static String user;
     static String admin;
@@ -32,22 +32,21 @@ public class TestTagDao
     @Before
     public void setUp() throws Exception
     {
-        DbUtil.initDb();
-        user=DbUtil.addUserToDb("test");
-        admin=DbUtil.addUserToDb("admin");
+        mgr=DbUtil.getTestDbSession();
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
+        user=DbUtil.addUserToDb(gpConfig, mgr, "test");
+        admin=DbUtil.addUserToDb(gpConfig, mgr, "admin");
 
-        dao = new TagDao();
+        dao = new TagDao(mgr);
     }
 
     @After
     public void tearDown() throws Exception
     {
-        DbUtil.deleteAllRows(Tag.class);
-    }
-
-    @AfterClass
-    static public void afterClass() throws Exception {
-        DbUtil.shutdownDb();
+        DbUtil.deleteAllRows(mgr, Tag.class);
     }
 
     /**

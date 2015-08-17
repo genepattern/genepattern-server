@@ -349,12 +349,17 @@
     </ui:define>
 
 	<ui:define name="body">
-    <h:outputText rendered="#{jobStatusBean.canViewJob and jobStatusBean.jobInfo.javascript and visualizerStatusBean.openVisualizers}">
+    <h:outputText rendered="#{jobStatusBean.canViewJob and jobStatusBean.jobInfo.javascript and visualizerStatusBean.openVisualizers and !visualizerStatusBean.openNewWindow}">
         <script type="text/javascript">
             openJavascript('#{jobStatusBean.jobInfo.jobNumber}', '#{jobStatusBean.jobInfo.taskName}', '#{jobStatusBean.jobInfo.taskLSID}', '#{jobStatusBean.jobInfo.launchUrl}');
         </script>
     </h:outputText>
-    <h:outputText rendered="#{jobStatusBean.canViewJob and (not jobStatusBean.jobInfo.javascript or not visualizerStatusBean.openVisualizers)}">
+    <h:outputText rendered="#{jobStatusBean.canViewJob and jobStatusBean.jobInfo.javascript and visualizerStatusBean.openVisualizers and visualizerStatusBean.openNewWindow}">
+        <script type="text/javascript">
+            window.open('#{jobStatusBean.jobInfo.launchUrl}', '_blank');
+        </script>
+    </h:outputText>
+    <h:outputText rendered="#{jobStatusBean.canViewJob and ((not jobStatusBean.jobInfo.javascript or visualizerStatusBean.openVisualizers) or visualizerStatusBean.openNewWindow)}">
                 <div style="display:none;" class="on-job-status-page"></div>
                 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
                     <h:form>

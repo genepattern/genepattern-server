@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.job.comment;
 
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.job.comment.dao.JobCommentDao;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +18,7 @@ public class JobCommentManager
 {
     static public boolean updateJobComment(JobComment jobComment) throws JSONException
     {
-        JobCommentDao jobCommentDao  = new JobCommentDao();
+        JobCommentDao jobCommentDao  = new JobCommentDao(HibernateUtil.instance());
 
         if(jobComment != null && jobComment.getId() >= 0)
         {
@@ -33,7 +34,7 @@ public class JobCommentManager
         if(jobComment != null && jobComment.getAnalysisJob() != null
                 && jobComment.getAnalysisJob().getJobNo() >= 0 && jobComment.getComment() != null)
         {
-            JobCommentDao jobCommentDao  = new JobCommentDao();
+            JobCommentDao jobCommentDao  = new JobCommentDao(HibernateUtil.instance());
 
             jobCommentDao.insertJobComment(jobComment);
             return jobComment;
@@ -47,7 +48,7 @@ public class JobCommentManager
         boolean result = false;
         if(id >= 0)
         {
-            JobCommentDao jobCommentDao  = new JobCommentDao();
+            JobCommentDao jobCommentDao  = new JobCommentDao(HibernateUtil.instance());
             result = jobCommentDao.deleteJobComment(id);
         }
 
@@ -56,7 +57,7 @@ public class JobCommentManager
 
     static public List<JobComment> selectAllJobComments(int jobNo)
     {
-        JobCommentDao jobCommentDao  = new JobCommentDao();
+        JobCommentDao jobCommentDao  = new JobCommentDao(HibernateUtil.instance());
 
         return jobCommentDao.selectJobComments(jobNo);
     }

@@ -30,6 +30,8 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.PropsTable;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.util.GPConstants;
@@ -50,7 +52,9 @@ public class RegisterServerBean {
             return new PasswordAuthentication(username, password.toCharArray());
         }
     }
-	  
+
+    private final HibernateSessionManager mgr;
+    
     // not in properties file so it cannot be (easily) overridden, but can be configured via setRegistrationUrl
     private String registrationUrl="http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";  
     private String email;
@@ -125,6 +129,11 @@ public class RegisterServerBean {
 			"Yugoslavia", "Zaire", "Zambia", "Zimbabwe" };  
 	    
     public RegisterServerBean() {
+        this(org.genepattern.server.database.HibernateUtil.instance());
+    }
+    
+    public RegisterServerBean(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
         this.email = System.getProperty("webmaster","");
     }
 
@@ -196,9 +205,12 @@ public class RegisterServerBean {
                 throw new HttpException();
             }
 
-            saveIsRegistered();
-            if (!UserAccountManager.instance().userExists(email)) {
-                UserAccountManager.instance().createUser(email);
+            saveIsRegistered(mgr);
+            if (!UserAccountManager.userExists(mgr, email)) {
+                UserAccountManager.createUser(
+                        ServerConfigurationFactory.instance(), 
+                        mgr, 
+                        email, "", email);
             }
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
             error = false;              
@@ -244,12 +256,15 @@ public class RegisterServerBean {
         // let them go on in if there was an exception but don't save 
         // the registration to the DB.  They will be asked to register again after each restart
         try { 
-            UserAccountManager.instance().createUser(email);
+            UserAccountManager.createUser(
+                        ServerConfigurationFactory.instance(), 
+                        mgr, 
+                        email, "", email);
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
             int responseCode = client.executeMethod(httppost);
             if (responseCode < 200 || responseCode >= 400) throw new HttpException();
             // we don't know them, but their download is recorded so mark the server as registered
-            saveIsRegistered();
+            saveIsRegistered(mgr);
         } 
         catch (Exception e) {
             // swallow it and return didn't get a record back at the mother ship from the post so
@@ -258,12 +273,12 @@ public class RegisterServerBean {
         return "unregisteredServer";
     }
 
-    public static boolean isRegisteredOrDeclined(){	
+    public static boolean isRegisteredOrDeclined(final HibernateSessionManager mgr) {	
         if (System.getProperty(GPConstants.REGISTERED_SERVER, null) != null) {
             return true;    
         }
         else {
-            boolean isRegistered = isRegistered();
+            boolean isRegistered = isRegistered(mgr);
             if (isRegistered) {
                 System.setProperty(GPConstants.REGISTERED_SERVER, "true");
             }
@@ -271,13 +286,13 @@ public class RegisterServerBean {
         }
     }
 
-    public static boolean isRegistered() {
+    public static boolean isRegistered(final HibernateSessionManager mgr) {
         log.debug("checking registration");
         AboutBean about = new AboutBean();
         final String genepatternVersion = about.getGenePatternVersion();
         String dbRegisteredVersion = null;
         try {
-            dbRegisteredVersion = getDbRegisteredVersion(genepatternVersion);
+            dbRegisteredVersion = getDbRegisteredVersion(mgr, genepatternVersion);
         }
         catch (DbException e) {
             //ignore, it's already been logged
@@ -292,7 +307,7 @@ public class RegisterServerBean {
      * @return true if this is an update from a previously registered version of GenePattern, <code>e.g. from 3.1 to 3.1.1</code>.
      */
     public boolean getIsUpdate() {
-        List<String> dbEntries = getDbRegisteredVersions();
+        List<String> dbEntries = getDbRegisteredVersions(mgr);
         AboutBean about = new AboutBean();
         final String genepatternVersion = about.getGenePatternVersion();
         if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
@@ -305,11 +320,11 @@ public class RegisterServerBean {
         return false;
     }
 
-    protected static String getDbRegisteredVersion(final String genepatternVersion) throws DbException {
+    protected static String getDbRegisteredVersion(final HibernateSessionManager mgr, final String genepatternVersion) throws DbException {
         log.debug("getting registration info from database");
         // select value from props where `key`='registeredVersion'+genepatternVersion
         String key="registeredVersion"+genepatternVersion;
-        return PropsTable.selectValue(key);
+        return PropsTable.selectValue(mgr, key);
     }
 
     /**
@@ -317,13 +332,13 @@ public class RegisterServerBean {
      * if there is no entry in the database.
      * @return
      */
-    protected static List<String> getDbRegisteredVersions() {
+    protected static List<String> getDbRegisteredVersions(final HibernateSessionManager mgr) {
         log.debug("getting registration info from database");
         String key="registeredVersion%";
-        return PropsTable.selectKeys(key);
+        return PropsTable.selectKeys(mgr, key);
     }
 
-    protected static void saveIsRegistered() 
+    protected static void saveIsRegistered(final HibernateSessionManager mgr) 
     throws DbException
     {
         log.debug("saving registration");
@@ -335,13 +350,13 @@ public class RegisterServerBean {
         }
         
         // update the DB
-        saveIsRegistered(genepatternVersion);
+        saveIsRegistered(mgr, genepatternVersion);
     }
     
-    protected static boolean saveIsRegistered(final String genepatternVersion) 
+    protected static boolean saveIsRegistered(final HibernateSessionManager mgr, final String genepatternVersion) 
     throws DbException
     {
-        return PropsTable.saveProp("registeredVersion"+genepatternVersion, genepatternVersion);
+        return PropsTable.saveProp(mgr, "registeredVersion"+genepatternVersion, genepatternVersion);
     }
 
     public void setRegistrationUrl(String url) {

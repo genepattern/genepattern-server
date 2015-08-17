@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
@@ -24,6 +24,13 @@ import org.hibernate.criterion.Restrictions;
  * @author Hibernate Tools
  */
 public class UserDAO extends BaseDAO {
+    /** @deprecated */
+    public UserDAO() {
+    }
+    
+    public UserDAO(final HibernateSessionManager mgr) {
+        super(mgr);
+    }
 
     public static final Logger log = Logger.getLogger(UserDAO.class);
 
@@ -31,7 +38,7 @@ public class UserDAO extends BaseDAO {
         if (id == null) {
             return null;
         }
-        return (User) HibernateUtil.getSession().get("org.genepattern.server.user.User", id);
+        return (User) this.mgr.getSession().get("org.genepattern.server.user.User", id);
     }
     
     public User findByIdIgnoreCase(String id) {
@@ -39,10 +46,11 @@ public class UserDAO extends BaseDAO {
             return null;
         }
         
-        Criteria criteria = HibernateUtil.getSession().createCriteria(User.class);
+        Criteria criteria = this.mgr.getSession().createCriteria(User.class);
         Criterion criterion = Restrictions.ilike("userId", id);
         criteria.add(criterion);
 
+        @SuppressWarnings("rawtypes")
         List results = criteria.list();
         if (results != null && results.size() > 0) {
             return (User) results.get(0);
@@ -51,8 +59,9 @@ public class UserDAO extends BaseDAO {
     }
     
     public List<User> getAllUsers() {
+        @SuppressWarnings("unchecked")
         List<User> users = 
-            HibernateUtil.getSession().createQuery(
+            this.mgr.getSession().createQuery(
                     "from org.genepattern.server.user.User order by userId").list();
         return users;
     }
@@ -104,11 +113,10 @@ public class UserDAO extends BaseDAO {
     }
     
     public Set<UserProp> getUserProps(String userId) {
-        Set<UserProp> rval = null;
-        User user = findById(userId);
+        final User user = findById(userId);
         if (user == null) {
             log.error("Error in UserDAO.getProps("+userId+"): User not found: "+userId);
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         return user.getProps();
     }

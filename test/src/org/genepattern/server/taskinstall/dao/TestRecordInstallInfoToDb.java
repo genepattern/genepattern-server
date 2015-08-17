@@ -6,23 +6,24 @@ package org.genepattern.server.taskinstall.dao;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.junitutil.DbUtil.DbType;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Test cases for recording task install information to the DB via Hibernate calls.
@@ -32,30 +33,26 @@ import org.junit.Test;
  */
 public class TestRecordInstallInfoToDb {
     private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
     final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     final String lsid_2="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00003:1";
     
     final String userId="gp_user";
     final String repoUrl="http://www.broadinstitute.org/webservices/gpModuleRepository";
     
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        //some of the classes being tested require a Hibernate Session connected to a GP DB
-        DbUtil.initDb();
-        
-        //add two users
-        DbUtil.addUserToDb("admin");
-        DbUtil.addUserToDb("gp_user");
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        DbUtil.shutdownDb();
-    }
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
     
     @Before
-    public void setUp() {
-        mgr=HibernateUtil.instance();
+    public void setUp() throws ExecutionException, IOException {
+        mgr=DbUtil.getTestDbSession();
+        //add two users
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
+        DbUtil.addUserToDb(gpConfig, mgr, "admin");
+        DbUtil.addUserToDb(gpConfig, mgr, "gp_user");
     }
 
     /**
@@ -68,7 +65,7 @@ public class TestRecordInstallInfoToDb {
         assertEquals("num task_install_category rows before", 0, taskInstallCategoryTable.size());
         assertEquals("allCategories.size", 0, Category.getAllCategories(mgr).size());
 
-        RecordInstallInfoToDb recorder=new RecordInstallInfoToDb();
+        RecordInstallInfoToDb recorder=new RecordInstallInfoToDb(mgr);
         InstallInfo installInfo=new InstallInfo(InstallInfo.Type.REPOSITORY);
         installInfo.setLsidFromString(cleLsid);
         installInfo.setUserId(userId);
