@@ -31,6 +31,8 @@ import org.junit.Test;
  *
  */
 public class TestFileDownloader {
+    final String gpUrl="http://127.0.0.1:8080/gp/";
+    
     private GpConfig gpConfig;
     private GpContext jobContext;
     private TaskInfo taskInfo = new TaskInfo();
@@ -50,6 +52,7 @@ public class TestFileDownloader {
     @Before
     public void setUp() {
         gpConfig=mock(GpConfig.class);
+        when(gpConfig.getGpUrl()).thenReturn(gpUrl);
         jobContext=mock(GpContext.class);
         jobInfo = mock(JobInfo.class);
         jobInput=new JobInput();
