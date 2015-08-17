@@ -74,13 +74,10 @@ public class PluginManagerLegacy {
     private final GpContext gpContext;
     private final PluginRegistry pluginRegistry;
     
-    public PluginManagerLegacy() {
-        this(org.genepattern.server.database.HibernateUtil.instance(), ServerConfigurationFactory.instance(),
-                GpContext.getServerContext());
-    }
     public PluginManagerLegacy(HibernateSessionManager mgr, GpConfig gpConfig, GpContext gpContext) {
         this(mgr, gpConfig, gpContext, initDefaultPluginRegistry(mgr, gpConfig, gpContext));
     }
+
     public PluginManagerLegacy(HibernateSessionManager mgr, GpConfig gpConfig, GpContext gpContext, PluginRegistry pluginRegistry) {
         this.mgr=mgr;
         this.gpConfig=gpConfig;

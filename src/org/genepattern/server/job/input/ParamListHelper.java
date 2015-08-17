@@ -529,6 +529,8 @@ public class ParamListHelper {
         //Note: createFilelist is true when createGroupFile is true, so check for createGroupFile first
         if (createGroupFile) { 
             ParamGroupHelper pgh=new ParamGroupHelper.Builder(actualValues)
+                .mgr(mgr)
+                .gpConfig(gpConfig)
                 .jobContext(jobContext)
                 .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
@@ -722,7 +724,7 @@ public class ParamListHelper {
     public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval);
+            final Record rec=initFromValue(mgr, gpConfig, jobContext, formalParam, pval);
             tmpList.add(rec);
         }
         
@@ -749,7 +751,7 @@ public class ParamListHelper {
         // Handle external URLs
         if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
             if (rec.isCached) {
-                GpFilePath cached=FileCache.downloadCachedFile(gpConfig, jobContext, rec.url.toExternalForm());
+                GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
                 rec.gpFilePath=cached;
             }
             else {
@@ -759,12 +761,12 @@ public class ParamListHelper {
     }
 
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
+        return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
+    public static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl = JobInputHelper.initExternalUrl(value);
+        URL externalUrl = JobInputHelper.initExternalUrl(gpConfig, value);
         final boolean isPassByReference=isPassByReference(formalParam);
         
         if (externalUrl != null) {
@@ -779,7 +781,7 @@ public class ParamListHelper {
             }
             else if (isCached) {
                 // special-case: 'cache.externalUrlDirs'
-                CachedFile cachedFile=FileCache.initCachedFileObj(gpConfig, jobContext, value);
+                CachedFile cachedFile=FileCache.initCachedFileObj(mgr, gpConfig, jobContext, value);
                 Record record=new Record(Record.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
                 record.isCached=isCached;
                 record.isPassByReference=isPassByReference;

@@ -3,7 +3,6 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.batch;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -123,12 +122,12 @@ public class FilenameBatchGenerator implements BatchGenerator {
     public void appendBatchValuesToJobInputTemplate(final JobInput jobInput, final Set<String> commonBasenames) throws GpServerException {
         //if there are any common basenames, only add the parameters which match
         //ensure the values are added in the correct order
-        List<String> usedFiles = new ArrayList();
+        List<String> usedFiles = new ArrayList<String>();
 
         for(final Entry<String,List<GpFilePath>> entry : batchValues.entrySet()) {
             SortedMap<String, GpFilePath> sortedValues=new TreeMap<String, GpFilePath>();
             //ignore basenames found more than once after a new value has been set
-            List<String> ignoredBasenames = new ArrayList();
+            List<String> ignoredBasenames = new ArrayList<String>();
             for(final GpFilePath inputFile : entry.getValue()) {
                 final String basename=BatchInputFileHelper.getBaseFilename(inputFile);
                 if (commonBasenames.contains(basename)) {
