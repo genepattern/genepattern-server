@@ -6,7 +6,7 @@ package org.genepattern.server.task.category.dao;
 
 import java.util.List;
 
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -16,54 +16,62 @@ import org.hibernate.Session;
  *
  */
 public class TaskCategoryRecorder {
+    private final HibernateSessionManager mgr;
+
+    public TaskCategoryRecorder(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
+    
     public void save(final String baseLsid, final String category) {
-        final boolean inTransaction=HibernateUtil.isInTransaction();
+        final boolean inTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             TaskCategory tk=new TaskCategory();
             tk.setTask(baseLsid);
             tk.setCategory("MIT_701X");
-            HibernateUtil.getSession().saveOrUpdate(tk);
+            mgr.getSession().saveOrUpdate(tk);
             if (!inTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public List<TaskCategory> query(final String baseLsid) {
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         try {
             String hql = "from "+TaskCategory.class.getName()+" tc where tc.task = :baseLsid";
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
+            mgr.beginTransaction();
+            Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setString("baseLsid", baseLsid);
+            @SuppressWarnings("unchecked")
             List<TaskCategory> records = query.list();
             return records;
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public List<TaskCategory> getAllCustomCategories() {
-        boolean inTransaction=HibernateUtil.isInTransaction();
+        boolean inTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
+            mgr.beginTransaction();
+            Session session = mgr.getSession();
+            @SuppressWarnings("unchecked")
             final List<TaskCategory> records = session.createCriteria(TaskCategory.class).list();
             return records;
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }

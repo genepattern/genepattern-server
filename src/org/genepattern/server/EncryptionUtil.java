@@ -15,6 +15,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
 
+import com.google.common.base.Strings;
+
 public class EncryptionUtil {
     /**
      * Property name for the key used to lookup the dynamically generated key for mapping a
@@ -126,16 +128,15 @@ public class EncryptionUtil {
     /**
      * Encrypts the clear text. The returned byte array is exactly 255 bytes, the size of the password field.
      * 
-     * @param clearText
-     *                the unencrypted text
+     * @param clearText, the unencrypted text, special-case null arg is converted to the empty String.
      * @return The encrypted text as a byte array
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] encrypt(String clearText) throws NoSuchAlgorithmException {
+    public static byte[] encrypt(final String clearText) throws NoSuchAlgorithmException {
 	MessageDigest md = MessageDigest.getInstance("MD5");
 	md.reset();
 	try {
-	    md.update(clearText.getBytes("UTF-8"));
+	    md.update(Strings.nullToEmpty(clearText).getBytes("UTF-8"));
 	} catch (UnsupportedEncodingException e) {
 	    log.error(e);
 	}

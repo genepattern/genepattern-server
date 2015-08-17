@@ -7,6 +7,7 @@ package org.genepattern.server.database;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -112,6 +113,17 @@ public class HibernateUtil {
         return instance().isInTransaction();
     }
 
+    /**
+     * Consolidate SuppressWarnings into one method call.
+     * @param query
+     * @return
+     */
+    public static <T> List<T> listUnchecked(final Query query) {
+        @SuppressWarnings("unchecked")
+        List<T> list = query.list();
+        return list;
+    }
+
     public static void executeSQL(final HibernateSessionManager mgr, final String sql) throws DbException {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
@@ -120,6 +132,7 @@ public class HibernateUtil {
             } 
             Statement updateStatement = null;
             updateStatement = mgr.getSession().connection().createStatement();
+            @SuppressWarnings("unused")
             int rval=updateStatement.executeUpdate(sql);
             if (!isInTransaction) {
                 mgr.commitTransaction();
@@ -138,21 +151,21 @@ public class HibernateUtil {
         }
     }
 
-    public static int getNextSequenceValue(GpConfig gpConfig, String sequenceName) {
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final String sequenceName) {
         final String dbVendor=gpConfig.getDbVendor();
-        return getNextSequenceValue(dbVendor, sequenceName);
+        return getNextSequenceValue(mgr, dbVendor, sequenceName);
     }
     
-    public static int getNextSequenceValue(final String dbVendor, final String sequenceName) {
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final String dbVendor, final String sequenceName) {
         if (dbVendor.equalsIgnoreCase("ORACLE")) {
-            return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
+            return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
                     .uniqueResult()).intValue();
         } 
         else if (dbVendor.equalsIgnoreCase("HSQL")) {
-            return (Integer) getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
+            return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
         } 
         else {
-            return getNextSequenceValueGeneric(sequenceName);
+            return getNextSequenceValueGeneric(mgr, sequenceName);
         }
     }
 
@@ -164,12 +177,12 @@ public class HibernateUtil {
      * The method is synchronized to prevent the same sequence number to be handed out to multiple callers (from
      * different threads. For the same reason a new session and transaction is created and closed prior to exit.
      */
-    protected static synchronized int getNextSequenceValueGeneric(final String sequenceName) {
+    protected static synchronized int getNextSequenceValueGeneric(final HibernateSessionManager mgr, final String sequenceName) {
         StatelessSession session = null;
         try {
             // Open a new session and transaction. 
             // It's necessary that the sequence update be committed prior to exiting this method.
-            SessionFactory sessionFactory = getSessionFactory();
+            SessionFactory sessionFactory = mgr.getSessionFactory();
             if (sessionFactory == null) {
                 throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
             }

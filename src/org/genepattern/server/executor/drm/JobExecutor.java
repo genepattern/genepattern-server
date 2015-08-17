@@ -30,6 +30,8 @@ import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -188,10 +190,15 @@ public class JobExecutor implements CommandExecutor2 {
     }
     
     public JobExecutor() {
-        this( JobEventBus.instance() );
+        this( HibernateUtil.instance(), JobEventBus.instance() );
     }
     
-    public JobExecutor(EventBus eventBus) {
+    public JobExecutor(final EventBus eventBus) {
+        this(HibernateUtil.instance(), eventBus);
+    }
+    
+    public JobExecutor(final HibernateSessionManager mgr, final EventBus eventBus) {
+        this.mgr=mgr;
         this.eventBus=eventBus;
     }
     
@@ -199,7 +206,8 @@ public class JobExecutor implements CommandExecutor2 {
     private String jobRunnerName;
     private JobRunner jobRunner;
     private DrmLookup jobLookupTable;
-    private EventBus eventBus;
+    private final EventBus eventBus;
+    private final HibernateSessionManager mgr;
 
     // initial polling interval as number of milliseconds
     private long minDelay=100L;
@@ -390,7 +398,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
 
         this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname, properties);
-        setJobLookupTable( DrmLookupFactory.initializeDrmLookup(lookupType, jobRunnerClassname, jobRunnerName) );
+        setJobLookupTable( DrmLookupFactory.initializeDrmLookup(mgr, lookupType, jobRunnerClassname, jobRunnerName) );
         log.info("Initialized jobRunner from classname="+jobRunnerClassname+", jobRunnerName="+jobRunnerName);
     }
 
@@ -442,7 +450,7 @@ public class JobExecutor implements CommandExecutor2 {
     protected void updateStatus(final Integer gpJobNo, final String taskLsid, final DrmJobStatus drmJobStatus) {
         JobRunnerJob existingJobRunnerJob = null;
         try {
-            existingJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+            existingJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(mgr, gpJobNo);
         }
         catch (DbException e) {
             // ignore
@@ -475,7 +483,7 @@ public class JobExecutor implements CommandExecutor2 {
         try {
             // record updated status to the job_runner_job table
             updatedJobRunnerJob = new JobRunnerJobDao()
-                .updateJobStatus(existingJobRunnerJob, updatedJobStatus);
+                .updateJobStatus(mgr, existingJobRunnerJob, updatedJobStatus);
         }
         catch (Throwable t) {
             //ignore exception
@@ -530,17 +538,6 @@ public class JobExecutor implements CommandExecutor2 {
         eventBus.post(new JobCompletedEvent(lsid, prevStatus, newStatus));
     }
     
-//    protected JobRunnerJob getCurrentJobRunnerJob(Integer gpJobNo) {
-//        try {
-//            JobRunnerJob jobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
-//            return jobRunnerJob;
-//        }
-//        catch (DbException e) {
-//            //ignore exception
-//        }
-//        return null;
-//    }
-
     private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
         return getJobStatus(drmJobRecord, 60000L); //60 seconds
     }
@@ -697,7 +694,7 @@ public class JobExecutor implements CommandExecutor2 {
             .jobRunnerName(jobRunnerName)
             .queueId(queueId)
         .build();
-        new JobRunnerJobDao().insertJobRunnerJob(jobRecord);
+        new JobRunnerJobDao().insertJobRunnerJob(mgr, jobRecord);
         
         //TODO: make fault tolerant in the event that (1) startJob gets hung
         final String extJobId;
@@ -717,7 +714,7 @@ public class JobExecutor implements CommandExecutor2 {
                 DrmJobStatus jobStatus=new DrmJobStatus.Builder(extJobId, DrmJobState.QUEUED)
                     .queueId(queueId)
                 .build();
-                new JobRunnerJobDao().updateJobStatus(gpJobNo, jobStatus);
+                new JobRunnerJobDao().updateJobStatus(mgr, gpJobNo, jobStatus);
             }
             catch (DbException e1) {
                 log.error("Unexpected DB error while updating job_runner_job table for gpJobNo="+gpJobNo, e1);
@@ -753,7 +750,7 @@ public class JobExecutor implements CommandExecutor2 {
             .endTime(new Date())
         .build();
         try {
-            new JobRunnerJobDao().updateJobStatus(gpJobNo, drmJobStatus);
+            new JobRunnerJobDao().updateJobStatus(mgr, gpJobNo, drmJobStatus);
         }
         catch (DbException e) {
             log.error("Unexpected DB error while updating job_runner_job table for gpJobNo="+gpJobNo, e);
@@ -774,7 +771,7 @@ public class JobExecutor implements CommandExecutor2 {
     protected DrmJobRecord lookupJobRecord(JobInfo jobInfo) {
         JobRunnerJob jobRunnerJob=null;
         try {
-            jobRunnerJob=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+            jobRunnerJob=new JobRunnerJobDao().selectJobRunnerJob(mgr, jobInfo.getJobNumber());
             if (jobRunnerJob != null) {
                 return JobRunnerJob.toDrmJobRecord(jobRunnerJob);
             }
@@ -907,7 +904,7 @@ public class JobExecutor implements CommandExecutor2 {
      */
     @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
-        final JobRunnerJob existing=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+        final JobRunnerJob existing=new JobRunnerJobDao().selectJobRunnerJob(mgr, jobInfo.getJobNumber());
         final DrmJobRecord drmJobRecord=JobRunnerJob.toDrmJobRecord(existing);
         if (drmJobRecord==null || drmJobRecord.getExtJobId()==null) {
             //no match found, what to do?

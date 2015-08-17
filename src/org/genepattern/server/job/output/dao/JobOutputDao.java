@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.output.GpFileType;
 import org.genepattern.server.job.output.JobOutputFile;
 import org.hibernate.Criteria;
@@ -17,42 +17,53 @@ public class JobOutputDao {
     private static final Logger log = Logger.getLogger(JobOutputDao.class);
 
     final int batchSize=100; //flush after each N entries
+    
+    private final HibernateSessionManager mgr;
+
+    /** @deprecated */
+    public JobOutputDao() {
+        this(org.genepattern.server.database.HibernateUtil.instance());
+    }
+    
+    public JobOutputDao(final HibernateSessionManager mgr) {
+        this.mgr=mgr;
+    }
 
     public void recordOutputFile(final JobOutputFile outputFile) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            HibernateUtil.getSession().save(outputFile);
+            mgr.getSession().save(outputFile);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
     public void recordOutputFiles(final List<JobOutputFile> outputFiles) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             int i=0;
             for(final JobOutputFile out : outputFiles) {
                 ++i;
-                HibernateUtil.getSession().save(out);
+                mgr.getSession().save(out);
                 if (i%batchSize == 0) {
-                    HibernateUtil.getSession().flush();
+                    mgr.getSession().flush();
                 }
             }
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -64,10 +75,10 @@ public class JobOutputDao {
     }
 
     public List<JobOutputFile> selectOutputFiles(final Integer gpJobNo, boolean includeHidden, boolean includeDeleted) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            Criteria query=mgr.getSession().createCriteria(JobOutputFile.class);
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             if (!includeHidden) {
                 query=query.add( Restrictions.eq("hidden", false) );
@@ -75,40 +86,43 @@ public class JobOutputDao {
             if (!includeDeleted) {
                 query=query.add( Restrictions.eq("deleted", false) );
             }
+            @SuppressWarnings("unchecked")
             List<JobOutputFile> out = query.list();
             return out;
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public JobOutputFile selectOutputFile(final Integer gpJobNo, final String path) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            Criteria query=mgr.getSession().createCriteria(JobOutputFile.class);
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             query=query.add( Restrictions.eq("path", path ) );
             return (JobOutputFile) query.uniqueResult();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public List<JobOutputFile> selectGpExecutionLogs(final Integer gpJobNo) throws DbException {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            Criteria query=mgr.getSession().createCriteria(JobOutputFile.class);
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             query=query.add( Restrictions.eq("gpFileType", GpFileType.GP_EXECUTION_LOG.name() ) );
-            return (List<JobOutputFile>) query.list();
+            @SuppressWarnings("unchecked")
+            final List<JobOutputFile> rval = query.list();
+            return rval;
         }
         catch (Throwable t) {
             final String message="Error querying gp_execution_log for gpJobNo="+gpJobNo;
@@ -117,19 +131,21 @@ public class JobOutputDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public List<JobOutputFile> selectStderrFiles(final Integer gpJobNo) throws DbException {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            Criteria query=HibernateUtil.getSession().createCriteria(JobOutputFile.class);
+            Criteria query=mgr.getSession().createCriteria(JobOutputFile.class);
             query=query.add( Restrictions.eq("gpJobNo", gpJobNo ) );
             query=query.add( Restrictions.eq("gpFileType", GpFileType.STDERR.name() ) );
-            return (List<JobOutputFile>) query.list();
+            @SuppressWarnings("unchecked")
+            final List<JobOutputFile> rval = query.list();
+            return rval;
         }
         catch (Throwable t) {
             final String message="Error querying stderr files for gpJobNo="+gpJobNo;
@@ -138,37 +154,38 @@ public class JobOutputDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public boolean deleteOutputFile(final Integer gpJobNo, final String path) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
             JobOutputFile toDel = selectOutputFile(gpJobNo, path);
             if (toDel == null) {
                 return false;
             }
-            HibernateUtil.getSession().delete(toDel);
+            mgr.getSession().delete(toDel);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return true;
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
     public boolean setDeleted(final Integer gpJobNo, final String path) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
+        mgr.beginTransaction();
         try {
-            List<JobOutputFile> match=HibernateUtil.getSession().createCriteria(JobOutputFile.class)
+            @SuppressWarnings("unchecked")
+            List<JobOutputFile> match=mgr.getSession().createCriteria(JobOutputFile.class)
                     .add( Restrictions.eq("gpJobNo", gpJobNo ) )
                     .add( Restrictions.eq("path", path) )
                     .list();
@@ -187,9 +204,9 @@ public class JobOutputDao {
             }
             out.setDeleted(true);
             out.setFileLength(0L); // assume that the file has already been removed from the system
-            HibernateUtil.getSession().saveOrUpdate(out);
+            mgr.getSession().saveOrUpdate(out);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return true;
         }
@@ -199,7 +216,7 @@ public class JobOutputDao {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }

@@ -12,8 +12,9 @@ import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.tag.JobTag;
@@ -27,22 +28,29 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * database integration test for the AnalysisDAO class.
  * @author pcarr
  *
  */
-public class TestAnalysisDAO {
+public class TestAnalysisDAO { 
+    private static HibernateSessionManager mgr;
     private static String testUser;
     private static final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     private static final String cleZip="modules/ConvertLineEndings_v2.zip";
     private static File zipFile;
     private static TaskInfo taskInfo;
     
+    private GpConfig gpConfig;
     private GpContext gpContext;
-    private AnalysisJobUtil jobUtil;
+    //private AnalysisJobUtil jobUtil;
+
+    @ClassRule
+    public static TemporaryFolder temp = new TemporaryFolder();
     
     private List<Integer> jobs;
     
@@ -61,47 +69,54 @@ public class TestAnalysisDAO {
         jobInput.addValue("input.filename", 
                 "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.cls");
         boolean initDefault=true;
-        int jobNo=jobUtil.addJobToDb(gpContext, jobInput, parentJobId, initDefault);
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, parentJobId, initDefault);
         jobs.add(jobNo);
         return jobNo;
     }
 
     public void cleanupJobs() throws Exception {
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
         try {
             for(int jobId : jobs) {
-                jobUtil.deleteJobFromDb(jobId);
+                AnalysisJobUtil.deleteJobFromDb(mgr, jobId);
             }
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
     @BeforeClass
     static public void beforeClass() throws Exception {
-        DbUtil.initDb();
-        testUser=DbUtil.addUserToDb("test");
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
+        
+        //DbUtil.initDb();
+        mgr=DbUtil.getTestDbSession();
+        testUser=DbUtil.addUserToDb(gpConfig, mgr, "test");
         zipFile=FileUtil.getDataFile(cleZip);
         taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
     }
     
     @AfterClass
     static public void afterClass() throws Exception {
-        DbUtil.shutdownDb();
+        //DbUtil.shutdownDb();
     }
     
     @Before
     public void setUp() throws Exception {
         jobs=new ArrayList<Integer>();
         
-        jobUtil=new AnalysisJobUtil();
+        //jobUtil=new AnalysisJobUtil();
+        gpConfig=new GpConfig.Builder().build();
         gpContext=new GpContext.Builder()
             .userId(testUser)
             .taskInfo(taskInfo)
             .build();
-        jobUtil=new AnalysisJobUtil();
+        //jobUtil=new AnalysisJobUtil();
         
         // add a job
         int jobNo=addJob(-1);
@@ -113,11 +128,11 @@ public class TestAnalysisDAO {
         
         // add a job, change it's status to ERR
         int errJob=addJob(-1);
-        jobUtil.setStatusInDb(errJob, 4);
+        AnalysisJobUtil.setStatusInDb(mgr, errJob, 4);
         
         // add a job, change it's status to FINISHED
         int finishedJob=addJob(-1);
-        jobUtil.setStatusInDb(finishedJob, 3);
+        AnalysisJobUtil.setStatusInDb(mgr, finishedJob, 3);
     }
     
     @After
@@ -128,12 +143,12 @@ public class TestAnalysisDAO {
     @Test
     public void numProcessingJobs() {
         try {
-            AnalysisDAO dao=new AnalysisDAO();
+            AnalysisDAO dao=new AnalysisDAO(mgr);
             int numProcessingJobs=dao.getNumProcessingJobsByUser(testUser);
             Assert.assertEquals("numProcessingJobsByUser", 2, numProcessingJobs);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
@@ -141,14 +156,14 @@ public class TestAnalysisDAO {
     public void numProcessingJobs_afterDelete() throws Exception {
         try {
             int jobToDelete=addJob(-1);
-            jobUtil.deleteJobFromDb(jobToDelete);
-            HibernateUtil.beginTransaction();
-            AnalysisDAO dao=new AnalysisDAO();
+            AnalysisJobUtil.deleteJobFromDb(mgr, jobToDelete);
+            mgr.beginTransaction();
+            AnalysisDAO dao=new AnalysisDAO(mgr);
             int numProcessingJobs=dao.getNumProcessingJobsByUser(testUser);
             Assert.assertEquals("numProcessingJobsByUser", 2, numProcessingJobs);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
 
@@ -157,8 +172,7 @@ public class TestAnalysisDAO {
     {
         try {
             int jobToSearch=addJob(-1);
-            HibernateUtil.beginTransaction();
-            AnalysisDAO dao=new AnalysisDAO();
+            mgr.beginTransaction();
 
             int pageNum=1;
             int pageSize=10;
@@ -186,15 +200,16 @@ public class TestAnalysisDAO {
             jobTag.setDateTagged(date);
 
             //add a tag
-            JobTagDao jobTagDao = new JobTagDao();
+            JobTagDao jobTagDao = new JobTagDao(mgr);
             boolean success = jobTagDao.insertJobTag(jobTag);
             Assert.assertTrue("jobTagSearch insert", success);
 
+            final AnalysisDAO dao=new AnalysisDAO(mgr);
             List<JobInfo> jobInfoList = dao.getPagedJobsWithTag(tagText, null, null, null, pageNum, pageSize,jobSortOrder, ascending);
             Assert.assertEquals("jobTagSearch", 1, jobInfoList.size());
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
 }

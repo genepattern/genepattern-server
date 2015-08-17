@@ -60,7 +60,7 @@ public class MigrateTaskCategories {
     protected boolean updateDb() 
     throws DbException
     {
-        boolean success=PropsTable.saveProp(PROP_DB_CHECK, "true");
+        boolean success=PropsTable.saveProp(HibernateUtil.instance(), PROP_DB_CHECK, "true");
         return success;
     }
 

@@ -7,22 +7,34 @@ package org.genepattern.server.database;
 import org.apache.log4j.Logger;
 
 public abstract class BaseDAO {
+    private static final Logger log = Logger.getLogger(BaseDAO.class);
+
+    protected final HibernateSessionManager mgr;
     
-    Logger log = Logger.getLogger(BaseDAO.class);
+    /** @deprecated */
+    public BaseDAO() {
+        this(null);
+    }
     
-    /*
+    /**
      * Constructor.  Conditionally starts a transaction,  if a transaction is already underway
      * the call to beginTransaction does nothing.
      *
      */
-    public BaseDAO() {
-    	HibernateUtil.beginTransaction();
+    public BaseDAO(final HibernateSessionManager mgrIn) {
+        if (mgrIn==null) {
+            this.mgr=HibernateUtil.instance();
+        }
+        else {
+            this.mgr=mgrIn;
+        }
+        this.mgr.beginTransaction();
     }
 
     public void delete(Object persistentInstance) {
         log.debug("deleting  instance");
         try {
-            HibernateUtil.getSession().delete(persistentInstance);
+            mgr.getSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -31,11 +43,10 @@ public abstract class BaseDAO {
         }
     }
 
-
 	public Object save(Object newObject) {
 	    log.debug("merging Props instance");
 	    try {
-	        return HibernateUtil.getSession().save(newObject);
+	        return mgr.getSession().save(newObject);
 	    }
 	    catch (RuntimeException re) {
 	        log.error("merge failed", re);
@@ -45,7 +56,7 @@ public abstract class BaseDAO {
 	
 	public void saveOrUpdate(Object obj) {
 	    try {
-	        HibernateUtil.getSession().saveOrUpdate(obj);
+	        mgr.getSession().saveOrUpdate(obj);
 	    }
 	    catch (RuntimeException re) {
 	        log.error("saveOrUpdate failed", re);

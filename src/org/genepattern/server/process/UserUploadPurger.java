@@ -309,7 +309,7 @@ public class UserUploadPurger {
         //on the third pass, remove records from the DB for files which no longer exist
         for(final GpFilePath missingFile : missingFiles) {
             try {
-                boolean success=DataManager.deleteUserUploadFile(userContext.getUserId(), missingFile);
+                boolean success=DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), missingFile);
                 if (!success) {
                     log.error("Did not deleteUserUploadFile: "+missingFile.getServerFile().getPath());
                 }
@@ -331,7 +331,7 @@ public class UserUploadPurger {
                 boolean deleted = false;
                 try {
                     HibernateUtil.beginTransaction();
-                    deleted = DataManager.deleteUserUploadFile(userContext.getUserId(), gpFilePath);
+                    deleted = DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), gpFilePath);
                     HibernateUtil.commitTransaction();
                     return deleted;
                 }

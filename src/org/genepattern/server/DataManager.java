@@ -14,7 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
@@ -101,12 +101,12 @@ public class DataManager {
      * 
      * @return true if the directory was successfully created
      */
-    public static boolean createSubdirectory(final GpContext userContext, final File relativePath) {
+    public static boolean createSubdirectory(final HibernateSessionManager mgr, final GpContext userContext, final File relativePath) {
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
             boolean initMetaData = false;
-            subdirRef = UserUploadManager.getUploadFileObj(userContext, relativePath, initMetaData);
+            subdirRef = UserUploadManager.getUploadFileObj(mgr, userContext, relativePath, initMetaData);
         }
         catch (Throwable t) {
             log.error(t.getLocalizedMessage());
@@ -124,8 +124,8 @@ public class DataManager {
         if (success) {
             //update the DB
             try {
-                UserUploadManager.createUploadFile(userContext, subdirRef, 1);
-                UserUploadManager.updateUploadFile(userContext, subdirRef, 1, 1);
+                UserUploadManager.createUploadFile(mgr, userContext, subdirRef, 1);
+                UserUploadManager.updateUploadFile(mgr, userContext, subdirRef, 1, 1);
             }
             catch (Throwable t) {
                 log.error(t);
@@ -142,7 +142,7 @@ public class DataManager {
      * @param to
      * @return
      */
-    public static boolean copyToUserUpload(String user, GpFilePath from, GpFilePath to) {
+    public static boolean copyToUserUpload(final HibernateSessionManager mgr, final String user, final GpFilePath from, final GpFilePath to) {
         boolean copied = false;
 
         File fromFile = from.getServerFile();
@@ -167,19 +167,20 @@ public class DataManager {
             }
 
             // Update the database
-            boolean inTransaction = HibernateUtil.isInTransaction();
+            boolean inTransaction = mgr.isInTransaction();
             try {
                 if (!directory) {
                     // Begin a new transaction
+                    @SuppressWarnings("deprecation")
                     GpContext context = GpContext.getContextForUser(user);
-                    UserUploadManager.createUploadFile(context, to, 1);
-                    UserUploadManager.updateUploadFile(context, to, 1, 1);
+                    UserUploadManager.createUploadFile(mgr, context, to, 1);
+                    UserUploadManager.updateUploadFile(mgr, context, to, 1, 1);
                     if (!inTransaction) {
-                        HibernateUtil.commitTransaction();
+                        mgr.commitTransaction();
                     }
                 }
                 else {
-                    syncUploadFiles(user);
+                    syncUploadFiles(mgr, user);
                     copied = true;
                 }
             }
@@ -187,7 +188,7 @@ public class DataManager {
                 copied = false;
                 // Error updating the DB
                 log.error("Error copying to user upload file record in db, '" + to.getRelativeUri() + "'", t);
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
             }
         }
 
@@ -201,7 +202,7 @@ public class DataManager {
      * @param to
      * @return
      */
-    public static boolean moveToUserUpload(String user, GpFilePath from, GpFilePath to) {
+    public static boolean moveToUserUpload(HibernateSessionManager mgr, String user, GpFilePath from, GpFilePath to) {
         boolean moved = false;
 
         File fromFile = from.getServerFile();
@@ -226,20 +227,21 @@ public class DataManager {
             }
 
             // Update the database
-            boolean inTransaction = HibernateUtil.isInTransaction();
+            boolean inTransaction = mgr.isInTransaction();
             try {
                 if (!directory) {
                     // Begin a new transaction
+                    @SuppressWarnings("deprecation")
                     GpContext context = GpContext.getContextForUser(user);
-                    UserUploadManager.deleteUploadFile(from);
-                    UserUploadManager.createUploadFile(context, to, 1);
-                    UserUploadManager.updateUploadFile(context, to, 1, 1);
+                    UserUploadManager.deleteUploadFile(mgr, from);
+                    UserUploadManager.createUploadFile(mgr, context, to, 1);
+                    UserUploadManager.updateUploadFile(mgr, context, to, 1, 1);
                     if (!inTransaction) {
-                        HibernateUtil.commitTransaction();
+                        mgr.commitTransaction();
                     }
                 }
                 else {
-                    syncUploadFiles(user);
+                    syncUploadFiles(mgr, user);
                     moved = true;
                 }
             }
@@ -247,12 +249,9 @@ public class DataManager {
                 moved = false;
                 // Error updating the DB
                 log.error("Error copying move to user upload file record in db, '" + to.getRelativeUri() + "'", t);
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
             }
         }
-
-
-
         return moved;
     }
 
@@ -263,7 +262,7 @@ public class DataManager {
      * @param name
      * @return
      */
-    public static boolean renameUserUpload(String user, GpFilePath filePath, String name) {
+    public static boolean renameUserUpload(final HibernateSessionManager mgr, final String user, final GpFilePath filePath, final String name) {
         File oldFile = filePath.getServerFile();
         File newFileAbsolute = new File(oldFile.getParentFile(), name);
         File newFileRelative = new File(filePath.getRelativeFile().getParent(), name);
@@ -284,26 +283,27 @@ public class DataManager {
         }
 
         // Change the record in the database
-        boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = mgr.isInTransaction();
         try {
             if (!directory) {
+                @SuppressWarnings("deprecation")
                 GpContext context = GpContext.getContextForUser(user);
                 GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
                 newPath.initMetadata();
 
                 // Begin a new transaction
-                UserUploadDao dao = new UserUploadDao();
+                UserUploadDao dao = new UserUploadDao(mgr);
                 int renamedCount = dao.renameUserUpload(context, filePath, newPath);
                 if (renamedCount < 1) {
                     renamed = false;
                     log.error("Error renaming user upload file record in db, userId=" + user + ", path= '" + filePath.getRelativePath()+"'. numDeleted=" + renamedCount);
                 }
                 if (!inTransaction) {
-                    HibernateUtil.commitTransaction();
+                    mgr.commitTransaction();
                 }
             }
             else {
-                syncUploadFiles(user);
+                syncUploadFiles(mgr, user);
                 renamed = true;
             }
         }
@@ -311,7 +311,7 @@ public class DataManager {
             renamed = false;
             // Error updating the DB
             log.error("Error renaming user upload file record in db, '" + filePath.getRelativeUri() + "'", t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
 
         return renamed;
@@ -325,7 +325,7 @@ public class DataManager {
      * 
      * @return true if the file was deleted
      */
-    public static boolean deleteUserUploadFile(String userId, GpFilePath uploadedFileObj) {
+    public static boolean deleteUserUploadFile(final HibernateSessionManager mgr, final String userId, final GpFilePath uploadedFileObj) {
         File file = uploadedFileObj.getServerFile();
         
         //1) if it exists, delete the file from the file system
@@ -360,23 +360,23 @@ public class DataManager {
         //2) remove the record from the DB, even if it doesn't exist in the file system
         if (!file.exists()) {
             //if we are in a transaction, don't commit and close
-            boolean inTransaction = HibernateUtil.isInTransaction();
+            boolean inTransaction = mgr.isInTransaction();
             try {
                 //this begins a new transaction
-                UserUploadDao dao = new UserUploadDao();
+                UserUploadDao dao = new UserUploadDao(mgr);
                 int numDeleted = dao.deleteUserUploadRecursive(userId, uploadedFileObj);
                 if (numDeleted < 1) {
                     log.error("Error deleting user upload file record from db, userId="+userId+", path= '"+uploadedFileObj.getRelativePath()+"'. numDeleted="+numDeleted);
                 }
                 if (!inTransaction) {
-                    HibernateUtil.commitTransaction();
+                    mgr.commitTransaction();
                 }
             }
             catch  (Throwable t) {
                 deleted = false;
                 //possible error updating the DB
                 log.error("Error deleting user upload file record from db, '"+uploadedFileObj.getRelativeUri()+"'", t);
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
             }
         } 
         return deleted;
@@ -444,12 +444,12 @@ public class DataManager {
      * exclude files list (used to ignore system files)
      * @param userId
      */
-    public static void syncUploadFiles(String userId) {
+    public static void syncUploadFiles(final HibernateSessionManager mgr, final String userId) {
         log.debug("syncUploadFiles(userId='"+userId+"') ...");
         try {
-            UserUploadDao dao = new UserUploadDao();
-            
-            File uploadDir = ServerConfigurationFactory.instance().getUserUploadDir(GpContext.getContextForUser(userId));
+            @SuppressWarnings("deprecation")
+            final GpContext userContext = GpContext.getContextForUser(userId);
+            File uploadDir = ServerConfigurationFactory.instance().getUserUploadDir(userContext);
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
                 return;
@@ -457,28 +457,27 @@ public class DataManager {
             
             // Remove all the old database entries
             log.debug("deleting old entries ...");
-            int numDeleted = dao.deleteAllUserUpload(userId);
+            int numDeleted = new UserUploadDao(mgr).deleteAllUserUpload(userId);
             log.debug("deleted "+numDeleted+" entries from DB");
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
 
             // Add new entries to the database
-            GpContext userContext = GpContext.getContextForUser(userId);
             String[] relPath = new String[0];
             Set<String> visitedDirs = new HashSet<String>();
-            dao = new UserUploadDao();
+            final UserUploadDao dao = new UserUploadDao(mgr);
             for (File file : uploadDir.listFiles()) {
                 handleFileSync(dao, visitedDirs, relPath, file, userContext);
             }
 
             // Commit
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error syncing upload files for user="+userId, t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         log.debug("syncUploadFiles(userId='"+userId+"') ... Done!");
     }

@@ -12,7 +12,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.BaseDAO;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.quota.DiskInfo;
@@ -20,6 +20,14 @@ import org.hibernate.Query;
 
 public class UserUploadDao extends BaseDAO {
     final private static Logger log = Logger.getLogger(UserUploadDao.class);
+    
+    /** @deprecated */
+    public UserUploadDao() {
+    }
+
+    public UserUploadDao(final HibernateSessionManager mgr) {
+        super(mgr);
+    }
     
     /**
      * This is the name of root directory relative to a given user's upload tab 
@@ -42,7 +50,7 @@ public class UserUploadDao extends BaseDAO {
     
     private UserUpload selectUserUpload(String userId, String relativePath) {
         String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId and path = :path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setString("path", relativePath);
         List<UserUpload> rval = query.list();
@@ -74,7 +82,7 @@ public class UserUploadDao extends BaseDAO {
             hql += " and uu.lastModified < :olderThanDate ";
         }
         hql += " order by uu.path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         if (olderThanDate != null) {
             query.setTimestamp("olderThanDate", olderThanDate);
@@ -97,7 +105,7 @@ public class UserUploadDao extends BaseDAO {
         if (userId == null) return Collections.emptyList();
         final String hql = "from "+UserUpload.class.getName()+
                 " uu where uu.userId = :userId and uu.numParts != uu.numPartsRecd and uu.lastModified < :olderThanDate";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setTimestamp("olderThanDate", olderThanDate);
         List<UserUpload> rval = query.list();
@@ -125,7 +133,7 @@ public class UserUploadDao extends BaseDAO {
         String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId "+
                 "and uu.path like '"+TMP_DIR+"/%' "+
                 "and uu.lastModified < :olderThanDate order by uu.path";        
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setTimestamp("olderThanDate", olderThanDate);
         List<UserUpload> rval = query.list();
@@ -143,7 +151,7 @@ public class UserUploadDao extends BaseDAO {
 
         // Delete child files
         String hql = "delete from " + UserUpload.class.getName() + " where user_id = '" + userId + "' and path like '" + relativePath + "/%'"; //delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         numDeleted += query.executeUpdate();
 
 
@@ -153,7 +161,7 @@ public class UserUploadDao extends BaseDAO {
 
     public int renameUserUpload(GpContext context, GpFilePath oldFilePath, GpFilePath newFilePath) {
         String hql = "update " + UserUpload.class.getName() + " uu set uu.name = :newName, uu.kind = :newKind, uu.extension = :newExtension, uu.path = :newPath where uu.userId = :userId and uu.path = :path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("newName", newFilePath.getName());
         query.setString("newKind", newFilePath.getKind());
         query.setString("newExtension", newFilePath.getExtension());
@@ -168,7 +176,7 @@ public class UserUploadDao extends BaseDAO {
         String relativePath = gpFileObj.getRelativePath();
 
         String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path = :path";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setString("path", relativePath);
         int numDeleted = query.executeUpdate();
@@ -183,7 +191,7 @@ public class UserUploadDao extends BaseDAO {
      */
     public int deleteAllUserUpload(String userId) {
         String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId";
-        Query query = HibernateUtil.getSession().createQuery( hql );
+        Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         int numDeleted = query.executeUpdate();
         return numDeleted;
@@ -196,16 +204,16 @@ public class UserUploadDao extends BaseDAO {
      */
     public List<DiskInfo> allDiskInfo() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
         final List<DiskInfo> diskInfoList=new ArrayList<DiskInfo>();
 
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
             final String hql = "SELECT uu.userId, SUM(uu.fileLength) FROM " + UserUpload.class.getName()
                     + " uu where uu.userId != :cacheUserId "
                     + "and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' "
                     + "GROUP BY uu.userId";
-            final Query query = HibernateUtil.getSession().createQuery(hql);
+            final Query query = mgr.getSession().createQuery(hql);
             query.setString("cacheUserId", FileCache.CACHE_USER_ID);
             query.setReadOnly(true);
 
@@ -240,7 +248,7 @@ public class UserUploadDao extends BaseDAO {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         return diskInfoList;
@@ -258,10 +266,10 @@ public class UserUploadDao extends BaseDAO {
         Memory size = null;
         if (userId == null) return size;
 
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
 
         try {
-            HibernateUtil.beginTransaction();
+            mgr.beginTransaction();
 
             String hql = "SELECT SUM(uu.fileLength) FROM " + UserUpload.class.getName() + " uu WHERE uu.userId = :userId";
 
@@ -270,7 +278,7 @@ public class UserUploadDao extends BaseDAO {
                 hql += " and uu.path not like '"+TMP_DIR+"/%' and uu.path not like '"+TMP_DIR+"' ";
             }
 
-            Query query = HibernateUtil.getSession().createQuery(hql);
+            Query query = mgr.getSession().createQuery(hql);
             query.setString("userId", userId);
 
             List<Long> sizeList = query.list();
@@ -294,13 +302,13 @@ public class UserUploadDao extends BaseDAO {
         {
             //log error
             log.error(t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally
         {
             if (!isInTransaction)
             {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 

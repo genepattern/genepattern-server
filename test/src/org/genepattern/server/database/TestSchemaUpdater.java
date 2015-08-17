@@ -6,16 +6,12 @@ package org.genepattern.server.database;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.Range;
 
@@ -29,44 +25,6 @@ public class TestSchemaUpdater {
     private final String schemaPrefix="analysis_hypersonic-";
     private final int numSchemaFiles=25;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
-    /**
-     * Create a new HSQL DB connection in "In-Process (Standalone) Mode". The DB is saved directly to the file system
-     * without any network I/O. This is suitable for testing.
-     * 
-     * @param dbDir, a directory for saving HSQL DB database files.
-     * @param dbName, a unique name for the database, default is "GenePatternDB"
-     * @return
-     */
-    protected HibernateSessionManager initSessionMgr(final File dbDir, final String dbName) throws IOException, FileNotFoundException {
-        final File hsqlDbFile=new File(dbDir, dbName);
-
-        //manually set properties
-        final Properties p=new Properties();
-        p.setProperty("hibernate.current_session_context_class", "thread");
-        p.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver");
-        p.setProperty("hibernate.username", "sa");
-        p.setProperty("hibernate.password", "");
-        p.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
-        p.setProperty("hiberate.default_schema", "PUBLIC");
-        p.setProperty("database.vendor", "HSQL");
-        p.setProperty("hibernate.connection.url", "jdbc:hsqldb:file:"+hsqlDbFile);
-
-        HibernateSessionManager mgr=new HibernateSessionManager(p);
-        return mgr;
-    }
-
-    
-    
-    private HibernateSessionManager initTmpHsqlDb() throws FileNotFoundException, IOException {
-        final File hsqlDbDir=tmp.newFolder("junitdb");
-        final String hsqlDbName="GenePatternDB";
-        HibernateSessionManager mgr=initSessionMgr(hsqlDbDir, hsqlDbName);
-        return mgr;
-    }
-    
     /**
      * Collect all DB integration tests into one unit test
      * @throws DbException
@@ -76,32 +34,35 @@ public class TestSchemaUpdater {
     public void initDbSchemaHsqlDb() throws DbException, Throwable {
         // path to load the schema files (e.g. ./resources/analysis_hypersonic-1.3.1.sql)
         final File schemaDir=new File("website/WEB-INF/schema");
-        HibernateSessionManager mgr=null;
-        try {
-            mgr=initTmpHsqlDb();
-            
-            String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
-            assertEquals("before update, dbSchemaVersion", "", dbSchemaVersion);
-            assertEquals("before update, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(mgr, "props"));
-            assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
-            
-            // test auto-generate
-            SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-", "1.3.0");
-            assertEquals("after update, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(mgr));
-            
-            
-            SchemaUpdater.updateSchema(mgr, schemaDir, "analysis_hypersonic-", "3.9.2");
-            assertEquals("after update", "3.9.2", SchemaUpdater.getDbSchemaVersion(mgr));
-        }
-        finally {
-            // We create a new in-process DB for each test and then delete its directory it after the test completes
-            // there is no need to properly close the DB
-            // If this ever changes ...
-            //if (mgr != null) {
-            //    HsqlDbUtil.shutdownDatabase(mgr);
-            //}
-        } 
-        
+        HibernateSessionManager db1=null;
+        HibernateSessionManager db2=null;
+
+        db1=DbUtil.initSessionMgrHsqlInMemory("db1");
+        db2=DbUtil.initSessionMgrHsqlInMemory("db2");
+
+        String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db1);
+        assertEquals("before update db1, dbSchemaVersion", "", dbSchemaVersion);
+        assertEquals("before update db1, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db1, "props"));
+        assertEquals("before update db1, 'PROPS' table exists", false, SchemaUpdater.tableExists(db1, "PROPS"));
+
+        // test auto-generate
+        SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "1.3.0");
+        assertEquals("after update, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db1));
+
+        SchemaUpdater.updateSchema(db1, schemaDir, "analysis_hypersonic-", "3.9.2");
+        assertEquals("after update", "3.9.2", SchemaUpdater.getDbSchemaVersion(db1));
+
+        dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(db2);
+        assertEquals("before update db2, dbSchemaVersion", "", dbSchemaVersion);
+        assertEquals("before update db2, 'props' table exists", !"".equals(""), SchemaUpdater.tableExists(db2, "props"));
+        assertEquals("before update db2, 'PROPS' table exists", false, SchemaUpdater.tableExists(db2, "PROPS"));
+
+        // test auto-generate
+        SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "1.3.0");
+        assertEquals("after update db2, auto-save dbSchemaVersion (1.3.0)", "1.3.0", SchemaUpdater.getDbSchemaVersion(db2));
+
+        SchemaUpdater.updateSchema(db2, schemaDir, "analysis_hypersonic-", "3.9.2");
+        assertEquals("after update db2", "3.9.2", SchemaUpdater.getDbSchemaVersion(db2));
     }
 
     @Test

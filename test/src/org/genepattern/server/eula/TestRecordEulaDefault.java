@@ -3,13 +3,19 @@
  *******************************************************************************/
 package org.genepattern.server.eula;
 
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.genepattern.junitutil.DbUtil;
-import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.webservice.TaskInfo;
-import org.junit.After;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit tests for the RecordEulaDefault class
@@ -18,18 +24,22 @@ import org.junit.Test;
  */
 public class TestRecordEulaDefault {
     final String userId="test_RecordEulaDefault_user";
-    EulaInfo eula;
+    private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
+    private EulaInfo eula;
     
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     @Before
-    public void setUp() {
-        try {
-            DbUtil.initDb();
-        }
-        catch (Throwable t) {
-            Assert.fail("failed to initialize DB for test: "+t.getLocalizedMessage());
-        }
+    public void setUp() throws ExecutionException, IOException {
+        mgr=DbUtil.getTestDbSession();
+        final String userDir=temp.newFolder("users").getAbsolutePath();
+        gpConfig=new GpConfig.Builder()
+            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
+        .build();
         
-        DbUtil.addUserToDb(userId);
+        DbUtil.addUserToDb(gpConfig, mgr, userId);
         
         eula = new EulaInfo();
         eula.setLicense("gp_license.txt");
@@ -38,18 +48,13 @@ public class TestRecordEulaDefault {
             eula.setModuleLsid("urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3");
         }
         catch (InitException e) {
-            Assert.fail(""+e.getLocalizedMessage());
+            fail(""+e.getLocalizedMessage());
         }
-    }
-    
-    @After
-    public void tearDown() {
-        // DbUtil.shutdownDb();
     }
 
     @Test
     public void testIntegration() {
-        RecordEulaDefault recordEula = new RecordEulaDefault();
+        RecordEulaDefault recordEula = new RecordEulaDefault(mgr);
         try {
             recordEula.recordLicenseAgreement(userId, eula);
             
@@ -64,7 +69,7 @@ public class TestRecordEulaDefault {
     @Test
     public void testIntegration_withRecordEulaStub() {
         RecordEula stub = new RecordEulaStub();
-        RecordEulaDefault recordEula = new RecordEulaDefault(stub);
+        RecordEulaDefault recordEula = new RecordEulaDefault(mgr, stub);
         
         try {
             recordEula.recordLicenseAgreement(userId, eula);

@@ -8,7 +8,12 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
@@ -17,11 +22,11 @@ import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -41,7 +46,11 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 
 /**
  * AnalysisDAO.java
@@ -51,8 +60,14 @@ import org.hibernate.criterion.*;
  */
 public class AnalysisDAO extends BaseDAO {
     public static Logger log = Logger.getLogger(AnalysisDAO.class);
+    
 
+    /** @deprecated */
     public AnalysisDAO() {
+    }
+
+    public AnalysisDAO(HibernateSessionManager mgr) {
+        super(mgr);
     }
 
     /**
@@ -83,11 +98,12 @@ public class AnalysisDAO extends BaseDAO {
         query.setString("userId", userId);
         
         // Within the last 30 days
-        Date date = new Date();
+        //Date date = new Date();
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -30);
         query.setDate("date", cal.getTime());
 
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list(); 
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -104,6 +120,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public List<JobInfo> getAllPagedJobsForAdmin(final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getAllPagedJobs", pageNum, pageSize, jobSortOrder, ascending);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -124,6 +141,7 @@ public class AnalysisDAO extends BaseDAO {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsForUser", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("userId", userId);
         query.setParameterList("groupIds", groupIds);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -142,6 +160,7 @@ public class AnalysisDAO extends BaseDAO {
     public List<JobInfo> getPagedJobsOwnedByUser(final String userId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("userId", userId);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -162,7 +181,7 @@ public class AnalysisDAO extends BaseDAO {
         int firstResult = (pageNum - 1) * pageSize;
         int maxResults = pageSize;
 
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
 
         List<JobInfo> jobInfos = null;
 
@@ -176,12 +195,13 @@ public class AnalysisDAO extends BaseDAO {
 
             appendSortOrder(hql, jobSortOrder, ascending);
 
-            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            Query query = mgr.getSession().createQuery(hql.toString());
             query.setBoolean("deleted", false);
             query.setFirstResult(firstResult);
             query.setMaxResults(maxResults);
             query.setString("batchId", batchId);
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> jobTags = query.list();
 
             jobInfos = new ArrayList<JobInfo>(jobTags.size());
@@ -193,7 +213,7 @@ public class AnalysisDAO extends BaseDAO {
         }
         else
         {
-            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag").createCriteria("analysisJob")
+            Criteria criteria = mgr.getSession().createCriteria(JobTag.class, "jobtag").createCriteria("analysisJob")
                     .createAlias("jobtag.tagObj", "tagObj")
                     .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
@@ -218,6 +238,7 @@ public class AnalysisDAO extends BaseDAO {
                     Projections.alias(Projections.distinct(
                             Projections.property("jobtag.analysisJob")), sortOrder.getPropertyName()));
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = criteria.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -235,7 +256,7 @@ public class AnalysisDAO extends BaseDAO {
      * @return
      */
     public int getJobsWithTagCount(final String tag, final String userId, final String batchId, final Set<String> groupIds) {
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
 
         int jobCount = 0;
 
@@ -247,7 +268,7 @@ public class AnalysisDAO extends BaseDAO {
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
-            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            Query query = mgr.getSession().createQuery(hql.toString());
             query.setBoolean("deleted", false);
             query.setString("batchId", batchId);
 
@@ -255,7 +276,7 @@ public class AnalysisDAO extends BaseDAO {
         }
         else
         {
-            Criteria criteria = HibernateUtil.getSession().createCriteria(JobTag.class, "jobtag")
+            Criteria criteria = mgr.getSession().createCriteria(JobTag.class, "jobtag")
                     .createAlias("jobtag.tagObj", "tagObj").createAlias("jobtag.analysisJob", "analysisJob")
                     .add(Restrictions.like("tagObj.tag", tag, MatchMode.ANYWHERE).ignoreCase());
 
@@ -331,7 +352,7 @@ public class AnalysisDAO extends BaseDAO {
         int firstResult = (pageNum - 1) * pageSize;
         int maxResults = pageSize;
 
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
 
         List<JobInfo> jobInfos = null;
 
@@ -345,12 +366,13 @@ public class AnalysisDAO extends BaseDAO {
 
             appendSortOrder(hql, jobSortOrder, ascending);
 
-            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            Query query = mgr.getSession().createQuery(hql.toString());
             query.setBoolean("deleted", false);
             query.setFirstResult(firstResult);
             query.setMaxResults(maxResults);
             query.setString("batchId", batchId);
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = query.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -362,7 +384,7 @@ public class AnalysisDAO extends BaseDAO {
         }
         else
         {
-            Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+            Criteria criteria = mgr.getSession().createCriteria(JobComment.class, "jobComment")
                     .createCriteria("analysisJob")
                     .add(Restrictions.like("jobComment.comment", comment, MatchMode.ANYWHERE).ignoreCase())
                     .setFirstResult(firstResult).setMaxResults(maxResults);
@@ -388,6 +410,7 @@ public class AnalysisDAO extends BaseDAO {
                     Projections.alias(Projections.distinct(
                             Projections.property("jobComment.analysisJob")), sortOrder.getPropertyName()));
 
+            @SuppressWarnings("unchecked")
             List<AnalysisJob> analysisJobs = criteria.list();
 
             jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
@@ -406,7 +429,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public int getJobsWithCommentCount(final String comment, final String userId, final String batchId, final Set<String> groupIds)
     {
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
 
         int jobCount = 0;
 
@@ -418,7 +441,7 @@ public class AnalysisDAO extends BaseDAO {
                     + " and a.deleted=:deleted and a.jobNo in (select aj from BatchJob as ba"
                     + " inner join ba.batchJobs as aj where ba.jobNo=:batchId)");
 
-            Query query = HibernateUtil.getSession().createQuery(hql.toString());
+            Query query = mgr.getSession().createQuery(hql.toString());
             query.setBoolean("deleted", false);
             query.setString("batchId", batchId);
 
@@ -426,7 +449,7 @@ public class AnalysisDAO extends BaseDAO {
         }
         else
         {
-            Criteria criteria = HibernateUtil.getSession().createCriteria(JobComment.class, "jobComment")
+            Criteria criteria = mgr.getSession().createCriteria(JobComment.class, "jobComment")
                     .createAlias("jobComment.analysisJob", "analysisJob")
                     .add(Restrictions.like("comment", comment, MatchMode.ANYWHERE).ignoreCase());
 
@@ -464,6 +487,7 @@ public class AnalysisDAO extends BaseDAO {
     public List<JobInfo> getPagedJobsInGroup(final String groupId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
         Query query = getPagedAnalysisJobsQuery("getPagedJobsForGroup", pageNum, pageSize, jobSortOrder, ascending);
         query.setString("groupId", groupId);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> results = query.list();
         List<JobInfo> jobInfos = convertResults(results);
         return jobInfos;
@@ -568,7 +592,9 @@ public class AnalysisDAO extends BaseDAO {
             aJob.setParent(parentJobNumber);
             aJob.setTaskLsid(taskInfo.getLsid());
 
-            JobStatus js = (new JobStatusDAO()).findById(JobStatus.JOB_PENDING);
+            final JobStatus js=new JobStatus();
+            js.setStatusId(JobStatus.JOB_PENDING);
+            js.setStatusName(JobStatus.PENDING);
             aJob.setJobStatus(js);
 
             jobId = (Integer) getSession().save(aJob);
@@ -586,6 +612,7 @@ public class AnalysisDAO extends BaseDAO {
         String sqlString = "select group_id, permission_flag from job_group where job_no = :jobId";
         Query sqlQuery = getSession().createSQLQuery(sqlString);
         sqlQuery.setInteger("jobId", jobId);
+        @SuppressWarnings("unchecked")
         List<Object[]> results = sqlQuery.list();
         Set<GroupPermission> rval = new HashSet<GroupPermission>();
         for(Object[] tuple : results) {
@@ -609,8 +636,9 @@ public class AnalysisDAO extends BaseDAO {
      * @param groupPermissions
      */
     public void setGroupPermissions(int jobId, Set<GroupPermission> groupPermissions) {
-        Query sqlQuery = HibernateUtil.getSession().createSQLQuery("delete from JOB_GROUP where job_no = :jobId");
+        Query sqlQuery = mgr.getSession().createSQLQuery("delete from JOB_GROUP where job_no = :jobId");
         sqlQuery.setInteger("jobId", jobId);
+        @SuppressWarnings("unused")
         int numDeleted = sqlQuery.executeUpdate();
         
         if (groupPermissions == null) {
@@ -621,7 +649,7 @@ public class AnalysisDAO extends BaseDAO {
             //insert into JOB_GROUP (job_no, group_id, permission_flag) values (<int: jobId>, <String: gp.groupId>, <int: gp.permission.flag>); 
             String sqlInsertStatement = 
                 "insert into JOB_GROUP (job_no, group_id, permission_flag) values (:jobId, :groupId, :permissionFlag)";
-            sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlInsertStatement);
+            sqlQuery = mgr.getSession().createSQLQuery(sqlInsertStatement);
             sqlQuery.setInteger("jobId", jobId);
             sqlQuery.setString("groupId", gp.getGroupId());
             sqlQuery.setInteger("permissionFlag", gp.getPermission().getFlag());
@@ -722,6 +750,7 @@ public class AnalysisDAO extends BaseDAO {
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobId);
         query.setFetchSize(50);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
             try {
@@ -746,6 +775,7 @@ public class AnalysisDAO extends BaseDAO {
         String hql = "select a.parent from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
+        @SuppressWarnings("unchecked")
         List<Integer> rval = query.list();
         if (rval.size() != 1) {
             log.error("getRootJobNumber("+jobNo+"): couldn't query AnalysisJob.parent from database");
@@ -762,6 +792,7 @@ public class AnalysisDAO extends BaseDAO {
         String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
+        @SuppressWarnings("unchecked")
         List<String> rval = query.list();
         if (rval.size() != 1) {
             log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
@@ -808,6 +839,7 @@ public class AnalysisDAO extends BaseDAO {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
+        @SuppressWarnings("unchecked")
         List<Integer> jobIds = query.list();
         return jobIds;
         
@@ -820,6 +852,7 @@ public class AnalysisDAO extends BaseDAO {
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
         query.setString("userId", userId);
+        @SuppressWarnings("unchecked")
         List<Integer> jobIds = query.list();
         return jobIds;
         
@@ -831,24 +864,9 @@ public class AnalysisDAO extends BaseDAO {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         query.setCalendar("completedDate", cal);
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         return aJobs;
-    }
-
-    /**
-     * Fetches list of JobInfo based on completion date on or before a specified date
-     * 
-     * @param date
-     * @return <CODE>JobInfo[]</CODE>
-     */
-    public JobInfo[] getJobInfo(java.util.Date date) {
-        List<AnalysisJob> aJobs = getAnalysisJobs(date);
-        JobInfo[] results = new JobInfo[aJobs.size()];
-        for (int i = 0, size = aJobs.size(); i < size; i++) {
-            JobInfo ji = new JobInfo(aJobs.get(i));
-            results[i] = ji;
-        }
-        return results;
     }
 
     /** 
@@ -1091,6 +1109,7 @@ public class AnalysisDAO extends BaseDAO {
         }
 
         List<JobInfo> results = new ArrayList<JobInfo>();
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
             JobInfo ji = new JobInfo(aJob);
@@ -1199,7 +1218,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_suite_identifier_seq");
+        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_suite_identifier_seq");
     }
 
     /**
@@ -1239,7 +1258,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public int getNextTaskLSIDIdentifier() {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(gpConfig, "lsid_identifier_seq");
+        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_identifier_seq");
     };
 
     /**
@@ -1284,28 +1303,20 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public JobInfo getParent(int jobId) throws OmnigeneException {
+//    }
+//
+//    public JobInfo getParent(final HibernateSessionManager mgr, final int jobId) throws OmnigeneException {
+        final String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "
+                + " org.genepattern.server.domain.AnalysisJob as child "
+                + " where child.jobNo = :jobNo and parent.jobNo = child.parent ";
+        final Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobId);
+        AnalysisJob parent = (AnalysisJob) query.uniqueResult();
+        if (parent != null) {
+            return new JobInfo(parent);
+        }
+        return null;
 
-	String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "
-		+ " org.genepattern.server.domain.AnalysisJob as child "
-		+ " where child.jobNo = :jobNo and parent.jobNo = child.parent ";
-	Query query = getSession().createQuery(hql);
-	query.setInteger("jobNo", jobId);
-	AnalysisJob parent = (AnalysisJob) query.uniqueResult();
-	if (parent != null) {
-	    return new JobInfo(parent);
-	}
-	return null;
-
-    }
-
-    /**
-     * 
-     */
-    public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException {
-	String hql = "select taskName from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNumber";
-	Query q = getSession().createQuery(hql);
-	q.setInteger("jobNumber", jobNumber);
-	return (String) q.uniqueResult();
     }
 
     /**
@@ -1390,14 +1401,14 @@ public class AnalysisDAO extends BaseDAO {
 	log.debug("/tSetting job status");
 
 	job.setJobStatus(js);
-	getSession().update(job); // Not really neccessary
+	getSession().update(job); // Not really necessary
 	return 1;
 
     }
     
     public int updateParameterInfo(Integer jobNo, String parameterInfo) {
         String hqlUpdate = "update org.genepattern.server.domain.AnalysisJob job set job.parameterInfo = :parameterInfo where jobNo = :jobNo";
-        Query query = HibernateUtil.getSession().createQuery( hqlUpdate );
+        Query query = mgr.getSession().createQuery( hqlUpdate );
         query.setString("parameterInfo", parameterInfo);
         query.setInteger("jobNo", jobNo);
         return query.executeUpdate();
@@ -1574,6 +1585,7 @@ public class AnalysisDAO extends BaseDAO {
 
     private static class SortOrder extends Order
     {
+        private static final long serialVersionUID = 4717635978676124641L;
         private String propertyName;
 
         protected SortOrder(String propertyName, boolean ascending)

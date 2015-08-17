@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -75,7 +76,7 @@ public class JobInputApiLegacy {
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(gpConfig, userContext, entry.getValue(), inputParam, initDefault);
+            ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, userContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
             plh.updatePinfoValue();
         }

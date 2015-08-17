@@ -15,6 +15,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.jsf.RegisterServerBean;
 
 /**
@@ -29,7 +30,7 @@ public class RegistrationFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest)request;
-        if (RegisterServerBean.isRegisteredOrDeclined()) { 
+        if (RegisterServerBean.isRegisteredOrDeclined(HibernateUtil.instance())) { 
             chain.doFilter(request, response);
         }
         else {
