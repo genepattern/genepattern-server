@@ -226,7 +226,7 @@ public class TestDbLookup {
         int maxProcesses=1;
         int maxThreads=1;
         
-        int gpJobNo=new AnalysisJobUtil().addJobToDb(mgr);
+        int gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         
         JobRunnerJob jobRecord=new JobRunnerJob.Builder()
             .gpJobNo(gpJobNo)
@@ -265,7 +265,7 @@ public class TestDbLookup {
     
     @Test
     public void updateJobRecord() throws DbException {
-        int gpJobNo=new AnalysisJobUtil().addJobToDb(mgr);
+        int gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         String jrClassname="org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner";
         String jrName="CmdLineLsfRunner";
         String workingDir="/opt/genepattern/jobResults/"+gpJobNo;

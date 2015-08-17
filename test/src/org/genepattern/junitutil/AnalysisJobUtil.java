@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -34,16 +35,6 @@ public class AnalysisJobUtil {
         return addJobToDb(mgr, ServerConfigurationFactory.instance(), taskContext, jobInput, -1, initDefault);
     }
 
-    /** @deprecated */
-    public static Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final boolean initDefault) throws Exception {
-        return addJobToDb(taskContext, jobInput, -1, initDefault);
-    }
-
-    /** @deprecated */
-    public static Integer addJobToDb(final GpContext taskContext, final JobInput jobInput, final Integer parentJobNumber, final boolean initDefault) throws Exception {
-        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), ServerConfigurationFactory.instance(), taskContext, jobInput, parentJobNumber, initDefault);         
-    }
-    
     /**
      * Add a record to the ANALYSIS_JOB table for the given job. This is a close approximation
      * (based on code in the JobInputApiLegacy.java file) to how jobs are submitted to the server
@@ -83,13 +74,9 @@ public class AnalysisJobUtil {
         }
     }
     
-    /** @deprecated */
-    public int deleteJobFromDb(final int jobNo) {
-        return deleteJobFromDb(org.genepattern.server.database.HibernateUtil.instance(), jobNo);
-    }
-    
-    public static int deleteJobFromDb(final HibernateSessionManager mgr, final int jobNo) {
+    public static int deleteJobFromDb(final HibernateSessionManager mgr, final int jobNo) throws DbException {
         final boolean isInTransaction=mgr.isInTransaction();
+        boolean doClose=!isInTransaction;
         try {
             mgr.beginTransaction();
             final String hqlDelete = "delete "+AnalysisJob.class.getName()+" a where a.jobNo = :jobNo";
@@ -101,8 +88,12 @@ public class AnalysisJobUtil {
             }
             return deletedEntities;
         }
+        catch (Throwable t) {
+            doClose=true;
+            throw new DbException("Error deleting job from db: "+jobNo, t);
+        }
         finally {
-            if (!isInTransaction) {
+            if (doClose) {
                 mgr.closeCurrentSession();
             }
         }
@@ -145,38 +136,26 @@ public class AnalysisJobUtil {
         return actualParams;
     }
     
-    /** @deprecated */
-    public Integer addJobToDb() {
-        return addJobToDb(GpContext.getServerContext());
-    }
-    
-    public static Integer addJobToDb(HibernateSessionManager mgr) {
+    public static Integer addJobToDb(HibernateSessionManager mgr) throws DbException {
         return addJobToDb(mgr, GpContext.getServerContext());
     }
     
-    /** @deprecated */
-    public Integer addJobToDb(final GpContext userContext) {
-        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userContext);
-    }
-
-    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext) {
+    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext) throws DbException {
         final int parentJobId=-1;
         return addJobToDb(mgr, userContext, parentJobId);
     }
 
-    /** @deprecated */
-    public Integer addJobToDb(final GpContext userContext, final int parentJobId) {
-        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userContext, parentJobId);
-    }
-    
     /**
      * Create a new entry in the analysis_job table, used primarily to generate a new job_id.
      * @param userContext, optionally set userId, taskName, and taskLsid
      * @param parentJobId, when parentJobId >= 0 set this as a child step in a pipeline
      * @return
      */
-    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext, final int parentJobId) {
+    public static Integer addJobToDb(final HibernateSessionManager mgr, final GpContext userContext, final int parentJobId) 
+    throws DbException
+    {
         final boolean isInTransaction=mgr.isInTransaction();
+        boolean doClose=!isInTransaction;
         Integer jobId = null;
         try {
             String parameter_info = ""; //empty CLOB
@@ -209,19 +188,17 @@ public class AnalysisJobUtil {
                 mgr.commitTransaction();
             }
         }
+        catch (Throwable t) {
+            doClose=true;
+            throw new DbException("Error adding new job to db, parentJobId="+parentJobId, t);
+        }
         finally {
-            if (!isInTransaction) {
+            if (doClose) {
                 mgr.closeCurrentSession();
             }
         }
         
         return jobId;
-    }
-
-    
-    /** @deprecated */
-    public Integer addJobToDb(final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
-        return addJobToDb(org.genepattern.server.database.HibernateUtil.instance(), userId, taskInfo, parameterInfoArray, parentJobNumber);
     }
     
     public static Integer addJobToDb(final HibernateSessionManager mgr, final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) throws Exception {
@@ -249,11 +226,6 @@ public class AnalysisJobUtil {
                 mgr.closeCurrentSession();
             }
         }
-    }
-    
-    /** @deprecated */
-    public static void setStatusInDb(final int jobNo, final int statusId) throws Exception {
-        setStatusInDb(org.genepattern.server.database.HibernateUtil.instance(), jobNo, statusId);
     }
     
     public static void setStatusInDb(final HibernateSessionManager mgr, final int jobNo, final int statusId) throws Exception {

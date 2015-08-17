@@ -6,7 +6,9 @@ package org.genepattern.server.webservice.server.dao;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
@@ -74,13 +76,20 @@ public class TestAnalysisDAO {
         return jobNo;
     }
 
-    public void cleanupJobs() throws Exception {
-        mgr.beginTransaction();
+    public void cleanupJobs() {
         try {
-            for(int jobId : jobs) {
+        Map<Integer, Throwable> errors=new LinkedHashMap<Integer, Throwable>();
+        for(final int jobId : jobs) {
+            try {
                 AnalysisJobUtil.deleteJobFromDb(mgr, jobId);
             }
-            mgr.commitTransaction();
+            catch (Throwable t) {
+                errors.put(jobId, t);
+            }
+        }
+        if (errors.size() > 0) {
+            Assert.fail("Error cleaning up jobs: "+errors);
+        }
         }
         finally {
             mgr.closeCurrentSession();
