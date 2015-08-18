@@ -97,18 +97,27 @@ public class DbUtil {
         return mgr;
     }
     
-    public static String addUserToDb(final GpConfig gpConfig, final HibernateSessionManager mgr, final String gp_username)
+
+    /**
+     * Add a new user to the database, or ignore if there is already a user with the given userId
+     * @param gpConfig, non-null, makes a call to gpConfig.getUserDir(userContext);
+     * @param mgr
+     * @param userId
+     * @return
+     * @throws DbException
+     */
+    public static String addUserToDb(final GpConfig gpConfig, final HibernateSessionManager mgr, final String userId)
     throws DbException
     {
         final boolean isInTransaction = mgr.isInTransaction();
         boolean doClose=!isInTransaction;
         try {
             mgr.beginTransaction();
-            final boolean userExists=UserAccountManager.userExists(mgr, gp_username);
+            final boolean userExists=UserAccountManager.userExists(mgr, userId);
             final String gp_email=null; //can be null
             final String gp_password=null; //can be null
             if (!userExists) {
-                UserAccountManager.createUser(gpConfig, mgr, gp_username, gp_password, gp_email);
+                UserAccountManager.createUser(gpConfig, mgr, userId, gp_password, gp_email);
                 if (!isInTransaction) {
                     mgr.commitTransaction();
                 }
@@ -116,18 +125,18 @@ public class DbUtil {
         }
         catch (AuthenticationException e) {
             doClose=true;
-            fail("Failed to add user to db, gp_username="+gp_username+": "+e.getLocalizedMessage());
+            fail("Failed to add user to db, gp_username="+userId+": "+e.getLocalizedMessage());
         }
         catch (Throwable t) {
             doClose=true;
-            throw new DbException("Error adding user to db, gp_username="+gp_username, t);
+            throw new DbException("Error adding user to db, gp_username="+userId, t);
         }
         finally {
             if (doClose) {
                 mgr.closeCurrentSession();
             }
         }
-        return gp_username;
+        return userId;
     }
     
     /**

@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -47,9 +47,17 @@ import org.hibernate.Query;
  * @modified "Hibernated" by Jim Robinson
  */
 public class AdminDAO extends BaseDAO {
-    static Logger log = Logger.getLogger(AdminDAO.class);
+    private static final Logger log = Logger.getLogger(AdminDAO.class);
 
     private static int PUBLIC_ACCESS_ID = 1;
+
+    /** @deprecated */
+    public AdminDAO() {
+    }
+    
+    public AdminDAO(final HibernateSessionManager mgr) {
+        super(mgr);
+    }
 
     /**
      * Returns the versions of the tasks with the same versionless LSID as the given LSID. 
@@ -66,6 +74,7 @@ public class AdminDAO extends BaseDAO {
         query.setString("lsid", lsid.toStringNoVersion() + "%");
         query.setString("userId", username);
         query.setInteger("accessId", GPConstants.ACCESS_PUBLIC);
+        @SuppressWarnings("unchecked")
         List<TaskMaster> results = query.list();
         List<String> versions = new ArrayList<String>();
         for (TaskMaster tm : results) {
@@ -100,8 +109,8 @@ public class AdminDAO extends BaseDAO {
 
         boolean startTransaction = false;
         try {
-            if (!HibernateUtil.getSession().getTransaction().isActive()) {
-                HibernateUtil.beginTransaction();
+            if (!mgr.getSession().getTransaction().isActive()) {
+                mgr.beginTransaction();
             }
 
             LSID lsid = new LSID(lsidOrTaskName);
@@ -152,6 +161,7 @@ public class AdminDAO extends BaseDAO {
                     query.setString("lsid", lsidOrTaskName + "%");
                 }
             }
+            @SuppressWarnings("unchecked")
             List<Integer> taskIds = query.list();
             if (log.isDebugEnabled()) {
                 for(int taskId : taskIds) {
@@ -204,6 +214,7 @@ public class AdminDAO extends BaseDAO {
                 query.setString("taskName", lsidOrTaskName);
             }
 
+            @SuppressWarnings("unchecked")
             List<Integer> taskIds = query.list();
             if (log.isDebugEnabled()) {
                 for(int taskId : taskIds) {
@@ -220,7 +231,7 @@ public class AdminDAO extends BaseDAO {
                     log.error("", ex);
                 }
             }
-            Collection latestTasks = null;
+            Collection<TaskInfo> latestTasks = null;
             try {
                 latestTasks = getLatestTasks((TaskInfo[]) tasksWithGivenName.toArray(new TaskInfo[0])).values();
             } 
@@ -230,8 +241,8 @@ public class AdminDAO extends BaseDAO {
 
             TaskInfo latestTask = null;
             LSID closestLSID = null;
-            for (Iterator it = latestTasks.iterator(); it.hasNext();) {
-                TaskInfo t = (TaskInfo) it.next();
+            for (Iterator<TaskInfo> it = latestTasks.iterator(); it.hasNext();) {
+                TaskInfo t =  it.next();
                 try {
                     LSID lsid = new LSID((String) t.getTaskInfoAttributes().get(GPConstants.LSID));
                     if (closestLSID == null) {
@@ -250,7 +261,7 @@ public class AdminDAO extends BaseDAO {
             }
 
             if (startTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             if (latestTask == null) {
                 log.debug("latestTask == null");
@@ -262,7 +273,7 @@ public class AdminDAO extends BaseDAO {
         }
         catch (RuntimeException e) {
             if (startTransaction) {
-                HibernateUtil.getSession().getTransaction().rollback();
+                mgr.getSession().getTransaction().rollback();
             }
             throw e;
         }
@@ -276,6 +287,7 @@ public class AdminDAO extends BaseDAO {
         String hql = "select taskId from org.genepattern.server.domain.TaskMaster where userId = :userId";
         Query query = getSession().createQuery(hql);
         query.setString("userId", username);
+        @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
         return TaskInfoCache.instance().getTasks(taskIds);
     }
@@ -285,6 +297,7 @@ public class AdminDAO extends BaseDAO {
         Query query = getSession().createQuery(hql);
         query.setString("userId", username);
         query.setInteger("accessId", PUBLIC_ACCESS_ID);
+        @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
         return TaskInfoCache.instance().getTasks(taskIds);
     }
@@ -303,6 +316,7 @@ public class AdminDAO extends BaseDAO {
         Map<String, TaskInfo> queriedTasks = new HashMap<String, TaskInfo>();
         for (String lsid : lsids) {
             query.setString("lsids", lsid + "%");
+            @SuppressWarnings("unchecked")
             List<Integer> taskIds = query.list();
             for(Integer taskId : taskIds) {
                 try {
@@ -328,6 +342,7 @@ public class AdminDAO extends BaseDAO {
         Query query = getSession().createQuery(jobHQL);
         query.setMaxResults(20);
         query.setString("userId", username);
+        @SuppressWarnings("unchecked")
         List<String> recentLsids = query.list();
 
         if (recentLsids.isEmpty()) {
@@ -361,6 +376,7 @@ public class AdminDAO extends BaseDAO {
         hql.append(")");
 
         query = getSession().createQuery(hql.toString());
+        @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
         return TaskInfoCache.instance().getTasks(taskIds);
     }
@@ -373,7 +389,7 @@ public class AdminDAO extends BaseDAO {
      * @return
      * @throws MalformedURLException
      */
-    public static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
+    public static Map<String, TaskInfo> getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
         Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo ti = tasks[i];
@@ -400,7 +416,7 @@ public class AdminDAO extends BaseDAO {
      * @return
      * @throws MalformedURLException
      */
-    public static Map getLatestTasks(TaskInfo[] tasks, List<String> excludedCategories) throws MalformedURLException {
+    public static Map<String, TaskInfo> getLatestTasks(TaskInfo[] tasks, List<String> excludedCategories) throws MalformedURLException {
         Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo ti = tasks[i];
@@ -479,7 +495,7 @@ public class AdminDAO extends BaseDAO {
             return new TaskInfo[0];
         }
         try {
-            Map lsidToTask = getLatestTasks(tasks);
+            final Map<String, TaskInfo> lsidToTask = getLatestTasks(tasks);
             TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(new TaskInfo[0]);
             Arrays.sort(tasksArray, new TaskNameComparator());
             return tasksArray;
@@ -667,6 +683,7 @@ public class AdminDAO extends BaseDAO {
     private List<Suite> queryAllSuites() {
         String hql = "from org.genepattern.server.domain.Suite ";
         Query query = getSession().createQuery(hql);
+        @SuppressWarnings("unchecked")
         List<Suite> results = query.list();
         return results;
     }
@@ -678,6 +695,7 @@ public class AdminDAO extends BaseDAO {
         query.setInteger("publicAccessId", GPConstants.ACCESS_PUBLIC);
         query.setString("userId", userId);
 
+        @SuppressWarnings("unchecked")
         List<Suite> results = query.list();
         return results;
     }

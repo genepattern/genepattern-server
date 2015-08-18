@@ -3,7 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.domain;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +28,7 @@ public class TestPropsTable {
     @Test
     public void createUpdateDeleteProp() throws Exception {
         List<PropsTable> allProps=PropsTable.selectAllProps(mgr);
-        assertEquals("selectAllProps.size, before save", 1, allProps.size());
+        assertNotNull("selectAllProps != null", allProps);
         
         String key="NEW_KEY";
         assertEquals("selectValue, before save", "",  PropsTable.selectValue(mgr, key));
