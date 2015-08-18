@@ -7,4 +7,8 @@ public final class ListFtpDirException extends Exception {
     public ListFtpDirException(final String message) {
         super(message);
     }
+    
+    public ListFtpDirException(final String message, final Throwable t) {
+        super(message, t);
+    }
 }
