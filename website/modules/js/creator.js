@@ -708,12 +708,10 @@ function updateparameter(parameter, updateCmdLine)
     }
 }
 
-function changeParameterType(element)
-{
+function changeParameterType(element) {
     element.multiselect("refresh");
 
-    if(!element.parent().next().children().is("input[name='p_prefix']"))
-    {
+    if (!element.parent().next().children().is("input[name='p_prefix']")) {
         element.parent().next().remove();
     }
 
@@ -721,21 +719,18 @@ function changeParameterType(element)
     element.parents(".pmoptions").parent().find(".textFieldData").remove();
 
     var fieldDetailsTd = $("<td/>");
-    if(value == "Input File")
-    {
+    if (value == "Input File") {
         fieldDetailsTd.append("File format: <br/>");
 
         var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
         var fileFormatButton = $('<button id="addinputfileformat">New</button>');
 
-        fileFormatButton.button().click(function()
-        {
-            $( "#addfileformatdialog" ).dialog("open");
+        fileFormatButton.button().click(function () {
+            $("#addfileformatdialog").dialog("open");
         });
 
         //copy option values from the modules output file format list that was generated earlier
-        $('select[name="mod_fileformat"]').children("option").each(function()
-        {
+        $('select[name="mod_fileformat"]').children("option").each(function () {
             fileFormatList.append("<option>" + $(this).val() + "</option>");
         });
 
@@ -746,15 +741,13 @@ function changeParameterType(element)
             header: false,
             noneSelectedText: "Specify input file formats",
             selectedList: 4, // 0-based index
-            position:
-            {
+            position: {
                 my: 'left bottom',
                 at: 'left top'
             }
         });
     }
-    else
-    {
+    else {
         var dataTypeTd = $("<td class='textFieldData'/>");
         dataTypeTd.append("Type of data to enter*: <br/>");
         var formatList = $("<select name='p_format'>\
@@ -764,16 +757,20 @@ function changeParameterType(element)
                 <option value='Directory'>Directory</option>\
                 <option value='Password'>Password</option>\
             </select> ");
-        formatList.change(function()
-        {
+        formatList.change(function () {
             //hide choices info if this is a directory or password entry
-            if($(this).val() == "Directory" || $(this).val() == "Password")
-            {
+            if ($(this).val() === "Directory") {
                 $(this).parents(".parameter:first").find(".choices").hide();
             }
-            else
-            {
+            if ($(this).val() === "Password") {
+                $(this).parents(".parameter:first").find(".choices").hide();
+                $(this).parents(".parameter:first").find(".minValues").hide();
+                $(this).parents(".parameter:first").find(".maxValues").hide();
+            }
+            else {
                 $(this).parents(".parameter:first").find(".choices").show();
+                $(this).parents(".parameter:first").find(".minValues").show();
+                $(this).parents(".parameter:first").find(".maxValues").show();
             }
         });
 
@@ -783,8 +780,7 @@ function changeParameterType(element)
             multiple: false,
             noneSelectedText: "Specify text format",
             selectedList: 1, // 0-based index
-            position:
-            {
+            position: {
                 my: 'left bottom',
                 at: 'left top'
             }
@@ -810,19 +806,17 @@ function changeParameterType(element)
 
     var specifyChoicesRow = $("<tr class='choices'/>");
     var editChoicesLink = $("<a href='#' class='choicelink'>add a drop-down list</a>");
-    editChoicesLink.click(function(event)
-    {
+    editChoicesLink.click(function (event) {
         event.preventDefault();
 
         var isFile = !($(this).parents(".parameter").find("select[name='p_type']").val() != "Input File");
         var choices = $(this).parents(".parameter").find("input[name='choicelist']").val();
         var pName = $(this).parents(".parameter").find("input[name='p_name']").val();
-        var title =  "Create drop-down list";
-        if(pName != null && pName != undefined && pName.length > 0)
-        {
-            pName =  pName.replace(/\./g, " ");
+        var title = "Create drop-down list";
+        if (pName != null && pName != undefined && pName.length > 0) {
+            pName = pName.replace(/\./g, " ");
 
-            title = "Edit Choices for "+ pName;
+            title = "Edit Choices for " + pName;
         }
 
         var editChoicesDialog = $(this).parents(".parameter").find(".editChoicesDialog");
@@ -833,39 +827,33 @@ function changeParameterType(element)
             height: 620,
             width: 600,
             title: title,
-            create: function()
-            {
+            create: function () {
                 var enterValuesDiv = $("<div class='hcontent'/>");
                 $(this).prepend(enterValuesDiv);
 
                 var staticChoiceDiv = $("<div class='staticChoicesDiv'/>");
                 enterValuesDiv.append(staticChoiceDiv);
                 var choiceButton = $("<button class='choiceadd'>Add Menu Item</button>");
-                choiceButton.button().click(function()
-                {
+                choiceButton.button().click(function () {
                     var choicerow = $("<tr> <td> <div class='sortHandle'><div class='frictionBox'/><div class='frictionBox'/></div></td><td class='defaultChoiceCol'> <input type='radio' name='cradio'/></td>" +
                         "<td> <input type='text' name='choicev' class='choiceFields'/> </td>" +
                         "<td> <input type='text' name='choicen' class='choiceFields'/> </td>" +
                         "<td> <button> X </button></td></tr>");
-                    choicerow.find("button").button().click(function()
-                    {
+                    choicerow.find("button").button().click(function () {
                         $(this).parent().parent().remove();
                     });
 
-                    choicerow.find("input[name='cradio']").click(function()
-                    {
+                    choicerow.find("input[name='cradio']").click(function () {
                         //check if this is the first item in the list
                         var firstListItem = $(this).parents("tr :first").index();
-                        if(firstListItem == 1)
-                        {
+                        if (firstListItem == 1) {
                             //this is the first data item in the list so allow it to be set as the default
                             return;
                         }
 
                         //check if the actual value is empty
                         var actualValue = $(this).parents("tr:first").find("input[name='choicev']").val();
-                        if(actualValue == undefined || actualValue == null || actualValue.length < 1)
-                        {
+                        if (actualValue == undefined || actualValue == null || actualValue.length < 1) {
                             alert("Please either specify a value to pass on the command line or make this item the first selection" +
                                 " in the list in order to make it the default");
                             $(this).removeAttr("checked");
@@ -873,34 +861,27 @@ function changeParameterType(element)
                         }
                     });
 
-                    choicerow.find("input[name='choicev']").focusout(function()
-                    {
+                    choicerow.find("input[name='choicev']").focusout(function () {
                         //set the display value if it is empty
-                        if($(this).val() != "")
-                        {
-                            if(choicerow.find("input[name='choicen']").val() == "")
-                            {
+                        if ($(this).val() != "") {
+                            if (choicerow.find("input[name='choicen']").val() == "") {
                                 var displayVal = $(this).val();
-                                if(isFile)
-                                {
+                                if (isFile) {
                                     displayVal = displayVal.replace(/\/\//g, '');
                                     var url_split = displayVal.split("/");
-                                    if(url_split.length > 1)
-                                    {
+                                    if (url_split.length > 1) {
                                         //get last item in parsed file url
-                                        displayVal = url_split[url_split.length -1];
+                                        displayVal = url_split[url_split.length - 1];
                                     }
                                 }
 
                                 choicerow.find("input[name='choicen']").val(displayVal);
                             }
                         }
-                        else
-                        {
+                        else {
                             //check if this was marked as the default and do not allow since
                             //the actual value is blank
-                            if($(this).parents("tr :first").index() > 1 && choicerow.find("input[name='cradio']").is(":checked"))
-                            {
+                            if ($(this).parents("tr :first").index() > 1 && choicerow.find("input[name='cradio']").is(":checked")) {
                                 alert("Please either specify a value to pass on the command line or make this item the first selection" +
                                     " in the list in order to make it the default");
                                 $(this).parents(".editChoicesDialog").find("input[name='cradio']").first().click();
@@ -909,8 +890,7 @@ function changeParameterType(element)
                     });
 
                     //if this is the only item in the list set it as the default
-                    if($(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("input[name='cradio']:checked").length == 0)
-                    {
+                    if ($(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("input[name='cradio']:checked").length == 0) {
                         $(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("input[name='cradio']:first").click();
                     }
 
@@ -920,36 +900,30 @@ function changeParameterType(element)
 
                     for (var y = 0; y < choiceEntries.length; ++y) {
                         var choiceEntry = choiceEntries[y];
-                        choiceEntry.addEventListener("dragenter", function(evt)
-                        {
+                        choiceEntry.addEventListener("dragenter", function (evt) {
                             evt.stopPropagation();
                             evt.preventDefault();
                         }, true);
-                        choiceEntry.addEventListener("dragleave", function(evt)
-                        {
+                        choiceEntry.addEventListener("dragleave", function (evt) {
                             evt.stopPropagation();
                             evt.preventDefault();
                         }, true);
-                        choiceEntry.addEventListener("dragexit", function(evt)
-                        {
+                        choiceEntry.addEventListener("dragexit", function (evt) {
                             evt.stopPropagation();
                             evt.preventDefault();
                         }, false);
-                        choiceEntry.addEventListener("dragover", function(evt)
-                        {
+                        choiceEntry.addEventListener("dragover", function (evt) {
                             evt.stopPropagation();
                             evt.preventDefault();
                         }, false);
-                        choiceEntry.addEventListener("drop", function(evt)
-                        {
+                        choiceEntry.addEventListener("drop", function (evt) {
                             evt.stopPropagation();
                             evt.preventDefault();
 
                             console.log("choice entry drop");
-                            if(evt.dataTransfer.getData('Text') != null
-                                && evt.dataTransfer.getData('Text')  !== undefined
-                                && evt.dataTransfer.getData('Text') != "")
-                            {
+                            if (evt.dataTransfer.getData('Text') != null
+                                && evt.dataTransfer.getData('Text') !== undefined
+                                && evt.dataTransfer.getData('Text') != "") {
                                 $(this).val(evt.dataTransfer.getData('Text'));
                             }
                         }, false);
@@ -963,8 +937,7 @@ function changeParameterType(element)
                 var valueColHeaderDescription = "The value to pass on the command line";
                 var dValueColHeaderDescription = "The value to display in the drop-down list";
 
-                if(isFile)
-                {
+                if (isFile) {
                     //change header text for file choices
                     valueColHeader = "URL";
                     valueColHeaderDescription = "Enter URLs (ftp, http, https)";
@@ -976,7 +949,7 @@ function changeParameterType(element)
                     "<td> <span class='staticTableHeader'>" + valueColHeader + "</span>" +
                     "<br/>" +
                     "<span class='shortDescription'>" + valueColHeaderDescription + "</span>" +
-                    "</td> <td>"+
+                    "</td> <td>" +
                     "<span class='staticTableHeader'>" + dValueColHeader + "</span>" +
                     "<br/>" +
                     "<span class='shortDescription'>" + dValueColHeaderDescription + "</span>" +
@@ -985,54 +958,46 @@ function changeParameterType(element)
                 staticChoiceDiv.prepend(table);
 
                 table.find("tbody").sortable(
-                {
-                    placeholder: "ui-sort-placeholder",
-                    forcePlaceholderSize: true,
-                    start: function(event, ui)
                     {
-                        ui.item.addClass("highlight");
-                    },
-                    stop: function(event, ui)
-                    {
-                        var element = ui.item;
-                        element.removeClass("highlight");
+                        placeholder: "ui-sort-placeholder",
+                        forcePlaceholderSize: true,
+                        start: function (event, ui) {
+                            ui.item.addClass("highlight");
+                        },
+                        stop: function (event, ui) {
+                            var element = ui.item;
+                            element.removeClass("highlight");
 
-                        //check if this item is set at as the default and its actual value is blank
-                        if(element.find("input[name='cradio']").is(":checked")
-                            && (element.find("input[name='choicev']").val() == undefined
-                            || element.find("input[name='choicev']").val() == null
-                            || element.find("input[name='choicev']").val().length < 1))
-                        {
-                            alert("You are not allowed to move a default selection with no command line " +
-                                "value to any position except the first");
-                            element.parents("tbody").sortable("cancel");
-                        }
-                    },
-                    handle: ".sortHandle"
-                });
+                            //check if this item is set at as the default and its actual value is blank
+                            if (element.find("input[name='cradio']").is(":checked")
+                                && (element.find("input[name='choicev']").val() == undefined
+                                    || element.find("input[name='choicev']").val() == null
+                                    || element.find("input[name='choicev']").val().length < 1)) {
+                                alert("You are not allowed to move a default selection with no command line " +
+                                    "value to any position except the first");
+                                element.parents("tbody").sortable("cancel");
+                            }
+                        },
+                        handle: ".sortHandle"
+                    });
 
                 var result = choices.split(';');
-                if(choices== "" || result == null  || result.length < 1)
-                {
+                if (choices == "" || result == null || result.length < 1) {
                     //start with two rows of data
                     choiceButton.click();
                     choiceButton.click();
                 }
-                else
-                {
-                    for(var i=0;i<result.length;i++)
-                    {
+                else {
+                    for (var i = 0; i < result.length; i++) {
                         var rowdata = result[i].split("=");
 
                         var displayValue = "";
                         var value = "";
-                        if(rowdata.length > 1)
-                        {
+                        if (rowdata.length > 1) {
                             displayValue = rowdata[1];
                             value = rowdata[0];
                         }
-                        else
-                        {
+                        else {
                             value = rowdata[0];
                         }
 
@@ -1041,8 +1006,7 @@ function changeParameterType(element)
                         table.find("input[name='cradio']").last().removeAttr("disabled");
 
                         //check if this should be set as the default
-                        if(value != "" && element.parents(".parameter").find(".defaultValue").val() == value)
-                        {
+                        if (value != "" && element.parents(".parameter").find(".defaultValue").val() == value) {
                             table.find("input[name='cradio']:checked").removeAttr("checked");
                             table.find("input[name='cradio']").last().attr("checked", "checked");
                         }
@@ -1052,8 +1016,7 @@ function changeParameterType(element)
                     }
                 }
 
-                if(isFile)
-                {
+                if (isFile) {
                     //type is file then display field to input url to retrieve
                     //files from
                     var choiceURLDiv = $("<div class='choicesURLDiv'/>");
@@ -1072,24 +1035,21 @@ function changeParameterType(element)
                     var choiceURLTableFilterTR = $("<tr/>");
                     choiceURLTableFilterTR.append("<td>File filter:</td>");
                     choiceURLTable.append(choiceURLTableFilterTR);
-                    var globDoc="Enter comma-separated list if one or more glob patterns (e.g. '*.gct') or anti-patterns (e.g. '!*.cls'). By default, 'readme.*' and '*.md5' files are ignored. "+
-                        "By default, sub-directories are ignored. To include sub-directories instead of files set 'type=dir'. "+
+                    var globDoc = "Enter comma-separated list if one or more glob patterns (e.g. '*.gct') or anti-patterns (e.g. '!*.cls'). By default, 'readme.*' and '*.md5' files are ignored. " +
+                        "By default, sub-directories are ignored. To include sub-directories instead of files set 'type=dir'. " +
                         "To include both files and directories set 'type=all'. The two can be combined (e.g. 'type=dir&hg*').";
                     var fileFilter = $("<input name='choiceURLFilter' type='text'/>");
                     fileFilter.val(element.parents(".parameter").find("input[name='choiceDirFilter']").val());
-                    $("<td/>").append(fileFilter).append("<div class='shortDescription'>"+globDoc+"</div>").appendTo(choiceURLTableFilterTR);
+                    $("<td/>").append(fileFilter).append("<div class='shortDescription'>" + globDoc + "</div>").appendTo(choiceURLTableFilterTR);
 
                     var altStaticChoiceToggle = $("<input type='checkbox' class='staticChoiceLink'/>");
-                    altStaticChoiceToggle.click(function(event)
-                    {
+                    altStaticChoiceToggle.click(function (event) {
                         $(this).parents(".editChoicesDialog").find(".staticChoicesDiv").toggle();
 
                         //hide the default value column
-                        $(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("tr").each(function()
-                        {
+                        $(this).parents(".editChoicesDialog").find(".staticChoiceTable").find("tr").each(function () {
                             var numElements = $(this).find("td").length;
-                            if(numElements > 2)
-                            {
+                            if (numElements > 2) {
                                 $(this).find("td:nth-child(2)").hide();
                             }
                         });
@@ -1107,27 +1067,22 @@ function changeParameterType(element)
                     var dynamicChoiceButton = $('<input type="radio" name="radio" class="dynamicChoice"/><label for="radio1">Dynamic drop-down list</label>');
                     var staticChoiceButton = $('<input type="radio" name="radio" class="staticChoice"/><label for="radio1" >Static drop-down list</label>');
 
-                    if(choiceURL.val() != undefined && choiceURL.val() != null && choiceURL.val() != "")
-                    {
+                    if (choiceURL.val() != undefined && choiceURL.val() != null && choiceURL.val() != "") {
                         $(this).find(".choicesURLDiv").show();
                         $(this).find(".staticChoicesDiv").hide();
-                        if(choices != undefined && choices != null &&  choices.length > 1)
-                        {
+                        if (choices != undefined && choices != null && choices.length > 1) {
                             altStaticChoiceToggle.click();
                         }
                         dynamicChoiceButton.attr("checked", "checked");
                     }
-                    else
-                    {
+                    else {
                         $(this).find(".choicesURLDiv").hide();
                         $(this).find(".staticChoicesDiv").show();
                         staticChoiceButton.attr("checked", "checked");
                     }
 
-                    dynamicChoiceButton.click(function()
-                    {
-                        if($(this).data("prevSelection") == "dynamic")
-                        {
+                    dynamicChoiceButton.click(function () {
+                        if ($(this).data("prevSelection") == "dynamic") {
                             //do nothing since no change from previous selection
                             return;
                         }
@@ -1146,10 +1101,8 @@ function changeParameterType(element)
                         $(this).data("prevSelection", "dynamic");
                     });
 
-                    staticChoiceButton.click(function()
-                    {
-                        if($(this).data("prevSelection") == "static")
-                        {
+                    staticChoiceButton.click(function () {
+                        if ($(this).data("prevSelection") == "static") {
                             //do nothing since no change from previous selection
                             return;
                         }
@@ -1179,46 +1132,38 @@ function changeParameterType(element)
                     addsectioncollapseimages();
                 }
             },
-            close: function()
-            {
-                $( this ).dialog( "destroy" );
+            close: function () {
+                $(this).dialog("destroy");
             },
             buttons: {
-                "OK": function() {
+                "OK": function () {
                     var choicelist = "";
                     var newDefault = "";
 
-                    if(!isFile || $(this).find(".staticChoice").is(":checked")
-                        || ($(this).find(".dynamicChoice").is(":checked") && $(this).find(".staticChoiceLink").is(":checked")))
-                    {
-                        $(this).find(".staticChoiceTable").find("tr").each(function()
-                        {
+                    if (!isFile || $(this).find(".staticChoice").is(":checked")
+                        || ($(this).find(".dynamicChoice").is(":checked") && $(this).find(".staticChoiceLink").is(":checked"))) {
+                        $(this).find(".staticChoiceTable").find("tr").each(function () {
                             var dvalue = $(this).find("td input[name='choicen']").val();
                             var value = $(this).find("td input[name='choicev']").val();
 
-                            if((dvalue == undefined && value == undefined)
-                                || (dvalue == "" && value==""))
-                            {
+                            if ((dvalue == undefined && value == undefined)
+                                || (dvalue == "" && value == "")) {
                                 return;
                             }
 
-                            if(choicelist !== "")
-                            {
+                            if (choicelist !== "") {
                                 choicelist += ";";
                             }
 
-                            if(dvalue == undefined || dvalue == null|| dvalue == "")
-                            {
+                            if (dvalue == undefined || dvalue == null || dvalue == "") {
                                 choicelist += value;
                             }
-                            else
-                            {
+                            else {
                                 choicelist += value + "=" + dvalue;
                             }
 
                             //set default value
-                            if($(this).find("input[name='cradio']").is(":checked"))
-                            {
+                            if ($(this).find("input[name='cradio']").is(":checked")) {
                                 //set the default value
                                 newDefault = $(this).find("input[name='choicev']").val();
                                 newDefault = newDefault.trim();
@@ -1228,13 +1173,11 @@ function changeParameterType(element)
 
                     var choiceURL = $(this).find("input[name='choiceURL']").val();
                     //set the dynamic url if there is any
-                    if(choiceURL == undefined && choiceURL == null)
-                    {
+                    if (choiceURL == undefined && choiceURL == null) {
                         choiceURL = "";
                     }
 
-                    if($(this).find(".dynamicChoice").is(":checked") && choiceURL.length < 1)
-                    {
+                    if ($(this).find(".dynamicChoice").is(":checked") && choiceURL.length < 1) {
                         alert("Please enter an ftp directory or switch to a static drop-down list");
                         return;
                     }
@@ -1245,8 +1188,7 @@ function changeParameterType(element)
                     //set the dynamic url filter if there is any
                     var choiceURLFilter = $(this).find("input[name='choiceURLFilter']").val();
                     //set the dynamic url if there is any
-                    if(choiceURLFilter == undefined && choiceURLFilter == null)
-                    {
+                    if (choiceURLFilter == undefined && choiceURLFilter == null) {
                         choiceURLFilter = "";
                     }
 
@@ -1258,13 +1200,11 @@ function changeParameterType(element)
                     element.parents(".parameter").find("input[name='choicelist']").trigger("change");
 
                     //set default value
-                    if(choiceURL == "" &&  choicelist.length > 0)
-                    {
+                    if (choiceURL == "" && choicelist.length > 0) {
                         //element.parents(".parameter").find(".defaultValue").find("option:selected").removeAttr("selected");
                         element.parents(".parameter").find(".defaultValue").val(newDefault);
 
-                        if(newDefault != "" && element.parents(".parameter").find(".defaultValue").val() != newDefault)
-                        {
+                        if (newDefault != "" && element.parents(".parameter").find(".defaultValue").val() != newDefault) {
                             element.parents(".parameter").find(".defaultValue").append("<option value='" + newDefault + "'>" +
                                 newDefault + "</option>");
                             element.parents(".parameter").find(".defaultValue").val(newDefault);
@@ -1273,11 +1213,10 @@ function changeParameterType(element)
                         element.parents(".parameter").find(".defaultValue").multiselect("refresh");
                     }
 
-                    $(this).dialog( "destroy" );
+                    $(this).dialog("destroy");
                 },
-                "Cancel": function()
-                {
-                    $(this).dialog( "destroy" );
+                "Cancel": function () {
+                    $(this).dialog("destroy");
                 }
             },
             resizable: true
@@ -1301,53 +1240,45 @@ function changeParameterType(element)
     editChoicesLink.parent().append("<input type='hidden' name='choiceDir'/>");
     editChoicesLink.parent().append("<input type='hidden' name='choiceDirFilter'/>");
 
-    editChoicesLink.parent().find("input[name='choicelist']").change(function()
-    {
+    editChoicesLink.parent().find("input[name='choicelist']").change(function () {
         var choicelist = $(this).parents(".parameter").find("input[name='choicelist']").val();
         $(this).parents(".parameter").find(".staticChoicesInfo").text("");
 
         var prevDefaultField = $(this).parents(".parameter").find(".defaultValue");
         var choiceDir = $(this).parents(".parameter").find("input[name='choiceDir']").val();
 
-        if(choicelist != null && choicelist != undefined && choicelist.length > 0)
-        {
+        if (choicelist != null && choicelist != undefined && choicelist.length > 0) {
             //change text of the create drop down link to edit
             $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
 
             var choicelistArray = choicelist.split(";");
-            if(choicelistArray.length > 0)
-            {
+            if (choicelistArray.length > 0) {
                 $(this).parents(".parameter").find(".staticChoicesInfo").append("Static list: " + choicelistArray.length + " items");
             }
 
             //change the default value field to a combo box if this is not a dynamic file choice
-            if(choiceDir == undefined || choiceDir == null || choiceDir.length < 1)
-            {
+            if (choiceDir == undefined || choiceDir == null || choiceDir.length < 1) {
                 var currentDefaultValue = $(this).parents(".parameter").find(".defaultValue").val();
 
                 var defaultValueSelect = $("<select name='p_defaultvalue' class='defaultValue'/>");
                 defaultValueSelect.append("<option value=''></option>");
                 var defaultValueFound = false;
-                for(var t=0;t<choicelistArray.length;t++)
-                {
+                for (var t = 0; t < choicelistArray.length; t++) {
                     var result = choicelistArray[t].split("=");
-                    if(result[0] == "" )
-                    {
+                    if (result[0] == "") {
                         continue;
                     }
 
-                    defaultValueSelect.append("<option value='" + result[0]+ "'>" + result[0]+ "</option>");
+                    defaultValueSelect.append("<option value='" + result[0] + "'>" + result[0] + "</option>");
 
-                    if(result[0] == currentDefaultValue)
-                    {
+                    if (result[0] == currentDefaultValue) {
                         defaultValueSelect.val(result[0]);
                         defaultValueFound = true;
                     }
                 }
 
-                if(!defaultValueFound && currentDefaultValue != undefined
-                    && currentDefaultValue != null && currentDefaultValue != "")
-                {
+                if (!defaultValueFound && currentDefaultValue != undefined
+                    && currentDefaultValue != null && currentDefaultValue != "") {
                     invalidDefaultValueFound = true;
                 }
 
@@ -1359,8 +1290,7 @@ function changeParameterType(element)
                         header: false,
                         multiple: false,
                         selectedList: 1,
-                        position:
-                        {
+                        position: {
                             my: 'left bottom',
                             at: 'left top'
                         }
@@ -1368,10 +1298,8 @@ function changeParameterType(element)
                 );
             }
         }
-        else
-        {
-            if(choiceDir == undefined || choiceDir == null || choiceDir.length < 1)
-            {
+        else {
+            if (choiceDir == undefined || choiceDir == null || choiceDir.length < 1) {
                 $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
             }
 
@@ -1380,30 +1308,25 @@ function changeParameterType(element)
         }
     });
 
-    specifyChoicesRow.find("input[name='choiceDir']").change(function()
-    {
+    specifyChoicesRow.find("input[name='choiceDir']").change(function () {
         $(this).parents(".parameter").find(".dynamicChoicesInfo").text("");
 
         var ftpDir = $(this).parents(".parameter").find("input[name='choiceDir']").val();
-        if(ftpDir != null && ftpDir != undefined && ftpDir.length > 0)
-        {
+        if (ftpDir != null && ftpDir != undefined && ftpDir.length > 0) {
             //change text of the create drop down link to edit
             $(this).parents(".parameter").find(".choicelink").text("edit drop down list");
 
             var newFtpDir = ftpDir;
-            if(newFtpDir.length > 60)
-            {
-                newFtpDir = newFtpDir.substring(0, 20) + "..." + newFtpDir.substring(newFtpDir.length-20, newFtpDir.length);
+            if (newFtpDir.length > 60) {
+                newFtpDir = newFtpDir.substring(0, 20) + "..." + newFtpDir.substring(newFtpDir.length - 20, newFtpDir.length);
             }
             $(this).parents(".parameter").find(".dynamicChoicesInfo").append("Dynamic directory URL: "
                 + newFtpDir);
         }
-        else
-        {
-            if($(this).parents(".parameter").find("input[name='choicelist']").val() == undefined
+        else {
+            if ($(this).parents(".parameter").find("input[name='choicelist']").val() == undefined
                 || $(this).parents(".parameter").find("input[name='choicelist']").val() == null
-                || $(this).parents(".parameter").find("input[name='choicelist']").val().length < 1)
-            {
+                || $(this).parents(".parameter").find("input[name='choicelist']").val().length < 1) {
                 $(this).parents(".parameter").find(".choicelink").text("add a drop down list");
             }
         }
@@ -1412,7 +1335,7 @@ function changeParameterType(element)
     typeDetailsTable.append(specifyChoicesRow);
 
     //add row to allow setting of number of allowed values
-    var specifyMinValuesRow = $("<tr/>");
+    var specifyMinValuesRow = $("<tr class='minValues'/>");
     var specifyMinValuesTd = $("<td/>");
     specifyMinValuesTd.append('Minimum number of values:<br/>');
     var minNumValues = $('<input name="minNumValues" value="0"/>');
@@ -1420,8 +1343,7 @@ function changeParameterType(element)
     minNumValues.spinner({
         min: 0,
         incremental: true,
-        change: function(event, ui)
-        {
+        change: function (event, ui) {
             setDirty(true);
         }
     });
@@ -1433,7 +1355,7 @@ function changeParameterType(element)
         " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
         + "</a>");
 
-    var specifyMaxValuesRow = $("<tr/>");
+    var specifyMaxValuesRow = $("<tr class='maxValues'/>");
     var specifyMaValuesTd = $("<td/>");
     specifyMaValuesTd.append('Maximum number of values:<br/>');
     var maxValues = $('<input name="maxNumValues" value="1"/>');
@@ -1442,8 +1364,7 @@ function changeParameterType(element)
     maxValues.spinner({
         min: 1,
         incremental: true,
-        change: function(event, ui)
-        {
+        change: function (event, ui) {
             setDirty(true);
         }
     });
@@ -1460,7 +1381,6 @@ function changeParameterType(element)
     specifyMaValuesTd.append("unlimited");
     specifyMaxValuesRow.append(specifyMaValuesTd);
     typeDetailsTable.append(specifyMaxValuesRow);
-
 
     if(value == "Input File") {
         //specify file grouping
