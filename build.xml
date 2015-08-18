@@ -197,7 +197,7 @@
         <mkdir dir="${junit.report.dir}/xml" />
         <mkdir dir="${junit.report.dir}/html" />
         
-        <property name="junit.forkmode" value="perTest" /> <!-- set forkmode=once to create only a single JVM -->
+        <property name="junit.forkmode" value="once" /> <!-- set forkmode=once to create only a single JVM, set forkmode=perTest to fork a new JVM for each test -->
 
         <!-- junit includeantruntime="yes" printsummary="withOutAndErr" haltonfailure="no" showoutput="yes" filtertrace="off"> -->
         <junit includeantruntime="yes" printsummary="no" haltonfailure="no" showoutput="no" filtertrace="on" fork="true" forkmode="${junit.forkmode}">
