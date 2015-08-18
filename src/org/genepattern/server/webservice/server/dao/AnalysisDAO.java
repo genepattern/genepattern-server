@@ -560,7 +560,7 @@ public class AnalysisDAO extends BaseDAO {
     {
         TaskInfo taskInfo = null;
         try {
-            taskInfo = new AdminDAO().getTask(taskId);
+            taskInfo = new AdminDAO(mgr).getTask(taskId);
         }
         catch (Throwable t) {
             throw new JobSubmissionException("Error adding new job, not able to get taskInfo for taskId="+taskId, t);
