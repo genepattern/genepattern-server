@@ -669,10 +669,10 @@ public class AnalysisDAO extends BaseDAO {
      * @throws OmnigeneException
      * @return task ID
      */
-    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info, String taskInfoAttributes) 
+    public int addNewTask(final String taskName, final String user_id, final int access_id, final String description, final String parameter_info, final String taskInfoAttributes) 
     throws OmnigeneException {
         try {
-            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            final TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
             String sLSID = null;
             if (tia != null) {
                 sLSID = tia.get(GPConstants.LSID);
@@ -692,7 +692,6 @@ public class AnalysisDAO extends BaseDAO {
                 Lsid lsid = new Lsid(sLSID);
                 getSession().save(lsid);
             }
-            TaskInfoCache.instance().removeFromCache(taskID);
             return taskID;
         } 
         catch (Exception e) {

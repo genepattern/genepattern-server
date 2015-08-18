@@ -22,6 +22,7 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 
 /**
  * <p>
@@ -92,6 +93,7 @@ public abstract class DBLoader {
         int id;
         try {
             id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info, this._taskInfoAttributes);
+            TaskInfoCache.instance().removeFromCache(id);
         }
         catch (Exception e) {
             throw new OmnigeneException("Unable to create new task! " + e.getMessage());
