@@ -3,11 +3,11 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-
-import junit.framework.Assert;
 
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.Param;
@@ -32,22 +32,22 @@ public class TestJobInput {
         jobInput.addValue("optionalFile", DATA_URL+"all_aml_test.gct");
         jobInput.addValue("inputList", DATA_URL+"all_aml_test.res");
 
-        Assert.assertEquals("numParams", 3, jobInput.getParams().size());
+        assertEquals("numParams", 3, jobInput.getParams().size());
 
-        Assert.assertEquals("requiredFile.numValues", 1,  
+        assertEquals("requiredFile.numValues", 1,  
                 jobInput.getParam("requiredFile").getNumValues());
-        Assert.assertEquals("requiredFile.numGroups", 1, 
+        assertEquals("requiredFile.numGroups", 1, 
                 jobInput.getParam("requiredFile").getNumGroups());
-        Assert.assertEquals("optionalFile.numValues", 1,  
+        assertEquals("optionalFile.numValues", 1,  
                 jobInput.getParam("optionalFile").getNumValues());
-        Assert.assertEquals("optionalFile.numGroups", 1, 
+        assertEquals("optionalFile.numGroups", 1, 
                 jobInput.getParam("optionalFile").getNumGroups());
-        Assert.assertEquals("inputList.numValues", 1,  
+        assertEquals("inputList.numValues", 1,  
                 jobInput.getParam("inputList").getNumValues());
-        Assert.assertEquals("inputList.numGroups", 1, 
+        assertEquals("inputList.numGroups", 1, 
                 jobInput.getParam("inputList").getNumGroups());
   
-        Assert.assertNull("missingParam", jobInput.getParam("missingParam"));
+        assertNull("missingParam", jobInput.getParam("missingParam"));
     }
     
     @Test
@@ -59,18 +59,18 @@ public class TestJobInput {
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.res");
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls");
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct");
-        Assert.assertEquals("numParams", 3, jobInput.getParams().size());
-        Assert.assertEquals("inputList.numValues", 3,  
+        assertEquals("numParams", 3, jobInput.getParams().size());
+        assertEquals("inputList.numValues", 3,  
                 jobInput.getParam("inputList").getNumValues());
-        Assert.assertEquals("inputList.numGroups", 1, 
+        assertEquals("inputList.numGroups", 1, 
                 jobInput.getParam("inputList").getNumGroups());
         
         //double check order
-        Assert.assertEquals("inputList[0]", DATA_URL+"all_aml_train.res",
+        assertEquals("inputList[0]", DATA_URL+"all_aml_train.res",
                 jobInput.getParam("inputList").getValues().get(0).getValue());
-        Assert.assertEquals("inputList[1]", DATA_URL+"all_aml_train.cls",
+        assertEquals("inputList[1]", DATA_URL+"all_aml_train.cls",
                 jobInput.getParam("inputList").getValues().get(1).getValue());
-        Assert.assertEquals("inputList[2]", DATA_URL+"all_aml_train.gct",
+        assertEquals("inputList[2]", DATA_URL+"all_aml_train.gct",
                 jobInput.getParam("inputList").getValues().get(2).getValue());
     }
     
@@ -83,17 +83,17 @@ public class TestJobInput {
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.res", new GroupId("single group"));
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.cls", new GroupId("single group"));
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId("single group"));
-        Assert.assertEquals("numParams", 3, jobInput.getParams().size());
+        assertEquals("numParams", 3, jobInput.getParams().size());
         
         final Param param=jobInput.getParam("inputList");
-        Assert.assertEquals("numGroups", 1, param.getNumGroups());
-        Assert.assertEquals("numValues", 3, param.getNumValues());
+        assertEquals("numGroups", 1, param.getNumGroups());
+        assertEquals("numValues", 3, param.getNumValues());
         //double check order
-        Assert.assertEquals("inputList[0]", DATA_URL+"all_aml_train.res",
+        assertEquals("inputList[0]", DATA_URL+"all_aml_train.res",
                 jobInput.getParam("inputList").getValues().get(0).getValue());
-        Assert.assertEquals("inputList[1]", DATA_URL+"all_aml_train.cls",
+        assertEquals("inputList[1]", DATA_URL+"all_aml_train.cls",
                 jobInput.getParam("inputList").getValues().get(1).getValue());
-        Assert.assertEquals("inputList[2]", DATA_URL+"all_aml_train.gct",
+        assertEquals("inputList[2]", DATA_URL+"all_aml_train.gct",
                 jobInput.getParam("inputList").getValues().get(2).getValue());
     }
     
@@ -109,32 +109,32 @@ public class TestJobInput {
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId("Train"));
         
         final Param param=jobInput.getParam("inputList");
-        Assert.assertEquals("numGroups", 2, param.getNumGroups());
-        Assert.assertEquals("numValues", 6, param.getNumValues());
+        assertEquals("numGroups", 2, param.getNumGroups());
+        assertEquals("numValues", 6, param.getNumValues());
         
         //expect groups in order
-        Assert.assertEquals("groups[0]", new GroupId("train"),
+        assertEquals("groups[0]", new GroupId("train"),
                 param.getGroups().get(0));
-        Assert.assertEquals("groups[1]", new GroupId("test"),
+        assertEquals("groups[1]", new GroupId("test"),
                 param.getGroups().get(1));
 
         //check values
-        Assert.assertEquals("inputList[train][0]",
+        assertEquals("inputList[train][0]",
                 DATA_URL+"all_aml_train.res",
                 param.getValuesInGroup(new GroupId("train")).get(0).getValue());
-        Assert.assertEquals("inputList[train][1]",
+        assertEquals("inputList[train][1]",
                 DATA_URL+"all_aml_train.cls",
                 param.getValuesInGroup(new GroupId("train")).get(1).getValue());
-        Assert.assertEquals("inputList[train][2]",
+        assertEquals("inputList[train][2]",
                 DATA_URL+"all_aml_train.gct",
                 param.getValuesInGroup(new GroupId("train")).get(2).getValue());
-        Assert.assertEquals("inputList[test][0]",
+        assertEquals("inputList[test][0]",
                 DATA_URL+"all_aml_test.res",
                 param.getValuesInGroup(new GroupId("test")).get(0).getValue());
-        Assert.assertEquals("inputList[test][1]",
+        assertEquals("inputList[test][1]",
                 DATA_URL+"all_aml_test.cls",
                 param.getValuesInGroup(new GroupId("test")).get(1).getValue());
-        Assert.assertEquals("inputList[test][2]",
+        assertEquals("inputList[test][2]",
                 DATA_URL+"all_aml_test.gct",
                 param.getValuesInGroup(new GroupId("test")).get(2).getValue());
         
@@ -156,8 +156,8 @@ public class TestJobInput {
         
         int i=0;
         for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
-            Assert.assertEquals("entry["+i+"].group", expectedGroups.remove(0), entry.getKey());
-            Assert.assertEquals("entry["+i+"]", expectedValues.remove(0), entry.getValue());
+            assertEquals("entry["+i+"].group", expectedGroups.remove(0), entry.getKey());
+            assertEquals("entry["+i+"]", expectedValues.remove(0), entry.getValue());
             ++i;
         }
     }
@@ -177,8 +177,8 @@ public class TestJobInput {
         jobInput.addValue("inputList", DATA_URL+"all_aml_train.gct", new GroupId(""));
 
         final Param param=jobInput.getParam("inputList");
-        Assert.assertEquals("numGroups", 1, param.getNumGroups());
-        Assert.assertEquals("numValues", 6, param.getNumValues());
+        assertEquals("numGroups", 1, param.getNumGroups());
+        assertEquals("numValues", 6, param.getNumValues());
     }
     
     /**
@@ -187,8 +187,8 @@ public class TestJobInput {
     @Test
     public void testNullGroupId() {
         GroupId groupId=new GroupId( (String) null);
-        Assert.assertEquals("groupId.name", "", groupId.getName());
-        Assert.assertEquals("groupId.groupId", "", groupId.getGroupId());
+        assertEquals("groupId.name", "", groupId.getName());
+        assertEquals("groupId.groupId", "", groupId.getGroupId());
     }
 
 }

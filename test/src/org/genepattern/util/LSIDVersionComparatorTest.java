@@ -3,24 +3,28 @@
  *******************************************************************************/
 package org.genepattern.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for LSIDVersionComparator.
  * 
  * @author pcarr
  */
-public class LSIDVersionComparatorTest extends TestCase {
-    private LSIDVersionComparator comparator = null;
+public class LSIDVersionComparatorTest {
+    private LSIDVersionComparator comparator;
     
-    public void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() {
         comparator = LSIDVersionComparator.INSTANCE;
     }
 
     /**
      * Test cases when one or both input LSID.version is the empty String.
      */
+    @Test
     public void testCompareToEmptyString() {
         assertEquals("compare(empty,empty)", 0, comparator.compare("", ""));
         assertEquals("empty < 2.1", -1, comparator.compare("", "2.1"));
@@ -38,12 +42,14 @@ public class LSIDVersionComparatorTest extends TestCase {
     /**
      * Test cases when one or both input LSID.version are null.
      */
+    @Test
     public void testCompareToNull() {
         assertEquals("compare(null,null)", 0, comparator.compare(null, null));
         assertEquals("compare(\"\",null)", 0, comparator.compare("", null));
         assertEquals("compare(null,\"\")", 0, comparator.compare(null, ""));
     }
     
+    @Test
     public void testCompare() {
         doTest(0, "1", "1");
         doTest(0, "1.2", "1.2");
@@ -60,6 +66,7 @@ public class LSIDVersionComparatorTest extends TestCase {
     /**
      * Test cases where part of the input does not map to an Integer.
      */
+    @Test
     public void testExceptions() {
         doTest(0, "1a", "1a");
         doTest(0, "1a", "2b");

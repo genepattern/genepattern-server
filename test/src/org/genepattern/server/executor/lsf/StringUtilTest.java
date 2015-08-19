@@ -3,18 +3,22 @@
  *******************************************************************************/
 package org.genepattern.server.executor.lsf;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class StringUtilTest extends TestCase {
+public class StringUtilTest {
 
+    @Test
     public void testSplitCommandLineEmptyString() {
         List<String> rval = StringUtil.splitCommandLine("");
         assertNotNull("should return non-null", rval);
         assertEquals("should return zero length list", 0, rval.size());
     }
     
+    @Test
     public void testSplitCommandLineWithQuotedArg() {
         List<String> rval = StringUtil.splitCommandLine("lsf_wrapper.sh stdout.txt java -cp a.jar:b.jar:c.jar org.broadinstitute.test.MyTest \"Test One\"");
         
@@ -28,6 +32,7 @@ public class StringUtilTest extends TestCase {
         assertEquals("Test One", rval.get(6));
     }
     
+    @Test
     public void testSplitCommandLineWithEscapedQuote() {
         List<String> rval = StringUtil.splitCommandLine("\"arg1 has an escaped quote (\\\") character\"");
         assertNotNull(rval);

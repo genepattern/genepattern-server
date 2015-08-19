@@ -3,20 +3,23 @@
  *******************************************************************************/
 package org.genepattern.server.auth;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * Unit tests for the GroupPermissions class.
  * 
  * @author pcarr
  */
-public class GroupPermissionTest extends TestCase {
+public class GroupPermissionTest {
     private static String groupId = "testGroup";
 
     /**
      * Test the constructor, making sure that the int ids map to the correct enum values.
      * This validates the mapping from the database 'PERMISSION_FLAG.ID' column.
      */
+    @Test
     public void testGroupPermissionConstructor() {
         GroupPermission gp = new GroupPermission(groupId, -1);
         assertEquals("-1 maps to NONE", GroupPermission.Permission.NONE, gp.getPermission());

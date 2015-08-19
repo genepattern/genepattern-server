@@ -3,14 +3,14 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.collection;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.genepattern.junitutil.MockGpFilePath;
 import org.genepattern.server.dm.GpFilePath;
@@ -61,7 +61,7 @@ public class TestDefaultParamGroupWriter {
         final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         
-        Assert.assertEquals("toFile.exists", true, toFile.exists());
+        assertEquals("toFile.exists", true, toFile.exists());
         
         //parse the results
         LineNumberReader reader=null;
@@ -73,7 +73,7 @@ public class TestDefaultParamGroupWriter {
             checkLine(3, reader.readLine(), gpFilePaths, "train");
             checkLine(4, reader.readLine(), gpFilePaths, "train");
             checkLine(5, reader.readLine(), gpFilePaths, "train");
-            Assert.assertNull( "", reader.readLine() );
+            assertNull( "", reader.readLine() );
         }
         finally {
             if (reader != null) {
@@ -84,13 +84,13 @@ public class TestDefaultParamGroupWriter {
     
     private void checkLine(final int i, final String line, final List<GpFilePath> gpFilePaths, final String groupId) {
         final String[] items=line.split("\t");
-        Assert.assertEquals("filename["+i+"]", gpFilePaths.get(i).getServerFile().toString(), items[0]);
-        Assert.assertEquals("group["+i+"]", groupId, items[1]);
+        assertEquals("filename["+i+"]", gpFilePaths.get(i).getServerFile().toString(), items[0]);
+        assertEquals("group["+i+"]", groupId, items[1]);
         try {
-            Assert.assertEquals("url["+i+"]", gpFilePaths.get(i).getUrl().toString(), items[2]);
+            assertEquals("url["+i+"]", gpFilePaths.get(i).getUrl().toString(), items[2]);
         }
         catch (Exception e) {
-            Assert.fail("Error parsing url["+i+"]: "+e.getLocalizedMessage());
+            fail("Error parsing url["+i+"]: "+e.getLocalizedMessage());
         }
     }
 
@@ -120,7 +120,7 @@ public class TestDefaultParamGroupWriter {
         final File toFile=tmpDir.newFile("exampleParamGroup_02.tsv");
         final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
-        Assert.assertEquals("toFile.exists", true, toFile.exists());
+        assertEquals("toFile.exists", true, toFile.exists());
     }
 
 }

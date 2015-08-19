@@ -3,16 +3,18 @@
  *******************************************************************************/
 package org.genepattern.server;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * junit test cases for FileUtil#getRelativePath.
  * @author pcarr
  *
  */
-public class FileUtilTest extends TestCase {
+public class FileUtilTest {
     final static String usera = new String("user_a");
     final static String userb = new String("user_b");
     
@@ -24,11 +26,8 @@ public class FileUtilTest extends TestCase {
     File b01 = new File(bHome, "1.txt");
     File b02 = new File(bHome, "2.txt");
     File serverFile01 = new File("test1.txt");
-    
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-    
+
+    @Test
     public void testGetRelativePath() {
         runTest(aHome, a01, "1.txt");
         runTest(aHome, a02, "2.txt");

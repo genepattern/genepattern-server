@@ -3,7 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.eula;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.genepattern.server.eula.InitException;
 import org.junit.Test;
@@ -23,13 +23,13 @@ public class TestEulaInfo {
             eula.setModuleLsid(lsidIn);
         }
         catch (InitException e) {
-            Assert.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
         eula.setModuleName(nameIn);
-        Assert.assertEquals("eula.lsid.toString", lsidIn, eula.getLsid().toString());
-        Assert.assertEquals("eula.moduleLsid", lsidIn, eula.getModuleLsid());
-        Assert.assertEquals("eula.moduleLsidVersion", "3", eula.getModuleLsidVersion()); 
-        Assert.assertEquals("eula.moduleName", nameIn, eula.getModuleName());
+        assertEquals("eula.lsid.toString", lsidIn, eula.getLsid().toString());
+        assertEquals("eula.moduleLsid", lsidIn, eula.getModuleLsid());
+        assertEquals("eula.moduleLsidVersion", "3", eula.getModuleLsidVersion()); 
+        assertEquals("eula.moduleName", nameIn, eula.getModuleName());
     }
     
     @Test
@@ -37,7 +37,7 @@ public class TestEulaInfo {
         EulaInfo eula=new EulaInfo();
         try {
             eula.setModuleLsid(null);
-            Assert.fail("setModuleLsid(null) should throw exception");
+            fail("setModuleLsid(null) should throw exception");
         }
         catch (InitException e) {
             //expected
@@ -49,7 +49,7 @@ public class TestEulaInfo {
         EulaInfo eula=new EulaInfo();
         try {
             eula.setModuleLsid("");
-            Assert.fail("setModuleLsid(\"\") should throw exception");
+            fail("setModuleLsid(\"\") should throw exception");
         }
         catch (InitException e) {
             //expected
@@ -61,7 +61,7 @@ public class TestEulaInfo {
         EulaInfo eula=new EulaInfo();
         try {
             eula.setModuleLsid("this is not an lsid");
-            Assert.fail("setModuleLsid(\"\") should throw exception");
+            fail("setModuleLsid(\"\") should throw exception");
         }
         catch (InitException e) {
             //expected
