@@ -3,10 +3,10 @@
  *******************************************************************************/
 package org.genepattern.server.eula;
 
+import static org.junit.Assert.*;
+
 import java.util.Collections;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.junitutil.TaskUtil;
@@ -39,7 +39,7 @@ public class TestEulaManagerNoOp {
     public void testDisableEulaManager() {
         GpContext userContext=GpContext.getContextForUser("gp_user");
         boolean customSetting=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "org.genepattern.server.eula.EulaManager.enabled", false);
-        Assert.assertEquals("eula.enabled", false, customSetting);
+        assertEquals("eula.enabled", false, customSetting);
     }
     
     @Test
@@ -50,7 +50,7 @@ public class TestEulaManagerNoOp {
         if (eulaMgr instanceof EulaManagerNoOp) {
         }
         else {
-            Assert.fail("Expecting instanceof EulaManagerNoOp");
+            fail("Expecting instanceof EulaManagerNoOp");
         }
     }
     
@@ -59,7 +59,7 @@ public class TestEulaManagerNoOp {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
         final GpContext taskContext=null;
         boolean requiresEula=eulaMgr.requiresEula(taskContext);
-        Assert.assertFalse("eulaMgr.requiresEula should always return false when eula manager is not enabled", requiresEula);
+        assertFalse("eulaMgr.requiresEula should always return false when eula manager is not enabled", requiresEula);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class TestEulaManagerNoOp {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
         TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), "testLicenseAgreement_v3.zip");
         final List<EulaInfo> eulas=eulaMgr.getEulas(taskInfo);
-        Assert.assertEquals("eulaMgr.getEulas should return one associated license", 1, eulas.size());
+        assertEquals("eulaMgr.getEulas should return one associated license", 1, eulas.size());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TestEulaManagerNoOp {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
         final GpContext taskContext=null;
         List<EulaInfo> eulas=eulaMgr.getAllEulaForModule(taskContext);
-        Assert.assertEquals("eulaMgr.allEulaForModule should always return an empty list when eula manager is not enabled", 0, eulas.size());
+        assertEquals("eulaMgr.allEulaForModule should always return an empty list when eula manager is not enabled", 0, eulas.size());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class TestEulaManagerNoOp {
         final IEulaManager eulaMgr=new EulaManagerNoOp();
         final GpContext taskContext=null;
         List<EulaInfo> eulas=eulaMgr.getPendingEulaForModule(taskContext);
-        Assert.assertEquals("eulaMgr.pendingEulaForModule should always return an empty list when eula manager is not enabled", 0, eulas.size());
+        assertEquals("eulaMgr.pendingEulaForModule should always return an empty list when eula manager is not enabled", 0, eulas.size());
     }
 
     @Test

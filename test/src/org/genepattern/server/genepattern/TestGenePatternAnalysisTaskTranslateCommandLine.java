@@ -3,18 +3,20 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * Unit test {@link GenePatternAnalysisTask#translateCommandline(String[])}.
  * @author pcarr
  */
-public class TestGenePatternAnalysisTaskTranslateCommandLine extends TestCase {
+public class TestGenePatternAnalysisTaskTranslateCommandLine {
     /**
      * Unit test based on GP-2936, RT-130573.
      * A module command line with double quotes surrounding more than one input parameter must collapse 
      * those into a single command line arg, quotes included, to the ProcessBuilder.
      */
+    @Test
     public void testMatlabExample() {
         //final String moduleCommandLineSpec = "/broad/tools/apps/matlab2009b/bin/matlab -nosplash -r \"MTestCase <p1> <p2> <p3> <p4> <p5>\"";
         //final String moduleCommandLineWithArgs = "/broad/tools/apps/matlab2009b/bin/matlab -nosplash -r \"MTestCase Hello! this is my testcase.\"";
