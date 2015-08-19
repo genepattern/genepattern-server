@@ -164,6 +164,10 @@ public abstract class AbstractPipelineCodeGenerator {
             tia.put(GetEulaAsManifestProperty.LICENSE, model.getLicense());
             addLicensePlugin(tia);
         }
+
+        if (model.getQuality() != null && model.getQuality().length() > 0) {
+            tia.put(GPConstants.QUALITY, model.getQuality());
+        }
         
         String taskDoc = model.getDocumentation();
         if (taskDoc == null) {
@@ -237,7 +241,7 @@ public abstract class AbstractPipelineCodeGenerator {
      * @param pipelineTaskInfos
      *            a list of <tt>TaskInfo</tt> objects in the same order as the
      *            tasks in the pipeline
-     * @param the
+     * @param server
      *            server, e.g. 'http://localhost:8080'
      * @param language
      *            the language to generate the code in

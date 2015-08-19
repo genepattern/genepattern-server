@@ -527,6 +527,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setDescription(pipelineObject.getDescription());
 	    model.setAuthor(pipelineObject.getAuthor());
 	    model.setVersion(pipelineObject.getVersionComment());
+        model.setQuality(pipelineObject.getQuality());
 	    model.setPrivacy(pipelineObject.getPrivacy().equals(GPConstants.PRIVATE));
 	    
 	    String lsid = blankLsidIfNecessary(pipelineObject.getLsid());

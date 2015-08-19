@@ -25,6 +25,7 @@ public class PipelineJSON extends JSONObject {
     public static final String NAME = "pipelineName";
     public static final String DESCRIPTION = "pipelineDescription";
     public static final String AUTHOR = "pipelineAuthor";
+    public static final String QUALITY = "pipelineQuality";
     public static final String PRIVACY = "pipelinePrivacy";
     public static final String VERSION = "pipelineVersion";
     public static final String VERSION_COMMENT = "pipelineVersionComment";
@@ -44,6 +45,7 @@ public class PipelineJSON extends JSONObject {
             this.put(NAME, object.get(NAME));
             this.put(DESCRIPTION, object.get(DESCRIPTION));
             this.put(AUTHOR, object.get(AUTHOR));
+            this.put(QUALITY, object.get(QUALITY));
             this.put(PRIVACY, object.get(PRIVACY));
             this.put(VERSION, object.get(VERSION));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
@@ -111,11 +113,12 @@ public class PipelineJSON extends JSONObject {
             this.put(NAME, pipeline.getName());
             this.put(DESCRIPTION, pipeline.getDescription());
             this.put(AUTHOR, pipeline.getAuthor());
+            this.put(QUALITY, pipeline.getQuality());
             this.put(PRIVACY, pipeline.isPrivate() ? PRIVATE : PUBLIC);
             this.put(VERSION, extractVersion(pipeline.getLsid()));
             this.put(VERSION_COMMENT, pipeline.getVersion());
             try {
-                final List<String> categories=new CategoryUtil().getCategoriesFromManifest(info);
+                List<String> categories = new CategoryUtil().getCategoriesFromManifest(info);
 
                 String categoriesStr=join(categories,";");
                 //Note: to return an actual list of values to the client (instead of a ';' separated string)
@@ -156,6 +159,10 @@ public class PipelineJSON extends JSONObject {
     
     public String getAuthor() throws JSONException {
         return this.getString(AUTHOR);
+    }
+
+    public String getQuality() throws JSONException {
+        return this.getString(QUALITY);
     }
     
     public String getPrivacy() throws JSONException {

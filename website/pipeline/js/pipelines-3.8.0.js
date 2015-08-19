@@ -33,6 +33,7 @@ var editor = {
         pipelineCategories: "pipeline",
         pipelineDescription: "",
         pipelineAuthor: "",
+        pipelineQuality: "development",
         pipelinePrivacy: "private",
         pipelineVersion: "0",
         pipelineVersionComment: "",
@@ -532,6 +533,7 @@ var editor = {
             pipelineCategories: "",
             pipelineDescription: "",
             pipelineAuthor: "",
+            pipelineQuality: "development",
             pipelinePrivacy: "private",
             pipelineVersion: "0",
             pipelineVersionComment: "",
@@ -943,6 +945,7 @@ var editor = {
         this.workspace["pipelineCategories"] = save["Categories"];
         this.workspace["pipelineDescription"] = save["Description"];
         this.workspace["pipelineAuthor"] = save["Author"];
+        this.workspace["pipelineQuality"] = save["Quality"];
         this.workspace["pipelinePrivacy"] = save["Privacy"];
         this.workspace["pipelineVersionComment"] = save["Version Comment"];
         this.workspace["pipelineDocumentation"] = save["Documentation"];
@@ -963,6 +966,7 @@ var editor = {
         transport["pipelineCategories"] = this.workspace["pipelineCategories"];
         transport["pipelineDescription"] = this.workspace["pipelineDescription"];
         transport["pipelineAuthor"] = this.workspace["pipelineAuthor"];
+        transport["pipelineQuality"] = this.workspace["pipelineQuality"];
         transport["pipelinePrivacy"] = this.workspace["pipelinePrivacy"];
         transport["pipelineVersion"] = this.workspace["pipelineVersion"];
         transport["pipelineVersionComment"] = this.workspace["pipelineVersionComment"];
@@ -1027,6 +1031,7 @@ var editor = {
         this.workspace["pipelineDescription"] = pipeline["pipelineDescription"];
         this.workspace["pipelineCategories"] = pipeline["pipelineCategories"];
         this.workspace["pipelineAuthor"] = pipeline["pipelineAuthor"];
+        this.workspace["pipelineQuality"] = pipeline["pipelineQuality"];
         this.workspace["pipelinePrivacy"] = pipeline["pipelinePrivacy"];
         this.workspace["pipelineVersion"] = pipeline["pipelineVersion"];
         this.workspace["pipelineVersionComment"] = pipeline["pipelineVersionComment"];
@@ -3365,6 +3370,10 @@ var properties = {
         this._addTextBox("Categories", editor.workspace["pipelineCategories"], "List of ';' separated categories for the pipeline.", false);
         this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
         this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
+
+        var qualityDropdown = null;
+        qualityDropdown = ["development", "preproduction", "production"];
+        this._addDropDown("Quality", qualityDropdown, editor.workspace["pipelineQuality"], false, false);
 
         var privacyDropdown = null;
         if (!createPublicPipelineAllowed) { privacyDropdown = ["private"]; }

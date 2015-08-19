@@ -65,6 +65,7 @@ public class PipelineModel implements Serializable {
     protected String categories = null;
     protected String description = "";
     protected String author = "";
+    protected String quality = "";
     protected boolean privacy = true;
     protected String display = "";
     protected String userID = "";
@@ -159,6 +160,14 @@ public class PipelineModel implements Serializable {
     public void setName(String name) {
         if (name != null)
             this.name = name;
+    }
+
+    public String getQuality() {
+        return quality;
+    }
+
+    public void setQuality(String quality) {
+        this.quality = quality;
     }
 
     public boolean isPrivate() {
@@ -349,6 +358,7 @@ public class PipelineModel implements Serializable {
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.NAME + "\" select=\"" + xmlEncode(getName()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.DESCRIPTION + "\" select=\"" + xmlEncode(getDescription()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.AUTHOR + "\" select=\"" + xmlEncode(getAuthor()) + "\"/>\n");
+        outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.QUALITY + "\" select=\"" + xmlEncode(getQuality()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.PRIVACY + "\" select=\"" + xmlEncode(isPrivate() ? GPConstants.PRIVATE : GPConstants.PUBLIC) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.USERID + "\" select=\""  + xmlEncode(getUserID()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.VERSION + "\" select=\"" + xmlEncode(getVersion()) + "\"/>\n");
