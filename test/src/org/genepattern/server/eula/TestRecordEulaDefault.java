@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.Assert;
@@ -32,7 +33,7 @@ public class TestRecordEulaDefault {
     public TemporaryFolder temp = new TemporaryFolder();
 
     @Before
-    public void setUp() throws ExecutionException, IOException {
+    public void setUp() throws ExecutionException, IOException, DbException  {
         mgr=DbUtil.getTestDbSession();
         final String userDir=temp.newFolder("users").getAbsolutePath();
         gpConfig=new GpConfig.Builder()

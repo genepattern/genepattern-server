@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.ParamId;
@@ -53,7 +52,7 @@ public class JobInputHelper {
      * 
      * @return the URL if it's an external url, otherwise return null.
      */
-    public static URL initExternalUrl(final String value) {
+    public static URL initExternalUrl(final GpConfig gpConfig, final String value) {
         log.debug("intialize external URL for value="+value);
         if (value==null) {
             throw new IllegalArgumentException("value==null");
@@ -63,7 +62,7 @@ public class JobInputHelper {
             log.debug("it's a substition for the gp url");
             return null;
         }
-        if (value.startsWith(ServerConfigurationFactory.instance().getGpUrl())) {
+        if (value.startsWith(gpConfig.getGpUrl())) {
             log.debug("it's a gp url");
             return null;
         }
@@ -85,11 +84,12 @@ public class JobInputHelper {
         return url;
     }
 
+    private final GpConfig gpConfig;
     private final BatchInputFileHelper batchInputFileHelper;
 
     /** @deprecated - should pass in a valid GpConfig. */
     public JobInputHelper(final GpContext userContext, final String lsid) {
-        this(ServerConfigurationFactory.instance(), userContext, lsid);
+        this(org.genepattern.server.config.ServerConfigurationFactory.instance(), userContext, lsid);
     }
     public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
         this(gpConfig, userContext, lsid, null);
@@ -102,9 +102,11 @@ public class JobInputHelper {
             getTaskStrategyIn=new GetTaskStrategyDefault();
         }
         final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
+        this.gpConfig=gpConfig;
         this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
     }
     public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final TaskInfo taskInfo) {
+        this.gpConfig=gpConfig;
         this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
     }
     
@@ -157,7 +159,7 @@ public class JobInputHelper {
      * @param value
      */
     public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(paramId, value);
+        this.batchInputFileHelper.addBatchValue(gpConfig, paramId, value);
     }
 
     public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
@@ -191,7 +193,7 @@ public class JobInputHelper {
     {
         if (isBatch) {
             //TODO: implement support for groupId with batch values
-            batchInputFileHelper.addBatchValue(new ParamId(name), value);
+            batchInputFileHelper.addBatchValue(gpConfig, new ParamId(name), value);
         }
         else {
             batchInputFileHelper.addValue(new ParamId(name), value, groupId);
@@ -212,7 +214,7 @@ public class JobInputHelper {
     }
     
     public void addBatchDirectory(final ParamId id, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(id, value);
+        this.batchInputFileHelper.addBatchValue(gpConfig, id, value);
     }
     
     /**

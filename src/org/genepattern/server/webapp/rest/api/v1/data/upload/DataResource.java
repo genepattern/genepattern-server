@@ -29,6 +29,7 @@ import org.genepattern.server.DataManager;
 import org.genepattern.server.UploadDirectoryZipWriter;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -819,7 +820,8 @@ public class DataResource {
             }
         }
         try {
-            JobInputFileUtil.addUploadFileToDb(userContext,gpFilePath);
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            JobInputFileUtil.addUploadFileToDb(mgr, userContext, gpFilePath);
         }
         catch (Throwable t) {
             log.error("Error saving record of job_input_file to DB, filename="+gpFilePath.getRelativePath(), t);

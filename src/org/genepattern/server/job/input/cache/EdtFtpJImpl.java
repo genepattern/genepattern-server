@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 
 import com.enterprisedt.net.ftp.FTPConnectMode;
 import com.enterprisedt.net.ftp.FTPException;
@@ -30,8 +31,8 @@ public final class EdtFtpJImpl extends CachedFtpFile {
     private static Logger log = Logger.getLogger(EdtFtpJImpl.class);
     final ExecutorService ex;
 
-    public EdtFtpJImpl(final GpConfig gpConfig, final String urlString, final ExecutorService ex) {
-        super(gpConfig, urlString);
+    public EdtFtpJImpl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString, final ExecutorService ex) {
+        super(mgr, gpConfig, urlString);
         this.ex=ex;
     }
 

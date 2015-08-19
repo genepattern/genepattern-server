@@ -27,6 +27,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.genepattern.ValueResolver;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
@@ -69,7 +70,16 @@ public class ParamListHelper {
         /**
          * When listMode=listIncludeEmpty, always create a filelist file on the cmd line, even for empty lists.
          */
-        LIST_INCLUDE_EMPTY
+        LIST_INCLUDE_EMPTY,
+        /**
+         * When listMode=CMD, the individual values will be listed on the CMD line with a default comma separator
+         */
+        CMD,
+        /**
+         * When listMode=CMD_opt, the individual values will be listed on the CMD line with the CMD line prefix
+         * prepended to it
+         */
+        CMD_OPT
     }
 
     /**
@@ -192,7 +202,7 @@ public class ParamListHelper {
         this.allowedNumValues=initAllowedNumValues();
 
         //initialize list mode
-        this.listMode=initListMode(parameterInfoRecord);
+        this.listMode=ParamListHelper.initListMode(parameterInfoRecord);
         
         //initialize group info
         this.groupInfo=initGroupInfo();
@@ -241,8 +251,8 @@ public class ParamListHelper {
             return listValue;
         }
     }
-    
-    private static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
+
+    public static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
         //initialize list mode
         String listModeStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
         if (listModeStr != null && listModeStr.length()>0) {
@@ -362,13 +372,15 @@ public class ParamListHelper {
      * @return
      */
     public boolean isCreateFilelist() {
-        if (this.allowedNumValues == null) {
+        if (this.allowedNumValues == null || !this.allowedNumValues.acceptsList()) {
             return false;
         }
-        if (!this.allowedNumValues.acceptsList()) {
+
+        if(ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
+        {
             return false;
         }
-        
+
         final int numValuesSet=actualValues.getNumValues();
         if (numValuesSet>1) {
             //always create a filelist when there are more than 1 values
@@ -517,6 +529,8 @@ public class ParamListHelper {
         //Note: createFilelist is true when createGroupFile is true, so check for createGroupFile first
         if (createGroupFile) { 
             ParamGroupHelper pgh=new ParamGroupHelper.Builder(actualValues)
+                .mgr(mgr)
+                .gpConfig(gpConfig)
                 .jobContext(jobContext)
                 .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
@@ -535,6 +549,18 @@ public class ParamListHelper {
             parameterInfoRecord.getActual().setValue(filelist);
             
             saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
+        }
+        else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
+        {
+            List<String> valueList = ValueResolver.getSubstitutedValues(actualValues, parameterInfoRecord);
+            String valuesString  = "";
+            for(String value:valueList)
+            {
+                valuesString += value + " ";
+            }
+
+            valuesString = valuesString.trim();
+            parameterInfoRecord.getActual().setValue(valuesString);
         }
         else if (numValues==0) {
             parameterInfoRecord.getActual().setValue("");
@@ -698,7 +724,7 @@ public class ParamListHelper {
     public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(gpConfig, jobContext, formalParam, pval);
+            final Record rec=initFromValue(mgr, gpConfig, jobContext, formalParam, pval);
             tmpList.add(rec);
         }
         
@@ -725,7 +751,7 @@ public class ParamListHelper {
         // Handle external URLs
         if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
             if (rec.isCached) {
-                GpFilePath cached=FileCache.downloadCachedFile(gpConfig, jobContext, rec.url.toExternalForm());
+                GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
                 rec.gpFilePath=cached;
             }
             else {
@@ -735,12 +761,12 @@ public class ParamListHelper {
     }
 
     private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
+        return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    public static Record initFromValue(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
+    public static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl = JobInputHelper.initExternalUrl(value);
+        URL externalUrl = JobInputHelper.initExternalUrl(gpConfig, value);
         final boolean isPassByReference=isPassByReference(formalParam);
         
         if (externalUrl != null) {
@@ -755,7 +781,7 @@ public class ParamListHelper {
             }
             else if (isCached) {
                 // special-case: 'cache.externalUrlDirs'
-                CachedFile cachedFile=FileCache.initCachedFileObj(gpConfig, jobContext, value);
+                CachedFile cachedFile=FileCache.initCachedFileObj(mgr, gpConfig, jobContext, value);
                 Record record=new Record(Record.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
                 record.isCached=isCached;
                 record.isPassByReference=isPassByReference;
@@ -950,7 +976,7 @@ public class ParamListHelper {
             throw new Exception("GenomeSpace not enabled. Need to enable GenomeSpace to download GenomeSpace files:" + url.toString());
         }
     }
-    
+
 //    /**
 //     * Compare last modified with cached versions for FTP files
 //     * @param realPath

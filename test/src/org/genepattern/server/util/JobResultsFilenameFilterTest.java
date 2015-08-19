@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.util;
 
+import static org.junit.Assert.*;
+
 import static org.genepattern.util.GPConstants.STDERR;
 import static org.genepattern.util.GPConstants.STDOUT;
 import static org.genepattern.util.GPConstants.TASKLOG;
@@ -11,13 +13,14 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit test JobResultsFilenameFilter class.
  * @author pcarr
  */
-public class JobResultsFilenameFilterTest extends TestCase {
+public class JobResultsFilenameFilterTest {
     private static final File dir = null; //arg to FilenameFilter.accept
     private static final String ds_store = ".DS_Store";
     private static final String nfsExample = ".nfs00012.txt";
@@ -26,9 +29,8 @@ public class JobResultsFilenameFilterTest extends TestCase {
     
     private JobResultsFilenameFilter filter = null;
     
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         filter = new JobResultsFilenameFilter();
         filter.addExactMatch(STDERR);
         filter.addExactMatch(STDOUT);
@@ -38,6 +40,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
     /**
      * Load the glob pattern from a .properties file
      */
+    @Test
     public void testGetProperties() throws Exception {
         Properties props = new Properties();
         InputStream properties = this.getClass().getResourceAsStream("jobsFilenameFilter.properties");
@@ -57,6 +60,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob(".nfs*").
      * </pre>
      */
+    @Test
     public void testDotNfsStar() {
         filter.setGlob(".nfs*");
         assertTrue("accept('"+ds_store+"')", filter.accept(dir, ds_store));
@@ -69,6 +73,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob(".*").
      * </pre>
      */
+    @Test
     public void testDotStar() {
         filter.setGlob(".*");
         assertFalse("accept('"+ds_store+"')", filter.accept(dir, ds_store));
@@ -81,6 +86,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob("*").
      * </pre>
      */
+    @Test
     public void testStar() {
         filter.setGlob("*");
         assertFalse("accept('"+ds_store+"')", filter.accept(dir, ds_store));
@@ -93,6 +99,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob(null).
      * </pre>
      */
+    @Test
     public void testNullPattern() {
         filter.setGlob((String)null);
         assertTrue("null pattern: .nfs", filter.accept(dir, nfsExample));
@@ -104,6 +111,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob("").
      * </pre>
      */
+    @Test
     public void testEmptyPattern() {
         filter.setGlob("");
         assertTrue("empty pattern:", filter.accept(dir, nfsExample));
@@ -114,6 +122,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
         assertTrue("whitespace pattern", filter.accept(dir, gctExample));        
     }
     
+    @Test
     public void testListOfGlobs() {
         filter.setGlob(".lsf*,.nfs*");
         
@@ -129,6 +138,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
        JobResultsFilenameFilter.setGlob("* ").
      * </pre>
      */
+    @Test
     public void testWhitespace() {
         String ws0 = "space char in filename.txt";
         String ws1 = ".space char in filename.txt";

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -38,6 +38,7 @@ import org.genepattern.webservice.ParameterInfo;
 public class ParamGroupHelper {
     private static final Logger log = Logger.getLogger(ParamGroupHelper.class);
     
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final ParameterInfo formalParam;
@@ -58,6 +59,12 @@ public class ParamGroupHelper {
     private final boolean downloadExternalFiles;
 
     private ParamGroupHelper(final Builder in) {
+        if (in.mgr==null) {
+            this.mgr=org.genepattern.server.database.HibernateUtil.instance();
+        }
+        else {
+            this.mgr=in.mgr;
+        }
         if (in.gpConfig==null) {
             this.gpConfig=ServerConfigurationFactory.instance();
         }
@@ -86,7 +93,7 @@ public class ParamGroupHelper {
         this.filenameSuffix=in.filenameSuffix;
         this.downloadExternalFiles=in.downloadExternalFiles;
         try {
-            this.gpFilePaths=ParamListHelper.getListOfValues(HibernateUtil.instance(), gpConfig, jobContext, formalParam, param, downloadExternalFiles);
+            this.gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, formalParam, param, downloadExternalFiles);
         }
         catch (Exception e) {
             log.error(e);
@@ -147,6 +154,7 @@ public class ParamGroupHelper {
     }
     
     public static class Builder {
+        private HibernateSessionManager mgr=null;
         private GpConfig gpConfig=null;
         private GpContext jobContext=null;
         private ParameterInfoRecord parameterInfoRecord=null;
@@ -160,6 +168,10 @@ public class ParamGroupHelper {
         public Builder(final Param param) {
             this.param=param;
         }
+        public Builder mgr(final HibernateSessionManager mgr) {
+            this.mgr=mgr;
+            return this;
+        } 
         public Builder gpConfig(final GpConfig gpConfig) {
             this.gpConfig=gpConfig;
             return this;

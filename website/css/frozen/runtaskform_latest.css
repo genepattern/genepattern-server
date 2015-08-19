@@ -199,17 +199,6 @@ button.urlButton
     top: -5px;
 }
 
-/*.paramsTable td:first-child
-{
-    width: 15px;
-}
-
-.paramsTable tr:nth-child(odd)
-{
-    border-bottom: 1px solid #7898c7;
-}
-*/
-
 #submitJob
 {
     min-width: 820px;
@@ -738,4 +727,40 @@ table.missingTaskTable
     margin-bottom: 3px;
 }
 
+.paramsTable .ui-spinner-button
+{
+    margin: 3px 2px 2px 0;
+    height: 15px;
+    width: 14px;
+}
 
+.paramsTable .ui-spinner
+{
+    height: 25px;
+    padding: 0;
+}
+
+.paramsTable .ui-spinner-input
+{
+    vertical-align: top;
+    font-size: 12px;
+    height: 20px;
+    margin-right: 3px;
+}
+
+
+.numericDiv .ui-spinner
+{
+    margin-bottom: 7px;
+}
+
+.deleteBtn .ui-button-text
+{
+    font-size: 81%;
+}
+
+.deleteBtn
+{
+    margin-left: 5px;
+    vertical-align: top;
+}

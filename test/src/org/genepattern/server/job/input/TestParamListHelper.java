@@ -94,7 +94,7 @@ public class TestParamListHelper {
      */
     @Test
     public void ftpInput() throws Exception {
-        Record record=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, ftpVal); 
+        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
@@ -108,7 +108,7 @@ public class TestParamListHelper {
     
     @Test
     public void httpInput() throws Exception {
-        Record record=ParamListHelper.initFromValue(gpConfig, jobContext, formalParam, httpVal); 
+        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
@@ -125,7 +125,7 @@ public class TestParamListHelper {
         GpContext mockContext = initCachedContext();
         
         //final boolean downloadExternalUrl=true;
-        Record record=ParamListHelper.initFromValue(gpConfig, mockContext, formalParam, ftpVal); 
+        Record record=ParamListHelper.initFromValue(mgr, gpConfig, mockContext, formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", true, record.isCached);
@@ -149,7 +149,7 @@ public class TestParamListHelper {
     public void httpInput_not_cached() throws Exception {
         final GpContext mockContext = initCachedContext();
 
-        Record record=ParamListHelper.initFromValue(gpConfig, mockContext, formalParam, httpVal); 
+        Record record=ParamListHelper.initFromValue(mgr, gpConfig, mockContext, formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);

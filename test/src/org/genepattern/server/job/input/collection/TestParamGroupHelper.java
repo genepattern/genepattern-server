@@ -5,8 +5,11 @@ package org.genepattern.server.job.input.collection;
 
 import java.io.File;
 
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.MockGpFilePath;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
@@ -55,9 +58,14 @@ public class TestParamGroupHelper {
         final JobInfo jobInfo=new JobInfo();
         jobInfo.setJobNumber(jobNo);
         jobInfo.setUserId(userId);
+        
+        final HibernateSessionManager mgr=DbUtil.getTestDbSession();
+        final GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=GpContext.getContextForJob(jobInfo);
 
         final ParamGroupHelper pgh=new ParamGroupHelper.Builder(jobInput.getParam(new ParamId("inputList")))
+            .mgr(mgr)
+            .gpConfig(gpConfig)
             .jobContext(jobContext)
             .groupInfo(groupInfo)
             .downloadExternalFiles(false)

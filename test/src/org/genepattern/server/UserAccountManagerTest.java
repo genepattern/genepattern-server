@@ -3,16 +3,19 @@
  *******************************************************************************/
 package org.genepattern.server;
 
-import org.genepattern.server.auth.AuthenticationException;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.genepattern.server.auth.AuthenticationException;
+import org.junit.Test;
 
 /**
  * Unit tests for validating usernames upon account creation.
  * 
  * @author pcarr
  */
-public class UserAccountManagerTest extends TestCase {
+public class UserAccountManagerTest {
+
+    @Test
     public void testValidateUsernameExceptions() {
         String bogus = "\"test user\"";        
         try {
@@ -56,6 +59,7 @@ public class UserAccountManagerTest extends TestCase {
         }
     }
     
+    @Test
     public void testValidateUsername() {
         try {
             UserAccountManager.validateUsername("test@emailaddress.com");

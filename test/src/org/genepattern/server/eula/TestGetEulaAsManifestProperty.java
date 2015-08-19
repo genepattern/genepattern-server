@@ -3,11 +3,11 @@
  *******************************************************************************/
 package org.genepattern.server.eula;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
@@ -43,7 +43,7 @@ public class TestGetEulaAsManifestProperty {
     public void testGetEulaFromModule() {
         final String filename="testLicenseAgreement_v3.zip";
         TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(this.getClass(), filename);
-        Assert.assertNotNull("taskInfo==null", taskInfo);
+        assertNotNull("taskInfo==null", taskInfo);
         File licenseFile=FileUtil.getSourceFile(TestGetEulaAsManifestProperty.class, "gp_server_license.txt");
 
         GetEulaAsManifestProperty stub = new GetEulaAsManifestProperty();
@@ -52,7 +52,7 @@ public class TestGetEulaAsManifestProperty {
             stub.setEula(eulaIn, taskInfo);
         }
         catch (InitException e) {
-            Assert.fail(""+e.getLocalizedMessage());
+            fail(""+e.getLocalizedMessage());
         }
 
         final String userId="gp_user";
@@ -60,8 +60,8 @@ public class TestGetEulaAsManifestProperty {
         taskContext.setTaskInfo(taskInfo);
         
         final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
-        Assert.assertNotNull("eulas==null", eulas);
-        Assert.assertEquals("Expecting one EulaInfo", 1, eulas.size());
+        assertNotNull("eulas==null", eulas);
+        assertEquals("Expecting one EulaInfo", 1, eulas.size());
         final String expectedContent=EulaInfo.fileToString(licenseFile);
         TestEulaManagerImpl.assertEulaInfo(eulas, 0, "testLicenseAgreement", "urn:lsid:9090.gpdev.gpint01:genepatternmodules:812:3", "3", expectedContent);
     }
@@ -88,7 +88,7 @@ public class TestGetEulaAsManifestProperty {
             stub.setEulas(eulasIn, taskInfo);
         }
         catch (InitException e) {
-            Assert.fail(""+e.getLocalizedMessage());
+            fail(""+e.getLocalizedMessage());
         }
 
         final String userId="gp_user";
@@ -96,8 +96,8 @@ public class TestGetEulaAsManifestProperty {
         taskContext.setTaskInfo(taskInfo);
         
         final List<EulaInfo> eulas=stub.getEulasFromTask(taskInfo);
-        Assert.assertNotNull("eulas==null", eulas);
-        Assert.assertEquals("Expecting two EulaInfo", 2, eulas.size());
+        assertNotNull("eulas==null", eulas);
+        assertEquals("Expecting two EulaInfo", 2, eulas.size());
         final String gpLicenseContent=EulaInfo.fileToString(gpLicenseFile);
         final String exampleLicenseContent=EulaInfo.fileToString(exampleLicenseFile);
         

@@ -2,11 +2,9 @@ package org.genepattern.server.genepattern;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 
 import java.io.File;
@@ -72,8 +70,40 @@ public class ValueResolver {
         boolean isOptional = true;
         for(String sub : subs) {
             String paramName = sub.substring(1, sub.length()-1);
+
+            //check if this parameter is a listMode=cmd or listMode=cmd_opt parameter
+            ParameterInfo pInfo = parameterInfoMap.get(paramName);
+            ParamListHelper.ListMode listMode= null;
+            ParameterInfoRecord pRecord = null;
+            boolean cmdListMode = false;
+            boolean cmdOptListMode = false;
+            if(pInfo != null)
+            {
+                pRecord = new ParameterInfoRecord(pInfo);
+                listMode = ParamListHelper.initListMode(pRecord);
+                cmdOptListMode = listMode.equals(ParamListHelper.ListMode.CMD_OPT);
+                cmdListMode = listMode.equals(ParamListHelper.ListMode.CMD);
+            }
+
             String value = null;
-            if (dict.containsKey(paramName)) {
+            if(cmdListMode || cmdOptListMode)
+            {
+                JobInput jobInput = gpContext.getJobInput();
+                Param param = jobInput.getParam(paramName);
+
+                List<String> valueList = ValueResolver.getSubstitutedValues(param, pRecord) ;
+
+                //HACK: if there are multiple values for this parameter
+                //add each one of them and make the last item the value for the parameter
+                int index=0;
+                for(;index < valueList.size()-1;index++)
+                {
+                   String val = valueList.get(index);
+                   rval.add(val);
+                }
+                value = valueList.get(index);
+            }
+            else if (dict.containsKey(paramName)) {
                 value = dict.get(paramName);
             }
             else if (gpConfig != null) {
@@ -93,7 +123,7 @@ public class ValueResolver {
             if (paramInfo != null) {
                 isOptional = paramInfo.isOptional();
                 String optionalPrefix = paramInfo._getOptionalPrefix();
-                if (value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                if(!cmdOptListMode && value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
                     if (optionalPrefix.endsWith("\\ ")) {
                         //special-case: if optionalPrefix ends with an escaped space, don't split into two args
                         value = optionalPrefix.substring(0, optionalPrefix.length()-3) + value;
@@ -250,5 +280,68 @@ public class ValueResolver {
             }
         }
         return paramValueMap;
+    }
+
+    /*
+     * Constructs the cmd line string for this parameter
+     */
+    public static List<String> getSubstitutedValues(final Param param, final ParameterInfoRecord pRecord)
+    {
+        List<String> substitutedValues = new ArrayList<String>();
+
+        if(param == null)
+        {
+            throw new IllegalArgumentException("param==null");
+        }
+
+        if(pRecord == null)
+        {
+            throw new IllegalArgumentException("pRecord==null");
+        }
+
+        String separator = "";
+        ParamListHelper.ListMode listMode = ParamListHelper.initListMode(pRecord);
+        if(listMode.equals(ParamListHelper.ListMode.CMD))
+        {
+            separator = (String) pRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE_SEP);
+            if(separator == null)
+            {
+                separator = ",";
+            }
+        }
+
+        String prefix= "";
+        if(listMode.equals(ParamListHelper.ListMode.CMD_OPT))
+        {
+            prefix = (String) pRecord.getFormal().getAttributes().get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]);
+        }
+
+        List<ParamValue> values = param.getValues();
+        String substitutedValue = "";
+        for(int i=0;i<values.size();i++)
+        {
+            final ParamValue value = values.get(i);
+
+            if(i>0)
+            {
+                substitutedValue += separator;
+            }
+
+            substitutedValue += prefix + value.getValue();
+
+            //if listMode=CMD_OPT then add each substituted value separately
+            if(listMode.equals(ParamListHelper.ListMode.CMD_OPT))
+            {
+                substitutedValues.add(substitutedValue);
+                substitutedValue = "";
+            }
+        }
+
+        if(!listMode.equals(ParamListHelper.ListMode.CMD_OPT))
+        {
+            substitutedValues.add(substitutedValue);
+        }
+
+        return substitutedValues;
     }
 }

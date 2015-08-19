@@ -50,39 +50,44 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
     private boolean passive=true;
     private int defaultTimeout_ms=60*1000; //60 seconds
 
-    protected FileTransferClient initFtpClient(final URL fromUrl) throws ListFtpDirException {
-        final String host=fromUrl.getHost();
-        final FileTransferClient ftp = new FileTransferClient();
+    public FileTransferClient initFtpClient(final URL fromUrl) throws FTPException, IOException, ListFtpDirException {
+        FileTransferClient ftpClient = null;
         boolean error=false;
         try {
-            ftp.setRemoteHost(host);
-            ftp.setUserName(ftpUsername);
-            ftp.setPassword(ftpPassword);
-            ftp.setTimeout(defaultTimeout_ms);
-            ftp.connect();
-            ftp.setContentType(FTPTransferType.BINARY);
+            ftpClient = new FileTransferClient();
+            final String host=fromUrl.getHost();
+            ftpClient.setRemoteHost(host);
+            ftpClient.setUserName(ftpUsername);
+            ftpClient.setPassword(ftpPassword);
+            ftpClient.setTimeout(defaultTimeout_ms);
+            ftpClient.connect();
+            ftpClient.setContentType(FTPTransferType.BINARY);
             if (passive) {
-                ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);
+                ftpClient.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.PASV);
             }
             else {
-                ftp.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.ACTIVE);
+                ftpClient.getAdvancedFTPSettings().setConnectMode(FTPConnectMode.ACTIVE);
             }
         }
         catch (FTPException e) {
             error=true;
-            log.debug("Error initializing connection to "+fromUrl);
-            throw new ListFtpDirException("Error initializing connection to "+fromUrl);
+            throw e;
         }
         catch (IOException e) {
             error=true;
-            log.debug("Error connecting to "+fromUrl, e);
-            throw new ListFtpDirException("Error connecting to "+fromUrl);
+            throw e;
+        }
+        catch (Throwable t) {
+            error=true;
+            final String msg="Error connecting to "+fromUrl+", "+t.getLocalizedMessage();
+            log.debug(msg, t);
+            throw new ListFtpDirException(msg, t);            
         }
         finally {
-            if (error) {
-                if (ftp.isConnected()) {
+            if (error && ftpClient != null) {
+                if (ftpClient.isConnected()) {
                     try {
-                        ftp.disconnect();
+                        ftpClient.disconnect();
                     }
                     catch (Throwable t) {
                         log.error("Error disconnecting ftp client, fromUrl="+fromUrl, t);
@@ -90,7 +95,7 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
                 }
             }
         }
-        return ftp;
+        return ftpClient;
     }
 
     protected URL initUrl(String str) throws ListFtpDirException {
@@ -106,15 +111,30 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
     @Override
     public List<FtpEntry> listFiles(String ftpDirUrl, DirFilter filter) throws ListFtpDirException {
         URL url = initUrl(ftpDirUrl);
-        FileTransferClient ftpClient=initFtpClient(url);
+        FileTransferClient ftpClient=null;
         try {
+            ftpClient=initFtpClient(url);
             FTPFile[] ftpFiles=ftpClient.directoryList(url.getPath());
             return asFilesToDownload(filter, ftpDirUrl, ftpFiles);
         }
+        catch (ListFtpDirException e) {
+            throw e;
+        }
         catch (Throwable t) {
-            log.error("Error listing ftpDir="+ftpDirUrl, t);
-            throw new ListFtpDirException("Error listing ftpDir="+ftpDirUrl);
-        }        
+            final String msg="Error listing ftpDir="+ftpDirUrl+", "+t.getLocalizedMessage();
+            log.error(msg, t);
+            throw new ListFtpDirException(msg, t);
+        }
+        finally {
+            if (ftpClient != null) {
+                try {
+                    ftpClient.disconnect();
+                }
+                catch (Throwable t) {
+                    log.error("Error in ftpClient.disconnect(), ftpDir="+ftpDirUrl, t);
+                }
+            } 
+        }
     }
 
     protected FtpEntry initFtpEntry(final String ftpParentDir, final FTPFile ftpFile) {

@@ -3,17 +3,20 @@
  *******************************************************************************/
 package org.genepattern.server.auth;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit test the XmlGroupManager class.
  * 
  * @author pcarr
  */
-public class XmlGroupManagerTest extends TestCase {
+public class XmlGroupManagerTest {
     private XmlGroupMembership groupManager = null;
 
     private InputStream input = null;
@@ -31,18 +34,19 @@ public class XmlGroupManagerTest extends TestCase {
     private String devGroup = "gp-dev";
     private String moduleGroup = "module-dev";
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        
+    @Before
+    public void setUp() throws Exception {
         input = this.getClass().getResourceAsStream("userGroups.xml");
         groupManager = new XmlGroupMembership(input);
     }
     
+    @Test
     public void testWildcardGroups() {
         assertTrue("'test' user is in wildcard (*) group", groupManager.getGroups(test).contains("public"));
         assertTrue("'notInDb' user is in wildcard (*) group", groupManager.getGroups(notInDb).contains("public"));
     }
     
+    @Test
     public void testAdministratorsGroup() {
         assertTrue("isMember(admin, admin)", groupManager.isMember(admin, adminGroup));
         assertTrue("isMember(gp_admin, admin)", groupManager.isMember(gp_admin, adminGroup));
@@ -53,6 +57,7 @@ public class XmlGroupManagerTest extends TestCase {
         assertFalse("isMember(notInDb, admin)", groupManager.isMember(notInDb, adminGroup));
     }
     
+    @Test
     public void testNonExistentGroup() {
         String n = "not_in_file";
         assertFalse("isMember(admin, n)", groupManager.isMember(admin, n));
@@ -63,6 +68,7 @@ public class XmlGroupManagerTest extends TestCase {
         assertFalse("isMember(notInDb, n)", groupManager.isMember(notInDb, n));
     }
     
+    @Test
     public void testGetGroups() {
         Set<String> groups = groupManager.getGroups(jgould);
         assertEquals("jgould is in 3 groups", groups.size(), 3);

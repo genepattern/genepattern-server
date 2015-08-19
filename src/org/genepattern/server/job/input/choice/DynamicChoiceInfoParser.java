@@ -155,16 +155,6 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         }
         
         initChoiceInfoEntriesFromFtp(param, ftpDir, choiceInfo, dirFilter);
-
-        // must set the status flag
-        if (choiceInfo.getChoices().size()==0) {
-            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
-        }
-        else {
-            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
-            choiceInfo.setStatus(Flag.OK, statusMessage);
-        }
-        
         return choiceInfo;
     }
     
@@ -173,6 +163,8 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
         List<FtpEntry> ftpEntries=null;
         try {
             ftpEntries=ftpDirLister.listFiles(ftpDir, dirFilter);
+            final String statusMessage="Initialized "+choiceInfo.getChoices().size()+" choices from "+ftpDir+" on "+new Date();
+            choiceInfo.setStatus(Flag.OK, statusMessage);
         }
         catch (ListFtpDirException e) {
             log.debug("dynamic drop-down error, param="+param.getName()+", ftpDir="+ftpDir, e);
@@ -190,13 +182,15 @@ public class DynamicChoiceInfoParser implements ChoiceInfoParser {
             choiceInfo.setStatus(Flag.ERROR, errorMessage);
             return choiceInfo;
         }
-        
+
         // add entries to choiceInfo
         for(final FtpEntry ftpEntry : ftpEntries) {
             final Choice choice=new Choice(ftpEntry.getName(), ftpEntry.getValue(), ftpEntry.isDir());
             choiceInfo.add(choice);
         }
-        
+        if (choiceInfo.getChoices().size()==0) {
+            choiceInfo.setStatus(Flag.WARNING, "No matching files in "+ftpDir);
+        } 
         return choiceInfo;
     }
 }

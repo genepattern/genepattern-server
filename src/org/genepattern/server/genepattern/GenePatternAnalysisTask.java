@@ -144,10 +144,7 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamListHelper;
-import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.*;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -802,7 +799,7 @@ public class GenePatternAnalysisTask {
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file drop-down param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);
@@ -811,7 +808,7 @@ public class GenePatternAnalysisTask {
                 }
                 else if (isCachedValue) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(gpConfig, jobContext, pinfo.getValue());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, pinfo.getValue());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);
@@ -3097,7 +3094,10 @@ public class GenePatternAnalysisTask {
                             break;
                         }
                     }
-                    if (!foundActual) {
+
+                    String listMode = hmAttributes != null ? (String)hmAttributes.get(NumValues.PROP_LIST_MODE) : null;
+                    //only verify if list mode is not CMD or CMD_OPT
+                    if (!foundActual && hmAttributes != null && listMode != null && !listMode.equalsIgnoreCase("cmd") && !listMode.equalsIgnoreCase("cmd_opt")) {
                         if (actualValue != null && actualValue.length() > 0) {
                             // only a problem if it's not an empty string
                             vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"

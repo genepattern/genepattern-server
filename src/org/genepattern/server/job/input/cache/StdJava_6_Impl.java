@@ -10,14 +10,15 @@ import java.net.URLConnection;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 
 public final class StdJava_6_Impl extends CachedFtpFile {
     private static Logger log = Logger.getLogger(StdJava_6_Impl.class);
     // this is the same default as edtFTP
     final public static int DEFAULT_BUFFER_SIZE = 16384;
 
-    public StdJava_6_Impl(final GpConfig gpConfig, final String urlString) {
-        super(gpConfig, urlString);
+    public StdJava_6_Impl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        super(mgr, gpConfig, urlString);
     }
 
     public boolean downloadFile(final URL fromUrl, final File toFile, final boolean deleteExisting, final int connectTimeout_ms, final int readTimeout_ms) 

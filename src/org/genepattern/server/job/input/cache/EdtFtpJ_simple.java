@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
 
 import com.enterprisedt.net.ftp.FTPException;
 import com.enterprisedt.net.ftp.FileTransferClient;
 
 public final class EdtFtpJ_simple extends CachedFtpFile {
-    public EdtFtpJ_simple(final GpConfig gpConfig, final String urlString) {
-        super(gpConfig, urlString);
+    public EdtFtpJ_simple(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        super(mgr, gpConfig, urlString);
     }
 
     @Override

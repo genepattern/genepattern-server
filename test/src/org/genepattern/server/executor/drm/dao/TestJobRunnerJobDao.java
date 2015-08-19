@@ -73,8 +73,10 @@ public class TestJobRunnerJobDao {
     }
     
     @After
-    public void tearDown() {
-        AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
+    public void tearDown() throws DbException {
+        if (gpJobNo != null) {
+            AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
+        }
     }
     
     /**

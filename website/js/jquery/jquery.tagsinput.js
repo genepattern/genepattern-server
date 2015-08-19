@@ -232,7 +232,7 @@
 			$(data.holder).css('min-height',settings.height);
 			$(data.holder).css('height','100%');
 	
-			if ($(data.real_input).val()!='') { 
+			if ($(data.real_input).val() != undefined && $(data.real_input).val()!='') {
 				$.fn.tagsInput.importTags($(data.real_input),$(data.real_input).val());
 			}		
 			if (settings.interactive) { 

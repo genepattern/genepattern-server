@@ -57,7 +57,7 @@ public class TestJobOutputDao {
     }
     
     @After
-    public void tearDown() {
+    public void tearDown() throws DbException {
         if (gpJobNo != null) {
             AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
         }

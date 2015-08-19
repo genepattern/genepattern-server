@@ -972,6 +972,7 @@ public class RunTaskServlet extends HttpServlet
         final boolean initDropdown=false;
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
+        parameter.addNumRangeInfo(pinfo);
         parameter.addGroupInfo(pinfo);
         parameter.initChoice(request, taskInfo, pinfo, initDropdown);
         return parameter;

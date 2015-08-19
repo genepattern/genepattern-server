@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.EulaInfo;
@@ -59,7 +60,7 @@ public class TestRecordEulaToDb {
         return eula;
     }
     
-    private void record(final String userId, final EulaInfo eula) {
+    private void record(final String userId, final EulaInfo eula) throws DbException {
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
         DbUtil.addUserToDb(gpConfig, mgr, userId);
         RecordEulaToDb recorder = new RecordEulaToDb(mgr);
@@ -106,7 +107,7 @@ public class TestRecordEulaToDb {
      * followed by another check (should be true).
      */
     @Test
-    public void testIntegration() {
+    public void testIntegration() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_01");
 
@@ -139,7 +140,7 @@ public class TestRecordEulaToDb {
     }
 
     @Test
-    public void testDateRecorded() {
+    public void testDateRecorded() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_02");
         final RecordEula recorder = new RecordEulaToDb(mgr);
@@ -331,7 +332,7 @@ public class TestRecordEulaToDb {
      * Saving the same record twice should have no effect.
      */
     @Test
-    public void testIdempotency() {
+    public void testIdempotency() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_03");
@@ -375,7 +376,7 @@ public class TestRecordEulaToDb {
      * Start the hibernate transaction before calling recordEula method.
      */
     @Test
-    public void testRecordEulaInTransaction() {
+    public void testRecordEulaInTransaction() throws DbException {
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_04");
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
 
@@ -440,7 +441,7 @@ public class TestRecordEulaToDb {
     
     //remote record tests
     @Test
-    public void testAddToRemoteQueue() {
+    public void testAddToRemoteQueue() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_05");
@@ -491,7 +492,7 @@ public class TestRecordEulaToDb {
      * Test case, for POSTing a single eula to two different remoteUrl.
      */
     @Test
-    public void testAddToRemoteQueue_twoRemoteUrls() {
+    public void testAddToRemoteQueue_twoRemoteUrls() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_06");
@@ -541,7 +542,7 @@ public class TestRecordEulaToDb {
     }
     
     @Test
-    public void testRemoveFromRemoteQueue() {
+    public void testRemoveFromRemoteQueue() throws DbException {
         final String remoteUrl="http://vgpweb01.broadinstitute.org:3000/eulas";
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
@@ -581,7 +582,7 @@ public class TestRecordEulaToDb {
      * should throw an exception if there is no entry in the 'eula_record' table.
      */
     @Test
-    public void testAddToRemoteQueue_UserHasNotAgreed() {
+    public void testAddToRemoteQueue_UserHasNotAgreed() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //user_04 hasn't agreed
         final String userId=DbUtil.addUserToDb(gpConfig, mgr, "test_08");
@@ -598,7 +599,7 @@ public class TestRecordEulaToDb {
     }
     
     @Test
-    public void testUpdateRemoteQueue() {
+    public void testUpdateRemoteQueue() throws DbException {
         final EulaInfo eula = init("urn:lsid:8080.gp-trunk-dev.120.0.0.1:genepatternmodules:303:5");
         //warning: can't use the same user id as another test, because we are running against the same DB for all tests
         final String userId="test_09";
