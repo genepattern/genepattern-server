@@ -97,11 +97,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.unknownPipeline_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.unknownPipeline_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.viewPipeline_jsp</servlet-name>
         <servlet-class>org.apache.jsp.viewPipeline_jsp</servlet-class>
     </servlet>
@@ -214,11 +209,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
         <url-pattern>/sql.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.unknownPipeline_jsp</servlet-name>
-        <url-pattern>/unknownPipeline.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
