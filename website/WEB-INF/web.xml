@@ -62,11 +62,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.internalError_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.internalError_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.makePipeline_jsp</servlet-name>
         <servlet-class>org.apache.jsp.makePipeline_jsp</servlet-class>
     </servlet>
@@ -194,11 +189,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.installNav_jsp</servlet-name>
         <url-pattern>/installNav.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.internalError_jsp</servlet-name>
-        <url-pattern>/internalError.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
