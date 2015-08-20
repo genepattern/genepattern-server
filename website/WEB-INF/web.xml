@@ -12,16 +12,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.askInclude_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.askInclude_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.cannotRunPipeline_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.cannotRunPipeline_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
         <servlet-class>org.apache.jsp.createReport_jsp</servlet-class>
     </servlet>
@@ -127,11 +117,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.runPipeline_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.runPipeline_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.runTaskMissingParams_jsp</servlet-name>
         <servlet-class>org.apache.jsp.runTaskMissingParams_jsp</servlet-class>
     </servlet>
@@ -179,16 +164,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
         <url-pattern>/addTask.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.askInclude_jsp</servlet-name>
-        <url-pattern>/askInclude.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.cannotRunPipeline_jsp</servlet-name>
-        <url-pattern>/cannotRunPipeline.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -294,11 +269,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
         <url-pattern>/requestReport.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.runPipeline_jsp</servlet-name>
-        <url-pattern>/runPipeline.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
