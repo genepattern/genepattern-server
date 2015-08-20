@@ -87,11 +87,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.runTaskMissingParams_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.runTaskMissingParams_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
         <servlet-class>org.apache.jsp.saveTask_jsp</servlet-class>
     </servlet>
@@ -209,11 +204,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
         <url-pattern>/requestReport.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.runTaskMissingParams_jsp</servlet-name>
-        <url-pattern>/runTaskMissingParams.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
