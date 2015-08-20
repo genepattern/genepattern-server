@@ -82,11 +82,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.provenanceFinder_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.provenanceFinder_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
         <servlet-class>org.apache.jsp.requestReport_jsp</servlet-class>
     </servlet>
@@ -209,11 +204,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
         <url-pattern>/navbarHead.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.provenanceFinder_jsp</servlet-name>
-        <url-pattern>/provenanceFinder.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
