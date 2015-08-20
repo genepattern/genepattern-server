@@ -27,11 +27,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.getParkedFile_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.getParkedFile_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
         <servlet-class>org.apache.jsp.getTaskDoc_jsp</servlet-class>
     </servlet>
@@ -94,11 +89,6 @@
     <servlet>
         <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
         <servlet-class>org.apache.jsp.navbarHead_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.parkFile_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.parkFile_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -177,11 +167,6 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.getParkedFile_jsp</servlet-name>
-        <url-pattern>/getParkedFile.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
         <url-pattern>/getTaskDoc.jsp</url-pattern>
     </servlet-mapping>
@@ -244,11 +229,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
         <url-pattern>/navbarHead.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.parkFile_jsp</servlet-name>
-        <url-pattern>/parkFile.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
