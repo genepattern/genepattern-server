@@ -22,11 +22,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.getCatalog_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.getCatalog_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
         <servlet-class>org.apache.jsp.getFile_jsp</servlet-class>
     </servlet>
@@ -174,11 +169,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
         <url-pattern>/footer.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.getCatalog_jsp</servlet-name>
-        <url-pattern>/getCatalog.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
