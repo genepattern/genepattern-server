@@ -2734,7 +2734,8 @@ function loadJobStatus(jobId, forceVisualizers) {
 
     var openNewWindow = getURLParameter("openNewWindow");
 
-    if (openNewWindow) {
+    if (openNewWindow == "true") {
+        console.log("open new window is: " + openNewWindow);
         openNewWindow = "&openNewWindow=true";
     }
     else {
@@ -2750,12 +2751,7 @@ function loadJobStatus(jobId, forceVisualizers) {
         visualizerAppend = openVisualizers;
     }
 
-    var openNewWindowAppend = "";
-    if (openNewWindow) {
-        openNewWindowAppend = openNewWindow;
-    }
-
-    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend + openNewWindowAppend);
+    history.pushState(null, document.title, location.protocol + "//" + location.host + location.pathname + "?jobid=" + jobId + visualizerAppend + openNewWindow);
 
     $.ajax({
         type: "GET",
