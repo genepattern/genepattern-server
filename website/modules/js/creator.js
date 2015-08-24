@@ -1566,6 +1566,33 @@ function changeParameterType(element) {
             + "</a>");
 
     }
+    else
+    {
+        var listModeRow = $("<tr class='listMode'/>");
+        var listModeTd = $("<td/>");
+        listModeRow.append(listModeTd);
+        listModeTd.append("List mode: <br/>");
+        var listMode = $("<select name='p_list_mode'>\
+                <option value='cmd'>List</option>\
+                <option value='cmd_opt'>Get-opt style list</option>\
+            </select> ");
+        listMode.change(function () {
+            //hide choices info if this is a directory or password entry
+        });
+
+        listModeTd.append(listMode);
+        listMode.multiselect({
+            header: false,
+            multiple: false,
+            noneSelectedText: "Specify list mode",
+            selectedList: 1, // 0-based index
+            position: {
+                my: 'left bottom',
+                at: 'left top'
+            }
+        });
+        typeDetailsTable.append(listModeRow);
+    }
 }
 
 function updatemodulecategories()
@@ -2138,6 +2165,13 @@ function loadParameterInfo(parameters)
             newParameter.find('input[name="unlimitedNumValues"]').prop('checked', true);
         }
 
+        if(parameters[i].listMode !== undefined && parameters[i].listMode != null
+            && parameters[i].listMode.length > 0)
+        {
+            newParameter.find("select[name='p_list_mode']").val(parameters[i].listMode);
+            newParameter.find("select[name='p_list_mode']").multiselect('refresh');
+        }
+
         if(parameters[i].groupInfo != undefined && parameters[i].groupInfo !== null)
         {
             var groupInfo = parameters[i].groupInfo;
@@ -2231,6 +2265,13 @@ function getParametersJSON()
         var mode = "";
         var prefix = "";
         var flag = "";
+        var listMode = "";
+
+        if($(this).find('select[name="p_list_mode"]').val() !== undefined
+            && $(this).find('select[name="p_list_mode"]').val() !== null)
+        {
+            listMode = $(this).find('select[name="p_list_mode"]').val();
+        }
 
         if($(this).find('select[name="fileformat"]').val() !== undefined
             && $(this).find('select[name="fileformat"]').val() !== null)
@@ -2340,6 +2381,11 @@ function getParametersJSON()
             {
                 type = "TEXT";
             }
+        }
+
+        if(listMode != undefined && listMode != null && listMode.length > 0)
+        {
+            $.extend(parameter, { "listMode": listMode });
         }
 
         if($(this).find('input[name="p_prefix"]').is(":checked"))
@@ -2649,12 +2695,19 @@ jQuery(document).ready(function() {
         }
     });
 
-    $("input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("keyup", function()
+    $("input[name='p_name'], input[name='p_flag']").live("keyup", function()
     {
         var parameterParent = $(this).parents(".parameter");
 
         updateparameter(parameterParent);
     });
+
+    $("#parameters").on("click","input[name='p_prefix']", (function()
+    {
+        var parameterParent = $(this).parents(".parameter");
+
+        updateparameter(parameterParent);
+    }));
 
 
     $('#commandpreview').children().button().click(function()
