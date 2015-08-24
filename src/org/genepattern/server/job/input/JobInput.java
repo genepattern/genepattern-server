@@ -74,6 +74,14 @@ public class JobInput {
         addValue(new ParamId(name), value, GroupId.EMPTY);
     }
     
+    public void addValue(final ParamId paramId, final ParamValue value) {
+        addValue(paramId, value, GroupId.EMPTY);
+    }
+    
+    public void addValue(final ParamId paramId, final ParamValue value, final GroupId groupId) {
+        addValue(paramId, value, groupId, false);
+    } 
+    
     public void addValue(final String name, final String value, final GroupId groupId) {
         addValue(new ParamId(name), value, groupId);
     }
@@ -102,6 +110,10 @@ public class JobInput {
     }
 
     public void addValue(final ParamId id, final String value, final GroupId groupId, final boolean batchParam) {
+        addValue(id, new ParamValue(value), groupId, batchParam);
+    }
+
+    public void addValue(final ParamId id, final ParamValue value, final GroupId groupId, final boolean batchParam) {
         if (id==null) {
             throw new IllegalArgumentException("id==null");
         }
@@ -119,7 +131,7 @@ public class JobInput {
             param=new Param(id, batchParam);
             params.put(id, param);
         }
-        param.addValue(groupId, new ParamValue(value));
+        param.addValue(groupId, value);
     }
 
     
