@@ -319,9 +319,10 @@ public class TestDynamicChoiceInfoParser {
     @Test
     @SuppressWarnings("unchecked")
     public void testDynamicDropdownGsea() {
+        final String ftpUrl="ftp://gseaftp.broadinstitute.org/pub/gsea/annotations/";
         final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam(
                 "input.file", 
-                "ftp://gseaftp.broadinstitute.org/pub/gsea/annotations/");
+                ftpUrl);
         final String choiceDirFilter="*.chip";
         pinfo.getAttributes().put("choiceDirFilter", choiceDirFilter);
 
@@ -338,7 +339,7 @@ public class TestDynamicChoiceInfoParser {
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        assertEquals("num choices", 144, choiceInfo.getChoices().size());
+        assertEquals("num choices from "+ftpUrl, 145, choiceInfo.getChoices().size());
     }
 
     /**
