@@ -13,7 +13,17 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+ import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -21,14 +31,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.server.*;
+import org.genepattern.server.DbException;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
@@ -600,10 +613,11 @@ public class JobsResource {
             final @PathParam("jobId") String jobId
     ) {
 
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         final GpContext jobContext=Util.getJobContext(request, jobId);
         try {
             final String gpUrl=UrlUtil.getGpUrl(request);
-            final Status status = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
+            final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
 
             final JSONObject jsonObj = status.toJsonObj();
             final String jsonStr = jsonObj.toString(2);
@@ -654,11 +668,12 @@ public class JobsResource {
     @GET
     @Path("/{jobId}/code")
     public Response jobCode(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId, @QueryParam("language") String language) {
-        GpContext userContext = Util.getUserContext(request);
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        final GpContext userContext = Util.getUserContext(request);
 
         try {
             int jobNumber = Integer.parseInt(jobId);
-            JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+            JobInfo jobInfo = new AnalysisDAO(mgr).getJobInfo(jobNumber);
             AnalysisJob job = new AnalysisJob(userContext.getUserId(), jobInfo);
             String filename = jobId + CodeGeneratorUtil.getFileExtension(language);
 
@@ -684,6 +699,9 @@ public class JobsResource {
         catch (Exception e) {
             log.error("Error viewing code for job " + jobId, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+        finally {
+            mgr.closeCurrentSession();
         }
     }
 
@@ -776,7 +794,6 @@ public class JobsResource {
         String cookie = request.getHeader("Cookie");
 
         try {
-            AnalysisDAO dao = new AnalysisDAO();
             int id = Integer.parseInt(jobId);
 
             JobInfoManager manager = new JobInfoManager();
@@ -823,17 +840,18 @@ public class JobsResource {
                                    @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
                                    @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles
     ) {
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         final GpContext userContext = Util.getUserContext(request);
 
         try {
             final String gpUrl=UrlUtil.getGpUrl(request);
             // Get the number of recent jobs to show
-            UserDAO userDao = new UserDAO();
+            UserDAO userDao = new UserDAO(mgr);
             Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
             int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(props, UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
 
             // Get the recent jobs
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             int numProcessingJobs=dao.getNumProcessingJobsByUser(userContext.getUserId());
             List<JobInfo> recentJobs = dao.getRecentJobsForUser(userContext.getUserId(), recentJobsToShow, Analysis.JobSortOrder.SUBMITTED_DATE);
 
@@ -863,6 +881,9 @@ public class JobsResource {
         catch (Throwable t) {
             String message = "Error creating JSON representation for recent jobs: " + t.getLocalizedMessage();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
+        }
+        finally {
+            mgr.closeCurrentSession();
         }
     }
 
@@ -931,13 +952,14 @@ public class JobsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/incomplete")
     public Response isJobRunning(@Context HttpServletRequest request) {
-        GpContext userContext = Util.getUserContext(request);
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        final GpContext userContext = Util.getUserContext(request);
         final String userId = userContext.getUserId();
 
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
         try {
             // Get the map of the latest tasks
-            AnalysisDAO analysisDao = new AnalysisDAO();
+            AnalysisDAO analysisDao = new AnalysisDAO(mgr);
             List<JobInfo> jobs = analysisDao.getIncompleteJobsForUser(userId);
 
             // Return the JSON object
@@ -954,7 +976,7 @@ public class JobsResource {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }

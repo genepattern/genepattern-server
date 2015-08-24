@@ -27,7 +27,7 @@ import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.JavascriptHandler;
@@ -122,16 +122,18 @@ public class JobInfoManager {
     }
 
     public static TaskInfo getTaskInfo(int taskId, boolean closeDbSession) throws TaskIDNotFoundException {
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+
         TaskInfo taskInfo = null;
         try {
             //calls HibernateUtil.beginTransaction...
-            AdminDAO ds = new AdminDAO();
+            AdminDAO ds = new AdminDAO(mgr);
             taskInfo = ds.getTask(taskId);
             return taskInfo;
         } finally {
             //...must close the session here, or in an enclosing method
             if (closeDbSession) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -146,7 +148,8 @@ public class JobInfoManager {
      * @return null if the job is deleted.
      */
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
-        AnalysisDAO analysisDao = new AnalysisDAO();
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        AnalysisDAO analysisDao = new AnalysisDAO(mgr);
         JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
         if (jobInfo == null) {
             return null;
@@ -160,13 +163,14 @@ public class JobInfoManager {
     }
     
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, JobInfo jobInfo, boolean includeStatus, String gpUrl) {
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
 
-        AnalysisDAO analysisDao = new AnalysisDAO();
-        UserDAO userDao = new UserDAO();
+        AnalysisDAO analysisDao = new AnalysisDAO(mgr);
+        UserDAO userDao = new UserDAO(mgr);
         boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
         String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
 
-        AdminDAO adminDao = new AdminDAO();
+        AdminDAO adminDao = new AdminDAO(mgr);
 
         JobInfoWrapper jobInfoWrapper = processChildren(
                 (JobInfoWrapper) null,
@@ -236,7 +240,7 @@ public class JobInfoManager {
             GpContext jobContext=new GpContext.Builder()
                 .jobInfo(jobInfo)
             .build();
-            Status jobStatus = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
+            Status jobStatus = new JobStatusLoaderFromDb(org.genepattern.server.database.HibernateUtil.instance(), gpUrl).loadJobStatus(jobContext);
             jobInfoWrapper.setJobStatus(jobStatus);
         }
 
@@ -263,6 +267,7 @@ public class JobInfoManager {
         UserProp userProp = userDao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS);
         String javaFlags = userProp.getValue();
         if (javaFlags == null) {
+            @SuppressWarnings("deprecation")
             GpContext userContext = GpContext.getContextForUser(userId);
             javaFlags = ServerConfigurationFactory.instance().getGPProperty(userContext, RunVisualizerConstants.JAVA_FLAGS_VALUE);
         }
