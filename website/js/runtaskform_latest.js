@@ -1218,8 +1218,7 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
 
     var textValChange= function(element)
     {
-        var valueList = [];
-        valueList.push($(element).val());
+        var valueList = $(element).val().split(",");
 
         var paramName = $(element).data("pname");
 
@@ -1248,7 +1247,7 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
     //select initial values if there are any
     if (initialValuesList !== undefined && initialValuesList !== null) {
         var inputFieldValue = "";
-        for (v = 0; v < initialValuesList.length; v++) {
+        for (var v = 0; v < initialValuesList.length; v++) {
             inputFieldValue += initialValuesList[v];
 
             // add a comma between items in this list

@@ -68,6 +68,8 @@ public class ValueResolver {
         }
         String substitutedValue = arg;
         boolean isOptional = true;
+        List<String> valueList = new ArrayList<String>();
+
         for(String sub : subs) {
             String paramName = sub.substring(1, sub.length()-1);
 
@@ -91,17 +93,13 @@ public class ValueResolver {
                 JobInput jobInput = gpContext.getJobInput();
                 Param param = jobInput.getParam(paramName);
 
-                List<String> valueList = ValueResolver.getSubstitutedValues(param, pRecord) ;
+                List<String> results = ValueResolver.getSubstitutedValues(param, pRecord) ;
 
-                //HACK: if there are multiple values for this parameter
-                //add each one of them and make the last item the value for the parameter
-                int index=0;
-                for(;index < valueList.size()-1;index++)
+                if(results != null && results.size() > 0)
                 {
-                   String val = valueList.get(index);
-                   rval.add(val);
+                    value = results.remove(0);
+                    valueList.addAll(results);
                 }
-                value = valueList.get(index);
             }
             else if (dict.containsKey(paramName)) {
                 value = dict.get(paramName);
@@ -155,6 +153,16 @@ public class ValueResolver {
         else {
             rval.add(substitutedValue);
         }
+
+        //HACK: if there are multiple values for this parameter
+        //add the remaining values
+        int index=0;
+        for(;index < valueList.size();index++)
+        {
+            String val = valueList.get(index);
+            rval.add(val);
+        }
+
         return rval;
     }
 
