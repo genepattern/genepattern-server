@@ -17,7 +17,6 @@ import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobReceipt;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -38,13 +37,6 @@ import org.genepattern.webservice.TaskInfo;
 public class JobInputHelper {
     final static private Logger log = Logger.getLogger(JobInputHelper.class);
     
-    final static public boolean isSet(final String in) {
-        if (in == null || in.length()==0) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Is the input value an external URL?
      * 
@@ -87,10 +79,6 @@ public class JobInputHelper {
     private final GpConfig gpConfig;
     private final BatchInputFileHelper batchInputFileHelper;
 
-    /** @deprecated - should pass in a valid GpConfig. */
-    public JobInputHelper(final GpContext userContext, final String lsid) {
-        this(org.genepattern.server.config.ServerConfigurationFactory.instance(), userContext, lsid);
-    }
     public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
         this(gpConfig, userContext, lsid, null);
     }
@@ -160,44 +148,6 @@ public class JobInputHelper {
      */
     public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
         this.batchInputFileHelper.addBatchValue(gpConfig, paramId, value);
-    }
-
-    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, boolean isBatch)
-    throws GpServerException 
-    {
-        addSingleOrBatchValue(pInfo.getName(), value, isBatch);
-        
-    }
-
-    public void addSingleOrBatchValue(final String pname, String value, boolean isBatch)
-    throws GpServerException 
-    {
-        addSingleOrBatchValue(pname, value, GroupId.EMPTY, isBatch);
-        
-    }
-
-    /**
-     * Add a value for a parameter which could be either a single or batch parameter
-     * @param pInfo - A ParameterInfo object
-     * @param value - The value to set the parameter identified by pInfo
-     * @param isBatch  - Whether the parameter is a batch parameter
-     */
-    public void addSingleOrBatchValue(final ParameterInfo pInfo, String value, final GroupId groupId, boolean isBatch)
-    throws GpServerException
-    {
-        addSingleOrBatchValue(pInfo.getName(), value, groupId, isBatch);
-    }
-
-    public void addSingleOrBatchValue(final String name, String value, final GroupId groupId, boolean isBatch)
-    throws GpServerException
-    {
-        if (isBatch) {
-            //TODO: implement support for groupId with batch values
-            batchInputFileHelper.addBatchValue(gpConfig, new ParamId(name), value);
-        }
-        else {
-            batchInputFileHelper.addValue(new ParamId(name), value, groupId);
-        }
     }
 
     /**
