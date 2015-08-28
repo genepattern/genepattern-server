@@ -252,9 +252,10 @@ public class JobInput {
      * @throws GpServerException
      */
     public int getNumBatchJobs() throws GpServerException {
-        int numJobs=1; //always run at least one job
+        int minJobs = 1;
+        int numJobs = -1; //always run at least one job
         for(final Param param : getBatchParams()) {
-            if (numJobs==1) {
+            if (numJobs == -1) {
                 numJobs=param.getNumValues();
             }
             else if (param.getNumValues()>1) {
@@ -264,9 +265,9 @@ public class JobInput {
                     throw new GpServerException("Number of batch parameters doesn't match");
                 }
             }
-            return numJobs;
         }
-        return numJobs;
+
+        return numJobs > minJobs ? numJobs : minJobs;
     }
     
 }
