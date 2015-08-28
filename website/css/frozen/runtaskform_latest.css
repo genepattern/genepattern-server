@@ -214,11 +214,12 @@ button.urlButton
 {
     vertical-align: bottom;
     padding: 9px 10px 10px 10px;
-    min-width: 570px;
+    min-width: 85%; /*550px;*/
     margin-bottom: 0;
     display: inline-block;
     white-space: normal;
     word-break: break-all;
+    float: left;
 }
 
 .fileDiv button img
@@ -521,18 +522,20 @@ hr
     font-weight: bold;
 }
 
-.fileDiv .batchBox {
+.batchBox {
 	float: right;
-	top: 0px;
+	top: 0;
 	position: relative;
 	margin-top: -10px;
-	padding: 0px;
+	padding: 0;
+    min-width: 10%;
+    margin-right: 0;
 }
 
-.fileDiv .batchBox label {
+.batchBox label {
 	font-size: 8pt !important;
 	background-image: none !important;
-	padding: 0px !important;
+	padding: 0 !important;
 }
 
 .fileDiv .ui-buttonset label.ui-corner-left {
@@ -603,6 +606,7 @@ span.drop-box
     padding: 8px 6px 6px 6px;
     white-space: normal;
     word-break: break-all;
+    width: 85%;
 }
 
 #otherOptionsMenu
@@ -640,7 +644,6 @@ span.drop-box
 {
     margin-top: 7px;
     margin-left: 10px;
-    margin-right: 10px;
 }
 
 div.tagsinput span.tag

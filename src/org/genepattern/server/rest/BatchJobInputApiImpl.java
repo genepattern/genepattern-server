@@ -50,7 +50,7 @@ public class BatchJobInputApiImpl implements JobInputApi {
                 ParamId paramId=entry.getKey();
                 Param param=entry.getValue();
                 if (param.isBatchParam()) {
-                    batchJobInput.addBatchDirectory(paramId, param.getValues().get(0).getValue());
+                    batchJobInput.addBatchValue(paramId, param.getValues().get(0).getValue());
                 }
                 else {
                     for(ParamValue pvalue : param.getValues()) {

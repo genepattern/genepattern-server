@@ -89,7 +89,11 @@ public class JobInput {
     public void addValue(final ParamId paramId, final String value, final GroupId groupId) {
         addValue(paramId, value, groupId, false);
     }
-    
+
+    public void addValue(final ParamId paramId, final String value, final boolean batchParam) {
+        addValue(paramId, value, GroupId.EMPTY, batchParam);
+    }
+
     public void addValue(final String name, final String value, final boolean batchParam) {
         if (name==null) {
             throw new IllegalArgumentException("name==null");

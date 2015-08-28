@@ -7,13 +7,13 @@
  * @param groupId
  * @param initialValuesList
  */
-function initChoiceDiv(parameterName, groupId, initialValuesList)
+function initChoiceDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var selectChoiceDiv = $("<div class='selectChoice' />");
     //check if there are predefined list of choices for this parameter
     var paramDetails = run_task_info.params[parameterName];
     var choiceInfo = paramDetails.choiceInfo;
-    return buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
+    return buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, enableBatch, initialValuesList);
 }
 
 /**
@@ -100,8 +100,55 @@ function getCustomChoices(choiceInfo, initialValues) {
     return custom;
 }
 
-function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList) {
+function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, enableBatch, initialValuesList) {
     var doLoadChoiceDiv=false;
+
+    // Create the single/batch run mode toggle
+    if (enableBatch) {
+        var batchBox = $("<div class='batchBox' title='A job will be launched for every value specified.'></div>");
+        // Add the checkbox
+        var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
+        batchCheck.change(function ()
+        {
+            var paramName = $(this).parents("tr").first().data("pname");
+
+            if ($(this).is(":checked"))
+            {
+                //highlight the div to indicate batch mode
+                $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+
+                run_task_info.params[paramName].isBatch = true;
+
+                run_task_info.params[paramName].allowMultiple = true;
+            }
+            else
+            {
+                //remove row highlight indicating batch mode
+                $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+
+                run_task_info.params[paramName].isBatch = false;
+                run_task_info.params[paramName].allowMultiple = false;
+            }
+
+            var textElement = $(this).closest(".pRow").find(".choice");
+            var groupId = getGroupId(textElement);
+            $(this).closest(".pRow").find(".selectChoice").replaceWith(initChoiceDiv(paramName, groupId, true));
+        });
+
+        batchBox.append(batchCheck);
+        batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
+        //batchCheck.button();
+        batchBox.tooltip();
+
+        selectChoiceDiv.append(batchBox);
+
+        //if this is a batch parameter then pre-select the batch checkbox
+        if (run_task_info.params[parameterName].isBatch) {
+            batchBox.find("input[type='checkbox']").prop('checked', true);
+        }
+    }
 
     if(paramDetails != undefined && paramDetails != null && choiceInfo != undefined  && choiceInfo != null && choiceInfo != '')
     {
@@ -153,6 +200,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         }
 
         choice.data("pname", parameterName);
+        choice.data("groupId", groupId);
+
         var longChars = 1;
         for(var c=0;c<choiceInfo.choices.length;c++)
         {
@@ -182,6 +231,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
         var validateSelectionFunc = function (element, val)
         {
+            var paramName = $(element).data("pname");
+
             var valueList = [];
 
             var value = val;
@@ -191,11 +242,11 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             }
 
             //if this a multiselect choice, then check that the maximum number of allowable selections was not reached
-            if($(element).multiselect("option", "multiple"))
+            if(run_task_info.params[paramName].allowMultiple)
             {
                 var maxVal = parseInt($(element).data("maxValue"));
                 var numSelected = $(element).multiselect("widget").find("input:checked").length;
-                if(!isNaN(maxVal) && numSelected > maxVal)
+                if(!run_task_info.params[paramName].isBatch && !isNaN(maxVal) && numSelected > maxVal)
                 {
                     //remove the last selection since it will exceed max allowed
                     if(value.length == 1)
@@ -221,8 +272,6 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             }
 
-            var paramName = $(element).data("pname");
-
             var groupId = getGroupId($(element));
             updateValuesForGroup(groupId, paramName, valueList);
 
@@ -232,7 +281,42 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         choice.multiselect({
             multiple: paramDetails.allowMultiple,
             header: paramDetails.allowMultiple,
-            selectedList: 2,
+            selectedText:  function(numChecked, numTotal, checkedItems)
+            {
+                var item1 = $(this)[0].element;
+
+                //show the list of values
+                if(numChecked == 1)
+                {
+                    //return $(item1).find("option[value='" + $(item1).val() + "']").html();
+                    return $(item1).find("option:selected").text();
+                }
+                else if(numChecked < 5) //show the list of values
+                {
+                    var paramName = $(item1).data("pname");
+                    var groupId = $(item1).data("groupId");
+
+                    var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
+                    var textList = [];
+                    for(var l=0; l < valuesList.length;l++)
+                    {
+                        var value = valuesList[l];
+                        for(var c=0 ;c < checkedItems.length;c++)
+                        {
+                            if($(checkedItems[c]).val() == value)
+                            {
+                                textList.push($(checkedItems[c].labels[0]).text());
+                            }
+                        }
+                    }
+
+                    return textList.join(", ");
+                }
+                else
+                {
+                    return numChecked + " selected";
+                }
+            },
             minWidth: cMinWidth,
             noneSelectedText: noneSelectedText,
             classes: 'mSelect',

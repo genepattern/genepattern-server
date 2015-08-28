@@ -1002,9 +1002,57 @@ function addSendToParam(parameterInfo) {
     }
 }
 
-function createNumericDiv(parameterName, groupId, initialValuesList)
+function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var numericDiv = $("<div class='numericDiv'/>");
+    // Create the single/batch run mode toggle
+    if (enableBatch) {
+        var batchBox = $("<div class='batchBox' title='A job will be launched for every value specified.'></div>");
+        // Add the checkbox
+        var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
+        batchCheck.change(function ()
+        {
+            var paramName = $(this).parents("tr").first().data("pname");
+
+            if ($(this).is(":checked"))
+            {
+
+                //highlight the div to indicate batch mode
+                $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+
+                run_task_info.params[paramName].isBatch = true;
+
+                run_task_info.params[paramName].allowMultiple = true;
+            }
+            else
+            {
+                //remove row highlight indicating batch mode
+                $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+
+                run_task_info.params[paramName].isBatch = false;
+                run_task_info.params[paramName].allowMultiple = false;
+            }
+
+            var textElement = $(this).closest(".pRow").find(".numericInput");
+            var groupId = getGroupId(textElement);
+            $(this).closest(".pRow").find(".numericDiv").replaceWith(createNumericDiv(paramName, groupId, true));
+        });
+
+        batchBox.append(batchCheck);
+        batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
+        //batchCheck.button();
+        batchBox.tooltip();
+
+        numericDiv.append(batchBox);
+
+        //if this is a batch parameter then pre-select the batch checkbox
+        if (run_task_info.params[parameterName].isBatch) {
+            batchBox.find("input[type='checkbox']").prop('checked', true);
+        }
+    }
+
     $("#runTaskSettingsDiv").append(numericDiv);
 
     var paramDetails = run_task_info.params[parameterName];
@@ -1063,6 +1111,7 @@ function createNumericDiv(parameterName, groupId, initialValuesList)
         $("<div/>").append(addMoreBtn).appendTo(numericDiv);
     }
     numericDiv.detach();
+
     return numericDiv;
 }
 
@@ -1076,6 +1125,8 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
 
     var div = $("<div/>");
     container.append(div);
+
+    var paramDetails = run_task_info.params[parameterName];
 
     var nField = $("<input name='numericInput' class='numericInput' />");
     div.append(nField);
@@ -1104,8 +1155,11 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
 
         div.append(deleteBtn);
     }
-
-    var paramDetails = run_task_info.params[parameterName];
+    else
+    {
+        //if delete is allowed then this is not the first item so set its value to the default value
+        nField.val(paramDetails.default_value);
+    }
 
     nField = nField.spinner();
 
@@ -1181,14 +1235,63 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
     });
 }
 
-function createTextDiv(parameterName, groupId, initialValuesList) {
+function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
     var textDiv = $("<div class='textDiv tagsContent'/>");
+    $("#runTaskSettingsDiv").append(textDiv);
+
+    // Create the single/batch run mode toggle
+    if (enableBatch) {
+        var batchBox = $("<div class='batchBox' title='A job will be launched for every value specified.'></div>");
+        // Add the checkbox
+        var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
+        batchCheck.change(function ()
+        {
+            var paramName = $(this).parents("tr").first().data("pname");
+
+            if ($(this).is(":checked"))
+            {
+
+                //highlight the div to indicate batch mode
+                $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+
+                run_task_info.params[paramName].isBatch = true;
+
+                run_task_info.params[paramName].allowMultiple = true;
+            }
+            else
+            {
+                //remove row highlight indicating batch mode
+                $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+
+                run_task_info.params[paramName].isBatch = false;
+                run_task_info.params[paramName].allowMultiple = false;
+            }
+
+            var textElement = $(this).closest(".pRow").find(".pValue");
+            var groupId = getGroupId(textElement);
+            $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
+        });
+
+        batchBox.append(batchCheck);
+        batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
+        //batchCheck.button();
+        batchBox.tooltip();
+
+        textDiv.append(batchBox);
+
+        //if this is a batch parameter then pre-select the batch checkbox
+        if (run_task_info.params[parameterName].isBatch) {
+            batchBox.find("input[type='checkbox']").prop('checked', true);
+        }
+    }
 
     var paramDetails = run_task_info.params[parameterName];
 
     var textField = null;
     var isPassword = $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) !== -1;
-    var tagFieldId = parameterName.replace(".", "_") + "Text";
+    var tagFieldId = parameterName.replace(/\./g, "_") + "Text";
 
     if (isPassword) {
         textField = $("<input type='password' class='pValue' id='" + tagFieldId + "' style='width:100px;'/>");
@@ -1200,6 +1303,8 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
     else {
         textField = $("<input type='text' class='pValue' id='" + tagFieldId + "'/>");
     }
+
+    textDiv.append(textField);
 
     textField.data("pname", parameterName);
     // Handle link drags
@@ -1234,7 +1339,8 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
 
     var textValueList = [];
 
-    if (textField.val() !== "") {
+    if (textField.val() !== "")
+    {
         textValueList.push(textField.val());
     }
 
@@ -1245,7 +1351,8 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
     }
 
     //select initial values if there are any
-    if (initialValuesList !== undefined && initialValuesList !== null) {
+    if (initialValuesList !== undefined && initialValuesList !== null)
+    {
         var inputFieldValue = "";
         for (var v = 0; v < initialValuesList.length; v++) {
             inputFieldValue += initialValuesList[v];
@@ -1259,15 +1366,13 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
         textField.trigger("change");
     }
 
-    textDiv.append(textField);
 
     if(!isPassword && run_task_info.params[parameterName].allowMultiple)
     {
-        $("#runTaskSettingsDiv").append(textDiv);
         textField.tagsInput(
         {
             'defaultText': 'Add value and press enter...',
-            width: '97%',
+            width: '88%',
             height: '40px',
             interactive: true,
             placeholderColor: '#CCC',
@@ -1277,9 +1382,10 @@ function createTextDiv(parameterName, groupId, initialValuesList) {
             }
         });
 
-        //replace the textDiv with the new tags input div
-        textDiv.detach();
     }
+
+    //replace the textDiv with the new tags input div
+    textDiv.detach();
 
     return textDiv;
 }
@@ -1302,9 +1408,11 @@ function createFileDivId(parameterName, groupId) {
 }
 
 function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
+    var fileDivMain = $("<div/>");
     var fileDivId = createFileDivId(parameterName, groupId);
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
     var fileDiv = $("<div class='fileDiv mainDivBorder' id='" + fileDivId + "' />");
+    fileDivMain.append(fileDiv);
 
     //enable dragging of file between groups
     fileDiv.droppable(
@@ -1390,7 +1498,8 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 //allow multi-select from file browser when in batch mode
                 $(this).parents(".fileDiv").find(".uploadedinputfile").attr("multiple", "multiple");
             }
-            else {
+            else
+            {
                 //remove row highlight indicating batch mode
                 $(this).closest(".pRow").css("background-color", "#FFFFFF");
                 $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
@@ -1398,12 +1507,13 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 // Clear the files from the parameter
                 var groupId = getGroupId($(this));
                 updateFilesForGroup(groupId, paramName, []);
-                updateParamFileTable(paramName, $(this).closest(".fileDiv"));
+                updateParamFileTable(paramName, $(this).parents(".valueEntryDiv").find(".fileDiv"));
 
                 var maxValue = run_task_info.params[paramName].maxValue;
 
                 //disable multiselect for this param if it is not file list param
-                if (maxValue <= 1) {
+                if (maxValue <= 1)
+                {
                     $(this).parents(".fileDiv").find(".uploadedinputfile").removeAttr("multiple");
                 }
 
@@ -1412,9 +1522,10 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
         });
         batchBox.append(batchCheck);
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
+        //batchCheck.button();
         batchBox.tooltip();
 
-        fileUploadDiv.append(batchBox);
+        fileDivMain.prepend(batchBox);
 
         //if this is a batch parameter then pre-select the batch checkbox
         if (run_task_info.params[parameterName].isBatch) {
@@ -1551,7 +1662,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
         fileDiv.hide();
     }
 
-    return fileDiv;
+    return fileDivMain;
 }
 
 //add toggle to switch between field types for a parameter that has multiple
@@ -1834,7 +1945,7 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
 function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch) {
     //create the necessary field types for this parameter
     if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) !== -1) {
-        contentDiv.append(initChoiceDiv(parameterName, groupId, initialValues));
+        contentDiv.append(initChoiceDiv(parameterName, groupId, enableBatch, initialValues));
     }
 
     if ($.inArray(field_types.FILE, run_task_info.params[parameterName].type) !== -1) {
@@ -1843,13 +1954,13 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
 
     if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
-        contentDiv.append(createTextDiv(parameterName, groupId, initialValues));
+        contentDiv.append(createTextDiv(parameterName, groupId, enableBatch, initialValues));
     }
 
     if ($.inArray(field_types.INTEGER, run_task_info.params[parameterName].type) !== -1
         || $.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
-        contentDiv.append(createNumericDiv(parameterName, groupId, initialValues));
+        contentDiv.append(createNumericDiv(parameterName, groupId, enableBatch, initialValues));
     }
 
     if (run_task_info.params[parameterName].type.length > 1) {

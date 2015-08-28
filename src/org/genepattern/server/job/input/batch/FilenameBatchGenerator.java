@@ -14,11 +14,15 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.GpServerException;
+import org.genepattern.server.rest.JobInputApi;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Generate batch jobs, match multiple batch parameters by basename and extension.
@@ -27,19 +31,23 @@ import org.genepattern.server.rest.GpServerException;
  * @author pcarr
  *
  */
-public class FilenameBatchGenerator implements BatchGenerator {
+public class FilenameBatchGenerator extends SimpleBatchGenerator {
 
     private static Logger log = Logger.getLogger(FilenameBatchGenerator.class);
 
     private final boolean extractBatchValues;
     private final Map<String,List<GpFilePath>> batchValues;
     
-    public FilenameBatchGenerator() {
+    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn)
+    {
+        super(gpConfig, userContext, jobInputApiIn);
         this.extractBatchValues=true;
         this.batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     }
     
-    public FilenameBatchGenerator(final Map<String,List<GpFilePath>> initializedBatchValues) {
+    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn, final Map<String,List<GpFilePath>> initializedBatchValues) {
+        super(gpConfig, userContext, jobInputApiIn);
+
         this.extractBatchValues=false;
         this.batchValues=initializedBatchValues;
     }
@@ -193,6 +201,8 @@ public class FilenameBatchGenerator implements BatchGenerator {
 
     private void extractBatchValues(final JobInput batchInputTemplate) {        
         for(final Param batchParam : batchInputTemplate.getBatchParams()) {
+            //remove the param from the template
+            batchInputTemplate.removeValue(batchParam.getParamId());
             final String key=batchParam.getParamId().getFqName();
             for(final ParamValue batchParamValue : batchParam.getValues()) {
                 final GpFilePath gpFilePath = BatchInputFileHelper.initGpFilePath(batchParamValue.getValue(), true);

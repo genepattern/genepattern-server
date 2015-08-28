@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamValue;
@@ -31,8 +33,11 @@ public class TestSimpleBatchGenerator {
         
         assertTrue("jobInputTemplate.isBatchJob", jobInputTemplate.isBatchJob());
         assertEquals("jobInputTemplate.numBatchJobs", 3, jobInputTemplate.getNumBatchJobs());
-        
-        final BatchGenerator simpleBatchGenerator=new BatchGenerator() {
+
+        GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext userContext=GpContext.getContextForUser("test_user", false);
+
+        final BatchGenerator simpleBatchGenerator=new SimpleBatchGenerator(gpConfig, userContext) {
             @Override
             public List<JobInput> prepareBatch(final JobInput batchInputTemplate) throws GpServerException {
                 int numBatchJobs=batchInputTemplate.getNumBatchJobs();

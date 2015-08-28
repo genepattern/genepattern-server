@@ -219,11 +219,11 @@ public class TestJobInputHelper {
     }
 
     @Test
-    public void testAddBatchDirectory() throws GpServerException {
+    public void testaddBatchValue() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
 
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         assertEquals("num batch jobs", 7, inputs.size());
     }
@@ -237,7 +237,7 @@ public class TestJobInputHelper {
     public void testAddBatchDirMatchFileFormat() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", batchDir.getAbsolutePath());
         //bogus value, but the module requires a cls file
         jobInputHelper.addValue("cls.file", FileUtil.getDataFile("all_aml/all_aml_test.cls").getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
@@ -252,9 +252,9 @@ public class TestJobInputHelper {
     public void testAddBatchDirMulti() throws GpServerException {
         final File batchDir=FileUtil.getDataFile("all_aml/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", batchDir.getAbsolutePath());
         //bogus value, but the module requires a cls file
-        jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", batchDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         assertEquals("num batch jobs", 2, inputs.size());
     }
@@ -267,7 +267,7 @@ public class TestJobInputHelper {
     public void testMatchBatchOfDirectories() throws GpServerException {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_02/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, listFilesLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("dir", batchDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("dir", batchDir.getAbsolutePath());
         jobInputHelper.addValue("outputFilename", "<dir_file>_listing.txt");
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         assertEquals("num batch jobs", 3, inputs.size());
@@ -282,15 +282,15 @@ public class TestJobInputHelper {
         final File gctDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/gct/");
         final File clsDir=FileUtil.getSourceFile(TestJobInputHelper.class,"batch_01/cls/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.file", gctDir.getAbsolutePath());
-        jobInputHelper.addBatchDirectory("cls.file", clsDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", gctDir.getAbsolutePath());
+        jobInputHelper.addBatchValue("cls.file", clsDir.getAbsolutePath());
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         assertEquals("num batch jobs", 2, inputs.size());
     }
     
     /**
      * Test case for a missing batch input parameter, for instance, 
-     *     addBatchDirectory("input.filename", directory) with CMS.
+     *     addBatchValue("input.filename", directory) with CMS.
      *     CMS has an "input.file" parameter, but not an "input.filename" parameter.
      */
     @Test
@@ -298,10 +298,10 @@ public class TestJobInputHelper {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/res/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
-            jobInputHelper.addBatchDirectory("input.filename",  batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.filename",  batchDir.getAbsolutePath());
             final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
-            fail("Expecting GpServerException: empty batch directory");
+            fail("Expecting GpServerException: No matching parameter input.filename...");
         }
         catch (GpServerException e) {
             //expected
@@ -316,7 +316,7 @@ public class TestJobInputHelper {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class,"empty_batch_dir/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         try {
-            jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
             fail("Expecting GpServerException: empty batch directory");
@@ -334,7 +334,7 @@ public class TestJobInputHelper {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_dir_does_not_exist/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
         try {
-            jobInputHelper.addBatchDirectory("input.filename", batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.filename", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
             fail("Expecting GpServerException: batch directory doesn't exist");
@@ -353,7 +353,7 @@ public class TestJobInputHelper {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_01/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
-            jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.file", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
             fail("Expecting GpServerException: empty batch directory");
@@ -372,8 +372,8 @@ public class TestJobInputHelper {
         final File batchDir=FileUtil.getSourceFile(TestJobInputHelper.class, "batch_03/");
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
         try {
-            jobInputHelper.addBatchDirectory("input.file", batchDir.getAbsolutePath());
-            jobInputHelper.addBatchDirectory("cls.file", batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.file", batchDir.getAbsolutePath());
+            jobInputHelper.addBatchValue("cls.file", batchDir.getAbsolutePath());
             //final List<JobInput> inputs=
                     jobInputHelper.prepareBatch();
             fail("Expecting GpServerException: empty batch directory");
@@ -418,9 +418,9 @@ public class TestJobInputHelper {
         final File dir3 = FileUtil.getSourceFile(TestJobInputHelper.class, "batch_02/03/");
 
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cleLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.filename", dir1.getAbsolutePath());
-        jobInputHelper.addBatchDirectory("input.filename", dir2.getAbsolutePath());
-        jobInputHelper.addBatchDirectory("input.filename", dir3.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", dir1.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", dir2.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.filename", dir3.getAbsolutePath());
 
         //Here we expect 9 batch jobs to be created, one for each file in the directory
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
@@ -468,8 +468,8 @@ public class TestJobInputHelper {
 
 
         final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
-        jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
-        jobInputHelper.addBatchDirectory("input.file", param1_dir2.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", param1_dir1.getAbsolutePath());
+        jobInputHelper.addBatchValue("input.file", param1_dir2.getAbsolutePath());
         jobInputHelper.addBatchValue("cls.file", param2_dir1.getAbsolutePath());
         jobInputHelper.addBatchValue("cls.file", param2_dir2.getAbsolutePath());
 
@@ -496,9 +496,9 @@ public class TestJobInputHelper {
         try
         {
             final JobInputHelper jobInputHelper=new JobInputHelper(gpConfig, userContext, cmsLsid, null, taskLoader);
-            jobInputHelper.addBatchDirectory("input.file", param1_file1.getAbsolutePath());
-            jobInputHelper.addBatchDirectory("input.file", param1_file2.getAbsolutePath());
-            jobInputHelper.addBatchDirectory("input.file", param1_dir1.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.file", param1_file1.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.file", param1_file2.getAbsolutePath());
+            jobInputHelper.addBatchValue("input.file", param1_dir1.getAbsolutePath());
             jobInputHelper.addBatchValue("cls.file", param2_file1.getAbsolutePath());
             jobInputHelper.addBatchValue("cls.file", param2_file2.getAbsolutePath());
 
@@ -535,7 +535,7 @@ public class TestJobInputHelper {
         File batchDir=new File(FileUtil.getDataDir(), "fastq");
         GpFilePath inputDir=new ServerFilePath(batchDir.getAbsoluteFile());
         
-        List<GpFilePath> batchFiles=BatchInputFileHelper.getBatchInputFiles(pinfo, inputDir);
+        List<String> batchFiles=BatchInputFileHelper.getBatchInputFiles(pinfo, inputDir);
         assertEquals(6, batchFiles.size());
     }
     

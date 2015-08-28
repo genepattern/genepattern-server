@@ -5,18 +5,25 @@ package org.genepattern.server.job.input;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
-import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.batch.BatchGenerator;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
+import org.genepattern.server.job.input.batch.FilenameBatchGenerator;
+import org.genepattern.server.job.input.batch.SimpleBatchGenerator;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobReceipt;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -36,7 +43,6 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class JobInputHelper {
     final static private Logger log = Logger.getLogger(JobInputHelper.class);
-    
     /**
      * Is the input value an external URL?
      * 
@@ -77,7 +83,12 @@ public class JobInputHelper {
     }
 
     private final GpConfig gpConfig;
-    private final BatchInputFileHelper batchInputFileHelper;
+    private final GpContext userContext;
+    private final JobInputApi jobInputApi;
+    private BatchGenerator batchGenerator;
+    private final JobInput jobInputTemplate;
+    private final Map<String,ParameterInfoRecord> paramInfoMap;
+    private boolean hasDirectory = false;
 
     public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
         this(gpConfig, userContext, lsid, null);
@@ -86,18 +97,31 @@ public class JobInputHelper {
         this(gpConfig, userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
     }
     public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
+
         if (getTaskStrategyIn == null) {
             getTaskStrategyIn=new GetTaskStrategyDefault();
         }
         final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
+
         this.gpConfig=gpConfig;
-        this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
+        this.userContext = userContext;
+        this.jobInputApi = jobInputApi;
+
+        this.jobInputTemplate = new JobInput();
+        this.jobInputTemplate.setLsid(taskInfo.getLsid());
+        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
     }
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, final TaskInfo taskInfo) {
+
+    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, TaskInfo taskInfo) {
         this.gpConfig=gpConfig;
-        this.batchInputFileHelper=new BatchInputFileHelper(gpConfig, userContext, taskInfo, jobInputApi);
+        this.userContext = userContext;
+        this.jobInputApi = jobInputApi;
+
+        this.jobInputTemplate = new JobInput();
+        this.jobInputTemplate.setLsid(taskInfo.getLsid());
+        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
     }
-    
+
     /**
      * Add a value for a non-batch parameter. 
      * 
@@ -115,7 +139,7 @@ public class JobInputHelper {
      * @param groupId
      */
     public void addValue(final String name, final String value, final GroupId groupId) {
-        this.batchInputFileHelper.addValue(new ParamId(name), value, groupId);
+        jobInputTemplate.addValue(new ParamId(name), value, groupId);
     }
 
     /**
@@ -128,8 +152,9 @@ public class JobInputHelper {
         addValue(paramId, value, GroupId.EMPTY);
     }
 
-    public void addValue(final ParamId paramId, final String value, final GroupId groupId) {
-        this.batchInputFileHelper.addValue(paramId, value, groupId);
+    public void addValue(final ParamId paramId, final String value, final GroupId groupId)
+    {
+        jobInputTemplate.addValue(paramId, value, groupId);
     }
     
     /**
@@ -140,33 +165,94 @@ public class JobInputHelper {
     public void addBatchValue(final String name, final String value) throws GpServerException {
         addBatchValue(new ParamId(name), value);
     }
-    
+
+    public boolean isFileParameter(ParamId paramId)
+    {
+        final ParameterInfoRecord record=paramInfoMap.get(paramId.getFqName());
+
+        boolean isFile = false;
+        boolean isDirectory = false;
+
+        if(record != null) {
+            isFile = record.getFormal().isInputFile();
+            isDirectory = record.getFormal()._isDirectory();
+        }
+        return isFile || isDirectory;
+    }
+
     /**
      * Add a value for a batch parameter.
      * @param paramId
      * @param value
      */
-    public void addBatchValue(final ParamId paramId, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(gpConfig, paramId, value);
+    public void addBatchValue(final ParamId paramId, final String value) throws GpServerException
+    {
+        final ParameterInfoRecord record = paramInfoMap.get(paramId.getFqName());
+
+        if (record==null) {
+            final String message="No matching parameter, '"+paramId.getFqName()+"', for task="+jobInputTemplate.getLsid();
+            log.error(message);
+            throw new GpServerException(message);
+        }
+
+        //check if this is a file parameter
+        if(isFileParameter(paramId))
+        {
+            //check if the value for this file parameter is a directory
+            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, value, true);
+            if(gpPath.isDirectory())
+            {
+                hasDirectory = true;
+            }
+
+
+            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, userContext, paramId, record, value);
+
+            for(String file: batchFileValues)
+            {
+                jobInputTemplate.addValue(paramId, file, true);
+            }
+        }
+        else
+        {
+            jobInputTemplate.addValue(paramId, value, true);
+        }
     }
 
-    /**
-     * When you assign an input parameter (e.g. 'input.file') to a batch directory, you are telling the server to
-     * automatically generate a batch of jobs, one for each matching file in the batch directory.
-     * 
-     * A file matches based on the file extension of the file and the list of accepted fileFormats for the parameter,
-     * as declared in the module manifest.
-     * 
-     *
-     */
-    public void addBatchDirectory(final String name, final String value) throws GpServerException {
-        addBatchDirectory(new ParamId(name), value);
+    private BatchGenerator initBatchGenerator() throws GpServerException
+    {
+        BatchGenerator generator;
+
+        //return the simple generator if this contains batch params that are not files
+        final Set<Param> params = jobInputTemplate.getBatchParams();
+
+        boolean hasNonFileBatchParams = false;
+        for(final Param param : params)
+        {
+            if(!isFileParameter(param.getParamId()))
+            {
+                hasNonFileBatchParams = true;
+            }
+        }
+
+        if(!hasNonFileBatchParams)
+        {
+            generator = new FilenameBatchGenerator(gpConfig, userContext, jobInputApi);
+
+        }
+        else if(!hasDirectory)
+        {
+            generator = new SimpleBatchGenerator(gpConfig, userContext, jobInputApi);
+        }
+        else
+        {
+            throw new GpServerException("Batching of non file parameters and file parameters containing " +
+                    "directories is not supported. Please provide a list of files instead of directories.");
+        }
+
+        return generator;
     }
-    
-    public void addBatchDirectory(final ParamId id, final String value) throws GpServerException {
-        this.batchInputFileHelper.addBatchValue(gpConfig, id, value);
-    }
-    
+
     /**
      * After you initialize all of the values, call this method to create the
      * list of JobInputs, one for each new job to run.
@@ -174,8 +260,14 @@ public class JobInputHelper {
      * @return
      * @throws GpServerException
      */
-    public List<JobInput> prepareBatch() throws GpServerException {
-        return batchInputFileHelper.prepareBatch();
+    public List<JobInput> prepareBatch() throws GpServerException
+    {
+        if(batchGenerator == null)
+        {
+           batchGenerator = initBatchGenerator();
+        }
+
+        return batchGenerator.prepareBatch(jobInputTemplate);
     }
 
     /**
@@ -187,7 +279,7 @@ public class JobInputHelper {
      * @throws GpServerException
      */
     public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
-        return batchInputFileHelper.submitBatch(batchInputs);
+        return batchGenerator.submitBatch(batchInputs);
     }
 
 }
