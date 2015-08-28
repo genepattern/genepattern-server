@@ -719,23 +719,23 @@ function loadModuleInfo(module) {
         run_task_info.is_js_viewer = true;
     }
 
-    var categories = module["categories"].split(";");
     //Check if there is a newer Beta version of the module available
     //module["betaVersion"] = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00261:999999999";
+    //check if this module has development i.e BETA quality level set
+    $("#betaInfoDiv").hide();
+
+    if(module["quality"] && (module["quality"] === "development" || module["quality"] === "preproduction"))
+    {
+        $("#betaInfoDiv").append("<div>This is a beta version of the module.</div>");
+        $("#betaInfoDiv").show();
+    }
+
     if(module["betaVersion"] && module["betaVersion"].length > 0)
     {
         var betaUrl = "/gp/pages/index.jsf?lsid=" + module["betaVersion"];
         $("#betaInfoDiv").append(
-                "<a href='"+ betaUrl + "'>A beta version of this module is available. Click here to try it out. </a>");
-    }
-    //check if this module has development i.e BETA quality level set
-    else if(inArrayCaseInsensitive(".beta", categories) != -1 || inArrayCaseInsensitive("beta", categories) != -1)
-    {
-        $("#betaInfoDiv").append("This module is currently in beta.");
-    }
-    else
-    {
-        $("#betaInfoDiv").hide();
+                "<div><a href='"+ betaUrl + "'>A newer beta version of this module is available. Click here to try it out. </a><div/>");
+        $("#betaInfoDiv").show();
     }
 
     // Display properties

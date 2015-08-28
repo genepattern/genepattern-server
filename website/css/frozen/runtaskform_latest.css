@@ -718,11 +718,17 @@ table.missingTaskTable
     background-color: #99FFCC;
     padding: 4px 0 4px 0;
     width: 100%;
-    margin: 2px;
+    margin: 4px 2px 2px 2px;
     font-style: italic;
     font-size: 12px;
     text-indent: 6px;
 }
+
+#betaInfoDiv div
+{
+    margin-top: 4px;
+}
+
 
 .urlEntry
 {
