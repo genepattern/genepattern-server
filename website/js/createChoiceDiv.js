@@ -330,7 +330,10 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 }
             },
             click: function (event, ui) {
-                var values = $(event.target).val();
+                var paramName = $(this).data("pname");
+                var groupId = getGroupId($(this));
+
+                var values = getValuesForGroup(groupId, paramName).slice();
 
                 if(values === undefined || values === null)
                 {
