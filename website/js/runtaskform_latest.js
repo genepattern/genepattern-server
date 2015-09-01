@@ -1187,20 +1187,14 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
         nField.spinner( "option", "step", 0.01);
     }
 
-    var placeholderText = "";
-
     if($.isNumeric(paramDetails.minRange))
     {
         nField.spinner( "option","min", paramDetails.minRange);
-
-        rangeText = paramDetails.minRange + "...";
     }
 
     if($.isNumeric(paramDetails.maxRange))
     {
         nField.spinner( "option","max", paramDetails.maxRange);
-
-        nField.attr("placeholder", placeholderText + paramDetails.maxRange);
     }
 
     if(value != undefined && value != null)
