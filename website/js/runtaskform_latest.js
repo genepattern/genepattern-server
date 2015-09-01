@@ -1112,6 +1112,24 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
     }
     numericDiv.detach();
 
+    //add text indicating the range if there is one
+    var rangeInfoText = "";
+
+    if($.isNumeric(paramDetails.minRange))
+    {
+        rangeInfoText = "min = " + paramDetails.minRange + "    ";
+    }
+
+    if($.isNumeric(paramDetails.maxRange))
+    {
+        rangeInfoText += "max = " + paramDetails.maxRange;
+    }
+
+    if(rangeInfoText.length > 0)
+    {
+        numericDiv.prepend("<div style='font-style: italic'>" + rangeInfoText + "</div>");
+    }
+
     return numericDiv;
 }
 
@@ -1128,7 +1146,7 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
 
     var paramDetails = run_task_info.params[parameterName];
 
-    var nField = $("<input name='numericInput' class='numericInput' />");
+    var nField = $("<input name='numericInput' class='numericInput'/>");
     div.append(nField);
 
     if(allowDelete)
@@ -1169,14 +1187,20 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
         nField.spinner( "option", "step", 0.01);
     }
 
+    var placeholderText = "";
+
     if($.isNumeric(paramDetails.minRange))
     {
         nField.spinner( "option","min", paramDetails.minRange);
+
+        rangeText = paramDetails.minRange + "...";
     }
 
     if($.isNumeric(paramDetails.maxRange))
     {
         nField.spinner( "option","max", paramDetails.maxRange);
+
+        nField.attr("placeholder", placeholderText + paramDetails.maxRange);
     }
 
     if(value != undefined && value != null)
