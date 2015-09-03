@@ -173,6 +173,7 @@ public class ParamListHelper {
     final Param actualValues;
     //outputs
     final NumValues allowedNumValues;
+    final RangeValues<Double> allowedRanges;
     final GroupInfo groupInfo;
     final ListMode listMode;
 
@@ -200,6 +201,9 @@ public class ParamListHelper {
 
         //initialize allowedNumValues
         this.allowedNumValues=initAllowedNumValues();
+
+        //initialize allowedRanges
+        this.allowedRanges=initAllowedRanges(parameterInfoRecord.getFormal());
 
         //initialize list mode
         this.listMode=ParamListHelper.initListMode(parameterInfoRecord);
@@ -284,6 +288,20 @@ public class ParamListHelper {
         }
     }
 
+    public static RangeValues initAllowedRanges(ParameterInfo pInfo) {
+        final String rangeValuesStr = (String) pInfo .getAttributes().get(RangeValues.PROP_RANGE);
+        //parse range  string
+        RangeValuesParser rvParser=new RangeValuesParser();
+        try {
+            return rvParser.parseRange(rangeValuesStr);
+        }
+        catch (Exception e) {
+            String message="Error parsing range="+rangeValuesStr+" for "+ pInfo.getName();
+            log.error(message,e);
+            throw new IllegalArgumentException(message);
+        }
+    }
+
     private GroupInfo initGroupInfo() {
         final GroupInfo groupInfo=new GroupInfo.Builder().fromParameterInfo(parameterInfoRecord.getFormal()).build();
         return groupInfo;
@@ -356,7 +374,39 @@ public class ParamListHelper {
             }
         }
     }
-    
+
+    /**
+     * @throws IllegalArgumentException if actual value entered is not within
+     *      the allowed range of values. For example,
+     *          actual value is 1 and range = 2+
+     *          actual value is 2 and range = 0..1
+     *          actual value is 3 and range = 0- (i.e <= 0)
+     */
+    public void validateRange() {
+        final Double minRange = allowedRanges.getMin();
+        final Double maxRange = allowedRanges.getMax();
+
+        //when both range min and range max is not set, it means there is no 'range' attribute for the parameter, assume it's not a filelist
+        if (minRange == null && maxRange == null) {
+            //everything else is valid
+            return;
+        }
+
+        //if we're here, it means range is set
+        //are we in range?
+        if (minRange != null && actualValues.getRangeMin() < minRange ) {
+            throw new IllegalArgumentException("Minimum value for "+parameterInfoRecord.getFormal().getName()+
+                    "is out of the expected range, num="+actualValues.getRangeMin()+", min="+allowedRanges.getMin());
+        }
+
+        //if we're here, it means range is set
+        //are we in range?
+        if (maxRange != null && actualValues.getRangeMax() > minRange ) {
+            throw new IllegalArgumentException("Maximum value for " + parameterInfoRecord.getFormal().getName()+
+                    "is out of the expected range, num="+actualValues.getRangeMax()+", max="+allowedRanges.getMax());
+        }
+    }
+
     /**
      * Do we need to create a filelist file for this parameter?
      * Based on the following rules.
@@ -669,7 +719,7 @@ public class ParamListHelper {
 
     /**
      * Save the filelist and groupids to the parameter info CLOB
-     * @param pgh
+     * @param listOfValues
      */
     @SuppressWarnings("unchecked")
     protected void saveGroupedValuesToClob(final List<GpFilePath> listOfValues) {

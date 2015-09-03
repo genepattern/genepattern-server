@@ -125,6 +125,7 @@ public class AnalysisJobUtil {
             Param inputParam=jobInput.getParam( entry.getKey() );
             ParamListHelper plh=new ParamListHelper(mgr, gpConfig, userContext, entry.getValue(), inputParam, initDefault);
             plh.validateNumValues();
+            plh.validateRange();
             plh.updatePinfoValue();
         }
         

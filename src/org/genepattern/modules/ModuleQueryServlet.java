@@ -48,6 +48,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.RangeValues;
 import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -547,7 +548,9 @@ public class ModuleQueryServlet extends HttpServlet {
                     if (!attributes.containsKey(key) && !key.equals(ParametersJSON.MIN_NUM_VALUE)
                             && !key.equals(ParametersJSON.MAX_NUM_VALUE)
                             && !key.equals(ParametersJSON.MIN_NUM_GROUPS)
-                            && !key.equals(ParametersJSON.MAX_NUM_GROUPS)) {
+                            && !key.equals(ParametersJSON.MAX_NUM_GROUPS)
+                            && !key.equals(ParametersJSON.MIN_RANGE)
+                            && !key.equals(ParametersJSON.MAX_RANGE)) {
                         attributes.put(key, parameterJSON.get(key));
                     }
                 }
@@ -574,6 +577,25 @@ public class ModuleQueryServlet extends HttpServlet {
                         numGroupsString += "+";
                     }
                     attributes.put(GroupInfo.PROP_NUM_GROUPS, numGroupsString);
+                }
+
+                //add the range of values
+                if (parameterJSON.getMinRange() != null)
+                {
+                    String rangeString = String.valueOf(parameterJSON.getMinRange());
+
+                    if (parameterJSON.getMaxRange() != -1) {
+                        rangeString += ".." + String.valueOf(parameterJSON.getMaxRange());
+                    } else {
+                        rangeString += "+";
+                    }
+                    attributes.put(RangeValues.PROP_RANGE, rangeString);
+                }
+                else if(parameterJSON.getMaxRange() != null)
+                {
+                    String rangeString = String.valueOf(parameterJSON.getMaxRange()) + "-";
+
+                    attributes.put(RangeValues.PROP_RANGE, rangeString);
                 }
 
                 parameter.setAttributes(attributes);

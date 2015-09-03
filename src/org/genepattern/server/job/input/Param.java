@@ -22,6 +22,7 @@ public class Param {
     private ParamId id;
     private ListMultimap<GroupId,ParamValue> groupedValues=LinkedListMultimap.create(1);
     private boolean batchParam=false;
+    private RangeValues<Double> range;
 
     public Param(final ParamId id, final boolean batchParam) {
         this.id=id;
@@ -40,6 +41,7 @@ public class Param {
 
     public void addValue(final GroupId groupId, final ParamValue val) {
         groupedValues.put(groupId, val);
+        updateRange(val);
     }
 
     public ParamId getParamId() {
@@ -53,6 +55,40 @@ public class Param {
      */
     public List<ParamValue> getValues() {
         return Collections.unmodifiableList( new ArrayList<ParamValue>( groupedValues.values() ) );
+    }
+
+    private void updateRange(ParamValue value)
+    {
+        //check if this is a number
+        try
+        {
+            Double newVal = Double.parseDouble(value.getValue());
+
+            Double minRange = range.getMin();
+            Double maxRange = range.getMax();
+
+            if(minRange > newVal)
+            {
+                range.setMin(newVal);
+            }
+
+            if(maxRange < newVal)
+            {
+                range.setMax(newVal);
+            }
+        }
+        catch(Exception io)
+        {
+            //ignore not a number
+        }
+    }
+
+    public Double getRangeMin() {
+        return range.getMin();
+    }
+
+    public Double getRangeMax() {
+        return range.getMax();
     }
 
     public int getNumValues() {

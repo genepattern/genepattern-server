@@ -44,7 +44,6 @@ import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
 import org.genepattern.server.DbException;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -972,7 +971,7 @@ public class RunTaskServlet extends HttpServlet
         final boolean initDropdown=false;
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
-        parameter.addNumRangeInfo(pinfo);
+        parameter.addRangeInfo(pinfo);
         parameter.addGroupInfo(pinfo);
         parameter.initChoice(request, taskInfo, pinfo, initDropdown);
         return parameter;

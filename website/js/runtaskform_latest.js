@@ -892,7 +892,7 @@ function setParamFieldType(parameterInfo) {
 
                 if(parameterInfo.maxRange != undefined)
                 {
-                    run_task_info.params[parameterInfo.name].maxRange = parseInt(parameterInfo.maxRange);
+                    run_task_info.params[parameterInfo.name].maxRange = parseFloat(parameterInfo.maxRange);
                 }
             }
             else

@@ -435,6 +435,7 @@ function saveModulePost(moduleJson)
 
     module_editor.filesToDelete = [];
 }
+
 function editModule()
 {
     var lsid = Request.parameter('lsid');
@@ -715,7 +716,7 @@ function changeParameterType(element) {
         element.parent().next().remove();
     }
 
-    var value = element.val();
+    var value = element.val(); //type of the parameter
     element.parents(".pmoptions").parent().find(".textFieldData").remove();
 
     var fieldDetailsTd = $("<td/>");
@@ -747,7 +748,10 @@ function changeParameterType(element) {
             }
         });
     }
-    else {
+    else
+    {
+        var format = element.parents(".parameter").find("select[name='p_format']");
+
         var dataTypeTd = $("<td class='textFieldData'/>");
         dataTypeTd.append("Type of data to enter*: <br/>");
         var formatList = $("<select name='p_format'>\
@@ -759,18 +763,27 @@ function changeParameterType(element) {
             </select> ");
         formatList.change(function () {
             //hide choices info if this is a directory or password entry
-            if ($(this).val() === "Directory") {
+            $(this).parents(".parameter:first").find(".minValues").show();
+            $(this).parents(".parameter:first").find(".maxValues").show();
+            $(this).parents(".parameter:first").find(".choices").show();
+
+            $(this).parents(".parameter:first").find(".range").hide();
+            $(this).parents(".parameter:first").find(".range").hide();
+
+            if ($(this).val() === "Directory")
+            {
                 $(this).parents(".parameter:first").find(".choices").hide();
             }
-            if ($(this).val() === "Password") {
+            else if ($(this).val() === "Password")
+            {
                 $(this).parents(".parameter:first").find(".choices").hide();
                 $(this).parents(".parameter:first").find(".minValues").hide();
                 $(this).parents(".parameter:first").find(".maxValues").hide();
             }
-            else {
-                $(this).parents(".parameter:first").find(".choices").show();
-                $(this).parents(".parameter:first").find(".minValues").show();
-                $(this).parents(".parameter:first").find(".maxValues").show();
+            else if ($(this).val() === "Integer" || $(this).val() === "Floating Point")
+            {
+                $(this).parents(".parameter:first").find(".range").show();
+                $(this).parents(".parameter:first").find(".range").show();
             }
         });
 
@@ -1592,6 +1605,88 @@ function changeParameterType(element) {
             }
         });
         typeDetailsTable.append(listModeRow);
+
+        //add a row for specifying the range if this is numeric parameter
+        var  numRangeRow= $("<tr class='range'/>");
+        var rangeTd = $("<td/>");
+        numRangeRow.append(rangeTd);
+        rangeTd.append("Range: <br/>");
+        var minRangeField = $("<input class='minRange' name='p_minRange' type='text' style='width: 90px;'>");
+        minRangeField.change(function () {
+            //check whether needs to be an integer
+            var format = $(this).parents(".parameter"). find("select[name='p_format'] option:selected").val();
+            var maxRange = parseFloat($(this).parents(".parameter"). find("input[name='p_maxRange']").val());
+            var minRange = parseFloat($(this).val());
+
+            if($(this).val().length > 0)
+            {
+                if($.isNumeric(minRange))
+                {
+                    if(format == "Integer" && Math.floor(minRange) != minRange)
+                    {
+                        $(this).val("");
+                        alert("The parameter type is an integer but the value " + minRange + " is not");
+                        return;
+                    }
+
+                    //check that min is less than max
+                    if(maxRange != undefined && maxRange != null && minRange > maxRange)
+                    {
+                        $(this).val("");
+                        alert("Min range must be less than max range");
+                    }
+                }
+                else
+                {
+
+                    $(this).val("");
+                    alert("The range value must be a number");
+                }
+            }
+        });
+
+        $("<label>Min: </label>").append(minRangeField).appendTo(rangeTd);
+
+        var maxRangeField = $("<input class='maxRange' name='p_maxRange' type='text' style='width: 90px;'>");
+        maxRangeField.change(function () {
+            //check whether needs to be an integer
+            var format = $(this).parents(".parameter"). find("select[name='p_format'] option:selected").val();
+            var minRange = parseFloat($(this).parents(".parameter"). find("input[name='p_minRange']").val());
+            var maxRange = parseFloat($(this).val());
+
+            if($(this).val())
+            {
+                if($.isNumeric(maxRange))
+                {
+                    if(format == "Integer" && Math.floor(maxRange) != maxRange)
+                    {
+                        $(this).val("");
+                        alert("The parameter type is an integer but the value " + maxRange + " is not");
+                        return;
+                    }
+
+                    //check that min is less than max
+                    if(minRange != undefined && minRange != null && minRange > maxRange)
+                    {
+                        $(this).val("");
+                        alert("Max range must be greater than min range");
+                    }
+                }
+                else
+                {
+                    $(this).val("");
+                    alert("The range value must be a number");
+                }
+            }
+        });
+
+        $("<label style='margin-left: 10px;'>Max: </label>").append(maxRangeField).appendTo(rangeTd);
+
+        typeDetailsTable.append(numRangeRow);
+
+        //hide by default
+        numRangeRow.hide();
+
     }
 }
 
@@ -2081,24 +2176,27 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
-
-        if(type == "java.lang.Float")
+        else if(type == "java.lang.Float")
         {
             newParameter.find("select[name='p_format']").val("Floating Point");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
-
-        if(type == "PASSWORD")
+        else if(type == "PASSWORD")
         {
             newParameter.find("select[name='p_format']").val("Password");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
-
-        if(type == "DIRECTORY")
+        else if(type == "DIRECTORY")
         {
             newParameter.find("select[name='p_format']").val("Directory");
+            newParameter.find("select[name='p_format']").multiselect("refresh");
+            newParameter.find("select[name='p_format']").trigger('change');
+        }
+        else
+        {
+            newParameter.find("select[name='p_format']").val("String");
             newParameter.find("select[name='p_format']").multiselect("refresh");
             newParameter.find("select[name='p_format']").trigger('change');
         }
@@ -2193,6 +2291,17 @@ function loadParameterInfo(parameters)
             }
 
             newParameter.find(".fileGroupsLink").text("edit file groups");
+        }
+
+
+        if(parameters[i].minRange != undefined && parameters[i].minRange != null && $.isNumeric(parameters[i].minRange))
+        {
+            newParameter.find('input[name="p_minRange"]').val(parameters[i].minRange);
+        }
+
+        if(parameters[i].maxRange != undefined && parameters[i].maxRange != null && $.isNumeric(parameters[i].maxRange))
+        {
+            newParameter.find('input[name="p_maxRange"]').val(parameters[i].maxRange);
         }
 
         var allAttrs = {};
@@ -2317,14 +2426,24 @@ function getParametersJSON()
         parameter.minValue = minValue;
         parameter.maxValue = maxValue;
 
-        //this is an input file type
+        var minRange = $(this).find('input[name="p_minRange"]').val();
+        var maxRange = $(this).find('input[name="p_maxRange"]').val();
 
+        if(minRange != undefined && minRange != null)
+        {
+            parameter.minRange = minRange;
+        }
+
+        if(maxRange != undefined && maxRange != null)
+        {
+            parameter.maxRange = maxRange;
+        }
+
+        //if this is an input file type
         if(type === "Input File")
         {
             mode = "IN";
             type = "FILE";
-
-
 
             //add file group info if available
             var minNumGroups = $(this).data("minNumGroups");
@@ -2332,7 +2451,6 @@ function getParametersJSON()
             var fileGroupsMatch = $(this).data("fileGroupsMatch");
             var groupColumnLabel = $(this).data("groupColumnLabel");
             var fileColumnLabel = $(this).data("fileColumnLabel");
-
 
             if(minNumGroups !== undefined && minNumGroups !== null && minNumGroups !== 0)
             {
@@ -2431,7 +2549,7 @@ function getParametersJSON()
                 if($.inArray(keyName, Object.keys(parameter)) == -1
                     && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
                     && keyName != "choiceDir" && keyName != "choiceDirFilter" && keyName != "numValues"
-                    && keyName != "numGroups" && keyName != "groupInfo" && keyName != "groupColumnLabel"
+                    && keyName != "numGroups" && keyName != "range" && keyName != "groupInfo" && keyName != "groupColumnLabel"
                     && keyName != "fileColumnLabel" && keyName != "groupNumValuesMustMatch")
                 {
                     parameter[keyName] = allAttrs[keyName];

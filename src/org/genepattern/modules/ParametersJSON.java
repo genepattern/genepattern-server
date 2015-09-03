@@ -43,6 +43,8 @@ public class ParametersJSON extends JSONObject {
     public static final String MAX_NUM_VALUE = "maxValue";
     public static final String MIN_NUM_GROUPS = "minNumGroups";
     public static final String MAX_NUM_GROUPS = "maxNumGroups";
+    public static final String MIN_RANGE = "minRange";
+    public static final String MAX_RANGE = "maxRange";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
     public static final String CHOICES = "choices";
@@ -102,6 +104,7 @@ public class ParametersJSON extends JSONObject {
             this.put(VALUE, pInfo.getValue());
 
             final NumValues numValues = ParamListHelper.initNumValues(pInfo);
+            final RangeValues rangeValues = ParamListHelper.initAllowedRanges(pInfo);
 
             if(numValues != null)
             {
@@ -115,15 +118,15 @@ public class ParametersJSON extends JSONObject {
                 }
             }
 
-            if(numValues != null)
+            if(rangeValues != null)
             {
-                if (numValues.getMin() != null)
+                if (rangeValues.getMin() != null)
                 {
-                    this.put(MIN_NUM_VALUE, numValues.getMin());
+                    this.put(MIN_RANGE, rangeValues.getMin());
                 }
-                if (numValues.getMax() != null)
+                if (rangeValues.getMax() != null)
                 {
-                    this.put(MAX_NUM_VALUE, numValues.getMax());
+                    this.put(MAX_RANGE, rangeValues.getMax());
                 }
             }
 
@@ -131,7 +134,7 @@ public class ParametersJSON extends JSONObject {
             while (it.hasNext()) {
                 final Map.Entry<?,?> entry = (Map.Entry<?,?>)it.next();
                 final String keyName = (String) entry.getKey();
-                if (!this.has(keyName) && !keyName.equals("numValues")) {
+                if (!this.has(keyName) && !keyName.equals("numValues") && !keyName.equals("range")) {
                     this.put(keyName, (String) entry.getValue());
                 }
             }
@@ -171,7 +174,7 @@ public class ParametersJSON extends JSONObject {
 
     /**
      * Helper method to parse the optional group info attributes for the given parameter.
-     * @param pInfo
+     * @param pinfo
      */
     public void addGroupInfo(final ParameterInfo pinfo) {
         if (pinfo==null) {
@@ -193,7 +196,7 @@ public class ParametersJSON extends JSONObject {
      * Helper method to parse the optional numRange attribute for the given parameter.
      * @param pInfo
      */
-    public void addNumRangeInfo(final ParameterInfo pInfo) {
+    public void addRangeInfo(final ParameterInfo pInfo) {
         if (pInfo == null ) {
             throw new IllegalArgumentException("pInfo==null");
         }
@@ -203,12 +206,12 @@ public class ParametersJSON extends JSONObject {
             throw new IllegalArgumentException("pInfo.getAttributes()==null");
         }
 
-        String numRangeString = attributes.get("numRange");
+        String numRangeString = attributes.get("range");
         if(numRangeString != null)
         {
             try {
-                final NumValuesParser nvParser=new NumValuesParserImpl();
-                final NumValues numRange = nvParser.parseNumValues(numRangeString);
+                final RangeValuesParser rvParser=new RangeValuesParser();
+                final RangeValues<Double> numRange = rvParser.parseRange(numRangeString);
 
                 if (numRange.getMin() != null) {
                     this.put("minRange", numRange.getMin());
@@ -263,6 +266,27 @@ public class ParametersJSON extends JSONObject {
 
     public long getMaxNumValue() throws JSONException {
         return this.getLong(MAX_NUM_VALUE);
+    }
+
+
+    public Double getMinRange() throws JSONException
+    {
+        if(this.has(MIN_RANGE) && !this.isNull(MIN_RANGE) && this.getString(MIN_RANGE).length() > 0)
+        {
+            return this.getDouble(MIN_RANGE);
+        }
+
+        return null;
+    }
+
+    public Double getMaxRange() throws JSONException
+    {
+        if(this.has(MAX_RANGE) && !this.isNull(MAX_RANGE) && this.getString(MAX_RANGE).length() > 0)
+        {
+            return this.getDouble(MAX_RANGE);
+        }
+
+        return null;
     }
 
     public long getMinGroups() throws JSONException
