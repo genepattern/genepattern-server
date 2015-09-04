@@ -10,6 +10,7 @@ function _env_hashmap_checkInit() {
     declare _env_hashmap_inited="true";
     declare -a _hashmap_keys=();
     declare -a _hashmap_vals=();
+    declare -a _runtime_environments=();
   fi
 }
 
@@ -70,10 +71,30 @@ function getValue() {
 function clearValues() {
     _hashmap_keys=();
     _hashmap_vals=();
+    _runtime_environments=();
 }
 
 function echoValues() {
     echo "keys=${_hashmap_keys[@]}"
     echo "_hashmap_vals=${_hashmap_vals[@]}"
+}
+
+#
+# module runtime environment specific functions
+#
+function addEnv() {
+    local key="$1";
+    local val="$(getValue $key)";
+    
+    oldIFS="$IFS";
+    IFS=', '
+    read -a valArr <<< "$val"
+    IFS="$oldIFS"
+
+    # step through each value
+    for index in "${!valArr[@]}"
+    do
+        _runtime_environments=( "${_runtime_environments[@]}" "${valArr[index]}" )
+    done
 }
 

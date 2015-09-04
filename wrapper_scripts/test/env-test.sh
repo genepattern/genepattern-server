@@ -17,27 +17,6 @@ tearDown() {
     unset GP_ENV_CUSTOM;
 }
 
-# demo assertTrue
-testAssertTrue() 
-{
-    assertTrue "Basic '-eq' test" "[ 1 -eq 1 ]"
-}
-
-# demo assertEquals
-testAssertEquals() {
-    assertEquals 'Basic test' 'Hello, World!' 'Hello, World!'
-}
-
-# Usage: arrayToString <array> [<delim>]
-# for example:
-#    declare -a argArray=('a' 'b');
-#    arrayToString argArray[@]
-function arrayToString() {
-    declare -a argAry1=("${!1}")
-    argAry1Str=$( IFS=$' '; echo "${argAry1[*]}" );
-    echo "$argAry1Str";
-}
-
 join() {
     local IFS=$1;
     shift;
@@ -160,7 +139,7 @@ testGetValue_NoEntry() {
 # 2) when the key is one of the canonical keys and there is no customization, return the default value
 testGetValue_CanonicalEntry() {
     source ../env-lookup.sh
-    assertTrue "indexOf('Java-1.7') before initCanonicalValues" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
+    assertTrue "indexOf('Java-1.7') before initDefaultValues" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
     initValues
     assertTrue "indexOf('Java-1.7')" "[ "-1" -ne "$(indexOf 'Java-1.7')" ]"
 }
@@ -172,8 +151,8 @@ testGetValue_CanonicalEntry() {
 testGetValue_CustomEntry() {
     source ../env-lookup.sh
 
-    initCanonicalValues
-    initCustomValues "${test_script_dir}/env-lookup-shunit2.sh"
+    initDefaultValues
+    sourceEnvCustom "${test_script_dir}/env-lookup-shunit2.sh"
     
     assertEquals "custom value" ".matlab_2010b_mcr" "$(getValue Matlab-2010b-MCR)"
     assertEquals "custom values" "R-3.1, GCC-4.9" "$(getValue R-3.1)"
@@ -192,21 +171,31 @@ testInitCustomValuesFromEnv() {
 
 testAddEnv() {
     source ../env-lookup.sh
-    initCanonicalValues
-    initCustomValues "${test_script_dir}/env-lookup-shunit2.sh"
+    initDefaultValues
+    sourceEnvCustom "${test_script_dir}/env-lookup-shunit2.sh"
     
     addEnv 'Java-1.7';
     addEnv 'R-3.1';
     
     # expecting three entries
-    assertEquals "runtimeEnvironments.size" "3" "${#runtimeEnvironments[@]}"
+    assertEquals "_runtime_environments.size" "3" "${#_runtime_environments[@]}"
+}
+
+testAddEnvIU() {
+    source ../env-lookup.sh
+    sourceEnvCustom "env-custom-IU.sh"
+    assertEquals "check values" 'gcc/4.7.2, R/3.0.1' "$(getValue 'R-3.0')"
+
+    addEnv 'R-3.0'
+    assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${_runtime_environments[0]}"
+    assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
 }
 
 testParseCmdLine() {
     declare -a mockCmdLine=('run-with-env.sh' '-u' 'Java' '-u' 'R-2.15');
     source ../env-lookup.sh
-    initCanonicalValues
-    initCustomValues
+    initDefaultValues
+    sourceEnvCustom
 
 }
 
