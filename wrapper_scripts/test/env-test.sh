@@ -82,9 +82,7 @@ testEnvHashMap() {
 }
 
 testPutValue_NoKey() {
-    echoValues
     putValue 'Java-1.7'
-    echoValues
     assertEquals "getValue('Java-1.7')" "Java-1.7" "$(getValue 'Java-1.7')"
 }
 
@@ -164,8 +162,6 @@ testGetValue_CanonicalEntry() {
     source ../env-lookup.sh
     assertTrue "indexOf('Java-1.7') before initCanonicalValues" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
     initValues
-#    initCanonicalValues
-#    initCustomValues
     assertTrue "indexOf('Java-1.7')" "[ "-1" -ne "$(indexOf 'Java-1.7')" ]"
 }
 
@@ -175,21 +171,12 @@ testGetValue_CanonicalEntry() {
 #    Something like: IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
 testGetValue_CustomEntry() {
     source ../env-lookup.sh
-    
+
     initCanonicalValues
     initCustomValues "${test_script_dir}/env-lookup-shunit2.sh"
     
     assertEquals "custom value" ".matlab_2010b_mcr" "$(getValue Matlab-2010b-MCR)"
     assertEquals "custom values" "R-3.1, GCC-4.9" "$(getValue R-3.1)"
-    
-    
-    oldIFS="$IFS";
-    IFS=', '
-    declare -a
-    read -a actualArr <<< "$(getValue R-3.1)"
-    IFS="$oldIFS"
-    echo "actualArr: ${actualArr[@]}"
-    assertEquals "parse custom values" "R-3.1,GCC-4.9" "$(join ',' ${actualArr[@]})"
 }
 
 testInitCustomValuesFromEnv() {
