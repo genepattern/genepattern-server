@@ -405,10 +405,6 @@ img.buttonIcon {
 	background-image: url(images/ui-icons_0c1922_256x240.png) !important;
 }
 
-.selectChoice {
-    width: 85%;
-}
-
 .selectChoice .ui-multiselect {
 	width: 300px !important;
 }
