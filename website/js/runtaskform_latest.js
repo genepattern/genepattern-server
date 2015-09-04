@@ -1254,7 +1254,7 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
 }
 
 function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
-    var textDiv = $("<div class='textDiv tagsContent'/>");
+    var textDiv = $("<div class='tagsContent textDiv '/>");
     $("#runTaskSettingsDiv").append(textDiv);
 
     // Create the single/batch run mode toggle
@@ -1380,12 +1380,21 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 inputFieldValue += ",";
             }
         }
-        textField.val(inputFieldValue);
+        /*if(paramDetails.allowMultiple)
+        {
+
+        }
+        else
+        {*/
+            textField.val(inputFieldValue);
+        //}
+
+        //textField.val(initialValuesList);
         textField.trigger("change");
     }
 
 
-    if(!isPassword && run_task_info.params[parameterName].allowMultiple)
+    if(!isPassword && paramDetails.allowMultiple)
     {
         textField.tagsInput(
         {
@@ -1412,11 +1421,14 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
         });
 
         textDiv.find(".tag").find("a").attr("title", "").hide();
-        textDiv.find(".tag").find("span").attr("title", "");
 
-        var text = textDiv.find(".tag").find("span").text();
-        text = $.trim(text);
-        textDiv.find(".tag").find("span").text(text);
+        textDiv.find(".tag").each(function()
+        {
+            var text = $(this).find("span").text();
+            text = $.trim(text);
+            $(this).find("span").text(text);
+        });
+
 
         textDiv.find(".tagsinput").on("hover", ".tag", function ()
         {

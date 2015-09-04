@@ -773,3 +773,8 @@ table.missingTaskTable
     margin-left: 5px;
     vertical-align: top;
 }
+
+.textDiv
+{
+    margin-left: 0;
+}
