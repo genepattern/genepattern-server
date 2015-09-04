@@ -1397,9 +1397,46 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
             onChange: function()
             {
                 textValChange(this);
+            },
+            onAddTag: function()
+            {
+                $(this).parent().find(".tag").last().find("a").attr("title", "").hide();
+                var text = $(this).parent().find(".tag").last().find("span").text();
+                text = $.trim(text);
+                $(this).parent().find(".tag").last().find("span").text(text);
+            },
+            onRemoveTag: function()
+            {
+                $(this).parent().find(".tag").find("a").hide();
             }
         });
 
+        textDiv.find(".tag").find("a").attr("title", "").hide();
+        textDiv.find(".tag").find("span").attr("title", "");
+
+        var text = textDiv.find(".tag").find("span").text();
+        text = $.trim(text);
+        textDiv.find(".tag").find("span").text(text);
+
+        textDiv.find(".tagsinput").on("hover", ".tag", function ()
+        {
+            if($(this).is(":hover"))
+            {
+                $(this).find("a").show();
+
+                var textHover = $(this).find("span").text();
+                textHover = textHover + " ";
+                $(this).find("span").text(textHover);
+            }
+            else
+            {
+                $(this).find("a").hide();
+
+                var text = $(this).find("span").text();
+                text = $.trim(text);
+                $(this).find("span").text(text);
+            }
+        });
     }
 
     //replace the textDiv with the new tags input div
