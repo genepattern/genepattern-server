@@ -1498,11 +1498,9 @@ function createFileDivId(parameterName, groupId) {
 }
 
 function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
-    var fileDivMain = $("<div/>");
     var fileDivId = createFileDivId(parameterName, groupId);
     var fileUploadDiv = $("<div class='fileUploadDiv'/>");
     var fileDiv = $("<div class='fileDiv mainDivBorder' id='" + fileDivId + "' />");
-    fileDivMain.append(fileDiv);
 
     //enable dragging of file between groups
     fileDiv.droppable(
@@ -1701,7 +1699,7 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
         fileDiv.hide();
     }
 
-    return fileDivMain;
+    return fileDiv;
 }
 
 //add toggle to switch between field types for a parameter that has multiple
@@ -1982,15 +1980,17 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
 }
 
 function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch) {
-    if (run_task_info.params[parameterName].type.length > 1) {
-        //multiple field types specified so add a toggle buttons
-        //right now this would only be for a file drop-down parameter
-        contentDiv.prepend(createModeToggle(parameterName));
-    }
+
 
     //create the necessary field types for this parameter
     if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) !== -1) {
         contentDiv.append(initChoiceDiv(parameterName, groupId, enableBatch, initialValues));
+    }
+
+    if (run_task_info.params[parameterName].type.length > 1) {
+        //multiple field types specified so add a toggle buttons
+        //right now this would only be for a file drop-down parameter
+        contentDiv.prepend(createModeToggle(parameterName));
     }
 
     if ($.inArray(field_types.FILE, run_task_info.params[parameterName].type) !== -1) {

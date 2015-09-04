@@ -219,7 +219,6 @@ button.urlButton
     display: inline-block;
     white-space: normal;
     word-break: break-all;
-    float: left;
 }
 
 .fileDiv button img
