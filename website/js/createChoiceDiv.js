@@ -112,29 +112,11 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         {
             var paramName = $(this).parents("tr").first().data("pname");
 
-            if ($(this).is(":checked"))
-            {
-                //highlight the div to indicate batch mode
-                $(this).closest(".pRow").css("background-color", "#F5F5F5");
-                $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
-
-                run_task_info.params[paramName].isBatch = true;
-
-                run_task_info.params[paramName].allowMultiple = true;
-            }
-            else
-            {
-                //remove row highlight indicating batch mode
-                $(this).closest(".pRow").css("background-color", "#FFFFFF");
-                $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-
-                run_task_info.params[paramName].isBatch = false;
-                run_task_info.params[paramName].allowMultiple = false;
-            }
-
-            var textElement = $(this).closest(".pRow").find(".choice");
+            var textElement = $(this).closest(".pRow").find(".selectChoice");
             var groupId = getGroupId(textElement);
-            $(this).closest(".pRow").find(".selectChoice").replaceWith(initChoiceDiv(paramName, groupId, true));
+
+            var isBatch = $(this).is(":checked");
+            updateNonFileView(textElement, paramName, groupId, isBatch);
         });
 
         batchBox.append(batchCheck);

@@ -506,22 +506,45 @@ function sendToParamForMenu(paramList) {
     });
 }
 
-/**
- * Iterates over an array of items to return the index of the first item that matches the
- * provided item in a case-insensitive way.  Returns -1 if no match found.
- * @param item - value to look for
- * @param array - array to search for item in
- * @returns index of first item match
+/*
+ * Intended to be used to update the view of a parameter that has batching enabled
  */
-function inArrayCaseInsensitive(item, array){
-    var defaultResult = -1;
-    var result = defaultResult;
-    $.each(array, function(index, value) {
-        if (result == defaultResult && value.toLowerCase() == item.toLowerCase()) {
-            result = index;
-        }
-    });
-    return result;
+function updateNonFileView(inputElement, parameterName, groupId, isBatch)
+{
+    if (isBatch)
+    {
+        //highlight the div to indicate batch mode
+        $(inputElement).closest(".pRow").css("background-color", "#F5F5F5");
+        $(inputElement).closest(".pRow").next().css("background-color", "#F5F5F5");
+
+        run_task_info.params[parameterName].isBatch = true;
+
+        run_task_info.params[parameterName].allowMultiple = true;
+    }
+    else
+    {
+        //remove row highlight indicating batch mode
+        $(inputElement).closest(".pRow").css("background-color", "#FFFFFF");
+        $(inputElement).closest(".pRow").next().css("background-color", "#FFFFFF");
+
+        run_task_info.params[parameterName].isBatch = false;
+        run_task_info.params[parameterName].allowMultiple = false;
+    }
+
+    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
+        //this must be a text entry
+        $(inputElement).replaceWith(createTextDiv(parameterName, groupId, true));
+    }
+
+    if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) !== -1) {
+        $(inputElement).replaceWith(initChoiceDiv(parameterName, groupId, true));
+
+    }
+
+    if ($.inArray(field_types.INTEGER, run_task_info.params[parameterName].type) !== -1
+        || $.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) !== -1) {
+        $(inputElement).replaceWith(createNumericDiv(parameterName, groupId, true));
+    }
 }
 
 function loadModuleInfo(module) {
@@ -1548,57 +1571,6 @@ function createFileDiv(parameterName, groupId, enableBatch, initialValuesList) {
     var fileInput = $("<input class='uploadedinputfile' type='file'/>");
     fileInput.data("pname", parameterName);
 
-    // Create the single/batch run mode toggle
-    if (enableBatch) {
-        var batchBox = $("<div class='batchBox' title='A job will be launched for every file with a matching type.'></div>");
-        // Add the checkbox
-        var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
-        batchCheck.change(function () {
-            var paramName = $(this).parents("tr").first().data("pname");
-            if ($(this).is(":checked")) {
-                run_task_info.params[paramName].isBatch = true;
-
-                //highlight the div to indicate batch mode
-                $(this).closest(".pRow").css("background-color", "#F5F5F5");
-                $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
-
-                //allow multi-select from file browser when in batch mode
-                $(this).parents(".fileDiv").find(".uploadedinputfile").attr("multiple", "multiple");
-            }
-            else
-            {
-                //remove row highlight indicating batch mode
-                $(this).closest(".pRow").css("background-color", "#FFFFFF");
-                $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
-
-                // Clear the files from the parameter
-                var groupId = getGroupId($(this));
-                updateFilesForGroup(groupId, paramName, []);
-                updateParamFileTable(paramName, $(this).parents(".valueEntryDiv").find(".fileDiv"));
-
-                var maxValue = run_task_info.params[paramName].maxValue;
-
-                //disable multiselect for this param if it is not file list param
-                if (maxValue <= 1)
-                {
-                    $(this).parents(".fileDiv").find(".uploadedinputfile").removeAttr("multiple");
-                }
-
-                run_task_info.params[paramName].isBatch = false;
-            }
-        });
-        batchBox.append(batchCheck);
-        batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
-        //batchCheck.button();
-        batchBox.tooltip();
-
-        fileDivMain.prepend(batchBox);
-
-        //if this is a batch parameter then pre-select the batch checkbox
-        if (run_task_info.params[parameterName].isBatch) {
-            batchBox.find("input[type='checkbox']").prop('checked', true);
-        }
-    }
 
     if (paramDetails.allowMultiple) {
         //make the file input field multiselect, so you can select more than one file
@@ -2010,6 +1982,12 @@ function createParamValueEntryDiv(parameterName, initialValuesObj) {
 }
 
 function populateContentDiv(parameterName, contentDiv, groupId, initialValues, enableBatch) {
+    if (run_task_info.params[parameterName].type.length > 1) {
+        //multiple field types specified so add a toggle buttons
+        //right now this would only be for a file drop-down parameter
+        contentDiv.prepend(createModeToggle(parameterName));
+    }
+
     //create the necessary field types for this parameter
     if ($.inArray(field_types.CHOICE, run_task_info.params[parameterName].type) !== -1) {
         contentDiv.append(initChoiceDiv(parameterName, groupId, enableBatch, initialValues));
@@ -2017,6 +1995,70 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
 
     if ($.inArray(field_types.FILE, run_task_info.params[parameterName].type) !== -1) {
         contentDiv.append(createFileDiv(parameterName, groupId, enableBatch, initialValues));
+
+        // Create the single/batch run mode toggle
+        if (enableBatch) {
+            var batchBox = $("<div class='batchBox' title='A job will be launched for every file with a matching type.'></div>");
+            // Add the checkbox
+            var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
+            batchCheck.change(function () {
+                var paramName = $(this).parents("tr").first().data("pname");
+
+                var isBatch = $(this).is(":checked");
+                if (isBatch) {
+                    run_task_info.params[paramName].isBatch = true;
+
+                    //highlight the div to indicate batch mode
+                    $(this).closest(".pRow").css("background-color", "#F5F5F5");
+                    $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
+
+                    //allow multi-select from file browser when in batch mode
+                    $(this).parents(".valueEntryDiv").find(".uploadedinputfile").attr("multiple", "multiple");
+                }
+                else
+                {
+                    //remove row highlight indicating batch mode
+                    $(this).closest(".pRow").css("background-color", "#FFFFFF");
+                    $(this).closest(".pRow").next().css("background-color", "#FFFFFF");
+
+                    // Clear the files from the parameter
+                    var groupId = getGroupId($(this));
+                    updateFilesForGroup(groupId, paramName, []);
+                    updateParamFileTable(paramName, $(this).parents(".valueEntryDiv").find(".fileDiv"));
+
+                    var maxValue = run_task_info.params[paramName].maxValue;
+
+                    //disable multiselect for this param if it is not file list param
+                    if (maxValue <= 1)
+                    {
+                        $(this).parents(".valueEntryDiv").find(".uploadedinputfile").removeAttr("multiple");
+                    }
+
+                    run_task_info.params[paramName].isBatch = false;
+                }
+
+                var isChoice = $.inArray(field_types.CHOICE, run_task_info.params[paramName].type);
+
+                //update multiselect of file drop down also
+                if(isChoice != -1)
+                {
+                    var choiceElement = $(this).closest(".pRow").find(".selectChoice");
+                    var choiceElementGroupId = getGroupId(choiceElement);
+                    updateNonFileView(choiceElement, paramName, choiceElementGroupId, isBatch);
+                }
+
+            });
+            batchBox.append(batchCheck);
+            batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
+            //batchCheck.button();
+            batchBox.tooltip();
+
+            //if this is a batch parameter then pre-select the batch checkbox
+            if (run_task_info.params[parameterName].isBatch) {
+                batchBox.find("input[type='checkbox']").prop('checked', true);
+            }
+            contentDiv.prepend(batchBox);
+        }
     }
 
     if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
@@ -2028,12 +2070,6 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
         || $.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
         contentDiv.append(createNumericDiv(parameterName, groupId, enableBatch, initialValues));
-    }
-
-    if (run_task_info.params[parameterName].type.length > 1) {
-        //multiple field types specified so add a toggle buttons
-        //right now this would only be for a file drop-down parameter
-        contentDiv.prepend(createModeToggle(parameterName));
     }
 }
 
