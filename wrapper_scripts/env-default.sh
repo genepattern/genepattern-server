@@ -12,7 +12,7 @@ function initEnv() {
 # initialize the default, canonical runtime environment names
 #
 
-putValue 'Java'
+putValue 'Java' 'Java-1.7'
 putValue 'Java-1.7'
 putValue 'Matlab-2010b-MCR'
 putValue 'Matlab-2013a-MCR'
