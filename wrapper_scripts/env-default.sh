@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 #
+# declare default implementation for initializing a runtime environment
+# Usage: initEnv <runtime-env-name>
+#
+function initEnv() {
+    echo "loading $1 ..."
+}
+
+#
 # initialize the default, canonical runtime environment names
 #
 
