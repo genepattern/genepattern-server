@@ -19,12 +19,7 @@ function scriptDir() {
     echo "$SCRIPT_DIR";
 }
 
-# seed the lookup table with default canonical values 
-# technically, this is not necessary, but it is helpful for debugging
-# and for guidance for GP server admins
-function initDefaultValues() {
-  source "$(scriptDir)/env-default.sh"
-}
+source "$(scriptDir)/env-hashmap.sh"
 
 #
 # Convert relative path to fully qualified path, if necessary. 
@@ -57,6 +52,13 @@ function initCustomValuePath() {
     echo "$(initPath 'env-custom.sh')";
 }
 
+# seed the lookup table with default canonical values 
+# technically, this is not necessary, but it is helpful for debugging
+# and for guidance for GP server admins
+function sourceEnvDefault() {
+  source "$(scriptDir)/env-default.sh"
+}
+
 function sourceEnvCustom() {
     local env_custom_script=$(initCustomValuePath "$@") 
     if [ -f "${env_custom_script}" ]
@@ -66,7 +68,7 @@ function sourceEnvCustom() {
 }
 
 function initValues() {
-  initDefaultValues
+  sourceEnvDefault
   sourceEnvCustom
 }
 

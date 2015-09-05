@@ -4,7 +4,6 @@
 # shunit2 test cases for wrapper script code
 #
 
-
 # called before each test
 setUp() {
     source ../env-hashmap.sh
@@ -139,7 +138,7 @@ testGetValue_NoEntry() {
 # 2) when the key is one of the canonical keys and there is no customization, return the default value
 testGetValue_CanonicalEntry() {
     source ../env-lookup.sh
-    assertTrue "indexOf('Java-1.7') before initDefaultValues" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
+    assertTrue "indexOf('Java-1.7') before sourceEnvDefault" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
     initValues
     assertTrue "indexOf('Java-1.7')" "[ "-1" -ne "$(indexOf 'Java-1.7')" ]"
 }
@@ -150,8 +149,7 @@ testGetValue_CanonicalEntry() {
 #    Something like: IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
 testGetValue_CustomEntry() {
     source ../env-lookup.sh
-
-    initDefaultValues
+    sourceEnvDefault
     sourceEnvCustom "${test_script_dir}/env-lookup-shunit2.sh"
     
     assertEquals "custom value" ".matlab_2010b_mcr" "$(getValue Matlab-2010b-MCR)"
@@ -171,7 +169,7 @@ testInitCustomValuesFromEnv() {
 
 testAddEnv() {
     source ../env-lookup.sh
-    initDefaultValues
+    sourceEnvDefault
     sourceEnvCustom "${test_script_dir}/env-lookup-shunit2.sh"
     
     addEnv 'Java-1.7';
@@ -194,9 +192,8 @@ testAddEnvIU() {
 testParseCmdLine() {
     declare -a mockCmdLine=('run-with-env.sh' '-u' 'Java' '-u' 'R-2.15');
     source ../env-lookup.sh
-    initDefaultValues
+    sourceEnvDefault
     sourceEnvCustom
-
 }
 
 
