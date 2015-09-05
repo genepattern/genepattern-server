@@ -189,11 +189,11 @@ testAddEnvIU() {
     assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
 }
 
-testParseCmdLine() {
-    declare -a mockCmdLine=('run-with-env.sh' '-u' 'Java' '-u' 'R-2.15');
-    source ../env-lookup.sh
-    sourceEnvDefault
-    sourceEnvCustom
+testRunWithEnv() {
+    unset GP_ENV_CUSTOM
+    expected=$'loading Java-1.7 ...\nHello'
+    TEST_OUT=$(../run-with-env.sh -u Java echo "Hello")
+    assertEquals "" "$expected" "$TEST_OUT"
 }
 
 

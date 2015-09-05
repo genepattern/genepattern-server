@@ -8,11 +8,16 @@
 r_version=$1
 shift;
 
-script_dir=$(dirname $0)
-source $(dirname $0)/env-init.sh
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source "$script_dir/env-lookup.sh"
+initValues
 
-initEnv $(modOrReplace "R-${r_version}")
-initEnv $(modOrReplace "Java")
+addEnv "R-${r_version}"
+addEnv "Java"
+for module in "${_runtime_environments[@]}"
+do
+  initEnv "${module}"
+done
 
 r=`which R`
 rhome=${r%/*/*}
