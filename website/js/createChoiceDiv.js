@@ -284,15 +284,25 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
                     var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
                     var textList = [];
-                    for(var l=0; l < valuesList.length;l++)
+                    if(valuesList !== undefined)
                     {
-                        var value = valuesList[l];
-                        for(var c=0 ;c < checkedItems.length;c++)
+                        for(var l=0; l < valuesList.length;l++)
                         {
-                            if($(checkedItems[c]).val() == value)
+                            var value = valuesList[l];
+                            for(var c=0 ;c < checkedItems.length;c++)
                             {
-                                textList.push($(checkedItems[c].labels[0]).text());
+                                if($(checkedItems[c]).val() == value)
+                                {
+                                    textList.push($(checkedItems[c].labels[0]).text());
+                                }
                             }
+                        }
+                    }
+                    else
+                    {
+                        for(var l=0 ;l < checkedItems.length;l++)
+                        {
+                            textList.push($(checkedItems[l].labels[0]).text());
                         }
                     }
 
