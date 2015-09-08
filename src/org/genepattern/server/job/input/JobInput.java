@@ -262,7 +262,7 @@ public class JobInput {
                 //validate
                 if (numJobs != param.getNumValues()) {
                     //error
-                    throw new GpServerException("Number of values in all batch parameter must be the same");
+                    throw new GpServerException("Number of values specified for each batch parameters must be the same.");
                 }
             }
         }

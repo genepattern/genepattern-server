@@ -116,7 +116,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             var groupId = getGroupId(textElement);
 
             var isBatch = $(this).is(":checked");
-            updateNonFileView(textElement, paramName, groupId, isBatch);
+            textElement = updateNonFileView(textElement, paramName, groupId, isBatch);
         });
 
         batchBox.append(batchCheck);
@@ -185,8 +185,12 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         choice.data("groupId", groupId);
 
         var longChars = 1;
+
+        var choiceMapping = run_task_info.params[parameterName].choiceMapping = {};
+
         for(var c=0;c<choiceInfo.choices.length;c++)
         {
+            choiceMapping[choiceInfo.choices[c].value] = choiceInfo.choices[c].label;
             choice.append("<option value='"+choiceInfo.choices[c].value+"'>"
                     + choiceInfo.choices[c].label+"</option>");
             if(choiceInfo.choices[c].label.length > longChars)

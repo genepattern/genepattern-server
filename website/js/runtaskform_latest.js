@@ -7,6 +7,9 @@ var field_types = {
     FLOAT: 7
 };
 
+//convenient lookup for finding display value for an actual value of a choice parameter
+var choiceMapping = {};
+
 //contains info about the current selected task
 var run_task_info = {
     lsid: null, //lsid of the module
@@ -531,6 +534,9 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         run_task_info.params[parameterName].allowMultiple = false;
     }
 
+    var parent =  $(inputElement).closest(".pRow");
+
+
     if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
         $(inputElement).replaceWith(createTextDiv(parameterName, groupId, true));
@@ -545,6 +551,19 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         || $.inArray(field_types.FLOAT, run_task_info.params[parameterName].type) !== -1) {
         $(inputElement).replaceWith(createNumericDiv(parameterName, groupId, true));
     }
+
+    if(isBatch)
+    {
+        updateBatchInfo();
+        parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
+            "How batch works...</a></div>");
+    }
+    else
+    {
+        parent.find("td").last().find(".batchInfo").remove();
+    }
+
+    return inputElement;
 }
 
 function loadModuleInfo(module) {
@@ -1025,6 +1044,142 @@ function addSendToParam(parameterInfo) {
     }
 }
 
+function getBatchInfo()
+{
+    var containsNonFileParam = false;
+    var batchParams = [];
+    var numBatchJobs = 0;
+
+    var parameterNames = Object.keys(run_task_info.params);
+    for (var p = 0; p < parameterNames.length; p++) {
+        var paramName = parameterNames[p];
+        if (isBatch(paramName))
+        {
+            batchParams.push(paramName);
+            if($.inArray(field_types.FILE, run_task_info.params[paramName].type) == -1)
+            {
+                containsNonFileParam = true;
+            }
+
+            var groups = parameter_and_val_groups[paramName] == undefined ? null :  parameter_and_val_groups[paramName].groups;
+            if(groups != undefined && groups != null && Object.keys(groups).length == 1 && groups[1].values != undefined
+                && groups[1].values != null)
+            {
+                //there should be only one group in a batch parameter
+                //since batching of group params is not currently allowed
+                var numValues = groups[1].values.length;
+
+                if(numBatchJobs < numValues)
+                {
+                    numBatchJobs = numValues;
+                }
+            }
+        }
+    }
+
+    var batchInfoObject = {};
+    batchInfoObject["numBatchJobs"] = numBatchJobs;
+    batchInfoObject["batchParams"] = batchParams;
+    batchInfoObject["containsNonFile"] = containsNonFileParam;
+
+    return batchInfoObject;
+}
+
+function updateBatchInfo()
+{
+    var batchInfoObject = getBatchInfo();
+
+    //display a message if there are multiple batch params and some of them are
+    // non-file params
+    $(".previewBatch").remove();
+    if(batchInfoObject.containsNonFile && batchInfoObject.batchParams.length > 1)
+    {
+        /*var batchInfoDiv = $("<div/>");
+        var link = $("<a>NOTE: Important message when batching non-file parameters.</a>");
+        batchInfoDiv.append(link);
+        $("#paramsInfoDiv").append(batchInfoDiv);*/
+
+        var previewBatchBtn = $("<button class='previewBatch'><img src='/gp/images/Information_magnifier_icon.png' class='buttonIcon' height='16' width='16'/>Preview Batch</button>");
+        previewBatchBtn.button().click(function()
+        {
+            $( "<div id='batchInfoDialog'/>" ).dialog({
+                minWidth: 600,
+                minHeight: 500,
+                create: function()
+                {
+                    var batchInfoObj = getBatchInfo();
+
+                    var div = $("<div id='batchInfoDialogHeader'/>");
+                    $(div).append("<h4> Total Batch Jobs: " + batchInfoObj.numBatchJobs + "</h4>");
+                    div.append("<div style='font-size: 10px;'>NOTE: Number of batch jobs and parameter pairing will vary if directories are specified.</div>");
+
+                    $(this).append(div);
+
+                    for(var b=0;b<batchInfoObj.numBatchJobs;b++)
+                    {
+                        var table = $("<table/>");
+                        table.append("<tr><td colspan='2'>Batch #" + (b+1) + "</td></tr>");
+
+                        for(var p=0;p<batchInfoObj.batchParams.length;p++)
+                        {
+                            var pName = batchInfoObj.batchParams[p];
+                            var tr = $("<tr/>");
+                            table.append(tr);
+                            var td = $("<td width='40%'/>");
+                            td.append(run_task_info.params[pName].displayname);
+                            $(tr).append(td).appendTo(table);
+                            var groups = parameter_and_val_groups[pName] == undefined ? null : parameter_and_val_groups[pName].groups;
+                            if (groups != undefined && groups != null && Object.keys(groups) == 1) {
+                                //there should be only one group in a batch parameter
+                                //since batching of group params is not currently allowed
+
+                                var values = groups[1].values;
+                                var files = groups[1].files;
+
+                                var value = "";
+                                var choiceMapping = run_task_info.params[pName].choiceMapping;
+
+                                if(choiceMapping != undefined && choiceMapping != null)
+                                {
+                                    value = choiceMapping[values[b]];
+                                }
+                                else if(files != undefined && files != null && b < files.length)
+                                {
+                                    value = htmlEncode(files[b].name);
+                                }
+                                else if(values != undefined && values != null && b < values.length)
+                                {
+                                   value = values[b];
+                                }
+                                else
+                                {
+                                    value = $("<span style='font-style:italic;color:red;'>No Value Specified...</span>");
+                                }
+
+                                td = $("<td width='60%'/>");
+                                td.append(value);
+                                $(tr).append(td).appendTo(table);
+                            }
+                        }
+
+                        $("<div/>").append(table).appendTo(this);
+                    }
+                },
+                buttons: {
+                    OK: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        });
+
+        $(".submitControlsDiv").each(function()
+        {
+            $(this).find("button").last().before(previewBatchBtn.clone(true));
+        });
+    }
+}
+
 function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList)
 {
     var numericDiv = $("<div class='numericDiv'/>");
@@ -1037,9 +1192,9 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         {
             var paramName = $(this).parents("tr").first().data("pname");
 
-            if ($(this).is(":checked"))
+            var isBatch = $(this).is(":checked");
+            if (isBatch)
             {
-
                 //highlight the div to indicate batch mode
                 $(this).closest(".pRow").css("background-color", "#F5F5F5");
                 $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
@@ -1047,6 +1202,10 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
                 run_task_info.params[paramName].isBatch = true;
 
                 run_task_info.params[paramName].allowMultiple = true;
+
+                var parent =  $(this).closest(".pRow");
+                parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
+                    "How batch works...</a></div>");
             }
             else
             {
@@ -1056,11 +1215,18 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].isBatch = false;
                 run_task_info.params[paramName].allowMultiple = false;
+
+                $(this).closest(".pRow").find("td").last().find(".batchInfo").remove();
             }
 
             var textElement = $(this).closest(".pRow").find(".numericInput");
             var groupId = getGroupId(textElement);
             $(this).closest(".pRow").find(".numericDiv").replaceWith(createNumericDiv(paramName, groupId, true));
+
+            if(isBatch)
+            {
+                updateBatchInfo();
+            }
         });
 
         batchBox.append(batchCheck);
@@ -1289,9 +1455,9 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
         {
             var paramName = $(this).parents("tr").first().data("pname");
 
-            if ($(this).is(":checked"))
+            var isBatch = $(this).is(":checked");
+            if (isBatch)
             {
-
                 //highlight the div to indicate batch mode
                 $(this).closest(".pRow").css("background-color", "#F5F5F5");
                 $(this).closest(".pRow").next().css("background-color", "#F5F5F5");
@@ -1312,7 +1478,22 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
             var textElement = $(this).closest(".pRow").find(".pValue");
             var groupId = getGroupId(textElement);
+
+            var parent =  $(this).closest(".pRow");
+
             $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
+
+            if(isBatch)
+            {
+                updateBatchInfo();
+
+                parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
+                     "How batch works...</a></div>");
+            }
+            else
+            {
+                parent.find("td").last().find(".batchInfo").remove();
+            }
         });
 
         batchBox.append(batchCheck);
@@ -2045,6 +2226,19 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
                     var choiceElement = $(this).closest(".pRow").find(".selectChoice");
                     var choiceElementGroupId = getGroupId(choiceElement);
                     updateNonFileView(choiceElement, paramName, choiceElementGroupId, isBatch);
+                }
+                else
+                {
+                    if(isBatch)
+                    {
+                        updateBatchInfo();
+                        $(this).closest(".paramValueTd").prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
+                            "How batch works...</a></div>");
+                    }
+                    else
+                    {
+                        $(this).closest(".paramValueTd").find(".batchInfo").remove();
+                    }
                 }
 
             });

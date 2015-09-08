@@ -778,3 +778,42 @@ table.missingTaskTable
 {
     margin-left: 0;
 }
+
+.batchInfo img {
+    vertical-align: top;
+}
+
+#batchInfoDialogHeader h4
+{
+    margin: 0;
+}
+
+#batchInfoDialogHeader
+{
+    margin-top: 1px;
+    margin-bottom: 8px;
+}
+
+#batchInfoDialog
+{
+    overflow: auto;
+}
+#batchInfoDialog table
+{
+    width: 100%;
+    height: 100%;
+    border: 1px solid gray;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+#batchInfoDialog table tr td
+{
+    padding: 2px;
+    border: 1px solid gray;
+}
+
+#batchInfoDialog table tr:first-child
+{
+    background-color: #d3d3d3;
+}
