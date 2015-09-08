@@ -172,7 +172,7 @@ public class GpConfig {
             }
         } 
         log.error("Error initializing genepattern.version from config, using hard-coded value");
-        return "3.9.4";
+        return "3.9.5";
     }
     
     /**
