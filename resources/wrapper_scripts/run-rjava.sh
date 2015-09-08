@@ -9,7 +9,7 @@ r_version=$1
 shift;
 
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "$script_dir/env-lookup.sh"
+source "${script_dir}/env-lookup.sh"
 initValues
 
 addEnv "R-${r_version}"

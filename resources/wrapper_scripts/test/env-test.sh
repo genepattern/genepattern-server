@@ -191,9 +191,18 @@ testAddEnvIU() {
 
 testRunWithEnv() {
     unset GP_ENV_CUSTOM
-    expected=$'loading Java-1.7 ...\nHello'
-    TEST_OUT=$(../run-with-env.sh -u Java echo "Hello")
-    assertEquals "" "$expected" "$TEST_OUT"
+    export GP_DEBUG="true"
+    expected=$'loading Java-1.7 ...\nHello, World!'
+    TEST_OUT=$(../run-with-env.sh -u Java echo 'Hello, World!')
+    assertEquals "default initEnv, with debug output" "$expected" "$TEST_OUT"
+    unset GP_DEBUG
+    
+    unset GP_DEBUG
+    assertEquals "default initEnv, no debug output" "Hello, World!" "$(../run-with-env.sh -u Java echo 'Hello, World!')"    
+}
+
+testRunRJava() {
+    
 }
 
 
