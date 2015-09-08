@@ -1145,7 +1145,7 @@ function updateBatchInfo()
                                 }
                                 else if(files != undefined && files != null && b < files.length)
                                 {
-                                    value = htmlEncode(files[b].name);
+                                    value = decodeURIComponent(files[b].name);
                                 }
                                 else if(values != undefined && values != null && b < values.length)
                                 {
@@ -3669,14 +3669,21 @@ function setAllFileParamValues() {
         for (var g = 0; g < groupNames.length; g++) {
             var param_files = parameter_and_val_groups[paramName].groups[groupNames[g]].files;
             var param_value_listing = parameter_and_val_groups[paramName].groups[groupNames[g]].values;
+            var setFromFile = parameter_and_val_groups[paramName].groups[groupNames[g]].setFromFile;
 
+            if(setFromFile == undefined || setFromFile == null)
+            {
+                setFromFile = false;
+            }
             if (param_value_listing !== null &&
                 param_value_listing !== undefined &&
-                param_value_listing.length > 0 || (param_files === undefined || param_files === null)) {
+                (param_value_listing.length > 0 && !setFromFile) || (param_files === undefined || param_files === null)) {
                 //check if value already set from a choice list and this is a file parameter
                 continue;
             }
 
+            //flag this param as not being set from a choice list
+            parameter_and_val_groups[paramName].groups[groupNames[g]].setFromFile = true;
             var fileList = [];
 
             for (var f = 0; f < param_files.length; f++) {
