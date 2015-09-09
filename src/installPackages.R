@@ -69,7 +69,7 @@ local({
       # relative references or symlinks.
       norm.Library <- normalizePath(.Library)
       norm.libPaths <- normalizePath(.libPaths())
-      gp.lib.loc <- norm.libPaths()[! norm.libPaths() %in% system.Library ]
+      gp.lib.loc <- norm.libPaths[! norm.libPaths %in% norm.Library ]
       write("\n---------------------", stdout())
       write(paste0("gp.lib.loc: ", gp.lib.loc), stdout()) 
       write("---------------------\n", stdout())
