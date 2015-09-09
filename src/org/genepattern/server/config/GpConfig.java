@@ -269,6 +269,10 @@ public class GpConfig {
 
             this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
             
+            if (in.resourcesDir != null) {
+                this.substitutionParams.put("R.suppress.messages.file", new File(in.resourcesDir, "R_suppress.txt").getAbsolutePath());
+            }
+            
             // special-case, set execute flag for ant command
             File antPath=new File(ant_1_8_HomeDir,"bin/ant");
             if (!antPath.exists()) {
