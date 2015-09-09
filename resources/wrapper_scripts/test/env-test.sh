@@ -6,6 +6,8 @@
 
 # called before each test
 setUp() {
+    unset GP_ENV_CUSTOM
+    unset GP_DEBUG    
     source ../env-hashmap.sh
     test_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 }
@@ -14,6 +16,7 @@ setUp() {
 tearDown() {
     clearValues;
     unset GP_ENV_CUSTOM;
+    unset GP_DEBUG
 }
 
 join() {
@@ -114,7 +117,6 @@ testInitPath() {
 }
 
 testInitCustomValuePath() {
-    unset GP_ENV_CUSTOM;
     source ../env-lookup.sh
     assertEquals "bash test" "$(scriptDir)/env-custom.sh" "$(initPath 'env-custom.sh')"
     assertEquals "default" "$(scriptDir)/env-custom.sh" "$(initCustomValuePath)"
@@ -125,7 +127,6 @@ testInitCustomValuePath() {
     unset GP_ENV_CUSTOM;
     export GP_ENV_CUSTOM="/opt/env-custom-broad-centos5.sh"
     assertEquals "env, fq path" "/opt/env-custom-broad-centos5.sh" "$(initCustomValuePath)"
-    unset GP_ENV_CUSTOM;    
 }
 
 # 1) when the key is not in the map, return the key
@@ -190,9 +191,8 @@ testAddEnvIU() {
 }
 
 testRunWithEnv() {
-    unset GP_ENV_CUSTOM
     export GP_DEBUG="true"
-    expected=$'loading Java-1.7 ...\nHello, World!'
+    local expected=$'loading Java-1.7 ...\nHello, World!'
     TEST_OUT=$(../run-with-env.sh -u Java echo 'Hello, World!')
     assertEquals "default initEnv, with debug output" "$expected" "$TEST_OUT"
     unset GP_DEBUG
@@ -201,8 +201,19 @@ testRunWithEnv() {
     assertEquals "default initEnv, no debug output" "Hello, World!" "$(../run-with-env.sh -u Java echo 'Hello, World!')"    
 }
 
-testRunRJava() {
+testRunWithEnv_custom_env_arg() {
+    export GP_DEBUG="true";
+    local env_custom="${test_script_dir}/env-lookup-shunit2.sh";
     
+    local expected=$'loading R-3.1 ...\nloading GCC-4.9 ...\nHello, World!';
+    assertEquals "set GP_ENV_CUSTOM with '-c' arg" "$expected" "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
+}
+
+testRunRJava_custom_env_arg() {
+    export GP_DEBUG="true";
+    local env_custom="${test_script_dir}/env-lookup-shunit2.sh";
+    local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
+    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
 }
 
 
