@@ -310,8 +310,8 @@ local({
          pkg.version.actual <- as.character(packageVersion(pkg.info$name))
       }
       
-      write(sprintf("r_package_name=%s, requested_version=%s, version_actual=%s, new_install=%s, install_failed=%s",
-                    pkg.info$name, pkg.info$requested.version, pkg.version.actual, pkg.info$new.install, pkg.info$failed), 
+      write(sprintf("r_package_name=%s, requested_version=%s, version_actual=%s, new_install=%s, install_succeeded=%s",
+                    pkg.info$name, pkg.info$requested.version, pkg.version.actual, pkg.info$new.install, !pkg.info$failed), 
             file="report.log", append=TRUE)
    }
    
