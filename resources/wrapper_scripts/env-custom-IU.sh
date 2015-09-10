@@ -21,7 +21,10 @@ putValue 'R-2.11'           'R/2.11.1'
 putValue 'R-2.13'           'R/2.13.2'
 putValue 'R-2.14'           'R/2.14.2'
 putValue 'R-2.15'           'R/2.15.2'
+# 
+# Note from Le-Shin:
+# the default gcc version on mason is 4.4.7, and we need gcc > 4.7 to install and run R/3.0 and R/3.1.
+#
 putValue 'R-3.0'            'gcc/4.7.2, R/3.0.1'
 putValue 'R-3.1'            'gcc/4.7.2, R/3.1.1'
 putValue 'GCC-4.7'          'gcc/4.7.2'
-

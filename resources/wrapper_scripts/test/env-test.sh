@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # shunit2 test cases for wrapper script code
@@ -207,6 +207,24 @@ testRunWithEnv_custom_env_arg() {
     
     local expected=$'loading R-3.1 ...\nloading GCC-4.9 ...\nHello, World!';
     assertEquals "set GP_ENV_CUSTOM with '-c' arg" "$expected" "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
+}
+
+testRunJava() {
+    export GP_DEBUG="true";
+    local expected=$'loading Java-1.7 ...'
+    assertEquals "run java" "$expected" "$('../run-java.sh' '-version')"
+}
+
+testRunJava_custom_env_arg() {
+    export GP_DEBUG="true";
+    local expected=$'loading custom/java ...'
+    assertEquals "run java" "$expected" "$('../run-java.sh' '-c' './test/env-lookup-shunit2.sh' '-version')"
+}
+
+testRunRJava() {
+    export GP_DEBUG="true";
+    local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
+    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '2.5' '-version')"
 }
 
 testRunRJava_custom_env_arg() {

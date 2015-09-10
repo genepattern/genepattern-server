@@ -28,7 +28,6 @@
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$script_dir/env-lookup.sh"
 sourceEnvDefault
-
 # special-case: check for -c <gp_env_custom> 
 if [ "$1" = "-c" ]; then
     shift;
