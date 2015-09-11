@@ -5,8 +5,11 @@
 # arg1: the version number of R to run, e.g. '2.15'
 #
 
-script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "${script_dir}/env-lookup.sh"
+_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+# add this directory to the path
+export PATH="${_gp_script_dir}:${PATH}"
+
+source "${_gp_script_dir}/env-lookup.sh"
 sourceEnvDefault
 # special-case: check for -c <gp_env_custom> 
 if [ "$1" = "-c" ]; then

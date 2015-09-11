@@ -24,9 +24,12 @@
 # E.g.
 #     export GP_ENV_CUSTOM="env-custom-broad-centos5.sh"; ./run-with-env.sh -u R-3.1 echo "Hello"
 #
- 
-script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "$script_dir/env-lookup.sh"
+
+_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+# add this directory to the path
+export PATH="${_gp_script_dir}:${PATH}"
+
+source "${_gp_script_dir}/env-lookup.sh"
 sourceEnvDefault
 # special-case: check for -c <gp_env_custom> 
 if [ "$1" = "-c" ]; then
@@ -49,9 +52,6 @@ for module in "${_runtime_environments[@]}"
 do
   initEnv "${module}"
 done
-
-# add this directory to the path
-PATH="${script_dir}:${PATH}"
 
 # run the command
 "${@}" 
