@@ -4,7 +4,7 @@
 # Wrapper script for initializing the runtime environment before running 
 # a GenePattern module on a compute node.
 #
-# Usage: run-with-env.sh [-c <env-custom-site.sh>] -u <env-id.0> -u <env-id.1> ... -u <env-id.N> <cmd> [<args>]
+# Usage: run-with-env.sh [-c <env-custom-site.sh>] -u <dotkit-id.0> -u <dotkit-id.1> ... -u <dotkit-id.N>  -e <key0=value> ... -e <keyN=value> <cmd> [<args>]
 # Each '-u' flag declares a module runtime environment which must be initialized.
 # For Broad hosted servers this corresponds to a dotkit name.
 #
@@ -24,6 +24,14 @@
 # E.g.
 #     export GP_ENV_CUSTOM="env-custom-broad-centos5.sh"; ./run-with-env.sh -u R-3.1 echo "Hello"
 #
+#
+# The optional '-e' flag can set an environment variable as a command line arg.
+# E.g.
+#     ./run-with-env.sh -e MY_KEY=MY_VALUE echo "Hello" 
+#
+#     special-case: unset the env variable like this, -e "MY_KEY="
+#     special-case: set the env variable as an empty value like this, -e "MY_KEY"
+#
 
 _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # add this directory to the path
@@ -41,8 +49,15 @@ else
 fi
 
 idx=0
-while getopts u: opt "$@"; do
-    addEnv "$OPTARG"
+while getopts u:e: opt "$@"; do
+    case $opt in
+        u)
+            addEnv "$OPTARG"
+            ;;
+        e)
+            exportEnv "$OPTARG"
+            ;; 
+    esac
     idx=$((idx+1))
     # need this line to remove the -u <module> from the cmdline
     shift $((OPTIND-1)); OPTIND=1

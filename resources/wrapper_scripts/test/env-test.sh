@@ -190,6 +190,108 @@ testAddEnvIU() {
     assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
 }
 
+#
+# test parsing of "key=val" from a string
+#
+testBashParseArgs() {
+    local input="MY_ARG=MY_VAL"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "2" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}"
+    
+    input="MY_ARG"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, not hasEquals" "! [[ $input == *=* ]]"
+    assertEquals "$input, args.length", "1" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+    assertEquals "$input, args[1]" "" "${args[1]}"
+
+    input="MY_ARG="
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "1" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+    assertEquals "$input, args[1]" "" "${args[1]}"
+    
+    input="=MY_VAL"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "2" "${#args[@]}"
+    assertEquals "$input, args[0]" "" "${args[0]}"
+    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}" 
+}
+
+testExportEnv_basic() {
+    source ../env-lookup.sh
+    unset MY_KEY
+    
+    local input="MY_KEY=MY_VAL"
+    exportEnv "$input"
+    assertEquals "exportEnv $input" "MY_VAL" "$MY_KEY"
+    assertTrue   "exportEnv $input, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    
+    exportEnv "MY_KEY=MY_VAL"   # <---- reset the value
+    input="MY_KEY"
+    exportEnv "$input"
+    assertEquals "exportEnv $input, unset" "" "$MY_KEY"
+    assertTrue   "exportEnv $input, expecting MY_KEY to be set" "! [ -z ${MY_KEY+x} ]"
+    
+}
+
+# exportEnv '=MY_VAL', no left hand side value
+testExportEnv_ignoreInvalidArg() {
+    source ../env-lookup.sh
+    unset MY_KEY
+
+    local input="=MY_VAL"
+    assertEquals "exportEnv $input, ignored, not previously set" "" "$MY_KEY"
+    assertTrue   "exportEnv $input, MY_KEY is not set" "[ -z ${MY_KEY+x} ]"
+    
+    export MY_KEY=MY_VAL   # <---- reset the value
+    assertEquals "exportEnv $input, ignored, previously set" "MY_VAL" "$MY_KEY"
+    assertTrue   "exportEnv $input, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+}
+
+# exportEnv 'MY_KEY=' should unset the value
+testExportEnv_unset() {
+    source ../env-lookup.sh
+    unset MY_KEY
+
+    local input="MY_KEY="
+    exportEnv "$input"
+    assertEquals "exportEnv $input, no previous value" "" "$MY_KEY"
+    assertTrue   "exportEnv $input, MY_KEY is not set" "[ -z ${MY_KEY+x} ]"
+    
+    export MY_KEY=MY_VALUE
+    assertEquals "sanity check, export previous value" "MY_VALUE" "$MY_KEY"
+    assertTrue   "sanity check, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    
+    exportEnv "$input"
+    assertEquals "exportEnv $input, previous value" "" "$MY_KEY"
+    assertTrue   "exportEnv $input, previous value, MY_KEY is not set" "[ -z ${MY_KEY+x} ]"
+}
+
+# exportEnv 'MY_KEY' should set an empty value
+testExportEnv_setToEmpty() {
+    source ../env-lookup.sh
+    unset MY_KEY
+
+    local input="MY_KEY"    
+    exportEnv "$input"
+    assertEquals "exportEnv $input, no previous value" "" "$MY_KEY"
+    assertTrue   "exportEnv '$input, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    
+    export MY_KEY=MY_VALUE
+    assertEquals "sanity check, export previous value" "MY_VALUE" "$MY_KEY"
+    assertTrue   "sanity check, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    
+    exportEnv "$input"
+    assertEquals "exportEnv $input, previous value" "" "$MY_KEY"
+    assertTrue   "exportEnv $input, previous value, MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+}
+
 testRunWithEnv() {
     export GP_DEBUG="true"
     local expected=$'loading Java-1.7 ...\nHello, World!'
@@ -207,6 +309,26 @@ testRunWithEnv_custom_env_arg() {
     
     local expected=$'loading R-3.1 ...\nloading GCC-4.9 ...\nHello, World!';
     assertEquals "set GP_ENV_CUSTOM with '-c' arg" "$expected" "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
+}
+
+#
+# test setenv as cmdline arg, e.g 
+# ../run-with-env.sh ... -e <env.key=env.value> ... 
+#
+testRunWithEnv_setenv_on_cmdLine() {
+     assertEquals "no args" "MY_FLAG=" "$( './print-my-flag.sh' )" 
+     
+     local cmd="${test_script_dir}/print-my-flag.sh"
+     assertEquals "exportEnv MY_FLAG=MY_CMD_LINE_VALUE" \
+         "MY_FLAG=MY_CMD_LINE_VALUE" \
+         "$( '../run-with-env.sh' \
+                 '-e' 'MY_UNUSED_FLAG'  \
+                 '-e' '=BOGUS_VALUE' \
+                 '-e' 'MY_UNSET_FLAG=' \
+                 '-e' 'MY_EMPTY_FLAG' \
+                 '-e' 'MY_FLAG=MY_CMD_LINE_VALUE' \
+                 '-u' 'Java-1.7' \
+                 $cmd)"
 }
 
 testRunJava() {
@@ -233,6 +355,5 @@ testRunRJava_custom_env_arg() {
     local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
     assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
 }
-
 
 . ${SHUNIT2_HOME}/src/shunit2
