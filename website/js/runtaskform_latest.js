@@ -552,15 +552,11 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         $(inputElement).replaceWith(createNumericDiv(parameterName, groupId, true));
     }
 
-    if(isBatch)
-    {
-        updateBatchInfo();
-        parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
-            "How batch works...</a></div>");
-    }
-    else
-    {
-        parent.find("td").last().find(".batchInfo").remove();
+    parent.find(".batchBox").find(".batchHelp").remove();
+    updateBatchInfo();
+
+    if(isBatch) {
+        parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
     }
 
     return inputElement;
@@ -1193,6 +1189,10 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
             var paramName = $(this).parents("tr").first().data("pname");
 
             var isBatch = $(this).is(":checked");
+
+            var parent =  $(this).closest(".pRow");
+
+            parent.find(".batchBox").find(".batchHelp").remove();
             if (isBatch)
             {
                 //highlight the div to indicate batch mode
@@ -1203,9 +1203,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].allowMultiple = true;
 
-                var parent =  $(this).closest(".pRow");
-                parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
-                    "How batch works...</a></div>");
+                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
             }
             else
             {
@@ -1215,18 +1213,13 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].isBatch = false;
                 run_task_info.params[paramName].allowMultiple = false;
-
-                $(this).closest(".pRow").find("td").last().find(".batchInfo").remove();
             }
 
-            var textElement = $(this).closest(".pRow").find(".numericInput");
-            var groupId = getGroupId(textElement);
+            var numericElement = $(this).closest(".pRow").find(".numericInput");
+            var groupId = getGroupId(numericElement);
             $(this).closest(".pRow").find(".numericDiv").replaceWith(createNumericDiv(paramName, groupId, true));
 
-            if(isBatch)
-            {
-                updateBatchInfo();
-            }
+            updateBatchInfo();
         });
 
         batchBox.append(batchCheck);
@@ -1483,17 +1476,15 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
             $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
 
+            parent.find(".batchBox").find(".batchHelp").remove();
+
+            updateBatchInfo();
+
             if(isBatch)
             {
-                updateBatchInfo();
+                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+            }
 
-                parent.find("td").last().prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
-                     "How batch works...</a></div>");
-            }
-            else
-            {
-                parent.find("td").last().find(".batchInfo").remove();
-            }
         });
 
         batchBox.append(batchCheck);
@@ -2229,15 +2220,12 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
                 }
                 else
                 {
+                    $(this).closest(".paramValueTd").find(".batchBox").find(".batchHelp").remove();
+                    updateBatchInfo();
+
                     if(isBatch)
                     {
-                        updateBatchInfo();
-                        $(this).closest(".paramValueTd").prepend("<div class='batchInfo'><a href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/info_green.png' width='16' height='16'/>" +
-                            "How batch works...</a></div>");
-                    }
-                    else
-                    {
-                        $(this).closest(".paramValueTd").find(".batchInfo").remove();
+                        $(this).closest(".paramValueTd").find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
                     }
                 }
 

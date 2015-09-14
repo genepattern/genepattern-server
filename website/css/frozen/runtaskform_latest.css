@@ -537,6 +537,11 @@ hr
 	padding: 0 !important;
 }
 
+.batchBox img
+{
+    margin-left: 3px;
+}
+
 .fileDiv .ui-buttonset label.ui-corner-left {
 	border-top-right-radius: 0px !important;
 	border-bottom-right-radius: 0px !important;
