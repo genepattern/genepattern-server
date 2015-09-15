@@ -88,7 +88,7 @@ public class ValueResolver {
             }
 
             String value = null;
-            if(cmdListMode || cmdOptListMode)
+            if(pRecord != null && (cmdListMode || cmdOptListMode))
             {
                 JobInput jobInput = gpContext.getJobInput();
                 Param param = jobInput.getParam(paramName);
