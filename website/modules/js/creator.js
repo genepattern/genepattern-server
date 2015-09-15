@@ -1604,6 +1604,9 @@ function changeParameterType(element) {
                 at: 'left top'
             }
         });
+
+        listModeTd.append('<a href="createhelp.jsp#listMode" target="help">'
+           + '<img src="/gp/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" /></a>');
         typeDetailsTable.append(listModeRow);
 
         //add a row for specifying the range if this is numeric parameter
