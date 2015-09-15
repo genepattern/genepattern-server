@@ -252,10 +252,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             }
             else
             {
-                if(value != "")
-                {
-                    valueList.push(value);
-                }
+                valueList = value;
             }
 
             var groupId = getGroupId($(element));
@@ -331,12 +328,12 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
                 var values = getValuesForGroup(groupId, paramName).slice();
 
-                if(values === undefined || values === null)
+                if(values === undefined || values === null || !run_task_info.params[paramName].allowMultiple || values == "")
                 {
                     values = [];
                 }
 
-                if(ui.checked)
+                if(ui.checked && ui.value !== "")
                 {
                     //add the value
                     values.push(ui.value);
