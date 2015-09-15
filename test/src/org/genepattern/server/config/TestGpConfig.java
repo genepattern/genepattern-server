@@ -53,6 +53,7 @@ public class TestGpConfig {
         GpServerProperties.writeProperties(mockBuildProps, mockBuildPropFile, "Creating mock build.properties file for junit test");
         
         gpConfig=new GpConfig.Builder()
+            .resourcesDir(new File("resources"))
             .addProperty("java", "java")
             .webappDir(webappDir)
         .build();
@@ -163,6 +164,14 @@ public class TestGpConfig {
         File expected=new File(webappDir,"WEB-INF/classes/");
         File actual=gpConfig.getGPFileProperty(gpContext, "run_r_path");
         assertEquals("getGPFileProperty('run_r_path')", expected, actual);
+    }
+    
+    @Test
+    public void getRSuppressMessages() {
+        // R.suppress.messages.file=<resources>/R_suppress.txt
+        File expected=new File("resources", "R_suppress.txt").getAbsoluteFile();
+        File actual=gpConfig.getGPFileProperty(gpContext, "R.suppress.messages.file");
+        assertEquals("getGPFileProperty('R.suppress.messages.file')", expected, actual);
     }
     
     /**
