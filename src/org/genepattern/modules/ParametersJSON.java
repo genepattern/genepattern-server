@@ -269,21 +269,21 @@ public class ParametersJSON extends JSONObject {
     }
 
 
-    public Double getMinRange() throws JSONException
+    public String getMinRange() throws JSONException
     {
         if(this.has(MIN_RANGE) && !this.isNull(MIN_RANGE) && this.getString(MIN_RANGE).length() > 0)
         {
-            return this.getDouble(MIN_RANGE);
+            return this.getString(MIN_RANGE);
         }
 
         return null;
     }
 
-    public Double getMaxRange() throws JSONException
+    public String getMaxRange() throws JSONException
     {
         if(this.has(MAX_RANGE) && !this.isNull(MAX_RANGE) && this.getString(MAX_RANGE).length() > 0)
         {
-            return this.getDouble(MAX_RANGE);
+            return this.getString(MAX_RANGE);
         }
 
         return null;
