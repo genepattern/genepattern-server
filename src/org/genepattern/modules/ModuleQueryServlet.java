@@ -584,7 +584,8 @@ public class ModuleQueryServlet extends HttpServlet {
                 {
                     String rangeString = String.valueOf(parameterJSON.getMinRange());
 
-                    if (parameterJSON.getMaxRange() != -1) {
+                    Double maxRange = parameterJSON.getMaxRange();
+                    if (maxRange != null) {
                         rangeString += ".." + String.valueOf(parameterJSON.getMaxRange());
                     } else {
                         rangeString += "+";
