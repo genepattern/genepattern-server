@@ -1,15 +1,14 @@
 Wrapper scripts for initializing the runtime environment for GenePattern modules.
-These wrapper scripts allow for site-specific customizations.
 
 Given a GenePattern module commandLine, e.g.
     commandLine=<R2.15_Rscript> ...
 
 A common wrapper script will be called at runtime on the compute node, e.g.
-    <wrapper-scripts>/run-with-env.sh -u R-2.15 -u Java ...
-    
-Each '-u <env-name>' defines a canonical runtime environment required by the module.
+    <wrapper-scripts>/run-with-env.sh -u R-2.15 ...
 
-You can customize how this environment is initialized by editing the env-custom.sh script:
+For detailed documentation look at the comments in the run-with-env.sh script.
+
+You can customize the way that each environment is loaded by
 
 a) defining a custom loadEnv() function.
 b) adding/replacing site-specific mappings, e.g.
@@ -20,12 +19,32 @@ b) adding/replacing site-specific mappings, e.g.
     putValue 'R-3.1' 'gcc/4.7.2, R/3.1'
 
 
-The run-with-env.sh wrapper script automatically sources the env-load-custom.sh and env-lookup-custom.sh scripts if present.
-Look at env-load-default.sh for an example implementation and documentation.
-Look at env-lookup-default.sh for the list of known canonical runtime environment names.
-<resources>/wrapper_scripts
-    ./env-load.sh
-    ./env-load-custom.sh
-    ./env-lookup.sh
-    ./env-lookup-custom.sh
-    
+Configuration for R modules
+============================
+For supported versions of R ( as of this writing R-2.14, R-2.15, R-3.0, and R-3.1),
+GenePattern uses a custom R_LIBS_SITE location for installing required packages. By default,
+    <GENEPATTERN_HOME>/patches/Library/R/<R.version>/
+
+Notes on R environment variables.
+R_LIBS_SITE
+    Set the site-library location for installing R packages. This is the default location where modules will 
+look when loading R packages. This is passed along to the wrapper script via the -e flag, e.g.
+    run-with-env.sh ... '-e' 'R_LIBS_SITE=<patches>/Library/R/2.15' ...
+
+R_LIBS_USER
+    For user-level libraries (if desired).  Not here; set in the R_ENVIRON_USER
+# for that particular user.  Just adding it here as a note.
+
+R_LIBS
+    By default, GenePattern forcibly ignores the R_LIBS setting. Both the Broad DotKit and the IU Module 
+add an unwritable system directory here that interferes with installation.  Besides, we don't want to load 
+packages from areas we don't control (other than .Library).  This will also disable loading settings from 
+implied locations (e.g. ~/.Renviron, etc.).
+
+# Additional proxy settings 
+ftp_proxy=
+ftp_proxy_user=
+ftp_proxy_password=
+http_proxy=
+no_proxy=
+   

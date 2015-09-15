@@ -4,7 +4,12 @@
 # Wrapper script for initializing the runtime environment before running 
 # a GenePattern module on a compute node.
 #
-# Usage: run-with-env.sh [-c <env-custom-site.sh>] -u <dotkit-id.0> -u <dotkit-id.1> ... -u <dotkit-id.N>  -e <key0=value> ... -e <keyN=value> <cmd> [<args>]
+# Usage: run-with-env.sh \
+#    [-c <env-custom-site.sh>] \ 
+#    -u <dotkit-id.0> -u <dotkit-id.1> ... -u <dotkit-id.N> \  
+#    -e <key0=value> ... -e <keyN=value> \
+#    <cmd> [<args>]
+#
 # Each '-u' flag declares a module runtime environment which must be initialized.
 # For Broad hosted servers this corresponds to a dotkit name.
 #
