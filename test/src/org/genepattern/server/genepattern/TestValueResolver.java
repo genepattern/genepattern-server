@@ -1,8 +1,11 @@
 package org.genepattern.server.genepattern;
 
-/*import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;*/
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -10,14 +13,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Created by nazaire on 8/13/15.
@@ -28,11 +24,6 @@ public class TestValueResolver
     private static final String choiceSpec2="choiceVal1=choiceVal1;choiceVal2;choiceVal3=choiceVal3;" +
             "choiceVal4;actualChoice5=displayChoice5";
 
-    @Before
-    public void setUp()
-    {
-    }
-
     @Test
     public void testListModeCmdWithChoice()
     {
@@ -41,7 +32,7 @@ public class TestValueResolver
         formalParam.setName(paramName);
         formalParam.setValue(choiceSpec1);
 
-        HashMap attributes=new HashMap();
+        HashMap<String,String> attributes=new HashMap<String,String>();
         attributes.put("default_value", "value2");
         attributes.put("name", paramName);
         attributes.put("optional", "on");
@@ -60,7 +51,7 @@ public class TestValueResolver
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("value2,value3,actual5");
 
-        Assert.assertEquals(expectedList, cmdList);
+        assertEquals(expectedList, cmdList);
     }
 
     @Test
@@ -68,7 +59,7 @@ public class TestValueResolver
     {
         String paramName = "multi.text";
 
-        HashMap attributes=new HashMap();
+        HashMap<String,String> attributes=new HashMap<String,String>();
         attributes.put("listMode", "cmd");
 
         ParameterInfo formalParam=new ParameterInfo();
@@ -86,7 +77,7 @@ public class TestValueResolver
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1,textval2,textval3");
 
-        Assert.assertEquals(expectedList, cmdList);
+        assertEquals(expectedList, cmdList);
     }
 
     @Test
@@ -97,7 +88,7 @@ public class TestValueResolver
     {
         String paramName = "multi.text.custom.sep";
 
-        HashMap attributes=new HashMap();
+        HashMap<String,String> attributes=new HashMap<String,String>();
         attributes.put("listMode", "cmd");
         attributes.put("listModeSep", ":");
 
@@ -116,7 +107,7 @@ public class TestValueResolver
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1:textval2:textval3");
 
-        Assert.assertEquals(expectedList, cmdList);
+        assertEquals(expectedList, cmdList);
     }
 
     @Test
@@ -128,7 +119,7 @@ public class TestValueResolver
     {
         String paramName = "multi.choice.cmd_opt";
 
-        HashMap attributes=new HashMap();
+        HashMap<String,String> attributes=new HashMap<String,String>();
         attributes.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input=");
         attributes.put("name", paramName);
         attributes.put("optional", "on");
@@ -153,7 +144,7 @@ public class TestValueResolver
         expectedList.add("--input=value4");
         expectedList.add("--input=actual5");
 
-        Assert.assertEquals(expectedList, cmdList);
+        assertEquals(expectedList, cmdList);
     }
 
     @Test
@@ -171,7 +162,7 @@ public class TestValueResolver
         formalSingleParam.setName(singleValueParam);
 
         formalSingleParam.setValue(choiceSpec2);
-        HashMap attributesOne=new HashMap();
+        HashMap<String,String> attributesOne=new HashMap<String,String>();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("optional", "on");
         attributesOne.put("type", "java.lang.String");
@@ -179,7 +170,7 @@ public class TestValueResolver
 
         ParameterInfo formalMultiParam=new ParameterInfo();
         formalMultiParam.setName(multiValueParam);
-        HashMap attributesTwo=new HashMap();
+        HashMap<String,String> attributesTwo=new HashMap<String,String>();
         attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi ");
         attributesTwo.put("listMode", "cmd");
         attributesTwo.put("optional", "on");
@@ -211,7 +202,7 @@ public class TestValueResolver
         expected.add("--multi");
         expected.add("value4,actual5");
 
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -229,7 +220,7 @@ public class TestValueResolver
         formalSingleParam.setName(singleValueParam);
 
         formalSingleParam.setValue(choiceSpec2);
-        HashMap attributesOne=new HashMap();
+        HashMap<String,String> attributesOne=new HashMap<String,String>();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("optional", "on");
         attributesOne.put("type", "java.lang.String");
@@ -238,7 +229,7 @@ public class TestValueResolver
         ParameterInfo formalMultiParam=new ParameterInfo();
         formalMultiParam.setName(multiValueParam);
         formalMultiParam.setValue(choiceSpec1);
-        HashMap attributesTwo=new HashMap();
+        HashMap<String,String> attributesTwo=new HashMap<String,String>();
         attributesTwo.put("listMode", "cmd_opt");
         attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
         attributesTwo.put("optional", "on");
@@ -270,7 +261,7 @@ public class TestValueResolver
         expected.add("--multi=value4");
         expected.add("--multi=actual5");
 
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -286,7 +277,7 @@ public class TestValueResolver
 
         ParameterInfo formalSingleParam = new ParameterInfo();
         formalSingleParam.setName(singleValueParam);
-        HashMap attributesOne = new HashMap();
+        HashMap<String, String> attributesOne = new HashMap<String, String>();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("name", singleValueParam);
         attributesOne.put("optional", "on");
@@ -294,7 +285,7 @@ public class TestValueResolver
         formalSingleParam.setAttributes(attributesOne);
 
         ParameterInfo formalMultiParam = new ParameterInfo();
-        HashMap attributesTwo = new HashMap();
+        HashMap<String, String> attributesTwo = new HashMap<String, String>();
         formalMultiParam.setName(multiValueParam);
         attributesTwo.put("listMode", "cmd");
         attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
@@ -327,6 +318,6 @@ public class TestValueResolver
         expected.add("singleValue");
         expected.add("--multi=onlyValue");
 
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
     }
 }
