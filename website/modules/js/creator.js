@@ -1384,33 +1384,40 @@ function changeParameterType(element) {
     specifyMaValuesTd.append('Maximum number of values:<br/>');
     var maxValues = $('<input name="maxNumValues" value="1"/>');
 
+   var spinchange = function maxValChange(element)
+   {
+       var value = $(element).val();
+       //check if this value is a number
+       if(value !== "" && !$.isNumeric(value))
+       {
+           alert("Invalid value: " + value + ". Value must be numeric.");
+           $(element).val("");
+           throw new Error("Invalid value: " + value + ". Value must be numeric.");
+       }
+
+       //display the list mode row if max values is greater than 1
+       if(value !== "" && value > 1)
+       {
+           $(element).parents("table").first().find("select[name='p_list_mode']").multiselect('enable');
+       }
+       else
+       {
+           $(element).parents("table").first().find("select[name='p_list_mode']").multiselect('disable');
+       }
+   };
+
     specifyMaValuesTd.append(maxValues);
     maxValues.spinner({
         min: 1,
         incremental: true,
         change: function (event, ui) {
             setDirty(true);
+
+            spinchange(this);
         },
         stop: function (event, ui) {
             var value = $(this).val();
-
-            //check if this value is a number
-            if(value !== "" && !$.isNumeric(value))
-            {
-                alert("Invalid value: " + value + ". Value must be numeric.");
-                $(this).val("");
-                throw new Error("Invalid value: " + value + ". Value must be numeric.");
-            }
-
-            //display the list mode row if max values is greater than 1
-            if(value !== "" && value > 1)
-            {
-                $(this).parents("table").first().find(".listMode").show();
-            }
-            else
-            {
-                $(this).parents("table").first().find(".listMode").hide();
-            }
+           spinchange(this);
         }
     });
 
@@ -1419,9 +1426,12 @@ function changeParameterType(element) {
     unlimitedValues.click(function () {
         if ($(this).is(":checked")) {
             $(this).parent("td").find("input[name='maxNumValues']").spinner("disable");
+            $(this).parents("table").first().find("select[name='p_list_mode']").multiselect('enable');
+
         }
         else {
             $(this).parent("td").find("input[name='maxNumValues']").spinner("enable");
+            $(this).parents("table").first().find("select[name='p_list_mode']").multiselect('disable');
         }
     });
     specifyMaValuesTd.append(unlimitedValues);
@@ -1623,9 +1633,6 @@ function changeParameterType(element) {
                 <option value='cmd'>List</option>\
                 <option value='cmd_opt'>Get-opt style list</option>\
             </select> ");
-        listMode.change(function () {
-            //hide choices info if this is a directory or password entry
-        });
 
         listModeTd.append(listMode);
         listMode.multiselect({
@@ -1638,10 +1645,10 @@ function changeParameterType(element) {
                 at: 'left top'
             }
         });
+        listMode.multiselect('disable');
 
         listModeTd.append('<a href="createhelp.jsp#listMode" target="help">'
            + '<img src="/gp/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" /></a>');
-        listModeRow.hide();
         typeDetailsTable.append(listModeRow);
 
         //add a row for specifying the range if this is numeric parameter
@@ -2414,7 +2421,8 @@ function getParametersJSON()
         var flag = "";
         var listMode = "";
 
-        if($(this).find('select[name="p_list_mode"]').val() !== undefined
+        if(!$(this).find('select[name="p_list_mode"]').is(":disabled") &&
+            $(this).find('select[name="p_list_mode"]').val() !== undefined
             && $(this).find('select[name="p_list_mode"]').val() !== null)
         {
             listMode = $(this).find('select[name="p_list_mode"]').val();
@@ -2587,7 +2595,7 @@ function getParametersJSON()
                 if($.inArray(keyName, Object.keys(parameter)) == -1
                     && keyName != "type" && keyName != "prefix_when_specified" && keyName != "choices"
                     && keyName != "choiceDir" && keyName != "choiceDirFilter" && keyName != "numValues"
-                    && keyName != "numGroups" && keyName != "range" && keyName != "groupInfo" && keyName != "groupColumnLabel"
+                    && keyName != "numGroups" && keyName != "range" && keyName != "listMode" && keyName != "groupInfo" && keyName != "groupColumnLabel"
                     && keyName != "fileColumnLabel" && keyName != "groupNumValuesMustMatch")
                 {
                     parameter[keyName] = allAttrs[keyName];
