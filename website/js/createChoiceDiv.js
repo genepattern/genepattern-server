@@ -116,13 +116,15 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             var groupId = getGroupId(textElement);
 
             var isBatch = $(this).is(":checked");
-            textElement = updateNonFileView(textElement, paramName, groupId, isBatch);
+            updateNonFileView(textElement, paramName, groupId, isBatch);
         });
 
         batchBox.append(batchCheck);
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+
 
         selectChoiceDiv.append(batchBox);
 
