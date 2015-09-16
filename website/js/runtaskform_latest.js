@@ -534,9 +534,6 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         run_task_info.params[parameterName].allowMultiple = false;
     }
 
-    var parent =  $(inputElement).closest(".pRow");
-
-
     if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
         //this must be a text entry
         $(inputElement).replaceWith(createTextDiv(parameterName, groupId, true));
@@ -552,12 +549,7 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         $(inputElement).replaceWith(createNumericDiv(parameterName, groupId, true));
     }
 
-    parent.find(".batchBox").find(".batchHelp").remove();
     updateBatchInfo();
-
-    if(isBatch) {
-        parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-    }
 
     return inputElement;
 }
@@ -1192,7 +1184,6 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
             var parent =  $(this).closest(".pRow");
 
-            parent.find(".batchBox").find(".batchHelp").remove();
             if (isBatch)
             {
                 //highlight the div to indicate batch mode
@@ -1226,6 +1217,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         numericDiv.append(batchBox);
 
@@ -1476,21 +1468,14 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
             $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
 
-            parent.find(".batchBox").find(".batchHelp").remove();
-
             updateBatchInfo();
-
-            if(isBatch)
-            {
-                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-            }
-
         });
 
         batchBox.append(batchCheck);
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         textDiv.append(batchBox);
 
@@ -2220,13 +2205,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
                 }
                 else
                 {
-                    $(this).closest(".paramValueTd").find(".batchBox").find(".batchHelp").remove();
                     updateBatchInfo();
-
-                    if(isBatch)
-                    {
-                        $(this).closest(".paramValueTd").find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-                    }
                 }
 
             });
@@ -2234,6 +2213,8 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
             batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
             //batchCheck.button();
             batchBox.tooltip();
+            batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+
 
             //if this is a batch parameter then pre-select the batch checkbox
             if (run_task_info.params[parameterName].isBatch) {
