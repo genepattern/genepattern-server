@@ -1358,7 +1358,18 @@ function changeParameterType(element) {
         incremental: true,
         change: function (event, ui) {
             setDirty(true);
+        },
+        stop: function (event, ui) {
+            var value = $(this).val();
+            //check if this value is a number
+            if(!$.isNumeric($(this).val()))
+            {
+                alert("Invalid value: " + value + ". Value must be numeric.");
+                $(this).val("");
+                throw new Error("Invalid value: " + value + ". Value must be numeric.");
+            }
         }
+
     });
     specifyMinValuesRow.append(specifyMinValuesTd);
     typeDetailsTable.append(specifyMinValuesRow);
@@ -1379,8 +1390,31 @@ function changeParameterType(element) {
         incremental: true,
         change: function (event, ui) {
             setDirty(true);
+        },
+        stop: function (event, ui) {
+            var value = $(this).val();
+
+            //check if this value is a number
+            if(value !== "" && !$.isNumeric(value))
+            {
+                alert("Invalid value: " + value + ". Value must be numeric.");
+                $(this).val("");
+                throw new Error("Invalid value: " + value + ". Value must be numeric.");
+            }
+
+            //display the list mode row if max values is greater than 1
+            if(value !== "" && value > 1)
+            {
+                $(this).parents("table").first().find(".listMode").show();
+            }
+            else
+            {
+                $(this).parents("table").first().find(".listMode").hide();
+            }
         }
     });
+
+
     var unlimitedValues = $('<input name="unlimitedNumValues" type="checkbox" />');
     unlimitedValues.click(function () {
         if ($(this).is(":checked")) {
@@ -1607,6 +1641,7 @@ function changeParameterType(element) {
 
         listModeTd.append('<a href="createhelp.jsp#listMode" target="help">'
            + '<img src="/gp/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" /></a>');
+        listModeRow.hide();
         typeDetailsTable.append(listModeRow);
 
         //add a row for specifying the range if this is numeric parameter
@@ -2267,7 +2302,7 @@ function loadParameterInfo(parameters)
         }
 
         if(parameters[i].listMode !== undefined && parameters[i].listMode != null
-            && parameters[i].listMode.length > 0)
+            && parameters[i].listMode.length > 0 && newParameter.find("select[name='p_list_mode']").length > 0)
         {
             newParameter.find("select[name='p_list_mode']").val(parameters[i].listMode);
             newParameter.find("select[name='p_list_mode']").multiselect('refresh');
