@@ -3,7 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,13 +15,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.webservice.ParameterInfo;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -154,13 +154,11 @@ public class TestCommandLineParser {
 
         // <R2.15_HOME>/bin/Rscript --no-save --quiet --slave --no-restore <libdir>run_rank_normalize.R <libdir> <user.dir> <patches> --input.file=<input.file> --output.file.name=<output.file.name> <scale.to.value> <threshold> <ceiling> <shift>
         final String cmdLine="<R2.15_HOME>/bin/Rscript --input.file=<input.file>";
-        final Properties setupProps=new Properties();
+        final Map<String,String> setupProps=new HashMap<String,String>();
         File inputFile=new File(uploadsDir, "all_aml_test.gct");
-        setupProps.setProperty("input.file", inputFile.getAbsolutePath());
-        final ParameterInfo[] formalParameters=new ParameterInfo[0];
+        setupProps.put("input.file", inputFile.getAbsolutePath());
         final Map<String,ParameterInfoRecord> paramInfoMap=Collections.emptyMap();
-        //final List<String> actual=ValueResolver.resolveValue(gpConfig, gpContext, cmdLine, setupProps, formalParameters);
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, gpContext, cmdLine);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, gpContext, cmdLine, setupProps, paramInfoMap);
         assertEquals(
                 Arrays.asList(R2_15_HOME+"/bin/Rscript", "--input.file="+inputFile.getAbsolutePath()),
                 actual );

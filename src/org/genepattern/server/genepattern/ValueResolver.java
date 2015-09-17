@@ -1,19 +1,32 @@
 package org.genepattern.server.genepattern;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamListHelper.ListMode;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by nazaire on 7/17/15.
  */
 public class ValueResolver {
+    private static final Logger log = Logger.getLogger(ValueResolver.class);
  
     /**
      * use this for junit tests, where we don't need a complete propsMap or paramInfoMap.
@@ -34,7 +47,6 @@ public class ValueResolver {
 
     private static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String, String> props, final Map<String, ParameterInfoRecord> parameterInfoMap, final int depth) {
         if (value == null) {
-            //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
         }
         List<String> rval = new ArrayList<String>();
@@ -77,67 +89,90 @@ public class ValueResolver {
         return rval;
     }
 
-    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,String> dict, final Map<String,ParameterInfoRecord> parameterInfoMap) {
-        List<String> rval = new ArrayList<String>();
-        List<String> subs = CommandLineParser.getSubstitutionParameters(arg);
+    protected static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,String> dict, final Map<String,ParameterInfoRecord> parameterInfoMap) {
+        final List<String> rval = new ArrayList<String>();
+        final List<String> subs = CommandLineParser.getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
             rval.add(arg);
             return rval;
         }
         String substitutedValue = arg;
+        final List<String> valueList = new ArrayList<String>();
+
         boolean isOptional = true;
-        List<String> valueList = new ArrayList<String>();
-
-        for(String sub : subs) {
-            String paramName = sub.substring(1, sub.length()-1);
-
-            //check if this parameter is a listMode=cmd or listMode=cmd_opt parameter
-            ParameterInfo pInfo=null;
-            ParameterInfoRecord pInfoRecord = parameterInfoMap.get(paramName);
-            if (pInfoRecord != null) {
+        for(final String sub : subs) {
+            boolean cmdOptListMode = false;
+            final String paramName = sub.substring(1, sub.length()-1);
+            final ParameterInfoRecord pInfoRecord = parameterInfoMap.get(paramName);
+            final ParameterInfo pInfo;
+            if (pInfoRecord == null) {
+                pInfo = null;
+            }
+            else {
                 pInfo = pInfoRecord.getFormal();
             }
-            ParamListHelper.ListMode listMode= null;
-            //ParameterInfoRecord pRecord = null;
-            boolean cmdListMode = false;
-            boolean cmdOptListMode = false;
-            if(pInfo != null)
-            {
-                listMode = ParamListHelper.initListMode(pInfoRecord);
-                cmdOptListMode = listMode.equals(ParamListHelper.ListMode.CMD_OPT);
-                cmdListMode = listMode.equals(ParamListHelper.ListMode.CMD);
-            }
 
-            String value = null;
-            if(pInfoRecord != null && (cmdListMode || cmdOptListMode))
-            {
-                JobInput jobInput = gpContext.getJobInput();
-                Param param = jobInput.getParam(paramName);
-
-                List<String> results = ValueResolver.getSubstitutedValues(param, pInfoRecord) ;
-
-                if(results != null && results.size() > 0)
-                {
-                    value = results.remove(0);
-                    valueList.addAll(results);
-                }
-            }
-            else if (dict.containsKey(paramName)) {
+            String value=null;
+            if (dict.containsKey(paramName)) {
                 value = dict.get(paramName);
             }
             else if (gpConfig != null) {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
 
-            //default to empty string, to handle optional parameters which have not been set
-            //String replacement = props.getProperty(varName, "");
+            if (pInfo != null) {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("resolving "+sub+"; the substitution matches an input parameter");
+                    }
+
+                    final NumValues numValues=ParamListHelper.initNumValues(pInfo);
+                    if (numValues.acceptsList()) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("for "+sub+"; acceptsList is true");
+                        }
+                        final ParamListHelper.ListMode listMode = ParamListHelper.initListMode(pInfoRecord);
+                        if (log.isDebugEnabled()) {
+                            log.debug("for "+sub+"; listMode="+listMode);
+                        }
+                        cmdOptListMode = ListMode.CMD_OPT == listMode;
+                        if (ListMode.CMD.equals(listMode) || ListMode.CMD_OPT.equals(listMode)) {
+                            final JobInput jobInput = gpContext.getJobInput();
+                            if (jobInput == null) {
+                                log.error("jobInput not set for param="+paramName);
+                            }
+                            else {
+                                // ... 
+                                final Param param = jobInput.getParam(paramName);
+                                if (param == null) {
+                                    log.error("jobInput.param not set for param="+paramName);
+                                }
+                                else {
+                                    final List<String> results = ValueResolver.getSubstitutedValues(param, pInfoRecord) ;
+                                    if(results != null && results.size() > 0) {
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("for "+sub+"; substitutedValues="+results);
+                                        }
+                                        value = results.remove(0);
+                                        valueList.addAll(results);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected exception resolving "+sub+" for paramName="+paramName, t);
+                }
+            }
+
+            //special-case for <resources> 
             if (paramName.equals("resources") && value != null) {
-                //TODO: this should really be in the setupProps
-                //special-case for <resources>,
                 // make this an absolute path so that pipeline jobs running in their own directories see the right path
                 value = new File(value).getAbsolutePath();
             }
 
+            //default to empty string, to handle optional parameters which have not been set
             if (pInfo != null) {
                 isOptional = pInfo.isOptional();
                 String optionalPrefix = pInfo._getOptionalPrefix();
@@ -176,10 +211,7 @@ public class ValueResolver {
 
         //HACK: if there are multiple values for this parameter
         //add the remaining values
-        int index=0;
-        for(;index < valueList.size();index++)
-        {
-            String val = valueList.get(index);
+        for(final String val : valueList) {
             rval.add(val);
         }
 
@@ -298,17 +330,15 @@ public class ValueResolver {
      */
     public static List<String> getSubstitutedValues(final Param param, final ParameterInfoRecord pRecord)
     {
-        List<String> substitutedValues = new ArrayList<String>();
-
-        if(param == null)
-        {
+        if (param == null) {
             throw new IllegalArgumentException("param==null");
         }
-
-        if(pRecord == null)
-        {
+        
+        if(pRecord == null) {
             throw new IllegalArgumentException("pRecord==null");
         }
+
+        List<String> substitutedValues = new ArrayList<String>();
 
         String separator = "";
         ParamListHelper.ListMode listMode = ParamListHelper.initListMode(pRecord);
