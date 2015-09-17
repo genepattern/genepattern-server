@@ -11,6 +11,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 
 import com.google.common.base.Joiner;
@@ -34,6 +36,7 @@ import com.google.common.base.Joiner;
 public class CommandLineParser {
     public static Logger log = Logger.getLogger(CommandLineParser.class);
     
+    @SuppressWarnings("serial")
     public static class Exception extends java.lang.Exception {
         public Exception(String message) {
             super(message);
@@ -47,28 +50,27 @@ public class CommandLineParser {
      * Create the list of cmd line args for the module, GP <= 3.9.1 implementation.
      * The GPAT.java onJob method must initialize the full set of substitution parameters before calling this method.
      * 
-     * @param cmdLine, the command line string from the module manifest file
-     * @param props, the lookup table of all substitution parameters
-     * @param formalParameters, the formal parameters from the TaskInfo, needed for some special-cases such as splitting prefix when run params. 
-     * @return
-     */
-    public static List<String> createCmdLine(String cmdLine, Properties props, ParameterInfo[] formalParameters) { 
-        return createCmdLine(null, null, cmdLine, props, formalParameters);
-    }
-
-    /**
-     * Updated createCmdLine method which uses the gpConfig to resolve global parameters, such as R2.15_HOME, which can be set at server runtime
-     * as a result of installing a patch.
-     * 
      * @param gpConfig
-     * @param gpContext
+     * @param jobContext
      * @param cmdLine
      * @param props
-     * @param formalParameters
+     * @param paramInfoMap
      * @return
+     * 
+     * @deprecated should pass in a Map<String,String> propsMap instead of a Properties object
      */
-    public static List<String> createCmdLine(final GpConfig gpConfig, final GpContext gpContext, String cmdLine, Properties props, ParameterInfo[] formalParameters) {
-        return ValueResolver.resolveValue(gpConfig, gpContext, cmdLine, props, formalParameters);
+    public static List<String> createCmdLine(final GpConfig gpConfig, final GpContext jobContext, final String cmdLine, final Properties props, final Map<String, ParameterInfoRecord> paramInfoMap) {
+        final Map<String,String> env=propsToMap(props);
+        return ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, env, paramInfoMap);
+    }
+    
+    public static Map<String, String> propsToMap(final Properties props) {
+        final Map<String,String> env = new HashMap<String,String>();
+        for(Object keyObj : props.keySet()) {
+            String key = keyObj.toString();
+            env.put( key.toString(), props.getProperty(key));
+        }
+        return env;
     }
 
     /**
@@ -78,12 +80,12 @@ public class CommandLineParser {
      * @param gpConfig
      * @param gpContext
      * @param cmdLine
-     * @param formalParameters
+     * @param paramInfoMap
      * @return
+     * 
      */
-    public static List<String> createCmdLine(GpConfig gpConfig, GpContext gpContext, String cmdLine, ParameterInfo[] formalParameters) { 
-        Map<String,ParameterInfo> parameterInfoMap = ValueResolver.createParameterInfoMap(formalParameters);
-        return resolveValue(gpConfig, gpContext, cmdLine, parameterInfoMap, 0);
+    public static List<String> createCmdLine(GpConfig gpConfig, GpContext gpContext, String cmdLine, Map<String,ParameterInfoRecord> paramInfoMap) { 
+        return resolveValue(gpConfig, gpContext, cmdLine, paramInfoMap, 0); 
     }
 
     /**
@@ -128,7 +130,8 @@ public class CommandLineParser {
         return joined;
     }
     
-    protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
+    //protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
+    protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfoRecord> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
@@ -176,7 +179,7 @@ public class CommandLineParser {
         return rval;
     }
 
-    protected static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfo> parameterInfoMap) {
+    protected static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,ParameterInfoRecord> parameterInfoMap) {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig == null");
         }
@@ -258,8 +261,19 @@ public class CommandLineParser {
             else {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
-            ParameterInfo paramInfo = parameterInfoMap == null ? null :
-                parameterInfoMap.get(paramName);
+            final ParameterInfo paramInfo;
+            if (parameterInfoMap == null) {
+                paramInfo=null;
+            }
+            else {
+                ParameterInfoRecord paramInfoRecord=parameterInfoMap.get(paramName);
+                if (paramInfoRecord!=null) {
+                    paramInfo=paramInfoRecord.getFormal();
+                }
+                else {
+                    paramInfo=null;
+                }
+            }
             if (paramInfo != null) {
                 isOptional = paramInfo.isOptional();
                 String optionalPrefix = paramInfo._getOptionalPrefix();
@@ -297,7 +311,7 @@ public class CommandLineParser {
         return rval;
     }
     
-    protected static String getBasenameSubstitution(final GpConfig gpConfig, final GpContext gpContext, final String paramName, final Map<String,ParameterInfo> parameterInfoMap) {
+    protected static String getBasenameSubstitution(final GpConfig gpConfig, final GpContext gpContext, final String paramName, final Map<String,ParameterInfoRecord> parameterInfoMap) {
         if (paramName == null) {
             return null;
         }
@@ -369,11 +383,11 @@ public class CommandLineParser {
     }
 
     public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine) {
-        final Map<String,ParameterInfo> emptyParameterInfoMap = Collections.emptyMap();
+        final Map<String,ParameterInfoRecord> emptyParameterInfoMap = Collections.emptyMap();
         return resolveValue(gpConfig, gpContext, cmdLine, emptyParameterInfoMap, 0);
     }
     
-    public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine, final Map<String,ParameterInfo> parameterInfoMap) {
+    public static List<String> translateCmdLine(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine, final Map<String,ParameterInfoRecord> parameterInfoMap) {
         return resolveValue(gpConfig, gpContext, cmdLine, parameterInfoMap, 0);
     }
 

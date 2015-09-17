@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -177,7 +177,8 @@ public class TestValueResolver
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
         String singleValueParamValue = "oneValue";
         JobInput jobInput=new JobInput();
@@ -186,7 +187,7 @@ public class TestValueResolver
         jobInput.addValue(multiValueParam, "value4");
         jobInput.addValue(multiValueParam, "actual5");
 
-        final Properties setupProps=new Properties();
+        final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -194,7 +195,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -236,7 +237,8 @@ public class TestValueResolver
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
         String singleValueParamValue = "oneValue";
         JobInput jobInput=new JobInput();
@@ -245,7 +247,7 @@ public class TestValueResolver
         jobInput.addValue(multiValueParam, "value4");
         jobInput.addValue(multiValueParam, "actual5");
 
-        final Properties setupProps=new Properties();
+        final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -253,7 +255,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -294,7 +296,9 @@ public class TestValueResolver
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+
 
         String singleValueParamValue = "singleValue";
         JobInput jobInput=new JobInput();
@@ -302,7 +306,7 @@ public class TestValueResolver
 
         jobInput.addValue(multiValueParam, "onlyValue");
 
-        final Properties setupProps = new Properties();
+        final Map<String,String> setupProps = new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -310,7 +314,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
 
         List<String> expected = new ArrayList<String>();
         expected.add("echo");

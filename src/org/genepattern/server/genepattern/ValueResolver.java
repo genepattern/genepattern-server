@@ -14,7 +14,25 @@ import java.util.*;
  * Created by nazaire on 7/17/15.
  */
 public class ValueResolver {
-    static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String, String> props, final Map<String, ParameterInfo> parameterInfoMap, final int depth) {
+ 
+    /**
+     * use this for junit tests, where we don't need a complete propsMap or paramInfoMap.
+     * @param gpConfig
+     * @param gpContext
+     * @param value
+     * @return
+     */
+    public static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value) {
+        final Map<String,String> propsMap=Collections.emptyMap();
+        final Map<String,ParameterInfoRecord> paramInfoMap=Collections.emptyMap();
+        return resolveValue(gpConfig, gpContext, value, propsMap, paramInfoMap);
+    }
+    
+    public static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String, String> propsMap, final Map<String, ParameterInfoRecord> parameterInfoMap) {
+        return resolveValue(gpConfig, gpContext, value, propsMap, parameterInfoMap, 0);
+    }
+
+    private static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String, String> props, final Map<String, ParameterInfoRecord> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
@@ -59,7 +77,7 @@ public class ValueResolver {
         return rval;
     }
 
-    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,String> dict, final Map<String,ParameterInfo> parameterInfoMap) {
+    private static List<String> substituteValue(final GpConfig gpConfig, final GpContext gpContext, final String arg, final Map<String,String> dict, final Map<String,ParameterInfoRecord> parameterInfoMap) {
         List<String> rval = new ArrayList<String>();
         List<String> subs = CommandLineParser.getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
@@ -74,26 +92,29 @@ public class ValueResolver {
             String paramName = sub.substring(1, sub.length()-1);
 
             //check if this parameter is a listMode=cmd or listMode=cmd_opt parameter
-            ParameterInfo pInfo = parameterInfoMap.get(paramName);
+            ParameterInfo pInfo=null;
+            ParameterInfoRecord pInfoRecord = parameterInfoMap.get(paramName);
+            if (pInfoRecord != null) {
+                pInfo = pInfoRecord.getFormal();
+            }
             ParamListHelper.ListMode listMode= null;
-            ParameterInfoRecord pRecord = null;
+            //ParameterInfoRecord pRecord = null;
             boolean cmdListMode = false;
             boolean cmdOptListMode = false;
             if(pInfo != null)
             {
-                pRecord = new ParameterInfoRecord(pInfo);
-                listMode = ParamListHelper.initListMode(pRecord);
+                listMode = ParamListHelper.initListMode(pInfoRecord);
                 cmdOptListMode = listMode.equals(ParamListHelper.ListMode.CMD_OPT);
                 cmdListMode = listMode.equals(ParamListHelper.ListMode.CMD);
             }
 
             String value = null;
-            if(pRecord != null && (cmdListMode || cmdOptListMode))
+            if(pInfoRecord != null && (cmdListMode || cmdOptListMode))
             {
                 JobInput jobInput = gpContext.getJobInput();
                 Param param = jobInput.getParam(paramName);
 
-                List<String> results = ValueResolver.getSubstitutedValues(param, pRecord) ;
+                List<String> results = ValueResolver.getSubstitutedValues(param, pInfoRecord) ;
 
                 if(results != null && results.size() > 0)
                 {
@@ -117,10 +138,9 @@ public class ValueResolver {
                 value = new File(value).getAbsolutePath();
             }
 
-            ParameterInfo paramInfo = parameterInfoMap.get(paramName);
-            if (paramInfo != null) {
-                isOptional = paramInfo.isOptional();
-                String optionalPrefix = paramInfo._getOptionalPrefix();
+            if (pInfo != null) {
+                isOptional = pInfo.isOptional();
+                String optionalPrefix = pInfo._getOptionalPrefix();
                 if(!cmdOptListMode && value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
                     if (optionalPrefix.endsWith("\\ ")) {
                         //special-case: if optionalPrefix ends with an escaped space, don't split into two args
@@ -175,26 +195,6 @@ public class ValueResolver {
         st.readNextChar(' ');
 
         return st.getTokens();
-    }
-
-    public static List<String> resolveValue(GpConfig gpConfig, GpContext gpContext, String cmdLine, Properties props, ParameterInfo[] formalParameters) {
-        Map<String,String> env = new HashMap<String,String>();
-        for(Object keyObj : props.keySet()) {
-            String key = keyObj.toString();
-            env.put( key.toString(), props.getProperty(key));
-        }
-        Map<String,ParameterInfo> parameterInfoMap = ValueResolver.createParameterInfoMap(formalParameters);
-        return resolveValue(gpConfig, gpContext, cmdLine, env, parameterInfoMap, 0);
-    }
-
-    static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
-        Map<String,ParameterInfo> map = new HashMap<String,ParameterInfo>();
-        if (params != null) {
-            for(ParameterInfo param : params) {
-                map.put(param.getName(), param);
-            }
-        }
-        return map;
     }
 
     private static class MyStringTokenizer {
@@ -254,14 +254,17 @@ public class ValueResolver {
         }
     }
 
-
-    public static HashMap<String,List<String>> getParamValues(final GpConfig gpConfig, final GpContext jobContext, Properties props, ParameterInfo[] formalParameters)throws Exception
+    public static HashMap<String,List<String>> getParamValues(final GpConfig gpConfig, final GpContext jobContext, Properties props, Map<String,ParameterInfoRecord> paramInfoMap)throws Exception
     {
         HashMap<String, List<String>> paramValueMap = new HashMap<String, List<String>>();
 
         JobInput jobInput = jobContext.getJobInput();
 
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(jobContext.getTaskInfo());
+        final Map<String,String> propsMap = new HashMap<String,String>();
+        for(Object keyObj : props.keySet()) {
+            String key = keyObj.toString();
+            propsMap.put( key.toString(), props.getProperty(key));
+        }
 
         final Map<ParamId, Param> jobParamMap = jobInput.getParams();
         for(ParamId paramId: jobParamMap.keySet())
@@ -279,7 +282,7 @@ public class ValueResolver {
                         paramValueMap.put(paramName , paramValueList);
                     }
 
-                    List<String> resolvedValues = ValueResolver.resolveValue(gpConfig, jobContext, paramValue.getValue(), props, formalParameters);
+                    List<String> resolvedValues = ValueResolver.resolveValue(gpConfig, jobContext, paramValue.getValue(), propsMap, paramInfoMap);
                     for(String substitutedValue: resolvedValues)
                     {
                         paramValueList.add(substitutedValue);

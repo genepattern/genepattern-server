@@ -45,8 +45,8 @@ public class ParameterInfoRecord {
         return paramInfoMap;
     }
 
-    private ParameterInfo formalParam;
-    private ParameterInfo actualParam;
+    private final ParameterInfo formalParam;
+    private final ParameterInfo actualParam;
 
     public ParameterInfoRecord(ParameterInfo formalParam) {
         this.formalParam=formalParam;

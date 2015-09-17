@@ -16,8 +16,8 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class TestTranslateCmdLine {
     private GpContext gpContext;
     private JobInfo jobInfo;
     private TaskInfo taskInfo;
-    private Map<String,ParameterInfo> parameterInfoMap;
+    private Map<String,ParameterInfoRecord> parameterInfoMap;
     
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
@@ -57,7 +57,7 @@ public class TestTranslateCmdLine {
         when(gpContext.getJobInfo()).thenReturn(jobInfo);
         taskInfo=mock(TaskInfo.class);
         when(gpContext.getTaskInfo()).thenReturn(taskInfo);
-        parameterInfoMap=new HashMap<String,ParameterInfo>();
+        parameterInfoMap=new HashMap<String,ParameterInfoRecord>();
         
         rootTasklibDir=tmp.newFolder("taskLib");
         libdir=new File(rootTasklibDir, "ConvertLineEndings.1.1");
