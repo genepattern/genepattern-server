@@ -666,14 +666,20 @@ in the list in order to be the default selection.
 For file parameters that have a dynamic drop-down list, the default value can only be a url to a file found in the provided ftp directory URL.
 <br>
 For example:
-<br>
+<br/>
 <ul><li>
     FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
     <br>
     Default value: <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
 </li></ul>
 
-<br><br>
+<a name="Range"></a><h4>Range</h4>
 
+For a numeric parameter that takes either a float or an integer, this is the minimum and maximum values that can be provided as input.
+When running the module the user will not be allowed to enter any values that are outside the minimum and maximum range.
+
+<br/><br/>
 </body>
 </html>
+
+

@@ -1683,7 +1683,6 @@ function changeParameterType(element) {
                 }
                 else
                 {
-
                     $(this).val("");
                     alert("The range value must be a number");
                 }
@@ -1726,6 +1725,9 @@ function changeParameterType(element) {
         });
 
         $("<label style='margin-left: 10px;'>Max: </label>").append(maxRangeField).appendTo(rangeTd);
+
+        rangeTd.append('<a href="createhelp.jsp#Range" target="help">'
+            + '<img src="/gp/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" /></a>');
 
         typeDetailsTable.append(numRangeRow);
 
