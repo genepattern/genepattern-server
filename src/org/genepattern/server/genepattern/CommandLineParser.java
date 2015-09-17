@@ -45,7 +45,17 @@ public class CommandLineParser {
             super(message, t);
         }
     }
-    
+
+    /** utility method, convert a Properties instance to a Map<String,String> */
+    public static Map<String, String> propsToMap(final Properties props) {
+        final Map<String,String> env = new HashMap<String,String>();
+        for(Object keyObj : props.keySet()) {
+            String key = keyObj.toString();
+            env.put( key.toString(), props.getProperty(key));
+        }
+        return env;
+    }
+
     /**
      * Create the list of cmd line args for the module, GP <= 3.9.1 implementation.
      * The GPAT.java onJob method must initialize the full set of substitution parameters before calling this method.
@@ -62,15 +72,6 @@ public class CommandLineParser {
         return ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
     }
 
-    public static Map<String, String> propsToMap(final Properties props) {
-        final Map<String,String> env = new HashMap<String,String>();
-        for(Object keyObj : props.keySet()) {
-            String key = keyObj.toString();
-            env.put( key.toString(), props.getProperty(key));
-        }
-        return env;
-    }
-
     /**
      * Proposed newer createCmdLine method (this works when generating the command line for installing patches) which is not yet ready for production.
      * Still need to implement support for file input parameters.
@@ -83,7 +84,7 @@ public class CommandLineParser {
      * 
      */
     public static List<String> createCmdLine(GpConfig gpConfig, GpContext gpContext, String cmdLine, Map<String,ParameterInfoRecord> paramInfoMap) { 
-        return resolveValue(gpConfig, gpContext, cmdLine, paramInfoMap, 0); 
+        return CommandLineParser.resolveValue(gpConfig, gpContext, cmdLine, paramInfoMap, 0); 
     }
 
     /**
@@ -128,7 +129,6 @@ public class CommandLineParser {
         return joined;
     }
     
-    //protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
     protected static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String,ParameterInfoRecord> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
