@@ -1328,7 +1328,9 @@ public class GenePatternAnalysisTask {
                 if (commandPrefix != null) {
                     cmdLine = commandPrefix + " " + cmdLine;
                 }
-                final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, props, paramInfoMap);
+                
+                final Map<String,String> propsMap=CommandLineParser.propsToMap(props);
+                final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
                 if (log.isDebugEnabled()) {
                     final List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramInfoMap);
                     log.debug("cmdLineArgs      : "+cmdLineArgs); // 3.9.2, it works!

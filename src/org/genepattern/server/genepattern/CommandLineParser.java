@@ -53,17 +53,15 @@ public class CommandLineParser {
      * @param gpConfig
      * @param jobContext
      * @param cmdLine
-     * @param props
+     * @param propsMap
      * @param paramInfoMap
      * @return
      * 
-     * @deprecated should pass in a Map<String,String> propsMap instead of a Properties object
      */
-    public static List<String> createCmdLine(final GpConfig gpConfig, final GpContext jobContext, final String cmdLine, final Properties props, final Map<String, ParameterInfoRecord> paramInfoMap) {
-        final Map<String,String> env=propsToMap(props);
-        return ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, env, paramInfoMap);
+    public static List<String> createCmdLine(final GpConfig gpConfig, final GpContext jobContext, final String cmdLine, final Map<String,String> propsMap, final Map<String, ParameterInfoRecord> paramInfoMap) {
+        return ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
     }
-    
+
     public static Map<String, String> propsToMap(final Properties props) {
         final Map<String,String> env = new HashMap<String,String>();
         for(Object keyObj : props.keySet()) {
