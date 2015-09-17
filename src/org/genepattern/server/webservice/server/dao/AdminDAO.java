@@ -425,6 +425,7 @@ public class AdminDAO extends BaseDAO {
 
             String taskQuality = ti.getTaskInfoAttributes().get(GPConstants.QUALITY);
             boolean skip = false;
+            boolean altHasExcludedQualityLevel = false;
             if (altTi == null) {
                 latestTasks.put(tiLSID.toStringNoVersion(), ti);
             }
@@ -434,17 +435,21 @@ public class AdminDAO extends BaseDAO {
                     for(String excludedQualityLevel: excludedQualityLevels)
                     {
                         //include this task if all versions include the excluded quality level
-                        if (excludedQualityLevel.equalsIgnoreCase(taskQuality)
-                                && !altTi.getTaskInfoAttributes().get(GPConstants.QUALITY).equalsIgnoreCase(taskQuality))
+                        if (excludedQualityLevel.equalsIgnoreCase(taskQuality))
                         {
                             skip = true;
                         }
+
+                        if (altTi.getTaskInfoAttributes().get(GPConstants.QUALITY).equalsIgnoreCase(excludedQualityLevel))
+                        {
+                            altHasExcludedQualityLevel = true;
+                        }
                     }
                 }
-                if(!skip)
+                if(!skip || altHasExcludedQualityLevel)
                 {
                     LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes().get(GPConstants.LSID));
-                    if (altLSID.compareTo(tiLSID) > 0) {
+                    if (altLSID.compareTo(tiLSID) > 0 ) {
                         latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
                     }
                 }
