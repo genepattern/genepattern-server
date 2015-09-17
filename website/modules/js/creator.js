@@ -2308,6 +2308,9 @@ function loadParameterInfo(parameters)
         {
             newParameter.find('input[name="maxNumValues"]').spinner( "disable" );
             newParameter.find('input[name="unlimitedNumValues"]').prop('checked', true);
+
+            //enable the list mode since numValues is unlimited
+            newParameter.find("select[name='p_list_mode']").multiselect('enable');
         }
 
         if(parameters[i].listMode !== undefined && parameters[i].listMode != null
