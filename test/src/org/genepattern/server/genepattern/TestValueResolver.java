@@ -3,9 +3,10 @@ package org.genepattern.server.genepattern;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -13,6 +14,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -23,7 +25,42 @@ public class TestValueResolver
     private static final String choiceSpec1 ="value1=value1;value2;value3=value3;value4;actual5=display5";
     private static final String choiceSpec2="choiceVal1=choiceVal1;choiceVal2;choiceVal3=choiceVal3;" +
             "choiceVal4;actualChoice5=displayChoice5";
+    
 
+    private static final String singleValueParam = "single.param";
+    private final String multiValueParam = "multivalue.param";
+    private Map<String,ParameterInfoRecord> paramInfoMap;
+
+
+    @Before
+    public void setUp() {
+        ParameterInfo formalSingleParam;
+        ParameterInfo formalMultiParam; 
+
+        formalSingleParam = new ParameterInfo();
+        formalSingleParam.setName(singleValueParam);
+        HashMap<String, String> attributesOne = new HashMap<String, String>();
+        attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
+        attributesOne.put("name", singleValueParam);
+        attributesOne.put("optional", "on");
+        attributesOne.put("type", "java.lang.String");
+        formalSingleParam.setAttributes(attributesOne);
+        
+        formalMultiParam = new ParameterInfo();
+        HashMap<String, String> attributesTwo = new HashMap<String, String>();
+        formalMultiParam.setName(multiValueParam);
+        attributesTwo.put("numValues", "0+");
+        attributesTwo.put("listMode", "cmd");
+        attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
+        attributesTwo.put("name", multiValueParam);
+        attributesTwo.put("optional", "on");
+        attributesTwo.put("type", "java.lang.String");
+        formalMultiParam.setAttributes(attributesTwo);
+        
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+    }
+    
     @Test
     public void testListModeCmdWithChoice()
     {
@@ -171,13 +208,15 @@ public class TestValueResolver
         ParameterInfo formalMultiParam=new ParameterInfo();
         formalMultiParam.setName(multiValueParam);
         HashMap<String,String> attributesTwo=new HashMap<String,String>();
+        attributesTwo.put("numValues", "0+");
         attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi ");
         attributesTwo.put("listMode", "cmd");
         attributesTwo.put("optional", "on");
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
         String singleValueParamValue = "oneValue";
         JobInput jobInput=new JobInput();
@@ -186,7 +225,7 @@ public class TestValueResolver
         jobInput.addValue(multiValueParam, "value4");
         jobInput.addValue(multiValueParam, "actual5");
 
-        final Properties setupProps=new Properties();
+        final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -194,7 +233,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -230,13 +269,15 @@ public class TestValueResolver
         formalMultiParam.setName(multiValueParam);
         formalMultiParam.setValue(choiceSpec1);
         HashMap<String,String> attributesTwo=new HashMap<String,String>();
+        attributesTwo.put("numValues", "0+");
         attributesTwo.put("listMode", "cmd_opt");
         attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
         attributesTwo.put("optional", "on");
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
         String singleValueParamValue = "oneValue";
         JobInput jobInput=new JobInput();
@@ -245,7 +286,7 @@ public class TestValueResolver
         jobInput.addValue(multiValueParam, "value4");
         jobInput.addValue(multiValueParam, "actual5");
 
-        final Properties setupProps=new Properties();
+        final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -253,7 +294,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -270,39 +311,19 @@ public class TestValueResolver
      */
     public void testResolveCmdLineListModeCmdOptWithSingleValue()
     {
-        String singleValueParam = "single.param";
-        String multiValueParam = "multivalue.param";
-
         final String cmdLine="echo <"+singleValueParam+ "> <"+ multiValueParam + ">";
 
-        ParameterInfo formalSingleParam = new ParameterInfo();
-        formalSingleParam.setName(singleValueParam);
-        HashMap<String, String> attributesOne = new HashMap<String, String>();
-        attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
-        attributesOne.put("name", singleValueParam);
-        attributesOne.put("optional", "on");
-        attributesOne.put("type", "java.lang.String");
-        formalSingleParam.setAttributes(attributesOne);
+        //final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        //final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
-        ParameterInfo formalMultiParam = new ParameterInfo();
-        HashMap<String, String> attributesTwo = new HashMap<String, String>();
-        formalMultiParam.setName(multiValueParam);
-        attributesTwo.put("listMode", "cmd");
-        attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
-        attributesTwo.put("name", multiValueParam);
-        attributesTwo.put("optional", "on");
-        attributesTwo.put("type", "java.lang.String");
-        formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
-
-        String singleValueParamValue = "singleValue";
-        JobInput jobInput=new JobInput();
+        final String singleValueParamValue = "singleValue";
+        final JobInput jobInput=new JobInput();
         jobInput.addValue(singleValueParam, singleValueParamValue);
 
         jobInput.addValue(multiValueParam, "onlyValue");
 
-        final Properties setupProps = new Properties();
+        final Map<String,String> setupProps = new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
         GpConfig gpConfig=new GpConfig.Builder().build();
@@ -310,7 +331,7 @@ public class TestValueResolver
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, formalParameters);
+        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
 
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
@@ -320,4 +341,31 @@ public class TestValueResolver
 
         assertEquals(expected, actual);
     }
+    
+    @Test
+    public void substituteValue_no_job_input_value_entry() {
+        ParameterInfo pinfo = new ParameterInfo();
+        pinfo.setName("output.filename");
+        HashMap<String, String> attrs = new HashMap<String, String>();
+        pinfo.setAttributes(attrs);
+        attrs.put("listMode", "cmd");
+        //attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
+        attrs.put("name", multiValueParam);
+        //attributesTwo.put("optional", "on");
+        attrs.put("type", "java.lang.String");
+        attrs.put("default_value", "<input.file_basename>.cp.<input.file_extension>");
+        
+        final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext jobContext=new GpContext.Builder().build();
+        Map<String,String> dict=new HashMap<String,String>();
+        dict.put("output.filename", "<input.file_basename>.cp.<input.file_extension>");
+        final List<String> expected=Arrays.asList(new String[]{ "<input.file_basename>.cp.<input.file_extension>" });
+        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<output.filename>", dict, paramInfoMap);
+        
+        assertEquals("substitue(<output.filename>)", expected, actual);
+    }
+    
 }

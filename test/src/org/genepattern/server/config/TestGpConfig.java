@@ -12,9 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.genepattern.server.genepattern.CommandLineParser;
+import org.genepattern.server.genepattern.ValueResolver;
 import org.genepattern.server.webapp.jsf.AboutBean;
-import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -111,20 +110,20 @@ public class TestGpConfig {
         final List<String> expectedAntScriptArgs=Arrays.asList( new File(expectedAntHome,"bin/ant").getAbsolutePath(), "--noconfig", "-version");
         assertEquals("parse <ant-script> command", 
                 expectedAntScriptArgs,
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]));
+                ValueResolver.resolveValue(gpConfig, gpContext, "<ant-script> -version"));
 
         final List<String> expectedAntJavaArgs=Arrays.asList("java", "-Dant.home="+expectedAntHome, "-cp", expectedAntHome+"/lib/ant-launcher.jar", "org.apache.tools.ant.launch.Launcher", "-version");
         assertEquals("parse <ant-java> command", 
                 expectedAntJavaArgs,
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-java> -version", new Properties(), new ParameterInfo[0]));
+                ValueResolver.resolveValue(gpConfig, gpContext, "<ant-java> -version"));
 
         assertEquals("parse <ant-1.8> command", 
                 expectedAntJavaArgs,
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-1.8> -version", new Properties(), new ParameterInfo[0]));
+                ValueResolver.resolveValue(gpConfig, gpContext, "<ant-1.8> -version"));
 
         assertEquals("parse <ant> command", 
                 expectedAntJavaArgs,
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant> -version", new Properties(), new ParameterInfo[0]));
+                ValueResolver.resolveValue(gpConfig, gpContext, "<ant> -version"));
     }
     
     @Test
@@ -138,7 +137,7 @@ public class TestGpConfig {
         
         assertEquals("parse <ant-script> command", 
                 Arrays.asList( tmpAnt.getAbsolutePath(), "--noconfig", "-version"),
-                CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]));
+                ValueResolver.resolveValue(gpConfig, gpContext, "<ant-script> -version"));
     }
 
     @Test
@@ -154,7 +153,7 @@ public class TestGpConfig {
         GpConfig gpConfig=new GpConfig.Builder()
             .webappDir(webappDir)
         .build();
-        List<String> args=CommandLineParser.createCmdLine(gpConfig, gpContext, "<ant-script> -version", new Properties(), new ParameterInfo[0]);        
+        List<String> args=ValueResolver.resolveValue(gpConfig, gpContext, "<ant-script> -version");        
         assertEquals("after init, exec flag should be true", true, new File(args.get(0)).canExecute());
     }
     

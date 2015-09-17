@@ -39,6 +39,8 @@ import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 
+import com.google.common.base.Strings;
+
 /**
  * Helper class, instantiated as part of processing user input, before adding a job to the queue.
  * This class, when needed, will generate a filelist file based on the list of values from the job input form.
@@ -256,16 +258,48 @@ public class ParamListHelper {
         }
     }
 
+    /**
+     * Get the value of the 'listMode' attribute from the manifest file;
+     * automatically trim and convert to all upper case if it is set.
+     * @param formalParam
+     * @return the formatted value or null if not present
+     */
+    protected static String getListModeSpec(final ParameterInfo formalParam) {
+        if (formalParam==null) {
+            log.warn("formalParam==null");
+            return null;
+        }
+        if (formalParam.getAttributes()==null) {
+            return null;
+        }
+        final String rval = (String) formalParam.getAttributes().get(NumValues.PROP_LIST_MODE);
+        if (rval==null) {
+            return null;
+        }
+        return rval.toUpperCase().trim();
+    }
+    
+    protected static String getListModeSpec(final ParameterInfoRecord parameterInfoRecord) {
+        if (parameterInfoRecord==null) {
+            log.warn("parameterInfoRecord==null");
+            return null;
+        }
+        return getListModeSpec(parameterInfoRecord.getFormal());
+    }
+    
+    public static boolean hasListMode(final ParameterInfoRecord parameterInfoRecord) {
+        String listModeSpec=getListModeSpec(parameterInfoRecord);
+        return ! Strings.isNullOrEmpty(listModeSpec);
+    }
+    
     public static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
-        //initialize list mode
-        String listModeStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
-        if (listModeStr != null && listModeStr.length()>0) {
-            listModeStr = listModeStr.toUpperCase().trim();
+        final String listModeSpec=getListModeSpec(parameterInfoRecord);
+        if (! Strings.isNullOrEmpty(listModeSpec)) {
             try {
-                return ListMode.valueOf(listModeStr);
+                return ListMode.valueOf(listModeSpec);
             }
             catch (Throwable t) {
-                String message="Error initializing listMode from listMode="+listModeStr;
+                String message="Error initializing listMode from listMode="+listModeSpec;
                 log.error(message, t);
                 throw new IllegalArgumentException(message);
             }

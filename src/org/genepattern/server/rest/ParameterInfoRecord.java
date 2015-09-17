@@ -28,21 +28,25 @@ public class ParameterInfoRecord {
      * @param taskInfo
      * @return
      */
-    final static public Map<String,ParameterInfoRecord> initParamInfoMap(final TaskInfo taskInfo) {
+    public static final Map<String,ParameterInfoRecord> initParamInfoMap(final TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
             return Collections.emptyMap();
         }
-        Map<String,ParameterInfoRecord> paramInfoMap=new LinkedHashMap<String,ParameterInfoRecord>();
-        for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-            ParameterInfoRecord record = new ParameterInfoRecord(pinfo);
-            paramInfoMap.put(pinfo.getName(), record);
+        return initParamInfoMap(taskInfo.getParameterInfoArray());
+    }
+    
+    public static final Map<String,ParameterInfoRecord> initParamInfoMap(final ParameterInfo[] formalParams) {
+        final Map<String,ParameterInfoRecord> paramInfoMap=new LinkedHashMap<String,ParameterInfoRecord>();
+        for(final ParameterInfo formalParam : formalParams) {
+            final ParameterInfoRecord record=new ParameterInfoRecord(formalParam);
+            paramInfoMap.put(formalParam.getName(), record);            
         }
         return paramInfoMap;
     }
 
-    private ParameterInfo formalParam;
-    private ParameterInfo actualParam;
+    private final ParameterInfo formalParam;
+    private final ParameterInfo actualParam;
 
     public ParameterInfoRecord(ParameterInfo formalParam) {
         this.formalParam=formalParam;
