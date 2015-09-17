@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.junitutil.ParameterInfoBuilder;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
@@ -366,6 +368,38 @@ public class TestValueResolver
         final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<output.filename>", dict, paramInfoMap);
         
         assertEquals("substitue(<output.filename>)", expected, actual);
+    }
+    
+    @Test
+    public void substituteValue_cmdOpt_prefixWhenSpecified() throws Exception {
+        final String pname="input.param";
+        
+        JobInput jobInput=new JobInput();
+        jobInput.addValue(pname, "A VALUE");
+        jobInput.addValue(pname, "B VALUE");
+        
+        ParameterInfo pinfo = new ParameterInfoBuilder()
+            .name(pname)
+            .numValues("0+")
+            .listMode(ListMode.CMD_OPT)
+            .optional(true)
+            .defaultValue("")
+            .prefixWhenSpecified("--input-param=")
+        .build();
+        
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext jobContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        Map<String,String> dict=new HashMap<String,String>();
+        final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        
+        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        assertEquals("substitue(<input.param>)", 
+                Arrays.asList("--input-param=A VALUE", "--input-param=B VALUE"), 
+                actual);
+        
     }
     
 }
