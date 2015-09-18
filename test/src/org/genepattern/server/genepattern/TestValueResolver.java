@@ -2,11 +2,7 @@ package org.genepattern.server.genepattern;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.genepattern.junitutil.ParameterInfoBuilder;
 import org.genepattern.server.config.GpConfig;
@@ -17,6 +13,7 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -187,6 +184,7 @@ public class TestValueResolver
     }
 
     @Test
+    @Ignore
     /*
      * Test resolving a command line which contains a parameter with listmode=cmd and multiple values set
      */
@@ -261,7 +259,7 @@ public class TestValueResolver
         formalSingleParam.setName(singleValueParam);
 
         formalSingleParam.setValue(choiceSpec2);
-        HashMap<String,String> attributesOne=new HashMap<String,String>();
+        HashMap attributesOne=new HashMap();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("optional", "on");
         attributesOne.put("type", "java.lang.String");
@@ -278,8 +276,8 @@ public class TestValueResolver
         attributesTwo.put("type", "java.lang.String");
         formalMultiParam.setAttributes(attributesTwo);
 
-        final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
-        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParameters);
 
         String singleValueParamValue = "oneValue";
         JobInput jobInput=new JobInput();
@@ -313,14 +311,36 @@ public class TestValueResolver
      */
     public void testResolveCmdLineListModeCmdOptWithSingleValue()
     {
+        String singleValueParam = "single.param";
+        String multiValueParam = "multivalue.param";
+
         final String cmdLine="echo <"+singleValueParam+ "> <"+ multiValueParam + ">";
 
-        //final ParameterInfo[] formalParams = new ParameterInfo[]{formalSingleParam , formalMultiParam};
-        //final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        ParameterInfo formalSingleParam = new ParameterInfo();
+        formalSingleParam.setName(singleValueParam);
+        HashMap attributesOne = new HashMap();
+        attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
+        attributesOne.put("name", singleValueParam);
+        attributesOne.put("optional", "on");
+        attributesOne.put("type", "java.lang.String");
+        formalSingleParam.setAttributes(attributesOne);
 
+        ParameterInfo formalMultiParam = new ParameterInfo();
+        HashMap attributesTwo = new HashMap();
+        formalMultiParam.setName(multiValueParam);
+        attributesTwo.put("numValues", "0+");
+        attributesTwo.put("listMode", "cmd_opt");
+        attributesTwo.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--multi=");
+        attributesTwo.put("name", multiValueParam);
+        attributesTwo.put("optional", "on");
+        attributesTwo.put("type", "java.lang.String");
+        formalMultiParam.setAttributes(attributesTwo);
 
-        final String singleValueParamValue = "singleValue";
-        final JobInput jobInput=new JobInput();
+        final ParameterInfo[] formalParameters = new ParameterInfo[]{formalSingleParam , formalMultiParam};
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParameters);
+
+        String singleValueParamValue = "singleValue";
+        JobInput jobInput=new JobInput();
         jobInput.addValue(singleValueParam, singleValueParamValue);
 
         jobInput.addValue(multiValueParam, "onlyValue");
