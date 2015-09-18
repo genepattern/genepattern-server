@@ -1099,7 +1099,7 @@ function updateBatchInfo()
 
                     var div = $("<div id='batchInfoDialogHeader'/>");
                     $(div).append("<h4> Total Batch Jobs: " + batchInfoObj.numBatchJobs + "</h4>");
-                    div.append("<div style='font-size: 10px;'>NOTE: Number of batch jobs and parameter pairing will vary if directories are specified.</div>");
+                    //div.append("<div style='font-size: 10px;'>NOTE: Number of batch jobs and pairing of parameter values will vary if directories are specified.</div>");
 
                     $(this).append(div);
 
