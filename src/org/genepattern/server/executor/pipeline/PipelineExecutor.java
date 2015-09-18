@@ -6,7 +6,6 @@ package org.genepattern.server.executor.pipeline;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
@@ -25,25 +24,20 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  */
 public class PipelineExecutor implements CommandExecutor {
-    private static Logger log = Logger.getLogger(PipelineExecutor.class);
 
     //'pipeline.num.threads' from genepattern.properties
     //private int numPipelines = 20;   
     
     public void setConfigurationFilename(String filename) {
-        // TODO Auto-generated method stub
     }
 
     public void setConfigurationProperties(CommandProperties properties) {
-        // TODO Auto-generated method stub
     }
 
     public void start() {
-        // TODO Auto-generated method stub
     }
 
     public void stop() {
-        // TODO Auto-generated method stub
     }
 
     public void runCommand(final String[] commandLine,
