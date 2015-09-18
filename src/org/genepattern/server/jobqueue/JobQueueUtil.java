@@ -4,7 +4,6 @@
 package org.genepattern.server.jobqueue;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -12,7 +11,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.executor.events.GpJobAddedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.job.status.Status;
-//import org.genepattern.server.jobqueue.dao.JobQueueStatusDao;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -75,6 +73,7 @@ public class JobQueueUtil {
                 query.setMaxResults(maxJobCount);
             }
             query.setString("status", JobQueue.Status.PENDING.toString());
+            @SuppressWarnings("unchecked")
             List<JobQueue> records = query.list();
             return records;
         }
@@ -130,6 +129,7 @@ public class JobQueueUtil {
             Query query = session.createQuery(hql);
             query.setParameter("parentJobNo", parentJobNo);
             query.setParameter("status", JobQueue.Status.WAITING.toString());
+            @SuppressWarnings("unchecked")
             List<JobQueue> records = query.list();
             return records;
         }
