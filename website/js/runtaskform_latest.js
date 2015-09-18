@@ -1590,9 +1590,24 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
             onAddTag: function()
             {
                 $(this).parent().find(".tag").last().find("a").attr("title", "").hide();
-                var text = $(this).parent().find(".tag").last().find("span").text();
-                text = $.trim(text);
-                $(this).parent().find(".tag").last().find("span").text(text);
+
+                var paramName = $(this).parents("tr").first().data("pname");
+                var numTags = $(this).parent().find(".tag").length;
+                //check that the max value has not been reached
+                if(!validateMaxValues(paramName, numTags))
+                {
+                    //delete the added tag
+                    $(this).parent().find(".tag").last().find("a").click();
+                }
+                else
+                {
+                    var text = $(this).parent().find(".tag").last().find("span").text();
+
+                    text = $.trim(text);
+                    $(this).parent().find(".tag").last().find("span").text(text);
+                }
+
+
             },
             onRemoveTag: function()
             {
@@ -3253,6 +3268,37 @@ function validateMaxFiles(paramName, numFiles) {
             "this parameter (" + paramName + ") has been reached. Please delete some files " +
             "before continuing.");
     }
+}
+
+function validateMaxValues(paramName, numValues) {
+    //check if max values will be violated only if this not a batch parameter
+    //in the case of batch we want to allow specifying any number of files
+    if (isBatch(paramName)) {
+        return;
+    }
+
+    var paramDetails = run_task_info.params[paramName];
+
+    var maxValuesLimitExceeded = false;
+
+    if (paramDetails !== null) {
+        //in this case the max num of files is not unlimited
+        if (paramDetails.maxValue !== undefined || paramDetails.maxValue !== null) {
+            var maxValue = parseInt(paramDetails.maxValue);
+            if (numValues > maxValue) {
+                maxValuesLimitExceeded = true;
+            }
+        }
+    }
+
+    //check that the user did not add more files than allowed
+    if (maxValuesLimitExceeded) {
+        alert("The maximum number of values that can be provided to the " + paramName +
+            " parameter has been reached.");
+        return false;
+    }
+
+    return true;
 }
 
 function checkFileSizes(files) {
