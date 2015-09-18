@@ -3274,7 +3274,7 @@ function validateMaxValues(paramName, numValues) {
     //check if max values will be violated only if this not a batch parameter
     //in the case of batch we want to allow specifying any number of files
     if (isBatch(paramName)) {
-        return;
+        return true;
     }
 
     var paramDetails = run_task_info.params[paramName];
