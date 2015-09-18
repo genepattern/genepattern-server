@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.GroupPermission.Permission;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
@@ -27,6 +28,8 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  *
  */
 public class PermissionsHelper implements Serializable {
+    private final HibernateSessionManager mgr;
+    
     //the user viewing or editing the job
     private String currentUser = null;
     //is the current user the owner of the job
@@ -50,14 +53,28 @@ public class PermissionsHelper implements Serializable {
     private int rootJobNo;
     private String rootJobOwner;
 
+    /** @deprecated pass in a valid Hibernate session */
     public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo) {
-        AnalysisDAO ds = new AnalysisDAO();
+        this(org.genepattern.server.database.HibernateUtil.instance(),
+                _isAdmin, _userId, _jobNo);
+    }
+    
+    public PermissionsHelper(final HibernateSessionManager mgr, final boolean _isAdmin, final String _userId, final int _jobNo) {
+        this.mgr=mgr;
+        AnalysisDAO ds = new AnalysisDAO(mgr);
         final int _rootJobNo = ds.getRootJobNumber(_jobNo);
         final String _rootJobOwner = ds.getJobOwner(_rootJobNo);
         init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, ds);
     }
     
+    /** @deprecated pass in a valid Hibernate session */
     public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
+        this(org.genepattern.server.database.HibernateUtil.instance(), 
+                _isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo);
+    }
+
+    public PermissionsHelper(final HibernateSessionManager mgr, final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
+        this.mgr=mgr;
         init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, (AnalysisDAO)null);
     }
     
@@ -72,12 +89,12 @@ public class PermissionsHelper implements Serializable {
             canRead = true;
             canWrite = true;
         }
-        init(ds);
+        init(mgr, ds);
     }
     
-    private void init(AnalysisDAO ds)  {
+    private void init(HibernateSessionManager mgr, AnalysisDAO ds)  {
         if (ds == null) {
-            ds = new AnalysisDAO();
+            ds = new AnalysisDAO(mgr);
         }
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
 
