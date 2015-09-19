@@ -232,7 +232,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                 createJobDirectory(taskContext, jobNo);
 
                 //add record to the internal job queue, for dispatching ...
-                JobQueueUtil.addJobToQueue(jobInfo, initialJobStatus);
+                JobQueueUtil.addJobToQueue(HibernateUtil.instance(), jobInfo, initialJobStatus);
                 return jobNo;
             }
             catch (JobSubmissionException e) {
