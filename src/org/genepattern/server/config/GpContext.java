@@ -55,17 +55,16 @@ public class GpContext {
 
     /** @deprecated should pass in a valid HibernateSessionManager */
     public static GpContext createContextForJob(final Integer jobNumber) throws Exception, Throwable {
+        return createContextForJob(org.genepattern.server.database.HibernateUtil.instance(), jobNumber);
+    }
+    
+    public static GpContext createContextForJob(final HibernateSessionManager mgr, final Integer jobNumber) throws Exception, Throwable {
         //null arg for currentUser means 'use the owner of the job'
-        return createContextForJob(null, jobNumber);
+        return createContextForJob(mgr, null, jobNumber);
     }
-    /** @deprecated should pass in a valid HibernateSessionManager */
-    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber) throws Exception, Throwable {
+    public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber) throws Exception, Throwable {
         LibdirStrategy libdirStrategy=new LibdirLegacy();
-        return createContextForJob(currentUser, jobNumber, libdirStrategy);
-    }
-    /** @deprecated should pass in a valid HibernateSessionManager */
-    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
-        return createContextForJob(org.genepattern.server.database.HibernateUtil.instance(), currentUser, jobNumber, libdirStrategy);
+        return createContextForJob(mgr, currentUser, jobNumber, libdirStrategy);
     }
     public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
         if (jobNumber==null) {
