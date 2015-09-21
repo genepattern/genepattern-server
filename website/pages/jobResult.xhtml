@@ -359,7 +359,7 @@
             window.open('#{jobStatusBean.jobInfo.launchUrl}', '_blank');
         </script>
     </h:outputText>
-    <h:outputText rendered="#{jobStatusBean.canViewJob and ((not jobStatusBean.jobInfo.javascript or visualizerStatusBean.openVisualizers) or visualizerStatusBean.openNewWindow)}">
+    <h:outputText rendered="#{jobStatusBean.canViewJob and (!visualizerStatusBean.openVisualizers or !visualizerStatusBean.openNewWindow)}">
                 <div style="display:none;" class="on-job-status-page"></div>
                 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
                     <h:form>
