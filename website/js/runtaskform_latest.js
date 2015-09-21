@@ -2361,7 +2361,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
         //check if the new section should be hidden
         if (parameterGroups[i].hidden !== undefined && parameterGroups[i].hidden !== null
-            && parameterGroups[i].hidden & !isNonDefaultValues(parameterGroups[i].parameters)) {
+            && parameterGroups[i].hidden && !isNonDefaultValues(parameterGroups[i].parameters)) {
             curHeaderDiv.prev().find(".paramSectionToggle").click();
         }
 
@@ -2399,8 +2399,6 @@ function isNonDefaultValues(parameterNames)
                  }
             }
         }
-
-        return false;
     }
 
     return false;
