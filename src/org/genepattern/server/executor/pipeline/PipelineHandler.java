@@ -9,8 +9,6 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -43,6 +41,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.util.FindFileFilter;
@@ -73,14 +72,27 @@ public class PipelineHandler {
     
     /**
      * Initialize the pipeline and add the first job to the queue.
+     * @param mgr
+     * @param jobContext
+     * @param stopAfterTask
+     * @throws CommandExecutorException
      */
-    public static void startPipeline(final HibernateSessionManager mgr, JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
+    public static void startPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final int stopAfterTask) throws CommandExecutorException {
+        if (jobContext==null) {
+            throw new CommandExecutorException("jobContext==null");
+        }
+        final JobInfo pipelineJobInfo=jobContext.getJobInfo();
         if (pipelineJobInfo == null) {
-            throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
-        }        
-        log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        final boolean isInTransaction = mgr.isInTransaction(); //for debugging
-        log.debug("isInTranscation="+isInTransaction);
+            throw new CommandExecutorException("jobContext.jobInfo is null");
+        }
+        //final JobInput jobInput=jobContext.getJobInput();
+        if (log.isDebugEnabled()) {
+            log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        }
+        if (log.isDebugEnabled()) {
+            final boolean isInTransaction = mgr.isInTransaction(); 
+            log.debug("isInTranscation="+isInTransaction);
+        }
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         final boolean isParallelExec = isParallelExec(pipelineJobInfo);
         int numAddedJobs=-1;
