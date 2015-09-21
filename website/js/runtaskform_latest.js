@@ -2526,6 +2526,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
     // Hide the protocols if visible
     $("#protocols").hide();
     $("#jobResults").hide();
+    $("#mainJsViewerPane").hide();
 
     // Lazily clone the blank jobSubmit div, and replace a dirty div with the clean one
     if (Request.cleanJobSubmit === null) {
