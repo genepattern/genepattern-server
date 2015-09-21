@@ -1089,18 +1089,6 @@ public class PipelineHandler {
                 if (params[i].isInputFile()) {
                     String file = params[i].getValue(); // bug 724
                     if (file != null && file.trim().length() != 0) {
-                        // GP-4191: no longer need to replace the original value with the file#toURI 
-                        final boolean keepOriginalValue=true;
-                        if (!keepOriginalValue) {
-                            String val = file;
-                            try {
-                                new URL(file);
-                            } 
-                            catch (MalformedURLException e) {
-                                val = new File(file).toURI().toString();
-                            }
-                            params[i].setValue(val);
-                        }
                         params[i].getAttributes().remove("TYPE");
                         params[i].getAttributes().remove("MODE");
                     }
