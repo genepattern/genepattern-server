@@ -746,7 +746,7 @@ public class GenePatternAnalysisTask {
         // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
         if (parentJobId >= 0) {
             try {
-                PipelineHandler.prepareNextStep(parentJobId, jobInfo);
+                PipelineHandler.prepareNextStep(mgr, parentJobId, jobInfo);
             }
             catch (PipelineException e) {
                 throw new JobDispatchException(e);
@@ -1937,7 +1937,7 @@ public class GenePatternAnalysisTask {
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
         if (isInPipeline) {
-            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(updatedJobInfo);
+            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(mgr, updatedJobInfo);
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();

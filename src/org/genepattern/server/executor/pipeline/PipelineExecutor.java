@@ -6,6 +6,7 @@ package org.genepattern.server.executor.pipeline;
 import java.io.File;
 import java.util.Map;
 
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
@@ -49,11 +50,11 @@ public class PipelineExecutor implements CommandExecutor {
             final File stdinFile) 
     throws CommandExecutorException {
         //no longer using commandLine for processing pipelines
-        PipelineHandler.startPipeline(jobInfo, Integer.MAX_VALUE);
+        PipelineHandler.startPipeline(HibernateUtil.instance(), jobInfo, Integer.MAX_VALUE);
     }
     
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        PipelineHandler.terminatePipeline(jobInfo);
+        PipelineHandler.terminatePipeline(HibernateUtil.instance(), jobInfo);
     }
     
     /**
@@ -64,7 +65,7 @@ public class PipelineExecutor implements CommandExecutor {
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
         String origStatus = jobInfo.getStatus();
         int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
-        PipelineHandler.handleRunningPipeline(jobInfo);
+        PipelineHandler.handleRunningPipeline(HibernateUtil.instance(), jobInfo);
         return origStatusId;
     }
 }

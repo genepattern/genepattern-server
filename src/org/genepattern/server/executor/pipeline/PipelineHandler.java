@@ -31,7 +31,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -74,36 +74,36 @@ public class PipelineHandler {
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
-    public static void startPipeline(JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
+    public static void startPipeline(final HibernateSessionManager mgr, JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
         if (pipelineJobInfo == null) {
             throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
         }        
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        final boolean isInTransaction = HibernateUtil.isInTransaction(); //for debugging
+        final boolean isInTransaction = mgr.isInTransaction(); //for debugging
         log.debug("isInTranscation="+isInTransaction);
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         final boolean isParallelExec = isParallelExec(pipelineJobInfo);
         int numAddedJobs=-1;
         try {
-            HibernateUtil.beginTransaction();
-            List<JobInfo> addedJobs = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
+            mgr.beginTransaction();
+            List<JobInfo> addedJobs = runPipeline(mgr, pipelineJobInfo, stopAfterTask, isScatterStep);
             numAddedJobs = addedJobs.size();
             //set the parent pipeline's status to PROCESSING 
-            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
+            AnalysisJobScheduler.setJobStatus(mgr, pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
 
             //add job records to the job_queue
             if (!isScatterStep && !isParallelExec) {
                 //for standard pipelines, set the status of the first job to PENDING, the rest to WAITING
                 JobQueue.Status status = JobQueue.Status.PENDING;
                 for(final JobInfo jobInfo : addedJobs) {
-                    JobQueueUtil.addJobToQueue( jobInfo,  status);
+                    JobQueueUtil.addJobToQueue(mgr, jobInfo,  status);
                     status = JobQueue.Status.WAITING;
                 }
             }
             else if (isScatterStep) {
                 //for scatter-gather pipelines, set the status of all jobs to PENDING
                 for(final JobInfo jobInfo : addedJobs) {
-                    JobQueueUtil.addJobToQueue( jobInfo,  JobQueue.Status.PENDING);
+                    JobQueueUtil.addJobToQueue(mgr, jobInfo,  JobQueue.Status.PENDING);
                 }
             }
             else if (isParallelExec) {
@@ -112,27 +112,27 @@ public class PipelineHandler {
                 Set<JobInfo> jobsToRun = graph.getJobsToRun();
                 for(JobInfo jobToRun : jobsToRun) {
                     log.debug("adding job to queue, jobId="+jobToRun.getJobNumber()+", "+jobToRun.getTaskName());
-                    JobQueueUtil.addJobToQueue( jobToRun,  JobQueue.Status.PENDING);
+                    JobQueueUtil.addJobToQueue(mgr, jobToRun,  JobQueue.Status.PENDING);
                 } 
             }
             else {
                 log.error("server config error: shouldn't be here!");
             }
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new CommandExecutorException("Error starting pipeline: "+t.getLocalizedMessage(), t);
         }
         
         //special-case: a pipeline with zero steps
         if (numAddedJobs==0) {
             log.warn("no jobs added to pipeline: "+pipelineJobInfo.getJobNumber()+": "+pipelineJobInfo.getTaskName());
-            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_FINISHED);
+            AnalysisJobScheduler.setJobStatus(mgr, pipelineJobInfo.getJobNumber(), JobStatus.JOB_FINISHED);
             int parentParentJobId = pipelineJobInfo._getParentJobNumber();
             if (parentParentJobId >= 0) {
                 //special-case: a nested pipeline with zero steps, make sure to notify the parent pipeline that this step has completed
-                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(pipelineJobInfo);
+                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(mgr, pipelineJobInfo);
                 if (wakeupJobQueue) {
                     //if the pipeline has more steps, wake up the job queue
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
@@ -141,8 +141,8 @@ public class PipelineHandler {
         }
 
     }
-    
-    public static void terminatePipeline(JobInfo jobInfo) {
+
+    public static void terminatePipeline(final HibernateSessionManager mgr, final JobInfo jobInfo) {
         if (jobInfo == null) {
             log.error("Ignoring null arg");
             return;
@@ -155,9 +155,9 @@ public class PipelineHandler {
         }
         
         // terminate processing jobs
-        HibernateUtil.beginTransaction();
-        List<Object[]> jobInfoObjs = getChildJobObjs(jobInfo.getJobNumber());
-        HibernateUtil.closeCurrentSession();
+        mgr.beginTransaction();
+        List<Object[]> jobInfoObjs = getChildJobObjs(mgr, jobInfo.getJobNumber());
+        mgr.closeCurrentSession();
         
         List<Integer> processingJobIds=new ArrayList<Integer>();
         for(Object[] row : jobInfoObjs) {
@@ -180,8 +180,8 @@ public class PipelineHandler {
             }
         }
         if (processingJobIds.size() == 0) {
-            terminatePipelineSteps(jobInfo.getJobNumber());
-            handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
+            terminatePipelineSteps(mgr, jobInfo.getJobNumber());
+            handlePipelineJobCompletion(mgr, jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
         }
     }
     
@@ -200,37 +200,37 @@ public class PipelineHandler {
      *
      * @param jobInfo - the job which is about to run
      */
-    public static void prepareNextStep(int parentJobId, JobInfo jobInfo) throws PipelineException { 
+    public static void prepareNextStep(final HibernateSessionManager mgr, final int parentJobId, final JobInfo jobInfo) throws PipelineException { 
         if (jobInfo==null) {
             throw new PipelineException("jobInfo==null");
         }
         log.debug("prepareNextStep(parentJobId="+parentJobId+", jobId="+jobInfo.getJobNumber()+", taskName="+jobInfo.getTaskName());
         try {
-            AnalysisDAO dao = new AnalysisDAO();
-            boolean updated = setInheritedParams(dao, parentJobId, jobInfo);
+            AnalysisDAO dao = new AnalysisDAO(mgr);
+            boolean updated = setInheritedParams(mgr, dao, parentJobId, jobInfo);
             if (updated) {
-                updateParameterInfo(jobInfo);
-                HibernateUtil.commitTransaction();
+                updateParameterInfo(mgr, jobInfo);
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             throw new PipelineException("Error preparing next step in pipeline job #"+parentJobId+" for step #"+jobInfo.getJobNumber(), t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
     /**
      * Helper method (could go into AnalysisDAO) for saving edits to the ANALYSIS_JOB.PARAMETER_INFO for a given job.
      */
-    private static void updateParameterInfo(JobInfo jobInfo) {
+    private static void updateParameterInfo(final HibernateSessionManager mgr, final JobInfo jobInfo) {
         int jobId = jobInfo.getJobNumber();
         String paramString = jobInfo.getParameterInfo();
-        AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
+        AnalysisJob aJob = (AnalysisJob) mgr.getSession().get(AnalysisJob.class, jobId);
         aJob.setParameterInfo(paramString);
-        HibernateUtil.getSession().update(aJob);
+        mgr.getSession().update(aJob);
     }
     
     //DAO helpers
@@ -239,34 +239,20 @@ public class PipelineHandler {
      * 
      * @return a List of [jobNo(Integer),statusId(Integer)]
      */
-    private static List<Object[]> getChildJobObjs(int parentJobId) {
+    private static List<Object[]> getChildJobObjs(final HibernateSessionManager mgr, final int parentJobId) {
         //TODO: hard-coded so that no more than 10000 batch jobs can be handled
         final int maxChildJobs = 10000; //limit total number of results to 10000
         String hql = "select a.jobNo, jobStatus.statusId from org.genepattern.server.domain.AnalysisJob a where a.parent = :jobNo ";
         hql += " ORDER BY jobNo ASC";
-        Query query = HibernateUtil.getSession().createQuery(hql);
+        Query query = mgr.getSession().createQuery(hql);
         query.setInteger("jobNo", parentJobId);
         query.setFetchSize(maxChildJobs);
         
+        @SuppressWarnings("unchecked")
         List<Object[]> rval = query.list();
         return rval;
     }
 
-    public static JobInfo getJobInfo(int jobId) {
-        boolean inTransaction = HibernateUtil.isInTransaction();
-        try {
-            HibernateUtil.beginTransaction();
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo jobInfo = ds.getJobInfo(jobId);
-            return jobInfo;
-        }
-        finally {
-            if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-    }
-    
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
      * Check for and handle pipeline termination.
@@ -277,16 +263,16 @@ public class PipelineHandler {
      * @param completionDate
      * @return
      */
-    public static boolean handleJobCompletion(final JobInfo completedJobInfo) {
+    public static boolean handleJobCompletion(final HibernateSessionManager mgr, final JobInfo completedJobInfo) {
         if (completedJobInfo==null) {
             log.error("completedJobInfo==null");
             return false;
         }
         JobInfo parentJobInfo=null;
         int parentJobId = -1;
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             parentJobId = completedJobInfo._getParentJobNumber();
             if (parentJobId >= 0) {
                 parentJobInfo = ds.getJobInfo(parentJobId);
@@ -297,27 +283,27 @@ public class PipelineHandler {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
-        return handleJobCompletion(parentJobInfo, completedJobInfo);
+        return handleJobCompletion(mgr, parentJobInfo, completedJobInfo);
     }
     
-    private static boolean handleJobCompletion(JobInfo parentJobInfo, JobInfo completedJobInfo) {
+    private static boolean handleJobCompletion(final HibernateSessionManager mgr, final JobInfo parentJobInfo, final JobInfo completedJobInfo) {
         if (parentJobInfo == null) {
             return false;
         }
         final boolean isParallelExec = isParallelExec(parentJobInfo);
         if (isParallelExec) {
-            return handleJobCompletionParallel(parentJobInfo, completedJobInfo);
+            return handleJobCompletionParallel(mgr, parentJobInfo, completedJobInfo);
         }
         else {
-            return handleJobCompletionOld(parentJobInfo, completedJobInfo);
+            return handleJobCompletionOld(mgr, parentJobInfo, completedJobInfo);
         }
     }
 
     //TODO: this method must be made thread-safe
-    private static boolean handleJobCompletionParallel(final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
+    private static boolean handleJobCompletionParallel(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
         boolean addedJobs=false;
         if (pipelineJobInfo==null) {
             throw new IllegalArgumentException("pipelineJobInfo==null");
@@ -330,12 +316,12 @@ public class PipelineHandler {
         
         if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
             //rebuild the graph for the pipeline
-            PipelineGraph graph = PipelineGraph.getDependencyGraph(pipelineJobInfo);
+            PipelineGraph graph = PipelineGraph.getDependencyGraph(mgr, pipelineJobInfo);
             
             boolean allStepsComplete=graph.allStepsComplete();
             if (allStepsComplete) {
                 //it's the last step in the pipeline, update its status, and notify downstream jobs
-                handlePipelineJobCompletion(parentJobNumber, 0);
+                handlePipelineJobCompletion(mgr, parentJobNumber, 0);
                 return false;
             }
             
@@ -343,11 +329,11 @@ public class PipelineHandler {
             Set<JobInfo> jobsToRun=graph.getJobsToRun();
             if (jobsToRun.size()>0) {
                 try {
-                    HibernateUtil.beginTransaction();
+                    mgr.beginTransaction();
                     for(JobInfo jobToRun : jobsToRun) {
                         log.debug("adding job to queue, jobId="+jobToRun.getJobNumber()+", "+jobToRun.getTaskName());
                         try {
-                            JobQueueUtil.addJobToQueue( jobToRun,  JobQueue.Status.PENDING);
+                            JobQueueUtil.addJobToQueue(mgr, jobToRun,  JobQueue.Status.PENDING);
                             addedJobs=true;
                         }
                         catch (Throwable t) {
@@ -355,10 +341,10 @@ public class PipelineHandler {
                             log.error(t);
                         }
                     }
-                    HibernateUtil.commitTransaction();
+                    mgr.commitTransaction();
                 }
                 finally {
-                    HibernateUtil.closeCurrentSession();
+                    mgr.closeCurrentSession();
                 }
             }
             return addedJobs;
@@ -366,13 +352,13 @@ public class PipelineHandler {
         else {
             //TODO: in some cases, we don't want to kill the parent pipeline or its child jobs
             //handle an error in a pipeline step
-            terminatePipelineSteps(parentJobNumber);
-            handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
+            terminatePipelineSteps(mgr, parentJobNumber);
+            handlePipelineJobCompletion(mgr, parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
         }
         return false;
     }
 
-    private static boolean handleJobCompletionOld(final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
+    private static boolean handleJobCompletionOld(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final JobInfo childJobInfo) {
         if (pipelineJobInfo==null) {
             throw new IllegalArgumentException("pipelineJobInfo==null");
         }
@@ -395,7 +381,7 @@ public class PipelineHandler {
             //boolean lastStepComplete = false;
             
             try {
-                List<JobQueue> records = getWaitingJobs(parentJobNumber);
+                List<JobQueue> records = getWaitingJobs(mgr, parentJobNumber);
                 if (records == null) {
                     log.error("Unexpected null result from getChildJobStatus, assuming all child steps are complete for parentJobNumber="+parentJobNumber);
                 }
@@ -418,15 +404,15 @@ public class PipelineHandler {
             
             if (nextWaitingJob >= 0) {
                 //if there is another job to run, change the status of the next job to pending
-                startNextStep(nextWaitingJob);
+                startNextStep(mgr, nextWaitingJob);
                 //indicate there is another step waiting on the queue
                 return true;
             }
             
             //no waiting jobs found, find out if the last step in the pipeline is complete
-            HibernateUtil.beginTransaction();
-            List<Object[]> jobInfoObjs = getChildJobObjs(parentJobNumber);
-            HibernateUtil.closeCurrentSession();
+            mgr.beginTransaction();
+            List<Object[]> jobInfoObjs = getChildJobObjs(mgr, parentJobNumber);
+            mgr.closeCurrentSession();
             // the job is complete iff the list is empty
             boolean lastStepComplete = true;
             for(Object[] row : jobInfoObjs) {
@@ -438,15 +424,15 @@ public class PipelineHandler {
 
             if (lastStepComplete) {
                 //it's the last step in the pipeline, update its status, and notify downstream jobs
-                handlePipelineJobCompletion(parentJobNumber, 0);
+                handlePipelineJobCompletion(mgr, parentJobNumber, 0);
                 return false;
             }
         }
         else {
             //TODO: in some cases, we don't want to kill the parent pipeline or its child jobs
             //handle an error in a pipeline step
-            terminatePipelineSteps(parentJobNumber);
-            handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
+            terminatePipelineSteps(mgr, parentJobNumber);
+            handlePipelineJobCompletion(mgr, parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
         }
         return false;
     }
@@ -455,12 +441,12 @@ public class PipelineHandler {
      * Get the next step in the pipeline, by jobId.
      * @return
      */
-    private static List<JobQueue> getWaitingJobs(int parentJobNo) throws Exception {
-        List<JobQueue> records = JobQueueUtil.getWaitingJobs(parentJobNo);
+    private static List<JobQueue> getWaitingJobs(final HibernateSessionManager mgr, int parentJobNo) throws Exception {
+        List<JobQueue> records = JobQueueUtil.getWaitingJobs(mgr, parentJobNo);
         return records;
     }
     
-    public static void handleRunningPipeline(JobInfo pipeline) {
+    public static void handleRunningPipeline(final HibernateSessionManager mgr, final JobInfo pipeline) {
         if (pipeline == null) {
             log.error("Invalid null arg");
             return;
@@ -476,14 +462,14 @@ public class PipelineHandler {
         String errorMessage = null;
         List<Object[]> jobInfoObjs = null;
         try {
-            HibernateUtil.beginTransaction();
-            jobInfoObjs = getChildJobObjs(pipeline.getJobNumber());
+            mgr.beginTransaction();
+            jobInfoObjs = getChildJobObjs(mgr, pipeline.getJobNumber());
         }
         catch (Throwable t) {
             jobInfoObjs = new ArrayList<Object[]>();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         for(Object[] row : jobInfoObjs) {
             int jobId = (Integer) row[0];
@@ -502,43 +488,43 @@ public class PipelineHandler {
         if (numStepsToGo == 0 || errorFlag) {
             if (errorFlag) {
                 //handle an error in a pipeline step
-                terminatePipelineSteps(pipeline.getJobNumber());
-                handlePipelineJobCompletion(pipeline.getJobNumber(), -1, errorMessage);
+                terminatePipelineSteps(mgr, pipeline.getJobNumber());
+                handlePipelineJobCompletion(mgr, pipeline.getJobNumber(), -1, errorMessage);
             }
             else {
-                PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0);
+                PipelineHandler.handlePipelineJobCompletion(mgr, pipeline.getJobNumber(), 0);
             }
         }
     }
     
-    private static void startNextStep(int nextJobId) {
+    private static void startNextStep(final HibernateSessionManager mgr, final int nextJobId) {
         try {
-            HibernateUtil.beginTransaction();
-            JobQueueUtil.setJobStatus(nextJobId, JobQueue.Status.PENDING);
-            HibernateUtil.commitTransaction();
+            mgr.beginTransaction();
+            JobQueueUtil.setJobStatus(mgr, nextJobId, JobQueue.Status.PENDING);
+            mgr.commitTransaction();
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
     }
     
-    private static void terminatePipelineSteps(int parentJobNumber) {
+    private static void terminatePipelineSteps(final HibernateSessionManager mgr, final int parentJobNumber) {
         try {
-            HibernateUtil.beginTransaction();
-            List<Integer> incompleteJobIds = getIncompleteJobs(parentJobNumber);
+            mgr.beginTransaction();
+            List<Integer> incompleteJobIds = getIncompleteJobs(mgr, parentJobNumber);
             for(Integer jobId : incompleteJobIds) {
-                AnalysisJobScheduler.setJobStatus(jobId, JobStatus.JOB_ERROR);
+                AnalysisJobScheduler.setJobStatus(mgr, jobId, JobStatus.JOB_ERROR);
             }
-            HibernateUtil.commitTransaction();
+            mgr.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error updating job status for child jobs in pipeline #"+parentJobNumber, t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
     }
 
-    private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode) {
-        handlePipelineJobCompletion(parentJobNumber, exitCode, (String) null);
+    private static void handlePipelineJobCompletion(final HibernateSessionManager mgr, int parentJobNumber, int exitCode) {
+        handlePipelineJobCompletion(mgr, parentJobNumber, exitCode, (String) null);
     }
     
     /**
@@ -549,17 +535,12 @@ public class PipelineHandler {
      * @param exitCode, with a non-zero exitCode, an errorMessage is automatically created, if necessary.
      * @param errorMessage, can be null
      */
-    private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode, String errorMessage) {
+    private static void handlePipelineJobCompletion(final HibernateSessionManager mgr, int parentJobNumber, int exitCode, String errorMessage) {
         try {
             if (exitCode != 0 && errorMessage == null) {
                 errorMessage = "Pipeline terminated with non-zero exitCode: "+exitCode;
             }
-            if (errorMessage == null) {
-                GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, exitCode);
-            }
-            else {
-                GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, exitCode, errorMessage);
-            }
+            GenePatternAnalysisTask.handleJobCompletion(mgr, parentJobNumber, exitCode, errorMessage);
         }
         catch (Throwable t) {
             log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);
@@ -573,8 +554,8 @@ public class PipelineHandler {
      * @param parentJobId
      * @return
      */
-    private static List<Integer> getIncompleteJobs(final int parentJobId) {
-        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
+    private static List<Integer> getIncompleteJobs(final HibernateSessionManager mgr, final int parentJobId) {
+        List<Object[]> jobInfoObjs = getChildJobObjs(mgr, parentJobId);
         List<Integer> waitingJobs = new ArrayList<Integer>();
         for(Object[] row : jobInfoObjs) {
             int jobId = (Integer) row[0];
@@ -600,7 +581,7 @@ public class PipelineHandler {
      * @throws MissingTasksException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
         final boolean initIsAdmin=true;
@@ -608,7 +589,7 @@ public class PipelineHandler {
 
         final TaskInfo pipelineTaskInfo;
         try {
-            pipelineTaskInfo=getTaskInfo(pipelineJobInfo.getTaskLSID());
+            pipelineTaskInfo=getTaskInfo(mgr, pipelineJobInfo.getTaskLSID());
         }
         catch (Throwable t) {
             log.error(t);
@@ -631,11 +612,11 @@ public class PipelineHandler {
         List<JobInfo> addedJobs = new ArrayList<JobInfo>();
         if (!isScatterStep) {
             // add job records to the analysis_job table
-            addedJobs = runPipeline(pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
+            addedJobs = runPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
         else {
-            addedJobs = runScatterPipeline(pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
+            addedJobs = runScatterPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
     }
@@ -653,7 +634,7 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
@@ -675,19 +656,19 @@ public class PipelineHandler {
             //    rather making another call
             final TaskInfo taskInfo;
             try {
-                taskInfo = getTaskInfo(jobSubmission.getLSID());
+                taskInfo = getTaskInfo(mgr, jobSubmission.getLSID());
             }
             catch (Throwable t) {
                 throw new JobSubmissionException("Error initializing task from lsid="+jobSubmission.getLSID()+": "+t.getLocalizedMessage());
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
+            JobInfo submittedJob = addJobToPipeline(mgr, pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
             submittedJobs.add(submittedJob);
             ++stepNum;
         }
         return submittedJobs;
     }
 
-    private static List<JobInfo> runScatterPipeline(final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
+    private static List<JobInfo> runScatterPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     { 
         log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
@@ -706,7 +687,7 @@ public class PipelineHandler {
         final JobSubmission jobSubmission=tasks.get(0);
         final TaskInfo taskInfo;
         try {
-            taskInfo = getTaskInfo(jobSubmission.getLSID());
+            taskInfo = getTaskInfo(mgr, jobSubmission.getLSID());
         }
         catch (Throwable t) {
             throw new JobSubmissionException("Error initializing task from lsid="+jobSubmission.getLSID()+": "+t.getLocalizedMessage());
@@ -723,7 +704,7 @@ public class PipelineHandler {
             boolean doScatter=false;
             doScatter=p.getValue().contains("?scatter"); //Note: must be first parameter in query string
             if (doScatter) {
-                List<String> scatterParamValues = getScatterParamValues(p);
+                List<String> scatterParamValues = getScatterParamValues(mgr, p);
                 if (scatterParamValues != null && scatterParamValues.size() > 0) {
                     scatterParamMap.put(p, scatterParamValues);
                 }
@@ -740,7 +721,7 @@ public class PipelineHandler {
             }
         }
         
-        List<JobInfo> submittedJobs = addScatterJobsToPipeline(pipelineJobInfo, taskInfo, params, scatterParamMap);
+        List<JobInfo> submittedJobs = addScatterJobsToPipeline(mgr, pipelineJobInfo, taskInfo, params, scatterParamMap);
         return submittedJobs;
     }
     
@@ -795,6 +776,7 @@ public class PipelineHandler {
      * @return
      */
     private static boolean isScatterParam_beforeStartPipeline(final ParameterInfo param) {
+        @SuppressWarnings("rawtypes")
         HashMap attributes = param.getAttributes();
         final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
@@ -836,11 +818,11 @@ public class PipelineHandler {
      * @return
      * @throws Exception
      */
-    private static TaskInfo getTaskInfo(String lsid) throws Exception {
+    private static TaskInfo getTaskInfo(final HibernateSessionManager mgr, final String lsid) throws Exception {
         if (lsid == null) {
             throw new IllegalArgumentException("lsid == null");
         }
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        boolean isInTransaction = mgr.isInTransaction();
         try {
             return TaskInfoCache.instance().getTask(lsid);
         }
@@ -849,7 +831,7 @@ public class PipelineHandler {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -901,7 +883,7 @@ public class PipelineHandler {
      * @return a list of values or null
      * @throws JobSubmissionException
      */
-    private static List<String> getScatterParamValues(ParameterInfo param) throws JobSubmissionException {
+    private static List<String> getScatterParamValues(final HibernateSessionManager mgr, final ParameterInfo param) throws JobSubmissionException {
         //note: currently implemented with ad-hoc rules for determining if it's a scatter - parameter
         if (!param.isInputFile()) {
             return null;
@@ -958,7 +940,7 @@ public class PipelineHandler {
         if (gpFilePath.isDirectory() && gpFilePath.isWorkingDir()) {
             try {
                 String jobId = gpFilePath.getJobId();
-                AnalysisDAO dao = new AnalysisDAO();
+                AnalysisDAO dao = new AnalysisDAO(mgr);
                 JobInfo jobInfo = dao.getJobInfo(Integer.parseInt(jobId));
                 List<ParameterInfo> outputFiles = getOutputParameterInfos(jobInfo);
                 List<String> rval = new ArrayList<String>();
@@ -1006,7 +988,7 @@ public class PipelineHandler {
         return includeFileFilter;
     }
 
-    private static List<JobInfo> addScatterJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> scatterParamMap) 
+    private static List<JobInfo> addScatterJobsToPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final TaskInfo taskInfo, final ParameterInfo[] params, final Map<ParameterInfo,List<String>> scatterParamMap) 
     throws JobSubmissionException
     {
         log.debug("adding scatter jobs to pipeline, "+pipelineJobInfo.getTaskName()+"["+pipelineJobInfo.getJobNumber()+"] ... ");
@@ -1049,7 +1031,7 @@ public class PipelineHandler {
                 scatterParam.setValue(batchParamValue);
                 log.debug("\t\tstep "+job_idx+": "+scatterParam.getName()+"="+scatterParam.getValue());
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
+            JobInfo submittedJob = addJobToPipeline(mgr, pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
@@ -1092,7 +1074,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params)
+    private static JobInfo addJobToPipeline(final HibernateSessionManager mgr, final int parentJobId, final String userID, final TaskInfo taskInfo, final ParameterInfo[] params)
     throws JobSubmissionException
     {
         if (taskInfo == null) {
@@ -1127,7 +1109,7 @@ public class PipelineHandler {
         }
 
         //make sure to commit db changes
-        JobInfo jobInfo = addJobToQueue(taskInfo, userID, params, parentJobId);
+        JobInfo jobInfo = addJobToQueue(mgr, taskInfo, userID, params, parentJobId);
         return jobInfo;
     }
 
@@ -1165,7 +1147,7 @@ public class PipelineHandler {
      * 
      * @return true iff an input param was modified
      */
-    private static boolean setInheritedParams(AnalysisDAO dao, int parentJobId, JobInfo currentStep) { 
+    private static boolean setInheritedParams(final HibernateSessionManager mgr, final AnalysisDAO dao, final int parentJobId, final JobInfo currentStep) { 
         if (currentStep==null) {
             throw new IllegalArgumentException("currentStep == null");
         }
@@ -1179,7 +1161,7 @@ public class PipelineHandler {
         JobInfo[] childJobs = dao.getChildren(parentJobId);
 
         for(ParameterInfo inputParam : inheritedInputParams) {
-            String url = getInheritedFilename(dao, childJobs, inputParam);
+            String url = getInheritedFilename(mgr, dao, childJobs, inputParam);
             if (url != null && url.trim().length() > 0) {
                 modified = true;
                 inputParam.setValue(url);
@@ -1205,6 +1187,7 @@ public class PipelineHandler {
         ParameterInfo[] parameterInfos = currentStep.getParameterInfoArray();
         for (ParameterInfo param : parameterInfos) {
             boolean isInheritTaskName = false;
+            @SuppressWarnings("rawtypes")
             HashMap attributes = param.getAttributes();
             if (attributes != null) {
                 isInheritTaskName = attributes.get(PipelineModel.INHERIT_TASKNAME) != null;
@@ -1225,9 +1208,11 @@ public class PipelineHandler {
      * @param inputParam
      * @return
      */
-    private static String getInheritedFilename(AnalysisDAO dao, JobInfo[] childJobs, ParameterInfo inputParam) {
+    @SuppressWarnings("unchecked")
+    private static String getInheritedFilename(final HibernateSessionManager mgr, final AnalysisDAO dao, final JobInfo[] childJobs, final ParameterInfo inputParam) {
         log.debug("getInheritedFilename for inputParam="+inputParam.getName());
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
+        @SuppressWarnings("rawtypes")
         HashMap attributes = inputParam.getAttributes();
         final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
@@ -1259,7 +1244,7 @@ public class PipelineHandler {
         }
         String fileName = null;
         try {
-            fileName = getOutputFileName(dao, fromJob, fileStr);
+            fileName = getOutputFileName(mgr, dao, fromJob, fileStr);
             log.debug("outputFileName="+fileName);
             if (fileName == null || fileName.trim().length() == 0) {
                 //return an empty string if no output filename is found
@@ -1278,7 +1263,7 @@ public class PipelineHandler {
         }
     }
     
-    private static String getOutputFileName(AnalysisDAO dao, JobInfo fromJob, String fileStr)
+    private static String getOutputFileName(final HibernateSessionManager mgr, final AnalysisDAO dao, final JobInfo fromJob, final String fileStr)
     throws ServerConfigurationException, FileNotFoundException 
     {
         if (fromJob==null) {
@@ -1338,7 +1323,7 @@ public class PipelineHandler {
         }
 
         try {
-            String fileNameFromPattern = getOutputFileNameFromPattern(fromJob, fileStr);
+            String fileNameFromPattern = getOutputFileNameFromPattern(mgr, fromJob, fileStr);
             if (fileNameFromPattern != null) {
                 return fileNameFromPattern;
             }
@@ -1362,14 +1347,14 @@ public class PipelineHandler {
      * 
      * @return
      */
-    private static String getOutputFileNameFromPattern(JobInfo fromJob, String fileStr) throws Exception {
+    private static String getOutputFileNameFromPattern(final HibernateSessionManager mgr, final JobInfo fromJob, final String fileStr) throws Exception {
         if (fileStr.startsWith("?scatter")) {
             //it's a scatter-step
             return fromJob.getJobNumber() + fileStr;
         }
         if (fileStr.startsWith("?filelist")) {
             //it's a gather-step, write the filelist as an output of the fromJob 
-            GpFilePath filelist = writeFileList(fromJob, fileStr);
+            final GpFilePath filelist = writeFileList(mgr, fromJob, fileStr);
             return fromJob.getJobNumber() + "/" + filelist.getRelativePath();
         } 
         //unknown
@@ -1377,12 +1362,12 @@ public class PipelineHandler {
     }
     
     //fileStr=?filelist[&filter=<list of patterns>]
-    private static GpFilePath writeFileList(JobInfo fromJob, String fileStr) throws Exception {
+    private static GpFilePath writeFileList(final HibernateSessionManager mgr, final JobInfo fromJob, final String fileStr) throws Exception {
         boolean isInTransaction = false;
         AnalysisDAO dao = null;
         try {
-            isInTransaction = HibernateUtil.isInTransaction();
-            dao = new AnalysisDAO();
+            isInTransaction = mgr.isInTransaction();
+            dao = new AnalysisDAO(mgr);
             List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob); 
             
             //let's see if there's a filter
@@ -1415,7 +1400,7 @@ public class PipelineHandler {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -1665,10 +1650,11 @@ public class PipelineHandler {
             String name, 
             int taskNum, //this is the step number
             ParameterInfo[] parameterInfo, 
-            Map args) 
+            @SuppressWarnings("rawtypes") Map args) 
     {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
+            @SuppressWarnings("rawtypes")
             HashMap attributes = aParam.getAttributes();
             if (attributes != null) {
                 if (attributes.get(PipelineModel.RUNTIME_PARAM) != null) {
@@ -1708,23 +1694,23 @@ public class PipelineHandler {
      * @return
      * @throws JobSubmissionException
      */
-    static private JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) 
+    static private JobInfo addJobToQueue(final HibernateSessionManager mgr, final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            AnalysisJob newJob = addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
+            mgr.beginTransaction();
+            AnalysisJob newJob = addNewJob(mgr, userId, taskInfo, parameterInfoArray, parentJobNumber);
             jobInfo = new JobInfo(newJob);
             JobManager.createJobDirectory(jobInfo); 
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return jobInfo;
         }
         catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             if (t instanceof JobSubmissionException) {
                 throw (JobSubmissionException) t;
             }
@@ -1732,12 +1718,12 @@ public class PipelineHandler {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
-    private static AnalysisJob addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber) 
+    private static AnalysisJob addNewJob(final HibernateSessionManager mgr, final String userId, final TaskInfo taskInfo, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) 
     throws JobSubmissionException
     { 
         if (taskInfo == null) {
@@ -1748,7 +1734,7 @@ public class PipelineHandler {
             throw new JobSubmissionException("Error adding job to queue, invalid taskId, taskInfo.getID="+taskInfo.getID());
         }
         
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = mgr.isInTransaction();
         try {
             String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
 
@@ -1766,21 +1752,21 @@ public class PipelineHandler {
             js.setStatusName(JobStatus.PENDING);
             aJob.setJobStatus(js);
             
-            HibernateUtil.getSession().save(aJob);
+            mgr.getSession().save(aJob);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return aJob;
         }
         catch (Throwable t) {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
             throw new JobSubmissionException("Error adding job to queue, taskId="+taskInfo.getID()+
                     ", taskName="+taskInfo.getName()+
                     ", taskLsid="+taskInfo.getLsid(), t);
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
