@@ -27,6 +27,7 @@ import org.genepattern.webservice.TaskInfo;
  * recursively including all tasks within nested pipelines.
  * 
  * It initializes the set within the constructor (so don't create these unnecessarily).
+ * It also initializes the root pipeline model to avoid duplicate DB calls.
  * 
  * @author pcarr
  */
@@ -42,7 +43,10 @@ public class GetIncludedTasks {
     
     //so that we don't visit the same pipeline more than once
     final private Set<String> visitedLsids;
+    
+    final private PipelineModel rootPipelineModel;
 
+    /** @deprecated should pass in a Hibernate session */
     public GetIncludedTasks(final GpContext userContext, final TaskInfo forTask) {
         this(userContext, forTask, null);
     }
@@ -76,10 +80,7 @@ public class GetIncludedTasks {
         insufficientPermissions=new LinkedHashSet<TaskInfo>();
         visitedLsids=new HashSet<String>();
         
-        
-        if (forTask.isPipeline()) {
-            visitChildren(mgr, forTask);
-        }
+        rootPipelineModel=visitChildren(mgr, forTask);
         
         //check for permissions on all dependent tasks
         for(final TaskInfo dependentTask : dependentTasks) {
@@ -89,82 +90,109 @@ public class GetIncludedTasks {
         }
     }
         
-    private void visitChildren(final HibernateSessionManager mgr, final TaskInfo taskInfo) {
-        if (taskInfo==null) {
-            log.error("taskInfo==null");
-            return;
+    /**
+     * initialize a PipelineModel for the given TaskInfo
+     * @param mgr
+     * @param forTask
+     * @return
+     */
+    protected static PipelineModel initPipelineModel(final HibernateSessionManager mgr, final TaskInfo forTask) {
+        if (forTask==null) {
+            log.error("forTask==null");
+            return null;
         }
+        if (!forTask.isPipeline()) {
+            if (log.isDebugEnabled()) {
+                log.debug("task is not a pipeline, "+forTask.getName()+", lsid="+forTask.getLsid());
+            }
+            return null;
+        }
+        try {
+            PipelineModel pipelineModel=PipelineUtil.getPipelineModel(mgr, forTask);
+            pipelineModel.setLsid(forTask.getLsid());
+            return pipelineModel;
+        }
+        catch (Throwable t) {
+            log.error("Error initializing PipelineModel for task, lsid="+forTask.getLsid(), t);
+            return null;
+        }
+    }
+    
+    private PipelineModel visitChildren(final HibernateSessionManager mgr, final TaskInfo taskInfo) {
         if (!taskInfo.isPipeline()) {
             log.error("taskInfo is not a pipeline");
-            return;
+            return null;
         }
         
         if (visitedLsids.contains(taskInfo.getLsid())) {
             //skip
-            return;
+            return null;
         }
 
         if (log.isDebugEnabled()) {
             log.debug("visiting "+taskInfo.getName()+", "+taskInfo.getLsid());
         }
         visitedLsids.add(taskInfo.getLsid());
-
-        PipelineModel pipelineModel=null;
-        try {
-            pipelineModel=PipelineUtil.getPipelineModel(mgr, taskInfo);
-            pipelineModel.setLsid(taskInfo.getLsid());
-        }
-        catch (Throwable t) {
-            log.error("Error initializing PipelineModel for task, lsid="+taskInfo.getLsid(), t);
-            return;
-        }
         
+        final PipelineModel pipelineModel=initPipelineModel(mgr, taskInfo); 
+        if (pipelineModel==null) {
+            return null;
+        }
         final List<TaskInfo> children = new ArrayList<TaskInfo>();
         
-        //breadth first traversal of all child pipelines
+        //breadth first traversal of all child tasks
         for(final JobSubmission jobSubmission : pipelineModel.getTasks()) {
-            final String lsid=jobSubmission.getLSID();
-            TaskInfo dependantTask=null;
-            try {
-                dependantTask=getTaskStrategy.getTaskInfo(lsid);
-            }
-            catch (Throwable t) {
-                //ignore exceptions, if we can't load the task, call it a missing task
-            }
-            // if the task is not installed on the server, dependantTask will be set to null
-            if (dependantTask == null) {
-                log.debug("task is not installed on server, lsid="+jobSubmission.getLSID());
-                try {
-                    missingTaskJobSubmissions.add(jobSubmission);
-                    final LSID missingTaskLsid = new LSID(lsid);
-                    missingTaskLsids.add(missingTaskLsid);
-                    
-                    TaskInfo missingTaskInfo=new TaskInfo();
-                    missingTaskInfo.setName(jobSubmission.getName());
-                    missingTaskInfo.giveTaskInfoAttributes().put("LSID", jobSubmission.getLSID());
-                }
-                catch (MalformedURLException e) {
-                    log.error(e);
-                }
-            }
-            if (dependantTask != null) {
-                boolean added=dependentTasks.add(dependantTask);
-                if (added) {
-                    //only need to traverse children once per unique lsid
-                    //added is only true after the first time we add a dependentTask
-                    children.add(dependantTask); 
-                    //check for user permissions, can the current user run the task?
-                    if (!canRun(dependantTask)) {
-                        insufficientPermissions.add(dependantTask);
-                    }
-                }
-            }
+            visitJobSubmission(children, jobSubmission);
         }
 
-        //now visit each of the child pipelines
+        //visit each of the child pipelines
         for(final TaskInfo child : children) {
-            if (child.isPipeline()) {
-                visitChildren(mgr, child);
+            visitChildren(mgr, child);
+        }
+        return pipelineModel;
+    }
+
+    /**
+     * Visit a step in the pipeline and add to list of included tasks.
+     * Keep track of missing tasks.
+     * @param children
+     * @param jobSubmission
+     */
+    protected void visitJobSubmission(final List<TaskInfo> children, final JobSubmission jobSubmission) {
+        final String lsid=jobSubmission.getLSID();
+        TaskInfo dependantTask=null;
+        try {
+            dependantTask=getTaskStrategy.getTaskInfo(lsid);
+        }
+        catch (Throwable t) {
+            //ignore exceptions, if we can't load the task, call it a missing task
+        }
+        // if the task is not installed on the server, dependantTask will be set to null
+        if (dependantTask == null) {
+            log.debug("task is not installed on server, lsid="+jobSubmission.getLSID());
+            try {
+                missingTaskJobSubmissions.add(jobSubmission);
+                final LSID missingTaskLsid = new LSID(lsid);
+                missingTaskLsids.add(missingTaskLsid);
+                
+                TaskInfo missingTaskInfo=new TaskInfo();
+                missingTaskInfo.setName(jobSubmission.getName());
+                missingTaskInfo.giveTaskInfoAttributes().put("LSID", jobSubmission.getLSID());
+            }
+            catch (MalformedURLException e) {
+                log.error(e);
+            }
+        }
+        else {
+            boolean added=dependentTasks.add(dependantTask);
+            if (added) {
+                //only need to traverse children once per unique lsid
+                //added is only true after the first time we add a dependentTask
+                children.add(dependantTask); 
+                //check for user permissions, can the current user run the task?
+                if (!canRun(dependantTask)) {
+                    insufficientPermissions.add(dependantTask);
+                }
             }
         }
     }
@@ -216,7 +244,15 @@ public class GetIncludedTasks {
      */
     public Set<TaskInfo> getInstalledDependentTasks() {
         return Collections.unmodifiableSet( dependentTasks );
-    }    
+    }
+
+    /**
+     * Get the PipelineModel for the given task. 
+     * @return null if the task is not a pipeline
+     */
+    public PipelineModel getPipelineModel() {
+        return rootPipelineModel;
+    }
 
     /**
      * Rule for whether the current user has permission to execute the given task.
