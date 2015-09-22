@@ -125,7 +125,6 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         batchBox.tooltip();
         batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
-
         selectChoiceDiv.append(batchBox);
 
         //if this is a batch parameter then pre-select the batch checkbox
@@ -283,26 +282,13 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
                     var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
                     var textList = [];
-                    if(valuesList !== undefined)
+
+
+                    for(var l=0 ;l < checkedItems.length;l++)
                     {
-                        for(var l=0; l < valuesList.length;l++)
-                        {
-                            var value = valuesList[l];
-                            for(var c=0 ;c < checkedItems.length;c++)
-                            {
-                                if($(checkedItems[c]).val() == value)
-                                {
-                                    textList.push($(checkedItems[c].labels[0]).text());
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for(var l=0 ;l < checkedItems.length;l++)
-                        {
-                            textList.push($(checkedItems[l].labels[0]).text());
-                        }
+                        var value = checkedItems[l].value;
+                        var optionText = item1.find("option[value='" + value + "']").text();
+                        textList.push(optionText);
                     }
 
                     return textList.join(", ");
@@ -323,6 +309,10 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     //unselect everything since it is over limit
                     $(this).multiselect("uncheckAll");
                 }
+            },
+            uncheckAll: function(event)
+            {
+                var valuesList = [];
             },
             click: function (event, ui) {
                 var paramName = $(this).data("pname");
