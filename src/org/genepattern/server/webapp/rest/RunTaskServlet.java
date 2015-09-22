@@ -47,6 +47,7 @@ import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
@@ -993,7 +994,7 @@ public class RunTaskServlet extends HttpServlet
         final String taskNoLSIDVersion = taskLSID.toStringNoVersion();
         final SortedSet<LSID> moduleVersions = new TreeSet<LSID>();
 
-        final List<TaskInfo> allVersions=TaskInfoCache.instance().getAllVersions(userContext, taskLSID);
+        final List<TaskInfo> allVersions=TaskInfoCache.instance().getAllVersions(HibernateUtil.instance(), userContext, taskLSID);
         for(final TaskInfo version : allVersions) {
             final LSID lsid=new LSID(version.getLsid());
             final String lsidNoVersion = lsid.toStringNoVersion();

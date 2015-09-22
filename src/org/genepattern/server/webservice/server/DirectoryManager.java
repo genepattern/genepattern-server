@@ -67,13 +67,21 @@ public class DirectoryManager {
      * @deprecated should pass in Hibernate session, GpConfig and GpContext
      */
     public static String getLibDir(String lsid) throws Exception, MalformedURLException {
+        final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getLibDir(mgr, gpConfig, serverContext, lsid);
+    }
+
+    public static String getLibDir(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext, String lsid) throws Exception, MalformedURLException {
 	LSID l = new LSID(lsid);
 	if (l.getAuthority().equals("") || l.getIdentifier().equals("") || !l.hasVersion()) {
 	    throw new MalformedURLException("invalid LSID");
 	}
 
 	if (LSIDUtil.isSuiteLSID(lsid)) {
-	    File suiteLibDir=getSuiteLibDir(null, lsid, null);
+	    final boolean alwaysMkdirs=false;
+	    File suiteLibDir=getSuiteLibDir(gpConfig, serverContext, null, lsid, null, alwaysMkdirs);
 	    if (suiteLibDir != null) {
 	        return suiteLibDir.getAbsolutePath();
 	    }
@@ -83,7 +91,7 @@ public class DirectoryManager {
 	    }
 
 	} else {
-	    return getTaskLibDir(null, lsid, null);
+	    return getTaskLibDir(mgr, gpConfig, serverContext, null, lsid, null);
 	}
     }
 
@@ -298,10 +306,14 @@ public class DirectoryManager {
      * @return directory name on server where taskName support files are stored
      * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
+     * 
+     * @deprecated should pass in a valid GpConfig and GpContext
      */
     public static File getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
         final boolean alwaysMkdirs=false;
-        return getSuiteLibDir(suiteName, sLSID, username, alwaysMkdirs);
+        return getSuiteLibDir(gpConfig, serverContext, suiteName, sLSID, username, alwaysMkdirs);
     }
 
     /**
@@ -313,18 +325,15 @@ public class DirectoryManager {
      * @param alwaysMkdirs
      * @return
      * @throws Exception
+     * 
+     * @deprecated should pass in a valid GpConfig and GpContext
      */
     public static File getSuiteLibDir(final SuiteInfo suiteInfo, final boolean alwaysMkdirs) throws Exception  {
-        return getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLsid(), suiteInfo.getOwner(), alwaysMkdirs);
-    }
-
-    /** @deprecated, should pass in a valid gpConfig and gpContext */
-    public static File getSuiteLibDir(final String suiteName, final String suiteLsid, final String username, final boolean alwaysMkdirs) throws Exception  {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
-        return getSuiteLibDir(gpConfig, serverContext, suiteName, suiteLsid, username, alwaysMkdirs);
+        return getSuiteLibDir(gpConfig, serverContext, suiteInfo.getName(), suiteInfo.getLsid(), suiteInfo.getOwner(), alwaysMkdirs);
     }
-    
+
     public static File getSuiteLibDir(final GpConfig gpConfig, final GpContext gpContext, final String suiteName, final String suiteLsid, final String username, final boolean alwaysMkdirs) throws Exception  {
         String ret = null;
         ret = (String) htSuiteLibDir.get(suiteLsid);
