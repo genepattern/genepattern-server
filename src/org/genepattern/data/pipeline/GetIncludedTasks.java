@@ -66,7 +66,7 @@ public class GetIncludedTasks {
             this.getTaskStrategy=getTaskStrategyIn;
         }
         else {
-            this.getTaskStrategy=new GetTaskStrategyDefault();
+            this.getTaskStrategy=new GetTaskStrategyDefault(mgr);
         }
         
         //do all the work in the constructor
