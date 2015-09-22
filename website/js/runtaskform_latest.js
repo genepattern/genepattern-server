@@ -534,7 +534,8 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         run_task_info.params[parameterName].allowMultiple = false;
     }
 
-    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
+    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1)
+    {
         //this must be a text entry
         $(inputElement).replaceWith(createTextDiv(parameterName, groupId, true));
     }
@@ -1462,11 +1463,11 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
             }
 
             var textElement = $(this).closest(".pRow").find(".pValue");
+            textElement.val("");
             var groupId = getGroupId(textElement);
 
             var parent =  $(this).closest(".pRow");
-
-            $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
+            parent.find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
 
             updateBatchInfo();
         });
@@ -1560,14 +1561,8 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 inputFieldValue += ",";
             }
         }
-        /*if(paramDetails.allowMultiple)
-        {
 
-        }
-        else
-        {*/
-            textField.val(inputFieldValue);
-        //}
+        textField.val(inputFieldValue);
 
         //textField.val(initialValuesList);
         textField.trigger("change");
@@ -1606,8 +1601,6 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
                     text = $.trim(text);
                     $(this).parent().find(".tag").last().find("span").text(text);
                 }
-
-
             },
             onRemoveTag: function()
             {
