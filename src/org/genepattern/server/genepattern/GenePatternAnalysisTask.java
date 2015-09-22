@@ -120,6 +120,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.AnalysisJob;
@@ -1585,7 +1586,7 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private CommandExecutor2 initCmdExec2(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private static CommandExecutor2 initCmdExec2(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
         final String executorId=gpConfig.getExecutorId(jobContext);
         if (executorId==null) {
             throw new JobDispatchException("Server error: 'executor' not set for job="+jobContext.getJobInfo().getJobNumber());
@@ -1602,14 +1603,15 @@ public class GenePatternAnalysisTask {
     {
         final boolean isPipeline=jobContext.getTaskInfo().isPipeline();
         final long jobDispatchTimeout = gpConfig.getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
-        final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
-        Future<Integer> task = executor.submit(new Callable<Integer>() {
-            public Integer call() throws Exception {
-                cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
-                return JobStatus.JOB_PROCESSING;
-            }
-        });
+        Future<Integer> task = null;
         try {
+            task = executor.submit(new Callable<Integer>() {
+                public Integer call() throws Exception {
+                    final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
+                    cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+                    return JobStatus.JOB_PROCESSING;
+                }
+            });
             int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
             try {
                 if (!isPipeline) {
@@ -3345,7 +3347,8 @@ public class GenePatternAnalysisTask {
             //the following code simplifies by never changing the owner or privacy flag of an existing module
             TaskInfo existingTask=null;
             try {
-                existingTask=TaskInfoCache.instance().getTask(formerID);
+                HibernateSessionManager mgr=HibernateUtil.instance();
+                existingTask=TaskInfoCache.instance().getTask(mgr, formerID);
                 final int existingAccessId=existingTask.getAccessId();
                 final String existingUserId=existingTask.getUserId();
                 final boolean diffAccessId=existingAccessId != requestedAccessId;
@@ -3658,7 +3661,7 @@ public class GenePatternAnalysisTask {
                         break; // only install the top level (first entry)
                     }
                 }
-                TaskInfoCache.instance().removeFromCache(firstLSID);
+                TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), firstLSID);
                 return firstLSID;
             }
 
@@ -3876,7 +3879,7 @@ public class GenePatternAnalysisTask {
             }
             throw new TaskInstallationException(vProblems);
         }
-        TaskInfoCache.instance().removeFromCache(lsid);
+        TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), lsid);
         return lsid;
     }
 
