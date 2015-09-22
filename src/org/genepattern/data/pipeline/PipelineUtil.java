@@ -149,14 +149,20 @@ public class PipelineUtil {
         }
         return isMissingTasks;
     }
+
     
-    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(PipelineModel model, String userId) {
-        List<JobSubmission> jobSubmissionTasks = model.getTasks();
-        LinkedHashMap<LSID, MissingTaskRecord> missingTasks = new LinkedHashMap<LSID, MissingTaskRecord>();
-        for(JobSubmission jobSubmission : jobSubmissionTasks) {
+    /**  @deprecated should pass in a Hibernate session */
+    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(final PipelineModel model, final String userId) {
+        return getMissingTasks(HibernateUtil.instance(), model, userId);
+    }
+    
+    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(final HibernateSessionManager mgr, final PipelineModel model, final String userId) {
+        final List<JobSubmission> jobSubmissionTasks = model.getTasks();
+        final LinkedHashMap<LSID, MissingTaskRecord> missingTasks = new LinkedHashMap<LSID, MissingTaskRecord>();
+        for(final JobSubmission jobSubmission : jobSubmissionTasks) {
             TaskInfo taskInfo = null;
             try {
-                taskInfo = TaskInfoCache.instance().getTask(jobSubmission.getLSID());
+                taskInfo = TaskInfoCache.instance().getTask(mgr, jobSubmission.getLSID());
             }
             catch (TaskLSIDNotFoundException e) {
             }
@@ -205,6 +211,7 @@ public class PipelineUtil {
             Session session = HibernateUtil.getSession();
             Query query = session.createQuery(hql);
             query.setString("lsid", lsidNoVersion+"%");
+            @SuppressWarnings("unchecked")
             List<String> lsidResults = query.list();
             
             for(String lsidResult : lsidResults) {
