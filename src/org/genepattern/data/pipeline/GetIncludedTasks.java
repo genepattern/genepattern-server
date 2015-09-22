@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.util.GPConstants;
@@ -46,7 +47,17 @@ public class GetIncludedTasks {
         this(userContext, forTask, null);
     }
 
+    /** @deprecated should pass in a Hibernate session */
     public GetIncludedTasks(final GpContext userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
+        this(org.genepattern.server.database.HibernateUtil.instance(), 
+                userContext, forTask, getTaskStrategyIn);
+    }
+
+    public GetIncludedTasks(final HibernateSessionManager mgr, final GpContext userContext, final TaskInfo forTask) {
+        this(mgr, userContext, forTask, null);
+    }
+    
+    public GetIncludedTasks(final HibernateSessionManager mgr, final GpContext userContext, final TaskInfo forTask, final GetTaskStrategy getTaskStrategyIn) {
         this.userContext=userContext;
         if (forTask==null) {
             throw new IllegalArgumentException("forTask==null");
@@ -67,7 +78,7 @@ public class GetIncludedTasks {
         
         
         if (forTask.isPipeline()) {
-            visitChildren(forTask);
+            visitChildren(mgr, forTask);
         }
         
         //check for permissions on all dependent tasks
@@ -78,7 +89,7 @@ public class GetIncludedTasks {
         }
     }
         
-    private void visitChildren(final TaskInfo taskInfo) {
+    private void visitChildren(final HibernateSessionManager mgr, final TaskInfo taskInfo) {
         if (taskInfo==null) {
             log.error("taskInfo==null");
             return;
@@ -100,7 +111,7 @@ public class GetIncludedTasks {
 
         PipelineModel pipelineModel=null;
         try {
-            pipelineModel=PipelineUtil.getPipelineModel(taskInfo);
+            pipelineModel=PipelineUtil.getPipelineModel(mgr, taskInfo);
             pipelineModel.setLsid(taskInfo.getLsid());
         }
         catch (Throwable t) {
@@ -153,7 +164,7 @@ public class GetIncludedTasks {
         //now visit each of the child pipelines
         for(final TaskInfo child : children) {
             if (child.isPipeline()) {
-                visitChildren(child);
+                visitChildren(mgr, child);
             }
         }
     }
