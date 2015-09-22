@@ -41,7 +41,6 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.util.FindFileFilter;
@@ -57,6 +56,9 @@ import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
 
 /**
+ * CommandExecutor based Pipeline engine, circa GP 3.2.3 .. 3.9.4. 
+ * Newer versions of GP use the CommandExecutor2 interface.
+ *  
  * Refactor code from GP 3.2.3 PipelineExecutor. This uses almost the same code base, but makes some changes
  * so that pipelines can be executed asynchronously rather than within a single thread.
  * 
@@ -67,46 +69,20 @@ import org.hibernate.Query;
  * 
  * @author pcarr
  */
-public class PipelineHandler {
-    private static Logger log = Logger.getLogger(PipelineHandler.class);
+public class PipelineHandler_v1 {
+    private static Logger log = Logger.getLogger(PipelineHandler_v1.class);
     
     /**
      * Initialize the pipeline and add the first job to the queue.
-     * @param mgr
-     * @param jobContext
-     * @param stopAfterTask
-     * @throws CommandExecutorException
+     * @deprecated - use new implementation which takes a GpContext as arg
      */
-    public static void startPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final int stopAfterTask) throws CommandExecutorException {
-        if (jobContext==null) {
-            throw new CommandExecutorException("jobContext==null");
-        }
-        final JobInfo pipelineJobInfo=jobContext.getJobInfo();
+    public static void startPipeline_orig(final HibernateSessionManager mgr, JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
         if (pipelineJobInfo == null) {
-            throw new CommandExecutorException("jobContext.jobInfo==null");
-        }
-        final TaskInfo pipelineTaskInfo=jobContext.getTaskInfo();
-        if (pipelineTaskInfo==null) {
-            throw new CommandExecutorException("jobContext.taskInfo==null");
-        }
-        try {
-            // Note: the checkForMissingTasks and the getPipelineModel call both initialize the list of tasks for the pipeline
-            if (log.isDebugEnabled()) {
-                log.debug("checking for missing tasks ...");
-            }
-            checkForMissingTasks(mgr, jobContext, pipelineTaskInfo);
-        }
-        catch (MissingTasksException e) {
-            throw new CommandExecutorException(e.getMessage());
-        }
-        catch (Throwable t) {
-            throw new CommandExecutorException("Unexpected error checking for missing tasks: "+t.getLocalizedMessage(), t);
-        } 
-        
-        //final JobInput jobInput=jobContext.getJobInput();
-        if (log.isDebugEnabled()) {
-            log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        }
+            throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
+        }        
+        log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        final boolean isInTransaction = mgr.isInTransaction(); //for debugging
+        log.debug("isInTranscation="+isInTransaction);
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         final boolean isParallelExec = isParallelExec(pipelineJobInfo);
         int numAddedJobs=-1;
@@ -158,7 +134,7 @@ public class PipelineHandler {
             int parentParentJobId = pipelineJobInfo._getParentJobNumber();
             if (parentParentJobId >= 0) {
                 //special-case: a nested pipeline with zero steps, make sure to notify the parent pipeline that this step has completed
-                boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(mgr, pipelineJobInfo);
+                boolean wakeupJobQueue = PipelineHandler_v1.handleJobCompletion(mgr, pipelineJobInfo);
                 if (wakeupJobQueue) {
                     //if the pipeline has more steps, wake up the job queue
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
@@ -518,7 +494,7 @@ public class PipelineHandler {
                 handlePipelineJobCompletion(mgr, pipeline.getJobNumber(), -1, errorMessage);
             }
             else {
-                PipelineHandler.handlePipelineJobCompletion(mgr, pipeline.getJobNumber(), 0);
+                PipelineHandler_v1.handlePipelineJobCompletion(mgr, pipeline.getJobNumber(), 0);
             }
         }
     }
@@ -625,7 +601,7 @@ public class PipelineHandler {
         
         //TODO: the checkForMissingTasks and the getPipelineModel call both initialize the list of tasks for the pipeline
         //    should refactor the code to avoid redundant calls
-        checkForMissingTasks(mgr, userContext, pipelineTaskInfo);
+        checkForMissingTasks(userContext, pipelineTaskInfo);
         final PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
         final Vector<JobSubmission> tasks = pipelineModel.getTasks();
 
@@ -850,7 +826,7 @@ public class PipelineHandler {
         }
         boolean isInTransaction = mgr.isInTransaction();
         try {
-            return TaskInfoCache.instance().getTask(mgr, lsid);
+            return TaskInfoCache.instance().getTask(lsid);
         }
         catch (Throwable t) {
             throw new Exception(t);
@@ -1127,10 +1103,10 @@ public class PipelineHandler {
         return jobInfo;
     }
 
-    private static void checkForMissingTasks(final HibernateSessionManager mgr, final GpContext userContext, final TaskInfo forTask) throws MissingTasksException {
+    private static void checkForMissingTasks(final GpContext userContext, final TaskInfo forTask) throws MissingTasksException {
         final GetIncludedTasks taskChecker;
         try {
-            taskChecker=new GetIncludedTasks(mgr, userContext, forTask);
+            taskChecker=new GetIncludedTasks(userContext, forTask);
         }
         catch (Throwable t) {
             log.error(t);
@@ -1536,7 +1512,7 @@ public class PipelineHandler {
         for (ParameterInfo childParam : childParams) {
             if (childParam.isOutputFile()) {
                 //don't add taskLogs to the results
-                boolean isTaskLog = PipelineHandler.isTaskLog(childParam);
+                boolean isTaskLog = PipelineHandler_v1.isTaskLog(childParam);
                 if (!isTaskLog) {
                     outs.add(childParam);
                 }
