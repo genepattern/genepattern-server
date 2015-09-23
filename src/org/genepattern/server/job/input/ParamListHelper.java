@@ -295,21 +295,49 @@ public class ParamListHelper {
         return rval.toUpperCase().trim();
     }
     
-    protected static String getListModeSpec(final ParameterInfoRecord parameterInfoRecord) {
-        if (parameterInfoRecord==null) {
-            log.warn("parameterInfoRecord==null");
-            return null;
-        }
-        return getListModeSpec(parameterInfoRecord.getFormal());
-    }
-    
+    /**
+     * calls hasListMode on the formalParam.
+     */
     public static boolean hasListMode(final ParameterInfoRecord parameterInfoRecord) {
-        String listModeSpec=getListModeSpec(parameterInfoRecord);
+        if (parameterInfoRecord==null) {
+            return false;
+        }
+        return hasListMode(parameterInfoRecord.getFormal());
+    }
+
+    /**
+     * Returns true if the manifest declares a listMode= property.
+     * @param formalParam
+     * @return
+     */
+    public static boolean hasListMode(final ParameterInfo formalParam) {
+        String listModeSpec=getListModeSpec(formalParam);
         return ! Strings.isNullOrEmpty(listModeSpec);
     }
     
+    /**
+     * calls initListMode on the formalParam.
+     * @param parameterInfoRecord
+     * @return
+     */
     public static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
-        final String listModeSpec=getListModeSpec(parameterInfoRecord);
+        if (parameterInfoRecord==null) {
+            final ParameterInfo nullPinfo=null;
+            return initListMode(nullPinfo);
+        }
+        return initListMode(parameterInfoRecord.getFormal());
+    }
+    
+    /**
+     * Get the ListMode as declared in the manifest file. For example,
+     *     listMode=CMD
+     * Returns the default value of ListMode.LIST when there is no custom value.
+     * @param formalParam
+     * @return a ListMode
+     * @throws IllegalArgumentException when listMode does not match one of the entries in the ListMode enum.
+     */
+    public static ListMode initListMode(final ParameterInfo formalParam) throws IllegalArgumentException {
+        final String listModeSpec=getListModeSpec(formalParam);
         if (! Strings.isNullOrEmpty(listModeSpec)) {
             try {
                 return ListMode.valueOf(listModeSpec);
