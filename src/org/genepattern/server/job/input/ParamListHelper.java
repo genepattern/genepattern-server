@@ -664,7 +664,7 @@ public class ParamListHelper {
         }
         else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
         {
-            List<String> valueList = ValueResolver.getSubstitutedValues(actualValues, parameterInfoRecord);
+            List<String> valueList = ValueResolver.getSubstitutedValues(actualValues, parameterInfoRecord, listMode);
             String valuesString  = "";
             for(String value:valueList)
             {

@@ -95,4 +95,9 @@ public class ParameterInfoBuilder {
         return this;
     }
     
+    public ParameterInfoBuilder listModeSep(final String listModeSep) {
+        pinfo.getAttributes().put("listModeSep", listModeSep);
+        return this;
+    }
+    
 }

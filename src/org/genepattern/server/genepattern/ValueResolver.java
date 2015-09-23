@@ -11,8 +11,10 @@ import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -97,67 +99,64 @@ public class ValueResolver {
             return rval;
         }
         String substitutedValue = arg;
-        final List<String> multiValueSubstitutionList = new ArrayList<String>();
+        final List<String> valueList = new ArrayList<String>();
 
         boolean isOptional = true;
-        for (final String sub : subs) {
+        for(final String sub : subs) {
             boolean cmdOptListMode = false;
-            final String paramName = sub.substring(1, sub.length() - 1);
+            final String paramName = sub.substring(1, sub.length()-1);
             final ParameterInfoRecord pInfoRecord = parameterInfoMap.get(paramName);
             final ParameterInfo pInfo;
             if (pInfoRecord == null) {
                 pInfo = null;
-            } else {
+            }
+            else {
                 pInfo = pInfoRecord.getFormal();
             }
 
-            String value = null;
+            String value=null;
             if (dict.containsKey(paramName)) {
                 value = dict.get(paramName);
-            } else if (gpConfig != null) {
+            }
+            else if (gpConfig != null) {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
 
             if (pInfo != null) {
                 try {
                     if (log.isDebugEnabled()) {
-                        log.debug("resolving " + sub + "; the substitution matches an input parameter");
+                        log.debug("resolving "+sub+"; the substitution matches an input parameter");
                     }
 
-                    final NumValues numValues = ParamListHelper.initNumValues(pInfo);
+                    final NumValues numValues=ParamListHelper.initNumValues(pInfo);
                     if (numValues.acceptsList()) {
                         if (log.isDebugEnabled()) {
-                            log.debug("for " + sub + "; acceptsList is true");
+                            log.debug("for "+sub+"; acceptsList is true");
                         }
-                        final ParamListHelper.ListMode listMode = ParamListHelper.initListMode(pInfoRecord);
+                        final ListMode listMode = ParamListHelper.initListMode(pInfoRecord);
                         if (log.isDebugEnabled()) {
-                            log.debug("for " + sub + "; listMode=" + listMode);
+                            log.debug("for "+sub+"; listMode="+listMode);
                         }
-                        cmdOptListMode = ListMode.CMD_OPT == listMode;
+                        cmdOptListMode = ListMode.CMD_OPT == listMode || ListMode.CMD == listMode;
                         if (ListMode.CMD.equals(listMode) || ListMode.CMD_OPT.equals(listMode)) {
                             final JobInput jobInput = gpContext.getJobInput();
                             if (jobInput == null) {
-                                log.error("jobInput not set for param=" + paramName);
-                            } else {
+                                log.error("jobInput not set for param="+paramName);
+                            }
+                            else {
                                 // ... 
                                 final Param param = jobInput.getParam(paramName);
                                 if (param == null) {
-                                    log.error("jobInput.param not set for param=" + paramName);
-                                } else {
-                                    final List<String> results = ValueResolver.getSubstitutedValues(param, pInfoRecord);
-                                    if (results != null && results.size() > 0) {
+                                    log.error("jobInput.param not set for param="+paramName);
+                                }
+                                else {
+                                    final List<String> results = ValueResolver.getSubstitutedValues(param, pInfoRecord, listMode) ;
+                                    if(results != null && results.size() > 0) {
                                         if (log.isDebugEnabled()) {
-                                            log.debug("for " + sub + "; substitutedValues=" + results);
+                                            log.debug("for "+sub+"; substitutedValues="+results);
                                         }
-                                        multiValueSubstitutionList.addAll(results);
-
-                                        //HACK: add all values for this parameter
-                                        for (final String val : multiValueSubstitutionList) {
-                                            rval.add(val);
-                                        }
-
-                                        //HACK to prevent value from being added to rval later
-                                        value = "";
+                                        value = results.remove(0);
+                                        valueList.addAll(results);
                                     }
                                 }
                             }
@@ -165,7 +164,7 @@ public class ValueResolver {
                     }
                 }
                 catch (Throwable t) {
-                    log.error("Unexpected exception resolving " + sub + " for paramName=" + paramName, t);
+                    log.error("Unexpected exception resolving "+sub+" for paramName="+paramName, t);
                 }
             }
 
@@ -176,61 +175,97 @@ public class ValueResolver {
             }
 
             //default to empty string, to handle optional parameters which have not been set
-            if (pInfo != null && multiValueSubstitutionList.size() == 0) {
+            if (pInfo != null) {
                 isOptional = pInfo.isOptional();
-                //check if an optional prefix needs to be added to this parameter
-                Map<String, String> prefixAndValueMap = handlePrefix(pInfo, value);
-
-                if (prefixAndValueMap.get("prefix") != null && prefixAndValueMap.get("prefix").length() > 0) {
-                    rval.add(prefixAndValueMap.get("prefix"));
+                String optionalPrefix = pInfo._getOptionalPrefix();
+                if(!cmdOptListMode && value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                    if (optionalPrefix.endsWith("\\ ")) {
+                        //special-case: if optionalPrefix ends with an escaped space, don't split into two args
+                        value = optionalPrefix.substring(0, optionalPrefix.length()-3) + value;
+                    }
+                    else if (optionalPrefix.endsWith(" ")) {
+                        //special-case: GP-2866, if optionalPrefix ends with a space, split into two args
+                        rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));
+                    }
+                    else {
+                        //otherwise, append the prefix to the value
+                        value = optionalPrefix + value;
+                    }
                 }
-
-                value = prefixAndValueMap.get("value");
             }
 
-            if (value == null) {
-                if (!isOptional) {
-                    //TODO: throw exception
-                    CommandLineParser.log.error("missing substitution value for '" + sub + "' in expression: " + arg);
-                    value = sub;
-                }
-                else
-                    value = "";
+            if (value == null && isOptional == false) {
+                //TODO: throw exception
+                CommandLineParser.log.error("missing substitution value for '"+sub+"' in expression: "+arg);
+                value = sub;
             }
-
+            else if (value == null &&  isOptional == true) {
+                value = "";
+            }
             substitutedValue = substitutedValue.replace(sub, value);
         }
-
-        if (!(substitutedValue.length() == 0 && isOptional))
-        {
+        if (substitutedValue.length() == 0 && isOptional) {
+            //return an empty list
+        }
+        else {
             rval.add(substitutedValue);
+        }
+
+        //HACK: if there are multiple values for this parameter
+        //add the remaining values
+        for(final String val : valueList) {
+            rval.add(val);
         }
 
         return rval;
     }
 
-    private static Map<String, String> handlePrefix(ParameterInfo pInfo, String value)
-    {
-        Map<String, String> valuesAndPrefixMap = new HashMap<String, String>();
-        String optionalPrefix = pInfo._getOptionalPrefix();
-        if(value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
-            if (optionalPrefix.endsWith("\\ ")) {
-                //special-case: if optionalPrefix ends with an escaped space, don't split into two args
-                value = optionalPrefix.substring(0, optionalPrefix.length()-3) + value;
-            }
-            else if (optionalPrefix.endsWith(" ")) {
-                //special-case: GP-2866, if optionalPrefix ends with a space, split into two args
-                valuesAndPrefixMap.put("prefix", optionalPrefix.substring(0, optionalPrefix.length()-1));
-            }
-            else {
-                //otherwise, append the prefix to the value
-                value = optionalPrefix + value;
-            }
+    /**
+     * For a given parameter, optionally split into multiple args depending on the prefix_when_specified flag.
+     */
+    protected static List<String> handlePrefix(final ParameterInfo pInfo, final String value) {
+        return handlePrefix(new ArrayList<String>(), pInfo, value);
+    }
+
+    protected static List<String> handlePrefix(final List<String> appendTo, final ParameterInfo pInfo, final String value) {
+        final String optionalPrefix = pInfo._getOptionalPrefix();
+        return handlePrefix(appendTo, optionalPrefix, value);
+    }
+
+    /**
+     * For a given parameter, optionally split into multiple args depending on the prefix_when_specified flag
+     * and the runtime value.
+     * 
+     * @param appendTo, the list of command line args to append to
+     * @param optionalPrefix, the prefix_when_specified flag as set in the manifest for the module
+     * @param value, the runtime value for the parameter
+     * 
+     * @return the updated appendTo list
+     */
+    protected static List<String> handlePrefix(final List<String> appendTo, final String optionalPrefix, final String value) {
+        if (value==null) {
+            //special-case: if there is no value, don't append anything to the list
+            return appendTo;
         }
-
-        valuesAndPrefixMap.put("value", value);
-
-        return valuesAndPrefixMap;
+        if (optionalPrefix==null) {
+            //special-case: if there is no prefix, append the original value to the list
+            appendTo.add(value);
+            return appendTo;
+        }
+        if (optionalPrefix.endsWith("\\ ")) {
+            //special-case: if optionalPrefix ends with an escaped space, don't split into two args
+            appendTo.add( optionalPrefix.substring(0, optionalPrefix.length()-3) + value );
+        }
+        else if (optionalPrefix.endsWith(" ")) {
+            //special-case: GP-2866, if optionalPrefix ends with a space, split into two args
+            appendTo.add(optionalPrefix.substring(0, optionalPrefix.length()-1));
+            appendTo.add(value);
+        }
+        else {
+            //otherwise, append the prefix to the value
+            appendTo.add(optionalPrefix + value);
+        }
+        return appendTo;
     }
 
     static List<String> getTokens(String arg) {
@@ -343,61 +378,40 @@ public class ValueResolver {
     /*
      * Constructs the cmd line string for this parameter
      */
-    public static List<String> getSubstitutedValues(final Param param, final ParameterInfoRecord pRecord)
-    {
+    public static List<String> getSubstitutedValues(final Param param, final ParameterInfoRecord pRecord) {
+        ListMode listMode = ParamListHelper.initListMode(pRecord);
+        return getSubstitutedValues(param, pRecord, listMode);
+    }
+    
+    public static List<String> getSubstitutedValues(final Param param, final ParameterInfoRecord pRecord, final ListMode listMode) {
         if (param == null) {
             throw new IllegalArgumentException("param==null");
         }
         
-        if(pRecord == null) {
+        if (pRecord == null) {
             throw new IllegalArgumentException("pRecord==null");
         }
-
-        List<String> substitutedValues = new ArrayList<String>();
-
-        String separator = "";
-        ParamListHelper.ListMode listMode = ParamListHelper.initListMode(pRecord);
-        if(listMode.equals(ParamListHelper.ListMode.CMD))
-        {
-            separator = (String) pRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE_SEP);
-            if(separator == null)
-            {
-                separator = ",";
+        
+        // option 1, join values then append optional prefix
+        if (listMode==ListMode.CMD) {
+            String separator = (String) pRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE_SEP);
+            if (Strings.isNullOrEmpty(separator)) {
+                separator=",";
             }
+            // join
+            String val=Joiner.on(separator).join(param.getValues());
+            return handlePrefix(pRecord.getFormal(), val);
         }
-
-        String prefix= "";
-        if(listMode.equals(ParamListHelper.ListMode.CMD_OPT))
-        {
-            prefix = (String) pRecord.getFormal().getAttributes().get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]);
-        }
-
-        List<ParamValue> values = param.getValues();
-        String substitutedValue = "";
-        for(int i=0;i<values.size();i++)
-        {
-            final ParamValue value = values.get(i);
-
-            if(i>0)
-            {
-                substitutedValue += separator;
+        // option 2, append prefix for each arg
+        else if (listMode==ListMode.CMD_OPT) {
+            final String optionalPrefix = pRecord.getFormal()._getOptionalPrefix();
+            final List<String> rval=new ArrayList<String>();
+            for(final ParamValue paramValue : param.getValues()) {
+                handlePrefix(rval, optionalPrefix, paramValue.getValue());
             }
-
-            substitutedValue += prefix + value.getValue();
-
-            //if listMode=CMD_OPT then add each substituted value separately
-            if(listMode.equals(ParamListHelper.ListMode.CMD_OPT))
-            {
-                substitutedValues.add(substitutedValue);
-                substitutedValue = "";
-            }
+            return rval;
         }
-
-        if(!listMode.equals(ParamListHelper.ListMode.CMD_OPT))
-        {
-            substitutedValues.add(substitutedValue);
-        }
-
-        return substitutedValues;
+        log.error("unexpected listMode="+listMode+" for param="+param.getParamId());
+        return Collections.emptyList();
     }
 }
