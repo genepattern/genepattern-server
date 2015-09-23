@@ -6,7 +6,6 @@ package org.genepattern.server.webservice.server;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,9 +24,9 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
@@ -55,6 +54,20 @@ public class Analysis extends GenericWebService {
     public enum JobSortOrder {
         JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
     }
+    
+    private final HibernateSessionManager mgr;
+    private final GpConfig gpConfig;
+
+    /** @deprecated should pass in a valid Hibernate session and a valid GpConfig */
+    public Analysis() {
+        this.mgr=org.genepattern.server.database.HibernateUtil.instance();
+        this.gpConfig=org.genepattern.server.config.ServerConfigurationFactory.instance();
+    }
+    
+    public Analysis(final HibernateSessionManager mgr, final GpConfig gpConfig) {
+        this.mgr=mgr;
+        this.gpConfig=gpConfig;
+    }
 
     /**
      * Returns the JobInfo object with the given ID, presumably to check status.
@@ -70,7 +83,7 @@ public class Analysis extends GenericWebService {
         try {
             final String userId = getUsernameFromContext();
             final Boolean isAdmin = AuthorizationHelper.adminJobs(userId);
-            jobInfo = (new AnalysisDAO()).getJobInfo(jobID);
+            jobInfo = (new AnalysisDAO(mgr)).getJobInfo(jobID);
             this.canReadJob(isAdmin, userId, jobID);
         } 
         catch (Throwable t) {
@@ -145,7 +158,7 @@ public class Analysis extends GenericWebService {
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         canWriteJob(isAdmin, userId, jobId);
 
-        AnalysisDAO ds = new AnalysisDAO();
+        AnalysisDAO ds = new AnalysisDAO(mgr);
         JobInfo jobInfo = ds.getJobInfo(jobId);
         if (jobInfo == null) {
             throw new WebServiceException("Unable to get jobInfo for jobId="+jobId);
@@ -177,7 +190,11 @@ public class Analysis extends GenericWebService {
                 log.debug("Did not find jobNumber in relativeFilePath, '"+value+"', assuming it is a path to an output file in a sub directory");
             }
         }
-        String jobDir = GenePatternAnalysisTask.getJobDir(""+fileCreationJobNumber);
+        final GpContext jobContext=new GpContext.Builder()
+            .userId(userId)
+            .jobNumber(fileCreationJobNumber)
+        .build();
+        String jobDir = GenePatternAnalysisTask.getJobDir(gpConfig, jobContext, ""+fileCreationJobNumber);
         File file = new File(jobDir, relativeFilepath);
         if (file.exists()) {
             file.delete();
@@ -216,7 +233,7 @@ public class Analysis extends GenericWebService {
 
     public int[] getChildren(int jobId) throws WebServiceException {
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             JobInfo[] children = ds.getChildren(jobId);
             int[] jobs = new int[children.length];
             for (int i = 0; i < children.length; i++) {
@@ -233,7 +250,7 @@ public class Analysis extends GenericWebService {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         this.canReadJob(isAdmin, userId, parentJobId);
-        AnalysisDAO ds = new AnalysisDAO();
+        AnalysisDAO ds = new AnalysisDAO(mgr);
         return ds.getChildren(parentJobId);
     }
 
@@ -248,7 +265,7 @@ public class Analysis extends GenericWebService {
             boolean isAdmin = AuthorizationHelper.adminJobs(userId);
             this.canReadJob(isAdmin, userId, jobId);
         }
-        AnalysisDAO ds = new AnalysisDAO();
+        AnalysisDAO ds = new AnalysisDAO(mgr);
         JobInfo job = ds.getJobInfo(jobId);
         return job;
     }
@@ -299,7 +316,7 @@ public class Analysis extends GenericWebService {
         if (username != null) {
             // (1) get jobs owned by user
            try {
-                AnalysisDAO ds = new AnalysisDAO();
+                AnalysisDAO ds = new AnalysisDAO(mgr);
                 return ds.getJobs(username, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
             } 
             catch (Exception e) {
@@ -317,7 +334,7 @@ public class Analysis extends GenericWebService {
             // (3) current user is an admin, get all jobs            
         }
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             return ds.getJobs(username, groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
         } 
         catch (Exception e) {
@@ -329,7 +346,7 @@ public class Analysis extends GenericWebService {
     throws WebServiceException
     {
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             return ds.getJobsInGroup(groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
         } 
         catch (Exception e) {
@@ -354,7 +371,7 @@ public class Analysis extends GenericWebService {
     throws WebServiceException
     {
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             return ds.getJobs(username, groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
         } 
         catch (Exception e) {
@@ -368,10 +385,12 @@ public class Analysis extends GenericWebService {
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         canReadJob(isAdmin, userId, jobId);
         
-        GpContext context = GpContext.getContextForUser(userId);
+        final GpContext userContext=new GpContext.Builder()
+            .userId(userId)
+        .build();
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
+            rootJobDir = gpConfig.getRootJobDir(userContext);
         }
         catch (Throwable t) {
             throw new WebServiceException(t.getLocalizedMessage());
@@ -404,15 +423,16 @@ public class Analysis extends GenericWebService {
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         this.canReadJob(isAdmin, userId, jobId);
         
-        GpContext context = GpContext.getContextForUser(userId);
         File rootJobDir = null;
         try {
-            rootJobDir = ServerConfigurationFactory.instance().getRootJobDir(context);
+            final GpContext userContext=new GpContext.Builder()
+                .userId(userId)
+            .build();
+            rootJobDir = gpConfig.getRootJobDir(userContext);
         }
         catch (Throwable t) {
             throw new WebServiceException(t.getLocalizedMessage());
         }
-
 
         ArrayList<String> filenames = new ArrayList<String>();
         JobInfo jobInfo = getJob(jobId);
@@ -485,7 +505,7 @@ public class Analysis extends GenericWebService {
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) 
     throws WebServiceException {
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), parameters, -1);
             return dao.getJobInfo(jobNo);
         } 
@@ -509,7 +529,7 @@ public class Analysis extends GenericWebService {
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
     throws WebServiceException {
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), parameters, parentJobNumber);
             return dao.getJobInfo(jobNo);
         } 
@@ -533,7 +553,7 @@ public class Analysis extends GenericWebService {
             boolean isAdmin = AuthorizationHelper.adminJobs(userId);
             canWriteJob(isAdmin, userId, jobId);
 
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             Integer intStatus = JobStatus.STATUS_MAP.get(status);
             if (intStatus == null) {
                 throw new WebServiceException("Unknown status: " + status);
@@ -557,7 +577,7 @@ public class Analysis extends GenericWebService {
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, @SuppressWarnings("rawtypes") Map files) throws WebServiceException {
         log.debug("submitJob: " + taskID);
         final String username = getUsernameFromContext();
-        final GpContext userContext=GpContext.getContextForUser(username);
+        final GpContext userContext=new GpContext.Builder().userId(username).build();
         JobInfo jobInfo = null;
         renameInputFiles_v3_9_2(userContext, parameters, files);
         try {
@@ -590,7 +610,7 @@ public class Analysis extends GenericWebService {
         try {
             log.debug("submitJob parentJobId=" + parentJobId);
             final String username = getUsernameFromContext();
-            final GpContext userContext=GpContext.getContextForUser(username);
+            final GpContext userContext=new GpContext.Builder().userId(username).build();
             renameInputFiles_v3_9_2(userContext, parameters, files);
             log.debug("new AddNewJobHander...");
             AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
@@ -628,7 +648,7 @@ public class Analysis extends GenericWebService {
             throw new WebServiceException("Error in terminateJob("+jobId+")");
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
@@ -648,14 +668,14 @@ public class Analysis extends GenericWebService {
     }
 
     private void canReadJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
+        PermissionsHelper ph = new PermissionsHelper(mgr, isAdmin, userId, jobId);
         if (!ph.canReadJob()) {
             throw new WebServiceException("You do not have permission to read the job: "+jobId);
         }
     }
 
     private void canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
+        PermissionsHelper ph = new PermissionsHelper(mgr, isAdmin, userId, jobId);
         if (!ph.canWriteJob()) {
             throw new WebServiceException("You do not have permission to edit the job: "+jobId);
         }
@@ -676,59 +696,6 @@ public class Analysis extends GenericWebService {
             }
         }
         return newParams.toArray(new ParameterInfo[newParams.size()]);
-    }
-
-    /**
-     * find any input files and concat axis name with original file name.
-     * @param parameters
-     * @param files
-     * @throws WebServiceException
-     */
-    private void renameInputFiles(ParameterInfo[] parameters, @SuppressWarnings("rawtypes") Map files) throws WebServiceException {
-        if (parameters == null) {
-            return;
-        }
-        for (int x = 0; x < parameters.length; x++) {
-            if (parameters[x].isInputFile()) {
-                String orgFilename = parameters[x].getValue();
-                Object obj = files.get(orgFilename);
-                DataHandler dataHandler = null;
-                if (obj instanceof AttachmentPart) {
-                    AttachmentPart ap = (AttachmentPart) obj;
-                    try {
-                        dataHandler = ap.getDataHandler();
-                    } catch (SOAPException se) {
-                        throw new WebServiceException("Error while processing files");
-                    }
-                } 
-                else {
-                    dataHandler = (DataHandler) obj;
-                }
-
-                String newFileName = new File(dataHandler.getName() + "_" + orgFilename).getName();
-                File uploadedFile = new File(dataHandler.getName());
-                File uploadedDir = uploadedFile.getParentFile();
-                File newDir = new File(uploadedDir, getUsernameFromContext());
-
-                if (!newDir.exists()) {
-                    newDir.mkdir();
-                }
-                File newFile = new File(newDir, newFileName);
-
-                if (uploadedFile.renameTo(newFile)) {
-                    try { // set parameter's value with new filename
-                        parameters[x].setValue(newFile.getCanonicalPath());
-                    } 
-                    catch (IOException e) {
-                        parameters[x].setValue(newFile.getPath());
-                    }
-                } 
-                else {
-                    uploadedFile.delete();
-                    throw new WebServiceException("Unable to save file " + newFileName + ".");
-                }
-            }
-        }
     }
 
     /**

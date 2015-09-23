@@ -4,22 +4,19 @@
 package org.genepattern.data.pipeline;
 
 import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
@@ -37,31 +34,23 @@ public class PipelineUtil {
     
     /**
      * Get the PipelineModel for the given lsid.
+     * @deprecated should pass in a Hibernate session
      */
-    static public PipelineModel getPipelineModel(String lsid) 
+    public static PipelineModel getPipelineModel(final String lsid) 
     throws TaskIDNotFoundException, PipelineModelException
     {
         TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
         return getPipelineModel(taskInfo);
     }
 
-    /**
-     * Get the PipelineModle for the given job, based on the job's task lsid.
-     */
-    static public PipelineModel getPipelineModel(JobInfo pipelineJobInfo) 
+    /**  @deprecated should pass in a Hibernate session */
+    public static PipelineModel getPipelineModel(final TaskInfo taskInfo) 
     throws TaskIDNotFoundException, PipelineModelException
     {
-        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineJobInfo.getTaskID());
-        if (taskInfo == null) {
-            throw new PipelineModelException("taskInfo is null for jobInfo.taskID="+pipelineJobInfo.getTaskID());
-        }
-        if (!taskInfo.isPipeline()) {
-            throw new PipelineModelException("task (id="+taskInfo.getID()+", name="+taskInfo.getName()+") is not a pipeline.");
-        }
-        return getPipelineModel(taskInfo);
+        return getPipelineModel(HibernateUtil.instance(), taskInfo);
     }
 
-    static public PipelineModel getPipelineModel(TaskInfo taskInfo) 
+    public static PipelineModel getPipelineModel(final HibernateSessionManager mgr, final TaskInfo taskInfo) 
     throws TaskIDNotFoundException, PipelineModelException
     {
         if (taskInfo == null) {
@@ -75,51 +64,36 @@ public class PipelineUtil {
         if (serializedModel == null || serializedModel.length() == 0) {
             throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
         }
-        PipelineModel model = null;
-        try {
-            model = PipelineModel.toPipelineModel(serializedModel);
-        } 
-        catch (Throwable t) {
-            throw new PipelineModelException(t);
-        }
+        final PipelineModel model = getPipelineModelFromSerializedModel(mgr, serializedModel);
         if (model == null) {
             throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
         }
         model.setLsid(taskInfo.getLsid());
         return model;
     }
-    
+
     /**
-     * Collect the command line params from the request and see if they are all present.
-     *
-     * @param taskInfo, the task info object
-     * @param commandLineParams, maps parameter name to value
+     * Helper method for de-serializing the pipeline model with proper DB connection handling.
+     * @param mgr
+     * @param serializedModel
+     * @return
+     * @throws PipelineModelException
      */
-    public static boolean validateAllRequiredParametersPresent(TaskInfo taskInfo, HashMap commandLineParams) {
-        ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
-        if (parameterInfoArray != null && parameterInfoArray.length > 0) {
-            for (int i = 0; i < parameterInfoArray.length; i++) {
-                ParameterInfo param = parameterInfoArray[i];
-                String key = param.getName();
-                Object value = commandLineParams.get(key);
-                if (!isOptional(param)) {
-                    if (value == null) {
-                        return true;
-                    } else if (value instanceof String) {
-                        String s = (String) value;
-                        if ("".equals(s.trim())) {
-                            return true;
-                        }
-                    }
-                }
+    public static PipelineModel getPipelineModelFromSerializedModel(final HibernateSessionManager mgr, final String serializedModel) throws PipelineModelException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            return PipelineModel.toPipelineModel(serializedModel);
+        } 
+        catch (Throwable t) {
+            log.error(t);
+            mgr.closeCurrentSession();
+            throw new PipelineModelException(t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
             }
         }
-        return false;
-    }
-    
-    public static boolean isOptional(final ParameterInfo info) {
-        final Object optional = info.getAttributes().get("optional");
-        return (optional != null && "on".equalsIgnoreCase(optional.toString()));
     }
     
     /**
@@ -132,7 +106,7 @@ public class PipelineUtil {
      * @param userID the user id
      * @return <code>true</code> if the pipeline is missing tasks
      */
-    public static boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
+    public static boolean isMissingTasks(final PipelineModel model, final java.io.PrintWriter out, final String userID) throws Exception {
         LinkedHashMap<LSID, MissingTaskRecord> missingTasks = getMissingTasks(model, userID);
         boolean isMissingTasks = missingTasks.size() > 0;
         if (isMissingTasks && out != null) {
@@ -175,14 +149,20 @@ public class PipelineUtil {
         }
         return isMissingTasks;
     }
+
     
-    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(PipelineModel model, String userId) {
-        List<JobSubmission> jobSubmissionTasks = model.getTasks();
-        LinkedHashMap<LSID, MissingTaskRecord> missingTasks = new LinkedHashMap<LSID, MissingTaskRecord>();
-        for(JobSubmission jobSubmission : jobSubmissionTasks) {
+    /**  @deprecated should pass in a Hibernate session */
+    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(final PipelineModel model, final String userId) {
+        return getMissingTasks(HibernateUtil.instance(), model, userId);
+    }
+    
+    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(final HibernateSessionManager mgr, final PipelineModel model, final String userId) {
+        final List<JobSubmission> jobSubmissionTasks = model.getTasks();
+        final LinkedHashMap<LSID, MissingTaskRecord> missingTasks = new LinkedHashMap<LSID, MissingTaskRecord>();
+        for(final JobSubmission jobSubmission : jobSubmissionTasks) {
             TaskInfo taskInfo = null;
             try {
-                taskInfo = TaskInfoCache.instance().getTask(jobSubmission.getLSID());
+                taskInfo = TaskInfoCache.instance().getTask(mgr, jobSubmission.getLSID());
             }
             catch (TaskLSIDNotFoundException e) {
             }
@@ -231,6 +211,7 @@ public class PipelineUtil {
             Session session = HibernateUtil.getSession();
             Query query = session.createQuery(hql);
             query.setString("lsid", lsidNoVersion+"%");
+            @SuppressWarnings("unchecked")
             List<String> lsidResults = query.list();
             
             for(String lsidResult : lsidResults) {

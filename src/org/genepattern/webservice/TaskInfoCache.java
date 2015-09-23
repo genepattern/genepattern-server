@@ -20,6 +20,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
@@ -29,8 +30,6 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.StatelessSession;
 
 /**
  * Use this cache to fetch a TaskInfo for a given lsid.
@@ -51,7 +50,7 @@ public class TaskInfoCache {
         private Singleton() {
         }
     }
-    private static TaskInfo taskInfoFromTaskMaster(TaskMaster tm, TaskInfoAttributes taskInfoAttributes) {
+    private static TaskInfo taskInfoFromTaskMaster(final TaskMaster tm, final TaskInfoAttributes taskInfoAttributes) {
         return new TaskInfo(
                 tm.getTaskId(), 
                 tm.getTaskName(), 
@@ -63,34 +62,25 @@ public class TaskInfoCache {
     }
     
     private final boolean enableCache;    
-    private final HibernateSessionManager mgr;
     private final ConcurrentMap<Integer, TaskMaster> taskMasterCache = new ConcurrentHashMap<Integer, TaskMaster>();
     private final ConcurrentMap<Integer, TaskInfoAttributes> taskInfoAttributesCache = new ConcurrentHashMap<Integer, TaskInfoAttributes>();
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     private TaskInfoCache(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext) {
-        this.mgr=mgr;
         enableCache = gpConfig.getGPBooleanProperty(serverContext, "taskInfoCache.enable", true);
         if (enableCache) {
-            initializeCache();
+            initializeCache(mgr, gpConfig, serverContext);
         }
     }
 
-    private void initializeCache() {
-        boolean closeDbSession = true;
-        List<TaskMaster> allTaskMasters = findAll(closeDbSession);
-        final GpContext serverContext=GpContext.getServerContext();
-        final boolean isPipelineDependencyCacheEnabled=PipelineDependencyCache.isEnabled(serverContext);
+    private void initializeCache(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext) {
+        List<TaskMaster> allTaskMasters = findAll(mgr);
+        final boolean isPipelineDependencyCacheEnabled=PipelineDependencyCache.isEnabled(gpConfig, serverContext);
         for(TaskMaster taskMaster : allTaskMasters) {
             addToCache(taskMaster, isPipelineDependencyCacheEnabled);
         }
     }
     
-    private void addToCache(final TaskMaster taskMaster) {
-        final GpContext serverContext=GpContext.getServerContext();
-        addToCache(taskMaster, PipelineDependencyCache.isEnabled(serverContext));
-    }
-
     private void addToCache(final TaskMaster taskMaster, final boolean isPipelineDependencyCacheEnabled) {
         Integer taskId = taskMaster.getTaskId();
         taskMasterCache.put(taskId, taskMaster);
@@ -107,19 +97,20 @@ public class TaskInfoCache {
         taskMasterCache.clear();
         taskInfoAttributesCache.clear();
         taskDocFilenameCache.clear();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
-        if (PipelineDependencyCache.isEnabled(serverContext)) {
+        if (PipelineDependencyCache.isEnabled(gpConfig, serverContext)) {
             PipelineDependencyCache.instance().clear();
         }
     }
 
-    public void removeFromCache(String lsid) {
-        int taskId = findTaskId(lsid);
+    public void removeFromCache(final HibernateSessionManager mgr, final String lsid) {
+        int taskId = findTaskId(mgr, lsid);
         DirectoryManager.removeTaskLibDirFromCache(lsid);
         removeFromCache(taskId);
     }
 
-    public void removeFromCache(Integer taskId) {
+    public void removeFromCache(final Integer taskId) {
         final TaskMaster tm = taskMasterCache.get(taskId);
         if (tm != null && tm.getLsid() != null) {
             DirectoryManager.removeTaskLibDirFromCache(tm.getLsid());
@@ -128,8 +119,9 @@ public class TaskInfoCache {
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
 
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
-        if (PipelineDependencyCache.isEnabled(serverContext)) {
+        if (PipelineDependencyCache.isEnabled(gpConfig, serverContext)) {
             if (tm != null) {
                 final String taskLsid=tm.getLsid();
                 PipelineDependencyCache.instance().removeTask(taskLsid);
@@ -211,48 +203,54 @@ public class TaskInfoCache {
     }
    
     //helper DAO methods
-    private List<TaskMaster> findAll(boolean closeTransaction) throws ExceptionInInitializerError {
-        StatelessSession session = null;
+    private List<TaskMaster> findAll(final HibernateSessionManager mgr) {
+        if (mgr==null) {
+            log.error("HibernateSessionManager==null");
+            return Collections.emptyList();
+        }
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            SessionFactory sessionFactory = mgr.getSessionFactory();
-            if (sessionFactory == null) {
-                throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
-            }
-            session = sessionFactory.openStatelessSession();
-            session.beginTransaction();
-            
-            String hql = "from org.genepattern.server.domain.TaskMaster";
-            Query query = session.createQuery(hql);
+            final String hql = "from org.genepattern.server.domain.TaskMaster";
+            mgr.beginTransaction();
+            Query query = mgr.getSession().createQuery(hql);
             @SuppressWarnings("unchecked")
             List<TaskMaster> taskMasters = query.list();
             return taskMasters;
         }
+        catch (Throwable t) {
+            log.error("DB error getting all entries from the TASK_MASTER table", t);
+            mgr.closeCurrentSession();
+            return Collections.emptyList();
+        }
         finally {
-            if (closeTransaction) {
-                if (session != null) {
-                    session.close();
-                }
+            if (isInTransaction) {
+                mgr.closeCurrentSession();
             }
         }
     }
     
-    public TaskInfo getTask(String lsid) throws TaskLSIDNotFoundException {
-        int taskId = findTaskId(lsid);
+    /** @deprecated pass in a Hibernate session */
+    public TaskInfo getTask(final String lsid) throws TaskLSIDNotFoundException {
+        return getTask(HibernateUtil.instance(), lsid);
+    }
+
+    public TaskInfo getTask(final HibernateSessionManager mgr, final String lsid) throws TaskLSIDNotFoundException {
+        int taskId = findTaskId(mgr, lsid);
         if (taskId >= 0) {
-            return getTask(taskId);
+            return getTask(mgr, taskId);
         }
         else {
             throw new TaskLSIDNotFoundException(lsid);
         }
     }
 
-    public TaskInfo getTask(Integer taskId) throws TaskIDNotFoundException {
+    public TaskInfo getTask(final HibernateSessionManager mgr, final Integer taskId) throws TaskIDNotFoundException {
         TaskInfo taskInfo = null;
         if (enableCache) {
             taskInfo = getTaskInfoFromCache(taskId);
         }
         if (taskInfo == null) {
-            TaskMaster taskMaster = getTaskMasterFromDb(taskId, enableCache);
+            TaskMaster taskMaster = getTaskMasterFromDb(mgr, taskId, enableCache);
             taskInfo = getTaskInfoFromTaskMaster(taskMaster, enableCache);
         }
         return taskInfo;
@@ -273,27 +271,41 @@ public class TaskInfoCache {
         return taskInfo;
     }
 
-    private TaskMaster getTaskMasterFromDb(final Integer taskId, final boolean addToCache) throws TaskIDNotFoundException {
+    private TaskMaster getTaskMasterFromDb(final HibernateSessionManager mgr, final Integer taskId, final boolean addToCache) throws TaskIDNotFoundException {
         //fetch from DB, then [optionally] add to cache
-        TaskMaster taskMaster = findById(taskId);
+        final TaskMaster taskMaster = findById(mgr, taskId);
         if (taskMaster == null) {
             throw new TaskIDNotFoundException(taskId);
         }
         if (addToCache) {
-            addToCache(taskMaster);
-            final TaskInfo taskInfo=getTaskInfoFromTaskMaster(taskMaster, addToCache);
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext serverContext=GpContext.getServerContext();
+            final boolean isPipelineDependencyCacheEnabled=PipelineDependencyCache.isEnabled(gpConfig, serverContext);
+            addToCache(taskMaster, isPipelineDependencyCacheEnabled);
         }
         return taskMaster;
     }
 
-    private TaskMaster findById(final Integer taskId) {
-        String hql = "from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
-        mgr.beginTransaction();
-        Session session = mgr.getSession();
-        Query query = session.createQuery(hql);
-        query.setInteger("taskId", taskId);
-        TaskMaster taskMaster = (TaskMaster) query.uniqueResult();
-        return taskMaster;
+    private TaskMaster findById(final HibernateSessionManager mgr, final Integer taskId) throws TaskIDNotFoundException {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            final String hql = "from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
+            mgr.beginTransaction();
+            final Query query = mgr.getSession().createQuery(hql);
+            query.setInteger("taskId", taskId);
+            final TaskMaster taskMaster = (TaskMaster) query.uniqueResult();
+            return taskMaster;
+        }
+        catch (Throwable t) {
+            mgr.closeCurrentSession();
+            log.error("Error getting TaskMaster for taskId="+taskId, t);
+            throw new TaskIDNotFoundException(taskId);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        } 
     }
 
     private TaskInfo getTaskInfoFromTaskMaster(TaskMaster taskMaster, boolean enableCache) {
@@ -308,35 +320,56 @@ public class TaskInfoCache {
         return taskInfo;
     }
 
+    /** @deprecated pass in a Hibernate session */
     public TaskInfo[] getAllTasks() {
-        List<Integer> allTaskIds = findAllTaskIds();
-        return getTasks(allTaskIds);
+        return getAllTasks(HibernateUtil.instance());
     }
     
-    private List<Integer> findAllTaskIds() {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
-        Session session = mgr.getSession();
-        Query query = session.createQuery(hql);
-        @SuppressWarnings("unchecked")
-        List<Integer> results = query.list();
-        return results;
+    public TaskInfo[] getAllTasks(final HibernateSessionManager mgr) {
+        List<Integer> allTaskIds = findAllTaskIds(mgr);
+        return getTasks(mgr, allTaskIds);
     }
     
-    private Integer findTaskId(final String lsid) {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
-        Session session = mgr.getSession();
-        Query query = session.createQuery(hql);
-        query.setString("lsid", lsid);
-        @SuppressWarnings("unchecked")
-        List<Integer> results = query.list();
-        if (results == null || results.size() == 0) {
-            return -1;
+    private List<Integer> findAllTaskIds(final HibernateSessionManager mgr) {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            final String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
+            mgr.beginTransaction();
+            final Query query = mgr.getSession().createQuery(hql);
+            @SuppressWarnings("unchecked")
+            List<Integer> results = query.list();
+            return results;
         }
-        else if (results.size() == 1) {
-            return results.get(0);
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
         }
-        else {
-            return -1;
+    }
+    
+    private Integer findTaskId(final HibernateSessionManager mgr, final String lsid) {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            final String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+            mgr.beginTransaction();
+            Query query = mgr.getSession().createQuery(hql);
+            query.setString("lsid", lsid);
+            @SuppressWarnings("unchecked")
+            List<Integer> results = query.list();
+            if (results == null || results.size() == 0) {
+                return -1;
+            }
+            else if (results.size() == 1) {
+                return results.get(0);
+            }
+            else {
+                return -1;
+            }
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
         }
     }
     
@@ -356,11 +389,8 @@ public class TaskInfoCache {
      * @param lsid
      * @return
      */
-    public List<TaskInfo> getAllVersions(final GpContext userContext, final LSID lsid) {
-        final boolean closeSessionIfNecessary=false;
-        return getAllVersions(closeSessionIfNecessary, userContext, lsid);
-    }
-    public List<TaskInfo> getAllVersions(final boolean closeSessionIfNecessary, final GpContext userContext, final LSID lsid) {
+    @SuppressWarnings("unchecked")
+    public List<TaskInfo> getAllVersions(final HibernateSessionManager mgr, final GpContext userContext, final LSID lsid) {
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -395,6 +425,7 @@ public class TaskInfoCache {
             if (!userContext.isAdmin()) {
                     hql += " and ( accessId = :accessId or userId = :userId )"; 
             }
+            mgr.beginTransaction();
             Session session = mgr.getSession();
             Query query = session.createQuery(hql);
             query.setString("baseLsid", baseLsid+"%");
@@ -407,30 +438,31 @@ public class TaskInfoCache {
                 log.error("Unexpected null returned from hibernate call");
                 return Collections.emptyList();
             }
-            return getTasksAsList(taskIds);
+            return getTasksAsList(mgr, taskIds);
         }
         catch (Throwable t) {
             log.error("Error getting TaskInfo versions for baseLsid="+baseLsid, t);
+            mgr.closeCurrentSession();
             return Collections.emptyList();
         }
         finally {
-            if (closeSessionIfNecessary && !inTransaction) {
+            if (!inTransaction) {
                 mgr.closeCurrentSession();
             }
         }
     }
     
-    public TaskInfo[] getTasks(List<Integer> taskIds) {
-        List<TaskInfo> allTaskInfos = getTasksAsList(taskIds);
+    public TaskInfo[] getTasks(final HibernateSessionManager mgr, final List<Integer> taskIds) {
+        List<TaskInfo> allTaskInfos = getTasksAsList(mgr, taskIds);
         TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
         return taskInfoArray;        
     }
     
-    public List<TaskInfo> getTasksAsList(List<Integer> taskIds) {
+    private List<TaskInfo> getTasksAsList(final HibernateSessionManager mgr, final List<Integer> taskIds) {
         List<TaskInfo> allTaskInfos = new ArrayList<TaskInfo>();
         for(Integer taskId : taskIds) {
             try {
-                TaskInfo taskInfo = getTask(taskId);
+                TaskInfo taskInfo = getTask(mgr, taskId);
                 allTaskInfos.add(taskInfo);
             }
             catch (TaskIDNotFoundException e) {

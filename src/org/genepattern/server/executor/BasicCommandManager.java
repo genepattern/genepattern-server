@@ -476,14 +476,14 @@ public class BasicCommandManager implements CommandManager {
         if (analysisTaskScheduler == null) {
             throw new JobTerminationException("Did not terminate jobId="+jobId+", analysisTaskScheduler not instantiated!");
         }
-        analysisTaskScheduler.terminateJob(jobId);
+        analysisTaskScheduler.terminateJob(mgr, jobId);
     }
     
     public void terminateJob(final JobInfo jobInfo) throws JobTerminationException {
         if (analysisTaskScheduler == null) {
             throw new JobTerminationException("Did not terminate jobId="+jobInfo.getJobNumber()+", analysisTaskScheduler not instantiated!");
         }
-        analysisTaskScheduler.terminateJob(jobInfo);
+        analysisTaskScheduler.terminateJob(mgr, jobInfo);
     }
 
 }

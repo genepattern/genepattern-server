@@ -26,7 +26,6 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
-import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
@@ -168,7 +167,7 @@ public class AdminDAO extends BaseDAO {
                     log.debug("\tfetched taskId="+taskId);
                 }
             }
-            TaskInfo[] results = TaskInfoCache.instance().getTasks(taskIds);
+            TaskInfo[] results = TaskInfoCache.instance().getTasks(mgr, taskIds);
             TaskInfo latestTask = null;
             LSID latestLSID = null;
             
@@ -224,7 +223,7 @@ public class AdminDAO extends BaseDAO {
             List<TaskInfo> tasksWithGivenName = new ArrayList<TaskInfo>();
             for (Integer taskId : taskIds) {
                 try {
-                    TaskInfo taskInfo = TaskInfoCache.instance().getTask(taskId);
+                    TaskInfo taskInfo = TaskInfoCache.instance().getTask(mgr, taskId);
                     tasksWithGivenName.add(taskInfo);
                 }
                 catch (TaskIDNotFoundException ex) {
@@ -280,7 +279,7 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getAllTasks() {
-        return TaskInfoCache.instance().getAllTasks();
+        return TaskInfoCache.instance().getAllTasks(mgr);
     }
 
     public TaskInfo[] getTasksOwnedBy(String username) {
@@ -289,7 +288,7 @@ public class AdminDAO extends BaseDAO {
         query.setString("userId", username);
         @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
-        return TaskInfoCache.instance().getTasks(taskIds);
+        return TaskInfoCache.instance().getTasks(mgr, taskIds);
     }
 
     public TaskInfo[] getAllTasksForUser(String username) {
@@ -299,7 +298,7 @@ public class AdminDAO extends BaseDAO {
         query.setInteger("accessId", PUBLIC_ACCESS_ID);
         @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
-        return TaskInfoCache.instance().getTasks(taskIds);
+        return TaskInfoCache.instance().getTasks(mgr, taskIds);
     }
 
     /**
@@ -320,10 +319,13 @@ public class AdminDAO extends BaseDAO {
             List<Integer> taskIds = query.list();
             for(Integer taskId : taskIds) {
                 try {
-                    queriedTasks.put(lsid, TaskInfoCache.instance().getTask(taskId));
+                    queriedTasks.put(lsid, TaskInfoCache.instance().getTask(mgr, taskId));
                 }
                 catch (TaskIDNotFoundException e) {
                     log.error("Unexpected error getting TaskInfo from cache", e);
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected error getting TaskInfo from cache", t);
                 }
             }
         }
@@ -378,7 +380,7 @@ public class AdminDAO extends BaseDAO {
         query = getSession().createQuery(hql.toString());
         @SuppressWarnings("unchecked")
         List<Integer> taskIds = query.list();
-        return TaskInfoCache.instance().getTasks(taskIds);
+        return TaskInfoCache.instance().getTasks(mgr, taskIds);
     }
 
     /**
@@ -517,7 +519,7 @@ public class AdminDAO extends BaseDAO {
      * @throws TaskIDNotFoundException
      */
     public TaskInfo getTask(int taskId) throws TaskIDNotFoundException {
-        return TaskInfoCache.instance().getTask(taskId);
+        return TaskInfoCache.instance().getTask(mgr, taskId);
     }
 
     /**
@@ -527,7 +529,7 @@ public class AdminDAO extends BaseDAO {
      * @throws TaskLSIDNotFoundException
      */
     public TaskInfo getTask(String lsid) throws TaskLSIDNotFoundException {
-        return TaskInfoCache.instance().getTask(lsid);
+        return TaskInfoCache.instance().getTask(mgr, lsid);
     }
 
     /**

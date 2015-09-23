@@ -18,6 +18,9 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
@@ -119,7 +122,9 @@ public class BaseDAO {
         final ArrayList<String> docs = new ArrayList<String>();
         try {
             boolean alwaysMkdirs=false;
-            File suiteDir = DirectoryManager.getSuiteLibDir(name, lsid, owner, alwaysMkdirs);
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext serverContext=GpContext.getServerContext();
+            File suiteDir = DirectoryManager.getSuiteLibDir(gpConfig, serverContext, name, lsid, owner, alwaysMkdirs);
             if (suiteDir != null && suiteDir.exists()) {
                 File docFiles[] = suiteDir.listFiles();
                 for (int i = 0; i < docFiles.length; i++) {

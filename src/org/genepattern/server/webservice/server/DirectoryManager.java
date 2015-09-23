@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -36,6 +37,7 @@ public class DirectoryManager {
     private static String taskLibDir = null;
 
     /** mapping of LSIDs to taskLibDir directories */
+    @SuppressWarnings("rawtypes")
     private static Hashtable htTaskLibDir = new Hashtable();
     private static Map<String,String> htSuiteLibDir = new ConcurrentHashMap<String,String>();
     
@@ -54,23 +56,32 @@ public class DirectoryManager {
 
     /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
-     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Note: should involve userID in this, so that there is no conflict among same-named private tasks. 
      * Creates the directory if it doesn't already exist.
      * 
      * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
      * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
+     * 
+     * @deprecated should pass in Hibernate session, GpConfig and GpContext
      */
-
     public static String getLibDir(String lsid) throws Exception, MalformedURLException {
+        final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getLibDir(mgr, gpConfig, serverContext, lsid);
+    }
+
+    public static String getLibDir(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext, String lsid) throws Exception, MalformedURLException {
 	LSID l = new LSID(lsid);
 	if (l.getAuthority().equals("") || l.getIdentifier().equals("") || !l.hasVersion()) {
 	    throw new MalformedURLException("invalid LSID");
 	}
 
 	if (LSIDUtil.isSuiteLSID(lsid)) {
-	    File suiteLibDir=getSuiteLibDir(null, lsid, null);
+	    final boolean alwaysMkdirs=false;
+	    File suiteLibDir=getSuiteLibDir(gpConfig, serverContext, null, lsid, null, alwaysMkdirs);
 	    if (suiteLibDir != null) {
 	        return suiteLibDir.getAbsolutePath();
 	    }
@@ -80,13 +91,21 @@ public class DirectoryManager {
 	    }
 
 	} else {
-	    return getTaskLibDir(null, lsid, null);
+	    return getTaskLibDir(mgr, gpConfig, serverContext, null, lsid, null);
 	}
     }
 
+    /** @deprecated should pass in a valid Hibernate session, gpConfig and gpContext */
+    public static String getTaskLibDir(final String taskName, final String sLSID, final String username) throws MalformedURLException {
+        final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getTaskLibDir(mgr, gpConfig, serverContext, taskName, sLSID, username);
+    }
+    
     /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
-     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Note: should involve userID in this, so that there is no conflict among same-named private tasks. 
      * Creates the directory if it doesn't already exist.
      * 
      * Warning: this method creates new DB connections, it is up to the calling method to close 
@@ -98,7 +117,8 @@ public class DirectoryManager {
      * @throws MalformedURLException, If the lsid is not properly formed.
      * @throws IllegalArgumentException, If the task name or lsid is not found in the database.
      */
-    public static String getTaskLibDir(String taskName, String sLSID, String username) throws MalformedURLException {
+    @SuppressWarnings("unchecked")
+    public static String getTaskLibDir(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, String taskName, String sLSID, String username) throws MalformedURLException {
         String ret = null;
         if (sLSID != null) {
             ret = (String) htTaskLibDir.get(sLSID);
@@ -108,7 +128,7 @@ public class DirectoryManager {
         }
 
         File f = null;
-        getLibDir();
+        getLibDir(gpConfig, gpContext);
         LSID lsid = null;
         TaskInfo taskInfo = null;
 
@@ -116,7 +136,7 @@ public class DirectoryManager {
             lsid = new LSID(sLSID);
             if (taskName == null || taskInfo == null) {
                 // lookup task name for this LSID
-                taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
+                taskInfo = (new AdminDAO(mgr)).getTask(lsid.toString(), username);
                 if (taskInfo == null) {
                     throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
                 }
@@ -132,7 +152,7 @@ public class DirectoryManager {
         if (lsid == null && taskName != null) {
             lsid = new LSID(taskName);
             // lookup task name for this LSID
-            taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
+            taskInfo = (new AdminDAO(mgr)).getTask(lsid.toString(), username);
             if (taskInfo == null) {
                 throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
             }
@@ -152,23 +172,31 @@ public class DirectoryManager {
         return ret;
     }
 
+    /** deprecated should pass in a valid gpConfig and gpContext */
+    public static String getTaskLibDir(final TaskInfo taskInfo) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getTaskLibDir(gpConfig, serverContext, taskInfo);
+    }
+    
     /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
-     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Note: should involve userID in this, so that there is no conflict among same-named private tasks. 
      * Creates the directory if it doesn't already exist.
-     * 
-     * @param taskName, name of task to look up
+     * @param gpConfig
+     * @param gpContext
+     * @param taskInfo, must set the taskName of task to look up
      * @return directory name on server where taskName support files are stored
      * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner (Moved to DirManager from GenePatternAnalysisTask by Ted Liefeld)
      */
-    public static String getTaskLibDir(TaskInfo taskInfo) {
+    public static String getTaskLibDir(final GpConfig gpConfig, final GpContext gpContext, final TaskInfo taskInfo) {
         if (taskInfo == null) {
             log.error("Unexpected null arg in DirectoryManager.getTaskLibDir");
             return "";
         }
         File f = null;
-        getLibDir();
+        getLibDir(gpConfig, gpContext);
 
         String taskName = taskInfo.getName();
         String sLsid = taskInfo.getLsid();
@@ -246,14 +274,10 @@ public class DirectoryManager {
 	return dirName;
     }
 
-    public static String getLibDir() {
+    public static String getLibDir(final GpConfig gpConfig, final GpContext gpContext) {
         if (taskLibDir == null) {
             log.debug("initializing taskLibDir...");
-            if (log.isDebugEnabled()) {
-                final String tasklibDirProp_orig = System.getProperty("tasklib");
-                log.debug("System.getProperty('tasklib')="+tasklibDirProp_orig);
-            }
-            taskLibDir = getRootTaskLibDir();
+            taskLibDir = getRootTaskLibDir(gpConfig, gpContext);
             if (taskLibDir == null || !new File(taskLibDir).exists()) {
                 taskLibDir = ".." + File.separator + "taskLib";
                 log.debug("taskLibDir not set, setting taskLibDir="+taskLibDir);
@@ -263,12 +287,6 @@ public class DirectoryManager {
             log.debug("taskLibDir="+taskLibDir);
         }
         return taskLibDir;
-    }
-    
-    protected static String getRootTaskLibDir() {
-        final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        final GpContext serverContext=GpContext.getServerContext();
-        return getRootTaskLibDir(gpConfig, serverContext);
     }
 
     protected static String getRootTaskLibDir(final GpConfig gpConfig, final GpContext gpContext) {
@@ -281,17 +299,21 @@ public class DirectoryManager {
 
     /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
-     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Note: should involve userID in this, so that there is no conflict among same-named private tasks. 
      * Creates the directory if it doesn't already exist.
      * 
      * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
      * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
+     * 
+     * @deprecated should pass in a valid GpConfig and GpContext
      */
     public static File getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
         final boolean alwaysMkdirs=false;
-        return getSuiteLibDir(suiteName, sLSID, username, alwaysMkdirs);
+        return getSuiteLibDir(gpConfig, serverContext, suiteName, sLSID, username, alwaysMkdirs);
     }
 
     /**
@@ -303,12 +325,16 @@ public class DirectoryManager {
      * @param alwaysMkdirs
      * @return
      * @throws Exception
+     * 
+     * @deprecated should pass in a valid GpConfig and GpContext
      */
     public static File getSuiteLibDir(final SuiteInfo suiteInfo, final boolean alwaysMkdirs) throws Exception  {
-        return getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLsid(), suiteInfo.getOwner(), alwaysMkdirs);
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext=GpContext.getServerContext();
+        return getSuiteLibDir(gpConfig, serverContext, suiteInfo.getName(), suiteInfo.getLsid(), suiteInfo.getOwner(), alwaysMkdirs);
     }
 
-    public static File getSuiteLibDir(final String suiteName, final String suiteLsid, final String username, final boolean alwaysMkdirs) throws Exception  {
+    public static File getSuiteLibDir(final GpConfig gpConfig, final GpContext gpContext, final String suiteName, final String suiteLsid, final String username, final boolean alwaysMkdirs) throws Exception  {
         String ret = null;
         ret = (String) htSuiteLibDir.get(suiteLsid);
         if (ret != null) {
@@ -322,7 +348,7 @@ public class DirectoryManager {
             return suiteLibDir;
         }
 
-        getLibDir();
+        getLibDir(gpConfig, gpContext);
         
         final String name;
         if (suiteName==null) {
@@ -340,48 +366,6 @@ public class DirectoryManager {
         ret = suiteLibDir.getAbsolutePath();
         htSuiteLibDir.put(suiteLsid, ret);
         return suiteLibDir;
-    }
-
-    /**
-     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
-     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
-     * Creates the directory if it doesn't already exist.
-     * 
-     * @param taskName, name of task to look up
-     * @return directory name on server where taskName support files are stored
-     * @throws Exception, if genepattern.properties System property not defined
-     * @author Jim Lerner
-     * 
-     * @deprecated
-     */
-    private static String _origGetSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
-        String ret = null;
-
-        if (sLSID != null) {
-            ret = (String) htSuiteLibDir.get(sLSID);
-            if (ret != null) {
-                return ret;
-            }
-        }
-
-        File f = null;
-        getLibDir();
-        LSID lsid = null;
-        String name = suiteName;
-        if (suiteName == null) {
-            IAdminClient adminClient = new LocalAdminClient(username);
-            SuiteInfo si = adminClient.getSuite(sLSID);
-            name = si.getName();
-        }
-        String dirName = makeDirName(lsid, name);
-        f = new File(taskLibDir, dirName);
-        f.mkdirs();
-        ret = f.getAbsolutePath();
-        if (lsid != null) {
-            //TODO: shouldn't this be htSuiteLibDir?
-            htTaskLibDir.put(lsid, ret);
-        }
-        return ret;
     }
 
 }
