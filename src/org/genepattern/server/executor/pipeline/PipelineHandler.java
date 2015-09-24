@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationException;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -41,7 +43,13 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.util.FindFileFilter;
@@ -89,12 +97,13 @@ public class PipelineHandler {
         if (pipelineTaskInfo==null) {
             throw new CommandExecutorException("jobContext.taskInfo==null");
         }
+        PipelineModel pipelineModel=null;
         try {
             // Note: the checkForMissingTasks and the getPipelineModel call both initialize the list of tasks for the pipeline
             if (log.isDebugEnabled()) {
                 log.debug("checking for missing tasks ...");
             }
-            checkForMissingTasks(mgr, jobContext, pipelineTaskInfo);
+            pipelineModel=checkForMissingTasks(mgr, jobContext, pipelineTaskInfo);
         }
         catch (MissingTasksException e) {
             throw new CommandExecutorException(e.getMessage());
@@ -103,7 +112,6 @@ public class PipelineHandler {
             throw new CommandExecutorException("Unexpected error checking for missing tasks: "+t.getLocalizedMessage(), t);
         } 
         
-        //final JobInput jobInput=jobContext.getJobInput();
         if (log.isDebugEnabled()) {
             log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         }
@@ -112,7 +120,7 @@ public class PipelineHandler {
         int numAddedJobs=-1;
         try {
             mgr.beginTransaction();
-            List<JobInfo> addedJobs = runPipeline(mgr, pipelineJobInfo, stopAfterTask, isScatterStep);
+            List<JobInfo> addedJobs = runPipeline(mgr, jobContext, pipelineModel, stopAfterTask, isScatterStep);
             numAddedJobs = addedJobs.size();
             //set the parent pipeline's status to PROCESSING 
             AnalysisJobScheduler.setJobStatus(mgr, pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
@@ -594,7 +602,7 @@ public class PipelineHandler {
         return waitingJobs;
     }
     
-    /**
+        /**
      * Add all of the steps in the pipeline as new jobs.
      * 
      * @param pipelineJobInfo
@@ -607,42 +615,25 @@ public class PipelineHandler {
      * @throws MissingTasksException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final PipelineModel pipelineModel, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
-        final boolean initIsAdmin=true;
-        final GpContext userContext=GpContext.getContextForUser(pipelineJobInfo.getUserId(), initIsAdmin);
-
-        final TaskInfo pipelineTaskInfo;
-        try {
-            pipelineTaskInfo=getTaskInfo(mgr, pipelineJobInfo.getTaskLSID());
-        }
-        catch (Throwable t) {
-            log.error(t);
-            throw new JobSubmissionException("Error getting task for pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        }
-        
-        
-        //TODO: the checkForMissingTasks and the getPipelineModel call both initialize the list of tasks for the pipeline
-        //    should refactor the code to avoid redundant calls
-        checkForMissingTasks(mgr, userContext, pipelineTaskInfo);
-        final PipelineModel pipelineModel = getPipelineModel(pipelineTaskInfo);
         final Vector<JobSubmission> tasks = pipelineModel.getTasks();
 
-        //initialize the pipeline args
+        // initialize the pipeline args
+        final JobInfo pipelineJobInfo=jobContext.getJobInfo();
         Map<String,String> additionalArgs = new HashMap<String,String>();
         for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
             additionalArgs.put(param.getName(), param.getValue());
         }
-
-        List<JobInfo> addedJobs = new ArrayList<JobInfo>();
+        
         if (!isScatterStep) {
             // add job records to the analysis_job table
-            addedJobs = runPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
+            final List<JobInfo> addedJobs = runPipeline(mgr, jobContext, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
         else {
-            addedJobs = runScatterPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
+            final List<JobInfo> addedJobs = runScatterPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
     }
@@ -660,9 +651,10 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
+        final JobInfo pipelineJobInfo=jobContext.getJobInfo();
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
 
         int stepNum = 0;
@@ -688,10 +680,47 @@ public class PipelineHandler {
                 throw new JobSubmissionException("Error initializing task from lsid="+jobSubmission.getLSID()+": "+t.getLocalizedMessage());
             }
             JobInfo submittedJob = addJobToPipeline(mgr, pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
+            
+            //HACK: for listMode=CMD and listMode=CMD_OPT params, add values to the job_input_values table
+            insertJobInputValues(mgr, jobContext, taskInfo, submittedJob, stepNum + 1);
             submittedJobs.add(submittedJob);
             ++stepNum;
         }
         return submittedJobs;
+    }
+    
+    protected static void insertJobInputValues(final HibernateSessionManager mgr, final GpContext pipelineJobContext, final TaskInfo submittedTaskInfo, final JobInfo submittedJob, final int taskNum) {
+        JobInput pipelineJobInput=pipelineJobContext.getJobInput();
+        JobInput stepJobInput=new JobInput();
+        stepJobInput.setLsid(submittedJob.getTaskLSID());
+        // go through the list of input parameters
+        for(final ParameterInfo pinfo : submittedJob.getParameterInfoArray()) {
+            final ParamId paramId=new ParamId(pinfo.getName());
+            final String key = submittedJob.getTaskName() + taskNum + "." + pinfo.getName();
+            final Param pipelineParam=pipelineJobInput.getParam(key);
+            if (pipelineParam != null) {
+                final boolean isCmdLineList=ParamListHelper.isCmdLineList(pinfo);
+                if (isCmdLineList) {
+                    // only add listMode=CMD or listMode=CMD_OPT values
+                    for(final Entry<GroupId,Collection<ParamValue>> groupEntry : pipelineParam.getGroupedValues().entrySet()) {
+                        final GroupId groupId=groupEntry.getKey();
+                        for(final ParamValue paramValue : groupEntry.getValue()) {
+                            stepJobInput.addValue(paramId, paramValue, groupId);
+                        }
+                    }
+                }
+            }
+        }
+        if (stepJobInput.getParams().size() > 0) {
+            try {
+                new JobInputValueRecorder(mgr).saveJobInput(submittedJob.getJobNumber(), stepJobInput);
+            }
+            catch (Throwable t) {
+                log.error("Error saving job_input_values for step in pipeline, pipeline job #"+pipelineJobContext.getJobNumber()+
+                        ", "+pipelineJobContext.getTaskName()+
+                        ", step #"+taskNum+", job #"+submittedJob.getJobNumber(), t);
+            }
+        }
     }
 
     private static List<JobInfo> runScatterPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
@@ -1127,18 +1156,18 @@ public class PipelineHandler {
         return jobInfo;
     }
 
-    private static void checkForMissingTasks(final HibernateSessionManager mgr, final GpContext userContext, final TaskInfo forTask) throws MissingTasksException {
+    private static PipelineModel checkForMissingTasks(final HibernateSessionManager mgr, final GpContext userContext, final TaskInfo forTask) throws MissingTasksException {
         final GetIncludedTasks taskChecker;
         try {
             taskChecker=new GetIncludedTasks(mgr, userContext, forTask);
         }
         catch (Throwable t) {
             log.error(t);
-            return;
+            return null;
         }
         
         if (taskChecker.allTasksAvailable()) {
-            return;
+            return taskChecker.getPipelineModel();
         }
 
         MissingTasksException ex = new MissingTasksException();
@@ -1150,7 +1179,8 @@ public class PipelineHandler {
         }
         if (ex.hasErrors()) {
             throw ex;
-        }        
+        }
+        return taskChecker.getPipelineModel();
     }
     
     /**
@@ -1628,6 +1658,11 @@ public class PipelineHandler {
         }
         return model;
     }
+
+    /** @deprecated pass in a valid GpConfig */
+    public static void substituteLsidInInputFiles(final String lsidValue, final ParameterInfo[] parameterInfos) {
+        substituteLsidInInputFiles(ServerConfigurationFactory.instance(), lsidValue, parameterInfos);
+    }
     
     /**
      * Substitute '<LSID>' in input files. 
@@ -1642,19 +1677,29 @@ public class PipelineHandler {
      * 
      * @param parameterInfos
      */
-    public static void substituteLsidInInputFiles(String lsidValue, ParameterInfo[] parameterInfos) {
-        final String lsidTag = "<LSID>";
-        final String gpUrlTag = "<GenePatternURL>";
-        for (ParameterInfo param : parameterInfos) {
-            String value = param.getValue();
-            if (value != null && value.startsWith(gpUrlTag)) {
-                // substitute <GenePatternURL> with actual value
-                value = value.replace(gpUrlTag, ServerConfigurationFactory.instance().getGpUrl());
-                // substitute <LSID> flags for pipeline files
-                value = value.replace(lsidTag, lsidValue);
+    public static void substituteLsidInInputFiles(final GpConfig gpConfig, final String lsidValue, final ParameterInfo[] parameterInfos) {
+        for (final ParameterInfo param : parameterInfos) {
+            final String valueIn = param.getValue();
+            if (valueIn != null) {
+                final String value = substituteLsidInInputFile(gpConfig, lsidValue, param.getValue());
                 param.setValue(value);
             }
         }        
+    }
+    
+    public static String substituteLsidInInputFile(final GpConfig gpConfig, final String lsidValue, final String valueIn) {
+        final String lsidTag = "<LSID>";
+        final String gpUrlTag = "<GenePatternURL>";
+        if (valueIn != null && valueIn.startsWith(gpUrlTag)) {
+            // substitute <GenePatternURL> with actual value
+            String value = valueIn.replace(gpUrlTag, gpConfig.getGpUrl());
+            // substitute <LSID> flags for pipeline files
+            value = value.replace(lsidTag, lsidValue);
+            return value;
+        }
+        else {
+            return valueIn;
+        }
     }
     
     /**
