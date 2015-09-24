@@ -39,6 +39,7 @@ import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 /**
@@ -692,14 +693,8 @@ public class ParamListHelper {
         }
         else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
         {
-            List<String> valueList = ValueResolver.getCmdListValues(actualValues, parameterInfoRecord, listMode);
-            String valuesString  = "";
-            for(String value:valueList)
-            {
-                valuesString += value + " ";
-            }
-
-            valuesString = valuesString.trim();
+            // set the display value ...
+            String valuesString="[" + Joiner.on(", ").join(actualValues.getValues()) + "]";
             parameterInfoRecord.getActual().setValue(valuesString);
         }
         else if (numValues==0) {
