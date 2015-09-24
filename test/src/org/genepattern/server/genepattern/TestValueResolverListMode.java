@@ -230,4 +230,36 @@ public class TestValueResolverListMode {
                 ValueResolver.substituteValue(gpConfig, jobContext, "<"+textListName+">", dict, paramInfoMap));
     }
 
+    @Test
+    public void handlePrefix_nullValue() {
+        textField.prefixWhenSpecified("-t");
+        initPinfo();
+        assertEquals("no prefix for null value", Arrays.asList(), ValueResolver.handlePrefix(textFieldInfo, null));
+    }
+    
+    @Test
+    public void handlePrefix_emptyValue() {
+        textField.prefixWhenSpecified("-t");
+        initPinfo();
+        assertEquals("no prefix for empty value, by default", Arrays.asList(), ValueResolver.handlePrefix(textFieldInfo, ""));
+    }
+
+    @Test
+    public void handlePrefix_emptyValue_treatEmptyStringAsNull_false() {
+        textField.prefixWhenSpecified("-t");
+        initPinfo();
+        assertEquals("prefix is '-t', empty value, treatEmptyStringAsNull=false", 
+                Arrays.asList("-t"), 
+                ValueResolver.handlePrefix(textFieldInfo, "", false));
+    }
+
+    @Test
+    public void handlePrefix_emptyValue_treatEmptyStringAsNull_false_trailing_space() {
+        textField.prefixWhenSpecified("-t ");
+        initPinfo();
+        assertEquals("prefix is '-t ' (trailing space) empty value, treatEmptyStringAsNull=false", 
+                Arrays.asList("-t", ""), 
+                ValueResolver.handlePrefix(textFieldInfo, "", false));
+    }
+
 }

@@ -352,6 +352,41 @@ public class ParamListHelper {
         return ListMode.LIST;
     }
     
+    /**
+     * Helper method for checking whether the given param 
+     * is configured for command line list mode.
+     * 
+     * This requires that numValues.acceptsList is true and that
+     * listMode is either CMD or CMD_OPT.
+     * 
+     * @param formalParam
+     * @return
+     */
+    public static boolean isCmdLineList(final ParameterInfo formalParam) {
+        final NumValues numValues=ParamListHelper.initNumValues(formalParam);
+        if (!numValues.acceptsList()) {
+            // must accept a list
+            return false;
+        }
+        final ListMode listMode=initListMode(formalParam);
+        if (listMode==ListMode.CMD || listMode==ListMode.CMD_OPT) {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isCmdLineList(final ParameterInfo formalParam, final ListMode listMode) {
+        if (listMode!=ListMode.CMD && listMode!=ListMode.CMD_OPT) {
+            return false;
+        }
+        final NumValues numValues=ParamListHelper.initNumValues(formalParam);
+        if (numValues.acceptsList()) {
+            // must accept a list
+            return true;
+        }
+        return false;
+    }
+
     private NumValues initAllowedNumValues() {
         final String numValuesStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_NUM_VALUES);
         //parse num values string

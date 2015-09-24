@@ -93,32 +93,6 @@ public class ValueResolver {
         return rval;
     }
 
-    protected static boolean isCmdLineList(final GpContext gpContext, final ParameterInfo pInfo, final ListMode listMode) {
-        final String pname=pInfo.getName();
-        try {
-            if (log.isDebugEnabled()) {
-                log.debug("resolving "+pname+"; the substitution matches an input parameter");
-            }
-            final NumValues numValues=ParamListHelper.initNumValues(pInfo);
-            if (numValues.acceptsList()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("for "+pname+"; acceptsList is true");
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("for "+pname+"; listMode="+listMode);
-                }
-                //cmdOptListMode = ListMode.CMD_OPT == listMode || ListMode.CMD == listMode;
-                if (ListMode.CMD.equals(listMode) || ListMode.CMD_OPT.equals(listMode)) {
-                    return true;
-                }
-            }
-        }
-        catch (Throwable t) {
-            log.error("Unexpected exception checking listMode for paramName="+pname, t);
-        }
-        return false;
-    }
-    
     /**
      * Input arg is either a literal or a substitution.
      * 
@@ -149,7 +123,7 @@ public class ValueResolver {
         final ParameterInfo pInfo = record == null ? null : record.getFormal();
         if (pInfo != null) {
             final ListMode listMode = ParamListHelper.initListMode(pInfo);
-            if (isCmdLineList(gpContext, pInfo, listMode)) {
+            if (ParamListHelper.isCmdLineList(pInfo, listMode)) {
                 final JobInput jobInput = gpContext.getJobInput();
                 if (jobInput == null) {
                     log.error("jobInput not set for param="+subToken.pname);

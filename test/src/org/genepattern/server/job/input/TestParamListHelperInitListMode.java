@@ -14,7 +14,76 @@ import org.junit.Test;
  *
  */
 public class TestParamListHelperInitListMode {
+    @Test
+    public void isCmdLineList_default() {
+        ParameterInfo formalParam=new ParameterInfoBuilder().build();
+        assertEquals("isCmdLineList(formalParam), default", false, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), default", false, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
     
+    @Test
+    public void isCmdLineList_numValuesNotAcceptsList() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .numValues("0..1")
+        .build();
+        assertEquals("isCmdLineList(), numValues=0..1, listMode not set", false, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=0..1, listMode not set", false, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+
+    @Test
+    public void isCmdLineList_numValuesAcceptsList_listModeNotSet() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .numValues("0+")
+        .build();
+        assertEquals("isCmdLineList(), numValues=0+, listMode not set", false, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=0+, listMode not set", false, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+    
+    @Test
+    public void isCmdLineList_listModeCmd_only() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .listMode(ListMode.CMD)
+        .build();
+        assertEquals("isCmdLineList(), numValues=<default>, listMode=CMD", false, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=<default>, listMode=CMD", false, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+
+    @Test
+    public void isCmdLineList_listModeCmdOpt_only() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .listMode(ListMode.CMD_OPT)
+        .build();
+        assertEquals("isCmdLineList(), numValues=<default>, listMode=CMD", false, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=<default>, listMode=CMD", false, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+
+    @Test
+    public void isCmdLineList_numValuesAcceptsList_listModeCmd() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .numValues("0+")
+            .listMode(ListMode.CMD)
+        .build();
+        assertEquals("isCmdLineList(), numValues=0+, listMode=CMD", true, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=0+, listMode=CMD", true, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+    
+    @Test
+    public void isCmdLineList_numValuesAcceptsList_listModeCmdOpt() throws Exception {
+        ParameterInfo formalParam=new ParameterInfoBuilder()
+            .numValues("0+")
+            .listMode(ListMode.CMD_OPT)
+        .build();
+        assertEquals("isCmdLineList(), numValues=0+, listMode=CMD_OPT", true, ParamListHelper.isCmdLineList(formalParam));
+        assertEquals("isCmdLineList(formalParam, listMode), numValues=0+, listMode=CMD_OPT", true, 
+                ParamListHelper.isCmdLineList(formalParam, ParamListHelper.initListMode(formalParam)));
+    }
+
     @Test
     public void getListModeSpec_initFromListMode_enum() {
         ParameterInfo formalParam=new ParameterInfoBuilder()
