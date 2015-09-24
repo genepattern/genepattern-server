@@ -13,7 +13,6 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
