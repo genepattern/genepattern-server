@@ -27,7 +27,6 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
-import org.genepattern.server.genepattern.ValueResolver;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
