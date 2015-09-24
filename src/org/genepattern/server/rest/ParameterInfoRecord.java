@@ -50,7 +50,13 @@ public class ParameterInfoRecord {
 
     public ParameterInfoRecord(ParameterInfo formalParam) {
         this.formalParam=formalParam;
-        this.actualParam=ParameterInfo._deepCopy(formalParam);
+        if (formalParam==null) {
+            log.warn("input param is null");
+            this.actualParam=null;
+        }
+        else {
+            this.actualParam=ParameterInfo._deepCopy(formalParam);
+        }
     }
 
     public ParameterInfo getFormal() {

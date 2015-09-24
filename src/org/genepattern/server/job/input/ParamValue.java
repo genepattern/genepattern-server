@@ -35,5 +35,10 @@ public class ParamValue {
         final boolean eq = Objects.equal(value, other.value);
         return eq;
     }
+    
+    @Override
+    public String toString() {
+        return value;
+    }
 
 }

@@ -13,7 +13,6 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -81,9 +80,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "value3");
         jobInput.addValue(paramName, "actual5");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
-
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("value2,value3,actual5");
 
@@ -107,8 +104,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "textval2");
         jobInput.addValue(paramName, "textval3");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1,textval2,textval3");
@@ -137,8 +133,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "textval2");
         jobInput.addValue(paramName, "textval3");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1:textval2:textval3");
@@ -172,8 +167,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "value4");
         jobInput.addValue(paramName, "actual5");
 
-        final ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        final List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        final List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("--input=value1");
@@ -184,7 +178,6 @@ public class TestValueResolver
     }
 
     @Test
-    @Ignore
     /*
      * Test resolving a command line which contains a parameter with listmode=cmd and multiple values set
      */
@@ -391,14 +384,9 @@ public class TestValueResolver
     }
     
     @Test
-    public void substituteValue_cmdOpt_prefixWhenSpecified() throws Exception {
+    public void substituteValue_cmdOpt_prefix() throws Exception {
         final String pname="input.param";
-        
-        JobInput jobInput=new JobInput();
-        jobInput.addValue(pname, "A VALUE");
-        jobInput.addValue(pname, "B VALUE");
-        
-        ParameterInfo pinfo = new ParameterInfoBuilder()
+        final ParameterInfo pinfo = new ParameterInfoBuilder()
             .name(pname)
             .numValues("0+")
             .listMode(ListMode.CMD_OPT)
@@ -406,6 +394,11 @@ public class TestValueResolver
             .defaultValue("")
             .prefixWhenSpecified("--input-param=")
         .build();
+        
+        JobInput jobInput=new JobInput();
+        jobInput.addValue(pname, "A VALUE");
+        jobInput.addValue(pname, "B VALUE");
+        
         
         final GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
@@ -419,7 +412,102 @@ public class TestValueResolver
         assertEquals("substitue(<input.param>)", 
                 Arrays.asList("--input-param=A VALUE", "--input-param=B VALUE"), 
                 actual);
-        
     }
     
+    @Test
+    public void substituteValue_cmdOpt_prefixWithTrailingSpace() throws Exception {
+        final String pname="input.param";
+        final ParameterInfo pinfo = new ParameterInfoBuilder()
+            .name(pname)
+            .numValues("0+")
+            .listMode(ListMode.CMD_OPT)
+            .optional(true)
+            .defaultValue("")
+            .prefixWhenSpecified("-i ")
+        .build();
+        
+        JobInput jobInput=new JobInput();
+        jobInput.addValue(pname, "A VALUE");
+        jobInput.addValue(pname, "B VALUE");
+        
+        
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext jobContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        Map<String,String> dict=new HashMap<String,String>();
+        final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        
+        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        assertEquals("substitue(<input.param>)", 
+                Arrays.asList("-i", "A VALUE", "-i", "B VALUE"), 
+                actual);
+    }
+
+    /**
+     * Test resolving a command line which contains a parameter with listmode=cmd and multiple values set
+     */
+    @Test
+    public void substituteValue_cmd_prefix() throws Exception {
+        final String pname="input.param";
+        final ParameterInfo pinfo = new ParameterInfoBuilder()
+            .name(pname)
+            .numValues("0+")
+            .listMode(ListMode.CMD)
+            .optional(true)
+            .defaultValue("")
+            .prefixWhenSpecified("-m")
+        .build();
+        
+        JobInput jobInput=new JobInput();
+        jobInput.addValue(pname, "A VALUE");
+        jobInput.addValue(pname, "B VALUE");
+
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext jobContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        Map<String,String> dict=new HashMap<String,String>();
+        final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        assertEquals("substitue(<input.param>)", 
+                Arrays.asList("-mA VALUE,B VALUE"), 
+                actual);
+
+    }    
+
+    /**
+     * Test resolving a command line which contains a parameter with listmode=cmd and multiple values set
+     */
+    @Test
+    public void substituteValue_cmd_prefixWithTrailingSpace() throws Exception {
+        final String pname="input.param";
+        final ParameterInfo pinfo = new ParameterInfoBuilder()
+            .name(pname)
+            .numValues("0+")
+            .listMode(ListMode.CMD)
+            .optional(true)
+            .defaultValue("")
+            .prefixWhenSpecified("--multi ")
+        .build();
+        
+        JobInput jobInput=new JobInput();
+        jobInput.addValue(pname, "A VALUE");
+        jobInput.addValue(pname, "B VALUE");
+
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        final GpContext jobContext=new GpContext.Builder()
+            .jobInput(jobInput)
+        .build();
+        Map<String,String> dict=new HashMap<String,String>();
+        final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
+        paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
+        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        assertEquals("substitue(<input.param>)", 
+                Arrays.asList("--multi", "A VALUE,B VALUE"), 
+                actual);
+
+    }    
 }

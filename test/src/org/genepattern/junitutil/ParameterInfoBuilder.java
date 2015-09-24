@@ -33,6 +33,11 @@ public class ParameterInfoBuilder {
         pinfo.setDescription(description);
         return this;
     }
+    
+    public ParameterInfoBuilder property(final String key, final String value) {
+        pinfo.getAttributes().put(key, value);
+        return this;
+    }
 
     public ParameterInfoBuilder defaultValue(final String defaultValue) {
         pinfo.getAttributes().put("default_value", defaultValue);
@@ -92,6 +97,11 @@ public class ParameterInfoBuilder {
     
     public ParameterInfoBuilder listMode(ListMode listMode) {
         pinfo.getAttributes().put("listMode", listMode.name());
+        return this;
+    }
+    
+    public ParameterInfoBuilder listModeSep(final String listModeSep) {
+        pinfo.getAttributes().put("listModeSep", listModeSep);
         return this;
     }
     
