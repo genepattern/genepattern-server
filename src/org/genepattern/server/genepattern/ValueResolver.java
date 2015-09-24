@@ -227,12 +227,17 @@ public class ValueResolver {
      * For a given parameter, optionally split into multiple args depending on the prefix_when_specified flag.
      */
     protected static List<String> handlePrefix(final ParameterInfo pInfo, final String value) {
-        return handlePrefix(new ArrayList<String>(), pInfo, value);
+        final boolean treatEmptyStringAsNull=true;
+        return handlePrefix(new ArrayList<String>(), pInfo._getOptionalPrefix(), value, treatEmptyStringAsNull);
     }
 
-    protected static List<String> handlePrefix(final List<String> appendTo, final ParameterInfo pInfo, final String value) {
-        final String optionalPrefix = pInfo._getOptionalPrefix();
-        return handlePrefix(appendTo, optionalPrefix, value);
+    protected static List<String> handlePrefix(final ParameterInfo pInfo, final String value, final boolean treatEmptyStringAsNull) {
+        return handlePrefix(new ArrayList<String>(), pInfo._getOptionalPrefix(), value, treatEmptyStringAsNull);
+    }
+
+    protected static List<String> handlePrefix(final List<String> appendTo, final String optionalPrefix, final String value) {
+        final boolean treatEmptyStringAsNull=true;
+        return handlePrefix(appendTo, optionalPrefix, value, treatEmptyStringAsNull);
     }
 
     /**
@@ -242,11 +247,14 @@ public class ValueResolver {
      * @param appendTo, the list of command line args to append to
      * @param optionalPrefix, the prefix_when_specified flag as set in the manifest for the module
      * @param value, the runtime value for the parameter
+     * @param treatEmptyStringAsNull, when true (by default), ignore empty String value
+     *     don't add prefix for an empty String
+     *     don't add arg for an empty String
      * 
      * @return the updated appendTo list
      */
-    protected static List<String> handlePrefix(final List<String> appendTo, final String optionalPrefix, final String value) {
-        if (value==null) {
+    protected static List<String> handlePrefix(final List<String> appendTo, final String optionalPrefix, final String value, final boolean treatEmptyStringAsNull) {
+        if (value==null || (treatEmptyStringAsNull && value.length()==0)) {
             //special-case: if there is no value, don't append anything to the list
             return appendTo;
         }
