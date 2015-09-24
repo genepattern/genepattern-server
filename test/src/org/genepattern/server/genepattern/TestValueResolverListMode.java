@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.genepattern.junitutil.ParameterInfoBuilder;
@@ -122,6 +121,7 @@ public class TestValueResolverListMode {
 
     /**
      * Test a substitution like "BEFORE<text.param>" with prefix_when_specified
+     * 
      * Note: this test is descriptive, not prescriptive. We may want to change 
      * the rules for handling prefixes within complex substitutions.
      */
@@ -138,22 +138,19 @@ public class TestValueResolverListMode {
 
     /**
      * Test a substitution like "BEFORE<text.param>" with prefix_when_specified with trailing space
+     * 
      * Note: this test is descriptive, not prescriptive. We may want to change 
      * the rules for handling prefixes within complex substitutions.
      * 
-     * Note: this test-case is a BUG, pre-existing in GP.
-     * TODO: fix this bug
      */
     @Test
     public void singleValue_inString_with_prefix_split() {
         textField.prefixWhenSpecified("-f ");
         initPinfo();
         
-        final String arg="BEFORE<"+textFieldName+">";
-        
-        // should be "BEFORE", "-f", "A VALUE"
+        final String arg="BEFORE<"+textFieldName+">"; 
         assertEquals("substituteValue("+arg+")", 
-                Arrays.asList("-f", "BEFOREA VALUE"),
+                Arrays.asList("BEFORE", "-f", "A VALUE"),
                 ValueResolver.substituteValue(gpConfig, jobContext, arg, dict, paramInfoMap));
     }
 
@@ -233,5 +230,4 @@ public class TestValueResolverListMode {
                 ValueResolver.substituteValue(gpConfig, jobContext, "<"+textListName+">", dict, paramInfoMap));
     }
 
-    
 }

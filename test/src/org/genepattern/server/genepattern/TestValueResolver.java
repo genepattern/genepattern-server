@@ -81,9 +81,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "value3");
         jobInput.addValue(paramName, "actual5");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
-
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("value2,value3,actual5");
 
@@ -107,8 +105,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "textval2");
         jobInput.addValue(paramName, "textval3");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1,textval2,textval3");
@@ -137,8 +134,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "textval2");
         jobInput.addValue(paramName, "textval3");
 
-        ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("textval1:textval2:textval3");
@@ -172,8 +168,7 @@ public class TestValueResolver
         jobInput.addValue(paramName, "value4");
         jobInput.addValue(paramName, "actual5");
 
-        final ParameterInfoRecord parameterInfoRecord = new ParameterInfoRecord(formalParam);
-        final List<String> cmdList = ValueResolver.getSubstitutedValues(jobInput.getParam(paramName), parameterInfoRecord);
+        final List<String> cmdList = ValueResolver.getCmdListValues(jobInput.getParam(paramName), formalParam);
 
         List<String> expectedList = new ArrayList<String>();
         expectedList.add("--input=value1");
