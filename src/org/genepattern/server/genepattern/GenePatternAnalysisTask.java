@@ -747,7 +747,7 @@ public class GenePatternAnalysisTask {
         // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
         if (parentJobId >= 0) {
             try {
-                PipelineHandler.prepareNextStep(mgr, parentJobId, jobInfo);
+                PipelineHandler.prepareNextStep(mgr, gpConfig, jobContext);
             }
             catch (PipelineException e) {
                 throw new JobDispatchException(e);

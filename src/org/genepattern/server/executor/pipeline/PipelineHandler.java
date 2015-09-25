@@ -228,13 +228,25 @@ public class PipelineHandler {
     }
     
     /**
+     * 
+     * @param mgr
+     * @param gpConfig
+     * @param jobContext, the job context for a job which is about to be started as a step in a pipeline.
+     */
+    public static void prepareNextStep(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws PipelineException {
+        final JobInfo jobInfo=jobContext.getJobInfo();
+        final int parentJobId=jobInfo._getParentJobNumber();
+        prepareNextStep(mgr, parentJobId, jobInfo);
+    }
+    
+    /**
      * Call this before running the next step in the given pipeline. Must be called after all dependent steps are completed.
      * Note: circa GP 3.2.3 and earlier this code was part of a loop which ran all steps in the same thread.
      * Note: circa GP 3.2.4 this method makes changes to the jobInfo which are saved to the DB.
      *
      * @param jobInfo - the job which is about to run
      */
-    public static void prepareNextStep(final HibernateSessionManager mgr, final int parentJobId, final JobInfo jobInfo) throws PipelineException { 
+    private static void prepareNextStep(final HibernateSessionManager mgr, final int parentJobId, final JobInfo jobInfo) throws PipelineException { 
         if (jobInfo==null) {
             throw new PipelineException("jobInfo==null");
         }
@@ -693,6 +705,7 @@ public class PipelineHandler {
         JobInput pipelineJobInput=pipelineJobContext.getJobInput();
         JobInput stepJobInput=new JobInput();
         stepJobInput.setLsid(submittedJob.getTaskLSID());
+        final boolean isJsViewer=TaskInfo.isJavascript(submittedTaskInfo);
         // go through the list of input parameters
         for(final ParameterInfo pinfo : submittedJob.getParameterInfoArray()) {
             final ParamId paramId=new ParamId(pinfo.getName());
@@ -700,8 +713,8 @@ public class PipelineHandler {
             final Param pipelineParam=pipelineJobInput.getParam(key);
             if (pipelineParam != null) {
                 final boolean isCmdLineList=ParamListHelper.isCmdLineList(pinfo);
-                if (isCmdLineList) {
-                    // only add listMode=CMD or listMode=CMD_OPT values
+                if (isJsViewer || isCmdLineList) {
+                    // only add JsViewer or listMode=CMD or listMode=CMD_OPT values
                     for(final Entry<GroupId,Collection<ParamValue>> groupEntry : pipelineParam.getGroupedValues().entrySet()) {
                         final GroupId groupId=groupEntry.getKey();
                         for(final ParamValue paramValue : groupEntry.getValue()) {
