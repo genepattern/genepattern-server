@@ -107,7 +107,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList("http://127.0.0.1:8080/gp/users/admin/all_aml_test.gct")); 
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8")+"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -119,7 +119,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8")+"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -131,7 +131,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8") +"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
