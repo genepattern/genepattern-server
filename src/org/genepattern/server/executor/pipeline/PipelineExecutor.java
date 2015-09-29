@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.Map;
 
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor2;
@@ -53,7 +54,7 @@ public class PipelineExecutor implements CommandExecutor2 {
 
     @Override
     public void runCommand(GpContext gpContext, String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, File stdinFile) throws CommandExecutorException {
-        PipelineHandler.startPipeline(HibernateUtil.instance(), gpContext, Integer.MAX_VALUE);
+        PipelineHandler.startPipeline(HibernateUtil.instance(), ServerConfigurationFactory.instance(), gpContext, Integer.MAX_VALUE);
         
     }
     
