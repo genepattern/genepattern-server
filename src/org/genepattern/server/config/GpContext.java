@@ -85,7 +85,7 @@ public class GpContext {
             jobInfo = dao.getJobInfo(jobNumber);
             jobInput = new JobInputValueRecorder(mgr).fetchJobInput(jobNumber);
             jobInput.setLsid(jobInfo.getTaskLSID());
-            taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
+            taskInfo=TaskInfoCache.instance().getTask(mgr, jobInfo.getTaskLSID());
             taskName=taskInfo.getName();
             if (log.isDebugEnabled()) {
                 log.debug("taskName=" + taskName);
