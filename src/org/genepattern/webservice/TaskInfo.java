@@ -21,10 +21,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webapp.ParameterInfoWrapper;
 import org.genepattern.util.GPConstants;
 
 public class TaskInfo implements Serializable {
+    final static private Logger log = Logger.getLogger(TaskInfo.class);
+
     // The maximum size of the "short name"
     private static int shortNameLimit = 33;
 
@@ -376,6 +379,24 @@ public class TaskInfo implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * Is the given module a JavaScript Visualizer?
+     * @param taskInfo
+     * @return
+     */
+    public static boolean isJavascript(final TaskInfo taskInfo) {
+        if (taskInfo==null) {
+            log.error("taskInfo==null, returning false");
+            return false;
+        }
+        final TaskInfoAttributes tia=taskInfo.getTaskInfoAttributes();
+        if (tia==null) {
+            log.error("taskInfo.taskInfoAttributes==null, returning false");
+            return false;
+        }
+        return isJavascript(tia);
     }
 
 }

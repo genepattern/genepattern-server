@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,7 +48,6 @@ import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
-import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.jobqueue.JobQueue;
@@ -59,7 +59,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
@@ -85,7 +84,7 @@ public class PipelineHandler {
      * @param stopAfterTask
      * @throws CommandExecutorException
      */
-    public static void startPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final int stopAfterTask) throws CommandExecutorException {
+    public static void startPipeline(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final int stopAfterTask) throws CommandExecutorException {
         if (jobContext==null) {
             throw new CommandExecutorException("jobContext==null");
         }
@@ -120,7 +119,7 @@ public class PipelineHandler {
         int numAddedJobs=-1;
         try {
             mgr.beginTransaction();
-            List<JobInfo> addedJobs = runPipeline(mgr, jobContext, pipelineModel, stopAfterTask, isScatterStep);
+            List<JobInfo> addedJobs = runPipeline(mgr, gpConfig, jobContext, pipelineModel, stopAfterTask, isScatterStep);
             numAddedJobs = addedJobs.size();
             //set the parent pipeline's status to PROCESSING 
             AnalysisJobScheduler.setJobStatus(mgr, pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
@@ -173,7 +172,6 @@ public class PipelineHandler {
                 }
             }
         }
-
     }
 
     public static void terminatePipeline(final HibernateSessionManager mgr, final JobInfo jobInfo) {
@@ -228,28 +226,48 @@ public class PipelineHandler {
     }
     
     /**
-     * Call this before running the next step in the given pipeline. Must be called after all dependent steps are completed.
-     * Note: circa GP 3.2.3 and earlier this code was part of a loop which ran all steps in the same thread.
-     * Note: circa GP 3.2.4 this method makes changes to the jobInfo which are saved to the DB.
-     *
-     * @param jobInfo - the job which is about to run
+     * 
+     * @param mgr
+     * @param gpConfig
+     * @param jobContext, the job context for a job which is about to be started as a step in a pipeline.
      */
-    public static void prepareNextStep(final HibernateSessionManager mgr, final int parentJobId, final JobInfo jobInfo) throws PipelineException { 
-        if (jobInfo==null) {
-            throw new PipelineException("jobInfo==null");
+    public static void prepareNextStep(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws PipelineException {
+        final JobInfo currentStep=jobContext.getJobInfo();
+        if (currentStep==null) {
+            throw new PipelineException("currentStep==null");
         }
-        log.debug("prepareNextStep(parentJobId="+parentJobId+", jobId="+jobInfo.getJobNumber()+", taskName="+jobInfo.getTaskName());
+        final int parentJobId=currentStep._getParentJobNumber();
+        if (log.isDebugEnabled()) {
+            log.debug("prepareNextStep(parentJobId="+parentJobId+", currentStepJobId="+currentStep.getJobNumber()+", taskName="+currentStep.getTaskName());
+        }
+        final List<ParameterInfo> inheritedInputParams = getInheritedInputParams(currentStep);
+        if (inheritedInputParams.size()==0) {
+            return;
+        }
+        
+        final JobInput currentJobInput=jobContext.getJobInput();
+        if (currentJobInput==null) {
+            throw new PipelineException("currentStep.jobInput==null");
+        }
+
         try {
-            AnalysisDAO dao = new AnalysisDAO(mgr);
-            boolean updated = setInheritedParams(mgr, dao, parentJobId, jobInfo);
-            if (updated) {
-                updateParameterInfo(mgr, jobInfo);
+            final AnalysisDAO dao = new AnalysisDAO(mgr);
+            final JobInfo[] childJobs = dao.getChildren(parentJobId);
+            final Map<String,String> updatedValues=updateInheritedParamValues(mgr, dao, childJobs, inheritedInputParams);
+            if (updatedValues.size()>0) {
+                updateParameterInfo(mgr, currentStep);
+                final JobInput updatedJobInput=new JobInput();
+                for(final Entry<String,String> entry : updatedValues.entrySet()) {
+                    currentJobInput.setValue(entry.getKey(), entry.getValue());
+                    updatedJobInput.addValue(entry.getKey(), entry.getValue());
+                }
+                new JobInputValueRecorder(mgr).saveJobInput(currentStep.getJobNumber(), updatedJobInput);
                 mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             mgr.rollbackTransaction();
-            throw new PipelineException("Error preparing next step in pipeline job #"+parentJobId+" for step #"+jobInfo.getJobNumber(), t);
+            throw new PipelineException("Error preparing next step in pipeline job #"+parentJobId+" for step #"+currentStep.getJobNumber(), t);
         }
         finally {
             mgr.closeCurrentSession();
@@ -260,8 +278,8 @@ public class PipelineHandler {
      * Helper method (could go into AnalysisDAO) for saving edits to the ANALYSIS_JOB.PARAMETER_INFO for a given job.
      */
     private static void updateParameterInfo(final HibernateSessionManager mgr, final JobInfo jobInfo) {
-        int jobId = jobInfo.getJobNumber();
-        String paramString = jobInfo.getParameterInfo();
+        final int jobId = jobInfo.getJobNumber();
+        final String paramString = jobInfo.getParameterInfo();
         AnalysisJob aJob = (AnalysisJob) mgr.getSession().get(AnalysisJob.class, jobId);
         aJob.setParameterInfo(paramString);
         mgr.getSession().update(aJob);
@@ -615,25 +633,25 @@ public class PipelineHandler {
      * @throws MissingTasksException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final PipelineModel pipelineModel, int stopAfterTask, boolean isScatterStep) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final PipelineModel pipelineModel, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
         final Vector<JobSubmission> tasks = pipelineModel.getTasks();
 
         // initialize the pipeline args
         final JobInfo pipelineJobInfo=jobContext.getJobInfo();
-        Map<String,String> additionalArgs = new HashMap<String,String>();
+        final Map<String,String> additionalArgs = new HashMap<String,String>();
         for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
             additionalArgs.put(param.getName(), param.getValue());
         }
         
         if (!isScatterStep) {
             // add job records to the analysis_job table
-            final List<JobInfo> addedJobs = runPipeline(mgr, jobContext, tasks, additionalArgs, stopAfterTask);
+            final List<JobInfo> addedJobs = runPipeline(mgr, gpConfig, jobContext, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
         else {
-            final List<JobInfo> addedJobs = runScatterPipeline(mgr, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
+            final List<JobInfo> addedJobs = runScatterPipeline(mgr, gpConfig, pipelineJobInfo, tasks, additionalArgs, stopAfterTask);
             return addedJobs;
         }
     }
@@ -651,7 +669,7 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpContext jobContext, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
+    private static List<JobInfo> runPipeline(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, final int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         final JobInfo pipelineJobInfo=jobContext.getJobInfo();
@@ -666,7 +684,7 @@ public class PipelineHandler {
             }
             
             final ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
-            substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
+            substituteLsidInInputFiles(gpConfig, pipelineJobInfo.getTaskLSID(), parameterInfo);
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
             
@@ -682,33 +700,42 @@ public class PipelineHandler {
             JobInfo submittedJob = addJobToPipeline(mgr, pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
             
             //HACK: for listMode=CMD and listMode=CMD_OPT params, add values to the job_input_values table
-            insertJobInputValues(mgr, jobContext, taskInfo, submittedJob, stepNum + 1);
+            insertJobInputValues(mgr, jobContext, submittedJob, stepNum + 1);
             submittedJobs.add(submittedJob);
             ++stepNum;
         }
         return submittedJobs;
     }
     
-    protected static void insertJobInputValues(final HibernateSessionManager mgr, final GpContext pipelineJobContext, final TaskInfo submittedTaskInfo, final JobInfo submittedJob, final int taskNum) {
+    /**
+     * When adding a new step to the pipeline, record values to the JOB_INPUT_VALUE table.
+     * note: 'Use output from ...' parameters must be handled at runtime just before starting the job.
+     * 
+     * @param mgr
+     * @param pipelineJobContext, the parent pipeline job
+     * @param submittedJob, the step added to the pipeline
+     * @param stepNum, the step number in the pipeline
+     */
+    protected static void insertJobInputValues(final HibernateSessionManager mgr, final GpContext pipelineJobContext, final JobInfo submittedJob, final int stepNum) {
         JobInput pipelineJobInput=pipelineJobContext.getJobInput();
         JobInput stepJobInput=new JobInput();
         stepJobInput.setLsid(submittedJob.getTaskLSID());
-        // go through the list of input parameters
         for(final ParameterInfo pinfo : submittedJob.getParameterInfoArray()) {
             final ParamId paramId=new ParamId(pinfo.getName());
-            final String key = submittedJob.getTaskName() + taskNum + "." + pinfo.getName();
+            final String key = submittedJob.getTaskName() + stepNum + "." + pinfo.getName();
             final Param pipelineParam=pipelineJobInput.getParam(key);
             if (pipelineParam != null) {
-                final boolean isCmdLineList=ParamListHelper.isCmdLineList(pinfo);
-                if (isCmdLineList) {
-                    // only add listMode=CMD or listMode=CMD_OPT values
-                    for(final Entry<GroupId,Collection<ParamValue>> groupEntry : pipelineParam.getGroupedValues().entrySet()) {
-                        final GroupId groupId=groupEntry.getKey();
-                        for(final ParamValue paramValue : groupEntry.getValue()) {
-                            stepJobInput.addValue(paramId, paramValue, groupId);
-                        }
+                // copy the parent pipeline input param into the job input param
+                for(final Entry<GroupId,Collection<ParamValue>> groupEntry : pipelineParam.getGroupedValues().entrySet()) {
+                    final GroupId groupId=groupEntry.getKey();
+                    for(final ParamValue paramValue : groupEntry.getValue()) {
+                        stepJobInput.addValue(paramId, paramValue, groupId);
                     }
                 }
+            }
+            else {
+                // add the job input param 
+                stepJobInput.addValue(pinfo.getName(), pinfo.getValue());
             }
         }
         if (stepJobInput.getParams().size() > 0) {
@@ -718,12 +745,12 @@ public class PipelineHandler {
             catch (Throwable t) {
                 log.error("Error saving job_input_values for step in pipeline, pipeline job #"+pipelineJobContext.getJobNumber()+
                         ", "+pipelineJobContext.getTaskName()+
-                        ", step #"+taskNum+", job #"+submittedJob.getJobNumber(), t);
+                        ", step #"+stepNum+", job #"+submittedJob.getJobNumber(), t);
             }
         }
     }
 
-    private static List<JobInfo> runScatterPipeline(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
+    private static List<JobInfo> runScatterPipeline(final HibernateSessionManager mgr, final GpConfig gpConfig, final JobInfo pipelineJobInfo, final List<JobSubmission> tasks, final Map<String,String> additionalArgs, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     { 
         log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
@@ -749,7 +776,7 @@ public class PipelineHandler {
         }
     
         ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
-        substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
+        substituteLsidInInputFiles(gpConfig, pipelineJobInfo.getTaskLSID(), parameterInfo);
         ParameterInfo[] params = parameterInfo;
         params = setJobParametersFromArgs(tasks.get(0).getName(), stepNum + 1, params, additionalArgs);
         
@@ -889,40 +916,6 @@ public class PipelineHandler {
                 mgr.closeCurrentSession();
             }
         }
-    }
-
-    /**
-     * Get the PipelineModel from the given TaskInfo.
-     * 
-     * @param taskInfo, must not be null, must be for a pipeline.
-     * @return
-     * @throws PipelineModelException
-     */
-    private static PipelineModel getPipelineModel(TaskInfo taskInfo) throws PipelineModelException
-    {
-        if (taskInfo == null) {
-            throw new IllegalArgumentException("taskInfo is null");
-        }
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia == null) {
-            throw new PipelineModelException("taskInfo.giveTaskInfoAttributes is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-        if (serializedModel == null || serializedModel.length() == 0) {
-            throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        PipelineModel model = null;
-        try {
-            model = PipelineModel.toPipelineModel(serializedModel);
-        } 
-        catch (Throwable t) {
-            throw new PipelineModelException(t);
-        }
-        if (model == null) {
-            throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
-        }
-        model.setLsid(taskInfo.getLsid());
-        return model;
     }
     
     /**
@@ -1182,32 +1175,21 @@ public class PipelineHandler {
         }
         return taskChecker.getPipelineModel();
     }
-    
+
     /**
-     * Before starting the next step in the pipeline, link output files from previous steps to input parameters for this step.
-     * 
-     * @param parentJobId
-     * @param currentStep
-     * 
-     * @return true iff an input param was modified
+     * Update the value and return the map of updated values.
+     * @param mgr
+     * @param dao
+     * @param childJobs
+     * @param inheritedInputParams
+     * @return
      */
-    private static boolean setInheritedParams(final HibernateSessionManager mgr, final AnalysisDAO dao, final int parentJobId, final JobInfo currentStep) { 
-        if (currentStep==null) {
-            throw new IllegalArgumentException("currentStep == null");
-        }
-        log.debug("setInheritedParams(parentJobId="+parentJobId+", currentStep="+currentStep.getJobNumber()+", task="+currentStep.getTaskName());
-        List<ParameterInfo> inheritedInputParams = getInheritedInputParams(currentStep);
-        if (inheritedInputParams.size() == 0) {
-            return false;
-        }
-
-        boolean modified = false;
-        JobInfo[] childJobs = dao.getChildren(parentJobId);
-
-        for(ParameterInfo inputParam : inheritedInputParams) {
-            String url = getInheritedFilename(mgr, dao, childJobs, inputParam);
+    private static Map<String,String> updateInheritedParamValues(final HibernateSessionManager mgr, final AnalysisDAO dao, JobInfo[] childJobs, final List<ParameterInfo> inheritedInputParams) {
+        final Map<String,String> rval=new LinkedHashMap<String,String>();
+        for(final ParameterInfo inputParam : inheritedInputParams) {
+            final String url = getInheritedFilename(mgr, dao, childJobs, inputParam);
             if (url != null && url.trim().length() > 0) {
-                modified = true;
+                rval.put(inputParam.getName(), url);
                 inputParam.setValue(url);
             }
             else {
@@ -1218,8 +1200,8 @@ public class PipelineHandler {
                     log.error("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+inputParam.getName());
                 }
             }
-        }            
-        return modified;
+        } 
+        return rval; 
     }
     
     /**
