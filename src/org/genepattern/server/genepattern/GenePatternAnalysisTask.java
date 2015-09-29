@@ -160,7 +160,6 @@ import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.util.UrlPrefixFilter;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -335,8 +334,8 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    private File localInputUrlToFile(final HibernateSessionManager mgr, URL url, boolean isAdmin, GpContext jobContext) {
-        JobInfo jobInfo = jobContext.getJobInfo();
+    private File localInputUrlToFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final URL url) {
+        final JobInfo jobInfo = jobContext.getJobInfo();
         //new way of converting server url to file path
         GpFilePath inputFilePath = null;
         try {
@@ -347,7 +346,7 @@ public class GenePatternAnalysisTask {
             //TODO: eventually we should not ignore this exception
         }
         if (inputFilePath != null) {
-            boolean canRead = inputFilePath.canRead(isAdmin, jobContext);
+            boolean canRead = inputFilePath.canRead(jobContext.isAdmin(), jobContext);
             if (!canRead) {
                 String errorMessage = "You are not permitted to access the requested file: "+url;
                 log.error(errorMessage);
@@ -424,8 +423,6 @@ public class GenePatternAnalysisTask {
                 File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
-                    //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
-                    //boolean canRead = perm.canReadJob();
                     if (jobContext.canReadJob()) {
                         return in;
                     }
@@ -438,8 +435,7 @@ public class GenePatternAnalysisTask {
 
                 //special case: look for file among the user uploaded files
                 try {
-                    GpContext context = GpContext.getContextForUser(userId);
-                    File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
+                    File userUploadDir = gpConfig.getUserUploadDir(jobContext);
                     in = new File(userUploadDir, filename);
                     boolean foundUserUpload = in.canRead();
                     if (foundUserUpload) {
@@ -513,7 +509,7 @@ public class GenePatternAnalysisTask {
         catch (Throwable t) {
             throw new IllegalArgumentException(t);
         }
-        if (canReadJob(mgr, isAdmin, userId, parser.getJobNumber())) {
+        if (jobContext.canReadJob()) {
             File localFile = null;
             try {
                 GpContext context = GpContext.getContextForJob(jobInfo);
@@ -669,7 +665,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        checkDiskQuota(gpConfig, jobContext);
+        checkDiskQuota(mgr, gpConfig, jobContext);
 
         File rootJobDir = null;
         try {
@@ -704,15 +700,6 @@ public class GenePatternAnalysisTask {
         if (requiresEULA) {
             throw new JobDispatchException(taskInfo.getName()+" requires an End-user license agreement. "+
                     "There is no record of agreement for userId="+jobInfo.getUserId());
-        }
-        
-        // is the job owner an admin?
-        final boolean isAdmin;
-        if (jobInfo.getUserId() != null) {
-            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
-        }
-        else {
-            isAdmin = false;
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
@@ -847,7 +834,7 @@ public class GenePatternAnalysisTask {
                             vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
                             continue;
                         }
-                        if (canReadJob(mgr, isAdmin, jobInfo.getUserId(), jobNumber)) {
+                        if (canReadJob(mgr, jobContext.isAdmin(), jobInfo.getUserId(), jobNumber)) {
                             originalPath = rootJobDir.getPath() + "/" + originalPath;
                         }
                         else {
@@ -924,7 +911,7 @@ public class GenePatternAnalysisTask {
                         }
 
                         if (isWebUpload) {
-                            if (!canReadJob(mgr, isAdmin, jobInfo.getUserId(), jobId)) {
+                            if (!jobContext.canReadJob()) {
                                 vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                 continue;
                             }
@@ -1018,7 +1005,7 @@ public class GenePatternAnalysisTask {
                             try {
                                 //does the current user have permission to access the file?
                                 final GpFilePath serverFile=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+originalPath);
-                                canRead=serverFile.canRead(isAdmin, jobContext);
+                                canRead=serverFile.canRead(jobContext.isAdmin(), jobContext);
                             }
                             catch (Throwable t) {
                                 log.error(t);
@@ -1140,7 +1127,7 @@ public class GenePatternAnalysisTask {
                                                 String parentFileName = inputFile.getParentFile().getName();
                                                 int jobNumber = Integer.parseInt(parentFileName);
                                                 //only allow access if the owner of this job has at least read access to the job which output this input file
-                                                boolean canRead = canReadJob(mgr, isAdmin, jobInfo.getUserId(), jobNumber);
+                                                boolean canRead = canReadJob(mgr, jobContext.isAdmin(), jobInfo.getUserId(), jobNumber);
                                                 isAllowed = isJobOutput && canRead;
                                             }
                                             catch (NumberFormatException e) {
@@ -1171,7 +1158,7 @@ public class GenePatternAnalysisTask {
                                 URL url = uri.toURL();
                                 if (isLocalHost(url)) {
                                     try {
-                                        File file = localInputUrlToFile(mgr, url, isAdmin, jobContext);
+                                        File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
                                             if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                 pinfo.setValue(file.getAbsolutePath());
@@ -1544,7 +1531,7 @@ public class GenePatternAnalysisTask {
      * @param jobContext
      * @throws JobDispatchException
      */
-    private void checkDiskQuota(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
         //is disk space available
         final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1556,7 +1543,7 @@ public class GenePatternAnalysisTask {
         //check if the user is above their disk quota
         try
         {
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(mgr, gpConfig, jobContext);
 
             if(diskInfo.isAboveQuota())
             {
