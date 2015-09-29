@@ -1473,7 +1473,7 @@ public class GenePatternAnalysisTask {
                 if (log.isDebugEnabled()) {
                     log.debug("jobId="+jobId+", launchUrl="+launchUrl);
                 }
-                GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
+                GenePatternAnalysisTask.handleJobCompletion(mgr, jobId, 0, null);
             }
             catch (Exception e) {
                 throw new JobDispatchException("Error handling visualizer", e);
