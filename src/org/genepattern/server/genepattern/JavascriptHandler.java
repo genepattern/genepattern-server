@@ -3,23 +3,23 @@ package org.genepattern.server.genepattern;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-import com.google.common.collect.*;
-import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.webapp.rest.api.v1.job.search.GpQueryParam;
 import org.genepattern.webservice.TaskInfo;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Created by nazaire on 7/16/15.
  */
 public class JavascriptHandler {
-    private static final Logger log = Logger.getLogger(JavascriptHandler.class);
     public static final String LAUNCH_URL_FILE = ".launchUrl.txt";
 
 
-    public static String buildQueryString(Multimap<String,String> queryMap) throws UnsupportedEncodingException
+    protected static String buildQueryString(final Multimap<String,String> queryMap) throws UnsupportedEncodingException
     {
         QueryStringBuilder b=new QueryStringBuilder();
 
@@ -80,46 +80,6 @@ public class JavascriptHandler {
         }
 
         return launchUrl.toString();
-    }
-
-    public static class QueryStringBuilder {
-
-        private List<GpQueryParam> params;
-
-        public QueryStringBuilder param(final String name) throws UnsupportedEncodingException {
-            return param(name, null);
-        }
-        public QueryStringBuilder param(final String name, final String value) throws UnsupportedEncodingException {
-            //skip null values
-            if (value==null) {
-                return this;
-            }
-            if (params==null) {
-                params=new ArrayList<GpQueryParam>();
-            }
-
-            params.add(new GpQueryParam(name, value));
-            return this;
-        }
-
-        public String build() throws UnsupportedEncodingException{
-            //null means, no query string
-            if (params==null || params.size()==0) {
-                return null;
-            }
-            boolean first=true;
-            final StringBuffer sb=new StringBuffer();
-            for(final GpQueryParam param : params) {
-                if (first) {
-                    first=false;
-                }
-                else {
-                    sb.append("&");
-                }
-                sb.append(param.toString());
-            }
-            return sb.toString();
-        }
     }
 
 }

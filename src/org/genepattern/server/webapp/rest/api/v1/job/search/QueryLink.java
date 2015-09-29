@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
+import org.genepattern.server.genepattern.GpQueryParam;
 import org.genepattern.server.webapp.rest.api.v1.GpLink;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 import org.json.JSONException;
