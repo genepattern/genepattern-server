@@ -2690,7 +2690,7 @@ function loadJobStatus(jobId, forceVisualizers) {
         return;
     }
 
-    //remove any javascript visualizer divs
+    //remove any javascript visualizer divs on the job status page
     $(".jsViewerDiv").remove();
 
     // Hide the search slider if it is open

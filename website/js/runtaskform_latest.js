@@ -2511,6 +2511,13 @@ function createParamDescriptionRow(parameterName) {
 
 function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
 {
+    //remove any tabs created when running a pipeline that contains a Javascript visualizer
+    if($("#main-pane").hasClass("ui-tabs"))
+    {
+        $("#main-pane").tabs("destroy");
+        $("#jobResultsTab").remove();
+    }
+
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
