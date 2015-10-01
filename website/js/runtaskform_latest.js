@@ -1522,9 +1522,18 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
     var textValChange= function(element)
     {
-        var valueList = $(element).val().split(",");
-
+        var valueList = [];
         var paramName = $(element).data("pname");
+
+        //split the values only if this is a multi value text field
+        if(run_task_info.params[parameterName].allowMultiple)
+        {
+            valueList = $(element).val().split(",");
+        }
+        else
+        {
+            valueList.push($(element).val());
+        }
 
         var groupId = $(element).data("groupId");
         updateValuesForGroup(groupId, paramName, valueList);
