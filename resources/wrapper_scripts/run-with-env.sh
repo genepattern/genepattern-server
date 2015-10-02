@@ -62,9 +62,13 @@ while getopts u:e: opt "$@"; do
         e)
             exportEnv "$OPTARG"
             ;; 
+        *)
+            # Unexpected option, exit with status of last command
+            exit $?
+            ;;
     esac
     idx=$((idx+1))
-    # need this line to remove the -u <module> from the cmdline
+    # need this line to remove the option from the cmdline
     shift $((OPTIND-1)); OPTIND=1
 done
 

@@ -331,6 +331,16 @@ testRunWithEnv_setenv_on_cmdLine() {
                  $cmd)"
 }
 
+#
+# test run-with-env.sh with an invalid command line option,
+# make sure the script exits early rather than go into an infinite loop
+#
+testRunWithEnv_invalid_option() {
+    unset GP_DEBUG
+    TEST_OUT=$((../run-with-env.sh -Xmx512m -u Java echo 'Hello, World!') 2>&1)
+    assertEquals "invalid '-Xmx512m' command line arg" "../run-with-env.sh: illegal option -- X" "$TEST_OUT"
+}
+
 testRunJava() {
     export GP_DEBUG="true";
     local expected=$'loading Java-1.7 ...'
