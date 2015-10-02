@@ -22,6 +22,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -32,8 +33,15 @@ import org.junit.Test;
 public class TestCustomXmxFlags {
     // mock commandLine= in manifest file
     final String javaCmdLine="<java> <java_flags> -jar <libdir>DemoJava.jar";
-    // mock runtime command array, after subsitutions, before applying -Xmx customization
+    // mock runtime command array, after substitutions, before applying -Xmx customization
     final String[] javaCmdArgs={"java", "-Xmx512m", "-jar", "/mock/libdir/DemoJava.jar"};
+    // mock <java> wrapper script
+    final String[] javaWrapperCmdArgs={ 
+            "/opt/genepattern/resources/wrapper-scripts/run-with-env.sh",
+            "-c", "env-custom-broad-centos5.sh", 
+            "-u", "Java", "java", 
+            "-jar", "/mock/libdir/DemoJava.jar" 
+    };
     
     DrmJobSubmission job;
     GpConfig gpConfig;
@@ -393,9 +401,86 @@ public class TestCustomXmxFlags {
         final GpContext jobContext=GpContext.getServerContext();
         final String[] cmdLineArgs={"ant", "install-task" };
         final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, mem, cmdLineArgs);
-        Assert.assertArrayEquals("null taskInfo", cmdLineArgs, actual);
+        assertArrayEquals("null taskInfo", cmdLineArgs, actual);
     }
+
+    /** simulate java wrapper_script */
+    public void javaWrapperScript_jobMemorySet() {
+        initContext(javaCmdLine, javaCmdArgs);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("512 Mb"));
+        final String[] expected={ 
+                "/opt/genepattern/resources/wrapper-scripts/run-with-env.sh",
+                "-c", 
+                "env-custom-broad-centos5.sh", 
+                "-u", 
+                "Java",
+                "java", 
+                "-Xmx512m", 
+                "-jar", 
+                "/mock/libdir/DemoJava.jar" };
+        
+        assertEquals("default <java> wrapper script with no -Xmx flag", 
+                Arrays.asList(expected), 
+                Arrays.asList( CustomXmxFlags.addOrReplaceXmxFlag(gpConfig, jobContext, javaWrapperCmdArgs)) );
+    }
+
+    @Test
+    public void javaWrapperScript_jobMemoryNotSet() {
+        initContext(javaCmdLine, javaCmdArgs);
+        //when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("512 Mb"));
+        final String[] expected={ 
+                "/opt/genepattern/resources/wrapper-scripts/run-with-env.sh",
+                "-c", 
+                "env-custom-broad-centos5.sh", 
+                "-u", 
+                "Java",
+                "java", 
+                "-jar", 
+                "/mock/libdir/DemoJava.jar" };
+        
+        assertEquals("default <java> wrapper script, no job.memory set", 
+                Arrays.asList(expected), 
+                Arrays.asList( CustomXmxFlags.addOrReplaceXmxFlag(gpConfig, jobContext, javaWrapperCmdArgs)) );
+    }
+
+    @Test
+    public void javaWrapperScript_replaceXmx() {
+        initContext(javaCmdLine, javaCmdArgs);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("4 Gb"));
+        final String[] input={ 
+                "/opt/run-java.sh", "-u", "Java", "java", 
+                "-Xmx512m",
+                "-jar", "/mock/libdir/DemoJava.jar" };
+        final String[] expected={ 
+                "/opt/run-java.sh", "-u", "Java", "java", 
+                "-Xmx4g",
+                "-jar", "/mock/libdir/DemoJava.jar" };
+        
+        assertEquals("replace -Xmx with job.memory", 
+                Arrays.asList(expected), 
+                Arrays.asList( CustomXmxFlags.addOrReplaceXmxFlag(gpConfig, jobContext, input)) );
+    }
+   
     
+    /** simulate duplicate '<java_flags>' on command line */
+    @Test
+    @Ignore
+    public void javaWrapperScript_duplicateXmx() {
+        initContext(javaCmdLine, javaCmdArgs);
+        when(gpConfig.getGPMemoryProperty(jobContext, JobRunner.PROP_MEMORY)).thenReturn(Memory.fromString("2 Gb"));
+        final String[] input={ 
+                "/opt/run-java.sh", "-u", "Java", "java", 
+                "-Xmx512m", "-Xmx2g",
+                "-jar", "/mock/libdir/DemoJava.jar" };
+        final String[] expected={ 
+                "/opt/run-java.sh", "-u", "Java", "java", 
+                "-Xmx2g",
+                "-jar", "/mock/libdir/DemoJava.jar" };
+        Assert.assertEquals("duplicate -Xmx flags", 
+                Arrays.asList(expected), 
+                Arrays.asList( CustomXmxFlags.addOrReplaceXmxFlag(gpConfig, jobContext, input)) );
+    }
+
     @Test
     public void replaceXmx_null() {
         Assert.assertEquals("null string", null, CustomXmxFlags.replaceXmx(mem, null));
@@ -431,7 +516,7 @@ public class TestCustomXmxFlags {
 
     @Test
     public void replaceXmx_skipInvalidSpec_empty() {
-        final String arg="This is an example of -Xmx happening to be in a string";
+        final String arg="Don't replace -Xmx in a string";
         Assert.assertEquals(arg, 
                 CustomXmxFlags.replaceXmx(mem, arg));
     }
@@ -442,5 +527,5 @@ public class TestCustomXmxFlags {
         Assert.assertEquals(arg, 
                 CustomXmxFlags.replaceXmx(mem, arg));
     }
-
+    
 }
