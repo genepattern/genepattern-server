@@ -4,7 +4,10 @@
 
 package org.genepattern.server.webservice.server.local;
 
-import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult;
@@ -17,14 +20,18 @@ import org.genepattern.webservice.WebServiceException;
  * @author Joshua Gould
  */
 public class LocalAnalysisClient {
-    private static Logger log = Logger.getLogger(LocalAnalysisClient.class);
 
     private Analysis service;
     private String userName;
 
+    /** @deprecated should pass in a valid Hibernate session */
     public LocalAnalysisClient(final String userName) {
+        this(HibernateUtil.instance(), ServerConfigurationFactory.instance(), userName);
+    }
+
+    public LocalAnalysisClient(final HibernateSessionManager mgr, final GpConfig gpConfig, final String userName) {
         this.userName = userName;
-        service = new Analysis() {
+        service = new Analysis(mgr, gpConfig) {
             @Override
             protected String getUsernameFromContext() {
                 return userName;

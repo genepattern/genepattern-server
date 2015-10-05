@@ -138,6 +138,12 @@ public class JobInput {
         param.addValue(groupId, value);
     }
 
+    public void setValue(final String key, final String value) {
+        ParamId id=new ParamId(key);
+        Param param=new Param(id);
+        param.addValue(new ParamValue(value));
+        params.put(id, param);
+    }
     
     public void setValue(final ParamId paramId, final Param param) {
         params.put(paramId, param);

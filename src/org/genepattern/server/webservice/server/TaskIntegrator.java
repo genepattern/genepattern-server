@@ -45,6 +45,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMasterDAO;
@@ -1195,7 +1196,7 @@ public class TaskIntegrator {
         catch (Exception e) {
             throw new WebServiceException(e);
         }
-        TaskInfoCache.instance().removeFromCache(lsid);
+        TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), lsid);
         return lsid;
     }
 

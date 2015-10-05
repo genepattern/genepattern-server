@@ -142,7 +142,7 @@
         <clover-clean />
     </target>
     
-    <target name="clean" depends="init, clover.clean">
+    <target name="clean" depends="init">
         <delete dir="applet-build" />
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
@@ -163,12 +163,16 @@
         <delete quiet="true" failonerror="false" dir="wartemp" />
         <delete quiet="true" failonerror="false" dir="ziptemp" />
         <delete quiet="true" failonerror="false" file="gp_war.zip" />
-        
+    </target>
+    
+    <target name="clean-jspc">
         <delete quiet="true" failonerror="false">
             <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp" includes="**/*.class" />
             <fileset dir="${webapp.path}/WEB-INF/src/org/apache/jsp" includes="**/*.java" />
-        </delete>
+        </delete> 
     </target>
+    
+    <target name="clean-all" depends="init, clover.clean, clean-jspc, clean" />
 
     <target name="findbugs" depends="init, compile, common" description="Findbugs static code analysis">
         <property name="findbugs.home" value="build_tools/findbugs-3.0.1" />

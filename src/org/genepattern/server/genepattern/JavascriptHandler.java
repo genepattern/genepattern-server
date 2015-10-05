@@ -2,42 +2,63 @@ package org.genepattern.server.genepattern;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.webservice.TaskInfo;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Created by nazaire on 7/16/15.
  */
 public class JavascriptHandler {
-    private static final Logger log = Logger.getLogger(JavascriptHandler.class);
     public static final String LAUNCH_URL_FILE = ".launchUrl.txt";
+
+
+    protected static String buildQueryString(final Multimap<String,String> queryMap) throws UnsupportedEncodingException
+    {
+        QueryStringBuilder b=new QueryStringBuilder();
+
+        for (Map.Entry<String, String> entry : queryMap.entries())
+        {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            b.param(key, value);
+        }
+
+        return b.build();
+    }
+
 
     public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
     {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
         }
-        StringBuffer launchUrl = new StringBuffer();
+
+        Multimap<String,String> queryMap = LinkedHashMultimap.create();
 
         String mainFile = (String)taskInfo.getAttributes().get("commandLine");
         mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
         final String relativeUriStr="tasklib/"+taskInfo.getLsid()+"/"+mainFile;
+
+        StringBuffer launchUrl = new StringBuffer();
         launchUrl.append(gpConfig.getGenePatternURL() + relativeUriStr + "?");
 
         if (substitutedValuesMap != null) {
             for(String paramName: substitutedValuesMap.keySet())
             {
                 List<String> paramValues = substitutedValuesMap.get(paramName);
-                for(String paramValue: paramValues)
-                {
-                    launchUrl.append(paramName + "=" + paramValue + "&");
-                }
+                queryMap.putAll(paramName, paramValues);
             }
         }
+
+        launchUrl.append(buildQueryString(queryMap));
         return launchUrl.toString();
     }
 
@@ -60,4 +81,6 @@ public class JavascriptHandler {
 
         return launchUrl.toString();
     }
+
 }
+

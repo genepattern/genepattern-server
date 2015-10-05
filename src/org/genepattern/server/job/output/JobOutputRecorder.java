@@ -25,11 +25,6 @@ import org.genepattern.server.util.JobResultsFilenameFilter;
 public class JobOutputRecorder {
     private static final Logger log = Logger.getLogger(JobOutputRecorder.class);
 
-    /** @deprecated */
-    public static void recordOutputFilesToDb(final GpConfig gpConfig, final GpContext jobContext, final File jobDir) throws DbException {
-        recordOutputFilesToDb(org.genepattern.server.database.HibernateUtil.instance(), gpConfig, jobContext, jobDir);
-    }
-
     public static void recordOutputFilesToDb(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final File jobDir) throws DbException {
         log.debug("recording files to db, jobId="+jobContext.getJobNumber());
         List<JobOutputFile> allFiles=new ArrayList<JobOutputFile>();

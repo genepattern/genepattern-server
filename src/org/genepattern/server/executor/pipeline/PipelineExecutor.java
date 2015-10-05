@@ -6,9 +6,11 @@ package org.genepattern.server.executor.pipeline;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutor2;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
@@ -24,42 +26,41 @@ import org.genepattern.webservice.JobInfo;
  * 
  * @author pcarr
  */
-public class PipelineExecutor implements CommandExecutor {
-    private static Logger log = Logger.getLogger(PipelineExecutor.class);
+public class PipelineExecutor implements CommandExecutor2 {
 
     //'pipeline.num.threads' from genepattern.properties
     //private int numPipelines = 20;   
-    
+
+    @Override
     public void setConfigurationFilename(String filename) {
-        // TODO Auto-generated method stub
     }
 
+    @Override
     public void setConfigurationProperties(CommandProperties properties) {
-        // TODO Auto-generated method stub
     }
 
+    @Override
     public void start() {
-        // TODO Auto-generated method stub
     }
 
+    @Override
     public void stop() {
-        // TODO Auto-generated method stub
     }
 
-    public void runCommand(final String[] commandLine,
-            final Map<String, String> environmentVariables, 
-            final File runDir,
-            final File stdoutFile, 
-            final File stderrFile, 
-            final JobInfo jobInfo, 
-            final File stdinFile) 
-    throws CommandExecutorException {
-        //no longer using commandLine for processing pipelines
-        PipelineHandler.startPipeline(jobInfo, Integer.MAX_VALUE);
+    @Override
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
+        throw new CommandExecutorException("server config error, should use newer runCommand signature with GpContext arg"); 
+    }
+
+    @Override
+    public void runCommand(GpContext gpContext, String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, File stdinFile) throws CommandExecutorException {
+        PipelineHandler.startPipeline(HibernateUtil.instance(), ServerConfigurationFactory.instance(), gpContext, Integer.MAX_VALUE);
+        
     }
     
+    @Override
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        PipelineHandler.terminatePipeline(jobInfo);
+        PipelineHandler.terminatePipeline(HibernateUtil.instance(), jobInfo);
     }
     
     /**
@@ -67,10 +68,12 @@ public class PipelineExecutor implements CommandExecutor {
      * a) all of the child jobs are 'FINISHED' but the pipeline's status is still 'PROCESSING'
      * b) one of the child jobs is 'ERROR', but the pipeline's status is still 'PROCESSING'
      */
+    @Override
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
         String origStatus = jobInfo.getStatus();
         int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
-        PipelineHandler.handleRunningPipeline(jobInfo);
+        PipelineHandler.handleRunningPipeline(HibernateUtil.instance(), jobInfo);
         return origStatusId;
     }
+
 }

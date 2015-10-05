@@ -116,13 +116,14 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             var groupId = getGroupId(textElement);
 
             var isBatch = $(this).is(":checked");
-            textElement = updateNonFileView(textElement, paramName, groupId, isBatch);
+            updateNonFileView(textElement, paramName, groupId, isBatch);
         });
 
         batchBox.append(batchCheck);
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         selectChoiceDiv.append(batchBox);
 
@@ -252,10 +253,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
             }
             else
             {
-                if(value != "")
-                {
-                    valueList.push(value);
-                }
+                valueList = value;
             }
 
             var groupId = getGroupId($(element));
@@ -284,26 +282,13 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
                     var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
                     var textList = [];
-                    if(valuesList !== undefined)
+
+
+                    for(var l=0 ;l < checkedItems.length;l++)
                     {
-                        for(var l=0; l < valuesList.length;l++)
-                        {
-                            var value = valuesList[l];
-                            for(var c=0 ;c < checkedItems.length;c++)
-                            {
-                                if($(checkedItems[c]).val() == value)
-                                {
-                                    textList.push($(checkedItems[c].labels[0]).text());
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for(var l=0 ;l < checkedItems.length;l++)
-                        {
-                            textList.push($(checkedItems[l].labels[0]).text());
-                        }
+                        var value = checkedItems[l].value;
+                        var optionText = item1.find("option[value='" + value + "']").text();
+                        textList.push(optionText);
                     }
 
                     return textList.join(", ");
@@ -325,18 +310,22 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     $(this).multiselect("uncheckAll");
                 }
             },
+            uncheckAll: function(event)
+            {
+                var valuesList = [];
+            },
             click: function (event, ui) {
                 var paramName = $(this).data("pname");
                 var groupId = getGroupId($(this));
 
                 var values = getValuesForGroup(groupId, paramName).slice();
 
-                if(values === undefined || values === null)
+                if(values === undefined || values === null || !run_task_info.params[paramName].allowMultiple || values == "")
                 {
                     values = [];
                 }
 
-                if(ui.checked)
+                if(ui.checked && ui.value !== "")
                 {
                     //add the value
                     values.push(ui.value);

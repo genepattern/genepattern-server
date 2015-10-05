@@ -122,4 +122,40 @@ public class TestJobInputValueDao {
         assertEquals("query groupIds by input param, num groups", 0, matchingGroups.size());
     }
 
+    @Test
+    public void updateValue_no_previous() throws Exception {
+        JobInput jobInput=new JobInput();
+        jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls");
+        final boolean initDefault=true;
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpContext, jobInput, initDefault);
+        new JobInputValueRecorder(mgr).saveJobInput(jobNo, jobInput);
+        
+        // validate initial input
+        JobInput jobInputOut = new JobInputValueRecorder(mgr).fetchJobInput(jobNo);
+        assertEquals("input.filename, initial input", gpUrl+"users/"+userId+"/all_aml_test_01.cls", jobInputOut.getParam("input.filename").getValues().get(0).getValue());
+        
+        // now update the initial input value
+        JobInput updated=new JobInput();
+        updated.addValue("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct");
+        new JobInputValueRecorder(mgr).saveJobInput(jobNo, updated);
+        jobInputOut = new JobInputValueRecorder(mgr).fetchJobInput(jobNo);
+        assertEquals("input.filename, updated value", 
+                "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_test.gct", 
+                jobInputOut.getParam("input.filename").getValues().get(0).getValue());
+        
+        // now append values
+        updated=new JobInput();
+        // example job config params
+        updated.addValue("job.queue", "broad");
+        updated.addValue("job.memory", "8gb");
+        updated.addValue("walltime", "");
+        new JobInputValueRecorder(mgr).saveJobInput(jobNo, updated);
+        
+        jobInputOut = new JobInputValueRecorder(mgr).fetchJobInput(jobNo);
+        //assertEquals("input.filename, updated input", gpUrl+"users/"+userId+"/all_aml_test_01.cls", jobInputOut.getParam("input.filename").getValues().get(0).getValue());
+        assertEquals("job.queue", "broad", jobInputOut.getParam("job.queue").getValues().get(0).getValue());
+        assertEquals("job.memory", "8gb", jobInputOut.getParam("job.memory").getValues().get(0).getValue());
+        assertEquals("walltime (empty string)", "", jobInputOut.getParam("walltime").getValues().get(0).getValue());
+    }
+    
 }

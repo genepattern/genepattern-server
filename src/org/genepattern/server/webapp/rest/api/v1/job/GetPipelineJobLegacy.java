@@ -197,7 +197,7 @@ public class GetPipelineJobLegacy implements GetJob {
 
         TaskInfo taskInfo = null;
         try {
-            taskInfo = TaskInfoCache.instance().getTask(jobInfo.getTaskID());
+            taskInfo = TaskInfoCache.instance().getTask(HibernateUtil.instance(), jobInfo.getTaskID());
         }
         catch (Throwable t)
         {

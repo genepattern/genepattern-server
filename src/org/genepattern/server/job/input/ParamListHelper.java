@@ -27,7 +27,6 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
-import org.genepattern.server.genepattern.ValueResolver;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
@@ -38,6 +37,9 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.ParameterInfo;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 /**
  * Helper class, instantiated as part of processing user input, before adding a job to the queue.
@@ -72,12 +74,28 @@ public class ParamListHelper {
          */
         LIST_INCLUDE_EMPTY,
         /**
-         * When listMode=CMD, the individual values will be listed on the CMD line with a default comma separator
+         * When listMode=CMD, the individual values will be listed on the CMD line as a single arg with a default comma separator.
+         * Set a custom separator with the 'listModeSep' attribute. The prefix_when_specified flag is optionally
+         * added as a command line arg.
+         * 
+         * case 1: no prefix_when_specified results in one arg
+         *     "argA,argB"
+         * case 2: prefix with no trailing space "-i", results in one arg
+         *     "-iargA,argB"
+         * case 3: prefix with trailing space "-i ", results in two args
+         *     "-i", "argA,argB"
          */
         CMD,
         /**
-         * When listMode=CMD_opt, the individual values will be listed on the CMD line with the CMD line prefix
-         * prepended to it
+         * When listMode=CMD_OPT, the individual values will be listed on the CMD line one arg per value.
+         * The prefix_when_speficied optionally is appended to the value.
+         * 
+         * case 1: no prefix_when_specified results in N args
+         *     "argA", "argB"
+         * case 2: prefix with no trailing space results in N args
+         *     "-iargA", "-iargB"
+         * case 3: prefix with trailing space results in 2*N args
+         *     "-i", "argA", "-i", "argB"
          */
         CMD_OPT
     }
@@ -256,16 +274,76 @@ public class ParamListHelper {
         }
     }
 
+    /**
+     * Get the value of the 'listMode' attribute from the manifest file;
+     * automatically trim and convert to all upper case if it is set.
+     * @param formalParam
+     * @return the formatted value or null if not present
+     */
+    protected static String getListModeSpec(final ParameterInfo formalParam) {
+        if (formalParam==null) {
+            log.warn("formalParam==null");
+            return null;
+        }
+        if (formalParam.getAttributes()==null) {
+            return null;
+        }
+        final String rval = (String) formalParam.getAttributes().get(NumValues.PROP_LIST_MODE);
+        if (rval==null) {
+            return null;
+        }
+        return rval.toUpperCase().trim();
+    }
+    
+    /**
+     * calls hasListMode on the formalParam.
+     */
+    public static boolean hasListMode(final ParameterInfoRecord parameterInfoRecord) {
+        if (parameterInfoRecord==null) {
+            return false;
+        }
+        return hasListMode(parameterInfoRecord.getFormal());
+    }
+
+    /**
+     * Returns true if the manifest declares a listMode= property.
+     * @param formalParam
+     * @return
+     */
+    public static boolean hasListMode(final ParameterInfo formalParam) {
+        String listModeSpec=getListModeSpec(formalParam);
+        return ! Strings.isNullOrEmpty(listModeSpec);
+    }
+    
+    /**
+     * calls initListMode on the formalParam.
+     * @param parameterInfoRecord
+     * @return
+     */
     public static ListMode initListMode(final ParameterInfoRecord parameterInfoRecord) {
-        //initialize list mode
-        String listModeStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_LIST_MODE);
-        if (listModeStr != null && listModeStr.length()>0) {
-            listModeStr = listModeStr.toUpperCase().trim();
+        if (parameterInfoRecord==null) {
+            final ParameterInfo nullPinfo=null;
+            return initListMode(nullPinfo);
+        }
+        return initListMode(parameterInfoRecord.getFormal());
+    }
+    
+    /**
+     * Get the ListMode as declared in the manifest file. For example,
+     *     listMode=CMD
+     * Returns the default value of ListMode.LIST when there is no custom value.
+     * @param formalParam
+     * @return a ListMode
+     * @throws IllegalArgumentException when listMode does not match one of the entries in the ListMode enum.
+     */
+    public static ListMode initListMode(final ParameterInfo formalParam) throws IllegalArgumentException {
+        final String listModeSpec=getListModeSpec(formalParam);
+        if (! Strings.isNullOrEmpty(listModeSpec)) {
             try {
-                return ListMode.valueOf(listModeStr);
+                return ListMode.valueOf(listModeSpec);
             }
             catch (Throwable t) {
-                String message="Error initializing listMode from listMode="+listModeStr;
+                String message="Error initializing listMode from listMode="+listModeSpec;
                 log.error(message, t);
                 throw new IllegalArgumentException(message);
             }
@@ -274,6 +352,41 @@ public class ParamListHelper {
         return ListMode.LIST;
     }
     
+    /**
+     * Helper method for checking whether the given param 
+     * is configured for command line list mode.
+     * 
+     * This requires that numValues.acceptsList is true and that
+     * listMode is either CMD or CMD_OPT.
+     * 
+     * @param formalParam
+     * @return
+     */
+    public static boolean isCmdLineList(final ParameterInfo formalParam) {
+        final NumValues numValues=ParamListHelper.initNumValues(formalParam);
+        if (!numValues.acceptsList()) {
+            // must accept a list
+            return false;
+        }
+        final ListMode listMode=initListMode(formalParam);
+        if (listMode==ListMode.CMD || listMode==ListMode.CMD_OPT) {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isCmdLineList(final ParameterInfo formalParam, final ListMode listMode) {
+        if (listMode!=ListMode.CMD && listMode!=ListMode.CMD_OPT) {
+            return false;
+        }
+        final NumValues numValues=ParamListHelper.initNumValues(formalParam);
+        if (numValues.acceptsList()) {
+            // must accept a list
+            return true;
+        }
+        return false;
+    }
+
     private NumValues initAllowedNumValues() {
         final String numValuesStr = (String) parameterInfoRecord.getFormal().getAttributes().get(NumValues.PROP_NUM_VALUES);
         //parse num values string
@@ -614,14 +727,8 @@ public class ParamListHelper {
         }
         else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
         {
-            List<String> valueList = ValueResolver.getSubstitutedValues(actualValues, parameterInfoRecord);
-            String valuesString  = "";
-            for(String value:valueList)
-            {
-                valuesString += value + " ";
-            }
-
-            valuesString = valuesString.trim();
+            // set the display value ...
+            String valuesString="[" + Joiner.on(", ").join(actualValues.getValues()) + "]";
             parameterInfoRecord.getActual().setValue(valuesString);
         }
         else if (numValues==0) {

@@ -11,10 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -23,9 +23,9 @@ import org.apache.commons.exec.Executor;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.genepattern.CommandLineParser;
+import org.genepattern.server.genepattern.ValueResolver;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +37,6 @@ import com.google.common.io.Files;
 public class TestLocalCommonsExecJobRunner {
     private GpConfig gpConfig;
     private File jobDir;
-    private Properties cmdProps=new Properties();
     
     private File antHome;
     
@@ -60,7 +59,9 @@ public class TestLocalCommonsExecJobRunner {
      */
     protected List<String> parseCmd(final String cmd) {
         GpContext gpContext=GpContext.getServerContext();
-        List<String> args=CommandLineParser.createCmdLine(gpConfig, gpContext, cmd, cmdProps, new ParameterInfo[0]);
+        Map<String,String> props=Collections.emptyMap();
+        Map<String,ParameterInfoRecord> paramInfoMap=Collections.emptyMap();
+        List<String> args=ValueResolver.resolveValue(gpConfig, gpContext, cmd, props, paramInfoMap);
         return args;
     }
     

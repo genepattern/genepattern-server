@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
@@ -30,6 +32,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
  */
 public class CustomXmxFlags {
     private static final Logger log = Logger.getLogger(CustomXmxFlags.class);
+
+    public static final String XMX="-Xmx";
 
     public static String replaceXmx(final Memory mem, final String arg) {
         final String XMX="-Xmx";
@@ -140,8 +144,9 @@ public class CustomXmxFlags {
         //case 1: replace existing -Xmx flag
         boolean hasXmx=false;
         int idx=0;
+        final int idxOfJavaCmd=Arrays.asList(cmdLineArgs).indexOf("java");
         for(final String arg : cmdLineArgs) {
-            if (arg.contains("-Xmx")) {
+            if (arg.startsWith("-Xmx")) {
                 cmdLineArgs[idx]=replaceXmx(mem,arg);
                 hasXmx=true;
                 break;
@@ -153,9 +158,15 @@ public class CustomXmxFlags {
         }
         else  {
             String[] rval=new String[ 1+cmdLineArgs.length ];
-            rval[0]=cmdLineArgs[0];
-            rval[1]="-Xmx"+mem.toXmx();
-            System.arraycopy(cmdLineArgs, 1, rval, 2, cmdLineArgs.length-1);
+            int i=0;
+            for(; i<=idxOfJavaCmd; ++i) {
+                rval[i]=cmdLineArgs[i];
+            }
+            //++i;
+            rval[i]="-Xmx"+mem.toXmx();
+            for(; i<cmdLineArgs.length; ++i) {
+                rval[i+1]=cmdLineArgs[i];
+            }
             return rval;
         }
     }

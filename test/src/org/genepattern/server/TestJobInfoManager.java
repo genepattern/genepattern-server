@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -106,7 +107,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList("http://127.0.0.1:8080/gp/users/admin/all_aml_test.gct")); 
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+fileUrl+"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -118,7 +119,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+fileUrl+"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -130,7 +131,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+fileUrl+"&",
+                gpUrl+"tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );

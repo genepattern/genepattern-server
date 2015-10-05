@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.genepattern.GpQueryParam;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
 
 import com.google.common.collect.ImmutableList;

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.JobExecutor;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
@@ -226,37 +226,19 @@ public class AnalysisJobScheduler implements Runnable {
             monitor.interrupt();
         }
     }
-
-    /**
-     * Change the statusId for the given job, only if the job's current status id is the same as the fromStatusId.
-     * This condition is helpful to guard against another thread which has already changed the job status.
-     * 
-     * @param jobNo
-     * @param fromStatusId
-     * @param toStatusId
-     * @return number of rows successfully updated
-     */
-    static public int changeJobStatus(int jobNo, int fromStatusId, int toStatusId) {
-        String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo and status_id=:fromStatusId";
-        SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
-        sqlQuery.setInteger("toStatusId", toStatusId);
-        sqlQuery.setInteger("jobNo", jobNo);
-        sqlQuery.setInteger("fromStatusId", fromStatusId);
-
-        int rval = sqlQuery.executeUpdate();
-        if (rval != 1) {
-            log.error("changeJobStatus(jobNo="+jobNo+", fromStatusId="+fromStatusId+", toStatusId="+toStatusId+") ignored, statusId for jobNo was already changed in another thread");
-        }
-        return rval;
-    }
     
+    /** @deprecated pass in a valid Hibernate session */
     static public int setJobStatus(int jobNo, int toStatusId) {
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
+        return setJobStatus(org.genepattern.server.database.HibernateUtil.instance(), jobNo, toStatusId);
+
+    }
+    static public int setJobStatus(final HibernateSessionManager mgr, int jobNo, int toStatusId) {
+        final boolean isInTransaction = mgr.isInTransaction();
+        mgr.beginTransaction();
         
         try {
             final String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo"; 
-            final SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
+            final SQLQuery sqlQuery = mgr.getSession().createSQLQuery(sqlUpdate);
             sqlQuery.setInteger("toStatusId", toStatusId);
             sqlQuery.setInteger("jobNo", jobNo);
             int rval = sqlQuery.executeUpdate();
@@ -264,13 +246,13 @@ public class AnalysisJobScheduler implements Runnable {
                 log.error("setJobStatus(jobNo="+jobNo+", toStatusId="+toStatusId+") had no effect");
             }
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return rval;
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -299,13 +281,13 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobId
      * @throws JobTerminationException
      */
-    public void terminateJob(Integer jobId) throws JobTerminationException {
+    public void terminateJob(final HibernateSessionManager mgr, Integer jobId) throws JobTerminationException {
         if (jobId == null) {
             throw new JobTerminationException("Invalid null arg");
         }
         JobInfo jobInfo = null;
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             jobInfo = dao.getJobInfo(jobId);
         }
         catch (Throwable t) {
@@ -314,9 +296,9 @@ public class AnalysisJobScheduler implements Runnable {
             throw new JobTerminationException(message, t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
-        terminateJob(jobInfo);
+        terminateJob(mgr, jobInfo);
     }
     
     /**
@@ -325,7 +307,7 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobInfo
      * @throws JobTerminationException
      */
-    public void terminateJob(JobInfo jobInfo) throws JobTerminationException {
+    public void terminateJob(final HibernateSessionManager mgr, final JobInfo jobInfo) throws JobTerminationException {
         if (jobInfo == null) {
             log.error("invalid null arg to terminateJob");
             return;
@@ -339,7 +321,7 @@ public class AnalysisJobScheduler implements Runnable {
         boolean isFinished = isFinished(jobInfo); 
         if (isFinished) {
             log.debug("job #"+jobInfo.getJobNumber()+" is already finished");
-            terminateJobRunnerJob(jobInfo);
+            terminateJobRunnerJob(mgr, jobInfo);
             return;
         }
 
@@ -349,7 +331,7 @@ public class AnalysisJobScheduler implements Runnable {
             if (!f.isDone()) {
                 boolean isCancelled=f.cancel(true);
                 log.info("cancelled jobId="+jobId+", isCancelled="+isCancelled);
-                int numDeleted=JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                int numDeleted=JobQueueUtil.deleteJobQueueStatusRecord(mgr, jobId);
                 if (log.isDebugEnabled()) { log.debug("numDeleted="+numDeleted); }
             }
         }
@@ -357,12 +339,12 @@ public class AnalysisJobScheduler implements Runnable {
         //terminate pending jobs immediately
         boolean isPending = isPending(jobInfo);
         if (isPending) {
-            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "Pending job #"+jobInfo.getJobNumber()+" terminated by user");
+            GenePatternAnalysisTask.handleJobCompletion(mgr, jobInfo.getJobNumber(), -1, "Pending job #"+jobInfo.getJobNumber()+" terminated by user");
             return;
         }
         
         // terminate the underlying job
-        terminateJobWTimeout(jobInfo);
+        terminateJobWTimeout(mgr, jobInfo);
     }
     
     /**
@@ -372,7 +354,7 @@ public class AnalysisJobScheduler implements Runnable {
      * @param jobInfo
      * @throws JobTerminationException
      */
-    private static void terminateJobWTimeout(final JobInfo jobInfo) throws JobTerminationException {
+    private static void terminateJobWTimeout(final HibernateSessionManager mgr, final JobInfo jobInfo) throws JobTerminationException {
         final int jobNumber;
         if (jobInfo != null) {
             jobNumber = jobInfo.getJobNumber();
@@ -391,7 +373,7 @@ public class AnalysisJobScheduler implements Runnable {
                 boolean isFinished = isFinished(jobInfo); 
                 if (isFinished) {
                     log.debug("job #"+jobInfo.getJobNumber()+" is already finished");
-                    terminateJobRunnerJob(jobInfo);
+                    terminateJobRunnerJob(mgr, jobInfo);
                     return jobInfo.getJobNumber();
                 }
                 
@@ -463,11 +445,11 @@ public class AnalysisJobScheduler implements Runnable {
         return false;        
     }
 
-    private static boolean terminateJobRunnerJob(final JobInfo jobInfo) {
+    private static boolean terminateJobRunnerJob(final HibernateSessionManager mgr, final JobInfo jobInfo) {
         Integer gpJobNo=jobInfo.getJobNumber();
         JobRunnerJob jrj = null;
         try {
-            jrj=new JobRunnerJobDao().selectJobRunnerJob(gpJobNo);
+            jrj=new JobRunnerJobDao().selectJobRunnerJob(mgr, gpJobNo);
         } // <- throws DbException
         catch (Throwable t) {
             log.error(t);

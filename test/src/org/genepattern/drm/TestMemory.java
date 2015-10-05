@@ -84,6 +84,12 @@ public class TestMemory {
     }
 
     @Test
+    public void testGB() {
+        final String spec="8GB";
+        Assert.assertEquals("numBytes for '"+spec+"'", 8589934592L, Memory.fromString(spec).getNumBytes());
+    }
+
+    @Test
     public void testg() {
         final String spec="8g";
         Assert.assertEquals("numBytes for '"+spec+"'", 8589934592L, Memory.fromString(spec).getNumBytes());

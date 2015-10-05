@@ -11,7 +11,7 @@ import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
 /**
@@ -80,19 +80,21 @@ public class DiskInfo
         return diskInfo;
     } 
 
-    public static DiskInfo createDiskInfo(GpConfig gpConfig, GpContext context) throws DbException {
-        final String userId=context.getUserId();
-        final Memory diskQuota=gpConfig.getGPMemoryProperty(context, "quota");
-        return createDiskInfo(userId, diskQuota);
+    /** @deprecated should pass in a Hibernate session */
+    public static DiskInfo createDiskInfo(final GpConfig gpConfig, final GpContext gpContext) throws DbException {
+        return createDiskInfo(org.genepattern.server.database.HibernateUtil.instance(),
+                gpConfig, gpContext);
     }
 
-    public static DiskInfo createDiskInfo(final String userId, final Memory diskQuota) throws DbException {
+    public static DiskInfo createDiskInfo(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext context) throws DbException {
+        final String userId=context.getUserId();
+        final Memory diskQuota=gpConfig.getGPMemoryProperty(context, "quota");
         final DiskInfo diskInfo = new DiskInfo(userId);
-        final boolean isInTransaction= HibernateUtil.isInTransaction();
+        final boolean isInTransaction= mgr.isInTransaction();
         try
         {
-            HibernateUtil.beginTransaction();
-            UserUploadDao userUploadDao = new UserUploadDao();
+            mgr.beginTransaction();
+            UserUploadDao userUploadDao = new UserUploadDao(mgr);
 
             // bug fix, GP-5412, make sure to compute files tab usage before total usage
             Memory diskUsageFilesTab = userUploadDao.sizeOfAllUserUploads(userId, false);
@@ -122,7 +124,7 @@ public class DiskInfo
         {
             if (!isInTransaction)
             {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
 

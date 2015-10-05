@@ -534,10 +534,8 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         run_task_info.params[parameterName].allowMultiple = false;
     }
 
-    var parent =  $(inputElement).closest(".pRow");
-
-
-    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
+    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1)
+    {
         //this must be a text entry
         $(inputElement).replaceWith(createTextDiv(parameterName, groupId, true));
     }
@@ -552,12 +550,7 @@ function updateNonFileView(inputElement, parameterName, groupId, isBatch)
         $(inputElement).replaceWith(createNumericDiv(parameterName, groupId, true));
     }
 
-    parent.find(".batchBox").find(".batchHelp").remove();
     updateBatchInfo();
-
-    if(isBatch) {
-        parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-    }
 
     return inputElement;
 }
@@ -1107,7 +1100,7 @@ function updateBatchInfo()
 
                     var div = $("<div id='batchInfoDialogHeader'/>");
                     $(div).append("<h4> Total Batch Jobs: " + batchInfoObj.numBatchJobs + "</h4>");
-                    div.append("<div style='font-size: 10px;'>NOTE: Number of batch jobs and parameter pairing will vary if directories are specified.</div>");
+                    //div.append("<div style='font-size: 10px;'>NOTE: Number of batch jobs and pairing of parameter values will vary if directories are specified.</div>");
 
                     $(this).append(div);
 
@@ -1192,7 +1185,6 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
             var parent =  $(this).closest(".pRow");
 
-            parent.find(".batchBox").find(".batchHelp").remove();
             if (isBatch)
             {
                 //highlight the div to indicate batch mode
@@ -1226,6 +1218,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         numericDiv.append(batchBox);
 
@@ -1470,27 +1463,20 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
             }
 
             var textElement = $(this).closest(".pRow").find(".pValue");
+            textElement.val("");
             var groupId = getGroupId(textElement);
 
             var parent =  $(this).closest(".pRow");
-
-            $(this).closest(".pRow").find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
-
-            parent.find(".batchBox").find(".batchHelp").remove();
+            parent.find(".textDiv").replaceWith(createTextDiv(paramName, groupId, true));
 
             updateBatchInfo();
-
-            if(isBatch)
-            {
-                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-            }
-
         });
 
         batchBox.append(batchCheck);
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         textDiv.append(batchBox);
 
@@ -1536,9 +1522,18 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
 
     var textValChange= function(element)
     {
-        var valueList = $(element).val().split(",");
-
+        var valueList = [];
         var paramName = $(element).data("pname");
+
+        //split the values only if this is a multi value text field
+        if(run_task_info.params[parameterName].allowMultiple)
+        {
+            valueList = $(element).val().split(",");
+        }
+        else
+        {
+            valueList.push($(element).val());
+        }
 
         var groupId = $(element).data("groupId");
         updateValuesForGroup(groupId, paramName, valueList);
@@ -1575,14 +1570,8 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
                 inputFieldValue += ",";
             }
         }
-        /*if(paramDetails.allowMultiple)
-        {
 
-        }
-        else
-        {*/
-            textField.val(inputFieldValue);
-        //}
+        textField.val(inputFieldValue);
 
         //textField.val(initialValuesList);
         textField.trigger("change");
@@ -1605,9 +1594,22 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
             onAddTag: function()
             {
                 $(this).parent().find(".tag").last().find("a").attr("title", "").hide();
-                var text = $(this).parent().find(".tag").last().find("span").text();
-                text = $.trim(text);
-                $(this).parent().find(".tag").last().find("span").text(text);
+
+                var paramName = $(this).parents("tr").first().data("pname");
+                var numTags = $(this).parent().find(".tag").length;
+                //check that the max value has not been reached
+                if(!validateMaxValues(paramName, numTags))
+                {
+                    //delete the added tag
+                    $(this).parent().find(".tag").last().find("a").click();
+                }
+                else
+                {
+                    var text = $(this).parent().find(".tag").last().find("span").text();
+
+                    text = $.trim(text);
+                    $(this).parent().find(".tag").last().find("span").text(text);
+                }
             },
             onRemoveTag: function()
             {
@@ -2220,13 +2222,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
                 }
                 else
                 {
-                    $(this).closest(".paramValueTd").find(".batchBox").find(".batchHelp").remove();
                     updateBatchInfo();
-
-                    if(isBatch)
-                    {
-                        $(this).closest(".paramValueTd").find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
-                    }
                 }
 
             });
@@ -2234,6 +2230,8 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
             batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
             //batchCheck.button();
             batchBox.tooltip();
+            batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+
 
             //if this is a batch parameter then pre-select the batch checkbox
             if (run_task_info.params[parameterName].isBatch) {
@@ -2365,7 +2363,7 @@ function loadParametersByGroup(parameterGroups, parameters, initialValues, batch
 
         //check if the new section should be hidden
         if (parameterGroups[i].hidden !== undefined && parameterGroups[i].hidden !== null
-            && parameterGroups[i].hidden & !isNonDefaultValues(parameterGroups[i].parameters)) {
+            && parameterGroups[i].hidden && !isNonDefaultValues(parameterGroups[i].parameters)) {
             curHeaderDiv.prev().find(".paramSectionToggle").click();
         }
 
@@ -2403,8 +2401,6 @@ function isNonDefaultValues(parameterNames)
                  }
             }
         }
-
-        return false;
     }
 
     return false;
@@ -2524,12 +2520,20 @@ function createParamDescriptionRow(parameterName) {
 
 function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
 {
+    //remove any tabs created when running a pipeline that contains a Javascript visualizer
+    if($("#main-pane").hasClass("ui-tabs"))
+    {
+        $("#main-pane").tabs("destroy");
+        $("#jobResultsTab").remove();
+    }
+
     // Hide the search slider if it is open
     $(".search-widget").searchslider("hide");
 
     // Hide the protocols if visible
     $("#protocols").hide();
     $("#jobResults").hide();
+    $("#mainJsViewerPane").hide();
 
     // Lazily clone the blank jobSubmit div, and replace a dirty div with the clean one
     if (Request.cleanJobSubmit === null) {
@@ -3272,6 +3276,37 @@ function validateMaxFiles(paramName, numFiles) {
             "this parameter (" + paramName + ") has been reached. Please delete some files " +
             "before continuing.");
     }
+}
+
+function validateMaxValues(paramName, numValues) {
+    //check if max values will be violated only if this not a batch parameter
+    //in the case of batch we want to allow specifying any number of files
+    if (isBatch(paramName)) {
+        return true;
+    }
+
+    var paramDetails = run_task_info.params[paramName];
+
+    var maxValuesLimitExceeded = false;
+
+    if (paramDetails !== null) {
+        //in this case the max num of files is not unlimited
+        if (paramDetails.maxValue !== undefined || paramDetails.maxValue !== null) {
+            var maxValue = parseInt(paramDetails.maxValue);
+            if (numValues > maxValue) {
+                maxValuesLimitExceeded = true;
+            }
+        }
+    }
+
+    //check that the user did not add more files than allowed
+    if (maxValuesLimitExceeded) {
+        alert("The maximum number of values that can be provided to the " + paramName +
+            " parameter has been reached.");
+        return false;
+    }
+
+    return true;
 }
 
 function checkFileSizes(files) {

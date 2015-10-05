@@ -619,10 +619,27 @@ there was an error in obtaining the list of files in the ftp directory URL. This
 <a name="multipleInputs"></a><h4>Multiple Inputs</h4>
 
 Indicate the number of inputs that can be provided to a parameter. You must specify a minimum number of inputs which can be zero.
-The maximum number of inputs allowed can be set to unlimited. For a non-file parameter the input to the parameter will be a comma separated list of input values.
+The maximum number of inputs allowed can be set to unlimited.
+<br/>
 
-<br>
+<br/>
 For a file parameter, the input to the parameter will be one text file containing local paths to the input files. There will be one file path per line.
+
+<br/>
+<a name="listMode"></a><h4>List Mode</h4>
+
+For a parameter that is not a file then the format of the input on the command line is determined by the value set for list mode.
+If list mode is <b>List</b> then the input value is formatted as a comma separated list.
+
+<br/><br/>
+For example if the values specified for a non file parameter are val1,val2 and val3 then the value on the command line would be <i>val1,val2,val3</i>.
+
+<br/><br/><br/>
+If the list mode is <b>Get-opt style list</b>, then the input values are provided as a space separated list with the flag prepended to each value.
+<br/> <br/>
+For example if the flag specified for the parameter is <i>--input=</i> and the value entered for the parameter is <i>value1</i> and <i>value2</i>,
+then the value on the command line would be is <i>--input=value1 --input=value2</i>
+
 
 <a name="fileGroup"></a><h4>Group Input Files</h4>
 Specify how the input files for a parameter should be grouped. The input to the parameter will be a three-column tab delimited text file.
@@ -649,14 +666,20 @@ in the list in order to be the default selection.
 For file parameters that have a dynamic drop-down list, the default value can only be a url to a file found in the provided ftp directory URL.
 <br>
 For example:
-<br>
+<br/>
 <ul><li>
     FTP directory:  <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/</span>
     <br>
     Default value: <span class="example">ftp://gpftp.broadinstitute.org/pub/rna_seq/referenceAnnotation/gtf/Homo_sapiens_UCSC_hg18.gtf</span>
 </li></ul>
 
-<br><br>
+<a name="Range"></a><h4>Range</h4>
 
+For a numeric parameter that takes either a float or an integer, this is the minimum and maximum values that can be provided as input.
+When running the module the user will not be allowed to enter any values that are outside the minimum and maximum range.
+
+<br/><br/>
 </body>
 </html>
+
+

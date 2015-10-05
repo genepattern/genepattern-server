@@ -8,7 +8,7 @@ package org.genepattern.server.domain;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 
 /**
  * Home object for domain model class AnalysisJob.
@@ -17,13 +17,20 @@ import org.genepattern.server.database.HibernateUtil;
  * @author Hibernate Tools
  */
 public class AnalysisJobDAO extends BaseDAO {
-
 	private static final Logger log = Logger.getLogger(AnalysisJobDAO.class);
+
+	/** @deprecated */
+	public AnalysisJobDAO() {
+	}
+	
+	public AnalysisJobDAO(final HibernateSessionManager mgr) {
+	    super(mgr);
+	}
 
 	public AnalysisJob findById(java.lang.Integer id) {
 		log.debug("getting AnalysisJob instance with id: " + id);
 		try {
-			return (AnalysisJob) HibernateUtil.getSession().get(
+			return (AnalysisJob) mgr.getSession().get(
 					"org.genepattern.server.domain.AnalysisJob", id);
 		} catch (RuntimeException re) {
 			log.error("get failed", re);

@@ -24,6 +24,10 @@ public class Param {
     private boolean batchParam=false;
     private RangeValues<Double> range;
 
+    public Param(final ParamId id) {
+        this.id=id;
+    }
+    
     public Param(final ParamId id, final boolean batchParam) {
         this.id=id;
         this.batchParam=batchParam;

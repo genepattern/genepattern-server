@@ -27,7 +27,6 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genomespace.GenomeSpaceBean;
 import org.genepattern.server.genomespace.GenomeSpaceManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;

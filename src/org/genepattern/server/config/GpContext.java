@@ -8,7 +8,7 @@ import java.io.File;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobPermissions;
 import org.genepattern.server.JobPermissionsFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.input.JobInput;
@@ -53,15 +53,20 @@ public class GpContext {
         return builder.build();
     }
 
+    /** @deprecated should pass in a valid HibernateSessionManager */
     public static GpContext createContextForJob(final Integer jobNumber) throws Exception, Throwable {
+        return createContextForJob(org.genepattern.server.database.HibernateUtil.instance(), jobNumber);
+    }
+    
+    public static GpContext createContextForJob(final HibernateSessionManager mgr, final Integer jobNumber) throws Exception, Throwable {
         //null arg for currentUser means 'use the owner of the job'
-        return createContextForJob(null, jobNumber);
+        return createContextForJob(mgr, null, jobNumber);
     }
-    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber) throws Exception, Throwable {
+    public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber) throws Exception, Throwable {
         LibdirStrategy libdirStrategy=new LibdirLegacy();
-        return createContextForJob(currentUser, jobNumber, libdirStrategy);
+        return createContextForJob(mgr, currentUser, jobNumber, libdirStrategy);
     }
-    public static GpContext createContextForJob(final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
+    public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
         if (jobNumber==null) {
             throw new IllegalArgumentException("jobNumber==null");
         }
@@ -69,18 +74,18 @@ public class GpContext {
             throw new IllegalArgumentException("libdirStrategy==null");
         }
         final boolean initFromDb=true;
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         final JobInfo jobInfo;
         final JobInput jobInput;
         final TaskInfo taskInfo;
         final String taskName;
         final File taskLibDir;
         try {
-            AnalysisDAO dao = new AnalysisDAO(HibernateUtil.instance());
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             jobInfo = dao.getJobInfo(jobNumber);
-            jobInput = new JobInputValueRecorder(HibernateUtil.instance()).fetchJobInput(jobNumber);
+            jobInput = new JobInputValueRecorder(mgr).fetchJobInput(jobNumber);
             jobInput.setLsid(jobInfo.getTaskLSID());
-            taskInfo=TaskInfoCache.instance().getTask(jobInfo.getTaskLSID());
+            taskInfo=TaskInfoCache.instance().getTask(mgr, jobInfo.getTaskLSID());
             taskName=taskInfo.getName();
             if (log.isDebugEnabled()) {
                 log.debug("taskName=" + taskName);
@@ -90,7 +95,7 @@ public class GpContext {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -130,10 +135,6 @@ public class GpContext {
         return builder.build();
     }
     
-    /**
-     * TODO: @deprecated
-     * @return
-     */
     public static GpContext getServerContext() {
         GpContext context = new GpContext();
         return context;

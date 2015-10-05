@@ -38,9 +38,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -112,18 +110,6 @@ public class PipelineModel implements Serializable {
     
     public void setGenePatternVersion(String version) {
         this.gpVersion = version;
-    }
-
-    /**
-     * Gets the <tt>JobSubmission</tt> at the given index
-     * 
-     * @param index
-     *                The index of the task to get
-     * @see getTasks
-     * @return The <tt>JobSubmission</tt> at the given index
-     */
-    private JobSubmission getTask(int index) {
-        return vTasks.get(index);
     }
 
     public Vector<JobSubmission> getTasks() {
@@ -732,32 +718,6 @@ public class PipelineModel implements Serializable {
         // appropriate position in the
         // Vector of JobSubmissions within the PipelineModel
         addTask(job, Integer.parseInt(taskNumber) - 1);
-    }
-
-    private static String dumpDOM(Node node, int indent) {
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            // most likely a comment or text node
-            System.out.println(node.getNodeName() + ", type=" + node.getNodeType() + ", value=" + node.getNodeValue());
-            return "";
-        }
-        Element element = (Element) node;
-        String indentString = "\t\t\t\t\t\t\t\t\t".substring(0, indent);
-        StringWriter outputWriter = new StringWriter();
-        NamedNodeMap attributes = element.getAttributes();
-        outputWriter.write(indentString);
-        outputWriter.write("<" + element.getTagName());
-        if (attributes != null) {
-            for (int i = 0; i < attributes.getLength(); i++) {
-                outputWriter.write(" " + ((Attr) attributes.item(i)).getName() + "="
-                        + ((Attr) attributes.item(i)).getValue());
-            }
-        }
-        outputWriter.write("/>\n");
-        NodeList children = element.getChildNodes();
-        for (int child = 0; child < children.getLength(); child++) {
-            outputWriter.write(dumpDOM(children.item(child), indent + 1));
-        }
-        return outputWriter.toString();
     }
 
     // return a Map of LSID/name dependencies for this model

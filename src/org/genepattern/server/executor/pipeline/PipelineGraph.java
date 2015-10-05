@@ -13,7 +13,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -94,12 +94,12 @@ public class PipelineGraph {
     
 
     //factory methods
-    static public PipelineGraph getDependencyGraph(final JobInfo pipelineJobInfo) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+    public static final PipelineGraph getDependencyGraph(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo) {
+        final boolean isInTransaction=mgr.isInTransaction();
         //rebuild the graph for the pipeline
-        HibernateUtil.beginTransaction();
+        mgr.beginTransaction();
         try {
-            final List<JobInfo> childJobInfos = getChildJobInfos(pipelineJobInfo);
+            final List<JobInfo> childJobInfos = getChildJobInfos(mgr, pipelineJobInfo);
             return getDependencyGraph(pipelineJobInfo, childJobInfos);
         }
         catch (Throwable t) {
@@ -108,7 +108,7 @@ public class PipelineGraph {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -134,11 +134,11 @@ public class PipelineGraph {
         return graph;
     }
     
-    private static List<JobInfo> getChildJobInfos(final JobInfo pipelineJobInfo) {
+    private static List<JobInfo> getChildJobInfos(final HibernateSessionManager mgr, final JobInfo pipelineJobInfo) {
         final int parentJobId = pipelineJobInfo.getJobNumber();
-        boolean inTransaction = HibernateUtil.isInTransaction();
+        boolean inTransaction = mgr.isInTransaction();
         try {
-            AnalysisDAO dao = new AnalysisDAO();
+            AnalysisDAO dao = new AnalysisDAO(mgr);
             JobInfo[] all = dao.getChildren(parentJobId);
             List<JobInfo> childJobs = new ArrayList<JobInfo>();
             for(JobInfo jobInfo : all) {
@@ -148,12 +148,12 @@ public class PipelineGraph {
         }
         catch (Throwable t) {
             log.error("Error getting child jobInfos for pipeline #"+pipelineJobInfo.getJobNumber(), t);
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
             return Collections.emptyList();
         }
         finally {
             if (!inTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -255,7 +255,7 @@ public class PipelineGraph {
      * Get the set of zero or more jobs that are ready to be started.
      * A job is ready to be started if all of the upstream jobs it depends on have completed.
      * 
-     * TODO: not sure what to do with jobs which have completed, but with an ERROR status.
+     * Note: not sure what to do with jobs which have completed, but with an ERROR status.
      * 
      * @return
      */
@@ -264,7 +264,9 @@ public class PipelineGraph {
         for(MyVertex v : jobGraph.vertexSet()) {
             JobInfo toJobInfo=v.getJobInfo();
             if (!isPending(toJobInfo)) {
-                //the target job has already been started, don't start it again
+                if (log.isDebugEnabled()) {
+                    log.debug("jobToRun="+toJobInfo.getJobNumber()+" pipeline step is not pending, don't start it");
+                }
             }
             else {
                 boolean isReady=true;

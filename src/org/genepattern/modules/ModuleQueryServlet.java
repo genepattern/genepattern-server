@@ -584,8 +584,9 @@ public class ModuleQueryServlet extends HttpServlet {
                 {
                     String rangeString = String.valueOf(parameterJSON.getMinRange());
 
-                    if (parameterJSON.getMaxRange() != -1) {
-                        rangeString += ".." + String.valueOf(parameterJSON.getMaxRange());
+                    String maxRange = parameterJSON.getMaxRange();
+                    if (maxRange != null) {
+                        rangeString += ".." + parameterJSON.getMaxRange();
                     } else {
                         rangeString += "+";
                     }
@@ -593,7 +594,7 @@ public class ModuleQueryServlet extends HttpServlet {
                 }
                 else if(parameterJSON.getMaxRange() != null)
                 {
-                    String rangeString = String.valueOf(parameterJSON.getMaxRange()) + "-";
+                    String rangeString = parameterJSON.getMaxRange() + "-";
 
                     attributes.put(RangeValues.PROP_RANGE, rangeString);
                 }

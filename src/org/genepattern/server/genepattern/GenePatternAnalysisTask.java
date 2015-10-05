@@ -119,6 +119,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -159,7 +160,6 @@ import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.util.UrlPrefixFilter;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -334,8 +334,8 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    private File localInputUrlToFile(URL url, boolean isAdmin, GpContext jobContext) {
-        JobInfo jobInfo = jobContext.getJobInfo();
+    private File localInputUrlToFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final URL url) {
+        final JobInfo jobInfo = jobContext.getJobInfo();
         //new way of converting server url to file path
         GpFilePath inputFilePath = null;
         try {
@@ -346,7 +346,7 @@ public class GenePatternAnalysisTask {
             //TODO: eventually we should not ignore this exception
         }
         if (inputFilePath != null) {
-            boolean canRead = inputFilePath.canRead(isAdmin, jobContext);
+            boolean canRead = inputFilePath.canRead(jobContext.isAdmin(), jobContext);
             if (!canRead) {
                 String errorMessage = "You are not permitted to access the requested file: "+url;
                 log.error(errorMessage);
@@ -423,8 +423,6 @@ public class GenePatternAnalysisTask {
                 File in = new File(parentTempdir, filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
-                    //PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
-                    //boolean canRead = perm.canReadJob();
                     if (jobContext.canReadJob()) {
                         return in;
                     }
@@ -437,8 +435,7 @@ public class GenePatternAnalysisTask {
 
                 //special case: look for file among the user uploaded files
                 try {
-                    GpContext context = GpContext.getContextForUser(userId);
-                    File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
+                    File userUploadDir = gpConfig.getUserUploadDir(jobContext);
                     in = new File(userUploadDir, filename);
                     boolean foundUserUpload = in.canRead();
                     if (foundUserUpload) {
@@ -512,7 +509,7 @@ public class GenePatternAnalysisTask {
         catch (Throwable t) {
             throw new IllegalArgumentException(t);
         }
-        if (canReadJob(isAdmin, userId, parser.getJobNumber())) {
+        if (jobContext.canReadJob()) {
             File localFile = null;
             try {
                 GpContext context = GpContext.getContextForJob(jobInfo);
@@ -590,9 +587,9 @@ public class GenePatternAnalysisTask {
         }
     }
 
-    private boolean canReadJob(boolean isAdmin, String userId, int jobNumber) {
+    private boolean canReadJob(final HibernateSessionManager mgr, boolean isAdmin, String userId, int jobNumber) {
         try {
-            PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
+            PermissionsHelper perm = new PermissionsHelper(mgr, isAdmin, userId, jobNumber);
             return perm.canReadJob();
         }
         catch (Throwable t) {
@@ -600,7 +597,7 @@ public class GenePatternAnalysisTask {
             return false;
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
     }
     
@@ -643,17 +640,18 @@ public class GenePatternAnalysisTask {
         if (jobId == null) {
             throw new JobDispatchException("Invalid arg to onJob, jobId="+jobId);
         }
+        final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext jobContext;
         try {
-            jobContext=GpContext.createContextForJob(jobId);
+            jobContext=GpContext.createContextForJob(mgr, jobId);
         }
         catch (Throwable t) {
             log.error("Error initializing jobContext for jobId="+jobId, t);
             throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         
         final JobInfo jobInfo=jobContext.getJobInfo();
@@ -667,7 +665,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        checkDiskQuota(gpConfig, jobContext);
+        checkDiskQuota(mgr, gpConfig, jobContext);
 
         File rootJobDir = null;
         try {
@@ -703,15 +701,6 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(taskInfo.getName()+" requires an End-user license agreement. "+
                     "There is no record of agreement for userId="+jobInfo.getUserId());
         }
-        
-        // is the job owner an admin?
-        final boolean isAdmin;
-        if (jobInfo.getUserId() != null) {
-            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
-        }
-        else {
-            isAdmin = false;
-        }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
         JOB_TYPE jobType = initJobType(taskInfo);
@@ -734,7 +723,7 @@ public class GenePatternAnalysisTask {
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
         validateOS(expected, "run " + taskName);
         try {
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy(HibernateUtil.instance(), gpConfig, jobContext);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(mgr, gpConfig, jobContext);
             pluginManager.validatePatches(taskInfo, null);
         }
         catch (Exception e) {
@@ -745,7 +734,7 @@ public class GenePatternAnalysisTask {
         // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
         if (parentJobId >= 0) {
             try {
-                PipelineHandler.prepareNextStep(parentJobId, jobInfo);
+                PipelineHandler.prepareNextStep(mgr, gpConfig, jobContext);
             }
             catch (PipelineException e) {
                 throw new JobDispatchException(e);
@@ -762,8 +751,8 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         Vector<String> vProblems = new Vector<String>();
+        final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
         if (paramsCopy != null) {
-            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
             for (int j = 0; j < paramsCopy.length; j++) {
                 final ParameterInfo pinfo=paramsCopy[j];
                 if (log.isDebugEnabled()) {
@@ -794,12 +783,12 @@ public class GenePatternAnalysisTask {
                         
                 final boolean isCachedValue=UrlPrefixFilter.isCachedValue(gpConfig, jobContext, jobType, pinfoRecord.getFormal(), pinfo.getValue());
                 if (isDirectoryInputParam) {
-                    setPinfoValueForDirectoryInputParam(gpConfig, jobContext, pinfo, pinfoRecord); 
+                    setPinfoValueForDirectoryInputParam(mgr, gpConfig, jobContext, pinfo, pinfoRecord); 
                 }
                 //special-case for File Choice parameters, cached values
                 else if (isFileChoiceSelection) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(mgr, gpConfig, jobContext, selectedChoice.getValue(), selectedChoice.isRemoteDir());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file drop-down param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);
@@ -808,7 +797,7 @@ public class GenePatternAnalysisTask {
                 }
                 else if (isCachedValue) {
                     //If necessary, wait for the remote file to transfer to local cache before starting the job.
-                    final GpFilePath cachedFile = FileCache.downloadCachedFile(HibernateUtil.instance(), gpConfig, jobContext, pinfo.getValue());
+                    final GpFilePath cachedFile = FileCache.downloadCachedFile(mgr, gpConfig, jobContext, pinfo.getValue());
                     final String serverPath=cachedFile.getServerFile().getAbsolutePath();
                     if (log.isDebugEnabled()) {
                         log.debug("setting cached value for file param: "+pinfo.getName()+"="+pinfo.getValue()+", localPath="+serverPath);
@@ -845,7 +834,7 @@ public class GenePatternAnalysisTask {
                             vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
                             continue;
                         }
-                        if (canReadJob(isAdmin, jobInfo.getUserId(), jobNumber)) {
+                        if (canReadJob(mgr, jobContext.isAdmin(), jobInfo.getUserId(), jobNumber)) {
                             originalPath = rootJobDir.getPath() + "/" + originalPath;
                         }
                         else {
@@ -922,7 +911,7 @@ public class GenePatternAnalysisTask {
                         }
 
                         if (isWebUpload) {
-                            if (!canReadJob(isAdmin, jobInfo.getUserId(), jobId)) {
+                            if (!jobContext.canReadJob()) {
                                 vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                 continue;
                             }
@@ -1016,7 +1005,7 @@ public class GenePatternAnalysisTask {
                             try {
                                 //does the current user have permission to access the file?
                                 final GpFilePath serverFile=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+originalPath);
-                                canRead=serverFile.canRead(isAdmin, jobContext);
+                                canRead=serverFile.canRead(jobContext.isAdmin(), jobContext);
                             }
                             catch (Throwable t) {
                                 log.error(t);
@@ -1088,7 +1077,7 @@ public class GenePatternAnalysisTask {
                                     final String pname=pinfoRecord.getFormal().getName();
                                     final Param inputParam=new Param(new ParamId(pname), false);
                                     inputParam.addValue(new ParamValue(pinfo.getValue()));
-                                    ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
+                                    ParamListHelper plh=new ParamListHelper(mgr, gpConfig, jobContext, pinfoRecord, inputParam);
                                     GpFilePath gpFilePath=null;
                                     try {
                                         gpFilePath=plh.initGpFilePath(inputParam.getValues().get(0));
@@ -1138,7 +1127,7 @@ public class GenePatternAnalysisTask {
                                                 String parentFileName = inputFile.getParentFile().getName();
                                                 int jobNumber = Integer.parseInt(parentFileName);
                                                 //only allow access if the owner of this job has at least read access to the job which output this input file
-                                                boolean canRead = canReadJob(isAdmin, jobInfo.getUserId(), jobNumber);
+                                                boolean canRead = canReadJob(mgr, jobContext.isAdmin(), jobInfo.getUserId(), jobNumber);
                                                 isAllowed = isJobOutput && canRead;
                                             }
                                             catch (NumberFormatException e) {
@@ -1169,7 +1158,7 @@ public class GenePatternAnalysisTask {
                                 URL url = uri.toURL();
                                 if (isLocalHost(url)) {
                                     try {
-                                        File file = localInputUrlToFile(url, isAdmin, jobContext);
+                                        File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
                                             if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                 pinfo.setValue(file.getAbsolutePath());
@@ -1328,26 +1317,13 @@ public class GenePatternAnalysisTask {
                 if (commandPrefix != null) {
                     cmdLine = commandPrefix + " " + cmdLine;
                 }
-                final List<String> cmdLineArgs;
-                final boolean useLegacyCmdLineParser=gpConfig.getGPBooleanProperty(jobContext, "gp.legacyCmdLineParser", false);
-                log.debug("gp.legacyCmdLineParser="+useLegacyCmdLineParser); 
-                List<String> cmdLineArgsA = null;
-                if (useLegacyCmdLineParser) {
-                    cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
-                    cmdLineArgs=cmdLineArgsA;
-                }
-                else {
-                    List<String> cmdLineArgsB = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, props, formalParameters);
-                    cmdLineArgs=cmdLineArgsB;
-                    if (log.isDebugEnabled()) {
-                        if (cmdLineArgsA==null) {
-                            cmdLineArgsA = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
-                        }
-                        List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramsCopy);
-                        log.debug("cmdLineArgsA (legacy): "+cmdLineArgsA); // pre 3.9.2
-                        log.debug("cmdLineArgsB (hybrid): "+cmdLineArgsB); // 3.9.2, it works!
-                        log.debug("cmdLineArgsC    (new): "+cmdLineArgsC); // under development, file input params not yet implemented
-                    }
+                
+                final Map<String,String> propsMap=CommandLineParser.propsToMap(props);
+                final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
+                if (log.isDebugEnabled()) {
+                    final List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramInfoMap);
+                    log.debug("cmdLineArgs      : "+cmdLineArgs); // 3.9.2, it works!
+                    log.debug("cmdLineArgs (new): "+cmdLineArgsC); // under development, file input params not yet implemented
                 }
                 if (cmdLineArgs == null || cmdLineArgs.size() == 0) {
                     vProblems.add("Command line not defined");
@@ -1428,7 +1404,7 @@ public class GenePatternAnalysisTask {
         }
         
         //close hibernate session before running the job, but don't save the parameter info
-        HibernateUtil.closeCurrentSession();
+        mgr.closeCurrentSession();
 
         //check for errors
         StringBuffer stderrBuffer = new StringBuffer();
@@ -1492,12 +1468,12 @@ public class GenePatternAnalysisTask {
             try
             {
                 //For javascript modules, output the launch url as a hidden file to the jobResultsDirectory
-                HashMap<String, List<String>> substituteParamValuesMap = ValueResolver.getParamValues(gpConfig, jobContext, props, formalParameters);
+                HashMap<String, List<String>> substituteParamValuesMap = ValueResolver.getParamValues(gpConfig, jobContext, props, paramInfoMap);
                 String launchUrl = JavascriptHandler.saveLaunchUrl(gpConfig, taskInfo, outDir, substituteParamValuesMap);
                 if (log.isDebugEnabled()) {
                     log.debug("jobId="+jobId+", launchUrl="+launchUrl);
                 }
-                GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
+                GenePatternAnalysisTask.handleJobCompletion(mgr, jobId, 0, null);
             }
             catch (Exception e) {
                 throw new JobDispatchException("Error handling visualizer", e);
@@ -1521,15 +1497,15 @@ public class GenePatternAnalysisTask {
             log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
         }
 
-        runCommand(gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+        runCommand(mgr, gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
 
-    protected void setPinfoValueForDirectoryInputParam(final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
+    protected void setPinfoValueForDirectoryInputParam(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
         //check permissions and optionally convert value from url to server file path
         final String pname=pinfoRecord.getFormal().getName();
         final Param inputParam=new Param(new ParamId(pname), false);
         inputParam.addValue(new ParamValue(pinfo.getValue()));
-        ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, jobContext, pinfoRecord, inputParam);
+        ParamListHelper plh=new ParamListHelper(mgr, gpConfig, jobContext, pinfoRecord, inputParam);
         GpFilePath directory=null;
         try {
             directory=plh.initDirectoryInputValue(inputParam.getValues().get(0));
@@ -1555,7 +1531,7 @@ public class GenePatternAnalysisTask {
      * @param jobContext
      * @throws JobDispatchException
      */
-    private void checkDiskQuota(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
         //is disk space available
         final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1567,7 +1543,7 @@ public class GenePatternAnalysisTask {
         //check if the user is above their disk quota
         try
         {
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(mgr, gpConfig, jobContext);
 
             if(diskInfo.isAboveQuota())
             {
@@ -1597,7 +1573,7 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private CommandExecutor2 initCmdExec2(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private static CommandExecutor2 initCmdExec2(final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
         final String executorId=gpConfig.getExecutorId(jobContext);
         if (executorId==null) {
             throw new JobDispatchException("Server error: 'executor' not set for job="+jobContext.getJobInfo().getJobNumber());
@@ -1609,33 +1585,34 @@ public class GenePatternAnalysisTask {
         return CommandExecutor2Wrapper.createCmdExecutor(cmdExec);
     }
 
-    private void runCommand(final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
+    private void runCommand(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String[] cmdLineArgs, final Map<String,String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final File stdinFile) 
     throws JobDispatchException
     {
         final boolean isPipeline=jobContext.getTaskInfo().isPipeline();
         final long jobDispatchTimeout = gpConfig.getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
-        final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
-        Future<Integer> task = executor.submit(new Callable<Integer>() {
-            public Integer call() throws Exception {
-                cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
-                return JobStatus.JOB_PROCESSING;
-            }
-        });
+        Future<Integer> task = null;
         try {
+            task = executor.submit(new Callable<Integer>() {
+                public Integer call() throws Exception {
+                    final CommandExecutor2 cmdExec=initCmdExec2(gpConfig, jobContext);
+                    cmdExec.runCommand(jobContext, cmdLineArgs, environmentVariables, runDir, stdoutFile, stderrFile, stdinFile);
+                    return JobStatus.JOB_PROCESSING;
+                }
+            });
             int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
             try {
                 if (!isPipeline) {
                     //pipeline handler sets the status for the pipeline job
-                    HibernateUtil.beginTransaction();
-                    AnalysisJobScheduler.setJobStatus(jobContext.getJobInfo().getJobNumber(), job_status);
-                    HibernateUtil.commitTransaction();
+                    mgr.beginTransaction();
+                    AnalysisJobScheduler.setJobStatus(mgr, jobContext.getJobInfo().getJobNumber(), job_status);
+                    mgr.commitTransaction();
                 }
                 if (isPipeline) {
                     CommandManagerFactory.getCommandManager().wakeupJobQueue();
                 }
             }
             catch (Throwable t) {
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
                 throw new JobDispatchException("Error changing job status for job #"+jobContext.getJobInfo().getJobNumber(), t);
             }
         }
@@ -1697,11 +1674,11 @@ public class GenePatternAnalysisTask {
         return ParameterInfo._deepCopy(orig);
     }
 
-    private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+    private static JobInfoWrapper getJobInfoWrapper(final HibernateSessionManager mgr, final GpConfig gpConfig, String userId, int jobNumber) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
             JobInfoManager m = new JobInfoManager();
-            String contextPath = ServerConfigurationFactory.instance().getGpPath();
+            String contextPath = gpConfig.getGpPath();
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
@@ -1710,22 +1687,30 @@ public class GenePatternAnalysisTask {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
     
+    /** @deprecated pass in a valid Hibernate session */
     public static void handleJobCompletion(int jobId, int exitCode) {
         handleJobCompletion(jobId, exitCode, null);
     }
 
+    /** @deprecated pass in a valid Hibernate session */
     public static void handleJobCompletion(int jobId, int exitCode, String errorMessage) {
+        handleJobCompletion(org.genepattern.server.database.HibernateUtil.instance(),
+                jobId, exitCode, errorMessage);
+    }
+
+    public static void handleJobCompletion(final HibernateSessionManager mgr, int jobId, int exitCode, String errorMessage) {
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
         File stdoutFile = new File(jobDir, STDOUT);
         File stderrFile = new File(jobDir, STDERR);
-        handleJobCompletion(jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
+        handleJobCompletion(mgr, jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
     }
 
+    /** @deprecated pass in a valid Hibernate session */
     public static void handleJobCompletion(int jobId, int exitCode, String errorMessage, String stdoutFilename, String stderrFilename) {
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
         File stdoutFile = new File(jobDir, stdoutFilename);
@@ -1733,29 +1718,35 @@ public class GenePatternAnalysisTask {
         handleJobCompletion(jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
     }
 
+    /** @deprecated pass in a valid Hibernate session */
     public static void handleJobCompletion(final int jobId, final int exitValue, final String errorMessage, final File jobDir, final File stdoutFile, final File stderrFile) {
+        handleJobCompletion(org.genepattern.server.database.HibernateUtil.instance(), 
+                jobId, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
+    }
+    
+    public static void handleJobCompletion(final HibernateSessionManager mgr, final int jobId, final int exitValue, final String errorMessage, final File jobDir, final File stdoutFile, final File stderrFile) {
         log.debug("job "+jobId+" completed with exitValue="+exitValue);
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            final JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobId);
+            final JobInfo jobInfo = new AnalysisDAO(mgr).getJobInfo(jobId);
             //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
             if (jobInfo == null) {
                 log.error("job #"+jobId+"was deleted before handleJobCompletion");
                 return;
             }
-            handleJobCompletionInThread(jobInfo, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
+            handleJobCompletionInThread(mgr, jobInfo, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
         }
         catch (Throwable t) {
             log.error("Unexpected exception in handleJobCompletion for jobId="+jobId, t);
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
 
-    private static void handleJobCompletionInThread(final JobInfo jobInfo, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
+    private static void handleJobCompletionInThread(final HibernateSessionManager mgr, final JobInfo jobInfo, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
         //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
         if (jobInfo == null) {
             log.error("jobInfo==null");
@@ -1781,7 +1772,7 @@ public class GenePatternAnalysisTask {
             return;
         }
         try {
-            File expectedJobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
+            File expectedJobDir = new File(GenePatternAnalysisTask.getJobDir(gpConfig, jobContext, ""+jobId));
             if (!expectedJobDir.getCanonicalPath().equals( jobDir.getCanonicalPath() )) {
                 log.error("Invalid arg, jobDir is not in the expected location\n"+
                     "\tjobDir="+jobDir.getCanonicalPath()+"\n"+
@@ -1806,7 +1797,7 @@ public class GenePatternAnalysisTask {
             log.error("Invalid arg, can't write to jobDir, jobDir="+jobDir.getAbsolutePath());
         }
         
-        JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
+        JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(mgr, gpConfig, jobInfo.getUserId(), jobInfo.getJobNumber());
         cleanupInputFiles(jobDir, jobInfoWrapper);
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
@@ -1911,22 +1902,22 @@ public class GenePatternAnalysisTask {
 
         JobInfo updatedJobInfo;
         try {
-            HibernateUtil.beginTransaction();
-            updatedJobInfo=recordJobCompletion(jobInfo, jobStatus);
-            HibernateUtil.commitTransaction();
+            mgr.beginTransaction();
+            updatedJobInfo=recordJobCompletion(mgr, jobInfo, jobStatus);
+            mgr.commitTransaction();
         }
         catch (Throwable t) {
             log.error("Error recording job completion for job #"+jobInfo.getJobNumber(), t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             updatedJobInfo=jobInfo;
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         
         // new api, in a new transaction, just in case of errors
         try {
-            JobOutputRecorder.recordOutputFilesToDb(gpConfig, jobContext, jobDir);
+            JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, jobContext, jobDir);
         }
         catch (DbException e) {
             //ignore, error is already logged
@@ -1935,7 +1926,7 @@ public class GenePatternAnalysisTask {
         //if the job is in a pipeline, notify the pipeline handler
         boolean isInPipeline = jobInfo._getParentJobNumber() >= 0;
         if (isInPipeline) {
-            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(updatedJobInfo);
+            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(mgr, updatedJobInfo);
             if (wakeupJobQueue) {
                 //if the pipeline has more steps, wake up the job queue
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
@@ -1945,7 +1936,7 @@ public class GenePatternAnalysisTask {
         // Publish a job completion event for the JobEventBus
         JobRunnerJob jrj=null;
         try {
-            jrj=new JobRunnerJobDao().selectJobRunnerJob(jobInfo.getJobNumber());
+            jrj=new JobRunnerJobDao().selectJobRunnerJob(mgr, jobInfo.getJobNumber());
         }
         catch (DbException e) {
             //ignore, innner method logs the error
@@ -2135,7 +2126,7 @@ public class GenePatternAnalysisTask {
         }
     };
     
-    private static JobInfo recordJobCompletion(final JobInfo jobInfo, final int jobStatus) {
+    private static JobInfo recordJobCompletion(final HibernateSessionManager mgr, final JobInfo jobInfo, final int jobStatus) {
         if (jobInfo == null) {
             log.error("jobInfo == null, not recording job completion");
             return null;
@@ -2144,7 +2135,7 @@ public class GenePatternAnalysisTask {
         try {
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
             Date now = new Date(Calendar.getInstance().getTimeInMillis());
-            JobInfo updatedJobInfo=updateJobInfo(jobInfo, jobStatus, now);
+            JobInfo updatedJobInfo=updateJobInfo(mgr, jobInfo, jobStatus, now);
             UsageLog.logJobCompletion(jobInfo, now, elapsedTime);
             return updatedJobInfo;
         } 
@@ -2154,13 +2145,13 @@ public class GenePatternAnalysisTask {
         return null;
     }
     
-    private static JobInfo updateJobInfo(final JobInfo jobInfo, final int jobStatus, final Date completionDate) {
+    private static JobInfo updateJobInfo(final HibernateSessionManager mgr, final JobInfo jobInfo, final int jobStatus, final Date completionDate) {
         if (jobInfo == null) {
             log.error("jobInfo == null");
             return null;
         }
 
-        AnalysisJobDAO home = new AnalysisJobDAO();
+        AnalysisJobDAO home = new AnalysisJobDAO(mgr);
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
 
@@ -2170,11 +2161,11 @@ public class GenePatternAnalysisTask {
         }
         aJob.setParameterInfo(paramString);
 
-        JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
+        JobStatus newJobStatus = (new JobStatusDAO()).findById(mgr, jobStatus);
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
         
-        HibernateUtil.getSession().update(aJob);
+        mgr.getSession().update(aJob);
         
         return new JobInfo(aJob);
     }
@@ -2507,7 +2498,6 @@ public class GenePatternAnalysisTask {
                 replacement = "";
             }
             if (varName.equals("resources")) {
-                //TODO: log.error("hard-coded path to user.dir");
                 // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
                 replacement = new File(replacement).getAbsolutePath();
             }
@@ -2516,6 +2506,7 @@ public class GenePatternAnalysisTask {
             }
             p = htParams.get(varName);
             if (p != null) {
+                @SuppressWarnings("rawtypes")
                 HashMap hmAttributes = p.getAttributes();
                 if (hmAttributes != null) {
                     if (hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null) {
@@ -2548,7 +2539,6 @@ public class GenePatternAnalysisTask {
         }
         rval.add(newString.toString());
         return rval;
-        //return newString.toString();
     }
 
     /**
@@ -2583,9 +2573,9 @@ public class GenePatternAnalysisTask {
         }
     }
 
-    public static AnalysisDAO getDS() {
-        return new AnalysisDAO();
-    }
+//    public static AnalysisDAO getDS() {
+//        return new AnalysisDAO();
+//    }
 
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
         AdminDAO adminDAO = new AdminDAO();
@@ -3303,7 +3293,7 @@ public class GenePatternAnalysisTask {
             //if necessary, install patches
             GpConfig gpConfig=ServerConfigurationFactory.instance();
             GpContext gpContext=GpContext.getServerContext();
-            PluginManagerLegacy pluginManager=new PluginManagerLegacy(HibernateUtil.instance(), gpConfig, gpContext);
+            PluginManagerLegacy pluginManager=new PluginManagerLegacy(org.genepattern.server.database.HibernateUtil.instance(), gpConfig, gpContext);
             pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
             final Vector<String> vProblems=GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
@@ -3344,7 +3334,8 @@ public class GenePatternAnalysisTask {
             //the following code simplifies by never changing the owner or privacy flag of an existing module
             TaskInfo existingTask=null;
             try {
-                existingTask=TaskInfoCache.instance().getTask(formerID);
+                HibernateSessionManager mgr=HibernateUtil.instance();
+                existingTask=TaskInfoCache.instance().getTask(mgr, formerID);
                 final int existingAccessId=existingTask.getAccessId();
                 final String existingUserId=existingTask.getUserId();
                 final boolean diffAccessId=existingAccessId != requestedAccessId;
@@ -3657,7 +3648,7 @@ public class GenePatternAnalysisTask {
                         break; // only install the top level (first entry)
                     }
                 }
-                TaskInfoCache.instance().removeFromCache(firstLSID);
+                TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), firstLSID);
                 return firstLSID;
             }
 
@@ -3875,7 +3866,7 @@ public class GenePatternAnalysisTask {
             }
             throw new TaskInstallationException(vProblems);
         }
-        TaskInfoCache.instance().removeFromCache(lsid);
+        TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), lsid);
         return lsid;
     }
 

@@ -23,6 +23,7 @@ import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.genepattern.CommandLineParser;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Assert;
@@ -139,7 +140,7 @@ public class GetCommandLineTest {
         private String description = "";
         private String cmdLine = "";
         private Map<String,String> env;
-        private Map<String,ParameterInfo> parameterInfoMap = Collections.emptyMap();
+        private Map<String,ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
 
         private List<String> expected;
         
@@ -216,9 +217,9 @@ public class GetCommandLineTest {
             }
         }
         private void setFormalParameters(ParameterInfo[] params) {
-            parameterInfoMap = new HashMap<String, ParameterInfo>();
+            parameterInfoMap = new HashMap<String, ParameterInfoRecord>();
             for(ParameterInfo param : params) {
-                parameterInfoMap.put(param.getName(), param);
+                parameterInfoMap.put(param.getName(), new ParameterInfoRecord(param));
             }
         }
         private void setExpected(Object env) {
@@ -287,7 +288,7 @@ public class GetCommandLineTest {
     private final String name;
     private final String cmdLine;
     private final Map<String,String> env;
-    private final Map<String,ParameterInfo> parameterInfoMap;
+    private final Map<String,ParameterInfoRecord> parameterInfoMap;
     private final List<String> expected;
     
     private boolean strequals(String a, String b) {
@@ -341,15 +342,6 @@ public class GetCommandLineTest {
             Assert.assertEquals(name+": cmdLineArg["+i+"]", expected_arg, actual_arg);                
             ++i;
         }
-    }
-    
-    private String hackFilterArg(String expected, String actual) {
-        //ignore <java_flags>
-        if (actual.equals("-Xmx512M")) {
-            return "-Xmx512M";
-        }
-        
-        return expected;
     }
 
 }

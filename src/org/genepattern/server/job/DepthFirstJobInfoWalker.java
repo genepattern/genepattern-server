@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
-import org.genepattern.server.executor.pipeline.PipelineGraph;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -30,7 +29,7 @@ import org.genepattern.webservice.ParameterInfo;
  *
  */
 public final class DepthFirstJobInfoWalker implements JobInfoWalker {
-    private static final Logger log = Logger.getLogger(PipelineGraph.class);
+    private static final Logger log = Logger.getLogger(DepthFirstJobInfoWalker.class);
 
     /**
      * Rule for extracting a GpFilePath from a ParameterInfo.

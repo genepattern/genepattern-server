@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -49,9 +50,9 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.w3c.dom.Attr;
@@ -477,8 +478,8 @@ public class PluginManagerLegacy {
     }
 
     protected static List<String> initCmdLineArray(final GpConfig gpConfig, final GpContext gpContext, final String cmdLine) {
-        final ParameterInfo[] formalParameters = new ParameterInfo[0];
-        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, formalParameters);        
+        final Map<String,ParameterInfoRecord> paramInfoMap=Collections.emptyMap();
+        final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, paramInfoMap);        
         return cmdLineArgs;
     }
 
