@@ -358,7 +358,6 @@ public class PipelineModel implements Serializable {
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.NAME + "\" select=\"" + xmlEncode(getName()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.DESCRIPTION + "\" select=\"" + xmlEncode(getDescription()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.AUTHOR + "\" select=\"" + xmlEncode(getAuthor()) + "\"/>\n");
-        outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.QUALITY + "\" select=\"" + xmlEncode(getQuality()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.PRIVACY + "\" select=\"" + xmlEncode(isPrivate() ? GPConstants.PRIVATE : GPConstants.PUBLIC) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.USERID + "\" select=\""  + xmlEncode(getUserID()) + "\"/>\n");
         outputWriter.write("\t<" + TAG_VARIABLE + " name=\"" + GPConstants.VERSION + "\" select=\"" + xmlEncode(getVersion()) + "\"/>\n");
