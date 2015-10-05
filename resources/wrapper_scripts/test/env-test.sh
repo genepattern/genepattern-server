@@ -168,6 +168,17 @@ testInitCustomValuesFromEnv() {
     assertEquals "custom values" "R-3.1, GCC-4.9" "$(getValue R-3.1)"
 }
 
+testExportEnvForLibMesa() {
+    source ../env-lookup.sh
+    sourceEnvDefault
+    sourceEnvCustom "${test_script_dir}/env-lookup-shunit2.sh"
+
+    # this is a special-case for the Broad hosted servers
+    assertEquals "before" "" "$(echo $RGL_USE_NULL)"
+    initEnv '.libmesa_from_matlab-2014b'
+    assertEquals "after" "TRUE" "$(echo $RGL_USE_NULL)"    
+}
+
 testAddEnv() {
     source ../env-lookup.sh
     sourceEnvDefault
