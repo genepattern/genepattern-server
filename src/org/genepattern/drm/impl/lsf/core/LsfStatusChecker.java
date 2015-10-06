@@ -169,12 +169,19 @@ public class LsfStatusChecker {
         if (out==null) {
             throw new CmdException("Null output from cmd="+cmd);
         }
+        if (log.isDebugEnabled()) {
+            log.debug("output="+out);
+        }
         //expecting just one line of output
         if (out.size()==0) {
             throw new CmdException("No output from cmd="+cmd);
         }
         if (out.size()!=1) {
-            throw new CmdException("Can only accept one line from 'bjobs -W' command, num lines="+out.size());
+            final String message="Unexpected error checking status for gpJobNo="+jobRecord.getGpJobNo()+", extJobId="+jobRecord.getExtJobId()+
+                    ", expecting one line from 'bjobs -W' command, num lines="+out.size()+
+                    ", output="+out;
+            log.error(message);
+            throw new CmdException(message);
         }
     
         String line=out.get(0);

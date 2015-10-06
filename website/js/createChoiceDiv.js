@@ -103,8 +103,9 @@ function getCustomChoices(choiceInfo, initialValues) {
 function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, enableBatch, initialValuesList) {
     var doLoadChoiceDiv=false;
 
-    // Create the single/batch run mode toggle
-    if (enableBatch) {
+    // Create the single/batch run mode toggle only if this is not a file choice parameter
+    // so that duplicate toggles are not created
+    if (enableBatch && $.inArray(field_types.FILE, run_task_info.params[parameterName].type) == -1) {
         var batchBox = $("<div class='batchBox' title='A job will be launched for every value specified.'></div>");
         // Add the checkbox
         var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
@@ -447,7 +448,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
     if (doLoadChoiceDiv === true) {
         // HACK: ignore previously selected custom values
         paramDetails.initialChoiceValues = true;
-        reloadChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
+        reloadChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, enableBatch, initialValuesList);
     }
 
     return selectChoiceDiv;
@@ -459,7 +460,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
  *
  * @returns a choiceInfo object
  */
-function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, initialValuesList) {
+function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, enableBatch, initialValuesList) {
     $.getJSON( choiceInfoIn.href,
         function( choiceInfo ) {
             if (window.console) {
@@ -467,7 +468,7 @@ function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterN
                 console.log("status: " + JSON.stringify(choiceInfo.status, null, 2));
             }
             $(selectChoiceDiv).empty();
-            buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, initialValuesList);
+            buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName, groupId, enableBatch, initialValuesList);
 
             //if it's a custom value then do the same as a send to parameter
             var customChoices=getCustomChoices(choiceInfo, initialValuesList);

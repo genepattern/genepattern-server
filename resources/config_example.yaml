@@ -150,6 +150,19 @@ executors:
         configuration.properties:
             jobRunnerClassname: org.genepattern.drm.impl.lsf.core.CmdLineLsfRunner
             jobRunnerName: CmdLineLsfRunner
+            
+            ## interval for polling for job status (in ms)
+            #minDelay: 100
+            ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            #useDynamicDelay: true
+            ## the max polling interval, when 'useDynamicDelay' is true
+            #maxDelay: 30000
+            ## the cutoff time to fail a job when getStatus is UNDETERMINED
+            ## this improves handling of intermittent failures communicating with the queuing system
+            #retryCutoff: 1-00:00:00
+            # set to null to disable this feature and revert back to pre-3.9.5 behavior
+            #retryCutoff: !!null
+            
         default.properties:
             job.project: genepattern
             job.logFile: .lsf.out
