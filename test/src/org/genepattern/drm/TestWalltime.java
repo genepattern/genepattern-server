@@ -12,12 +12,17 @@ import org.junit.Test;
 
 
 public class TestWalltime {
+
     @Test
     public void testFullSpec() throws Exception {
         Walltime wt=Walltime.fromString("7-12:30:30");
         Assert.assertEquals("duration", 649830, wt.getDuration());
         Assert.assertEquals("units", TimeUnit.SECONDS, wt.getTimeUnit());
         Assert.assertEquals("toString()", "7-12:30:30", wt.toString());
+        
+        long asMillis=wt.getTimeUnit().toMillis(wt.getDuration());
+        Assert.assertEquals("asMillis", asMillis, 649830000L);
+        Assert.assertEquals("wt.asMillis", wt.asMillis(), asMillis);
     }
 
     @Test

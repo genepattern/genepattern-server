@@ -6,6 +6,7 @@ package org.genepattern.server.executor.drm;
 import java.beans.Statement;
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -26,6 +27,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -45,6 +47,7 @@ import org.genepattern.server.job.status.Status;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
+import com.google.common.base.Strings;
 import com.google.common.eventbus.EventBus;
 
 /**
@@ -112,6 +115,24 @@ public class JobExecutor implements CommandExecutor2 {
      * @see DrmLookupFactory.Type
      */
     public static final String PROP_LOOKUP_TYPE="lookupType";
+    
+    /**
+     * Set the 'retryCutoff' to an amount of time in d-hh:mm:ss format @see Walltime. 
+     * If the status check fails, retry until the most recent successful status check exceeds
+     * this cutoff time. The default is 1 day. When the cutoff is reached, fail the job.
+     * E.g.
+     * <pre>
+           retryCutoff: 1-00:00:00
+     * </pre>
+     * 
+     * To disable this feature and revert back to pre-3.9.5 behavior, set the retryCutoff to null, e.g.
+     * <pre>
+           retryCutoff: !!null
+           or
+           retryCutoff:
+       </pre>
+     */
+    public static final String PROP_RETRY_CUTOFF="retryCutoff";
     
     /**
      * Load JobRunner from classname.
@@ -217,8 +238,13 @@ public class JobExecutor implements CommandExecutor2 {
     private long minDelay=100L;
     private long maxDelay=30*SEC;
     private boolean useDynamicDelay=true;
+    
+    // default retry cutoff, when getStatus fails
+    private Walltime retryCutoff=new Walltime(1, TimeUnit.DAYS);
 
     private BlockingQueue<DrmJobRecord> runningJobs;
+    // map of <GpJobNo, retryCount> for retrying the status check
+    private Map<Integer,Integer> retryCountMap;
     private Thread jobHandlerThread;
     
     // wait for a fixed delay before putting a job back on the status checking queue
@@ -277,12 +303,7 @@ public class JobExecutor implements CommandExecutor2 {
             if (exitCode != 0) {
                 errorMessage=jobStatus.getJobStatusMessage();
             }
-            if (errorMessage != null) {
-                GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode, errorMessage);
-            }
-            else {
-                GenePatternAnalysisTask.handleJobCompletion(gpJobNo, exitCode);
-            }
+            GenePatternAnalysisTask.handleJobCompletion(mgr, gpJobNo, exitCode, errorMessage);
         }
         catch (Throwable t) {
             log.error("Unexpected error in handleCompletedJob for drmJobId="+jobStatus.getDrmJobId()+", gpJobId="+gpJobNo, t);
@@ -393,12 +414,37 @@ public class JobExecutor implements CommandExecutor2 {
             this.useDynamicDelay=Boolean.valueOf(useDynamicDelayStr.trim());
         }
         
+        final String retryCutoffStr=properties.getProperty(PROP_RETRY_CUTOFF);
+        if (log.isDebugEnabled()) {
+            log.debug("retryCutoffStr="+retryCutoffStr);
+        }
+        if (retryCutoffStr==null) {
+            if (log.isDebugEnabled()) {
+                log.debug("null 'retryCutoff'; ignore retry feature");
+            }
+            retryCutoff=null;
+        }
+        else if (Strings.isNullOrEmpty(retryCutoffStr)) {
+            if (log.isDebugEnabled()) {
+                log.debug("empty 'retryCutoff'; use default value");
+            }
+        }
+        else {
+            try {
+                retryCutoff=Walltime.fromString(retryCutoffStr);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing value from config file, "+PROP_RETRY_CUTOFF+": "+retryCutoffStr, t);
+            }
+        }
+        
         if (log.isDebugEnabled()) {
             log.debug(PROP_JOB_RUNNER_CLASSNAME+"="+jobRunnerClassname);
             log.debug(PROP_JOB_RUNNER_NAME+"="+jobRunnerName);
             log.debug(PROP_LOOKUP_TYPE+"="+lookupType);
             log.debug(PROP_MIN_DELAY+"="+minDelay);
             log.debug(PROP_USE_DYNAMIC_DELAY+"="+useDynamicDelay);
+            log.debug(PROP_RETRY_CUTOFF+"="+retryCutoff);
         }
 
         this.jobRunner=JobExecutor.initJobRunner(jobRunnerClassname, properties);
@@ -411,6 +457,7 @@ public class JobExecutor implements CommandExecutor2 {
         log.info("starting job executor: "+jobRunnerName+" ( "+jobRunnerName+" ) ...");
         final int BOUND = 100000;
         runningJobs=new LinkedBlockingQueue<DrmJobRecord>(BOUND);
+        retryCountMap=new HashMap<Integer,Integer>();
         initJobHandler();
         initJobsOnStartup(runningJobs);
     }
@@ -444,14 +491,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
-    /**
-     * Update the job_runner_job table and publish JobStatusEvents.
-     * 
-     * @param gpJobNo
-     * @param taskLsid
-     * @param drmJobStatus
-     */
-    protected void updateStatus(final Integer gpJobNo, final String taskLsid, final DrmJobStatus drmJobStatus) {
+    protected JobRunnerJob getRecordFromDb(final Integer gpJobNo) {
         JobRunnerJob existingJobRunnerJob = null;
         try {
             existingJobRunnerJob = new JobRunnerJobDao().selectJobRunnerJob(mgr, gpJobNo);
@@ -460,6 +500,18 @@ public class JobExecutor implements CommandExecutor2 {
             // ignore
             log.debug("no job_runner_job entry for gpJobNo="+gpJobNo, e);
         }
+        return existingJobRunnerJob;
+    }
+    
+    /**
+     * Update the job_runner_job table and publish JobStatusEvents.
+     * 
+     * @param gpJobNo
+     * @param taskLsid
+     * @param drmJobStatus
+     */
+    protected void updateStatus(final Integer gpJobNo, final String taskLsid, final DrmJobStatus drmJobStatus) {
+        final JobRunnerJob existingJobRunnerJob = getRecordFromDb(gpJobNo);
         updateStatus(gpJobNo, taskLsid, existingJobRunnerJob, drmJobStatus);
     }
     
@@ -542,10 +594,6 @@ public class JobExecutor implements CommandExecutor2 {
         eventBus.post(new JobCompletedEvent(lsid, prevStatus, newStatus));
     }
     
-    private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
-        return getJobStatus(drmJobRecord, 60000L); //60 seconds
-    }
-
     private DrmJobStatus getJobStatus(final DrmJobRecord drmJobRecord, final long getJobStatus_delay_ms) throws InterruptedException {
         Future<DrmJobStatus> f=jobStatusService.submit(new Callable<DrmJobStatus>() {
             @Override
@@ -573,45 +621,103 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
 
-    private void checkJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
-        //check it's status
-        final DrmJobStatus drmJobStatus=getJobStatus(drmJobRecord);
-        // can return null if there was a connection timeout or other problem getting the status from the jobrunner
-        if (drmJobStatus != null) {
-            updateStatus(drmJobRecord.getGpJobNo(), drmJobRecord.getLsid(), drmJobStatus);
-        }
-        if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
-            log.debug("job is terminated, drmJobStatus.jobState="+drmJobStatus.getJobState());
-            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
-        }
-        else if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
-            log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
-            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
-        }
-        else {
-            final long delay;
-            if (drmJobStatus==null) {
-                log.error("unexpected result from jobRunner.getStatus, drmJobStatus=null, retry in 5 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
-                delay=5*MINUTE;
+    protected boolean shouldRetry(final JobRunnerJob existingJobRunnerJob, final Integer retryCount) {
+        if (retryCutoff != null) {
+            if (existingJobRunnerJob != null) {
+                final Date cutoff=new Date(new Date().getTime()-retryCutoff.asMillis());
+                if (cutoff.after(existingJobRunnerJob.getStatusDate())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("cutoff exceeded, cancel job");
+                    }
+                    return false;
+                }
+                else {
+                    return true;
+                }
             }
             else {
-                //put it back onto the queue
-                delay=getDelay(drmJobRecord, drmJobStatus);
+                //special-case
+                log.error("existingJobRunnerJob==0, retryCount="+retryCount+", checking retryCount > 1000");
+                return retryCount > 1000;
             }
-            svcDelay.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        runningJobs.put(drmJobRecord);
-                    }
-                    catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            },
-            delay,
-            TimeUnit.MILLISECONDS);
         }
+        
+        // revert back to pre 3.9.5 behavior, always fail when jobState is UNDETERMINED
+        return false;
+    }
+    
+    private void checkJobStatus(final DrmJobRecord drmJobRecord) throws InterruptedException {
+        final JobRunnerJob existingJobRunnerJob = getRecordFromDb(drmJobRecord.getGpJobNo());
+        //check it's status
+        final DrmJobStatus drmJobStatus=getJobStatus(drmJobRecord, 60000L); //60 seconds
+        // can return null if there was a connection timeout or other problem getting the status from the jobrunner
+        if (drmJobStatus != null && ! drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) {
+            // only update DB when not UNDETERMINED
+            updateStatus(drmJobRecord.getGpJobNo(), drmJobRecord.getLsid(), existingJobRunnerJob, drmJobStatus);
+        }
+        
+        // handle completed job and return
+        if (drmJobStatus != null && drmJobStatus.getJobState().is(DrmJobState.TERMINATED)) {
+            if (log.isDebugEnabled()) {
+                log.debug("job is terminated, drmJobStatus.jobState="+drmJobStatus.getJobState());
+            }
+            handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
+            return;
+        }
+
+        // special-case, retry when job state is UNDETERMINED within some boundaries
+        boolean retry=false;
+        final Integer retryCount;
+        if (retryCountMap.containsKey(drmJobRecord.getGpJobNo())) {
+            retryCount=retryCountMap.get(drmJobRecord.getGpJobNo());
+        }
+        else {
+            retryCount=0;
+        }
+        if (drmJobStatus != null) {
+            if (drmJobStatus.getJobState().is(DrmJobState.UNDETERMINED)) { 
+                if (log.isDebugEnabled()) {
+                    log.debug("unexpected result from jobRunner.getStatus, jobState="+drmJobStatus.getJobState());
+                    log.debug("retryCount="+retryCount);
+                }
+                retryCountMap.put(drmJobRecord.getGpJobNo(), 1+retryCount);
+                retry=shouldRetry(existingJobRunnerJob, retryCount);
+                if (!retry) {
+                    handleCompletedJob(drmJobRecord.getGpJobNo(), drmJobStatus);
+                    return;
+                }
+            }
+            else {
+                retryCountMap.remove(drmJobRecord.getGpJobNo());
+            }
+        }
+
+        final long delay;
+        if (retry) {
+            log.error("status UNDETERMINED, retry getStatus in 5 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
+            delay=5*MINUTE;
+        }
+        else if (drmJobStatus==null) {
+            log.error("drmJobStatus=null, retry getStatus in 5 minutes, gpJobNo="+drmJobRecord.getGpJobNo());
+            delay=5*MINUTE;
+        }
+        else {
+            delay=getDelay(drmJobRecord, drmJobStatus);
+        }
+        // keep polling
+        svcDelay.schedule(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runningJobs.put(drmJobRecord);
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        },
+        delay,
+        TimeUnit.MILLISECONDS);
     }
 
     private void initJobHandler() {
