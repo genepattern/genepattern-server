@@ -195,7 +195,7 @@ public class GenomeSpaceResource {
      * @param dirUrl - GenomeSpace URL to the save directory
      * @return - A response containing the URL of the GenomeSpace directory
      */
-    @GET
+    @POST
     @Path("/save")
     public Response saveFile(@Context HttpServletRequest request, @QueryParam("file") String fileUrl, @QueryParam("directory") String dirUrl) {
         HttpSession httpSession = request.getSession();
