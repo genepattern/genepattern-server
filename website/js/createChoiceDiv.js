@@ -105,7 +105,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
 
     // Create the single/batch run mode toggle only if this is not a file choice parameter
     // so that duplicate toggles are not created
-    if (enableBatch && $.inArray(field_types.FILE, run_task_info.params[parameterName]).type == -1) {
+    if (enableBatch && $.inArray(field_types.FILE, run_task_info.params[parameterName].type) == -1) {
         var batchBox = $("<div class='batchBox' title='A job will be launched for every value specified.'></div>");
         // Add the checkbox
         var batchCheck = $("<input type='checkbox' id='batchCheck" + parameterName + "' />");
