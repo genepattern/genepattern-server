@@ -5,6 +5,8 @@ package org.genepattern.server.webapp.rest.api.v1.genomespace;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.genomespace.*;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 
@@ -183,5 +185,38 @@ public class GenomeSpaceResource {
         HttpSession session = request.getSession();
         GenomeSpaceManager.forceFileRefresh(session);
         return Response.ok().entity("GenomeSpace file cache has been reset.").build();
+    }
+
+    /**
+     * Saves a file from GenePattern to GenomeSpace
+     *
+     * @param request - The HttpSessionRequest
+     * @param fileUrl - GenePattern URL to the file
+     * @param dirUrl - GenomeSpace URL to the save directory
+     * @return - A response containing the URL of the GenomeSpace directory
+     */
+    @GET
+    @Path("/save")
+    public Response saveFile(@Context HttpServletRequest request, @QueryParam("file") String fileUrl, @QueryParam("directory") String dirUrl) {
+        HttpSession httpSession = request.getSession();
+        GenomeSpaceManager.setLoggedIn(httpSession, true);
+        GenomeSpaceFile directory = GenomeSpaceManager.getDirectory(httpSession, dirUrl);
+        GpFilePath file = null;
+        try {
+            file = GpFileObjFactory.getRequestedGpFileObj(fileUrl);
+        } catch (Exception e) {
+            log.error("Unable to locate GenePattern file when saving to GenomeSpace: " + fileUrl);
+            Response.serverError().entity("Unable to find GenePattern File: " + fileUrl).build();
+        }
+
+        Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        try {
+            GenomeSpaceClientFactory.instance().saveFileToGenomeSpace(gsSession, file, directory);
+        } catch (GenomeSpaceException e) {
+            log.error("Unable to save file to GenomeSpace: " + dirUrl);
+            Response.serverError().entity("Unable to save file to GenomeSpace: " + dirUrl).build();
+        }
+
+        return Response.ok().entity(dirUrl).build();
     }
 }
