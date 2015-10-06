@@ -20,7 +20,6 @@
             <img src="skin/HeaderLogo.jpg" width="115" height="17" border="0" alt="GenePattern logo" />
             server:</b>
         <ol>
-            <li><a href="installLog.jsp">View the server installation report</a><br><br></li>
             <li><a href="pages/taskCatalog.jsf">Install modules</a> from among those at the Broad public website.
                 If you want to install all available modules, click the <b>install checked</b> button.<br><br></li>
             <li><a href="installDatasets.htm">Download sample datasets</a><br><br></li>
