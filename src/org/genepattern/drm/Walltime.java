@@ -21,7 +21,7 @@ public class Walltime {
     private long duration;
     private TimeUnit timeUnit;
     
-    private Walltime(long duration, final TimeUnit timeUnit) {
+    public Walltime(long duration, final TimeUnit timeUnit) {
         this.duration=duration;
         this.timeUnit=timeUnit;
     }
