@@ -25,12 +25,26 @@ public class Walltime {
         this.duration=duration;
         this.timeUnit=timeUnit;
     }
-    
+
+    /**
+     * @return the duration of this walltime spec in the specified timeUnit.
+     */
     public long getDuration() {
         return duration;
     }
+
+    /**
+     * @return the timeunit of this walltime spec.
+     */
     public TimeUnit getTimeUnit() {
         return timeUnit;
+    }
+
+    /**
+     * @return the duration of this walltime spec in milliseconds.
+     */
+    public long asMillis() {
+        return timeUnit.toMillis(duration);
     }
     
     public String toString() {
