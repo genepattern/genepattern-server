@@ -1,34 +1,31 @@
-#Mon, 03 Feb 2014 14:30:04 -0500
+#Fri Oct 09 19:23:40 PDT 2015
 name=InstallRPackages
-commandLine=<R.execution.environment> --no-save --quiet --slave --no-restore <libdir>installPackages.R <r.package.info>
+commandLine=<R2.15_Rscript> --no-save --quiet --slave --no-restore <libdir>installPackages.R <r.package.info>
 license=
 taskDoc=doc.html
-fileFormat=txt
+fileFormat=
 taskType=Administration
 os=any
 language=R2.15.3
 cpuType=any
-privacy=public
-description=Install R packages
-version=
+privacy=preproduction
+description=Installs packages into the GenePattern R-2.15 site library
+version=Initial preproduction release
+author=David Eby;Broad Institute
 
-p1_default_value=<R2.15_Rscript_dev>
+p1_MODE=IN
+p1_TYPE=FILE
+p1_default_value=
 p1_description=
-p1_name=R.execution.environment
+p1_fileFormat=
+p1_flag=
+p1_name=r.package.info
+p1_numValues=1..1
 p1_optional=
+p1_prefix=
 p1_prefix_when_specified=
-p1_type=java.lang.String
-p1_value=<R2.15_Rscript_dev>\=R 2.15;<R2.14_Rscript_dev>\=R 2.14
-
-p2_default_value=
-p2_description=
-p2_name=r.package.info
-p2_optional=
-p2_prefix_when_specified=
-p2_type=java.lang.String
-p2_TYPE=FILE
-p2_type=java.io.File
-p2_value=
+p1_type=java.io.File
+p1_value=
 
 requiredPatchLSIDs=
 requiredPatchURLs=
