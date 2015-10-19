@@ -319,7 +319,7 @@ public class TestDynamicChoiceInfoParser {
     @Test
     @SuppressWarnings("unchecked")
     public void testDynamicDropdownGsea() {
-        final String ftpUrl="ftp://gseaftp.broadinstitute.org/pub/gsea/annotations/";
+        final String ftpUrl="ftp://ftp.broadinstitute.org/pub/gsea/annotations/";
         final ParameterInfo pinfo=ParameterInfoUtil.initFileDropdownParam(
                 "input.file", 
                 ftpUrl);
