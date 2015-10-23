@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Ant build file -->
 
-<project basedir="." default="create-zip" name="InstallRPackages">
+<project basedir="." default="create-zip" name="InstallRPackages_R3.0">
 	<property name="dirOffset" value="../../" />
 	<import file="${dirOffset}/commontargets.xml" />
 
