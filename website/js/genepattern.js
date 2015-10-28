@@ -2663,6 +2663,7 @@ function loadJavascript(jobId, container, openInNewWindow) {
                     container.gpJavascript({
                         taskName: job.taskName,
                         taskLsid: job.taskLsid,
+                        jobId: job.jobId,
                         url: job.launchUrl  //The URL to the main javascript html file
                     });
                     mainLayout.close('west');
