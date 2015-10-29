@@ -198,6 +198,8 @@ public class ModuleDocServlet extends HttpServlet implements Servlet {
             htTypes.put(".class", "application/octet-stream");
             htTypes.put(".pdf", "application/pdf");
             htTypes.put(".doc", "application/msword");
+            htTypes.put(".css", "text/css");
+            htTypes.put(".js", "text/javascript");
 
             int i = filename.lastIndexOf(".");
             String extension = (i > -1 ? filename.substring(i) : "");
