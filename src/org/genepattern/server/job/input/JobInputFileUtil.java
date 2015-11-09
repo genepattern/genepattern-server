@@ -216,11 +216,6 @@ public class JobInputFileUtil {
         return input;
     }
 
-    /** @deprecated */
-    public void updateUploadsDb(final GpFilePath gpFilePath) throws Exception {
-        updateUploadsDb(org.genepattern.server.database.HibernateUtil.instance(), gpFilePath);
-    }
-    
     /**
      * Save a record in the GP DB for the newly created user upload file.
      * @param gpFilePath
