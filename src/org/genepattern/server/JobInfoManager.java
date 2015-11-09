@@ -538,7 +538,7 @@ public class JobInfoManager {
     
     public static String getLaunchUrlFromJobDir(final File jobDir) throws IOException {
         final File launchUrlFile = new File(jobDir, JavascriptHandler.LAUNCH_URL_FILE);
-        final String launchUrl = FileUtils.readFileToString(launchUrlFile);
+        final String launchUrl = FileUtils.readFileToString(launchUrlFile, "UTF-8").trim();
         return launchUrl;
     }
     
