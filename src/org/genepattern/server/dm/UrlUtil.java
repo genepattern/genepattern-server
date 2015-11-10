@@ -66,6 +66,55 @@ public class UrlUtil {
         }
         return sb.substring(0, idx);
     }
+
+    /**
+     * Get the callback href to the given GpFilePath file;
+     * This method uses the incoming servlet request to generate the base URL.
+     * 
+     * @param request
+     * @param gpFilePath
+     * @return
+     */
+    public static String getHref(final HttpServletRequest request, final GpFilePath gpFilePath) {
+        if (gpFilePath==null) {
+            // ignore, based on implementation in UploadFilesBean
+            return "";
+        }
+        if (request==null) {
+            // when request is null, fallback to original implementation 
+            return initUrl(gpFilePath);
+        }
+        // option a; relative paths, does not work in web client; JS code expects valid URL
+        //final String href=ServerConfigurationFactory.instance().getGpPath() + file.getRelativeUri();
+        // option b; use fq path from servlet request
+        final String href=getGpUrl(request) + gpFilePath.getRelativeUri();
+        return href;
+    }
+    
+    /**
+     * Original implementation from UploadFilesBean; append GenePatternURL from genepattern.properties.
+     * @param file
+     * @return
+     * 
+     * @deprecated
+     */
+    protected static String initUrl(final GpFilePath file) {
+        if (file==null) {
+            return "";
+        }
+        try {
+            URL urlObj=file.getUrl();
+            if (urlObj != null) {
+                return urlObj.toExternalForm();
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error initializing FileInfoWrapper", t);
+            return "";
+        }
+        log.debug("url is not initialized");
+        return "";
+    }
     
     /** Converts a string into something you can safely insert into a URL. */
     public static String encodeURIcomponent(String str) {
