@@ -66,13 +66,6 @@ public class UploadTreeJSON extends JSONArray {
         object.put(DATA, "<em>Empty Directory</em>");
         return object;
     }
-    private static String makeTaskString(SortedSet<TaskInfo> tasks) {
-        List<String> toReturn = new ArrayList<String>();
-        for (TaskInfo task : tasks) {
-            toReturn.add('"' + task.getLsid() + '"');
-        }
-        return toReturn.toString();
-    }
 
     public static JSONObject makeFileJSON(GpFilePath file) throws Exception {
         return makeFileJSON(file, false);
