@@ -581,7 +581,7 @@ public class RunTaskServlet extends HttpServlet
         try {
             final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+            final TaskInfo taskInfo = userContext.getTaskInfo();
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
                 final String parameterName = (String) iter.next();
