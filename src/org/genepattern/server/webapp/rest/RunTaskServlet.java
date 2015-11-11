@@ -503,6 +503,46 @@ public class RunTaskServlet extends HttpServlet
         }
     }
 
+    /**
+     * consolidated /addJob and /launchJsViewer initialization of the taskContext
+     * 
+     * @param request
+     * @param jobSubmitInfo
+     * @return GpContext initialized with the current user and the TaskInfo for the job to be submitted.
+     * @throws WebApplicationException
+     */
+    protected GpContext initTaskContext(final HttpServletRequest request, final JobSubmitInfo jobSubmitInfo) throws WebApplicationException {
+        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
+            handleError("No lsid received");
+        }
+
+        final GpContext taskContext;
+        try {
+            taskContext=Util.getTaskContext(request, jobSubmitInfo.getLsid());
+        }
+        catch (Throwable t) {
+            final String errorMessage="Unexpected error initializing taskContext for userId="+
+                    request.getSession().getAttribute("userid") +
+                    ", lsid="+jobSubmitInfo.getLsid();
+            log.debug(errorMessage, t);
+            throw new WebApplicationException( 
+                    Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
+        }
+        if (taskContext.getTaskInfo()==null) {
+            final String errorMessage="No task found for userId="+taskContext.getUserId()+", lsid=" + jobSubmitInfo.getLsid();
+            log.debug(errorMessage);
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
+        } 
+
+        if (checkDiskQuota(taskContext)) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build());
+        }
+        return taskContext;
+    }
+    
+    
     @POST
     @Path("/addJob")
     @Produces(MediaType.APPLICATION_JSON)
@@ -512,12 +552,8 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
-
-        if (checkDiskQuota(userContext))
-            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
-
-        return addJob(gpConfig, userContext, jobSubmitInfo, request);
+        final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
+        return addJob(gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     @POST
@@ -528,12 +564,8 @@ public class RunTaskServlet extends HttpServlet
             @Context HttpServletRequest request)
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
-
-        if (checkDiskQuota(userContext))
-            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
-
-        return launchJsViewer(gpConfig, userContext, jobSubmitInfo, request);
+        final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
+        return launchJsViewer(gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     /**
