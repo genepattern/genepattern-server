@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.batch.BatchGenerator;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
@@ -77,6 +78,7 @@ public class JobInputHelper {
         return url;
     }
 
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext taskContext;
     private BatchGenerator batchGenerator;
@@ -88,7 +90,7 @@ public class JobInputHelper {
      * @param gpConfig
      * @param taskContext non-null, must have a non-null TaskInfo with a non-null lsid.
      */
-    public JobInputHelper(final GpConfig gpConfig, final GpContext taskContext) {
+    public JobInputHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext taskContext) {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
@@ -99,6 +101,7 @@ public class JobInputHelper {
             throw new IllegalArgumentException("taskContext.taskInfo.lsid==null");
         }
         
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.taskContext = taskContext;
 
@@ -222,12 +225,12 @@ public class JobInputHelper {
 
         if(!hasNonFileBatchParams)
         {
-            generator = new FilenameBatchGenerator(gpConfig, taskContext);
+            generator = new FilenameBatchGenerator(mgr, gpConfig, taskContext);
 
         }
         else if(!hasDirectory)
         {
-            generator = new SimpleBatchGenerator(gpConfig, taskContext);
+            generator = new SimpleBatchGenerator(mgr, gpConfig, taskContext);
         }
         else
         {
