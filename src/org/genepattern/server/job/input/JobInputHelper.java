@@ -5,7 +5,6 @@ package org.genepattern.server.job.input;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,17 +13,13 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.eula.GetTaskStrategy;
-import org.genepattern.server.eula.GetTaskStrategyDefault;
 import org.genepattern.server.job.input.batch.BatchGenerator;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.job.input.batch.FilenameBatchGenerator;
 import org.genepattern.server.job.input.batch.SimpleBatchGenerator;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for the job input form, includes methods for preparing both batch jobs and regular jobs.
@@ -83,43 +78,33 @@ public class JobInputHelper {
     }
 
     private final GpConfig gpConfig;
-    private final GpContext userContext;
-    private final JobInputApi jobInputApi;
+    private final GpContext taskContext;
     private BatchGenerator batchGenerator;
     private final JobInput jobInputTemplate;
     private final Map<String,ParameterInfoRecord> paramInfoMap;
     private boolean hasDirectory = false;
 
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
-        this(gpConfig, userContext, lsid, null);
-    }
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
-        this(gpConfig, userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
-    }
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
-
-        if (getTaskStrategyIn == null) {
-            getTaskStrategyIn=new GetTaskStrategyDefault();
+    /**
+     * @param gpConfig
+     * @param taskContext non-null, must have a non-null TaskInfo with a non-null lsid.
+     */
+    public JobInputHelper(final GpConfig gpConfig, final GpContext taskContext) {
+        if (taskContext==null) {
+            throw new IllegalArgumentException("taskContext==null");
         }
-        final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
-
+        if (taskContext.getTaskInfo()==null) {
+            throw new IllegalArgumentException("taskContext.taskInfo==null");
+        }
+        if (taskContext.getTaskInfo().getLsid()==null) {
+            throw new IllegalArgumentException("taskContext.taskInfo.lsid==null");
+        }
+        
         this.gpConfig=gpConfig;
-        this.userContext = userContext;
-        this.jobInputApi = jobInputApi;
+        this.taskContext = taskContext;
 
         this.jobInputTemplate = new JobInput();
-        this.jobInputTemplate.setLsid(taskInfo.getLsid());
-        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-    }
-
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, TaskInfo taskInfo) {
-        this.gpConfig=gpConfig;
-        this.userContext = userContext;
-        this.jobInputApi = jobInputApi;
-
-        this.jobInputTemplate = new JobInput();
-        this.jobInputTemplate.setLsid(taskInfo.getLsid());
-        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        this.jobInputTemplate.setLsid(taskContext.getTaskInfo().getLsid());
+        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
     }
 
     /**
@@ -206,7 +191,7 @@ public class JobInputHelper {
             }
 
 
-            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, userContext, paramId, record, value);
+            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, taskContext, paramId, record, value);
 
             for(String file: batchFileValues)
             {
@@ -237,12 +222,12 @@ public class JobInputHelper {
 
         if(!hasNonFileBatchParams)
         {
-            generator = new FilenameBatchGenerator(gpConfig, userContext, jobInputApi);
+            generator = new FilenameBatchGenerator(gpConfig, taskContext);
 
         }
         else if(!hasDirectory)
         {
-            generator = new SimpleBatchGenerator(gpConfig, userContext, jobInputApi);
+            generator = new SimpleBatchGenerator(gpConfig, taskContext);
         }
         else
         {

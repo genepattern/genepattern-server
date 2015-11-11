@@ -6,7 +6,9 @@ package org.genepattern.server.job.input.batch;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
@@ -17,19 +19,12 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
-import org.genepattern.server.job.input.GroupId;
-import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.server.rest.JobInputApiFactory;
-import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Helper class for preparing a batch of jobs, when batching over input files and directories.

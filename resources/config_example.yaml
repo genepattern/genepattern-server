@@ -89,10 +89,6 @@ default.properties:
     # added in GP 3.8.1
     #
     enableJobConfigParams: true
-    # default value, circa 3.8.0 release
-    # jobInputApiClass: "org.genepattern.server.rest.JobInputApiImpl"
-    # added for 3.8.1 release, required for enableJobConfigParams
-    jobInputApiClass: "org.genepattern.server.rest.JobInputApiImplV2"
     
     #
     # set the ftp downloader by uncommenting one of these lines
