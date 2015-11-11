@@ -47,6 +47,7 @@ import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -553,7 +554,7 @@ public class RunTaskServlet extends HttpServlet
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
-        return addJob(gpConfig, taskContext, jobSubmitInfo, request);
+        return addJob(HibernateUtil.instance(), gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     @POST
@@ -565,7 +566,7 @@ public class RunTaskServlet extends HttpServlet
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
-        return launchJsViewer(gpConfig, taskContext, jobSubmitInfo, request);
+        return launchJsViewer(HibernateUtil.instance(), gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     /**
@@ -574,12 +575,12 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response launchJsViewer(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response launchJsViewer(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext);
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             final TaskInfo taskInfo = userContext.getTaskInfo();
 
@@ -730,9 +731,9 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response addJob(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response addJob(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext);
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamValue;
@@ -16,10 +17,12 @@ import org.genepattern.server.rest.JobReceipt;
  */
 public class SimpleBatchGenerator implements BatchGenerator
 {
-    private final GpConfig gpConfig;
+    private final HibernateSessionManager mgr;
+    protected final GpConfig gpConfig;
     private final GpContext userContext;
 
-    public SimpleBatchGenerator(final GpConfig gpConfig, final GpContext userContext) {
+    public SimpleBatchGenerator(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext) {
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
         this.userContext=userContext;
     }
@@ -68,7 +71,7 @@ public class SimpleBatchGenerator implements BatchGenerator
      * @throws org.genepattern.server.rest.GpServerException
      */
     public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
-        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(gpConfig, userContext);
+        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(mgr, gpConfig, userContext);
         JobReceipt receipt= batchSubmitter.submitBatch(batchInputs);
         return receipt;
     }

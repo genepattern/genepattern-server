@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
@@ -36,15 +37,15 @@ public class FilenameBatchGenerator extends SimpleBatchGenerator {
     private final boolean extractBatchValues;
     private final Map<String,List<GpFilePath>> batchValues;
     
-    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext)
+    public FilenameBatchGenerator(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext)
     {
-        super(gpConfig, userContext);
+        super(mgr, gpConfig, userContext);
         this.extractBatchValues=true;
         this.batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     }
     
-    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final Map<String,List<GpFilePath>> initializedBatchValues) {
-        super(gpConfig, userContext);
+    public FilenameBatchGenerator(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final Map<String,List<GpFilePath>> initializedBatchValues) {
+        super(mgr, gpConfig, userContext);
 
         this.extractBatchValues=false;
         this.batchValues=initializedBatchValues;
@@ -203,7 +204,7 @@ public class FilenameBatchGenerator extends SimpleBatchGenerator {
             batchInputTemplate.removeValue(batchParam.getParamId());
             final String key=batchParam.getParamId().getFqName();
             for(final ParamValue batchParamValue : batchParam.getValues()) {
-                final GpFilePath gpFilePath = BatchInputFileHelper.initGpFilePath(batchParamValue.getValue(), true);
+                final GpFilePath gpFilePath = BatchInputFileHelper.initGpFilePath(gpConfig, batchParamValue.getValue(), true);
                 if (gpFilePath != null) {
                     List<GpFilePath> gpFilePaths;
                     if (!batchValues.containsKey(key)) {
