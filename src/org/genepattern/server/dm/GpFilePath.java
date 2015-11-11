@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.util.SemanticUtil;
@@ -76,12 +77,24 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @return
      * @throws Exception
      * 
-     * @deprecated this method is deprecated; when possible should use relative paths instead;
-     *     when generating a fully-qualified URL callback, use the incoming HttpServletRequest. 
+     * @deprecated should pass in GpConfig
      */
     public URL getUrl() throws Exception {
+        return getUrl(ServerConfigurationFactory.instance());
+    }
+    
+    /**
+     * Get the fully qualified URL to this file.
+     * @param gpConfig
+     * @return
+     * @throws Exception
+     * 
+     * @deprecated use relative paths when possible;
+     *     for a fully-qualified URL callback, use the incoming HttpServletRequest when possible. 
+     */
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
         String str="";
-        final URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
+        final URL gpUrl = gpConfig.getGenePatternURL();
         if (gpUrl==null) {
             log.error("GenePatternURL is null");
         }
