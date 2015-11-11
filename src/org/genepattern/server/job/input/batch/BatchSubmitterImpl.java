@@ -13,8 +13,7 @@ import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.server.rest.JobInputApiFactory;
+import org.genepattern.server.rest.JobInputApiImplV2;
 import org.genepattern.server.rest.JobReceipt;
 
 /**
@@ -27,19 +26,11 @@ import org.genepattern.server.rest.JobReceipt;
 public class BatchSubmitterImpl implements BatchSubmitter {
 
     private final GpContext userContext;
-    private final JobInputApi jobInputApi;
+    private final JobInputApiImplV2 jobInputApi;
     
     public BatchSubmitterImpl(final GpConfig gpConfig, final GpContext userContext) {
-        this(gpConfig, userContext, null);
-    }
-    public BatchSubmitterImpl(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn) {
         this.userContext=userContext;
-        if (jobInputApiIn == null) {
-            this.jobInputApi=JobInputApiFactory.createJobInputApi(gpConfig, userContext);
-        }
-        else {
-            this.jobInputApi=jobInputApiIn;
-        }
+        this.jobInputApi=new JobInputApiImplV2();
     }
     
     /**

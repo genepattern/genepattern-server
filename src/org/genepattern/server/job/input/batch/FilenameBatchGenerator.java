@@ -21,8 +21,6 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
-import org.genepattern.webservice.TaskInfo;
 
 /**
  * Generate batch jobs, match multiple batch parameters by basename and extension.
@@ -38,15 +36,15 @@ public class FilenameBatchGenerator extends SimpleBatchGenerator {
     private final boolean extractBatchValues;
     private final Map<String,List<GpFilePath>> batchValues;
     
-    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn)
+    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext)
     {
-        super(gpConfig, userContext, jobInputApiIn);
+        super(gpConfig, userContext);
         this.extractBatchValues=true;
         this.batchValues=new LinkedHashMap<String,List<GpFilePath>>();
     }
     
-    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final JobInputApi jobInputApiIn, final Map<String,List<GpFilePath>> initializedBatchValues) {
-        super(gpConfig, userContext, jobInputApiIn);
+    public FilenameBatchGenerator(final GpConfig gpConfig, final GpContext userContext, final Map<String,List<GpFilePath>> initializedBatchValues) {
+        super(gpConfig, userContext);
 
         this.extractBatchValues=false;
         this.batchValues=initializedBatchValues;

@@ -579,7 +579,7 @@ public class RunTaskServlet extends HttpServlet
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             final TaskInfo taskInfo = userContext.getTaskInfo();
 
@@ -731,11 +731,8 @@ public class RunTaskServlet extends HttpServlet
      * @return
      */
     private Response addJob(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
-        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
-            return handleError("No lsid received");
-        }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
