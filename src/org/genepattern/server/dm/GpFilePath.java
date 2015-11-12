@@ -93,23 +93,15 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      *     for a fully-qualified URL callback, use the incoming HttpServletRequest when possible. 
      */
     public URL getUrl(final GpConfig gpConfig) throws Exception {
-        String str="";
-        final URL gpUrl = gpConfig.getGenePatternURL();
-        if (gpUrl==null) {
-            log.error("GenePatternURL is null");
-        }
-        else {
-            //expected
-            str += gpUrl.toString();
-        }
-        
+        // includes the trailing slash
+        String str=gpConfig.getGpUrl();
         final URI relativeUri = getRelativeUri();
         if (relativeUri==null) {
             //null relativeUri means use the GP URL
             log.debug("known error: uri is null");
         }
         else {
-            //str += relativeUri.toString();
+            //expected
             str = glue(str, relativeUri.toString());
         }
         if (isDirectory() && !str.endsWith("/")) {
