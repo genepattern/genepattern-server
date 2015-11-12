@@ -55,7 +55,7 @@ public class TestFileDownloader {
 
     @Before
     public void setUp() throws ExecutionException {
-        mgr=DbUtil.getTestDbSession();
+        mgr=null;
         gpConfig=mock(GpConfig.class);
         when(gpConfig.getGpUrl()).thenReturn(gpUrl);
         jobContext=mock(GpContext.class);
