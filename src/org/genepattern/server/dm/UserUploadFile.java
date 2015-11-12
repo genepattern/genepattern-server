@@ -57,7 +57,6 @@ public class UserUploadFile extends GpFilePath {
     }
 
     public String getParamInfoValue() {
-        // TODO Auto-generated method stub
         return null;
     }
 
