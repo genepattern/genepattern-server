@@ -20,7 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -170,13 +169,8 @@ public class ParamListHelper {
      * Replace the actual url with the '<GenePatternURL>' substitution variable.
      * @return
      */
-    private static String insertGpUrlSubstitution(final String in) {
-        URL gpURL=ServerConfigurationFactory.instance().getGenePatternURL();
-        String gpUrlStr=gpURL.toExternalForm();
-        if (!gpUrlStr.endsWith("/")) {
-            gpUrlStr += "/";
-        }
-        
+    private static String insertGpUrlSubstitution(final GpConfig gpConfig, final String in) {
+        final String gpUrlStr=gpConfig.getGpUrl();
         if (!in.startsWith(gpUrlStr)) {
             return in;
         }
@@ -805,7 +799,7 @@ public class ParamListHelper {
             boolean replaceGpUrl=true;
             if (replaceGpUrl) {
                 final String in=parameterInfoRecord.getActual().getValue();
-                final String out=ParamListHelper.insertGpUrlSubstitution(in);
+                final String out=ParamListHelper.insertGpUrlSubstitution(gpConfig, in);
                 parameterInfoRecord.getActual().setValue(out);
             }
         }
