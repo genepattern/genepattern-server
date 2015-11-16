@@ -102,10 +102,6 @@ public class ModuleChooserBean implements java.io.Serializable {
             runTaskBean.setTask(selectedModule);
             setVersionPrompt(runTaskBean);
         }
-        EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
-        if (eulaTaskBean != null && runTaskBean != null) {
-            eulaTaskBean.setCurrentLsid(selectedModule);
-        }
     }
     
     public void setVersionPrompt(RunTaskBean runTaskBean) {

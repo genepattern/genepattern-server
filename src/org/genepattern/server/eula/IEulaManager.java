@@ -43,8 +43,7 @@ public interface IEulaManager {
      *     2) site license,
      *     3) group license 
      *     
-     * Don't use this method from the EulaTaskBean, because it will not have the desired result when the license is disabled.
-     * Instead use getAllEulaForModule or getPendingEulaForModule.
+     * When the license is disabled, use getAllEulaForModule or getPendingEulaForModule instead.
      * 
      * @param taskInfo
      * @return the list of EulaInfo, it will be empty if the task has not attached EULA.
