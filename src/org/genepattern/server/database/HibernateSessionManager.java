@@ -23,7 +23,7 @@ import org.reflections.Reflections;
  * @author pcarr
  *
  */
-public final class HibernateSessionManager {
+public class HibernateSessionManager {
     private static final Logger log = Logger.getLogger(HibernateSessionManager.class);
 
     /**
