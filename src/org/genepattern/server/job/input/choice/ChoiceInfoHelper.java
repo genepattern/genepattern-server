@@ -3,7 +3,6 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,10 +11,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.job.input.JobInputHelper;
-import org.genepattern.server.job.input.cache.CachedFtpFile;
-import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -31,6 +26,7 @@ import org.json.JSONObject;
 public class ChoiceInfoHelper {
     final static private Logger log = Logger.getLogger(ChoiceInfoHelper.class);
     
+    @SuppressWarnings("serial")
     final static public class Ex extends Exception {
         public Ex() {
             super();
@@ -216,6 +212,7 @@ public class ChoiceInfoHelper {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static void appendChoice(final Choice choice, final ParameterInfo pinfo) {
         //append choice to beginning of menu
         final String choicesStrIn=(String)pinfo.getAttributes().get(ChoiceInfo.PROP_CHOICE);
