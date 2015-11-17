@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.util.Date;
 import java.util.List;
 
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
 
 
@@ -30,8 +32,18 @@ public interface ParamListWriter {
      * @author pcarr
      */
     public static class Default implements ParamListWriter {
-        private final String COL_DELIM="\t";
-        private boolean writeTimestamp=false;
+        private static final String COL_DELIM="\t";
+        private static final boolean writeTimestamp=false;
+        
+        private final GpConfig gpConfig;
+
+        /** @deprecated pass in a GpConfig */
+        public Default() {
+            this(ServerConfigurationFactory.instance());
+        }
+        public Default(final GpConfig gpConfig) {
+            this.gpConfig=gpConfig;
+        }
 
         /**
          * Write a new parameter list file from the list of values.
@@ -42,12 +54,12 @@ public interface ParamListWriter {
             writeParamList(toFile, values, false);
         }
 
-            /**
-             * Write a new parameter list file from the list of values.
-             *
-             */
+        /**
+         * Write a new parameter list file from the list of values.
+         *
+         */
         @Override
-        public void writeParamList(GpFilePath toFile, List<GpFilePath> values, boolean urlMode) throws Exception {
+        public void writeParamList(final GpFilePath toFile, final List<GpFilePath> values, final boolean urlMode) throws Exception {
             FileWriter writer = null;
             BufferedWriter out = null;
             try {
