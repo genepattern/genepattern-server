@@ -13,7 +13,10 @@ import java.net.URLEncoder;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
+import com.google.common.base.Strings;
 
 /**
  * Utility methods for converting between Files (on the GP server file system) and URIs (to be be used as external references to those files).
@@ -22,6 +25,11 @@ import org.apache.log4j.Logger;
  */
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
+    
+    /** @deprecated renamed to getBaseGpHref */
+    public static String getGpUrl(final HttpServletRequest request) {
+        return getBaseGpHref(request);
+    }
 
     /**
      * Helper method for getting the base GenePatternURL for a given request.
@@ -42,7 +50,7 @@ public class UrlUtil {
      * @param request
      * @return
      */
-    public static String getGpUrl(final HttpServletRequest request) {
+    public static String getBaseGpHref(final HttpServletRequest request) {
         if (log.isDebugEnabled()) {
             log.debug("requestURL="+request.getRequestURL().toString());
             log.debug("requestURI="+request.getRequestURI());
@@ -66,54 +74,137 @@ public class UrlUtil {
         }
         return sb.substring(0, idx);
     }
+    
+    /** @deprecated initialize from HttpServletRequest if possible */
+    public static String getBaseGpHref(final GpConfig gpConfig) {
+        return removeTrailingSlash(gpConfig.getGpUrl());
+    }
 
     /**
-     * Get the callback href to the given GpFilePath file;
-     * This method uses the incoming servlet request to generate the base URL.
-     * 
-     * @param request
-     * @param gpFilePath
+     * @param gpConfig must be non-null
+     * @param request can be null
+     */
+    public static String getBaseGpHref(final GpConfig gpConfig, final HttpServletRequest request) {
+        if (request != null) {
+            return getBaseGpHref(request);
+        }
+        else if (gpConfig != null) {
+            return getBaseGpHref(gpConfig);
+        }
+        else {
+            return getBaseGpHref(ServerConfigurationFactory.instance());
+        }
+    }
+
+//import java.util.List;
+//import com.google.common.collect.ImmutableList;
+//    public static List<String> initBaseGpHrefs(final GpConfig gpConfig, final HttpServletRequest request) {
+//        if (gpConfig==null) {
+//            throw new IllegalArgumentException("gpConfig==null");
+//        }
+//        ImmutableList.Builder<String> b =new ImmutableList.Builder<String>();
+//        if (request!=null) {
+//            b.add(UrlUtil.getBaseGpHref(request));
+//        }
+//        if (gpConfig!=null) {
+//            b.add(UrlUtil.getBaseGpHref(gpConfig));
+//        }
+//        return b.build();
+//    }
+ 
+    /**
+     * Append the base gpUrl to the relative uri, making sure to not duplicate the '/' character.
+     * @param prefix, the base url (expected to not include the trailing slash)
+     * @param suffix, the relative url (expected to start with a slash)
      * @return
      */
-    public static String getHref(final HttpServletRequest request, final GpFilePath gpFilePath) {
-        if (gpFilePath==null) {
-            // ignore, based on implementation in UploadFilesBean
+    protected static String glue(final String prefix, final String suffix) {
+        return removeTrailingSlash(Strings.nullToEmpty(prefix)) + 
+                prependSlash(Strings.nullToEmpty(suffix));
+    }
+
+    /** prepend a slash '/' if and only if the input does not already start with one */
+    protected static String prependSlash(final String in) {
+        if (Strings.isNullOrEmpty(in)) {
+            return "/";
+        }
+        if (in.startsWith("/")) {
+            return in;
+        }
+        return "/"+in;
+    }
+    
+    /** remove the trailing slash '/' if and only if the input ends with one */
+    protected static String removeTrailingSlash(final String in) {
+        if (in==null) {
             return "";
         }
-        if (request==null) {
-            // when request is null, fallback to original implementation 
-            return initUrl(gpFilePath);
+        if (!in.endsWith("/")) {
+            return in;
         }
-        // option a; relative paths, does not work in web client; JS code expects valid URL
-        //final String href=ServerConfigurationFactory.instance().getGpPath() + file.getRelativeUri();
-        // option b; use fq path from servlet request
-        final String href=getGpUrl(request) + gpFilePath.getRelativeUri();
-        return href;
+        return in.substring(0, in.length()-1);
+    }
+
+    /**
+     * default implementation of GpFilePath#getUrl for all internal URLs.
+     * @param baseGpHref
+     * @param gpFilePath_internal
+     * @return
+     * @throws MalformedURLException
+     */
+    public static URL getUrl(final String baseGpHref, final GpFilePath gpFilePath_internal) throws MalformedURLException {
+        if (Strings.isNullOrEmpty(baseGpHref)) {
+            throw new IllegalArgumentException("baseGpHref not set");
+        }
+        final String href=getHref(baseGpHref, gpFilePath_internal);
+        return new URL(href);
     }
     
     /**
-     * Original implementation from UploadFilesBean; append GenePatternURL from genepattern.properties.
-     * @param file
+     * Get the callback href to the given GpFilePath file.
+     * @param request
+     * @param gpFilePath_internal
      * @return
-     * 
-     * @deprecated
      */
-    protected static String initUrl(final GpFilePath file) {
-        if (file==null) {
-            return "";
+    public static String getHref(final HttpServletRequest request, final GpFilePath gpFilePath_internal) {
+        if (request==null) {
+            throw new IllegalArgumentException("request==null");
         }
-        try {
-            URL urlObj=file.getUrl();
-            if (urlObj != null) {
-                return urlObj.toExternalForm();
-            }
+        return getHref(getBaseGpHref(request), gpFilePath_internal);
+    }
+
+    public static String getHref(final GpConfig gpConfig, final GpFilePath gpFilePath_internal) {
+        if (gpConfig==null) {
+            throw new IllegalArgumentException("gpConfig==null");
         }
-        catch (Throwable t) {
-            log.error("Error initializing FileInfoWrapper", t);
-            return "";
+        return getHref(getBaseGpHref(gpConfig), gpFilePath_internal);
+    }
+    
+    public static String getHref(final GpConfig gpConfig, final HttpServletRequest request, final GpFilePath gpFilePath_internal) {
+        return getHref(getBaseGpHref(gpConfig, request), gpFilePath_internal);
+    }
+
+    /**
+     * Get the callback href to the given GpFilePath file.
+     * 
+     * @param baseGpHref
+     * @param gpFilePath_internal
+     * @return
+     */
+    public static String getHref(final String baseGpHref, final GpFilePath gpFilePath_internal) {
+        if (gpFilePath_internal==null) {
+            throw new IllegalArgumentException("gpFilePath==null");
         }
-        log.debug("url is not initialized");
-        return "";
+        if (baseGpHref==null) {
+            log.warn("baseGpHref==null, convert null to empty, relative url");
+        }
+        if (baseGpHref != null && baseGpHref.endsWith("/")) {
+            log.warn("remove trailing slash from baseGpHref="+baseGpHref);
+        }
+        final String href=removeTrailingSlash(Strings.nullToEmpty(baseGpHref)) +
+                gpFilePath_internal.getRelativeUri() + 
+                (gpFilePath_internal.isDirectory() ? "/" : "");
+        return href;
     }
     
     /** Converts a string into something you can safely insert into a URL. */
