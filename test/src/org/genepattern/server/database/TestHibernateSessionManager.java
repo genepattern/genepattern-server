@@ -16,13 +16,13 @@ public class TestHibernateSessionManager {
     @Test
     public void initAnnotatedClasses_hardCoded() {
         Collection<Class<?>> annotatedClasses=HibernateSessionManager.hardCodedAnnotatedClasses();
-        assertEquals("annotatedClasses.size()", 20, annotatedClasses.size());
+        assertEquals("annotatedClasses.size()", 18, annotatedClasses.size());
     }
 
     @Test
     public void initAnnotatedClasses_Reflections() throws IOException, ClassNotFoundException {
         Collection<Class<?>> annotatedClasses=HibernateSessionManager.initAnnotatedClasses_Reflections();
-        assertEquals("annotatedClasses.size()", 20, annotatedClasses.size());
+        assertEquals("annotatedClasses.size()", 18, annotatedClasses.size());
     }
     
     @Test
