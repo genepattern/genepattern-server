@@ -64,7 +64,7 @@ public class JobInputApiImplV2 implements JobInputApi {
     public JobInputApiImplV2(final boolean initDefault) {
         this(null, initDefault);
     }
-    public JobInputApiImplV2(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
+    private JobInputApiImplV2(final GetTaskStrategy getTaskStrategy, final boolean initDefault) {
         this.getTaskStrategy=getTaskStrategy;
         this.initDefault=initDefault;
     }
@@ -97,7 +97,7 @@ public class JobInputApiImplV2 implements JobInputApi {
     
     // copied implementation from JobInputApiLegacy class
     private static class JobInputHelper {
-        final static private Logger log = Logger.getLogger(JobInputApiLegacy.class);
+        final static private Logger log = Logger.getLogger(JobInputHelper.class);
 
         private final GpConfig gpConfig;
         private final GpContext taskContext;
