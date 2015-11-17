@@ -16,6 +16,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.batch.BatchGenerator;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.job.input.batch.FilenameBatchGenerator;
@@ -111,6 +112,7 @@ public class JobInputHelper {
 
         this.jobInputTemplate = new JobInput();
         this.jobInputTemplate.setLsid(taskContext.getTaskInfo().getLsid());
+        this.jobInputTemplate.setBaseGpHref(UrlUtil.getBaseGpHref(request));
         this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
     }
 
