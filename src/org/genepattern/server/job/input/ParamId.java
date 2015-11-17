@@ -9,6 +9,9 @@ package org.genepattern.server.job.input;
  *
  */
 public class ParamId {
+    /** reserved parameter id for saving the baseGpHref to which the given job was submitted */
+    public static final ParamId BASE_GP_HREF=new ParamId("__GP_BASE_GP_HREF");
+    
     transient int hashCode;
     private final String fqName;
     public ParamId(final String fqName) {

@@ -190,5 +190,16 @@ public class TestJobInput {
         assertEquals("groupId.name", "", groupId.getName());
         assertEquals("groupId.groupId", "", groupId.getGroupId());
     }
+    
+    @Test
+    public void baseGpHref() {
+        final JobInput jobInput=new JobInput();
+        jobInput.setLsid(lsid);
+        assertEquals("baseGpHref not set", null, jobInput.getBaseGpHref());
+        jobInput.setBaseGpHref("http://127.0.0.1:8080/gp");
+        assertEquals("baseGpHref default", "http://127.0.0.1:8080/gp", jobInput.getBaseGpHref());
+        jobInput.setBaseGpHref("https://gpdev.broadinstitute.org/gp");
+        assertEquals("baseGpHref replaced", "https://gpdev.broadinstitute.org/gp", jobInput.getBaseGpHref());
+    }
 
 }
