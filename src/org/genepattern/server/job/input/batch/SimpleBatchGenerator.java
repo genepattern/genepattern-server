@@ -37,6 +37,7 @@ public class SimpleBatchGenerator implements BatchGenerator
         {
             JobInput jobInput=new JobInput();
             jobInput.setLsid(batchInputTemplate.getLsid());
+            jobInput.setBaseGpHref(batchInputTemplate.getBaseGpHref());
 
             batchJobs.add(jobInput);
 
