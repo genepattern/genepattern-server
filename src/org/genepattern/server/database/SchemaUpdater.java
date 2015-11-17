@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,15 +219,23 @@ public class SchemaUpdater {
     {
         PropsTable.saveProp(sessionMgr, PROP_SCHEMA_VERSION, schemaVersion);
     }
-    
-    protected static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
+
+    /**
+     * helper method, checks talbeName.toLower and tableName.toUpper
+     * @param sessionMgr
+     * @param tableName
+     * @return
+     */
+    protected static boolean tableExistsIgnoreCase(final HibernateSessionManager sessionMgr, final String tableName) {
         final boolean isInTransaction=sessionMgr.isInTransaction();
         try {
             sessionMgr.beginTransaction();
             DatabaseMetaData md =
                     sessionMgr.getSession().connection().getMetaData();
-            ResultSet rs=md.getTables(null, null, tableName, null);
-            if (rs.next()) {
+            if (checkTableExists(md, tableName.toLowerCase())) {
+                return true;
+            }
+            if (checkTableExists(md, tableName.toUpperCase())) {
                 return true;
             }
         }
@@ -241,6 +250,35 @@ public class SchemaUpdater {
         return false;
     }
 
+    protected static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
+        final boolean isInTransaction=sessionMgr.isInTransaction();
+        try {
+            sessionMgr.beginTransaction();
+            DatabaseMetaData md =
+                    sessionMgr.getSession().connection().getMetaData();
+            if (checkTableExists(md, tableName)) {
+                return true;
+            }
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error checking if tableExists for tableName="+tableName, t);
+        }
+        finally {
+            if (!isInTransaction) {
+                sessionMgr.closeCurrentSession();
+            }
+        }
+        return false;
+    }
+
+    protected static boolean checkTableExists(final DatabaseMetaData md, final String tableName) throws SQLException {
+        final ResultSet rs=md.getTables(null, null, tableName, null);
+        if (rs.next()) {
+            return true;
+        }
+        return false;
+    }
+    
     protected static void createSchema(final HibernateSessionManager sessionMgr, final String schemaPrefix, final List<File> schemaFiles) 
     throws DbException
     {

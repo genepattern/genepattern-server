@@ -83,8 +83,6 @@ public final class HibernateSessionManager {
         return Arrays.<Class<?>>asList( 
                 org.genepattern.server.dm.congestion.Congestion.class,
                 org.genepattern.server.dm.userupload.dao.UserUpload.class,
-                org.genepattern.server.dm.jobinput.JobInput.class,
-                org.genepattern.server.dm.jobinput.JobInputAttribute.class,
                 org.genepattern.server.dm.jobresult.JobResult.class,
                 org.genepattern.server.jobqueue.JobQueue.class,
                 org.genepattern.server.eula.dao.EulaRecord.class,
