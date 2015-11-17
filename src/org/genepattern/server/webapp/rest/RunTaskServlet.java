@@ -580,7 +580,7 @@ public class RunTaskServlet extends HttpServlet
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext);
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
             final TaskInfo taskInfo = userContext.getTaskInfo();
 
@@ -733,7 +733,7 @@ public class RunTaskServlet extends HttpServlet
      */
     private Response addJob(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext);
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {

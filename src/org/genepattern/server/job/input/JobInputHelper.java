@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -87,10 +89,12 @@ public class JobInputHelper {
     private boolean hasDirectory = false;
 
     /**
+     * @param mgr
      * @param gpConfig
-     * @param taskContext non-null, must have a non-null TaskInfo with a non-null lsid.
+     * @param taskContext must have a non-null TaskInfo with a non-null lsid.
+     * @param request the client http servlet request
      */
-    public JobInputHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext taskContext) {
+    public JobInputHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext taskContext, final HttpServletRequest request) {
         if (taskContext==null) {
             throw new IllegalArgumentException("taskContext==null");
         }
