@@ -714,7 +714,6 @@ public class TasksResource {
             attrObj.put("description", pinfo.getDescription());
 
             if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
-                //TODO: new way ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(ServerConfigurationFactory.instance(), pinfo);
                 ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
                 attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
             }
