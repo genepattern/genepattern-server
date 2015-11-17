@@ -4,6 +4,7 @@
 package org.genepattern.server.job.input.dao;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.List;
@@ -13,26 +14,31 @@ import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.webservice.TaskInfo;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestJobInputValueDao {
     private static final String userId="test_user";
-    private static final String gpUrl="http://127.0.0.1:8080/gp/";
+    private static final String baseGpHref="http://127.0.0.1:8080/gp";
+    private static final String gpUrl=baseGpHref+"/";
     private static final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
     private static final String cleZip="modules/ConvertLineEndings_v2.zip";
     
-    private HibernateSessionManager mgr;
-    private GpContext gpContext;
+    private static HibernateSessionManager mgr;
+    private static GpConfig gpConfig;
+    private static GpContext gpContext;
     
-    @Before
-    public void beforeTest() throws ExecutionException {
+    @BeforeClass
+    public static void beforeClass() throws ExecutionException {
         mgr=DbUtil.getTestDbSession();
+        gpConfig=mock(GpConfig.class);
+        when(gpConfig.getGpUrl()).thenReturn(gpUrl);
 
         final File zipFile=FileUtil.getDataFile(cleZip);
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);
@@ -62,7 +68,7 @@ public class TestJobInputValueDao {
 
         // (1) db transaction
         final boolean initDefault=true;
-        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpContext, jobInput, initDefault);
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, -1, initDefault);
 
         // (2) another db transaction
         new JobInputValueRecorder(mgr).saveJobInput(jobNo, jobInput);
@@ -105,7 +111,7 @@ public class TestJobInputValueDao {
         jobInput.addValue("walltime", "");
 
         final boolean initDefault=true;
-        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpContext, jobInput, initDefault);
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, -1, initDefault);
         new JobInputValueRecorder(mgr).saveJobInput(jobNo, jobInput);
         JobInput jobInputOut = new JobInputValueRecorder(mgr).fetchJobInput(jobNo);
 
@@ -127,7 +133,7 @@ public class TestJobInputValueDao {
         JobInput jobInput=new JobInput();
         jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_01.cls");
         final boolean initDefault=true;
-        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpContext, jobInput, initDefault);
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, -1, initDefault);
         new JobInputValueRecorder(mgr).saveJobInput(jobNo, jobInput);
         
         // validate initial input
@@ -156,6 +162,20 @@ public class TestJobInputValueDao {
         assertEquals("job.queue", "broad", jobInputOut.getParam("job.queue").getValues().get(0).getValue());
         assertEquals("job.memory", "8gb", jobInputOut.getParam("job.memory").getValues().get(0).getValue());
         assertEquals("walltime (empty string)", "", jobInputOut.getParam("walltime").getValues().get(0).getValue());
+    }
+    
+    @Test
+    public void saveBaseGpHref() throws Exception {
+        JobInput jobInput=new JobInput();
+        jobInput.setLsid(cleLsid);
+        jobInput.setBaseGpHref(baseGpHref);
+        jobInput.addValue("input.filename", gpUrl+"users/"+userId+"/all_aml_test_03.cls");
+        final boolean initDefault=true;
+        int jobNo=AnalysisJobUtil.addJobToDb(mgr, gpConfig, gpContext, jobInput, -1, initDefault);
+        new JobInputValueRecorder(mgr).saveJobInput(jobNo, jobInput);
+        
+        JobInput jobInputOut = new JobInputValueRecorder(mgr).fetchJobInput(jobNo);
+        assertEquals("baseGpHref from DB", baseGpHref, jobInputOut.getBaseGpHref());
     }
     
 }
