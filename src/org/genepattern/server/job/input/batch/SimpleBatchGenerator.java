@@ -71,7 +71,7 @@ public class SimpleBatchGenerator implements BatchGenerator
      * @throws org.genepattern.server.rest.GpServerException
      */
     public JobReceipt submitBatch(final List<JobInput> batchInputs) throws GpServerException {
-        BatchSubmitter batchSubmitter = new BatchSubmitterImpl(mgr, gpConfig, userContext);
+        final BatchSubmitterImpl batchSubmitter = new BatchSubmitterImpl(mgr, gpConfig, userContext);
         JobReceipt receipt= batchSubmitter.submitBatch(batchInputs);
         return receipt;
     }
