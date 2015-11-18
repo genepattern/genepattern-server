@@ -96,29 +96,13 @@ public class UrlUtil {
         }
     }
 
-//import java.util.List;
-//import com.google.common.collect.ImmutableList;
-//    public static List<String> initBaseGpHrefs(final GpConfig gpConfig, final HttpServletRequest request) {
-//        if (gpConfig==null) {
-//            throw new IllegalArgumentException("gpConfig==null");
-//        }
-//        ImmutableList.Builder<String> b =new ImmutableList.Builder<String>();
-//        if (request!=null) {
-//            b.add(UrlUtil.getBaseGpHref(request));
-//        }
-//        if (gpConfig!=null) {
-//            b.add(UrlUtil.getBaseGpHref(gpConfig));
-//        }
-//        return b.build();
-//    }
- 
     /**
      * Append the base gpUrl to the relative uri, making sure to not duplicate the '/' character.
      * @param prefix, the base url (expected to not include the trailing slash)
      * @param suffix, the relative url (expected to start with a slash)
      * @return
      */
-    protected static String glue(final String prefix, final String suffix) {
+    public static String glue(final String prefix, final String suffix) {
         return removeTrailingSlash(Strings.nullToEmpty(prefix)) + 
                 prependSlash(Strings.nullToEmpty(suffix));
     }
