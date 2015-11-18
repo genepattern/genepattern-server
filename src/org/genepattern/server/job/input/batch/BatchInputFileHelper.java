@@ -13,12 +13,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputHelper;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.rest.GpServerException;
@@ -38,22 +38,6 @@ import com.google.common.base.Strings;
 public class BatchInputFileHelper {
     private static final Logger log = Logger.getLogger(BatchInputFileHelper.class);
 
-    /** @deprecated should pass in a valid GpConfig */
-    public static GpFilePath initGpFilePath(final String value, final boolean includeExternalUrl) {
-        return initGpFilePath(ServerConfigurationFactory.instance(), value, includeExternalUrl);
-    }
-    
-    /**
-     * by default, includeExternalUrl is false.
-     * @param gpConfig
-     * @param value
-     * @return
-     */
-    public static GpFilePath initGpFilePath(final GpConfig gpConfig, final String value) {
-        final boolean includeExternalUrl=false;
-        return initGpFilePath(gpConfig, value, includeExternalUrl);
-    }
-
     /**
      * Get the GpFilePath for a batch input directory, if and only if, the given value
      * is a valid batch input directory. Otherwise, return null.
@@ -63,9 +47,9 @@ public class BatchInputFileHelper {
      * @param includeExternalUrl
      * @return
      */
-    public static GpFilePath initGpFilePath(final GpConfig gpConfig, final String value, final boolean includeExternalUrl) {
+    public static GpFilePath initGpFilePath(final GpConfig gpConfig, final JobInput jobInput, final String value, final boolean includeExternalUrl) {
         GpFilePath gpPath=null;
-        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, value);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, jobInput, value);
         if (externalUrl!=null) {
             //it's an externalURL
             if (!includeExternalUrl) {
@@ -110,33 +94,32 @@ public class BatchInputFileHelper {
      * @return
      * @throws GpServerException
      */
-    public static List<String> getBatchInputFiles(final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
-        final String parentUrl;
-        try {
-            parentUrl=batchDir.getUrl().toExternalForm();
-        }
-        catch (Exception e) {
-            throw new GpServerException("Error initializing parentUrl: "+batchDir.getRelativeUri().toString());
-        }
-        List<String> filePaths = new ArrayList<String>();
-        File[] files = batchDir.getServerFile().listFiles(listFilesFilter);
-
+    public static List<String> getBatchInputFiles(final String baseGpHref, final ParameterInfo pinfo, final GpFilePath batchDir) throws GpServerException {
+        final String parentHref=UrlUtil.getHref(baseGpHref, batchDir);
+        final List<String> filePaths = new ArrayList<String>();
+        final File[] files = batchDir.getServerFile().listFiles(listFilesFilter);
         //sort the files in ascending order
         Arrays.sort(files);
-        for(File file : files) {
-            final String fileUrl = parentUrl + UrlUtil.encodeURIcomponent( file.getName() );
-            try {
-                GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(fileUrl);
-                filePath.initMetadata();
-                if (accept(pinfo,filePath)) {
-                    filePaths.add(filePath.getUrl().toExternalForm());
-                }
+        for(final File file : files) {
+            if (accept(pinfo,file)) {
+                final String value=UrlUtil.glue(parentHref, UrlUtil.encodeURIcomponent(file.getName()));
+                filePaths.add(value);
             }
-            catch (Throwable t) {
-                log.error("Server error preparing batch input fileUrl="+fileUrl, t);
-            }
-        }
+        } 
         return filePaths;
+    }
+    
+    /**
+     * @deprecated prefer to avoid creating a new GpFilePath for each listed file in the batch directory
+     */
+    private static boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
+        return accept(pinfo, inputValue.isDirectory(), inputValue.getKind(), inputValue.getExtension());
+    }
+    
+    private static boolean accept(final ParameterInfo pinfo, final File serverFile) {
+        final String extension=SemanticUtil.getExtension(serverFile);
+        final String kind=SemanticUtil.getKind(serverFile, extension);
+        return accept(pinfo, serverFile.isDirectory(), kind, extension);
     }
 
     /**
@@ -148,15 +131,16 @@ public class BatchInputFileHelper {
      *        if it has fileFormats, accept any file which matches one of the file formats
      *        if it has no fileFormats, match any file which is not a directory
      *    otherwise, it's not a match
-     * 
-     * @param pinfo
-     * @param inputValue
+     * @param pinfo the input parameter
+     * @param isDirectory true if the input file is a directory
+     * @param kind the 'kind' of input file
+     * @param ext the input file extension
      * @return
      */
-    private static boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
+    private static boolean accept(final ParameterInfo pinfo, final boolean isDirectory, final String kind, final String ext) {
         //special-case for DIRECTORY input parameter
         if (pinfo._isDirectory()) {
-            if (inputValue.isDirectory()) {
+            if (isDirectory) {
                 return true;
             }
             else {
@@ -164,7 +148,7 @@ public class BatchInputFileHelper {
             }
         }
         
-        if (inputValue.isDirectory()) {
+        if (isDirectory) {
             //the value is a directory, but the parameter type is not a directory
             log.debug("Not implemented!");
             return false;
@@ -175,11 +159,9 @@ public class BatchInputFileHelper {
             //no declared fileFormats, acceptAll
             return true;
         }
-        final String kind=inputValue.getKind();
         if (fileFormats.contains(kind)) {
             return true;
         }
-        final String ext = inputValue.getExtension();
         if (fileFormats.contains(ext)) {
             return true;
         }
@@ -273,15 +255,17 @@ public class BatchInputFileHelper {
      * @param id
      * @param value
      */
-    public static List<String> getBatchValues(final GpConfig gpConfig, final GpContext gpContext, final ParamId paramId, final ParameterInfoRecord record, final String value) throws GpServerException
+    public static List<String> getBatchValues(final GpConfig gpConfig, final GpContext gpContext, final JobInput jobInput, final ParamId paramId, final ParameterInfoRecord record, final String value) throws GpServerException
     {
         List<String> fileValues = new ArrayList<String>();
         fileValues.add(value);
 
-        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, value);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, jobInput, value);
         if (externalUrl == null)
         {
-            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, value);
+            // set includeExternalUrl is false, external url are not implemented
+            final boolean includeExternalUrl=false;
+            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, jobInput, value, includeExternalUrl);
             if (gpPath == null) {
                 throw new GpServerException("batch input not supported for param="+paramId.getFqName()+", value="+value);
             }
@@ -290,7 +274,7 @@ public class BatchInputFileHelper {
             }
 
             if (gpPath.isDirectory()) {
-                fileValues = getBatchDirectory(gpContext, paramId, record, gpPath);
+                fileValues = getBatchDirectory(gpContext, jobInput.getBaseGpHref(), paramId, record, gpPath);
             }
         }
 
@@ -298,9 +282,9 @@ public class BatchInputFileHelper {
     }
 
 
-    private static List<String> getBatchDirectory(final GpContext userContext, final ParamId paramId, ParameterInfoRecord record, final GpFilePath batchDir) throws GpServerException
+    private static List<String> getBatchDirectory(final GpContext userContext, final String baseGpHref, final ParamId paramId, ParameterInfoRecord record, final GpFilePath batchDir) throws GpServerException
     {
-        final List<String> batchFileValues=listBatchDir(record.getFormal(), batchDir, userContext);
+        final List<String> batchFileValues=listBatchDir(baseGpHref, record.getFormal(), batchDir, userContext);
         if (batchFileValues==null || batchFileValues.size()==0) {
             log.debug("No matching batchValues for "+paramId.getFqName()+"="+batchDir);
         }
@@ -313,7 +297,7 @@ public class BatchInputFileHelper {
      * @param formalParam
      * @return
      */
-    public static List<String> listBatchDir(final ParameterInfo formalParam, final GpFilePath batchInputDir, GpContext userContext) throws GpServerException {
+    protected static List<String> listBatchDir(final String baseGpHref, final ParameterInfo formalParam, final GpFilePath batchInputDir, final GpContext userContext) throws GpServerException {
         if (batchInputDir==null) {
             throw new IllegalArgumentException("batchInputDir==null");
         }
@@ -331,21 +315,9 @@ public class BatchInputFileHelper {
             final String errorMessage=""+batchInputDir+" is not a valid batch input directory";
             throw new GpServerException(errorMessage);
         }
-
-        final List<String> batchInputFileValues=BatchInputFileHelper.getBatchInputFiles(formalParam, batchInputDir);
+        final List<String> batchInputFileValues=BatchInputFileHelper.getBatchInputFiles(baseGpHref, formalParam, batchInputDir);
         if (batchInputFileValues.size()==0) {
-
-            String externalUrlMsg = "";
-            try
-            {
-                externalUrlMsg = "in directory " + batchInputDir.getUrl().toExternalForm();
-            }
-            catch(Exception e)
-            {
-                //do nothing here
-            }
-
-            throw new GpServerException("No matching input files for batch parameter " + formalParam.getName() + " " + externalUrlMsg);
+            throw new GpServerException("No matching input files for batch parameter " + formalParam.getName() + "=" + UrlUtil.getHref(baseGpHref, batchInputDir));
         }
         return batchInputFileValues;
     }

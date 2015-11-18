@@ -227,14 +227,14 @@ public class JobInputHelper {
         if(isFileParameter(paramId))
         {
             //check if the value for this file parameter is a directory
-            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, value, true);
+            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, jobInputTemplate, value, true);
             if(gpPath.isDirectory())
             {
                 hasDirectory = true;
             }
 
 
-            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, taskContext, paramId, record, value);
+            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, taskContext, jobInputTemplate, paramId, record, value);
 
             for(String file: batchFileValues)
             {
