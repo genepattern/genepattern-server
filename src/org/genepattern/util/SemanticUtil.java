@@ -78,11 +78,16 @@ public class SemanticUtil {
         if (extension == null) {
             return null;
         }
-        if (extension.equalsIgnoreCase("odf")) {
-            return getOdfKind(file);
-        }
-        if (extension.equalsIgnoreCase("gz")) {
-            return getGzKind(file);
+        if (file != null && file.exists()) {
+            if (file.isDirectory()) {
+                return "directory";
+            }
+            else if (extension.equalsIgnoreCase("odf")) {
+                return getOdfKind(file);
+            }
+            else if (extension.equalsIgnoreCase("gz")) {
+                return getGzKind(file);
+            }
         }
         return extension.toLowerCase();
     }
