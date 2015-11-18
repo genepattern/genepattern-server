@@ -74,6 +74,19 @@ public class SemanticUtil {
         return extension.toLowerCase();
     }
 
+    public static String getKind(final File file, final String extension) {
+        if (extension == null) {
+            return null;
+        }
+        if (extension.equalsIgnoreCase("odf")) {
+            return getOdfKind(file);
+        }
+        if (extension.equalsIgnoreCase("gz")) {
+            return getGzKind(file);
+        }
+        return extension.toLowerCase();
+    }
+
     private static String getOdfKind(File file) {
         OdfParser parser = new OdfParser();
         MyOdfHandler handler = new MyOdfHandler();
