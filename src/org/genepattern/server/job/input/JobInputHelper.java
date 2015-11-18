@@ -5,6 +5,7 @@ package org.genepattern.server.job.input;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,8 @@ import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * Helper class for the job input form, includes methods for preparing both batch jobs and regular jobs.
  * 
@@ -42,14 +45,43 @@ import org.genepattern.server.rest.ParameterInfoRecord;
  */
 public class JobInputHelper {
     final static private Logger log = Logger.getLogger(JobInputHelper.class);
+    
+    /** @deprecated include baseGpHref from client request */
+    public static URL initExternalUrl(final GpConfig gpConfig, final String value) {
+        return initExternalUrl(
+                Arrays.asList(UrlUtil.getBaseGpHref(gpConfig)), 
+                value);
+    }
+
     /**
      * Is the input value an external URL?
-     * 
+     * @param gpConfig to match against the server configured gpUrl 
+     * @param jobInput to match against the web client baseGpUrl
      * @param value
-     * 
      * @return the URL if it's an external url, otherwise return null.
      */
-    public static URL initExternalUrl(final GpConfig gpConfig, final String value) {
+    public static URL initExternalUrl(final GpConfig gpConfig, final JobInput jobInput, final String value) {
+        if (gpConfig==null) { 
+            throw new IllegalArgumentException("gpConfig==null");
+        }
+        ImmutableList.Builder<String> b =new ImmutableList.Builder<String>();
+        if (jobInput!=null) {
+            final String baseGpHref=jobInput.getBaseGpHref();
+            if (baseGpHref != null) {
+                b.add(baseGpHref);
+            }
+        }
+        b.add(UrlUtil.getBaseGpHref(gpConfig));
+        return initExternalUrl(b.build(), value);
+    }
+
+    /**
+     * Is the input value an external URL?
+     * @param baseGpUrls a list of zero or more baseGpUrls, if the value matches one of these it is considered an internal URL.
+     * @param value
+     * @return
+     */
+    public static URL initExternalUrl(final List<String> baseGpUrls, final String value) {
         log.debug("intialize external URL for value="+value);
         if (value==null) {
             throw new IllegalArgumentException("value==null");
@@ -59,9 +91,11 @@ public class JobInputHelper {
             log.debug("it's a substition for the gp url");
             return null;
         }
-        if (value.startsWith(gpConfig.getGpUrl())) {
-            log.debug("it's a gp url");
-            return null;
+        for(final String baseGpUrl : baseGpUrls) {
+            if (value.startsWith(baseGpUrl)) {
+                log.debug("it's a gp url");
+                return null;
+            }
         }
 
         URL url=null;
