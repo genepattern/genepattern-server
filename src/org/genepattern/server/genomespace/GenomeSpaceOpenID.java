@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.dm.UrlUtil;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.ConsumerManager;
@@ -66,14 +67,24 @@ public class GenomeSpaceOpenID extends HttpServlet {
         return gsUrl;
     }
 
+    /**
+     * Returns the URL to GenomeSpace server OpenId logout page.
+     * @param req the client http request to the GP server
+     */
+    private String getGsLogoutUrl(final HttpServletRequest req) {
+        final String baseGpHref=UrlUtil.getBaseGpHref(req);
+        return getGsLogoutUrl(baseGpHref);
+    }
+    
     /** 
      * Returns the URL to GenomeSpace server OpenId logout page. 
+     * @param baseGpHref the href to the GP server, e.g. 'http://127.0.0.1:8080/gp'
      * */
-    private String getGsLogoutUrl() {
+    private String getGsLogoutUrl(final String baseGpHref) {
         int idx = getProviderURL().lastIndexOf("identityServer");
         if (idx < 0) { return null; }
         String gsUrl = getProviderURL().substring(0, idx) + "identityServer/openIdProvider?_action=logout";
-        gsUrl += "&logout_return_to=" + ServerConfigurationFactory.instance().getGenePatternURL();
+        gsUrl += "&logout_return_to=" + baseGpHref+"/";
         log.debug("Getting the OpenID logout URL.  URL is: " + gsUrl);
         return gsUrl;
     }
@@ -253,7 +264,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     private void doOpenIdLogout(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         log.debug("Performing OpenID logout");
-        String url = getGsLogoutUrl();
+        String url = getGsLogoutUrl(req);
         if (url != null) {
             log.info("Logging out at " + url);
             resp.sendRedirect(url);
@@ -270,15 +281,8 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     private String getRequestURL(HttpServletRequest request) {
         log.debug("Contructing the OpenID return URL");
-        String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();
-        
-        // Remove preceding slash
-        if (servletPath.startsWith("/")) {
-            servletPath = servletPath.substring(1);
-        }
-
-        String u = ServerConfigurationFactory.instance().getGenePatternURL() + servletPath;
+        String u=UrlUtil.getBaseGpHref(request) + request.getServletPath();
         if (pathInfo != null) {
             u+= pathInfo;
         }
