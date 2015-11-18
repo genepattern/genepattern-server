@@ -26,6 +26,8 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 
+import com.google.common.base.Strings;
+
 /**
  * Helper class for preparing a batch of jobs, when batching over input files and directories.
  * 
@@ -184,30 +186,18 @@ public class BatchInputFileHelper {
         return false;
     }
 
+    /**
+     * Extract the base filename for the given GpFilePath, with special-case for paired input files
+     * which match the pattern:
+     * 
+     *     {basename}_1.{ext} or {basename}_2.{ext}
+     * 
+     * @param file
+     * @return
+     */
     public static String getBaseFilename(final GpFilePath file) {
-        if (file==null) {
-            log.error("file==null");
-            return "";
-        }
-        String filename=null;       
-        if (file.getName()!=null) {
-            filename=file.getName();
-        }
-        else {
-            try {
-                URL url=file.getUrl();
-                if (url != null) {
-                    String path=url.getPath();
-                    if (path != null) {
-                        filename=new File(path).getName();
-                    }
-                }
-            }
-            catch (Exception e) {
-                log.error(e);
-            }
-        }
-        if (filename==null) {
+        final String filename=getFilename(file);
+        if (Strings.isNullOrEmpty(filename)) {
             log.error("error getting filename for file="+file);
             return "";
         }
@@ -232,7 +222,47 @@ public class BatchInputFileHelper {
         }
     }
 
-    public BatchInputFileHelper() {}
+    /**
+     * helper method to get the filename for a GpFilePath.
+     * Note: could be moved into the GpFilePath class instead.
+     * @param file
+     * @return
+     */
+    protected static String getFilename(final GpFilePath file) {
+        if (file==null) {
+            log.error("file==null");
+            return "";
+        }
+        else if (file.getName()!=null) {
+            return file.getName();
+        }
+        else {
+            //special-case: GpFilePath.name not initialized
+            if (log.isDebugEnabled()) {
+                log.debug("GpFilePath.name not initialized ... ");
+            }
+            if (file.getRelativeFile() != null) {
+                log.debug("use relativeFile.name");
+                return file.getRelativeFile().getName();
+            }
+            else if (file.getRelativeUri() != null) {
+                final String uriPath=file.getRelativeUri().getPath();
+                if (uriPath != null) {
+                    log.debug("use relativeUri.path");
+                    return new File(uriPath).getName();
+                }
+            }
+        }
+        log.debug("unable to getFilename from GpFilePath, return empty string");
+        return "";
+    }
+    
+    protected static String getFilenameFromUrl(final URL url) {
+        if (url==null) {
+            return null;
+        }
+        return new File(url.getPath()).getName();
+    }
 
     /**
      * Helper method, based on the value provided from the web upload form
