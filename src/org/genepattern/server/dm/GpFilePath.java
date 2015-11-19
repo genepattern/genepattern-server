@@ -57,6 +57,21 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
     
+    /** flag indicating whether this is a local file path (callback to GP server) or an external URL */
+    private final boolean isLocal;
+    
+    public GpFilePath() {
+        this.isLocal=true;
+    }
+
+    protected GpFilePath(final boolean isLocal) {
+        this.isLocal=isLocal;
+    }
+    
+    public boolean isLocal() {
+        return isLocal;
+    }
+    
     protected String owner = "";
     /**
      * Get the GP userid for the owner of the file.
@@ -80,7 +95,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @deprecated should pass in GpConfig
      */
     public URL getUrl() throws Exception {
-        return getUrl(ServerConfigurationFactory.instance());
+        return UrlUtil.getUrl(UrlUtil.getBaseGpHref(ServerConfigurationFactory.instance()), this);
     }
     
     /**
@@ -93,42 +108,9 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      *     for a fully-qualified URL callback, use the incoming HttpServletRequest when possible. 
      */
     public URL getUrl(final GpConfig gpConfig) throws Exception {
-        // includes the trailing slash
-        String str=gpConfig.getGpUrl();
-        final URI relativeUri = getRelativeUri();
-        if (relativeUri==null) {
-            //null relativeUri means use the GP URL
-            log.debug("known error: uri is null");
-        }
-        else {
-            //expected
-            str = glue(str, relativeUri.toString());
-        }
-        if (isDirectory() && !str.endsWith("/")) {
-            str = str + "/";
-        }
-        URL url = new URL(str);
-        return url;
+        return UrlUtil.getUrl(UrlUtil.getBaseGpHref(gpConfig), this);
     }
     
-    /** append the gpUrl to the relative uri, making sure to not duplicate the '/' character. */
-    protected String glue(String prefix, String suffix) {
-        if (prefix.endsWith("/")) {
-            if (suffix.startsWith("/")) {
-                return prefix + suffix.substring(1);
-            }
-            else {
-                return prefix + "/" + suffix;
-            }
-        }
-        if (suffix.startsWith("/")) {
-            return prefix + suffix;
-        }
-        else {
-            return prefix + "/" + suffix;
-        }
-    }
-
     /**
      * Same as {@link java.io.File#isFile()}.
      * @return

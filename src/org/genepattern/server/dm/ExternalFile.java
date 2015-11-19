@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 
 /**
@@ -23,10 +24,12 @@ public class ExternalFile extends GpFilePath {
     private URI uri = null;
     
     public ExternalFile(String url) {
+        super(false); // required to flag this as an external url
         setUrl(url);
     }
     
     public ExternalFile(URL url) {
+        super(false); // required to flag this as an external url
         setUrl(url);
     }
     
@@ -52,6 +55,11 @@ public class ExternalFile extends GpFilePath {
     
     @Override
     public URL getUrl() throws Exception {
+        return url;
+    }
+    
+    @Override
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
         return url;
     }
 

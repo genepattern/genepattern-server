@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -48,6 +49,7 @@ public class GenomeSpaceFile extends GpFilePath {
     Map<String, String> conversionUrls = null;
     
     public GenomeSpaceFile(Object gsSession) {
+        super(false); // required to flag this as an external url
         if (gsSession == null) {
             log.error("ERROR: null gsSession passed into GenomeSpaceFile constructor");
         }
@@ -203,7 +205,12 @@ public class GenomeSpaceFile extends GpFilePath {
     public URL getUrl() throws Exception {
         return gsUrl;
     }
-    
+
+    @Override
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
+        return gsUrl;
+    }
+
     public String getEncodedUrl() {
         if (gsUrl==null) {
             return "";
