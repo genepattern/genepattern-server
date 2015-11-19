@@ -75,19 +75,21 @@ public class SemanticUtil {
     }
 
     public static String getKind(final File file, final String extension) {
-        if (extension == null) {
-            return null;
-        }
         if (file != null && file.exists()) {
+            // special-case for directory, only check if file exists
             if (file.isDirectory()) {
                 return "directory";
             }
-            else if (extension.equalsIgnoreCase("odf")) {
+            // extension can be null
+            else if ("odf".equalsIgnoreCase(extension)) {
                 return getOdfKind(file);
             }
-            else if (extension.equalsIgnoreCase("gz")) {
+            else if ("gz".equalsIgnoreCase(extension)) {
                 return getGzKind(file);
             }
+        }
+        if (extension==null) {
+            return null;
         }
         return extension.toLowerCase();
     }
