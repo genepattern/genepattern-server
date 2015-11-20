@@ -3,7 +3,7 @@
 
 <project basedir="." default="create-zip" name="InstallRPackages_R2.15">
 	<property name="dirOffset" value="../../" />
-	<import file="${dirOffset}/commontargets.xml" />
+    <import file="${dirOffset}/common_module_code/commontargets.xml" />
 
 	<target depends="init" name="create-zip">
 		<antcall target="prezip" />

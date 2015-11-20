@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Ant build file -->
 
-<project basedir="." default="create-zip" name="InstallRPackages_R3.0">
+<project basedir="." default="create-zip" name="InstallRPackages_R3.2">
 	<property name="dirOffset" value="../../" />
-    <import file="${dirOffset}/common_module_code/commontargets.xml" />
+	<import file="${dirOffset}/common_module_code/commontargets.xml" />
 
 	<target depends="init" name="create-zip">
 		<antcall target="prezip" />
