@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input.batch;
 
+import static org.genepattern.junitutil.Demo.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -9,17 +10,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.dm.GpFilePath;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestBatchInputFileHelper {
-    final String baseGpHref="http://127.0.0.1:8080/gp";
+    GpConfig gpConfig;
     final String filename="all_aml_test.gct";
     GpFilePath gpFilePath;
     
     @Before
     public void setUp() {
+        gpConfig=mock(GpConfig.class);
         gpFilePath=mock(GpFilePath.class);
     }
 
@@ -28,7 +31,7 @@ public class TestBatchInputFileHelper {
         when(gpFilePath.getName()).thenReturn(filename);
         assertEquals("gpFilePath.name is set",
                 filename,
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
 
     @Test
@@ -36,7 +39,7 @@ public class TestBatchInputFileHelper {
         when(gpFilePath.getRelativeFile()).thenReturn(new File(filename));
         assertEquals("gpFilePath.relativeFile, when name not set",
                 filename,
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
     
     @Test
@@ -44,32 +47,32 @@ public class TestBatchInputFileHelper {
         when(gpFilePath.getRelativeFile()).thenReturn(new File(""));
         assertEquals("empty string",
                 "",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeFile()).thenReturn(new File("/"));
         assertEquals("'/'",
                 "",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeFile()).thenReturn(new File("./"));
         assertEquals("'./'",
                 ".",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeFile()).thenReturn(new File("parent/child_dir"));
         assertEquals("'parent/child_dir' (no extension)",
                 "child_dir",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeFile()).thenReturn(new File("parent/child_dir/"));
         assertEquals("'parent/child_dir/' (trailing '/')",
                 "child_dir",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeFile()).thenReturn(new File("parent/child_dir/.hidden"));
         assertEquals("'parent/child_dir/.hidden'",
                 ".hidden",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
 
     @Test
@@ -77,7 +80,7 @@ public class TestBatchInputFileHelper {
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("/users/test_user/"+filename));
         assertEquals("gpFilePath.relativeFile, when name not set",
                 filename,
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
 
     @Test
@@ -85,37 +88,65 @@ public class TestBatchInputFileHelper {
         when(gpFilePath.getRelativeUri()).thenReturn(new URI(""));
         assertEquals("empty string",
                 "",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("/"));
         assertEquals("'/'",
                 "",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("users"));
         assertEquals("'users' (no leading '/')",
                 "users",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("/users"));
         assertEquals("'/users' (no extension, presumably a dir)",
                 "users",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("/users/test_user/gp_tutorial_files/"));
         assertEquals("'/users/test_user/gp_tutorial_files/'  (trailing '/', presumably a dir)",
                 "gp_tutorial_files",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
 
         when(gpFilePath.getRelativeUri()).thenReturn(new URI("/users/test_user/.hidden"));
         assertEquals("'.hidden'",
                 ".hidden",
-                BatchInputFileHelper.getFilename(gpFilePath));
+                BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
+    }
+    
+    @Test
+    public void getFilename_fromExternalUrl_http() throws Exception {
+        URL extUrl=new URL(dataHttpDir+"all_aml_test.gct");
+        when(gpFilePath.getUrl(gpConfig)).thenReturn(extUrl);
+        assertEquals("all_aml_test.gct", BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
+    }
+
+    @Test
+    public void getFilename_fromExternalUrl_http_dir() throws Exception {
+        URL extUrl=new URL(dataHttpDir);
+        when(gpFilePath.getUrl(gpConfig)).thenReturn(extUrl);
+        assertEquals("all_aml", BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
+    }
+
+    @Test
+    public void getFilename_fromExternalUrl_genomeSpace() throws Exception {
+        URL extUrl=new URL(dataGsDir+"all_aml_test.gct");
+        when(gpFilePath.getUrl(gpConfig)).thenReturn(extUrl);
+        assertEquals("all_aml_test.gct", BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
+    }
+
+    @Test
+    public void getFilename_fromExternalUrl_ftp() throws Exception {
+        URL extUrl=new URL(dataFtpDir+"all_aml_test.gct");
+        when(gpFilePath.getUrl(gpConfig)).thenReturn(extUrl);
+        assertEquals("all_aml_test.gct", BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
 
     @Test
     public void getFilename_nullName() {
-        assertEquals("", BatchInputFileHelper.getFilename(gpFilePath));
+        assertEquals("", BatchInputFileHelper.getFilename(gpConfig, gpFilePath));
     }
 
     @Test
@@ -127,42 +158,57 @@ public class TestBatchInputFileHelper {
     public void getFilenameFromUrl() throws MalformedURLException {
         assertEquals(filename, 
                 BatchInputFileHelper.getFilenameFromUrl(
-                        new URL(baseGpHref+"/users/test_user/"+filename)));
+                        new URL(gpHref+"/users/test_user/"+filename)));
     }
 
     @Test
     public void getFilenameFromUrl_ignoreQueryString() throws MalformedURLException {
         assertEquals("ignore queryString", filename, 
                 BatchInputFileHelper.getFilenameFromUrl(
-                        new URL(baseGpHref+"/users/test_user/"+filename+"?key=val&flag#anchor")));
+                        new URL(gpHref+"/users/test_user/"+filename+"?key=val&flag#anchor")));
     }
 
     @Test
     public void getFilenameFromUrl_nullArg() throws MalformedURLException {
         assertEquals("null arg", null, BatchInputFileHelper.getFilenameFromUrl(null));
-        assertEquals("baseGpHref (no trailing slash), returns servlet context path", 
-                "gp", 
-                BatchInputFileHelper.getFilenameFromUrl(new URL(baseGpHref)));
-        assertEquals("baseGpUrl (with trailing slash), also returns servlet context path", 
-                "gp",
-                BatchInputFileHelper.getFilenameFromUrl(new URL(baseGpHref+"/")));
     }
 
     @Test
     public void getFilenameFromUrl_baseGpHref_noTrailingSlash() throws MalformedURLException {
         assertEquals("baseGpHref (no trailing slash), returns servlet context path", 
                 "gp", 
-                BatchInputFileHelper.getFilenameFromUrl(new URL(baseGpHref)));
-        assertEquals("baseGpUrl (with trailing slash), also returns servlet context path", 
-                "gp",
-                BatchInputFileHelper.getFilenameFromUrl(new URL(baseGpHref+"/")));
+                BatchInputFileHelper.getFilenameFromUrl(new URL(gpHref)));
     }
 
     @Test
-    public void getFilenameFromUrl_baseGpUrl_withTrailingSlash() throws MalformedURLException {
-        assertEquals("baseGpUrl (with trailing slash), also returns servlet context path", 
+    public void getFilenameFromUrl_gpUrl() throws MalformedURLException {
+        assertEquals("'{gpUrl}' (with trailing slash), returns servlet context path", 
                 "gp",
-                BatchInputFileHelper.getFilenameFromUrl(new URL(baseGpHref+"/")));
+                BatchInputFileHelper.getFilenameFromUrl(new URL(gpUrl)));
+    }
+
+    public void doGetFilenameFromUrl(final String expectedFilename, final String urlSpec) throws MalformedURLException {
+        assertEquals("fromUrl('"+urlSpec+"')", 
+                expectedFilename,
+                BatchInputFileHelper.getFilenameFromUrl(new URL(urlSpec)));
+    }
+
+    @Test
+    public void getFilenameFromUrl_scenarios() throws MalformedURLException {
+        doGetFilenameFromUrl("", "http:");
+        doGetFilenameFromUrl("", "http://");
+        doGetFilenameFromUrl("", "http://");
+        doGetFilenameFromUrl("", "http://127.0.0.1");
+        doGetFilenameFromUrl("", "http://127.0.0.1:8080");
+        doGetFilenameFromUrl("", "http://127.0.0.1:8080/");
+        doGetFilenameFromUrl("gp", gpHref);
+        doGetFilenameFromUrl("gp", gpUrl);
+        doGetFilenameFromUrl("gp", gpHref+"?name=value&name=value#pathfragment");
+        doGetFilenameFromUrl("data", gpHref+"/data//?name=value&name=value#pathfragment");
+        doGetFilenameFromUrl("xchip", gpHref+"/data//xchip/?name=value&name=value#pathfragment");
+        doGetFilenameFromUrl("all_aml_test.gct", gpHref+"/data//xchip/all_aml_test.gct?name=value&name=value#pathfragment");
+        doGetFilenameFromUrl("all aml test.gct", gpHref+"/all%20aml%20test.gct");
+        doGetFilenameFromUrl("all+aml+test.gct ('+' chars in path element are not encoded)", gpHref+"/all+aml+test.gct");
     }
 
 }

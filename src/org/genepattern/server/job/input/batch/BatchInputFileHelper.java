@@ -5,6 +5,7 @@ package org.genepattern.server.job.input.batch;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -204,13 +206,18 @@ public class BatchInputFileHelper {
         }
     }
 
+    /** @deprecated pass in GpConfig */
+    protected static String getFilename(final GpFilePath file) {
+        return getFilename(ServerConfigurationFactory.instance(), file);
+    }
+
     /**
      * helper method to get the filename for a GpFilePath.
      * Note: could be moved into the GpFilePath class instead.
      * @param file
      * @return
      */
-    protected static String getFilename(final GpFilePath file) {
+    protected static String getFilename(final GpConfig gpConfig, final GpFilePath file) {
         if (file==null) {
             log.error("file==null");
             return "";
@@ -218,32 +225,58 @@ public class BatchInputFileHelper {
         else if (file.getName()!=null) {
             return file.getName();
         }
-        else {
-            //special-case: GpFilePath.name not initialized
-            if (log.isDebugEnabled()) {
-                log.debug("GpFilePath.name not initialized ... ");
+        //special-case: GpFilePath.name not initialized
+        log.debug("GpFilePath.name not initialized ... ");
+        if (file.getRelativeFile() != null) {
+            log.debug("use relativeFile.name");
+            return file.getRelativeFile().getName();
+        }
+        else if (file.getRelativeUri() != null) {
+            final String uriPath=file.getRelativeUri().getPath();
+            if (uriPath != null) {
+                log.debug("use relativeUri.path");
+                return new File(uriPath).getName();
             }
-            if (file.getRelativeFile() != null) {
-                log.debug("use relativeFile.name");
-                return file.getRelativeFile().getName();
-            }
-            else if (file.getRelativeUri() != null) {
-                final String uriPath=file.getRelativeUri().getPath();
-                if (uriPath != null) {
-                    log.debug("use relativeUri.path");
-                    return new File(uriPath).getName();
+        }
+        try {
+            final String filename=getFilenameFromUrl(file.getUrl(gpConfig));
+            if (!Strings.isNullOrEmpty(filename)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("use url.path, filename="+filename);
                 }
+                return filename;
             }
+        }
+        catch (Exception e) {
+            log.debug("error in GpFilePath.getUrl", e);
         }
         log.debug("unable to getFilename from GpFilePath, return empty string");
         return "";
     }
     
     protected static String getFilenameFromUrl(final URL url) {
+         final boolean keepTrailingSlash=false;
+         return getFilenameFromUrl(url, keepTrailingSlash);
+    }
+    protected static String getFilenameFromUrl(final URL url, final boolean keepTrailingSlash) {
         if (url==null) {
             return null;
         }
-        return new File(url.getPath()).getName();
+        String path;
+        try {
+            path=url.toURI().getPath();
+        }
+        catch (URISyntaxException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("error getting path from url="+url, e);
+            }
+            path=url.getPath();
+        }
+        
+        File file=new File(path);
+        boolean isDirectory=path.endsWith("/");
+        final String postfix= ( keepTrailingSlash && isDirectory ? "/" : "");
+        return file.getName() + postfix;
     }
 
     /**
