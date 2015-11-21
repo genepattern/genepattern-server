@@ -92,6 +92,16 @@ public class JobInput {
         addValue(new ParamId(name), value, GroupId.EMPTY);
     }
     
+    /**
+     * Add a batch value for the param, use this when batching over more than one
+     * value for the given param.
+     * @param name
+     * @param value
+     */
+    public void addBatchValue(final String name, final String value) {
+        addValue(name, value, true);
+    }
+    
     public void addValue(final ParamId paramId, final ParamValue value) {
         addValue(paramId, value, GroupId.EMPTY);
     }
