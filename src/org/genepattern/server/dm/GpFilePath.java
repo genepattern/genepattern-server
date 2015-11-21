@@ -95,7 +95,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @deprecated should pass in GpConfig
      */
     public URL getUrl() throws Exception {
-        return UrlUtil.getUrl(UrlUtil.getBaseGpHref(ServerConfigurationFactory.instance()), this);
+        return getUrl(ServerConfigurationFactory.instance());
     }
     
     /**
