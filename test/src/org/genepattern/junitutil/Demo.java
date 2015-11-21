@@ -34,17 +34,26 @@ public class Demo {
     private static final String proxyHost="gpdev.broadinstitute.org";
     /** proxyHref='https://gpdev.broadinstitute.org/gp', returned by HttpServletRequest.getRequestURL,  */
     public static final String proxyHref=proxyScheme+"://"+proxyHost+gpPath;
+    public static final String proxyUrl=proxyHref+"/";
     private static final int proxyPort=443;
     
-    // common data paths
-    public static final String dataFtpDir="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/";
-    public static final String dataHttpDir="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
-    public static final String dataGsDir="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
-
     // common user ids
     public static final String adminUserId="admin";
     public static final String devUserId="dev";
     public static final String testUserId="test_user";
+    
+    // common job ids
+    /** default jobId for basic junit tests */
+    public static final String jobId="1001";
+
+    // common data hrefs, external
+    public static final String dataFtpDir="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/";
+    public static final String dataHttpDir="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
+    public static final String dataGsDir="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
+    
+    // common file system paths, (as opposed to URI paths)
+    /** path to 'all_aml' data on server's file system, includes trailing slash */
+    public static final String localDataDir="/var/genepattern/shared_data/all_aml/";
     
     protected static String portStr(final String scheme, final int port) {
         if ("http".equals(scheme) && port==80) return "";
@@ -187,6 +196,11 @@ public class Demo {
         //return ""+Math.rint(1000.* Math.random());
     }
 
+    /** default User Upload File, relative URI path */
+    public static String uploadPath() {
+        return uploadPath(testUserId, "all_aml_test.cls");
+    }
+    
     /** User Upload File, relative URI path (default userId). */
     public static String uploadPath(final String path) {
         return uploadPath(testUserId, path);
@@ -215,5 +229,38 @@ public class Demo {
     public static String jobUploadPath(final String userId, final String pname, final int idx, final String path) {
         return uploadPath(userId, "tmp/run"+randomInt()+".tmp/"+pname+"/"+idx+"/"+path);
     }
+    
+    /** default Job Result Dir, relative URI path */
+    public static String jobResultDir() {
+        return jobResultPath(jobId, "");
+    }
 
+    /** default Job Result File, relative URI path, all_aml_test.gct */
+    public static String jobResultFile() {
+        return jobResultPath(jobId, "all_aml_test.gct");
+    }
+    
+    /**
+     * Job Result File, relative URI path
+     * @param jobId
+     * @param path, a URI encoded path, suitable for constructing an href (as opposed to a File).
+     * @return
+     */
+    public static String jobResultPath(final String jobId, final String path) {
+        return "/jobResults/"+jobId+"/"+Strings.nullToEmpty(path);
+    }
+
+    /** default Server File Path, relative URI path */
+    public static String serverFile() {
+        return serverFile("all_aml_test.cls");
+    } 
+
+    /**
+     * custom Server File, relative URI path 
+     * @param path a relative URI path to be appended to the default localDataDir
+     * @return
+     */
+    public static String serverFile(final String path) {
+        return "/data/"+localDataDir+path;
+    }
 }
