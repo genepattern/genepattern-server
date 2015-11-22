@@ -35,8 +35,8 @@ public class ExternalFile extends GpFilePath {
     
     public void setUrl(URL url) {
         this.url = url;
-        
-        String filename = url.getFile().substring(url.getFile().lastIndexOf("/") + 1);
+        final boolean keepTrailingSlash=true;
+        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
         this.setName(filename);
         
         String extension = filename.substring(filename.lastIndexOf(".") + 1);
