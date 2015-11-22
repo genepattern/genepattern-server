@@ -26,6 +26,7 @@ import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -64,14 +65,23 @@ public class JobInputHelper {
         if (gpConfig==null) { 
             throw new IllegalArgumentException("gpConfig==null");
         }
-        ImmutableList.Builder<String> b =new ImmutableList.Builder<String>();
-        if (jobInput!=null) {
+        final ImmutableList.Builder<String> b = new ImmutableList.Builder<String>();
+        if (jobInput != null) {
             final String baseGpHref=jobInput.getBaseGpHref();
-            if (baseGpHref != null) {
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
                 b.add(baseGpHref);
             }
+            else {
+                if (log.isDebugEnabled()) {
+                    // only warn when in debug mode
+                    log.warn("jobInput.baseGpHref not set");
+                }
+            }
         }
-        b.add(UrlUtil.getBaseGpHref(gpConfig));
+        final String baseGpHrefFromConfig=UrlUtil.getBaseGpHref(gpConfig);
+        if (!Strings.isNullOrEmpty(baseGpHrefFromConfig)) {
+           b.add(baseGpHrefFromConfig);
+        }
         return initExternalUrl(b.build(), value);
     }
 
@@ -82,18 +92,23 @@ public class JobInputHelper {
      * @return
      */
     public static URL initExternalUrl(final List<String> baseGpUrls, final String value) {
-        log.debug("intialize external URL for value="+value);
         if (value==null) {
             throw new IllegalArgumentException("value==null");
         }
-
         if (value.startsWith("<GenePatternURL>")) {
-            log.debug("it's a substition for the gp url");
+            if (log.isDebugEnabled()) {
+                log.debug("<GenePatternURL> substitution, return null, value="+value);
+            }
             return null;
         }
         for(final String baseGpUrl : baseGpUrls) {
-            if (value.startsWith(baseGpUrl)) {
-                log.debug("it's a gp url");
+            if (Strings.isNullOrEmpty(baseGpUrl)) {
+                log.error("baseGpUrl arg is null or empty");
+            }
+            else if (value.startsWith(baseGpUrl)) {
+                if (log.isDebugEnabled()) { 
+                    log.debug("baseUrl callback, return null, value="+value);
+                }
                 return null;
             }
         }
@@ -103,14 +118,22 @@ public class JobInputHelper {
             url=new URL(value);
         }
         catch (MalformedURLException e) {
-            log.debug("it's not a url", e);
+            if (log.isDebugEnabled()) {
+                log.debug("MalformedURLException, return null, value="+value);
+            }
             return null;
         }
         
         //special-case for file:/// urls
         if ("file".equalsIgnoreCase(url.getProtocol())) {
-            log.debug("it's a file url, assume it's a local path: "+value);
+            if (log.isDebugEnabled()) {
+                log.debug("file url.protocal, return null, value="+value);
+            }
             return null;
+        }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("returning ExternalUrl="+url);
         }
         return url;
     }

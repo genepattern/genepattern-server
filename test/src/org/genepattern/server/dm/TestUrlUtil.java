@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,7 +25,6 @@ public class TestUrlUtil {
     private static GpFilePath gpFilePath; 
     private static final String relativeHref=jobResultPath("1", "all%20aml%20test.gct");
 
-
     @BeforeClass
     public static void beforeClass() throws URISyntaxException {
         gpConfig=mock(GpConfig.class);
@@ -33,6 +33,24 @@ public class TestUrlUtil {
         when(gpFilePath.getRelativeUri()).thenReturn(new URI(relativeHref));
     }
 
+    // sanity check the Demo class
+    protected void checkDemo(final String relativeUri, String[] expected) {
+        final String[] args=Demo.splitRelativeUri(relativeUri);  // [ servletPath, pathInfo, queryString ]
+        assertEquals("splitRelativeUri("+relativeUri+")", Arrays.asList(expected), Arrays.asList(args));
+    }
+    
+    /** sanity check {@link Demo#splitRelativeUri(String)} in junitutil package */
+    @Test public void check_splitRelativeUri() {
+        checkDemo("/", new String[]{"/", null, null} );
+        checkDemo("/users", new String[]{"/users", null, null} );
+        checkDemo("/users/test_user", new String[]{"/users", "/test_user", null} );
+        checkDemo("/users/test_user/all_aml_test.gct", new String[]{"/users", "/test_user/all_aml_test.gct", null} );
+        checkDemo("/users/test_user/all_aml_test.gct?p1=v1&p2=v2", new String[]{"/users", "/test_user/all_aml_test.gct", "p1=v1&p2=v2"} );
+
+        // the '#' fragment is not part of the query
+        checkDemo("/users/test_user?p1=v1&p2=v2#fragment", new String[]{"/users", "/test_user", "p1=v1&p2=v2"} );
+    }
+    
     @Test
     public void getUrl() throws MalformedURLException, URISyntaxException {
         URL expected=new URL(gpHref+relativeHref);
@@ -110,7 +128,7 @@ public class TestUrlUtil {
 
     @Test
     public void getBaseGpHref_root() {
-        HttpServletRequest request=Demo.rootClientRequest("/users", "/test_user/all_aml_test.gct", null);
+        HttpServletRequest request=Demo.rootClientRequest("/users/test_user/all_aml_test.gct");
         assertEquals(""+request.getRequestURL(),
                 proxyHref_ROOT,
                 UrlUtil.getBaseGpHref(request));

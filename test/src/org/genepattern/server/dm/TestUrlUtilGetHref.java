@@ -115,12 +115,6 @@ public class TestUrlUtilGetHref {
         assertEquals("queryString", "param01=value01&param02=value02", request.getQueryString());
     }
 
-    @Test
-    public void demoClientRequest_customServletPath() {
-        HttpServletRequest request=clientRequest("/nested/servlet_path", "/all_aml_test.gct", null);
-        assertEquals("servletPath", "/nested/servlet_path", request.getServletPath());
-    }
-    
     @Test(expected=IllegalArgumentException.class)
     public void demoClientRequest_null() {
         //HttpServletRequest request=
