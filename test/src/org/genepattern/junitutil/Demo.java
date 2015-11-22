@@ -30,8 +30,10 @@ public class Demo {
     /** gpUrl, set in genepattern.properties, includes trailing slash '/'. */
     public static final String gpUrl=gpHref+"/";
 
-    private static final String proxyScheme="https";
-    private static final String proxyHost="gpdev.broadinstitute.org";
+    public static final String proxyScheme="https";
+    public static final String proxyHost="gpdev.broadinstitute.org";
+    /** baseUrl of ROOT web app, 'https://gpdev.broadinstitute.org' */
+    public static final String proxyHref_ROOT=proxyScheme+"://"+proxyHost; 
     /** proxyHref='https://gpdev.broadinstitute.org/gp', returned by HttpServletRequest.getRequestURL,  */
     public static final String proxyHref=proxyScheme+"://"+proxyHost+gpPath;
     public static final String proxyUrl=proxyHref+"/";
@@ -149,7 +151,7 @@ public class Demo {
     /**
      * mock client HttpRequest to '{proxyHref}{servletPath}[{pathInfo}][?{queryString}]'
      * 
-     * @param servletPath, starts with '/', encoded as HTTP path element, 
+     * @param servletPath, starts with '/', encoded as HTTP path element, can be an empty String if the request is matched using the "/*" pattern
      *     @see {@link HttpServletRequest#getContextPath()}
      * @param pathInfoIn, can be null, starts with '/', encoded as HTTP path 
      *     @see {@link HttpServletRequest#getPathInfo()}
@@ -176,6 +178,30 @@ public class Demo {
         when(request.getScheme()).thenReturn(proxyScheme);
         when(request.getServerName()).thenReturn(proxyHost);
         when(request.getContextPath()).thenReturn(gpPath);
+        when(request.getServletPath()).thenReturn(servletPath);
+        when(request.getServerPort()).thenReturn(proxyPort);
+        when(request.getQueryString()).thenReturn(queryString);
+        
+        return request;
+    }
+    
+    /** mock request to ROOT web application, contextPath is the empty String. */
+    public static HttpServletRequest rootClientRequest(final String servletPath, final String pathInfo, final String queryString) {
+        // the base url of the request, no trailing slash
+        //final String baseUrl=proxyScheme+"://"+proxyHost; 
+        final String contextPath="";
+        
+        // uri={contextPath}{servletPath}{pathInfo}, does not include the queryString
+        final String uri=contextPath+servletPath+pathInfo;
+        // url={baseUrl}{uri}, does not include queryString
+        final String url=proxyHref_ROOT+uri;
+
+        final HttpServletRequest request=mock(HttpServletRequest.class);
+        when(request.getRequestURL()).thenReturn(new StringBuffer().append(url));
+        when(request.getRequestURI()).thenReturn(uri);
+        when(request.getScheme()).thenReturn(proxyScheme);
+        when(request.getServerName()).thenReturn(proxyHost);
+        when(request.getContextPath()).thenReturn(contextPath);
         when(request.getServletPath()).thenReturn(servletPath);
         when(request.getServerPort()).thenReturn(proxyPort);
         when(request.getQueryString()).thenReturn(queryString);
