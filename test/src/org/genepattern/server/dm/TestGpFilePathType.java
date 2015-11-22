@@ -83,7 +83,7 @@ class GpFilePathType {
     /**
      * To solve the problem of identifying different types of GP server files; 
      *     phase 1, must support some kind of reverse lookup, by unique servletPath
-     *     phase 2, could avoid this by saving the type is part of the ParamValue; must be persisted to/from the DB 
+     *     phase 2, could avoid this by saving the type as part of the ParamValue; must be persisted to/from the DB 
      */
     public static enum Type {
         USER_UPLOAD("/users", "/{userId}/{path}"),
