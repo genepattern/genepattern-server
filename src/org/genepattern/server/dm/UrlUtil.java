@@ -26,6 +26,36 @@ import com.google.common.base.Strings;
  */
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
+
+    /**
+     * Get the baseUrl of the GenePattern web application, including the trailing slash ('/').
+     * This method uses the client request rather than the GenePatternURL set in the config file.
+     * For example, when 
+     *     request.requestUrl=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/67262
+     *     request.contextPath=/gp
+     *     request.servletPath=/rest
+     * then return
+     *     http://gpdev.broadinstitute.org/gp
+     * 
+     * @param req
+     * @return
+     */
+    public static String getBaseGpUrl(final HttpServletRequest req) {
+        if (log.isDebugEnabled()) {
+            final String rurl=req.getRequestURL().toString();
+            final String contextPath=req.getContextPath();
+            final URI uri=URI.create(rurl);
+            final URI contextUrl=uri.resolve(contextPath);
+            log.debug("contextUrl="+contextUrl);
+        }
+        final URI contextUrl = 
+                URI.create(req.getRequestURL().toString())
+                    .resolve(req.getContextPath());
+        if (log.isDebugEnabled()) {
+            log.debug("baseGpUrl=");
+        }
+        return contextUrl.toString();
+    }
     
     /** @deprecated renamed to getBaseGpHref */
     public static String getGpUrl(final HttpServletRequest request) {
@@ -52,28 +82,7 @@ public class UrlUtil {
      * @return
      */
     public static String getBaseGpHref(final HttpServletRequest request) {
-        if (log.isDebugEnabled()) {
-            log.debug("requestURL="+request.getRequestURL().toString());
-            log.debug("requestURI="+request.getRequestURI());
-            log.debug("scheme="+request.getScheme());
-            log.debug("serverName="+request.getServerName());
-            log.debug("serverPort="+request.getServerPort());
-            log.debug("contextPath="+request.getContextPath());
-            log.debug("servletPath="+request.getServletPath());
-            log.debug("pathInfo="+request.getPathInfo());
-            log.debug("protocol="+request.getProtocol());
-        }
-        final StringBuffer sb=request.getRequestURL();
-        int idx=sb.indexOf(request.getContextPath());
-        if (idx<0) {
-            log.error("request.getContextPath not defined: "+request.getRequestURL().toString());
-            idx=0;
-        }
-        idx=sb.indexOf(request.getServletPath());
-        if (idx<0) {
-            log.error("request.servletPath not defined, requestURL="+request.getRequestURL().toString());
-        }
-        return sb.substring(0, idx);
+        return getBaseGpUrl(request);
     }
     
     /** @deprecated initialize from HttpServletRequest if possible */
