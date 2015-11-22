@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -191,6 +192,47 @@ public class UrlUtil {
         return href;
     }
     
+    /**
+     * Get the filename from URL, by analogy to File.getName(),
+     * by default keepTrailingSlash is true.
+     * 
+     * @param url
+     * @return
+     */
+    public static String getFilenameFromUrl(final URL url) {
+         final boolean keepTrailingSlash=true;
+         return getFilenameFromUrl(url, keepTrailingSlash);
+    }
+    
+    /**
+     * Get the filename from URL, by analogy to File.getName(),
+     * optionally including the slash from the url path.
+     * 
+     * @param url
+     * @param keepTrailingSlash, when true append trailing '/' from url.getPath.
+     * @return
+     */
+    public static String getFilenameFromUrl(final URL url, final boolean keepTrailingSlash) {
+        if (url==null) {
+            return null;
+        }
+        String urlPath;
+        try {
+            urlPath=url.toURI().getPath();
+        }
+        catch (URISyntaxException e) {
+            urlPath=url.getPath();
+            if (log.isDebugEnabled()) {
+                log.debug("error decoding path from url="+url+", use encoded path instead", e);
+                log.debug("urlPath="+urlPath);
+            }
+        }  
+        final File file=new File(urlPath);
+        return file.getName() + 
+                // append '/' if necessary
+                ( keepTrailingSlash && urlPath.endsWith("/") ? "/" : "");
+    }
+
     /** Converts a string into something you can safely insert into a URL. */
     public static String encodeURIcomponent(String str) {
         String encoded = str;

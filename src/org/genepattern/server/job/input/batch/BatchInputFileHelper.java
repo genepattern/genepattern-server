@@ -5,7 +5,6 @@ package org.genepattern.server.job.input.batch;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,13 +108,6 @@ public class BatchInputFileHelper {
             }
         } 
         return filePaths;
-    }
-    
-    /**
-     * @deprecated prefer to avoid creating a new GpFilePath for each listed file in the batch directory
-     */
-    private static boolean accept(final ParameterInfo pinfo, final GpFilePath inputValue) {
-        return accept(pinfo, inputValue.isDirectory(), inputValue.getKind(), inputValue.getExtension());
     }
     
     private static boolean accept(final ParameterInfo pinfo, final File serverFile) {
@@ -239,7 +231,7 @@ public class BatchInputFileHelper {
             }
         }
         try {
-            final String filename=getFilenameFromUrl(file.getUrl(gpConfig));
+            final String filename=UrlUtil.getFilenameFromUrl(file.getUrl(gpConfig));
             if (!Strings.isNullOrEmpty(filename)) {
                 if (log.isDebugEnabled()) {
                     log.debug("use url.path, filename="+filename);
@@ -254,31 +246,6 @@ public class BatchInputFileHelper {
         return "";
     }
     
-    protected static String getFilenameFromUrl(final URL url) {
-         final boolean keepTrailingSlash=false;
-         return getFilenameFromUrl(url, keepTrailingSlash);
-    }
-    protected static String getFilenameFromUrl(final URL url, final boolean keepTrailingSlash) {
-        if (url==null) {
-            return null;
-        }
-        String path;
-        try {
-            path=url.toURI().getPath();
-        }
-        catch (URISyntaxException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("error getting path from url="+url, e);
-            }
-            path=url.getPath();
-        }
-        
-        File file=new File(path);
-        boolean isDirectory=path.endsWith("/");
-        final String postfix= ( keepTrailingSlash && isDirectory ? "/" : "");
-        return file.getName() + postfix;
-    }
-
     /**
      * Helper method, based on the value provided from the web upload form
      * or the REST API request,

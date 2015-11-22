@@ -180,6 +180,13 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     private int numParts = 1;    
     private int numPartsRecd = 0;
     
+    /**
+     * Get the name, suitable for creating/listing on the GP server file system.
+     * When initializing from an href, you must decode the path segment, before setting the name. E.g.
+     *     href="http://127.0.0.1:8080/gp/all%20aml%20test.gct"
+     *     name="all aml test.gct"
+     * @return the filename
+     */
     public String getName() {
         return name;
     }
