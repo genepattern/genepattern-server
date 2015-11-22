@@ -27,64 +27,60 @@ import com.google.common.base.Strings;
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
 
-    /**
-     * Get the baseUrl of the GenePattern web application, including the trailing slash ('/').
-     * This method uses the client request rather than the GenePatternURL set in the config file.
-     * For example, when 
-     *     request.requestUrl=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/67262
-     *     request.contextPath=/gp
-     *     request.servletPath=/rest
-     * then return
-     *     http://gpdev.broadinstitute.org/gp
-     * 
-     * @param req
-     * @return
-     */
-    public static String getBaseGpUrl(final HttpServletRequest req) {
-        if (log.isDebugEnabled()) {
-            final String rurl=req.getRequestURL().toString();
-            final String contextPath=req.getContextPath();
-            final URI uri=URI.create(rurl);
-            final URI contextUrl=uri.resolve(contextPath);
-            log.debug("contextUrl="+contextUrl);
-        }
-        final URI contextUrl = 
-                URI.create(req.getRequestURL().toString())
-                    .resolve(req.getContextPath());
-        if (log.isDebugEnabled()) {
-            log.debug("baseGpUrl=");
-        }
-        return contextUrl.toString();
-    }
-    
     /** @deprecated renamed to getBaseGpHref */
     public static String getGpUrl(final HttpServletRequest request) {
         return getBaseGpHref(request);
     }
 
     /**
-     * Helper method for getting the base GenePatternURL for a given request.
-     * This method is based on the client request rather than the server configuration
-     * setting for the GenePatternURL.
+     * Get the baseUrl of the web application, inclusive of the contextPath, but not including the trailing slash.
+     * This is the URL for the root of your GenePattern site. 
      * 
-     * Template:
-     *     {protocol}:{hostname}[:{port}]{contextPath}
-     * Which does not include the trailing slash.
+     * For a default installation the contextPath is '/gp' and the baseUrl is,
+     *     http://127.0.0.1:8080/gp
+     * When the web app is installed in the root directory, the context path is the empty string,
+     *     http://127.0.0.1:8080
      * 
-     * For example, when 
-     *     request.requestUrl=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/67262
-     *     request.contextPath=/gp
-     *     request.servletPath=/rest
-     * then return
-     *     http://gpdev.broadinstitute.org/gp
+     * This method uses the client HttpServletRequest to determine baseUrl. The client request in most cases
+     * will be to a named host, rather than the internal 127.0.0.1 address. For example,
+     *     requestURL=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/0
+     *     contextPath=/gp
+     * Resolves to
+     *     baseUrl= http://gpdev.broadinstitute.org/gp
      * 
-     * @param request
+     * @param req
      * @return
      */
-    public static String getBaseGpHref(final HttpServletRequest request) {
-        return getBaseGpUrl(request);
+    public static String getBaseGpHref(final HttpServletRequest req) {
+        if (log.isDebugEnabled()) {
+            log.debug("requestURL="+req.getRequestURL().toString());
+            log.debug("contextPath="+req.getContextPath());
+        }
+        final String baseUrl=resolveBaseUrl(req.getRequestURL().toString(), req.getContextPath());
+        if (log.isDebugEnabled()) {
+            log.debug("baseUrl="+baseUrl);
+        }
+        return  baseUrl;
     }
     
+    /**
+     * resolve the baseUrl from the given requestUrlSpec and contextPath.
+     * @param requestUrlSpec, e.g. 'http://127.0.0.1:8080/gp/jobResults/0/out.txt'
+     * @param contextPath, e.g. '/gp'
+     * 
+     * @return the baseUrl of the server, e.g. 'http://127.0.0.1:8080/gp'
+     */
+    protected static String resolveBaseUrl(final String requestUrlSpec, String contextPath) {
+        //adjust empty contextPath, must start with "/" in order to resolve it back to root 
+        if (Strings.isNullOrEmpty(contextPath)) {
+            contextPath="/";
+        }
+        final URI contextUrl = 
+                URI.create(requestUrlSpec)
+                    .resolve(contextPath);
+        return  removeTrailingSlash( contextUrl.toString() );
+    }
+
     /** @deprecated initialize from HttpServletRequest if possible */
     public static String getBaseGpHref(final GpConfig gpConfig) {
         return removeTrailingSlash(gpConfig.getGpUrl());
