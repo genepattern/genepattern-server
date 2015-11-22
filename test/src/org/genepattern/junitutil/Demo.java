@@ -1,8 +1,7 @@
 package org.genepattern.junitutil;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,6 +24,8 @@ public class Demo {
     /** servlet context path is '/gp' */
     public static final String gpPath="/gp";
 
+    /** baseUrl of ROOT web app, 'http://127.0.0.1:8080' */
+    protected static final String gpHref_ROOT="http://127.0.0.1:8080";
     /** gpHref, set in genepattern.properties, no trailing slash. */
     public static final String gpHref="http://127.0.0.1:8080"+gpPath;
     /** gpUrl, set in genepattern.properties, includes trailing slash '/'. */
@@ -54,8 +55,18 @@ public class Demo {
     public static final String dataGsDir="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
     
     // common file system paths, (as opposed to URI paths)
-    /** path to 'all_aml' data on server's file system, includes trailing slash */
-    public static final String localDataDir="/var/genepattern/shared_data/all_aml/";
+    /** 
+     * File system path to example data on server's file system, includes trailing slash. 
+     *     href template: {gpUrl}/data/{localDataDir}{relativePath}
+     *     example: http://127.0.0.1:8080/gp/data//Users/my_user/genepattern/test/data/all_aml/all_aml_test.gct
+     * 
+     * Note: file name encoding has not been worked out, be careful. When constructing href's should use valid href path.
+     *     when access actual file should use file system paths.
+     * 
+     * The actual path is to the ./test/data folder of the project; the all_aml folder includes
+     * example data files.
+     */
+    public static final String localDataDir=FileUtil.getDataDir().getAbsolutePath() + "/";
     
     protected static String portStr(final String scheme, final int port) {
         if ("http".equals(scheme) && port==80) return "";
@@ -69,7 +80,14 @@ public class Demo {
      * @param relativeUri, expecting a leading '/'
      * @return as a 3-tuple, [ servletPath, pathInfo, queryString ]
      */
-    protected static String[] splitRelativeUri(final String relativeUri) {
+    public static String[] splitRelativeUri(final String relativeUri) {
+        if (relativeUri==null) {
+            throw new IllegalArgumentException("relativeUri==null");
+        }
+        if (!relativeUri.startsWith("/")) {
+            fail("relativeUri must start with a '/', relativeUri="+relativeUri);
+        }
+
         // default for gp junit tests
         final String[] rval={"", null, null};
         if (Strings.isNullOrEmpty(relativeUri)) {
@@ -108,8 +126,8 @@ public class Demo {
             // short-circuit
             return rval;
         }
-        // always split on first '/'
-        int idx=uriRawPath.indexOf(1, '/');
+        // split on second '/'
+        int idx=uriRawPath.indexOf('/', 1);
         if (idx>0) {
             //servletPath
             rval[0]=uriRawPath.substring(0, idx);
@@ -138,26 +156,31 @@ public class Demo {
      * @return
      */
     public static HttpServletRequest clientRequest(final String relativeUri) {
-        if (relativeUri==null) {
-            throw new IllegalArgumentException("relativeUri==null");
-        }
-        if (!relativeUri.startsWith("/")) {
-            fail("relativeUri must start with a '/', relativeUri="+relativeUri);
-        }
-        final String[] args=splitRelativeUri(relativeUri);
-        return clientRequest( args[0], args[1], args[2] );
+        return mockRequest(proxyHref_ROOT, gpPath, relativeUri);
     }
 
+    /** mock client HttpRequest to '{gpHref}/', 'http://127.0.0.1:8080/gp/' */
+    public static HttpServletRequest localRequest() {
+        return Demo.mockRequest(gpHref_ROOT, "/gp", "/");
+    }
+
+    /** mock client HttpRequest to '{gpHref}{relativeUri}' */
+    public static HttpServletRequest localRequest(final String relativeUri) {
+        return Demo.mockRequest(gpHref_ROOT, "/gp", relativeUri);
+    }
+    
+    /** mock client request to ROOT web application, contextPath is the empty String. */
+    public static HttpServletRequest rootClientRequest(final String relativeUri) {
+        return mockRequest(proxyHref_ROOT, "", relativeUri);
+    }
+    
     /**
-     * mock client HttpRequest to '{proxyHref}{servletPath}[{pathInfo}][?{queryString}]'
+     * mock client http request to {rootUrl}{contextPath}{relativeUri}
      * 
-     * @param servletPath, starts with '/', encoded as HTTP path element, can be an empty String if the request is matched using the "/*" pattern
-     *     @see {@link HttpServletRequest#getContextPath()}
-     * @param pathInfoIn, can be null, starts with '/', encoded as HTTP path 
-     *     @see {@link HttpServletRequest#getPathInfo()}
-     * @param queryString, can be null, does not include '?', encoded as a valid HTTP queryString, 
-     *     @see {@link HttpServletRequest#getQueryString()}
-     *     
+     * @param rootUrl, e.g. 'https://gpdev.broadinstitute.org'
+     * @param contextPath, e.g. '/gp'
+     * @param relativeUri, e.g. '/users/test_user/all_aml_test.gct'
+     * 
      * Example:
      *     requestURL = https://gpdev.broadinstitute.org/gp/users/test_user/all_aml_test.gct?key=val
      *     requestURI = /gp/users/test_user/all_aml_test.gct
@@ -165,36 +188,19 @@ public class Demo {
      *     serlvetPath = /users
      *     pathInfo = /test_user/all_aml_test.gct
      *     queryString = key=val
-     * 
+     *     
      * @return a new mock HttpServletRequest, can be modified with Mockito calls
      */
-    public static HttpServletRequest clientRequest(final String servletPath, final String pathInfoIn, final String queryString) {
-        final String pathInfo=Strings.nullToEmpty(pathInfoIn);
-        final HttpServletRequest request=mock(HttpServletRequest.class);
-        // url={proxyScheme}://{proxyHost}[:{proxyPort}]{uri}, does not include queryString
-        when(request.getRequestURL()).thenReturn(new StringBuffer().append(proxyHref+servletPath+pathInfo));
-        // uri={gpPath}{servletPath}{pathInfo}, does not include the queryString
-        when(request.getRequestURI()).thenReturn(gpPath+servletPath+pathInfo);
-        when(request.getScheme()).thenReturn(proxyScheme);
-        when(request.getServerName()).thenReturn(proxyHost);
-        when(request.getContextPath()).thenReturn(gpPath);
-        when(request.getServletPath()).thenReturn(servletPath);
-        when(request.getServerPort()).thenReturn(proxyPort);
-        when(request.getQueryString()).thenReturn(queryString);
-        
-        return request;
-    }
-    
-    /** mock request to ROOT web application, contextPath is the empty String. */
-    public static HttpServletRequest rootClientRequest(final String servletPath, final String pathInfo, final String queryString) {
-        // the base url of the request, no trailing slash
-        //final String baseUrl=proxyScheme+"://"+proxyHost; 
-        final String contextPath="";
-        
+    protected static HttpServletRequest mockRequest(final String rootUrl, final String contextPath, final String relativeUri) {
+        final String[] args=splitRelativeUri(relativeUri);  // [ servletPath, pathInfo, queryString ]
+        final String servletPath=Strings.nullToEmpty(args[0]);
+        final String pathInfo=Strings.nullToEmpty(args[1]);
+        final String queryString=args[2];
+
         // uri={contextPath}{servletPath}{pathInfo}, does not include the queryString
         final String uri=contextPath+servletPath+pathInfo;
-        // url={baseUrl}{uri}, does not include queryString
-        final String url=proxyHref_ROOT+uri;
+        // url={rootUrl}{uri}, does not include queryString
+        final String url=rootUrl+uri;
 
         final HttpServletRequest request=mock(HttpServletRequest.class);
         when(request.getRequestURL()).thenReturn(new StringBuffer().append(url));
@@ -212,14 +218,12 @@ public class Demo {
     // generate server file uri paths
     private static final Random rnd = new Random();
     protected static String randomInt() {
-        final int numDigits=4;
+        final int numDigits=6;
         final StringBuilder sb = new StringBuilder(numDigits);
         for(int i=0; i < numDigits; ++i) {
             sb.append((char)('0' + rnd.nextInt(10)));
         }
         return sb.toString();
-        
-        //return ""+Math.rint(1000.* Math.random());
     }
 
     /** default User Upload File, relative URI path */
@@ -232,7 +236,7 @@ public class Demo {
         return uploadPath(testUserId, path);
     }
 
-    /** User Upload File, relative URI path, for given userId. */
+    /** User Upload File, relative URI path, for given userId; path should not start with '/'. */
     public static String uploadPath(final String userId, final String path) {
         if (path==null) {
             fail("path==null");
@@ -283,10 +287,11 @@ public class Demo {
 
     /**
      * custom Server File, relative URI path 
-     * @param path a relative URI path to be appended to the default localDataDir
+     * @param path a relative URI path to be appended to the default localDataDir, should not start with '/'
      * @return
      */
     public static String serverFile(final String path) {
         return "/data/"+localDataDir+path;
     }
+
 }
