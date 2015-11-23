@@ -17,9 +17,35 @@ public class TestExternalFile {
         
         GpFilePath gpFilePath=new ExternalFile(urlSpec);
         assertEquals("isLocal, from urlSpec="+urlSpec, false, gpFilePath.isLocal());
+        assertEquals("extension", "gct", gpFilePath.getExtension());
         
         gpFilePath=new ExternalFile(url);
         assertEquals("isLocal, from URL="+url, false, ((GpFilePath)(new ExternalFile(url))).isLocal());
+    }
+    
+    protected void checkExtension(final String urlSpec, final String expectedExtension) {
+        checkExtension(urlSpec, expectedExtension, expectedExtension);
+    }
+    protected void checkExtension(final String urlSpec, final String expectedExtension, final String expectedKind) {
+        GpFilePath gpFilePath=new ExternalFile(urlSpec);
+        assertEquals("extension, '"+urlSpec+"'", expectedExtension, 
+                gpFilePath.getExtension());
+        assertEquals("kind, '"+urlSpec+"'", expectedKind, 
+                gpFilePath.getKind());
+    }
+
+    /** initialize extension from URL in ExternalFile constructor */
+    @Test
+    public void initExtension() {
+        checkExtension(dataFtpDir+"all_aml_train.gct", "gct");
+        // match existing functionality, preserve case of extension, always convert kind to lower case
+        checkExtension(dataFtpDir+"all_aml_train.GCT", "GCT", "gct");
+        checkExtension(dataFtpDir+"all_aml", null);
+        checkExtension(dataFtpDir+"all_aml/", null, "directory");
+        checkExtension("http://www.broadinstitute.org", null);
+        checkExtension(dataHttpDir+"mock.tar.gz", "gz", "tar.gz");
+        checkExtension(dataHttpDir+"mock.gz", "gz", "gz");
+        checkExtension(dataHttpDir+"mock.fasta.gz", "gz", "fasta.gz");
     }
     
     @Test

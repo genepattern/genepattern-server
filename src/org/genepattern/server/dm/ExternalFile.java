@@ -12,6 +12,7 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Implementation for handling external URLs to files in the way we handle other files
@@ -39,8 +40,9 @@ public class ExternalFile extends GpFilePath {
         final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
         this.setName(filename);
         
-        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-        this.setKind(extension);
+        final String extension=SemanticUtil.getExtension(filename);
+        final String kind=SemanticUtil.getKindForUrl(filename, extension);
+        this.setKind(kind);
         this.setExtension(extension);
     }
     
