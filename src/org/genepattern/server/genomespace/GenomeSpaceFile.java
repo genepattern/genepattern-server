@@ -17,6 +17,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Implementation of handling GenomeSpaceFiles in a way that extends GpFilePath
@@ -139,6 +140,7 @@ public class GenomeSpaceFile extends GpFilePath {
     /**
      * Return whether this is a directory
      */
+    @Override
     public boolean isDirectory() {
         if (DIRECTORY_KIND.equals(getKind()))
             return true;
@@ -199,6 +201,15 @@ public class GenomeSpaceFile extends GpFilePath {
      */
     public void setUrl(URL url) {
         gsUrl = url;
+        // init 'name', 'kind', and 'extension' from url path
+        final boolean keepTrailingSlash=true;
+        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
+        this.setName(filename);
+        
+        final String extension=SemanticUtil.getExtension(filename);
+        final String kind=SemanticUtil.getKindForUrl(filename, extension);
+        this.setKind(kind);
+        this.setExtension(extension);
     }
     
     @Override

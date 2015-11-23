@@ -6,7 +6,6 @@ import java.io.File;
 import java.net.URI;
 
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.genomespace.GenomeSpaceFile;
 import org.junit.Test;
 
 /**
@@ -15,14 +14,6 @@ import org.junit.Test;
  * @author pcarr
  */
 public class TestGpFilePath {
-    
-    @Test
-    public void isLocal_GenomeSpaceFile() {
-        //final String genomeSpaceUrlStr="https://dm.genomespace.org/datamanager/file/Home/Public/test/atm_test.gct";
-        final Object gsSession=new Object();
-        final GpFilePath gpFilePath=new GenomeSpaceFile(gsSession);
-        assertEquals("isLocal", false, gpFilePath.isLocal());
-    }
     
     @Test
     public void isLocal_ConcreteGpFilePath() {

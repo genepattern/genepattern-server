@@ -23,6 +23,7 @@ public class ExternalFile extends GpFilePath {
     
     private URL url = null;
     private URI uri = null;
+    private boolean isDirectory = false;
     
     public ExternalFile(String url) {
         super(false); // required to flag this as an external url
@@ -44,6 +45,8 @@ public class ExternalFile extends GpFilePath {
         final String kind=SemanticUtil.getKindForUrl(filename, extension);
         this.setKind(kind);
         this.setExtension(extension);
+
+        this.isDirectory=SemanticUtil.DIRECTORY_KIND.equals(kind);
     }
     
     public void setUrl(String url) {
@@ -76,6 +79,15 @@ public class ExternalFile extends GpFilePath {
             }
         }
         return uri;
+    }
+
+    /**
+     * Return whether this is a directory
+     */
+    @Override
+    public boolean isDirectory() {
+        // initialized in setUrl
+        return isDirectory;
     }
 
     @Override

@@ -25,6 +25,8 @@ import org.genepattern.webservice.TaskInfo;
 public class SemanticUtil {
     private static Logger log = Logger.getLogger(SemanticUtil.class);
 
+    public static final String DIRECTORY_KIND = "directory";
+
     private SemanticUtil() {
     }
 
@@ -102,7 +104,7 @@ public class SemanticUtil {
         if (file != null && file.exists()) {
             // special-case for directory, only check if file exists
             if (file.isDirectory()) {
-                return "directory";
+                return DIRECTORY_KIND;
             }
             // extension can be null
             else if ("odf".equalsIgnoreCase(extension)) {
@@ -125,7 +127,7 @@ public class SemanticUtil {
 
     public static String getKindForUrl(final String filename, final String extension, final boolean isDirectory) {
         if (isDirectory) {
-            return "directory";
+            return DIRECTORY_KIND;
         }
         if (filename==null) {
             return extension;
