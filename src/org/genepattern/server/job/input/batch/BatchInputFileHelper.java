@@ -163,13 +163,9 @@ public class BatchInputFileHelper {
     }
 
     /**
-     * Extract the base filename for the given GpFilePath, with special-case for paired input files
-     * which match the pattern:
-     * 
-     *     {basename}_1.{ext} or {basename}_2.{ext}
-     * 
+     * Calls #getBasenameFromFilename(String) with {@link GpFilePath#getName()}
      * @param file
-     * @return
+     * @return the basename with special-case for paired input files
      */
     public static String getBaseFilename(final GpFilePath file) {
         final String filename=getFilename(file);
@@ -177,6 +173,19 @@ public class BatchInputFileHelper {
             log.error("error getting filename for file="+file);
             return "";
         }
+        return getBasenameFromFilename(filename);
+    }
+    
+    /**
+     * Extract the basename from the filename, with special-case for paired input files
+     * which match the pattern:
+     * 
+     *     {basename}_1.{ext} or {basename}_2.{ext}
+     * 
+     * @param file
+     * @return
+     */
+    public static String getBasenameFromFilename(final String filename) {
         int periodIndex = filename.lastIndexOf('.');
         if (periodIndex > 0) {
             String basename = filename.substring(0, periodIndex);
