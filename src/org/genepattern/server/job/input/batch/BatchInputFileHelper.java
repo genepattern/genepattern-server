@@ -13,7 +13,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -207,18 +206,13 @@ public class BatchInputFileHelper {
         }
     }
 
-    /** @deprecated pass in GpConfig */
-    protected static String getFilename(final GpFilePath file) {
-        return getFilename(ServerConfigurationFactory.instance(), file);
-    }
-
     /**
      * helper method to get the filename for a GpFilePath.
      * Note: could be moved into the GpFilePath class instead.
      * @param file
      * @return
      */
-    protected static String getFilename(final GpConfig gpConfig, final GpFilePath file) {
+    protected static String getFilename(final GpFilePath file) {
         if (file==null) {
             log.error("file==null");
             return "";
@@ -239,17 +233,27 @@ public class BatchInputFileHelper {
                 return new File(uriPath).getName();
             }
         }
-        try {
-            final String filename=UrlUtil.getFilenameFromUrl(file.getUrl(gpConfig));
-            if (!Strings.isNullOrEmpty(filename)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("use url.path, filename="+filename);
-                }
-                return filename;
-            }
+        if (file.isLocal()) {
+            // for local paths, without name or relative uri we can't do anything
+            log.error("unexpected input, GpFilePath.name==null, relativeUri==null AND isLocal==true; returning empty string");
+            return "";
         }
-        catch (Exception e) {
-            log.debug("error in GpFilePath.getUrl", e);
+        else {
+            log.warn("unexpected input, GpFilePath.name is null, getting name from url");
+            try {
+                final URL extUrl=file.getUrl();
+                log.warn("GpFilePath.url="+extUrl);
+                final String filename=UrlUtil.getFilenameFromUrl(extUrl);
+                if (!Strings.isNullOrEmpty(filename)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("use url.path, filename="+filename);
+                    }
+                    return filename;
+                }
+            }
+            catch (Exception e) {
+                log.debug("error in GpFilePath.getUrl", e);
+            }
         }
         log.debug("unable to getFilename from GpFilePath, return empty string");
         return "";
