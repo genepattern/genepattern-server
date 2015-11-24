@@ -204,7 +204,7 @@ button.urlButton
     min-width: 820px;
 }
 
-.paramsTable input[type=text]
+.paramsTable input[type=text], .paramsTable input[type=password]
 {
     width: 295px;
     height: 17px;

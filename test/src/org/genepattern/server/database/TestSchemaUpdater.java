@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
@@ -23,8 +24,27 @@ import com.google.common.collect.Range;
 public class TestSchemaUpdater {
     private final File schemaDir=new File("website/WEB-INF/schema");
     private final String schemaPrefix="analysis_hypersonic-";
-    private final int numSchemaFiles=25;
+    private final int numSchemaFiles=26;
+    private final int numSchemaFiles_3_9_3=25;
 
+    @Test
+    public void initDbSchemaHsqlDb_toLatest() throws ExecutionException {
+        HibernateSessionManager mgr=DbUtil.getTestDbSession();
+        
+        // sanity check
+        assertEquals("sanity check for 'props' table", 
+                true,
+                SchemaUpdater.tableExistsIgnoreCase(mgr, "props"));
+        
+        assertEquals("tableExists('job_input'), dropped in v3.9.6",
+                false,
+                SchemaUpdater.tableExistsIgnoreCase(mgr, "job_input"));
+
+        assertEquals("tableExists('job_input_attribute'), dropped in v3.9.6",
+                false,
+                SchemaUpdater.tableExistsIgnoreCase(mgr, "job_input"));
+    }
+    
     /**
      * Collect all DB integration tests into one unit test
      * @throws DbException
@@ -70,7 +90,7 @@ public class TestSchemaUpdater {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion=null;
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles, schemaFiles.size());
+        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles_3_9_3, schemaFiles.size());
     }
 
     @Test
@@ -78,7 +98,7 @@ public class TestSchemaUpdater {
         final String schemaPrefix="analysis_hypersonic-";
         final String dbSchemaVersion="";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, "3.9.3", dbSchemaVersion);
-        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles, schemaFiles.size());
+        assertEquals("num schema files, new install of 3.9.3", numSchemaFiles_3_9_3, schemaFiles.size());
     }
     
     @Test
@@ -92,7 +112,7 @@ public class TestSchemaUpdater {
     public void listSchemaFiles_update_expectedSchemaVersionNotSet() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, "3.9.1");
-        assertEquals("num schema files, updated install of 3.9.2", 2, schemaFiles.size());
+        assertEquals("num schema files, updating from 3.9.1 to latest", 3, schemaFiles.size());
     }
 
     @Test
@@ -173,11 +193,11 @@ public class TestSchemaUpdater {
     @Test
     public void isUpToDate() {
         final String expectedSchemaVersion=null;
-        final String dbSchemaVersion="3.9.3";
+        final String dbSchemaVersion="3.9.6";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
         
         boolean upToDate=SchemaUpdater.isUpToDate(schemaFiles);
-        assertEquals("schemaFiles.size>0, expectedSchemaVersion==null", true, upToDate);
+        assertEquals("isUpToDate, dbSchemaVersion="+dbSchemaVersion, true, upToDate);
     }
 
     @Test

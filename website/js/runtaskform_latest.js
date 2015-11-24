@@ -1493,7 +1493,7 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
     var tagFieldId = parameterName.replace(/\./g, "_") + "Text";
 
     if (isPassword) {
-        textField = $("<input type='password' class='pValue' id='" + tagFieldId + "' style='width:100px;'/>");
+        textField = $("<input type='password' class='pValue' id='" + tagFieldId + "'/>");
     }
     else if(run_task_info.params[parameterName].allowMultiple)
     {
@@ -2241,7 +2241,9 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
         }
     }
 
-    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1) {
+    if ($.inArray(field_types.TEXT, run_task_info.params[parameterName].type) !== -1
+        || $.inArray(field_types.PASSWORD, run_task_info.params[parameterName].type) !== -1)
+    {
         //this must be a text entry
         contentDiv.append(createTextDiv(parameterName, groupId, enableBatch, initialValues));
     }

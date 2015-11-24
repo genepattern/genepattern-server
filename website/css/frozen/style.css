@@ -1173,9 +1173,9 @@ strong.filtered-number
 
 #actionBar
 {
-    float:left;
     margin-right: 5px;
     margin-top: 2px;
+    margin-left: 7px;
 }
 
 #openJSWin
