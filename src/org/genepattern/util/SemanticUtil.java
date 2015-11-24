@@ -50,6 +50,20 @@ public class SemanticUtil {
         return extension;
     }
     
+    /**
+     * Get the extension for the given filename. Examples,
+     * <pre>
+           <null>      --> null
+           file.ext    --> "ext"
+           file        --> ""
+           dir/        --> ""
+           .hidden.txt --> "txt"
+           .hidden     --> ""
+     * </pre>
+     * 
+     * @param name - the filename to query, null returns null
+     * @return
+     */
     public static String getExtension(final String name) {
         return getExtension(name, name == null ? false : name.endsWith("/"));
     }
@@ -59,10 +73,10 @@ public class SemanticUtil {
             return null;
         }
         if (isDirectory) {
-            return null;
+            return "";
         }
         
-        String extension = null;
+        String extension = "";
         int idx = name.lastIndexOf(".");
         if (idx > 0 && idx < (name.length() - 1)) {
             extension = name.substring(idx + 1);
