@@ -192,7 +192,7 @@ public class GenomeSpaceFileHelper {
      * @return
      * @throws IOException
      */
-    private static String extractFilename(URL url) throws IOException {
+    public static String extractFilename(URL url) throws IOException {
         String urlString = URLDecoder.decode(url.toString(), "UTF-8");
         int question = urlString.indexOf("?");
         String baseUrl = null;
