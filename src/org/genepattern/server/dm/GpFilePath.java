@@ -68,6 +68,23 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         this.isLocal=isLocal;
     }
     
+    /**
+     * Set name, extension, kind for this instance based on the given URL.
+     * Added as a helper method when creating external url instances.
+     * 
+     * @param url
+     */
+    public void initNameKindExtensionFromUrl(final URL url) {
+        final boolean keepTrailingSlash=true;
+        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
+        this.setName(filename);
+        
+        final String extension=SemanticUtil.getExtension(filename);
+        final String kind=SemanticUtil.getKindForUrl(filename, extension);
+        this.setKind(kind);
+        this.setExtension(extension);
+    }
+    
     public boolean isLocal() {
         return isLocal;
     }

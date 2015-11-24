@@ -37,16 +37,12 @@ public class ExternalFile extends GpFilePath {
     
     public void setUrl(URL url) {
         this.url = url;
-        final boolean keepTrailingSlash=true;
-        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
-        this.setName(filename);
-        
-        final String extension=SemanticUtil.getExtension(filename);
-        final String kind=SemanticUtil.getKindForUrl(filename, extension);
-        this.setKind(kind);
-        this.setExtension(extension);
-
-        this.isDirectory=SemanticUtil.DIRECTORY_KIND.equals(kind);
+        initNameKindExtensionFromUrl(url);
+        initIsDirectoryFromKind();
+    }
+    
+    protected void initIsDirectoryFromKind() {
+        this.isDirectory=SemanticUtil.DIRECTORY_KIND.equals(getKind());
     }
     
     public void setUrl(String url) {
