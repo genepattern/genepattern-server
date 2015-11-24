@@ -9,7 +9,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
@@ -17,7 +20,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
-import org.genepattern.util.SemanticUtil;
 
 /**
  * Implementation of handling GenomeSpaceFiles in a way that extends GpFilePath
@@ -49,6 +51,10 @@ public class GenomeSpaceFile extends GpFilePath {
     Object gsSession = null;
     Map<String, String> conversionUrls = null;
     
+    /**
+     * should use GenomeSpaceFileHelper to create new instances
+     * @param gsSession
+     */
     public GenomeSpaceFile(Object gsSession) {
         super(false); // required to flag this as an external url
         if (gsSession == null) {
@@ -196,20 +202,11 @@ public class GenomeSpaceFile extends GpFilePath {
     }
     
     /**
-     * Sets the GenomeSpace URL for this file
+     * Sets the GenomeSpace URL for this file, does not initialize other values
      * @param url
      */
     public void setUrl(URL url) {
         gsUrl = url;
-        // init 'name', 'kind', and 'extension' from url path
-        final boolean keepTrailingSlash=true;
-        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
-        this.setName(filename);
-        
-        final String extension=SemanticUtil.getExtension(filename);
-        final String kind=SemanticUtil.getKindForUrl(filename, extension);
-        this.setKind(kind);
-        this.setExtension(extension);
     }
     
     @Override

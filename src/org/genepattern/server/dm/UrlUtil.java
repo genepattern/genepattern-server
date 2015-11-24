@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 
 import com.google.common.base.Strings;
 
@@ -232,10 +233,40 @@ public class UrlUtil {
                 log.debug("urlPath="+urlPath);
             }
         }  
-        final File file=new File(urlPath);
-        return file.getName() + 
-                // append '/' if necessary
-                ( keepTrailingSlash && urlPath.endsWith("/") ? "/" : "");
+        
+        final boolean isGsFile=GenomeSpaceFileHelper.isGenomeSpaceFile(url);
+        String filename=new File(urlPath).getName();
+        // special-case for GenomeSpace linked to Google drive reference
+        if (isGsFile) {
+            filename=stripParen(filename);
+        }
+        if (keepTrailingSlash && urlPath.endsWith("/")) {
+            filename += "/";
+        }
+        return filename;
+    }
+
+    /**
+     * hack to strip out text in parenthesis for google drive files,
+     * linked to from GenomeSpace.
+     * Only matches pattern at end of filename.
+     *     
+     * @param filename, e.g. 'all_aml(0By2oidMlPWQtQ2RlQV8zd25Md1E)'
+     * @return the filename, stripped of paren, e.g. 'all_aml'
+     */
+    protected static String stripParen(final String filename) {
+        if (filename==null) {
+            return null;
+        }
+        if (!filename.endsWith(")")) {
+            // only if it ends with ')'
+            return filename;
+        }
+        int parenthesisIndex = filename.lastIndexOf(("("));
+        if (parenthesisIndex >= 0) {
+            return filename.substring(0, parenthesisIndex);
+        }
+        return filename;
     }
 
     /** Converts a string into something you can safely insert into a URL. */
