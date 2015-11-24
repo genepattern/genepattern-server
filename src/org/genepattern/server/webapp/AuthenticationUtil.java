@@ -50,15 +50,21 @@ public class AuthenticationUtil {
      */
     static public String getAuthenticatedUserId(HttpServletRequest req, HttpServletResponse resp) throws AuthenticationException {
         String userIdFromSession = LoginManager.instance().getUserIdFromSession(req);
+        boolean authenticated = false;
+        String gpUserId = null;
 
-        /*
-         * First try Basic Auth
-         */
+        // Grab authorization header and determine Basic Auth, OAuth2 or neither
+        String auth = req.getHeader("Authorization");
+        boolean basicAuth = false;
+        boolean oauth2 = false;
+        if (auth != null) {
+            basicAuth = auth.startsWith("Basic ");
+            oauth2 = auth.startsWith("Bearer ");
+        }
 
-        // Get Authorization header
+        // Basic auth style authentication parsing (needing for both basic auth and GenomeSpace)
         String userIdFromAuthorizationHeader = null;
         byte[] password = null;
-        String auth = req.getHeader("Authorization");
         if (auth != null) {
             String[] up = getBasicAuthCredentials(auth);
             userIdFromAuthorizationHeader = up[0];
@@ -66,48 +72,52 @@ public class AuthenticationUtil {
             password = passwordStr != null ? passwordStr.getBytes() : null;
         }
 
-        //if the session is already authenticated
-        if (userIdFromSession != null) {
-            if (userIdFromAuthorizationHeader == null || userIdFromSession.equals(userIdFromAuthorizationHeader)) {
-                return userIdFromSession;
-            }
-            //special-case when the userId from the session is a GP userId, but the userId in the authorizationHeader is a GS userId
-            final String linkedGsUsername=GenomeSpaceDatabaseManager.getGSUsername(userIdFromSession);
-            if (userIdFromAuthorizationHeader.equals(linkedGsUsername)) {
-                return userIdFromSession;
+        /*
+         * First try Basic Auth
+         */
+
+        if (auth == null || basicAuth) {
+
+            //if the session is already authenticated
+            if (userIdFromSession != null) {
+                if (userIdFromAuthorizationHeader == null || userIdFromSession.equals(userIdFromAuthorizationHeader)) {
+                    return userIdFromSession;
+                }
+                //special-case when the userId from the session is a GP userId, but the userId in the authorizationHeader is a GS userId
+                final String linkedGsUsername = GenomeSpaceDatabaseManager.getGSUsername(userIdFromSession);
+                if (userIdFromAuthorizationHeader.equals(linkedGsUsername)) {
+                    return userIdFromSession;
+                }
+
+                //special-case when the userId from the session doesn't match the one in the authorization header
+                try {
+                    boolean redirect = false;
+                    LoginManager.instance().logout(req, resp, redirect);
+                } catch (IOException e) {
+                    //ignoring IOException because the redirect arg is false
+                    log.error("Unexpected IOException", e);
+                }
+                userIdFromSession = null;
             }
 
-            //special-case when the userId from the session doesn't match the one in the authorization header
+            //if we are here, check the authorization header ...
+            log.debug("authenticating userIdFromAuthorizationHeader=" + userIdFromAuthorizationHeader);
             try {
-                boolean redirect = false;
-                LoginManager.instance().logout(req, resp, redirect);
+                authenticated = UserAccountManager.instance().getAuthentication().authenticate(userIdFromAuthorizationHeader, password);
+                if (authenticated) {
+                    gpUserId = userIdFromAuthorizationHeader;
+                }
+            } catch (AuthenticationException ex) {
+                //ignore it
+                authenticated = false;
             }
-            catch (IOException e) {
-                //ignoring IOException because the redirect arg is false
-                log.error("Unexpected IOException", e);
-            }
-            userIdFromSession = null;
-        }
 
-        //if we are here, check the authorization header ...
-        log.debug("authenticating userIdFromAuthorizationHeader="+userIdFromAuthorizationHeader);
-        String gpUserId=null;
-        boolean authenticated;
-        try {
-            authenticated = UserAccountManager.instance().getAuthentication().authenticate(userIdFromAuthorizationHeader, password);
-            if (authenticated) {
-                gpUserId = userIdFromAuthorizationHeader;
-            }
-        }
-        catch (AuthenticationException ex) {
-            //ignore it
-            authenticated=false;
         }
 
         /*
          * If not Basic Auth, try OAuth
          */
-        if (!authenticated) {
+        if (!authenticated && oauth2) {
             try {
                 OAuthAccessResourceRequest oauthRequest = new OAuthAccessResourceRequest(req, ParameterStyle.HEADER, ParameterStyle.QUERY);
                 String accessToken = oauthRequest.getAccessToken();
