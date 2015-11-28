@@ -5,7 +5,7 @@ package org.genepattern.server.job.input;
  */
 public class RangeValuesParser
 {
-    public RangeValues parseRange(String rangeValues) throws Exception
+    public RangeValues<Double> parseRange(String rangeValues) throws Exception
     {
         if (rangeValues==null || rangeValues.trim().length()==0) {
             //return null if not set
@@ -38,7 +38,7 @@ public class RangeValuesParser
                 max=min;
             }
 
-            return new RangeValues(min, max);
+            return new RangeValues<Double>(min, max);
         }
         catch (NumberFormatException e) {
             String message="Error parsing range="+rangeValues;

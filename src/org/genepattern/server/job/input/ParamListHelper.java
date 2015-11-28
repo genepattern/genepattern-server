@@ -395,30 +395,30 @@ public class ParamListHelper {
         }
     }
 
-    public static RangeValues initAllowedRanges(ParameterInfo pInfo)
+    public static RangeValues<Double> initAllowedRanges(ParameterInfo pInfo)
     {
-        RangeValues rangeValues = new RangeValues();
-        if (pInfo == null)
-        {
+        //RangeValues rangeValues = new RangeValues();
+        if (pInfo == null) {
             throw new IllegalArgumentException("pInfo == null");
         }
 
+        @SuppressWarnings("unchecked")
         HashMap<String, String> attr = pInfo.getAttributes();
-        if(attr !=null && attr.containsKey(RangeValues.PROP_RANGE))
-        {
+        if(attr != null && attr.containsKey(RangeValues.PROP_RANGE)) {
             final String rangeValuesStr = attr.get(RangeValues.PROP_RANGE);
-            //parse range  string
+            //parse range string
             RangeValuesParser rvParser = new RangeValuesParser();
             try {
-                rangeValues =  rvParser.parseRange(rangeValuesStr);
-            } catch (Exception e) {
+                return rvParser.parseRange(rangeValuesStr);
+            } 
+            catch (Exception e) {
                 String message = "Error parsing range=" + rangeValuesStr + " for " + pInfo.getName();
                 log.error(message, e);
                 throw new IllegalArgumentException(message);
             }
         }
 
-        return rangeValues;
+        return new RangeValues<Double>();
     }
 
     private GroupInfo initGroupInfo() {
