@@ -161,7 +161,7 @@ public class GenomeSpaceFileHelper {
      * @return
      * @throws UnsupportedEncodingException
      */
-    private static String extractKind(URL url, String filename) throws UnsupportedEncodingException {
+    public static String extractKind(URL url, String filename) throws UnsupportedEncodingException {
         String urlString = URLDecoder.decode(url.toString(), "UTF-8");
         int question = urlString.indexOf("?");
         String formatUrl = null;
