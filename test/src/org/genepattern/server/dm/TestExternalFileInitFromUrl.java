@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 import java.net.URL;
 import java.util.Arrays;
 
-import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceFile;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genomespace.client.GsSession;
@@ -39,7 +38,6 @@ import org.mockito.Mockito;
  */
 @RunWith(Parameterized.class)
 public class TestExternalFileInitFromUrl {
-    
     //@Parameters(name = "setUrl: {0}")
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -52,11 +50,12 @@ public class TestExternalFileInitFromUrl {
                 { ".hidden.txt", "txt", "txt", false },
                 { ".hidden_no_ext", "", "", false },
                 { ".hidden_dir/", "", "directory", true },
-                { "mock.gz","gz", "gz", false }, 
-                { "mock.tar.gz","gz", "tar.gz", false }, 
-                { "mock.fasta.gz","gz", "fasta.gz", false }, 
-                // Note, not yet ready to test custom conversion for GenomeSpace file, gct or genomica-tab 
-                //{ "foo.gct","gct", "tab", false }, 
+                { "mock.gz", "gz", "gz", false }, 
+                { "mock.tar.gz", "gz", "tar.gz", false }, 
+                { "mock.fasta.gz", "gz", "fasta.gz", false }, 
+                
+                // See TestGenomeSpaceFile for tests for custom conversion for GenomeSpace files, e.g. 
+                //     CEL_IK50.tab?dataformat=.../dataformat/gct
         });
     }
     

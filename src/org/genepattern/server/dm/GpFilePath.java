@@ -80,7 +80,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         this.setName(filename);
         
         final String extension=SemanticUtil.getExtension(filename);
-        final String kind=SemanticUtil.getKindForUrl(filename, extension);
+        final String kind=UrlUtil.getKindFromUrl(url, filename, extension);
         this.setKind(kind);
         this.setExtension(extension);
     }

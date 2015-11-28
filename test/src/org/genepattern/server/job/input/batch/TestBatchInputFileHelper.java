@@ -1,16 +1,10 @@
 package org.genepattern.server.job.input.batch;
 
-import static org.genepattern.junitutil.Demo.dataFtpDir;
-import static org.genepattern.junitutil.Demo.dataGsDir;
-import static org.genepattern.junitutil.Demo.dataHttpDir;
-import static org.genepattern.junitutil.Demo.gpHref;
-import static org.genepattern.junitutil.Demo.gpUrl;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.genepattern.junitutil.Demo.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,7 +13,6 @@ import java.net.URL;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -228,39 +221,6 @@ public class TestBatchInputFileHelper {
         doGetFilenameFromUrlSpec("('+' chars in path element are not encoded), ", "all+aml+test.gct", gpHref+"/all+aml+test.gct");
     }
     
-    // helper test for GenomeSpace_Google drive url
-    protected void checkGoogleDocGsUrl(final String message, final String expected, final String urlSpec, final boolean checkGsHelper) throws IOException {
-        final URL url=new URL(urlSpec);
-        assertEquals(message, // e.g. root folder 
-                expected, // e.g. "googledrive:test_user@email.com", 
-                UrlUtil.getFilenameFromUrl(url));
-        if (checkGsHelper) {
-            assertEquals(message+", GsHelper", 
-                expected, 
-                GenomeSpaceFileHelper.extractFilename(url));
-        }
-    }
-    
-    @Test
-    public void getFilenameFromUrl_GenomeSpace_GoogleDrive() throws IOException {
-        // simulate root path to a GenomeSpace user's shared google drive folder
-        final String rootDir="https://dm.genomespace.org/datamanager/v1.0/file/Home/googledrive:test_user@email.com(mIv4L0eliPcQ21HRCqwWQg==)";
-        final String subDir=rootDir+"/GenomeSpacePublic/all_aml(0By2oidMlPWQtQ2RlQV8zd25Md1E)";
-        final String file=subDir+"/all_aml_test.gct";
-        final String subDirWithParen=rootDir+"/all_aml(test%20dir)(0Cz0uuuUUUUaXo2SFR0000)";
-        
-        checkGoogleDocGsUrl("root folder", "googledrive:test_user@email.com", rootDir, true);
-        checkGoogleDocGsUrl("sub dir", "all_aml", subDir, true);
-        checkGoogleDocGsUrl("file in sub dir", "all_aml_test.gct", file, true);
-        checkGoogleDocGsUrl("file name with paren", "all_aml_test(paren).gct", rootDir+"/all_aml_test(paren).gct", 
-                // not working in GenomeSpaceHelper
-                false);
-        checkGoogleDocGsUrl("sub dir with paren", "all_aml(test dir)", subDirWithParen, 
-                // not working in GenomeSpaceHelper
-                false);
-        
-    }
-
     @Test
     public void rootDirTest() {
         //what is the name of the root directory
