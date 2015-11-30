@@ -141,9 +141,17 @@ public class Demo {
         return rval;
     }
 
-    /** mock GpConfig */
+    /** 
+     * mock GpConfig, initialized with defaults:
+     * - gpPath=/gp
+     * - gpUrl=http://127.0.0.1:8080/gp/
+     */
     public static GpConfig gpConfig() {
-        return mock(GpConfig.class);
+        //return mock(GpConfig.class);
+        GpConfig gpConfig=mock(GpConfig.class);
+        when(gpConfig.getGpPath()).thenReturn(gpPath);
+        when(gpConfig.getGpUrl()).thenReturn(gpUrl);
+        return gpConfig;
     }
     
     /** mock client HttpRequest to '{proxyHref}/' */

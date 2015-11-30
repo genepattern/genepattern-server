@@ -339,7 +339,7 @@ public class GenePatternAnalysisTask {
         //new way of converting server url to file path
         GpFilePath inputFilePath = null;
         try {
-            inputFilePath = GpFileObjFactory.getRequestedGpFileObj(url);
+            inputFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, url);
         }
         catch (Throwable t) {
             //ignore exception, because we have not fully implemented GpFileObjFactory methods

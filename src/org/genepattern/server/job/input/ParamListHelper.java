@@ -990,7 +990,7 @@ public class ParamListHelper {
         }
         
         try {
-            final GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(value, lsid);
+            final GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, value, lsid);
             return new Record(Record.Type.SERVER_URL, gpPath, null);
         }
         catch (Exception e) {
@@ -1028,7 +1028,7 @@ public class ParamListHelper {
         }
         else {
             try {
-                gpPath=GpFileObjFactory.getRequestedGpFileObj(value);
+                gpPath=GpFileObjFactory.getRequestedGpFileObj(gpConfig, value);
             }
             catch (Throwable t) {
                 log.error("Error initializing gpFilePath for directory input: "+value, t);

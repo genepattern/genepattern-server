@@ -55,10 +55,10 @@ public class UploadResource {
      * @return
      * @throws FileUploadException
      */
-    private GpFilePath getUploadFile(GpContext userContext, String uploadPath) throws FileUploadException {
+    private GpFilePath getUploadFile(final GpConfig gpConfig, final GpContext userContext, final String uploadPath) throws FileUploadException {
         try {
             //special-case, block 'tmp'
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(uploadPath);
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath);
             if (DataManager.isTmpDir(uploadFilePath)) {
                 throw new FileUploadException("Can't save file with reserved filename: " + uploadPath);
             }
@@ -71,10 +71,8 @@ public class UploadResource {
         }
     }
 
-    public File getTempDir() {
-
-        String str = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext()).getAbsolutePath();
-
+    protected File getTempDir(final GpConfig gpConfig) {
+        String str = gpConfig.getTempDir(GpContext.getServerContext()).getAbsolutePath();
         return new File(str);
     }
 
@@ -103,8 +101,8 @@ public class UploadResource {
         return fileList;
     }
 
-    public File getUploadDir(String token) throws FileUploadException {
-        File serverTempDir = getTempDir();
+    protected File getUploadDir(final GpConfig gpConfig, final String token) throws FileUploadException {
+        File serverTempDir = getTempDir(gpConfig);
         File uploadDir = new File(serverTempDir, token);
 
         // Check to see if it is all good
@@ -191,6 +189,7 @@ public class UploadResource {
             @QueryParam("parts") int parts,
             @QueryParam("fileSize") long fileSize) {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
             if (log.isDebugEnabled()) {
@@ -199,9 +198,9 @@ public class UploadResource {
                 log.debug("fileSize=" + fileSize);
             }
 
-            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, fileSize);
+            checkDiskQuota(gpConfig, userContext, fileSize);
 
-            GpFilePath file = getUploadFile(userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
 
             // Check if the file exists and throw an error if it does
             if (file.getServerFile().exists() && file.getServerFile().length() > 0) {
@@ -209,7 +208,7 @@ public class UploadResource {
             }
 
             // Create the temp directory for the upload
-            File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
+            File fileTempDir = gpConfig.getTemporaryUploadDir(userContext);
 
             // Return the JSON response with the upload token
             JSONObject returnObject = new JSONObject();
@@ -242,6 +241,7 @@ public class UploadResource {
             @QueryParam("parts") int parts) 
     {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
@@ -252,11 +252,11 @@ public class UploadResource {
                 log.debug("index="+index);
                 log.debug("parts="+parts);
             }
-            GpFilePath file = getUploadFile(userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setNumParts(parts);
 
             // Get the temp directory for the upload
-            File uploadDir = getUploadDir(token);
+            File uploadDir = getUploadDir(gpConfig, token);
 
             // Create the file to write
             File toWrite = new File(uploadDir, index.toString());
@@ -270,7 +270,7 @@ public class UploadResource {
             InputStream is = request.getInputStream();
             appendPartition(is, toWrite);
 
-            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, toWrite.length());
+            checkDiskQuota(gpConfig, userContext, toWrite.length());
 
             // Return the status object
             JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
@@ -300,6 +300,7 @@ public class UploadResource {
             @QueryParam("path") String path, 
             @QueryParam("parts") int parts) {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
@@ -309,11 +310,11 @@ public class UploadResource {
                 log.debug("path="+path);
                 log.debug("parts="+parts);
             }
-            GpFilePath file = getUploadFile(userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setNumParts(parts);
 
             // Get the temp directory for the upload
-            File uploadDir = getUploadDir(token);
+            File uploadDir = getUploadDir(gpConfig, token);
 
             // Get the status object
             JSONObject toReturn = getStatusObject(userContext, token, path, file, uploadDir);
@@ -335,6 +336,7 @@ public class UploadResource {
             @QueryParam("parts") int parts
     ) {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
@@ -344,11 +346,11 @@ public class UploadResource {
                 log.debug("path="+path);
                 log.debug("parts="+parts);
             }
-            GpFilePath file = getUploadFile(userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setNumParts(parts);
 
             // Get the temp directory for the upload
-            File uploadDir = getUploadDir(token);
+            File uploadDir = getUploadDir(gpConfig, token);
 
             // Get the status object
             JSONObject status = getStatusObject(userContext, token, path, file, uploadDir);
@@ -376,7 +378,7 @@ public class UploadResource {
                     totalSize += myfile.length();
                 }
             }
-            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, totalSize);
+            checkDiskQuota(gpConfig, userContext, totalSize);
 
             // Write the file
             for (File i : fileList) {
@@ -414,6 +416,7 @@ public class UploadResource {
             @Context HttpServletRequest request)
     {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
@@ -422,14 +425,14 @@ public class UploadResource {
                 log.debug("path="+path);
             }
 
-            GpFilePath file = getUploadFile(userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
             if(file.getServerFile() != null && file.getServerFile().exists())
             {
                 throw new FileUploadException("File already exists: " + file.getServerFile().getName());
             }
 
             // Get the temp directory for the upload
-            File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
+            File fileTempDir = gpConfig.getTemporaryUploadDir(userContext);
 
             // Create the file to write
             File toWrite = File.createTempFile("cls", null, fileTempDir);
@@ -439,7 +442,7 @@ public class UploadResource {
             InputStream inputStream = request.getInputStream();
             appendPartition(inputStream, toWrite);
 
-            checkDiskQuota(ServerConfigurationFactory.instance(), userContext, toWrite.length());
+            checkDiskQuota(gpConfig, userContext, toWrite.length());
 
             //now move the file to it's permanent location
             boolean success = toWrite.renameTo(file.getServerFile());

@@ -61,7 +61,7 @@ public class BatchInputFileHelper {
         }
 
         try {
-            gpPath = GpFileObjFactory.getRequestedGpFileObj(value);
+            gpPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, value);
             return gpPath;
         }
         catch (Exception e) {
