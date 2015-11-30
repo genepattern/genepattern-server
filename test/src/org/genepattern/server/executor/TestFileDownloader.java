@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;

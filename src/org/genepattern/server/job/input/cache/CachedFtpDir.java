@@ -84,10 +84,6 @@ public class CachedFtpDir implements CachedFile {
         else {
             this.gpConfig=gpConfigIn;
         }
-        this.url=JobInputHelper.initExternalUrl(this.gpConfig, urlString);
-        if (url==null) {
-            throw new IllegalArgumentException("value is not an external url: "+urlString);
-        }
         
         if (jobContextIn==null) {
             this.jobContext=GpContext.getServerContext();
@@ -96,6 +92,10 @@ public class CachedFtpDir implements CachedFile {
             this.jobContext=jobContextIn;
         }
 
+        this.url=JobInputHelper.initExternalUrl(this.gpConfig, this.jobContext.getJobInput(), urlString);
+        if (url==null) {
+            throw new IllegalArgumentException("value is not an external url: "+urlString);
+        }
         this.localPath=CachedFileUtil.getLocalPath(this.gpConfig, url);
         if (this.localPath==null) {
             throw new IllegalArgumentException("error initializing local path for external url: "+urlString);

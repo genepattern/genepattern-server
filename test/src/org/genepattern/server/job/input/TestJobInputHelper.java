@@ -15,6 +15,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.genepattern.junitutil.Demo;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
 import org.genepattern.server.config.GpConfig;
@@ -39,7 +40,7 @@ import org.mockito.Mockito;
  */
 public class TestJobInputHelper {
     private static HttpServletRequest request=null;
-    private static HibernateSessionManager mgr=null;
+    private static final HibernateSessionManager mgr=null;
     private static GpConfig gpConfig=null;
     
     private static TaskInfo cleTaskInfo;
@@ -75,7 +76,7 @@ public class TestJobInputHelper {
     public void setUp() throws MalformedURLException {
         gpConfig=new GpConfig.Builder()
             .webappDir(new File("website"))
-            .genePatternURL(new URL("http://127.0.0.1:8080/gp/"))
+            .genePatternURL(new URL(gpUrl))
         .build();
     }
     
@@ -190,12 +191,47 @@ public class TestJobInputHelper {
         final List<JobInput> inputs=jobInputHelper.prepareBatch();
         assertEquals("num jobs", 2, inputs.size());
         
-        //first batch
         assertEquals(gpHref + serverFile("all_aml/all_aml_test.gct"), inputs.get(0).getParam("input.file").getValues().get(0).getValue());
         assertEquals(gpHref + serverFile("all_aml/all_aml_test.cls"), inputs.get(0).getParam("cls.file").getValues().get(0).getValue());
         assertEquals(gpHref + serverFile("all_aml/all_aml_train.gct"), inputs.get(1).getParam("input.file").getValues().get(0).getValue());
         assertEquals(gpHref + serverFile("all_aml/all_aml_train.cls"), inputs.get(1).getParam("cls.file").getValues().get(0).getValue());
     }
+    
+    @Test
+    public void testAddBatchMultiParam_externalUrl() throws GpServerException {
+        final JobInputHelper jobInputHelper=new JobInputHelper(mgr, gpConfig, cmsContext, request);
+        jobInputHelper.addBatchValue("input.file", dataFtpDir + "all_aml_test.gct");
+        jobInputHelper.addBatchValue("cls.file",   dataFtpDir + "all_aml_test.cls");
+        jobInputHelper.addBatchValue("input.file", dataFtpDir + "all_aml_train.gct");
+        jobInputHelper.addBatchValue("cls.file",   dataFtpDir + "all_aml_train.cls");
+
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        assertEquals("num jobs", 2, inputs.size());
+        
+        assertEquals(dataFtpDir + "all_aml_test.gct",  inputs.get(0).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(dataFtpDir + "all_aml_test.cls",  inputs.get(0).getParam("cls.file").getValues().get(0).getValue());
+        assertEquals(dataFtpDir + "all_aml_train.gct", inputs.get(1).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(dataFtpDir + "all_aml_train.cls", inputs.get(1).getParam("cls.file").getValues().get(0).getValue()); 
+    }
+    
+    @Test public void multiBatchParam_mixedInternalAndExternal() throws GpServerException  {
+        final JobInputHelper jobInputHelper=new JobInputHelper(mgr, gpConfig, cmsContext, request);
+        jobInputHelper.addBatchValue("input.file", dataFtpDir + "all_aml_test.gct" );
+        jobInputHelper.addBatchValue("input.file", gpHref + serverFile("all_aml/all_aml_train.gct"));
+        jobInputHelper.addBatchValue("cls.file", dataFtpDir + "all_aml_test.cls");
+        jobInputHelper.addBatchValue("cls.file", gpHref + serverFile("all_aml/all_aml_train.cls"));
+
+        final List<JobInput> inputs=jobInputHelper.prepareBatch();
+        assertEquals("num jobs", 2, inputs.size());
+        
+        assertEquals(dataFtpDir + "all_aml_test.gct",  inputs.get(0).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(dataFtpDir + "all_aml_test.cls",  inputs.get(0).getParam("cls.file").getValues().get(0).getValue());
+        assertEquals(gpHref + serverFile("all_aml/all_aml_train.gct"), inputs.get(1).getParam("input.file").getValues().get(0).getValue());
+        assertEquals(gpHref + serverFile("all_aml/all_aml_train.cls"), inputs.get(1).getParam("cls.file").getValues().get(0).getValue()); 
+        
+        
+    }
+    
     
     /**
      * Test a batch job with multiple input parameters, but only one value for each batch parameter.
@@ -633,6 +669,15 @@ public class TestJobInputHelper {
         assertEquals( "batch[2].input.file.2", 
                 createServerFilePathUrl("fastq/c_2.fastq"),
                 batchJobs.get(2).getParam("input.file.2").getValues().get(0).getValue());
+    }
+    
+    @Test
+    public void baseGpHref_proxyRequest() throws GpServerException {
+        //GpConfig gpConfig=mock(GpConfig.class);
+        //HibernateSessionManager mgr=
+        JobInputHelper jobInputHelper=new JobInputHelper(mgr, gpConfig, cleContext, clientRequest());
+        List<JobInput> batch=jobInputHelper.prepareBatch();
+        assertEquals("jobInput.baseGpHref", Demo.proxyHref, batch.get(0).getBaseGpHref());
     }
 
 }

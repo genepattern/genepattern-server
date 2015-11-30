@@ -24,6 +24,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
@@ -181,6 +182,8 @@ public class ParamListHelper {
     final HibernateSessionManager mgr;
     final GpConfig gpConfig;
     final GpContext jobContext;
+    final JobInput jobInput;
+    final String baseGpHref;
     final ParameterInfoRecord parameterInfoRecord;
     final Param actualValues;
     //outputs
@@ -189,11 +192,16 @@ public class ParamListHelper {
     final GroupInfo groupInfo;
     final ListMode listMode;
 
-    public ParamListHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues) {
-        this(mgr, gpConfig, jobContext, parameterInfoRecord, inputValues, false);
-    }
-
-    public ParamListHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final Param inputValues, final boolean initDefault) {
+    /**
+     * 
+     * @param mgr
+     * @param gpConfig
+     * @param jobContext
+     * @param parameterInfoRecord
+     * @param inputValues
+     * @param initDefault, (default=false)
+     */
+    public ParamListHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfoRecord parameterInfoRecord, final JobInput jobInput, final Param inputValues, final boolean initDefault) {
         if (mgr==null) {
             throw new IllegalArgumentException("mgr==null");
         }
@@ -210,6 +218,16 @@ public class ParamListHelper {
         this.gpConfig=gpConfig;
         this.jobContext=jobContext;
         this.parameterInfoRecord=parameterInfoRecord;
+        this.jobInput=jobInput;
+        if (jobInput != null && !Strings.isNullOrEmpty(jobInput.getBaseGpHref())) {
+            this.baseGpHref=jobInput.getBaseGpHref();
+        }
+        else {
+            if (log.isDebugEnabled()) {
+                log.debug("jobInput.baseGpHref not set, initializing baseGpHref from GpConfig instead");
+            }
+            this.baseGpHref=UrlUtil.getBaseGpHref(gpConfig);
+        }
 
         //initialize allowedNumValues
         this.allowedNumValues=initAllowedNumValues();
@@ -397,7 +415,6 @@ public class ParamListHelper {
 
     public static RangeValues<Double> initAllowedRanges(ParameterInfo pInfo)
     {
-        //RangeValues rangeValues = new RangeValues();
         if (pInfo == null) {
             throw new IllegalArgumentException("pInfo == null");
         }
@@ -701,22 +718,22 @@ public class ParamListHelper {
                 .mgr(mgr)
                 .gpConfig(gpConfig)
                 .jobContext(jobContext)
+                .jobInput(jobInput)
                 .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
                 .build();
             final GpFilePath toFile=pgh.createFilelist();
-            parameterInfoRecord.getActual().setValue(toFile.getUrl().toExternalForm());
+            final String toFileHref=UrlUtil.getHref(baseGpHref, toFile);
+            parameterInfoRecord.getActual().setValue(toFileHref);
             saveGroupedValuesToClob(pgh.getGpFilePaths());
         }
         else if (createFilelist)
         {
             final boolean downloadExternalFiles = !passByReference;
             final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
-            final GpFilePath filelistFile=createFilelist(mgr, listOfValues, passByReference);
-
-            String filelist=filelistFile.getUrl().toExternalForm();
-            parameterInfoRecord.getActual().setValue(filelist);
-            
+            final GpFilePath toFile=createFilelist(mgr, listOfValues, passByReference);
+            final String toFileHref=UrlUtil.getHref(baseGpHref, toFile);
+            parameterInfoRecord.getActual().setValue(toFileHref);
             saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
         }
         else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
@@ -746,8 +763,9 @@ public class ParamListHelper {
                             value="<empty string>";
                         }
                         throw new Exception("For the input parameter, "+pname+", You are not permitted to access the file: "+value);
-                    }
-                    parameterInfoRecord.getActual().setValue(file.getUrl().toExternalForm());
+                    } 
+                    final String toFileHref=UrlUtil.getHref(baseGpHref, file);
+                    parameterInfoRecord.getActual().setValue(toFileHref);
                 }
                 else {
                     parameterInfoRecord.getActual().setValue(actualValues.getValues().get(0).getValue());
@@ -761,7 +779,8 @@ public class ParamListHelper {
                     if (!canRead) {
                         throw new Exception("You are not permitted to access the directory: "+paramValueIn.getValue());
                     }
-                    parameterInfoRecord.getActual().setValue(directory.getUrl().toExternalForm());
+                    final String directoryHref=UrlUtil.getHref(baseGpHref, directory);
+                    parameterInfoRecord.getActual().setValue(directoryHref);
                 }
                 else {
                     parameterInfoRecord.getActual().setValue(paramValueIn.getValue());
@@ -862,14 +881,14 @@ public class ParamListHelper {
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 
         //write the file list
-        ParamListWriter writer=new ParamListWriter.Default();
+        ParamListWriter writer=new ParamListWriter.Default(gpConfig);
         writer.writeParamList(gpFilePath, listOfValues, urlMode);
         fileUtil.updateUploadsDb(mgr, gpFilePath);
         return gpFilePath;
     }
     
     protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
-        return ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
+        return ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
     }
 
     /**
@@ -884,10 +903,10 @@ public class ParamListHelper {
      * @return
      * @throws Exception
      */
-    public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
+    public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(mgr, gpConfig, jobContext, formalParam, pval);
+            final Record rec=initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, pval);
             tmpList.add(rec);
         }
         
@@ -923,13 +942,13 @@ public class ParamListHelper {
         }
     }
 
-    private Record initFromValue(final ParamValue pval) throws Exception {
-        return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, this.parameterInfoRecord.getFormal(), pval);
+    protected Record initFromValue(final ParamValue pval) throws Exception {
+        return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, baseGpHref, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    public static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
+    protected static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
         final String value=pval.getValue();
-        URL externalUrl = JobInputHelper.initExternalUrl(gpConfig, value);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, baseGpHref, value);
         final boolean isPassByReference=isPassByReference(formalParam);
         
         if (externalUrl != null) {

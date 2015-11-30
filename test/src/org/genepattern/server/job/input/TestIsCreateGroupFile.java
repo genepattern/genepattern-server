@@ -63,7 +63,7 @@ public class TestIsCreateGroupFile {
         final JobInput jobInput = new JobInput();
         jobInput.addValue(paramName, ftpFile);
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, jobInput, param, false);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
         Assert.assertFalse(paramName+".isCreateGroupFile", plh.isCreateGroupFile());
@@ -76,7 +76,7 @@ public class TestIsCreateGroupFile {
         final JobInput jobInput = new JobInput();
         jobInput.addValue(paramName, ftpFile);
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, jobInput, param, false);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
         Assert.assertFalse(paramName+".isCreateGroupFile", plh.isCreateGroupFile());
@@ -88,7 +88,7 @@ public class TestIsCreateGroupFile {
         final ParameterInfoRecord record=paramInfoMap.get(paramName);
         final JobInput jobInput = new JobInput();
         final Param param=jobInput.getParam(new ParamId(paramName));
-        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, param);
+        ParamListHelper plh = new ParamListHelper(mgr, gpConfig, jobContext, record, jobInput, param, false);
 
         Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
         Assert.assertFalse(paramName+".isCreateGroupFile", plh.isCreateGroupFile());

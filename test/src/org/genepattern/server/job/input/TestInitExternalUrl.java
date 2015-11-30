@@ -165,7 +165,7 @@ public class TestInitExternalUrl {
         final String urlSpec=gpHref+uploadPath();
         assertEquals("initExternalUrl('"+urlSpec+"')",
                 null, // null means callback url
-                JobInputHelper.initExternalUrl(gpConfig, null, urlSpec));
+                JobInputHelper.initExternalUrl(gpConfig, (JobInput)null, urlSpec));
     }
 
     @Test
@@ -173,7 +173,7 @@ public class TestInitExternalUrl {
         final String urlSpec=proxyHref+uploadPath();
         assertEquals("initExternalUrl('"+urlSpec+"')",
                 urlSpec, // non-null match means ExternalUrl
-                ""+JobInputHelper.initExternalUrl(gpConfig, null, urlSpec));
+                ""+JobInputHelper.initExternalUrl(gpConfig, (JobInput)null, urlSpec));
     }
 
     @Test

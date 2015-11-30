@@ -48,6 +48,10 @@ public class Demo {
     // common job ids
     /** default jobId for basic junit tests */
     public static final String jobId="1001";
+    
+    // common module lsids
+    /** LSID for ConvertLineEndings, cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2" */
+    public static final String cleLsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
 
     // common data hrefs, external
     public static final String dataFtpDir="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/";

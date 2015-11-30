@@ -62,20 +62,29 @@ public class JobInputHelper {
      * @return the URL if it's an external url, otherwise return null.
      */
     public static URL initExternalUrl(final GpConfig gpConfig, final JobInput jobInput, final String value) {
+        final String baseGpHref = jobInput==null ? null : jobInput.getBaseGpHref();
+        return initExternalUrl(gpConfig, baseGpHref, value);
+    }
+    
+    /**
+     * Is the input value an external URL?
+     * @param gpConfig to match the server configured gpUrl 
+     * @param baseGpHref to match the baseUrl of the web client request
+     * @param value
+     * @return
+     */
+    public static URL initExternalUrl(final GpConfig gpConfig, final String baseGpHref, final String value) {
         if (gpConfig==null) { 
             throw new IllegalArgumentException("gpConfig==null");
         }
         final ImmutableList.Builder<String> b = new ImmutableList.Builder<String>();
-        if (jobInput != null) {
-            final String baseGpHref=jobInput.getBaseGpHref();
-            if (!Strings.isNullOrEmpty(baseGpHref)) {
-                b.add(baseGpHref);
-            }
-            else {
-                if (log.isDebugEnabled()) {
-                    // only warn when in debug mode
-                    log.warn("jobInput.baseGpHref not set");
-                }
+        if (!Strings.isNullOrEmpty(baseGpHref)) {
+            b.add(baseGpHref);
+        }
+        else {
+            if (log.isDebugEnabled()) {
+                // only warn when in debug mode
+                log.warn("jobInput.baseGpHref not set");
             }
         }
         final String baseGpHrefFromConfig=UrlUtil.getBaseGpHref(gpConfig);

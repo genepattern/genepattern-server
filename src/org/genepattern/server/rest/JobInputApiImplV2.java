@@ -148,7 +148,7 @@ public class JobInputApiImplV2 implements JobInputApi {
                 // validate num values
                 // and initialize input file (or parameter) lists as needed
                 Param inputParam=jobInput.getParam( entry.getKey() );
-                ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, taskContext, entry.getValue(), inputParam, initDefault);
+                ParamListHelper plh=new ParamListHelper(HibernateUtil.instance(), gpConfig, taskContext, entry.getValue(), jobInput, inputParam, initDefault);
                 plh.validateNumValues();
                 plh.updatePinfoValue();
             }

@@ -3,14 +3,23 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.genepattern.junitutil.JobInfoLoaderFromMap;
 import org.genepattern.junitutil.TaskLoader;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -21,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * jUnit tests for initializing the values for the job input form.
@@ -32,6 +42,7 @@ public class TestLoadModuleHelper {
     private static TaskLoader taskLoader;
     private static JobInfoLoader jobInfoLoader;
     private static String adminUserId;
+    private static GpConfig gpConfig;
     private static GpContext userContext;
     private static URL gpUrl;
 
@@ -46,7 +57,7 @@ public class TestLoadModuleHelper {
     private Map<String,String[]> parameterMap;
 
     @BeforeClass
-    static public void beforeClass() {
+    static public void beforeClass() throws MalformedURLException {
         adminUserId="admin";
         userContext=new GpContext.Builder()
             .userId(adminUserId)
@@ -59,7 +70,10 @@ public class TestLoadModuleHelper {
 
         jobInfoLoader = new JobInfoLoaderFromMap();
         
-        gpUrl=ServerConfigurationFactory.instance().getGenePatternURL();
+        gpConfig=Mockito.mock(GpConfig.class);
+        gpUrl=new URL("http://127.0.0.1:8080/gp/");
+        
+        //gpUrl=ServerConfigurationFactory.instance().getGenePatternURL();
     }
     
     @Before
@@ -142,7 +156,7 @@ public class TestLoadModuleHelper {
     @Test
     public void testFromDefaultValues() throws Exception {
         final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         taskInfo.getLsid(), taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -157,7 +171,7 @@ public class TestLoadModuleHelper {
         //expecting input.file to match the _fileParam
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -171,7 +185,7 @@ public class TestLoadModuleHelper {
         //expecting input.file to match the _fileParam
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -196,7 +210,7 @@ public class TestLoadModuleHelper {
         _formatParam="cls";
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("cls.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -212,7 +226,7 @@ public class TestLoadModuleHelper {
         //expecting input.file to match the request parameter
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( inputFile )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -223,7 +237,7 @@ public class TestLoadModuleHelper {
     public void testNoParameters() throws Exception {
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.clear();
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, new ParameterInfo[] {}, reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -245,7 +259,7 @@ public class TestLoadModuleHelper {
         expectedValues.put("comparative.marker.selection.filename", new ArrayList<String>(Arrays.asList( _fileParam )));
         //ExtractComparativeMarkerResults
         final TaskInfo taskInfo = taskLoader.getTaskInfo(ecmrLsid);
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         taskInfo.getLsid(), taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -264,7 +278,7 @@ public class TestLoadModuleHelper {
         _formatParam="gct";
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -287,7 +301,7 @@ public class TestLoadModuleHelper {
         _formatParam="gct";
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -301,7 +315,7 @@ public class TestLoadModuleHelper {
         _formatParam="gct";
         final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
         cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -323,7 +337,7 @@ public class TestLoadModuleHelper {
     public void testBogusFileParam() throws Exception {
         final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
         _fileParam="/xchip/gpdev/servers/shared_data/all_aml_test.gct";
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext, taskLoader, jobInfoLoader);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
         JSONObject actualInitialValues=
                 loadModuleHelper.getInitialValuesJson(
                         cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
@@ -448,7 +462,7 @@ public class TestLoadModuleHelper {
         parameterMap.put("input.file", new String[] {inputFile1, inputFile2} );
         parameterMap.put("_batchParam", new String[] {"input.file"} );
 
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
 
         JobInput actualInitialValues=
                 loadModuleHelper.getInitialValues(
@@ -483,7 +497,7 @@ public class TestLoadModuleHelper {
         parameterMap.put("aligned.files", new String[] {g1_inputFile1, g1_inputFile2, g2_inputFile1, g2_inputFile2} );
         parameterMap.put("_filegroup", new String[] {"{aligned.files:{cond1: [0..1], cond2: [2,3]}}"} );
 
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(userContext);
+        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
 
         JobInput jobInput=
                 loadModuleHelper.getInitialValues(

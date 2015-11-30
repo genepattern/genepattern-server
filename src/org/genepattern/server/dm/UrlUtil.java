@@ -89,7 +89,7 @@ public class UrlUtil {
     }
 
     /**
-     * @param gpConfig must be non-null
+     * @param gpConfig can be null
      * @param request can be null
      */
     public static String getBaseGpHref(final GpConfig gpConfig, final HttpServletRequest request) {

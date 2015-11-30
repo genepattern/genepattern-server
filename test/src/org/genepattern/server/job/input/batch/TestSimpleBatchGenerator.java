@@ -2,15 +2,14 @@ package org.genepattern.server.job.input.batch;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.Param;
-import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.GpServerException;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -19,6 +18,20 @@ import org.junit.Test;
  *
  */
 public class TestSimpleBatchGenerator {
+    private HibernateSessionManager mgr;
+    private GpConfig gpConfig;
+    private GpContext userContext;
+    private SimpleBatchGenerator simpleBatchGenerator;
+    
+    @Before
+    public void setUp() {
+         // not needed unless you call SimpleBatchGenerator#submitBatch
+        mgr=null;
+        gpConfig=new GpConfig.Builder().build();
+        userContext=GpContext.getContextForUser("test_user", false);
+        simpleBatchGenerator=new SimpleBatchGenerator(mgr, gpConfig, userContext);
+    }
+    
     @Test
     public void testMultipleBatchParams() throws GpServerException {
         JobInput jobInputTemplate=new JobInput();
@@ -33,11 +46,6 @@ public class TestSimpleBatchGenerator {
         
         assertTrue("jobInputTemplate.isBatchJob", jobInputTemplate.isBatchJob());
         assertEquals("jobInputTemplate.numBatchJobs", 3, jobInputTemplate.getNumBatchJobs());
-
-        GpConfig gpConfig=new GpConfig.Builder().build();
-        final GpContext userContext=GpContext.getContextForUser("test_user", false);
-
-        final BatchGenerator simpleBatchGenerator=new SimpleBatchGenerator(gpConfig, userContext);
         
         List<JobInput> batchJobs=simpleBatchGenerator.prepareBatch(jobInputTemplate);
         assertEquals("batchJobs.size", 3, batchJobs.size());
@@ -59,8 +67,9 @@ public class TestSimpleBatchGenerator {
         assertEquals("batchJobs[2].pD", "another", batchJobs.get(2).getParam("pD").getValues().get(0).getValue());        
     }
 
-    @Test
-    public void testMismatchBatchParams()
+    /** should throw GpServerException: Number of batch parameters doesn't match. */
+    @Test(expected=GpServerException.class)
+    public void testMismatchBatchParams() throws GpServerException
     {
         JobInput jobInputTemplate=new JobInput();
         jobInputTemplate.addValue("pA", "x", true);
@@ -71,19 +80,7 @@ public class TestSimpleBatchGenerator {
         jobInputTemplate.addValue("pC", "single", false);
         jobInputTemplate.addValue("pD", "another", false);
 
-
-        try {
-            GpConfig gpConfig = new GpConfig.Builder().build();
-            final GpContext userContext = GpContext.getContextForUser("test_user", false);
-
-            final BatchGenerator simpleBatchGenerator = new SimpleBatchGenerator(gpConfig, userContext);
-
-            List<JobInput> batchJobs = simpleBatchGenerator.prepareBatch(jobInputTemplate);
-            fail("Expecting GpServerException: Number of batch parameters doesn't match.");
-        }
-        catch(GpServerException e)
-        {
-            //expected
-        }
+        //List<JobInput> batchJobs = 
+                simpleBatchGenerator.prepareBatch(jobInputTemplate);
     }
 }
