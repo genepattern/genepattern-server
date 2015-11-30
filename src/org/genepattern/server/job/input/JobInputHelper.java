@@ -77,21 +77,8 @@ public class JobInputHelper {
         if (gpConfig==null) { 
             throw new IllegalArgumentException("gpConfig==null");
         }
-        final ImmutableList.Builder<String> b = new ImmutableList.Builder<String>();
-        if (!Strings.isNullOrEmpty(baseGpHref)) {
-            b.add(baseGpHref);
-        }
-        else {
-            if (log.isDebugEnabled()) {
-                // only warn when in debug mode
-                log.warn("jobInput.baseGpHref not set");
-            }
-        }
-        final String baseGpHrefFromConfig=UrlUtil.getBaseGpHref(gpConfig);
-        if (!Strings.isNullOrEmpty(baseGpHrefFromConfig)) {
-           b.add(baseGpHrefFromConfig);
-        }
-        return initExternalUrl(b.build(), value);
+        List<String> baseGpHrefs=UrlUtil.initBaseGpHrefs(gpConfig, baseGpHref);
+        return initExternalUrl(baseGpHrefs, value);
     }
 
     /**

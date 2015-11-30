@@ -20,6 +20,7 @@ import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.util.SemanticUtil;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Utility methods for converting between Files (on the GP server file system) and URIs (to be be used as external references to those files).
@@ -63,6 +64,33 @@ public class UrlUtil {
             log.debug("baseUrl="+baseUrl);
         }
         return  baseUrl;
+    }
+
+    /**
+     * Helper method, get the list of base urls which call back to the local server.
+     * 
+     * @param gpConfig
+     * @param baseGpHref
+     * @return
+     */
+    public static ImmutableList<String> initBaseGpHrefs(final GpConfig gpConfig, final String baseGpHref) {
+        final ImmutableList.Builder<String> b = new ImmutableList.Builder<String>();
+        if (!Strings.isNullOrEmpty(baseGpHref)) {
+            b.add(baseGpHref);
+        }
+        else {
+            if (log.isDebugEnabled()) {
+                // only warn when in debug mode
+                log.warn("jobInput.baseGpHref not set");
+            }
+        }
+        if (gpConfig != null) {
+            final String baseGpHrefFromConfig=UrlUtil.getBaseGpHref(gpConfig);
+            if (!Strings.isNullOrEmpty(baseGpHrefFromConfig)) {
+                b.add(baseGpHrefFromConfig);
+            }
+        }
+        return b.build();
     }
     
     /**
