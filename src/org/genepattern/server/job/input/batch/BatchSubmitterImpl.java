@@ -60,7 +60,6 @@ public class BatchSubmitterImpl implements BatchSubmitter {
     }
 
     private String recordBatchJob(final GpContext userContext, final JobReceipt jobReceipt) throws GpServerException {
-        //legacy implementation, based on code in SubmitJobServlet
         String batchId="";
         final boolean isInTransaction=mgr.isInTransaction();
         try {
