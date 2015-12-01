@@ -81,7 +81,7 @@ public class ServerFileServlet extends HttpServlet {
         return toReturn;
     }
 
-    private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
+    private void loadTreeLevel(final HttpServletRequest request, final HttpServletResponse response) {
         String url = request.getParameter("dir");
         
         List<GpFilePath> tree = null;
@@ -122,10 +122,10 @@ public class ServerFileServlet extends HttpServlet {
         
         ServerFileTreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new ServerFileTreeJSON(tree);
+            json = new ServerFileTreeJSON(request, tree);
         }
         else {
-            json = new ServerFileTreeJSON(null, ServerFileTreeJSON.EMPTY);
+            json = new ServerFileTreeJSON(request, null, ServerFileTreeJSON.EMPTY);
         }
         this.write(response, json);
     }
