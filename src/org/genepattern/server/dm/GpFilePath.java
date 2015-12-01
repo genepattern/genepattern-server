@@ -75,6 +75,9 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * Get the fully qualified URL to this file.
      * @return
      * @throws Exception
+     * 
+     * @deprecated this method is deprecated; when possible should use relative paths instead;
+     *     when generating a fully-qualified URL callback, use the incoming HttpServletRequest. 
      */
     public URL getUrl() throws Exception {
         String str="";
