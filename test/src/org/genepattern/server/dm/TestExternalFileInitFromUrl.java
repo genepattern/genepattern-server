@@ -3,18 +3,13 @@ package org.genepattern.server.dm;
 import static org.genepattern.junitutil.Demo.*;
 import static org.junit.Assert.*;
 
-import java.net.URL;
 import java.util.Arrays;
 
 import org.genepattern.server.genomespace.GenomeSpaceFile;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genomespace.client.GsSession;
-import org.genomespace.datamanager.core.GSFileMetadata;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mockito;
 
 /**
  * Parameterized tests for new ExternalFile(urlSpec) and GenomeSpaceFile.setUrl(urlSpec), 
@@ -78,20 +73,16 @@ public class TestExternalFileInitFromUrl {
         // initialize ExternalFile
         this.extFilePath=new ExternalFile(dataHttpDir+expectedName);
         // initialize GsFile (proposed new behavior to match ExternalFile values)
-        this.gsFilePath=initGsFileForTest(dataGsDir+expectedName);
+        this.gsFilePath=initGsFileForTest(expectedName);
         // initialize GsFile (this version causes some tests to fail)
-        //this.gsFilePath=initGsFileFromGsFileHelper(dataGsDir+expectedName);
+        //this.gsFilePath=initGsFileFromGsFileHelper(expectedName);
     }
 
     // Note: circa GP 3.9.5, the default (name, extension, kind, isDirectory) for a GenomeSpace file will not pass these tests
     // should come to agreement on this
-    protected GenomeSpaceFile initGsFileFromGsFileHelper(final String urlSpec) {
-        final GsSession gsSession=Mockito.mock(GsSession.class);
-        final GSFileMetadata metadata=Mockito.mock(GSFileMetadata.class);
-        final URL url;
+    protected GenomeSpaceFile initGsFileFromGsFileHelper(final String expectedName) {
         try {
-            url=new URL(urlSpec);
-            return GenomeSpaceFileHelper.createFile(gsSession, url, metadata);
+            return TestGenomeSpaceFile.mockGsFileFromGsHelper(expectedName);
         }
         catch (Throwable t) {
             gsFilePathInitError=t;
@@ -99,39 +90,14 @@ public class TestExternalFileInitFromUrl {
         return null;
     }
 
-    protected GenomeSpaceFile initGsFileForTest(final String urlSpec) {
-        final GsSession gsSession=Mockito.mock(GsSession.class);
-        final URL url;
+    protected GenomeSpaceFile initGsFileForTest(final String expectedName) {
         try {
-            url=new URL(urlSpec);
-            return createFileForTest(gsSession, url);
+            return TestGenomeSpaceFile.mockGsFile(expectedName);
         }
         catch (Throwable t) {
             gsFilePathInitError=t;
         }
         return null;
-    }
-    
-    /**
-     * Testing the unified way to initialize name, kind, and extension from the incoming url.
-     * this fixes some potential bugs in 
-     * @param gsClient
-     * @param url
-     * @return a new GenomeSpaceFile initialized from the URL
-     */
-    public static GenomeSpaceFile createFileForTest(final GsSession gsSession, final URL url) {
-        if (!GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
-            throw new IllegalArgumentException("Not a GenomeSpace URL: " + url);
-         }
-
-        if (gsSession == null) {
-            throw new IllegalArgumentException("gsSession=null");
-        }
-
-        final GenomeSpaceFile file = new GenomeSpaceFile(gsSession);
-        // use generic helper method in GpFilePath to init name, kind and extenstion from the incoming url
-        file.initNameKindExtensionFromUrl(url);
-        return file;
     }
     
     @Test
