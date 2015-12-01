@@ -588,6 +588,18 @@
   </init-param>
   <load-on-startup>1</load-on-startup>
  </servlet>
+ 
+<!-- just for debugging
+ <servlet>
+  <servlet-name>DebugServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.DebugServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>DebugServlet</servlet-name>
+  <url-pattern>/debug/*</url-pattern>
+ </servlet-mapping>
+-->
+
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
@@ -675,35 +687,7 @@
   <servlet-name>ModuleDocServlet</servlet-name>
   <url-pattern>/tasklib/*</url-pattern>
  </servlet-mapping>
-
  
- <!--  DEPRECATED: Point old references to submitJob.jsp to the new servlet -->
- <!-- 
- <servlet>
-    <display-name>Submit Job Servlet</display-name>
-    <servlet-name>SubmitJob</servlet-name>
-    <servlet-class>org.genepattern.server.webapp.SubmitJobServlet</servlet-class>    
- </servlet>
- <servlet-mapping>
-  <servlet-name>SubmitJob</servlet-name>
-  <url-pattern>/SubmitJob</url-pattern>
- </servlet-mapping>
-  <servlet-mapping>
-  <servlet-name>SubmitJob</servlet-name>
-  <url-pattern>/submitJob.jsp</url-pattern>
- </servlet-mapping>
--->
-
-<servlet>
-    <display-name>End user license agreement servlet</display-name>
-    <servlet-name>EulaServlet</servlet-name>
-    <servlet-class>org.genepattern.server.webapp.EulaServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>EulaServlet</servlet-name>
-    <url-pattern>/eula</url-pattern>
-</servlet-mapping> 
-
 <servlet>
     <display-name>Upload Receiver Servlet</display-name>
     <servlet-name>UploadReceiver</servlet-name>

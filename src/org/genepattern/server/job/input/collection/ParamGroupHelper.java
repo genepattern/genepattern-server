@@ -14,6 +14,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.GroupInfo;
+import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamListHelper;
@@ -41,6 +42,7 @@ public class ParamGroupHelper {
     private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
     private final GpContext jobContext;
+    private final JobInput jobInput;
     private final ParameterInfo formalParam;
     private final GroupInfo groupInfo;
     private final Param param;
@@ -74,6 +76,9 @@ public class ParamGroupHelper {
         if (in.jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }
+        if (in.jobInput==null) {
+            throw new IllegalArgumentException("jobInput==null");
+        }
         if (in.param==null) {
             throw new IllegalArgumentException("param==null");
         }
@@ -81,6 +86,7 @@ public class ParamGroupHelper {
             throw new IllegalArgumentException("groupInfo==null");
         }
         this.jobContext=in.jobContext;
+        this.jobInput=in.jobInput;
         if (in.parameterInfoRecord != null) {
             this.formalParam=in.parameterInfoRecord.getFormal();
         }
@@ -93,7 +99,7 @@ public class ParamGroupHelper {
         this.filenameSuffix=in.filenameSuffix;
         this.downloadExternalFiles=in.downloadExternalFiles;
         try {
-            this.gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, formalParam, param, downloadExternalFiles);
+            this.gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, formalParam, param, downloadExternalFiles);
         }
         catch (Exception e) {
             log.error(e);
@@ -157,6 +163,7 @@ public class ParamGroupHelper {
         private HibernateSessionManager mgr=null;
         private GpConfig gpConfig=null;
         private GpContext jobContext=null;
+        private JobInput jobInput=null;
         private ParameterInfoRecord parameterInfoRecord=null;
 
         private GroupInfo groupInfo=null;
@@ -178,6 +185,10 @@ public class ParamGroupHelper {
         }
         public Builder jobContext(final GpContext jobContext) {
             this.jobContext=jobContext;
+            return this;
+        }
+        public Builder jobInput(final JobInput jobInput) {
+            this.jobInput=jobInput;
             return this;
         }
         public Builder parameterInfoRecord(ParameterInfoRecord parameterInfoRecord) {

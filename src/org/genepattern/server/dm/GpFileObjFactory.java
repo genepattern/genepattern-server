@@ -23,6 +23,8 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 
+import com.google.common.base.Strings;
+
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
 
@@ -32,6 +34,8 @@ public class GpFileObjFactory {
      * @param userContext
      * @return
      * @throws Exception
+     * 
+     * @deprecated pass in a valid GpConfig.
      */
     public static GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
         GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -79,7 +83,7 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      * 
-     * @deprecated, should pass in a valid GpConfig.
+     * @deprecated pass in a valid GpConfig.
      */
     static public GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -111,7 +115,7 @@ public class GpFileObjFactory {
         if (uploadFile.isAbsolute()) {
             throw new Exception("user upload file must be a relative path, uploadFile="+uploadFile.getPath());
         }
-        //TODO: quick and dirty way to prevent relative paths to forbidden parent directories
+        // quick and dirty way to prevent relative paths to forbidden parent directories
         if (uploadFile.getPath().startsWith("../")) {
             throw new Exception("uploadFile.path can't start with '../'");
         }
@@ -182,9 +186,14 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(URL url) throws Exception {
+    static public GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final URL url) throws Exception {
         URI uri = url.toURI();
-        return getRequestedGpFileObj(uri);
+        return getRequestedGpFileObj(gpConfig, uri);
+    }
+
+    /** @deprecated pass in a valid GpConfig. */
+    public static GpFilePath getRequestedGpFileObj(String urlStr) throws Exception {
+        return getRequestedGpFileObj(ServerConfigurationFactory.instance(), urlStr);
     }
 
     /**
@@ -199,11 +208,21 @@ public class GpFileObjFactory {
      * @return a GpFilePath
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception
+    public static GpFilePath getRequestedGpFileObj(GpConfig gpConfig, String urlStr) throws Exception
     {
-        return getRequestedGpFileObj(urlStr, (LSID)null);
+        return getRequestedGpFileObj(gpConfig, urlStr, (LSID)null);
     }
 
+    protected static boolean startsWithIgnoreNull(final String str, final String prefix) {
+        if (str==null) {
+            return false;
+        }
+        if (Strings.isNullOrEmpty(prefix)) {
+            return false;
+        }
+        return str.startsWith(prefix);
+    }
+    
     /**
      * Get the GpFilePath reference from a GP URL request.
      *
@@ -212,12 +231,14 @@ public class GpFileObjFactory {
      *
      * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
      *
-     * @param url, requires a valid url
+     * @param gpConfig
+     * @param baseGpHref
+     * @param urlStr, requires a valid url
      * @param lsid, the lsid of the task
      * @return a GpFilePath
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(String urlStr, final LSID lsid) throws Exception {
+    public static GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, /* final String baseGpHref,*/ String urlStr, final LSID lsid) throws Exception {
         //special-case for <libdir> substitution
         if (urlStr.startsWith("<libdir>")) {
             final TaskInfo taskinfo = TaskInfoCache.instance().getTask(lsid.toString());
@@ -228,8 +249,7 @@ public class GpFileObjFactory {
 
         //special-case for <GenePatternURL> substitution
         if (urlStr.startsWith("<GenePatternURL>")) {
-            URL url = ServerConfigurationFactory.instance().getGenePatternURL();
-            String gpUrl=url.toString();
+            String gpUrl=gpConfig.getGpUrl();
             String path=urlStr.substring("<GenePatternURL>".length());
             urlStr=gpUrl;
             if (urlStr.endsWith("/") && path.startsWith("/")) {
@@ -243,6 +263,18 @@ public class GpFileObjFactory {
             urlStr+=path;
         }
 
+//        //TODO: special-case: ignore external urls
+//        boolean isLocal=false;
+//        if (startsWithIgnoreNull(urlStr, gpConfig.getGpUrl())) {
+//            isLocal=true;
+//        }
+//        else if (startsWithIgnoreNull(urlStr, baseGpHref)) {
+//            isLocal=true;
+//        }
+//        if (!isLocal) {
+//            throw new Exception("Not a local url: "+urlStr);
+//        }
+
         //create a uri, which automatically decodes the url
         URI uri = null;
         try {
@@ -251,7 +283,7 @@ public class GpFileObjFactory {
         catch (URISyntaxException e) {
             log.error("Invalid url: "+urlStr, e);
             // hack fix for GP-5558
-            urlStr=sanixize(ServerConfigurationFactory.instance(), urlStr);
+            urlStr=sanixize(gpConfig, urlStr);
             try {
                 uri = new URI(urlStr);
             }
@@ -260,7 +292,7 @@ public class GpFileObjFactory {
                 throw new Exception("Invalid url: "+urlStr);
             }
         }
-        return getRequestedGpFileObj(uri);
+        return getRequestedGpFileObj(gpConfig, uri);
     }
     
     static public String sanixize(GpConfig gpConfig, String urlStr) {
@@ -274,13 +306,20 @@ public class GpFileObjFactory {
         return urlStr;
     }
 
-    static private GpFilePath getRequestedGpFileObj(URI uri) throws Exception {
-        final String[] split = splitUri(uri);
+    static private GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final URI uri) throws Exception {
+        final String[] split = UrlUtil.splitUri(gpConfig.getGpPath(), uri);
         final String servletPath = split[0];
         final String pathInfo = split[1];
         return getRequestedGpFileObj(servletPath, pathInfo);        
     }
 
+    /**
+     * Note: When needed, the calling method must init metadata from file system, DB, or pathInfo depending on context. 
+     * @param servletPath
+     * @param pathInfo
+     * @return
+     * @throws Exception
+     */
     static public GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
          if ("/users".equals(servletPath)) {
             String userId = extractUserId(pathInfo);
@@ -289,8 +328,6 @@ public class GpFileObjFactory {
             File uploadFilePath = new File(relativePath);
             GpContext userContext = GpContext.getContextForUser(userId);
             GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
-            
-            //TODO: init from either file system or DB depending on context, currently client must do this 
             return gpFileObj;
         }
         if ("/data".equals(servletPath)) {
@@ -304,7 +341,6 @@ public class GpFileObjFactory {
         }
         
         //special-case for legacy web upload and tasklib paths
-        //TODO: implement this properly, in most cases the String literal '<GenePatternURL>' is passed in rather than the actual GenePatternURL
         //    http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1222&file=test_run89....546.tmp/all_aml_test.gct
         //    <GenePatternURL>getFile.jsp?task=&job=<job_no>&file=<userid>_run<random_number>.tmp/<filename>
         //if (pathInfo.startsWith("/getFile.jsp?task=&job=")) {
@@ -316,18 +352,15 @@ public class GpFileObjFactory {
     
     /**
      * Get a JobResultFile, GpFilePath instance, for the given url. 
-     * This method is a temporary helper method until  {@link #getRequestedGpFileObj(String, String)} is fully implemented for the '/jobResults/' type. 
      * 
-     * TODO: remove this method when possible
-     * 
-     * @deprecated - as soon  as {@link #getRequestedGpFileObj(String, String)} is fully implemented for the '/jobResults/' type
+     * @deprecated Should call getRequestedGpFileObj instead, or just create a new JobResultFile directly 
      * @param urlStr
      * @return
      * @throws Exception
      */
     static public JobResultFile getRequestedJobResultFileObj(String urlStr) throws Exception {
         URI uri = getUri(urlStr);
-        String[] split = splitUri(uri);
+        final String[] split = UrlUtil.splitUri(ServerConfigurationFactory.instance().getGpPath(), uri);
         String servletPath = split[0];
         String pathInfo = split[1];
         if ("/jobResults".equals(servletPath)) {
@@ -341,25 +374,6 @@ public class GpFileObjFactory {
         //create a uri, which automatically decodes the url
         URI uri = new URI(urlStr);
         return uri;
-    }
-    static private String[] splitUri(URI uri) {
-        String servletPathPlus = uri.getPath();
-        //1) chop off the servlet context (e.g. '/gp')
-        String gpPath=ServerConfigurationFactory.instance().getGpPath();
-        if (servletPathPlus.startsWith(gpPath)) {
-            servletPathPlus = servletPathPlus.substring( gpPath.length() );
-        }
-        
-        //2) extract the servletPath and the remaining pathInfo
-        String servletPath = servletPathPlus;
-        String pathInfo = "";
-        int idx = servletPathPlus.indexOf("/", 1);
-        if (idx > 0) {
-            servletPath = servletPathPlus.substring(0, idx);
-            pathInfo = servletPathPlus.substring(idx);
-        }
-        
-        return new String[]{ servletPath, pathInfo };
     }
 
     private static String extractUserId(String pathInfo) throws Exception {

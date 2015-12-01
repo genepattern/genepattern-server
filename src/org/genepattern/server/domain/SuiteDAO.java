@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.Query;
 
 /**
@@ -20,12 +20,18 @@ import org.hibernate.Query;
  * @author Hibernate Tools
  */
 public class SuiteDAO extends BaseDAO {
-
     private static final Logger log = Logger.getLogger(SuiteDAO.class);
+    
+    /** @deprecated */
+    public SuiteDAO() {
+    }
+    public SuiteDAO(final HibernateSessionManager mgr) {
+        super(mgr);
+    }
 
     public Suite findById(String id) {
         try {
-            return (Suite) HibernateUtil.getSession().get("org.genepattern.server.domain.Suite", id);
+            return (Suite) mgr.getSession().get("org.genepattern.server.domain.Suite", id);
         }
         catch (RuntimeException re) {
             log.error("get failed", re);
@@ -33,9 +39,10 @@ public class SuiteDAO extends BaseDAO {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<Suite> findAll() {
         try {
-            return HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.Suite order by name")
+            return mgr.getSession().createQuery("from org.genepattern.server.domain.Suite order by name")
                     .list();
         }
         catch (RuntimeException re) {
@@ -50,9 +57,10 @@ public class SuiteDAO extends BaseDAO {
      * @param ownerName
      * @return
      */
+    @SuppressWarnings("unchecked")
     public List<Suite> findByOwner(String ownerName) {
         try {
-            Query query = HibernateUtil.getSession().createQuery(
+            Query query = mgr.getSession().createQuery(
                     "from org.genepattern.server.domain.Suite where userId = :ownerName order by name");
             query.setString("ownerName", ownerName);
             return query.list();
@@ -64,9 +72,10 @@ public class SuiteDAO extends BaseDAO {
 
     }
     
+    @SuppressWarnings("unchecked")
     public List<Suite> findByOwnerOrPublic(String ownerName) {
         try {
-            Query query = HibernateUtil.getSession().createQuery(
+            Query query = mgr.getSession().createQuery(
                     "from org.genepattern.server.domain.Suite where userId = :ownerName  or accessId = 1 order by name");
             query.setString("ownerName", ownerName);
             return query.list();

@@ -20,6 +20,7 @@ import java.util.Map;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.genepattern.JavascriptHandler;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
@@ -71,7 +72,7 @@ public class TestJobInfoManager {
         taskInfo=mock(TaskInfo.class);
         when(taskInfo.getLsid()).thenReturn(lsid);
         when(taskInfo.getTaskInfoAttributes()).thenReturn(tia);
-        when(taskInfo.getAttributes()).thenReturn(tia);
+        when(taskInfo.giveTaskInfoAttributes()).thenReturn(tia);
     }
     
     @Test(expected=FileNotFoundException.class)
@@ -117,8 +118,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(clientGpUrl+"/users/admin/all_aml_test.gct")); 
         assertEquals(
                 // expected
-                //clientGpUrl+
-                gpContextPath+"/tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -130,7 +130,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpContextPath+"/tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );
@@ -142,7 +142,7 @@ public class TestJobInfoManager {
         substitutedValues.put("input.file", Arrays.asList(fileUrl));
         assertEquals(
                 // expected
-                gpContextPath+"/tasklib/"+lsid+"/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8"),
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8"),
                 // actual
                 JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
                 );

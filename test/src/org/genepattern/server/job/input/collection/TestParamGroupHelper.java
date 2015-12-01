@@ -67,6 +67,7 @@ public class TestParamGroupHelper {
             .mgr(mgr)
             .gpConfig(gpConfig)
             .jobContext(jobContext)
+            .jobInput(jobInput)
             .groupInfo(groupInfo)
             .downloadExternalFiles(false)
             .toFile(toFile)

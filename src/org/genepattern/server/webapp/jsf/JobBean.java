@@ -298,13 +298,6 @@ public class JobBean {
             final int reloadJobNumber = Integer.parseInt(jobNumberParam);
             AnalysisDAO ds = new AnalysisDAO();
             reloadJob = ds.getJobInfo(reloadJobNumber);
-
-            //TODO: refactor so that we don't have to do the eula check until later
-            EulaTaskBean eulaTaskBean = (EulaTaskBean) UIBeanHelper.getManagedBean("#{eulaTaskBean}");
-            if (eulaTaskBean != null && reloadJob != null) {
-                eulaTaskBean.setReloadJobParam(""+reloadJob.getJobNumber());
-                eulaTaskBean.setCurrentLsid(reloadJob.getTaskLSID());
-            }            
         }
         catch (Throwable t) {
             log.error("Error reloading job.", t);

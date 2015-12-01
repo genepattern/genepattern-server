@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -18,11 +18,20 @@ import org.hibernate.SQLQuery;
 
 public class BatchJobDAO extends BaseDAO {
     private static final Logger log = Logger.getLogger(BatchJobDAO.class);
+    
+    /** @deprecated pass in a Hibernate session */
+    public BatchJobDAO() {
+        super(org.genepattern.server.database.HibernateUtil.instance());
+    }
+    
+    public BatchJobDAO(final HibernateSessionManager mgr) {
+        super(mgr);
+    }
 
     public BatchJob findById(Integer id) {
         log.debug("getting BatchJob instance with id: " + id);
         try {
-            return (BatchJob) HibernateUtil.getSession().load("org.genepattern.server.domain.BatchJob", id);
+            return (BatchJob) mgr.getSession().load("org.genepattern.server.domain.BatchJob", id);
         }
         catch (RuntimeException re) {
             log.error("get failed", re);
@@ -30,8 +39,9 @@ public class BatchJobDAO extends BaseDAO {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<BatchJob> getOlderThanDateForUser(final String userId, final Date date) {
-        Query query = HibernateUtil.getSession().getNamedQuery("getOlderThanDateForUser");
+        Query query = mgr.getSession().getNamedQuery("getOlderThanDateForUser");
         query.setString("userId", userId);
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -39,8 +49,9 @@ public class BatchJobDAO extends BaseDAO {
         return query.list();
     }
     
+    @SuppressWarnings("unchecked")
     public List<BatchJob> getOlderThanDate(Date date) {
-        Query query = HibernateUtil.getSession().getNamedQuery("getOlderThanDate");
+        Query query = mgr.getSession().getNamedQuery("getOlderThanDate");
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         query.setCalendar("olderThanDate", cal);
@@ -57,31 +68,33 @@ public class BatchJobDAO extends BaseDAO {
         throw new IllegalArgumentException("batchIdObj is not a Number, batchIdObj="+batchIdObj);
     }
 
+    @SuppressWarnings("rawtypes")
     public void markDeletedIfLastJobDeleted(int lastJobDeleted) {
-        Query query = HibernateUtil.getSession().getNamedQuery("getBatchOwnerOfJob");
+        Query query = mgr.getSession().getNamedQuery("getBatchOwnerOfJob");
         query.setInteger("jobId", lastJobDeleted);
         List batchIds = query.list();
         if (batchIds.size() > 0) {
             int batchId = getIntFromResultObj(batchIds.get(0));
-            Query countMemberJobs = HibernateUtil.getSession().getNamedQuery("countJobsInBatch");
+            Query countMemberJobs = mgr.getSession().getNamedQuery("countJobsInBatch");
             countMemberJobs.setInteger("jobId", lastJobDeleted);
             countMemberJobs.setInteger("batchId", batchId);
             int remainingJobCount = getIntFromResultObj (countMemberJobs.list().get(0));
             if (remainingJobCount == 0) {
-                BatchJob batchJob = (BatchJob) HibernateUtil.getSession().get(BatchJob.class, batchId);
+                BatchJob batchJob = (BatchJob) mgr.getSession().get(BatchJob.class, batchId);
                 batchJob.setDeleted(true);
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<BatchJob> findByUserId(String userId) {
-        Query query = HibernateUtil.getSession().getNamedQuery("getBatchJobsForUser");
+        Query query = mgr.getSession().getNamedQuery("getBatchJobsForUser");
         query.setString("userId", userId);
         return query.list();
     }
 
     public JobInfo[] getBatchJobs(String userId, String batchFilter, int firstJob, int numJobs, JobSortOrder jobSortOrder, boolean jobSortAscending) {
-        Query baseQueryText = HibernateUtil.getSession().getNamedQuery("getJobsInBatch");
+        Query baseQueryText = mgr.getSession().getNamedQuery("getJobsInBatch");
 
         StringBuffer orderedQuery = new StringBuffer(baseQueryText.getQueryString());
         switch (jobSortOrder) {
@@ -105,13 +118,14 @@ public class BatchJobDAO extends BaseDAO {
             break;
         }
         orderedQuery.append(jobSortAscending ? " ASC" : " DESC");
-        SQLQuery query = HibernateUtil.getSession().createSQLQuery(orderedQuery.toString());
+        SQLQuery query = mgr.getSession().createSQLQuery(orderedQuery.toString());
         query.setInteger("batchId", Integer.parseInt(undecorate(batchFilter)));
         query.setBoolean("deleted", false);
         query.addEntity(AnalysisJob.class);
         query.setMaxResults(numJobs);
         query.setFirstResult(firstJob);
 
+        @SuppressWarnings("unchecked")
         List<AnalysisJob> queryResults = query.list();
         List<JobInfo> results = new ArrayList<JobInfo>();
         for (AnalysisJob aJob : queryResults) {
@@ -126,7 +140,7 @@ public class BatchJobDAO extends BaseDAO {
         try {
             final String batchIdStr = undecorate(batchFilter);
             final int batchId = Integer.parseInt(batchIdStr);
-            BatchJob batchJob = (BatchJob) HibernateUtil.getSession().load("org.genepattern.server.domain.BatchJob", batchId);
+            BatchJob batchJob = (BatchJob) mgr.getSession().load("org.genepattern.server.domain.BatchJob", batchId);
             return batchJob.getBatchJobs().size();
         }
         catch (RuntimeException re) {

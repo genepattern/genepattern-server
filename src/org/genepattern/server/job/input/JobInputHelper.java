@@ -5,26 +5,29 @@ package org.genepattern.server.job.input;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.eula.GetTaskStrategy;
-import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.batch.BatchGenerator;
 import org.genepattern.server.job.input.batch.BatchInputFileHelper;
 import org.genepattern.server.job.input.batch.FilenameBatchGenerator;
 import org.genepattern.server.job.input.batch.SimpleBatchGenerator;
 import org.genepattern.server.rest.GpServerException;
-import org.genepattern.server.rest.JobInputApi;
 import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.webservice.TaskInfo;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Helper class for the job input form, includes methods for preparing both batch jobs and regular jobs.
@@ -43,26 +46,67 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class JobInputHelper {
     final static private Logger log = Logger.getLogger(JobInputHelper.class);
+    
+    /** @deprecated include baseGpHref from client request */
+    public static URL initExternalUrl(final GpConfig gpConfig, final String value) {
+        return initExternalUrl(
+                Arrays.asList(UrlUtil.getBaseGpHref(gpConfig)), 
+                value);
+    }
+
     /**
      * Is the input value an external URL?
-     * 
+     * @param gpConfig to match against the server configured gpUrl 
+     * @param jobInput to match against the web client baseGpUrl
      * @param value
-     * 
      * @return the URL if it's an external url, otherwise return null.
      */
-    public static URL initExternalUrl(final GpConfig gpConfig, final String value) {
-        log.debug("intialize external URL for value="+value);
+    public static URL initExternalUrl(final GpConfig gpConfig, final JobInput jobInput, final String value) {
+        final String baseGpHref = jobInput==null ? null : jobInput.getBaseGpHref();
+        return initExternalUrl(gpConfig, baseGpHref, value);
+    }
+    
+    /**
+     * Is the input value an external URL?
+     * @param gpConfig to match the server configured gpUrl 
+     * @param baseGpHref to match the baseUrl of the web client request
+     * @param value
+     * @return
+     */
+    public static URL initExternalUrl(final GpConfig gpConfig, final String baseGpHref, final String value) {
+        if (gpConfig==null) { 
+            throw new IllegalArgumentException("gpConfig==null");
+        }
+        List<String> baseGpHrefs=UrlUtil.initBaseGpHrefs(gpConfig, baseGpHref);
+        return initExternalUrl(baseGpHrefs, value);
+    }
+
+    /**
+     * Is the input value an external URL?
+     * @param baseGpUrls a list of zero or more baseGpUrls, if the value matches one of these it is considered an internal URL.
+     * @param value
+     * @return
+     */
+    public static URL initExternalUrl(final List<String> baseGpUrls, final String value) {
         if (value==null) {
             throw new IllegalArgumentException("value==null");
         }
-
         if (value.startsWith("<GenePatternURL>")) {
-            log.debug("it's a substition for the gp url");
+            if (log.isDebugEnabled()) {
+                log.debug("<GenePatternURL> substitution, return null, value="+value);
+            }
             return null;
         }
-        if (value.startsWith(gpConfig.getGpUrl())) {
-            log.debug("it's a gp url");
-            return null;
+        for(final String baseGpUrl : baseGpUrls) {
+            if (Strings.isNullOrEmpty(baseGpUrl)) {
+                log.error("baseGpUrl arg is null or empty");
+            }
+            else if (value.startsWith(baseGpUrl)) {
+                if (log.isDebugEnabled()) { 
+                    log.debug("baseUrl callback, return null, value="+value);
+                }
+                return null;
+            }
         }
 
         URL url=null;
@@ -70,56 +114,59 @@ public class JobInputHelper {
             url=new URL(value);
         }
         catch (MalformedURLException e) {
-            log.debug("it's not a url", e);
+            if (log.isDebugEnabled()) {
+                log.debug("MalformedURLException, return null, value="+value);
+            }
             return null;
         }
         
         //special-case for file:/// urls
         if ("file".equalsIgnoreCase(url.getProtocol())) {
-            log.debug("it's a file url, assume it's a local path: "+value);
+            if (log.isDebugEnabled()) {
+                log.debug("file url.protocal, return null, value="+value);
+            }
             return null;
+        }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("returning ExternalUrl="+url);
         }
         return url;
     }
 
+    private final HibernateSessionManager mgr;
     private final GpConfig gpConfig;
-    private final GpContext userContext;
-    private final JobInputApi jobInputApi;
+    private final GpContext taskContext;
     private BatchGenerator batchGenerator;
     private final JobInput jobInputTemplate;
     private final Map<String,ParameterInfoRecord> paramInfoMap;
     private boolean hasDirectory = false;
 
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid) {
-        this(gpConfig, userContext, lsid, null);
-    }
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi singleJobInputApi) {
-        this(gpConfig, userContext, lsid, singleJobInputApi, new GetTaskStrategyDefault());
-    }
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, GetTaskStrategy getTaskStrategyIn) {
-
-        if (getTaskStrategyIn == null) {
-            getTaskStrategyIn=new GetTaskStrategyDefault();
+    /**
+     * @param mgr
+     * @param gpConfig
+     * @param taskContext must have a non-null TaskInfo with a non-null lsid.
+     * @param request the client http servlet request
+     */
+    public JobInputHelper(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext taskContext, final HttpServletRequest request) {
+        if (taskContext==null) {
+            throw new IllegalArgumentException("taskContext==null");
         }
-        final TaskInfo taskInfo = getTaskStrategyIn.getTaskInfo(lsid);
-
+        if (taskContext.getTaskInfo()==null) {
+            throw new IllegalArgumentException("taskContext.taskInfo==null");
+        }
+        if (taskContext.getTaskInfo().getLsid()==null) {
+            throw new IllegalArgumentException("taskContext.taskInfo.lsid==null");
+        }
+        
+        this.mgr=mgr;
         this.gpConfig=gpConfig;
-        this.userContext = userContext;
-        this.jobInputApi = jobInputApi;
+        this.taskContext = taskContext;
 
         this.jobInputTemplate = new JobInput();
-        this.jobInputTemplate.setLsid(taskInfo.getLsid());
-        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
-    }
-
-    public JobInputHelper(final GpConfig gpConfig, final GpContext userContext, final String lsid, final JobInputApi jobInputApi, TaskInfo taskInfo) {
-        this.gpConfig=gpConfig;
-        this.userContext = userContext;
-        this.jobInputApi = jobInputApi;
-
-        this.jobInputTemplate = new JobInput();
-        this.jobInputTemplate.setLsid(taskInfo.getLsid());
-        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+        this.jobInputTemplate.setLsid(taskContext.getTaskInfo().getLsid());
+        this.jobInputTemplate.setBaseGpHref(UrlUtil.getBaseGpHref(request));
+        this.paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskContext.getTaskInfo());
     }
 
     /**
@@ -199,14 +246,14 @@ public class JobInputHelper {
         if(isFileParameter(paramId))
         {
             //check if the value for this file parameter is a directory
-            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, value, true);
+            final GpFilePath gpPath=BatchInputFileHelper.initGpFilePath(gpConfig, jobInputTemplate, value, true);
             if(gpPath.isDirectory())
             {
                 hasDirectory = true;
             }
 
 
-            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, userContext, paramId, record, value);
+            List<String> batchFileValues = BatchInputFileHelper.getBatchValues(gpConfig, taskContext, jobInputTemplate, paramId, record, value);
 
             for(String file: batchFileValues)
             {
@@ -237,12 +284,12 @@ public class JobInputHelper {
 
         if(!hasNonFileBatchParams)
         {
-            generator = new FilenameBatchGenerator(gpConfig, userContext, jobInputApi);
+            generator = new FilenameBatchGenerator(mgr, gpConfig, taskContext);
 
         }
         else if(!hasDirectory)
         {
-            generator = new SimpleBatchGenerator(gpConfig, userContext, jobInputApi);
+            generator = new SimpleBatchGenerator(mgr, gpConfig, taskContext);
         }
         else
         {

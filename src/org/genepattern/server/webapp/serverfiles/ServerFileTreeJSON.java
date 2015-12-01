@@ -107,13 +107,7 @@ public class ServerFileTreeJSON extends JSONArray {
 
         JSONObject attr = new JSONObject();
 
-        // original implementation; uses GenePatternURL from genepattern.properties
-        //final String href=file.getUrl().toExternalForm();
-        // option a; relative paths, does not work in web client; JS code expects valid URL
-        //final String href=ServerConfigurationFactory.instance().getGpPath() + file.getRelativeUri();
-        // option b; use fq path from servlet request
-        final String href=UrlUtil.getGpUrl(request) + file.getRelativeUri();
-        
+        final String href=UrlUtil.getHref(request, file);        
         attr.put("href", href);
         if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
         else { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }

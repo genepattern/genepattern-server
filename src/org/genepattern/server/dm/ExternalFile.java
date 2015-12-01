@@ -10,7 +10,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Implementation for handling external URLs to files in the way we handle other files
@@ -21,24 +23,26 @@ public class ExternalFile extends GpFilePath {
     
     private URL url = null;
     private URI uri = null;
+    private boolean isDirectory = false;
     
     public ExternalFile(String url) {
+        super(false); // required to flag this as an external url
         setUrl(url);
     }
     
     public ExternalFile(URL url) {
+        super(false); // required to flag this as an external url
         setUrl(url);
     }
     
     public void setUrl(URL url) {
         this.url = url;
-        
-        String filename = url.getFile().substring(url.getFile().lastIndexOf("/") + 1);
-        this.setName(filename);
-        
-        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-        this.setKind(extension);
-        this.setExtension(extension);
+        initNameKindExtensionFromUrl(url);
+        initIsDirectoryFromKind();
+    }
+    
+    protected void initIsDirectoryFromKind() {
+        this.isDirectory=SemanticUtil.DIRECTORY_KIND.equals(getKind());
     }
     
     public void setUrl(String url) {
@@ -54,6 +58,11 @@ public class ExternalFile extends GpFilePath {
     public URL getUrl() throws Exception {
         return url;
     }
+    
+    @Override
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
+        return url;
+    }
 
     @Override
     public URI getRelativeUri() {
@@ -66,6 +75,15 @@ public class ExternalFile extends GpFilePath {
             }
         }
         return uri;
+    }
+
+    /**
+     * Return whether this is a directory
+     */
+    @Override
+    public boolean isDirectory() {
+        // initialized in setUrl
+        return isDirectory;
     }
 
     @Override

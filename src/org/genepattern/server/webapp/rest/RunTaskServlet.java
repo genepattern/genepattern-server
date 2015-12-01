@@ -47,6 +47,7 @@ import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -503,6 +504,46 @@ public class RunTaskServlet extends HttpServlet
         }
     }
 
+    /**
+     * consolidated /addJob and /launchJsViewer initialization of the taskContext
+     * 
+     * @param request
+     * @param jobSubmitInfo
+     * @return GpContext initialized with the current user and the TaskInfo for the job to be submitted.
+     * @throws WebApplicationException
+     */
+    protected GpContext initTaskContext(final HttpServletRequest request, final JobSubmitInfo jobSubmitInfo) throws WebApplicationException {
+        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
+            handleError("No lsid received");
+        }
+
+        final GpContext taskContext;
+        try {
+            taskContext=Util.getTaskContext(request, jobSubmitInfo.getLsid());
+        }
+        catch (Throwable t) {
+            final String errorMessage="Unexpected error initializing taskContext for userId="+
+                    request.getSession().getAttribute("userid") +
+                    ", lsid="+jobSubmitInfo.getLsid();
+            log.debug(errorMessage, t);
+            throw new WebApplicationException( 
+                    Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
+        }
+        if (taskContext.getTaskInfo()==null) {
+            final String errorMessage="No task found for userId="+taskContext.getUserId()+", lsid=" + jobSubmitInfo.getLsid();
+            log.debug(errorMessage);
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
+        } 
+
+        if (checkDiskQuota(taskContext)) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build());
+        }
+        return taskContext;
+    }
+    
+    
     @POST
     @Path("/addJob")
     @Produces(MediaType.APPLICATION_JSON)
@@ -512,12 +553,8 @@ public class RunTaskServlet extends HttpServlet
         @Context HttpServletRequest request)
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
-
-        if (checkDiskQuota(userContext))
-            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
-
-        return addJob(gpConfig, userContext, jobSubmitInfo, request);
+        final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
+        return addJob(HibernateUtil.instance(), gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     @POST
@@ -528,12 +565,8 @@ public class RunTaskServlet extends HttpServlet
             @Context HttpServletRequest request)
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
-
-        if (checkDiskQuota(userContext))
-            return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
-
-        return launchJsViewer(gpConfig, userContext, jobSubmitInfo, request);
+        final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
+        return launchJsViewer(HibernateUtil.instance(), gpConfig, taskContext, jobSubmitInfo, request);
     }
 
     /**
@@ -542,14 +575,14 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response launchJsViewer(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
+    private Response launchJsViewer(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
             return handleError("No lsid received");
         }
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-            TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+            final TaskInfo taskInfo = userContext.getTaskInfo();
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
                 final String parameterName = (String) iter.next();
@@ -698,12 +731,9 @@ public class RunTaskServlet extends HttpServlet
      * @param request
      * @return
      */
-    private Response addJob(final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
-        if (jobSubmitInfo==null || jobSubmitInfo.getLsid()==null || jobSubmitInfo.getLsid().length()==0) {
-            return handleError("No lsid received");
-        }
+    private Response addJob(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final JobSubmitInfo jobSubmitInfo, final HttpServletRequest request) {
         try {
-            final JobInputHelper jobInputHelper = new JobInputHelper(gpConfig, userContext, jobSubmitInfo.getLsid());
+            final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
 
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {

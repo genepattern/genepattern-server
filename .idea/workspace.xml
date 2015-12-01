@@ -109,21 +109,6 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/genepattern/server/webapp/SubmitJobServlet.java" line="85" class="org.genepattern.server.webapp.SubmitJobServlet" package="org.genepattern.server.webapp">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
       <breakpoint url="file://$PROJECT_DIR$/src/org/genepattern/server/webapp/rest/RunTaskServlet.java" line="632" class="org.genepattern.server.webapp.rest.RunTaskServlet" package="org.genepattern.server.webapp.rest">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />

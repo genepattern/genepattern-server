@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.webservice.TaskInfo;
 
 import com.google.common.base.Strings;
@@ -65,23 +66,22 @@ public class JavascriptHandler {
     public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
     {
         final StringBuffer launchUrl = new StringBuffer();
-        // <gpServletContext>
-        if (gpConfig != null && !Strings.isNullOrEmpty(gpConfig.getGpPath())) {  
-            launchUrl.append(gpConfig.getGpPath());
+        // For servlets in the default (root) context, HttpServletRequest.getContextPath returns ""
+        if (gpConfig != null && gpConfig.getGpPath() != null) {  
+            launchUrl.append(Strings.nullToEmpty(gpConfig.getGpPath()));
         }
         else {
             if (log.isDebugEnabled()) {
-                log.debug("gpConfig == null || gpPath not set, using default value, '/gp'");
+                log.debug("gpConfig == null || gpConfig.gpPath==null, using default value, '/gp'");
             }
             launchUrl.append("/gp");
         } 
         launchUrl.append("/tasklib/");
-        launchUrl.append(taskInfo.getLsid());
+        launchUrl.append(UrlUtil.encodeURIcomponent(taskInfo.getLsid()));
         // <mainFile>        
-        String mainFile = (String)taskInfo.getAttributes().get("commandLine");
-        mainFile = mainFile.substring(0, mainFile.indexOf("?")).trim();
+        final String mainFile = getMainFile(taskInfo);
         launchUrl.append("/");
-        launchUrl.append(mainFile);
+        launchUrl.append(UrlUtil.encodeURIcomponent(mainFile));
 
         //?<param>=<value>&<param>=<value>...
         final Multimap<String,String> queryMap = LinkedHashMultimap.create();
@@ -102,6 +102,53 @@ public class JavascriptHandler {
             log.debug("launchUrl="+launchUrl.toString());
         }
         return launchUrl.toString();
+    }
+
+    /**
+     * Get the mainFile for a JsViewer, passing in hard-coded mainFile_default='index.html'.
+     */
+    protected static String getMainFile(final TaskInfo taskInfo) {
+        final String mainFile_default="index.html";
+        return getMainFile(taskInfo, mainFile_default);
+    }
+    
+    /**
+     * Get the mainFile for a JsViewer, or the default if not set on the command line.
+     * Note: possibility to declare the mainFile= in the manifest file.
+     * 
+     * @param taskInfo
+     * @param mainFile_default
+     * @return the value from the commandLine=<mainFile> ? ..., 
+     *    or return hard-coded mainFile_default="index.html" if commandLine is not formatted properly.
+     */
+    protected static String getMainFile(final TaskInfo taskInfo, final String mainFile_default) {
+        if (taskInfo==null) {
+            log.error("taskInfo==null");
+            return mainFile_default;
+        }
+        final String commandLine=(String)taskInfo.giveTaskInfoAttributes().get("commandLine");
+        if (Strings.isNullOrEmpty(commandLine)) {
+            if (log.isDebugEnabled()) {
+                log.debug("commandLine not set, mainFile_default="+mainFile_default);
+            }
+            return mainFile_default;
+        }
+        int idx=commandLine.indexOf("?");
+        // missing '?' delimiter, match first '<' or end of string
+        if (idx<0) {
+            idx=commandLine.indexOf("<");
+        }
+        if (idx<0) {
+            idx=commandLine.length();
+        }
+        String mainFile = commandLine.substring(0, idx).trim();
+        if (Strings.isNullOrEmpty(mainFile)) {
+            if (log.isDebugEnabled()) {
+                log.debug("mainFile not set in commandLine="+commandLine+", mainFile_default="+mainFile_default);
+            }
+            return mainFile_default;
+        }
+        return mainFile;
     }
 
     public static String saveLaunchUrl(GpConfig gpConfig, TaskInfo taskInfo, File outputDir,  Map<String, List<String>> substitutedValuesMap) throws Exception

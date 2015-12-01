@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import org.genepattern.junitutil.TaskLoader;
 import org.genepattern.junitutil.TaskUtil;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
@@ -16,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 /**
  * Created by nazaire on 2/11/14.
@@ -23,6 +25,7 @@ import org.junit.rules.TemporaryFolder;
 public class TestParameterGrouping
 {
     final static private String adminUserId="admin";
+    private static GpConfig gpConfig;
     private static GpContext userContext;
     private static TaskLoader taskLoader;
     final static private String tBAdvancedParamsLsid ="urn:lsid:8080.nazaire.69.173.118.131:genepatternmodules:6:4";
@@ -31,10 +34,10 @@ public class TestParameterGrouping
     @Rule
     public TemporaryFolder temp= new TemporaryFolder();
 
-
     @BeforeClass
     static public void beforeClass()
     {
+        gpConfig=Mockito.mock(GpConfig.class);
         userContext=new GpContext.Builder()
             .userId(adminUserId)
             .isAdmin(true)
@@ -60,7 +63,7 @@ public class TestParameterGrouping
         File paramGroupsFile = temp.newFile("paramgroups.json");
         TaskUtil.writeSupportFileToFile(paramGroupsInputStream, paramGroupsFile);
 
-        LoadModuleHelper loadModuleHelper = new LoadModuleHelper(userContext);
+        LoadModuleHelper loadModuleHelper = new LoadModuleHelper(gpConfig, userContext, taskLoader);
         JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, paramGroupsFile);
 
         //check that there were three parameter groups defined

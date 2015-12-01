@@ -148,12 +148,6 @@
  </managed-bean>
 
  <managed-bean>
-  <managed-bean-name>eulaTaskBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.EulaTaskBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
-
- <managed-bean>
   <managed-bean-name>userSessionBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.UserSessionBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
