@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.Param;
@@ -39,6 +41,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
      */
     final Column[] columns;
     final boolean includeHeader;
+    final String baseGpHref; // e.g. 'http://127.0.0.1:8080/gp'
 
     private DefaultParamGroupWriter(final Builder in) {
         if (in.toFile==null) {
@@ -57,6 +60,13 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         }
         else {
             this.writer=in.writer;
+        }
+        if (in.baseGpHref==null) {
+            log.error("baseGpHref not set; getting default value from GpConfig");
+            this.baseGpHref=UrlUtil.getBaseGpHref(ServerConfigurationFactory.instance());
+        }
+        else {
+            this.baseGpHref=in.baseGpHref;
         }
     }
     
@@ -134,7 +144,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         writer.writeRow(row);
     } 
 
-    private String getRowValue(final Integer rowIdx, final Column column, final GroupId groupId, final GpFilePath gpFilePath) {
+    protected String getRowValue(final Integer rowIdx, final Column column, final GroupId groupId, final GpFilePath gpFilePath) {
         switch (column) {
         case VALUE: return gpFilePath.getServerFile().getAbsolutePath();
         case GROUP: 
@@ -146,7 +156,12 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             }
         case URL:
             try {
-                return gpFilePath.getUrl().toExternalForm();
+                if (gpFilePath.isLocal()) {
+                    return baseGpHref+gpFilePath.getRelativeUri().toString();
+                }
+                else {
+                    return gpFilePath.getUrl().toExternalForm();
+                }
             }
             catch (Exception e) {
                 log.error(e);
@@ -157,6 +172,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
     }
     
     public static class Builder {
+        private String baseGpHref=null;
         private File toFile=null;
         private List<Column> columns=null;
         private boolean includeHeader=false;
@@ -165,6 +181,10 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         public Builder(final File toFile) {
             this.toFile=toFile;
         }
+        public Builder baseGpHref(final String baseGpHref) {
+            this.baseGpHref=baseGpHref;
+            return this;
+        } 
         public Builder addColumn(final Column column) {
             if (columns==null) {
                 columns=new ArrayList<Column>();

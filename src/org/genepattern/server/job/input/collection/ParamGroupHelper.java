@@ -43,6 +43,7 @@ public class ParamGroupHelper {
     private final GpConfig gpConfig;
     private final GpContext jobContext;
     private final JobInput jobInput;
+    private final String baseGpHref;
     private final ParameterInfo formalParam;
     private final GroupInfo groupInfo;
     private final Param param;
@@ -87,6 +88,7 @@ public class ParamGroupHelper {
         }
         this.jobContext=in.jobContext;
         this.jobInput=in.jobInput;
+        this.baseGpHref=ParamListHelper.initBaseGpHref(gpConfig, jobInput);
         if (in.parameterInfoRecord != null) {
             this.formalParam=in.parameterInfoRecord.getFormal();
         }
@@ -149,14 +151,20 @@ public class ParamGroupHelper {
         writeGroupFile(toFile.getServerFile(), gpFilePaths);
     }
     private void writeGroupFile(final File toFile, final List<GpFilePath> gpFilePaths) throws Exception {
+        final DefaultParamGroupWriter writer=initParamGroupWriter(baseGpHref, toFile);
+        writer.writeParamGroup(groupInfo, param, gpFilePaths);
+    }
+    
+    protected static DefaultParamGroupWriter initParamGroupWriter(final String baseGpHref, final File toFile) {
         final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile)
+            .baseGpHref(baseGpHref)
             .addColumn(Column.VALUE)
             .addColumn(Column.GROUP)
             .addColumn(Column.URL)
             .includeHeader(true)
             .tableWriter(new TsvWriter())
             .build();
-        writer.writeParamGroup(groupInfo, param, gpFilePaths);
+        return writer;
     }
     
     public static class Builder {

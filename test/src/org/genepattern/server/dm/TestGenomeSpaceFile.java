@@ -27,7 +27,7 @@ public class TestGenomeSpaceFile {
      * @return
      * @throws MalformedURLException
      */
-    protected static GenomeSpaceFile mockGsFileFromGsHelper(final String filename) throws MalformedURLException {
+    public static GenomeSpaceFile mockGsFileFromGsHelper(final String filename) throws MalformedURLException {
         final String urlSpec=dataGsDir+filename;
         final GsSession gsSession=Mockito.mock(GsSession.class);
         final GSFileMetadata metadata=Mockito.mock(GSFileMetadata.class);
@@ -44,7 +44,7 @@ public class TestGenomeSpaceFile {
      * @return
      * @throws MalformedURLException
      */
-    protected static GenomeSpaceFile mockGsFile(final String filename) throws MalformedURLException {
+    public static GenomeSpaceFile mockGsFile(final String filename) throws MalformedURLException {
         final String urlSpec=dataGsDir+filename;
         final GsSession gsSession=Mockito.mock(GsSession.class);
         final URL url=new URL(urlSpec);
