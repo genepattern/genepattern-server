@@ -66,13 +66,13 @@ public class JavascriptHandler {
     public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
     {
         final StringBuffer launchUrl = new StringBuffer();
-        // <gpServletContext>
-        if (gpConfig != null && !Strings.isNullOrEmpty(gpConfig.getGpPath())) {  
-            launchUrl.append(gpConfig.getGpPath());
+        // For servlets in the default (root) context, HttpServletRequest.getContextPath returns ""
+        if (gpConfig != null && gpConfig.getGpPath() != null) {  
+            launchUrl.append(Strings.nullToEmpty(gpConfig.getGpPath()));
         }
         else {
             if (log.isDebugEnabled()) {
-                log.debug("gpConfig == null || gpPath not set, using default value, '/gp'");
+                log.debug("gpConfig == null || gpConfig.gpPath==null, using default value, '/gp'");
             }
             launchUrl.append("/gp");
         } 

@@ -107,6 +107,12 @@ public class TestJavascriptHandler
     }
 
     @Test
+    public void emptyGpPath() throws Exception {
+        when(gpConfig.getGpPath()).thenReturn("");
+        checkLaunchUrl("", "jsviewer.html ? <input.filename> <param>", "jsviewer.html");
+    }
+
+    @Test
     public void nullGpPath() throws Exception {
         when(gpConfig.getGpPath()).thenReturn(null);
         checkLaunchUrl("jsviewer.html ? <input.filename> <param>", "jsviewer.html");
