@@ -49,6 +49,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
@@ -473,16 +474,16 @@ public class RunTaskServlet extends HttpServlet
 
             // save it
             writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
-            fileUtil.updateUploadsDb(gpFilePath);
+            fileUtil.updateUploadsDb(HibernateUtil.instance(), gpFilePath);
 
+            final String location=UrlUtil.getGpUrl(request) +
+                    gpFilePath.getRelativeUri();
             if (log.isDebugEnabled()) {
-                final String output = "File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath();
-                log.debug(output);
-                log.debug(gpFilePath.getUrl().toExternalForm());
+                log.debug("File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath());
+                log.debug("File location : "+location);
             }
-
-            ResponseJSON result = new ResponseJSON();
-            result.addChild("location",  gpFilePath.getUrl().toExternalForm());
+            final ResponseJSON result = new ResponseJSON();
+            result.addChild("location",  location);
             return Response.ok().entity(result.toString()).build();
         }
         catch(Exception e)
