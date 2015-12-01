@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,6 +20,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.util.SemanticUtil;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
@@ -333,6 +335,62 @@ public class UrlUtil {
             return filename.substring(0, parenthesisIndex);
         }
         return filename;
+    }
+
+    public static String[] splitUrl(final String contextPath, final String urlSpec) throws URISyntaxException, MalformedURLException {
+        return splitUrl(contextPath, new URL(urlSpec));
+    }
+
+    public static String[] splitUrl(final String contextPath, final URL url) throws URISyntaxException {
+        return splitUri(contextPath,  url.toURI());
+    }
+
+    /**
+     * Split the uri path into the {servletPath}, and {pathInfo}, drop the {contextPath}.
+     * Example values when servletContext='/gp' for each uri#path below: 
+     *     '/gp/debug'          --> [ '/debug', null ] 
+     *     '/gp/debug/'         --> [ '/debug', '/' ] 
+     *     '/gp/debug/test'     --> [ '/debug', '/test' ] 
+     *     '/gp/debug/test.ext' --> [ '/debug', '/test.ext' ] 
+     * Special-cases:
+     *     '/gp'                --> [ '', '/' ] 
+     *     '/gp/'               --> [ '', '/' ] 
+     * 
+     * @param url
+     * @return an array split into [ {contextPath}, {servletPath}, {pathInfo} ]
+     * @throws URISyntaxException
+     * @throws MalformedURLException 
+     */
+    public static String[] splitUri(final String contextPath, final URI uri) { 
+        if (contextPath==null) {
+            throw new IllegalArgumentException("contextPath==null");
+        }
+        else if (contextPath.length()>0 && !contextPath.startsWith("/")) {
+            throw new IllegalArgumentException("contextPath must be the empty String (\"\") or start with \"/\"");
+        }
+        String path=uri.getPath();
+        path=path.substring(contextPath.length());
+        if (path.length()>0 && !path.startsWith("/")) {
+            throw new IllegalArgumentException("servletPath must be the empty String (\"\") or start with \"/\"");
+        }
+        
+        //special-case for empty string or '/'
+        if (path.length()<=1) {
+            return new String[]{"", "/"}; 
+        }
+
+        String servletPath="";
+        String pathInfo=null;
+        final String[] pathElements=path.split("/", -1);
+        if (pathElements.length>1) {
+            servletPath="/"+pathElements[1];
+        }
+        if (pathElements.length>2) {
+            pathInfo="/"+Joiner.on("/").join(
+                    Arrays.copyOfRange(pathElements, 2, pathElements.length)
+            );
+        }
+        return new String[]{servletPath, pathInfo}; 
     }
 
     /** Converts a string into something you can safely insert into a URL. */

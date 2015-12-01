@@ -192,5 +192,95 @@ public class TestUrlUtil {
         assertEquals("special-case: null baseHref, null path -> {empty}/{empty}}", "/", 
                 UrlUtil.glue(null, null));
     }
+    
+    protected void checkSplit(final String expectedServletPath, final String expectedPathInfo, final String gpContextPath, final String urlSpec) throws MalformedURLException, URISyntaxException {
+        String[] actual=UrlUtil.splitUrl(gpContextPath, new URL(urlSpec));
+        assertEquals("servletPath from '"+urlSpec+"', gpPath='"+gpContextPath+"'", expectedServletPath, actual[0]);
+        assertEquals("pathInfo from '"+urlSpec+"', gpPath='"+gpContextPath+"'", expectedPathInfo, actual[1]);
+    }
+
+    @Test
+    public void splitUrl_gpPath() throws MalformedURLException, URISyntaxException {
+        String gpPath="/gp";
+        checkSplit( "/debug", null, gpPath, 
+                proxyHref_ROOT+"/gp/debug");
+        checkSplit( "/debug", "/", gpPath, 
+                proxyHref_ROOT+"/gp/debug/");
+        checkSplit("/debug", "/test", gpPath, 
+                proxyHref_ROOT+"/gp/debug/test");
+        checkSplit("/debug", "/test.ext", gpPath, 
+                proxyHref_ROOT+"/gp/debug/test.ext");
+        checkSplit("/debug", "/subdir/test.ext", gpPath, 
+                proxyHref_ROOT+"/gp/debug/subdir/test.ext");
+        
+        // corner-cases
+        checkSplit("", "/", gpPath, 
+                proxyHref_ROOT+"/gp");
+        checkSplit("", "/", gpPath, 
+                proxyHref_ROOT+"/gp/");
+    }
+    
+    @Test
+    public void splitUrl_customGpPath() throws MalformedURLException, URISyntaxException {
+        String customContextPath="/custom";
+        checkSplit( "/debug", null, customContextPath, 
+                proxyHref_ROOT+"/custom/debug");
+        checkSplit( "/debug", "/", customContextPath, 
+                proxyHref_ROOT+"/custom/debug/");
+        checkSplit( "/debug", "/test", customContextPath, 
+                proxyHref_ROOT+"/custom/debug/test");
+        checkSplit( "/debug", "/test.ext", customContextPath, 
+                proxyHref_ROOT+"/custom/debug/test.ext");
+        checkSplit( "/debug", "/subdir/test.ext", customContextPath, 
+                proxyHref_ROOT+"/custom/debug/subdir/test.ext");
+        
+        // corner-cases
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"/custom");
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"/custom/");
+    }
+    
+    @Test
+    public void splitUrl_nestedGpPath() throws MalformedURLException, URISyntaxException {
+        String customContextPath="/sub/dir";
+        checkSplit( "/debug", null, customContextPath, 
+                proxyHref_ROOT+"/sub/dir/debug");
+        checkSplit( "/debug", "/", customContextPath, 
+                proxyHref_ROOT+"/sub/dir/debug/");
+        checkSplit( "/debug", "/test", customContextPath, 
+                proxyHref_ROOT+"/sub/dir/debug/test");
+        checkSplit( "/debug", "/test.ext", customContextPath, 
+                proxyHref_ROOT+"/sub/dir/debug/test.ext");
+        checkSplit( "/debug", "/subdir/test.ext", customContextPath, 
+                proxyHref_ROOT+"/sub/dir/debug/subdir/test.ext");
+        
+        // corner-cases
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"/sub/dir");
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"/sub/dir/");
+    }
+    
+    @Test
+    public void splitUrl_ROOT() throws MalformedURLException, URISyntaxException {
+        String customContextPath="";
+        checkSplit( "/debug", null, customContextPath, 
+                proxyHref_ROOT+"/debug");
+        checkSplit( "/debug", "/", customContextPath, 
+                proxyHref_ROOT+"/debug/");
+        checkSplit( "/debug", "/test", customContextPath, 
+                proxyHref_ROOT+"/debug/test");
+        checkSplit( "/debug", "/test.ext", customContextPath, 
+                proxyHref_ROOT+"/debug/test.ext");
+        checkSplit( "/debug", "/subdir/test.ext", customContextPath, 
+                proxyHref_ROOT+"/debug/subdir/test.ext");
+        
+        // corner-cases
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"");
+        checkSplit( "", "/", customContextPath, 
+                proxyHref_ROOT+"/");
+    }
 
 }

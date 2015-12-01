@@ -307,7 +307,7 @@ public class GpFileObjFactory {
     }
 
     static private GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final URI uri) throws Exception {
-        final String[] split = splitUri(gpConfig, uri);
+        final String[] split = UrlUtil.splitUri(gpConfig.getGpPath(), uri);
         final String servletPath = split[0];
         final String pathInfo = split[1];
         return getRequestedGpFileObj(servletPath, pathInfo);        
@@ -360,7 +360,7 @@ public class GpFileObjFactory {
      */
     static public JobResultFile getRequestedJobResultFileObj(String urlStr) throws Exception {
         URI uri = getUri(urlStr);
-        String[] split = splitUri(ServerConfigurationFactory.instance(), uri);
+        final String[] split = UrlUtil.splitUri(ServerConfigurationFactory.instance().getGpPath(), uri);
         String servletPath = split[0];
         String pathInfo = split[1];
         if ("/jobResults".equals(servletPath)) {
@@ -374,25 +374,6 @@ public class GpFileObjFactory {
         //create a uri, which automatically decodes the url
         URI uri = new URI(urlStr);
         return uri;
-    }
-    static private String[] splitUri(final GpConfig gpConfig, final URI uri) {
-        String servletPathPlus = uri.getPath();
-        //1) chop off the servlet context (e.g. '/gp')
-        final String gpPath=gpConfig.getGpPath();
-        if (servletPathPlus.startsWith(gpPath)) {
-            servletPathPlus = servletPathPlus.substring( gpPath.length() );
-        }
-        
-        //2) extract the servletPath and the remaining pathInfo
-        String servletPath = servletPathPlus;
-        String pathInfo = "";
-        int idx = servletPathPlus.indexOf("/", 1);
-        if (idx > 0) {
-            servletPath = servletPathPlus.substring(0, idx);
-            pathInfo = servletPathPlus.substring(idx);
-        }
-        
-        return new String[]{ servletPath, pathInfo };
     }
 
     private static String extractUserId(String pathInfo) throws Exception {
