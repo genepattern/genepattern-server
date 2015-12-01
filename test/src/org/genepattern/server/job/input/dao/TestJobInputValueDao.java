@@ -3,8 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.dao;
 
+import static org.genepattern.junitutil.Demo.gpConfig;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.List;
@@ -37,8 +37,7 @@ public class TestJobInputValueDao {
     @BeforeClass
     public static void beforeClass() throws ExecutionException {
         mgr=DbUtil.getTestDbSession();
-        gpConfig=mock(GpConfig.class);
-        when(gpConfig.getGpUrl()).thenReturn(gpUrl);
+        gpConfig=gpConfig();
 
         final File zipFile=FileUtil.getDataFile(cleZip);
         final TaskInfo taskInfo=TaskUtil.getTaskInfoFromZip(zipFile);

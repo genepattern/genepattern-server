@@ -147,7 +147,6 @@ public class Demo {
      * - gpUrl=http://127.0.0.1:8080/gp/
      */
     public static GpConfig gpConfig() {
-        //return mock(GpConfig.class);
         GpConfig gpConfig=mock(GpConfig.class);
         when(gpConfig.getGpPath()).thenReturn(gpPath);
         when(gpConfig.getGpUrl()).thenReturn(gpUrl);
