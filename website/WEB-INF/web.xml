@@ -588,6 +588,18 @@
   </init-param>
   <load-on-startup>1</load-on-startup>
  </servlet>
+ 
+<!-- just for debugging
+ <servlet>
+  <servlet-name>DebugServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.DebugServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>DebugServlet</servlet-name>
+  <url-pattern>/debug/*</url-pattern>
+ </servlet-mapping>
+-->
+
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
