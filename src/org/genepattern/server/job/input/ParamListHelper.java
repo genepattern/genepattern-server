@@ -246,6 +246,7 @@ public class ParamListHelper {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static String initBaseGpHref(final GpConfig gpConfig, final JobInput jobInput) {
         if (jobInput != null && !Strings.isNullOrEmpty(jobInput.getBaseGpHref())) {
             return jobInput.getBaseGpHref();
@@ -1024,7 +1025,7 @@ public class ParamListHelper {
         if (pathIn != null) {
             try {
                 //hint: need to append a '/' to the value, e.g. "/data//xchip/shared_data/all_aml_test.gct"
-                gpPath=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+pathIn);
+                gpPath=GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/data", "/"+pathIn);
             }
             catch (Throwable tx) {
                 log.error("Error initializing gpFilePath for directory input: "+pathIn, tx);

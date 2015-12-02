@@ -241,6 +241,7 @@ public class BatchInputFileHelper {
         else {
             log.warn("unexpected input, GpFilePath.name is null, getting name from url");
             try {
+                @SuppressWarnings("deprecation")
                 final URL extUrl=file.getUrl();
                 log.warn("GpFilePath.url="+extUrl);
                 final String filename=UrlUtil.getFilenameFromUrl(extUrl);

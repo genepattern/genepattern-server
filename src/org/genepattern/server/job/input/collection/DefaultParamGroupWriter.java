@@ -43,6 +43,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
     final boolean includeHeader;
     final String baseGpHref; // e.g. 'http://127.0.0.1:8080/gp'
 
+    @SuppressWarnings("deprecation")
     private DefaultParamGroupWriter(final Builder in) {
         if (in.toFile==null) {
             throw new IllegalArgumentException("toFile==null");

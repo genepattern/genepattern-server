@@ -27,7 +27,6 @@ import org.genepattern.server.rest.JobReceipt;
 import org.genepattern.server.rest.ParameterInfoRecord;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Helper class for the job input form, includes methods for preparing both batch jobs and regular jobs.
