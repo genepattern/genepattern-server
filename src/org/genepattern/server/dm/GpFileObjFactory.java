@@ -202,7 +202,7 @@ public class GpFileObjFactory {
      * This method does the same stuff that the servlet engine is doing for us.
      * It extracts the servletPath and decoded pathInfo from the URL.
      *
-     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
+     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(GpConfig, String, String)}
      *
      * @param url, requires a valid url
      * @return a GpFilePath
@@ -229,7 +229,7 @@ public class GpFileObjFactory {
      * This method does the same stuff that the servlet engine is doing for us.
      * It extracts the servletPath and decoded pathInfo from the URL.
      *
-     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
+     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(GpConfig, String, String)}
      *
      * @param gpConfig
      * @param baseGpHref
@@ -310,24 +310,30 @@ public class GpFileObjFactory {
         final String[] split = UrlUtil.splitUri(gpConfig.getGpPath(), uri);
         final String servletPath = split[0];
         final String pathInfo = split[1];
-        return getRequestedGpFileObj(servletPath, pathInfo);        
+        return getRequestedGpFileObj(gpConfig, servletPath, pathInfo);        
     }
 
+    /** @deprecated pass in a valid GpConfig */
+    public static GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
+        return getRequestedGpFileObj(ServerConfigurationFactory.instance(), servletPath, pathInfo);
+    }
+    
     /**
      * Note: When needed, the calling method must init metadata from file system, DB, or pathInfo depending on context. 
      * @param servletPath
      * @param pathInfo
      * @return
      * @throws Exception
+     * 
      */
-    static public GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
+    static public GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final String servletPath, final String pathInfo) throws Exception {
          if ("/users".equals(servletPath)) {
             String userId = extractUserId(pathInfo);
             //drop the wrapping slashes from '/user_id/'
             String relativePath = pathInfo.substring( userId.length() + 2 );
             File uploadFilePath = new File(relativePath);
             GpContext userContext = GpContext.getContextForUser(userId);
-            GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+            GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, uploadFilePath);
             return gpFileObj;
         }
         if ("/data".equals(servletPath)) {
