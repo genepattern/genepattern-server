@@ -5,9 +5,7 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import javax.servlet.Servlet;
@@ -57,6 +55,7 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
  * 
  * @author pcarr
  */
+@SuppressWarnings("serial")
 public class DataServlet extends HttpServlet implements Servlet {
     private static Logger log = Logger.getLogger(DataServlet.class);
 
@@ -91,39 +90,6 @@ public class DataServlet extends HttpServlet implements Servlet {
     
     public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {
         resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-    
-    private URL getRequestUrl(HttpServletRequest request) {
-        //final String requestUrl = request.getRequestURL().toString();
-
-        final String scheme = request.getScheme();
-        final String serverName = request.getServerName();
-        final int serverPort = request.getServerPort();
-        final String contextPath = request.getContextPath();
-        final String servletPath = request.getServletPath();
-        final String pathInfo = request.getPathInfo();
-        final String queryString = request.getQueryString();
-
-        String u = scheme + "://" + serverName;
-        if (serverPort > 0) {
-            u += (":" +serverPort);
-        }
-        u += contextPath + servletPath;
-        if (pathInfo != null) {
-            u+= pathInfo;
-        }
-        if (queryString != null) {
-            u+= ("?" + queryString);
-        }
-        
-        URL url = null;
-        try {
-            url = new URL(u);
-        }
-        catch (MalformedURLException e) {
-            log.error(e);
-        }
-        return url;
     }
     
     /**
@@ -223,15 +189,6 @@ public class DataServlet extends HttpServlet implements Servlet {
     }
 
     /**
-     * Sets the header that ensures download behavior in the browser
-     * @param response
-     * @param filename
-     */
-    private void attachDownloadHeader(HttpServletResponse response, String filename) {
-        response.setHeader("Content-Disposition", "attachment; filename=" + filename);
-    }
-
-    /**
      * Determine if the request has the "download" GET param
      * This is used in requests that force download browser behavior
      * @param request
@@ -263,7 +220,6 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param httpMethod
      */
     private void processUserUploadRequest(HttpServletRequest request, HttpServletResponse response, HTTPMethod httpMethod) throws IOException {  
-        final URL requestUrl = getRequestUrl( request );
         GpFilePath requestedFile = null;
         try {
             requestedFile = GpFileObjFactory.getRequestedGpFileObj(request);
@@ -361,7 +317,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      */
     public static boolean gpUserCanRead(String userid, File fileObj) {
         //admin users can read all files
-        //TODO: come up with an improved policy for ACL for admin users
+        //Note: come up with an improved policy for ACL for admin users
         boolean isAdmin = false;
         isAdmin = AuthorizationHelper.adminJobs(userid);
         if (isAdmin) {

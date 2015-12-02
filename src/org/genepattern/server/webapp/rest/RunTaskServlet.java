@@ -477,7 +477,7 @@ public class RunTaskServlet extends HttpServlet
             writeToFile(uploadedInputStream, gpFilePath.getServerFile().getCanonicalPath());
             fileUtil.updateUploadsDb(HibernateUtil.instance(), gpFilePath);
 
-            final String location=UrlUtil.getGpUrl(request) +
+            final String location=UrlUtil.getBaseGpHref(request) +
                     gpFilePath.getRelativeUri();
             if (log.isDebugEnabled()) {
                 log.debug("File uploaded to : " + gpFilePath.getServerFile().getCanonicalPath());
