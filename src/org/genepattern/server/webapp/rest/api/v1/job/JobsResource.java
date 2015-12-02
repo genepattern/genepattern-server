@@ -154,7 +154,7 @@ public class JobsResource {
         {
             //check if the user is above their disk quota
             //first check if the disk quota is or will be exceeded
-            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), jobContext);
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
 
             if(diskInfo.isAboveQuota())
             {
@@ -322,7 +322,7 @@ public class JobsResource {
         final GpContext userContext=Util.getUserContext(request);
 
         try {
-            final String gpUrl=UrlUtil.getGpUrl(request);
+            final String gpUrl=UrlUtil.getBaseGpHref(request);
             final String jobsResourcePath = uriInfo.getBaseUri().toString() + URI_PATH;
             final SearchQuery q = new SearchQuery.Builder(gpConfig, userContext, jobsResourcePath)
                     .userId(userId)
@@ -543,7 +543,7 @@ public class JobsResource {
 
         final GpContext jobContext=Util.getJobContext(request, jobId);
 
-        final String gpUrl=UrlUtil.getGpUrl(request);
+        final String gpUrl=UrlUtil.getBaseGpHref(request);
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
@@ -615,7 +615,7 @@ public class JobsResource {
         final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         final GpContext jobContext=Util.getJobContext(request, jobId);
         try {
-            final String gpUrl=UrlUtil.getGpUrl(request);
+            final String gpUrl=UrlUtil.getBaseGpHref(request);
             final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
 
             final JSONObject jsonObj = status.toJsonObj();
@@ -843,7 +843,7 @@ public class JobsResource {
         final GpContext userContext = Util.getUserContext(request);
 
         try {
-            final String gpUrl=UrlUtil.getGpUrl(request);
+            final String gpUrl=UrlUtil.getBaseGpHref(request);
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO(mgr);
             Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
@@ -909,7 +909,7 @@ public class JobsResource {
 
         final GpContext userContext=Util.getUserContext(request);
         final String self=uriInfo.getAbsolutePath().toString();
-        final String gpUrl=UrlUtil.getGpUrl(request);
+        final String gpUrl=UrlUtil.getBaseGpHref(request);
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);

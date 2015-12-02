@@ -127,7 +127,7 @@ public class TasksResource {
     final static public String URI_PATH="v1/tasks";
 
     public static String getTaskInfoPath(final HttpServletRequest request, final TaskInfo taskInfo) {
-        String rootPath=UrlUtil.getGpUrl(request);
+        String rootPath=UrlUtil.getBaseGpHref(request);
         if (!rootPath.endsWith("/")) {
             rootPath += "/";
         }
@@ -303,12 +303,12 @@ public class TasksResource {
         final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             // Get the map of the latest tasks
-            final AdminDAO adminDao = new AdminDAO();
+            final AdminDAO adminDao = new AdminDAO(HibernateUtil.instance());
             final TaskInfo[] allTasks;
             allTasks = adminDao.getAllTasksForUser(userId);
 
             //exclude development quality i.e BETA modules from the list
-            List<String> excludedQualityLevels = new ArrayList();
+            List<String> excludedQualityLevels = new ArrayList<String>();
             excludedQualityLevels.add("development");
             final Map<String, TaskInfo> latestTasks = AdminDAO.getLatestTasks(allTasks, excludedQualityLevels);
 
@@ -973,7 +973,7 @@ public class TasksResource {
     }
 
     private static String getServletPath(HttpServletRequest request, String lsid) {
-        String rootPath = UrlUtil.getGpUrl(request);
+        String rootPath = UrlUtil.getBaseGpHref(request);
         if (!rootPath.endsWith("/")) {
             rootPath += "/";
         }

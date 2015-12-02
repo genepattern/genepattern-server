@@ -32,11 +32,6 @@ import com.google.common.collect.ImmutableList;
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
 
-    /** @deprecated renamed to getBaseGpHref */
-    public static String getGpUrl(final HttpServletRequest request) {
-        return getBaseGpHref(request);
-    }
-
     /**
      * Get the baseUrl of the web application, inclusive of the contextPath, but not including the trailing slash.
      * This is the URL for the root of your GenePattern site. 
@@ -394,6 +389,7 @@ public class UrlUtil {
     }
 
     /** Converts a string into something you can safely insert into a URL. */
+    @SuppressWarnings("deprecation")
     public static String encodeURIcomponent(String str) {
         String encoded = str;
         try {
@@ -411,6 +407,7 @@ public class UrlUtil {
     }
     
     /** Converts a string into something you can safely insert into a URL. */
+    @SuppressWarnings("deprecation")
     public static String decodeURIcomponent(final String encoded) {
         String decoded = encoded;
         try {
@@ -424,55 +421,6 @@ public class UrlUtil {
             log.error("Unexpected error decoding string="+encoded);
         }
         return decoded;
-    }
-
-    
-    //alternative implementation which doesn't use any other java classes
-    private static String encodeURIcomponent_orig(String s) {
-        StringBuilder o = new StringBuilder();
-        for (char ch : s.toCharArray()) {
-            if (isUnsafe(ch)) {
-                o.append('%');
-                o.append(toHex(ch / 16));
-                o.append(toHex(ch % 16));
-            }
-            else {
-                o.append(ch);
-            }
-        }
-        return o.toString();
-    }
-    
-    //alternative implementation which uses standard java classes, File, URL, and URI
-    private static String encodeURIcomponent_file(String name) {
-        final File file=new File(name);
-        final URI uri=file.toURI();
-        try { 
-            final URL url=uri.toURL();
-            final String encodedPath=url.toExternalForm();
-            int beginIndex=encodedPath.lastIndexOf("/");
-            ++beginIndex;
-            if (beginIndex<0) {
-                beginIndex=0;
-            }
-            final String encodedName=encodedPath.substring(beginIndex);
-            return encodedName;
-        }
-        catch (MalformedURLException e) {
-            log.error(e);
-        }
-        return name;
-    }
-
-    private static char toHex(int ch) {
-        return (char)(ch < 10 ? '0' + ch : 'A' + ch - 10);
-    }
-
-    private static boolean isUnsafe(char ch) {
-        if (ch > 128 || ch < 0) {
-            return true;
-        }
-        return " %$&+,/:;=?@<>#%\\".indexOf(ch) >= 0;
     }
 
     /**
