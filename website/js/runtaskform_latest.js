@@ -3160,7 +3160,7 @@ function drop(evt) {
                         var fileDiv = $(this).closest(".fileDiv");
 
                         $.ajax({
-                            url: servletUrl + dirUrl,
+                            url: servletUrl + encodeURIComponent(dirUrl),
                             type: "GET",
                             dataType: "json",
                             success: function(data) {
@@ -3439,7 +3439,7 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
 
             //determine if this is a  url
             if (files[i].name.indexOf("://") !== -1) {
-                fileRow.append("<td><a href='" + files[i].name + "'> " + decodeURI(files[i].name) + "</a></td>");
+                fileRow.append("<td><a href='" + files[i].name + "'> " + decodeURIComponent(files[i].name) + "</a></td>");
             }
             else {
                 fileRow.append("<td>" + files[i].name + "</td>");
