@@ -1,0 +1,31 @@
+#Fri Oct 09 19:23:40 PDT 2015
+name=InstallRPackages_R2.15
+commandLine=<R2.15_Rscript> --no-save --quiet --slave --no-restore <libdir>installPackages.R <r.package.info>
+license=
+taskDoc=doc.html
+fileFormat=
+taskType=Administration
+os=any
+language=R-2.15.3
+cpuType=any
+privacy=preproduction
+description=Installs packages into the GenePattern R-2.15 site library
+version=Initial Beta release
+author=David Eby;Broad Institute
+
+p1_MODE=IN
+p1_TYPE=FILE
+p1_default_value=
+p1_description=
+p1_fileFormat=
+p1_flag=
+p1_name=r.package.info
+p1_numValues=1..1
+p1_optional=
+p1_prefix=
+p1_prefix_when_specified=
+p1_type=java.io.File
+p1_value=
+
+requiredPatchLSIDs=
+requiredPatchURLs=
