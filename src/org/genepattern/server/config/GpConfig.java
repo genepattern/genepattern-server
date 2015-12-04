@@ -138,6 +138,13 @@ public class GpConfig {
      * @see PROP_GA_ENABLED
      */
     public static final String PROP_GA_TRACKING_ID="googleAnalytics.trackingId";
+    
+    /**
+     * The 'gp.tools.dir' is a directory path to the location for 3rd-party and other helper tools which are 
+     * included as part of the genepattern installation.
+     * Default location: <webappDir>/WEB-INF/tools 
+     */
+    public static final String PROP_GP_TOOLS_DIR="gp.tools.dir";
 
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
@@ -237,7 +244,6 @@ public class GpConfig {
     private final Properties dbProperties;
     private final Map<String,String> buildProperties;
     private final String dbVendor;
-    private final File ant_1_8_HomeDir;
 
     /**
      *  Special-case, some properties can be set by convention rather than declared in a config file.
@@ -252,7 +258,11 @@ public class GpConfig {
         GpContext gpContext=GpContext.getServerContext();
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
-            ant_1_8_HomeDir=new File(webappDir, "WEB-INF/tools/ant/apache-ant-1.8.4").getAbsoluteFile();
+            // init toos dir
+            final File toolsDir=new File(webappDir, "WEB-INF/tools").getAbsoluteFile();
+            this.substitutionParams.put(PROP_GP_TOOLS_DIR, toolsDir.getAbsolutePath());
+
+            final File ant_1_8_HomeDir=new File(toolsDir, "ant/apache-ant-1.8.4").getAbsoluteFile();
             // <java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher
             final String antJavaCmd="<java> -Dant.home=<ant-1.8_HOME>"
                     +" -cp <ant-1.8_HOME>"+File.separator+"lib"+File.separator+"ant-launcher.jar"
@@ -289,9 +299,7 @@ public class GpConfig {
                 }
             }
         }
-        else {
-            ant_1_8_HomeDir=null;
-        } 
+
         this.buildProperties=initBuildProperties();
         this.gpHomeDir=in.gpHomeDir;
         if (in.logDir!=null) {
@@ -902,10 +910,6 @@ public class GpConfig {
      */
     public File getWebappDir() {
         return this.webappDir;
-    }
-    
-    protected File getAntHomeDir() {
-        return this.ant_1_8_HomeDir;
     }
     
     /**

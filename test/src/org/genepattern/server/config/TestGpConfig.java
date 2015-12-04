@@ -100,7 +100,6 @@ public class TestGpConfig {
         final String expectedAntJavaCmd="<java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher";
         final String expectedAntCmd=expectedAntJavaCmd;
         
-        assertEquals("antHomeDir", expectedAntHome, gpConfig.getAntHomeDir());
         assertEquals("<ant> command", expectedAntCmd, gpConfig.getValue(gpContext, "ant").getValue());
         assertEquals("<ant-1.8> command", expectedAntCmd, gpConfig.getValue(gpContext, "ant-1.8").getValue());
         assertEquals("<ant-1.8_HOME>", expectedAntHome, gpConfig.getGPFileProperty(gpContext, "ant-1.8_HOME"));
@@ -205,6 +204,13 @@ public class TestGpConfig {
     @Test(expected=IllegalArgumentException.class)
     public void aboutBean_null_gpConfig() {
         new AboutBean((GpConfig)null, gpContext);
+    }
+    
+    @Test
+    public void toolsDir() {
+        assertEquals("<gp.tools.dir>", new File(webappDir, "WEB-INF/tools").getAbsolutePath(), 
+        gpConfig.getGPProperty(gpContext, "gp.tools.dir"));
+        
     }
 
 }

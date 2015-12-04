@@ -66,6 +66,19 @@ default.properties:
     # The default location is $GENEPATTERN_HOME/taskLib
     # This is a global setting, the taslib must be the same for all users. 
     tasklib: /Users/GenePattern/taskLib
+    
+    #
+    # Set the fully qualifed directory path (no trailing '/') to the support tools
+    # which are packaged as part of the GenePattern web application (e.g. gp.war).
+    #     ./Tomcat/webapps/gp/WEB-INF/tools
+    # By default you do not need to set this.
+    # If your app server does not unpackage the war file; you can manually 
+    # unpackage into a custom location. 
+    # Set this path so that built in tools, such as ant, can be resolved to the custom
+    # location, e.g.
+    #     ant=<gp.tools.dir>/ant/...
+    #
+    gp.tools.dir: /Users/GenePattern/tools
 
     # PipelineDependencyCache, hidden features in the 3.6.0 release.
     # Set this to true to enable.
