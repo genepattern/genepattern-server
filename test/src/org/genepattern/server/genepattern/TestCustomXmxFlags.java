@@ -247,6 +247,52 @@ public class TestCustomXmxFlags {
         assertArrayEquals(expected, actual);
     }
     
+/**
+ * more use-cases for java commands
+ * 
+ * java=java
+ * java=/usr/bin/java
+ * java=/opt/oracle-java-jdk_1.7.0-51_x86_64/bin/java
+ * java=<run-with-env> -u Java java
+ * 
+ */
+    //TODO: implement fix for this, see GP-5931
+    @Ignore @Test
+    public void setXmx_R_2_5_SVM_local() {
+        //String rCmdLine="<R2.5> <libdir>cart.R cartCmdLine";
+        String[] commandTokens={
+                "/usr/bin/java", 
+                "-DR_suppress=/Broad/dev/working/genepattern_home/resources/R_suppress.txt", 
+                "-DR_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources", 
+                "-Dr_flags=--no-save --quiet --slave --no-restore", 
+                "-cp", 
+                "/Broad/dev/deploy/gp-trunk-tomcat-5.5/wtpwebapps/genepattern/WEB-INF/classes/", 
+                "RunR", 
+                "/mock/libdir/DemoModule/svm.R", 
+                "svm_arg_0",
+                "svm_arg_1" 
+        };
+        String[] expected={
+                "/usr/bin/java", 
+                "-Xmx1g",
+                "-DR_suppress=/Broad/dev/working/genepattern_home/resources/R_suppress.txt", 
+                "-DR_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources", 
+                "-Dr_flags=--no-save --quiet --slave --no-restore", 
+                "-cp", 
+                "/Broad/dev/deploy/gp-trunk-tomcat-5.5/wtpwebapps/genepattern/WEB-INF/classes/", 
+                "RunR", 
+                "/mock/libdir/DemoModule/svm.R", 
+                "svm_arg_0",
+                "svm_arg_1" 
+                
+        };
+
+        final Memory memoryFlag=Memory.fromString("1 g");
+        final String[] actual=CustomXmxFlags.addOrReplaceXmxFlag(jobContext, memoryFlag, commandTokens);
+        assertEquals(Arrays.asList(expected), Arrays.asList(actual));
+        assertArrayEquals(expected, actual);
+    }
+    
     /**
      * Special-case, make sure -Xmx flags are added for <R2.5> modules, such as CART.
      * This particular test is similar to the config on GP@IndianaU:
