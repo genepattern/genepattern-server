@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="set-rscript" name="set-rscript">
+  <description>
+  Generate the substitution for a particular version of R; based on the wrapper.properties.template.
+  </description>
+
+  <target name="init">
+    <mkdir dir="build" />
+  </target>
+
+  <target name="set-rscript">
+      <input message="R.version, (e.g. 3.2): " addproperty="R.version" defaultvalue="3.2" />
+      <copy file="wrapper.properties.template" tofile="./build/R${R.version}_Rscript.custom.properties">
+          <filterset>
+              <filter token="R_VERSION" value="${R.version}" />
+          </filterset>
+      </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="build" />
+  </target>
+
+</project>
