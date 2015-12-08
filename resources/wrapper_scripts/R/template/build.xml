@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="set-rscript" name="set-rscript">
   <description>
-  Generate the substitution for a particular version of R; based on the wrapper.properties.template.
+  Add/update the R${R.version}_Rscript substitution in the ../../wrapper.custom.properties file, based on the template.properties file.
+  Must set the 'R.version', e.g.
+      ant -DR.version=2.15
+  This script edits the ../../wrapper.custom.properties file.
+  Optionally set a different template,
+      ant ... -Dtemplate.properties=template_run_with_env.properties
   </description>
 
   <target name="init">
-    <mkdir dir="build" />
+    <input message="R.version, (e.g. 3.2): " addproperty="R.version" defaultvalue="3.2" />
+    <property name="Rscript.key" value="R${R.version}_Rscript" />
+    <property name="template.properties" location="template.properties" /> 
   </target>
 
-  <target name="set-rscript">
-      <input message="R.version, (e.g. 3.2): " addproperty="R.version" defaultvalue="3.2" />
-      <copy file="wrapper.properties.template" tofile="./build/R${R.version}_Rscript.custom.properties">
-          <filterset>
-              <filter token="R_VERSION" value="${R.version}" />
-          </filterset>
-      </copy>
-  </target>
-
-  <target name="clean">
-    <delete dir="build" />
+  <target name="set-rscript" depends="init">
+    <!-- load the template; substituting ${R.version} -->
+    <property file="${template.properties}" />
+    <echo level="verbose">${Rscript.key}=${Rscript}</echo>
+    <!-- add/update the property file -->
+    <propertyfile file="../../wrapper.custom.properties">
+        <entry key="${Rscript.key}" value="${Rscript.value}" />
+    </propertyfile>
   </target>
 
 </project>
