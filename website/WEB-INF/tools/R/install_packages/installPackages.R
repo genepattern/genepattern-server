@@ -12,7 +12,19 @@ local({
       # Parse command line to get the list of packages.  Note, can't use optparse for bootstrap reasons
       # (may be trying to install it), but it's not really needed anyway.
       cmd_args <- commandArgs(TRUE)
+      
+      # Require the at least the r.package.info file; allow output.file as an optional arg
+      if (NROW(cmd_args) < 1 || NROW(cmd_args) > 2 || grepl('^[:space:]*$', cmd_args[1])) {
+         stop("Usage: Rscript InstallPackages r.package.info [output.file]")
+      }
       r.package.info <- cmd_args[1]
+      
+      # Check for empty/missing output.file arg
+      if (NROW(cmd_args) < 2 || is.null(cmd_args[2]) || grepl('^[:space:]*$', cmd_args[2])) {
+         output.file <- ".report.log"
+      } else {
+         output.file <- cmd_args[2]
+      }
    
       # Tracks whether or not the installation proceeds cleanly 
       installedCleanly <- TRUE
@@ -112,20 +124,20 @@ local({
             write("\n---------------------", stdout())
             write(paste0("Skipping ", pkg.info$name, " as it is already installed"), stdout()) 
             write("---------------------\n", stdout())
-            report.pkg.info(pkg.info)
+            report.pkg.info(pkg.info, output.file)
             next
          }
 
          # Create CRAN URLs if needed and also determine whether to install byName or from URL.
          pkg.info <- build.CRAN.URLs.if.needed(pkg.info, cran.repos.url, isSrcInstall)
          if (pkg.info$do.byName.install) {
-            pkg.info <- install.named.package(pkg.info, gp.lib.loc)
+            pkg.info <- install.named.package(pkg.info, gp.lib.loc, output.file)
          } else {
             pkg.info <- download.and.install.from.URL(pkg.info, gp.lib.loc)
          }
 
          if (pkg.info$failed) installedCleanly <- FALSE
-         report.pkg.info(pkg.info)
+         report.pkg.info(pkg.info, output.file)
       }
       
       if (installedCleanly) {
@@ -146,7 +158,7 @@ local({
    }
    
    # Load the BiocInstaller if it's not already present
-   init.bioc.loader <- function(gp.lib.loc) {
+   init.bioc.loader <- function(gp.lib.loc, output.file) {
       # Don't init if the package has already been loaded
       if (exists("biocLite")) return(TRUE)
    
@@ -182,7 +194,7 @@ local({
          bioc.pkg.info$new.install <- TRUE
          bioc.pkg.info$failed <- FALSE
          bioc.pkg.info <- verify.package.installed(bioc.pkg.info, gp.lib.loc)
-         report.pkg.info(bioc.pkg.info)
+         report.pkg.info(bioc.pkg.info, output.file)
          return(!bioc.pkg.info$failed)
    }
    
@@ -201,8 +213,8 @@ local({
       return(pkg.info)
    }
 
-   install.named.package  <- function(pkg.info, gp.lib.loc) {
-      if (!init.bioc.loader(gp.lib.loc)) {
+   install.named.package  <- function(pkg.info, gp.lib.loc, output.file) {
+      if (!init.bioc.loader(gp.lib.loc, output.file)) {
          pkg.info$failed <- TRUE
          return(pkg.info)
       }
@@ -299,7 +311,7 @@ local({
       return(pkg.info)
    }
 
-   report.pkg.info <- function(pkg.info) {
+   report.pkg.info <- function(pkg.info, output.file) {
       if (is.null.or.blank(pkg.info$requested.version)) {
          pkg.info$requested.version <- "Not specified"
       }
@@ -312,7 +324,7 @@ local({
       
       write(sprintf("r_package_name=%s, requested_version=%s, version_actual=%s, new_install=%s, install_succeeded=%s",
                     pkg.info$name, pkg.info$requested.version, pkg.version.actual, pkg.info$new.install, !pkg.info$failed), 
-            file="report.log", append=TRUE)
+            file=output.file, append=TRUE)
    }
    
    sessionInfo()
