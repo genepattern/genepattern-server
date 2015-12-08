@@ -46,7 +46,7 @@ while getopts c:v:p:d:m: opt "$@"; do
 done
 
 #
-# optionally clean up options delimiter '--'
+# optionally clean up options delimiter '--' 
 #
 if [ "$1" = "--" ]; then
     shift;
@@ -55,17 +55,18 @@ fi
 #
 # build an array of args
 #
-MY_ARGS=( "${_gp_script_dir}/run-with-env.sh" "-c" "${env_custom}" \
-    "-u" "R-${r_version}" \
-    "-e" "GP_DEBUG=${gp_debug}" \
-    "-e" "GP_MKDIR_R_LIBS_SITE=${gp_mkdirs}" \
-    "-e" "R_LIBS" \
-    "-e" "R_LIBS_USER" \
-    "-e" "R_ENVIRON=${_gp_script_dir}/R/Renviron.gp.site" \
-    "-e" "R_LIBS_SITE=${gp_patches}/Library/R/${r_version}" \
-    "-e" "R_ENVIRON_USER=${_gp_script_dir}/R/${r_version}/Renviron.gp.site" \
-    "-e" "R_PROFILE=${_gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
-    "-e" "R_PROFILE_USER=${_gp_script_dir}/R/${r_version}/Rprofile.gp.custom" \
+MY_ARGS=( "${_gp_script_dir}/run-with-env.sh" \
+    -c "${env_custom}" \
+    -u "R-${r_version}" \
+    -e "GP_DEBUG=${gp_debug}" \
+    -e "GP_MKDIR_R_LIBS_SITE=${gp_mkdirs}" \
+    -e "R_LIBS=" \
+    -e "R_LIBS_USER=' '" \
+    -e "R_LIBS_SITE=${gp_patches}/Library/R/${r_version}" \
+    -e "R_ENVIRON=${_gp_script_dir}/R/Renviron.gp.site" \
+    -e "R_ENVIRON_USER=${_gp_script_dir}/R/${r_version}/Renviron.gp.site" \
+    -e "R_PROFILE=${_gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
+    -e "R_PROFILE_USER=${_gp_script_dir}/R/${r_version}/Rprofile.gp.custom" \
     "Rscript" \
     "$@" );
 

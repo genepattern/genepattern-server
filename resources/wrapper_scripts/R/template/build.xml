@@ -6,18 +6,18 @@
       ant -DR.version=2.15
   This script edits the ../../wrapper.custom.properties file.
   Optionally set a different template,
-      ant ... -Dtemplate.properties=template_run_with_env.properties
+      ant ... -Dtemplate=template_run_with_env.properties
   </description>
 
   <target name="init">
     <input message="R.version, (e.g. 3.2): " addproperty="R.version" defaultvalue="3.2" />
     <property name="Rscript.key" value="R${R.version}_Rscript" />
-    <property name="template.properties" location="template.properties" /> 
+    <property name="template" location="template.properties" /> 
   </target>
 
   <target name="set-rscript" depends="init">
     <!-- load the template; substituting ${R.version} -->
-    <property file="${template.properties}" />
+    <property file="${template}" />
     <echo level="verbose">${Rscript.key}=${Rscript}</echo>
     <!-- add/update the property file -->
     <propertyfile file="../../wrapper.custom.properties">
