@@ -46,6 +46,13 @@ while getopts c:v:p:d:m: opt "$@"; do
 done
 
 #
+# optionally clean up options delimiter '--'
+#
+if [ "$1" = "--" ]; then
+    shift;
+fi
+
+#
 # build an array of args
 #
 MY_ARGS=( "${_gp_script_dir}/run-with-env.sh" "-c" "${env_custom}" \
