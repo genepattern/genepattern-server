@@ -1156,8 +1156,12 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             else {
-                                URL url = uri.toURL();
-                                if (isLocalHost(url)) {
+                                final URL url = uri.toURL();
+                                final boolean isLocalHost=isLocalHost(url);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("isLocalHost("+url+")="+isLocalHost);
+                                }
+                                if (isLocalHost) {
                                     try {
                                         File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
