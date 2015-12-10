@@ -3,7 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.collection;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,8 +14,13 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.genepattern.junitutil.Demo;
 import org.genepattern.junitutil.MockGpFilePath;
+import org.genepattern.server.dm.ExternalFile;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.TestGenomeSpaceFile;
+import org.genepattern.server.genomespace.GenomeSpaceFile;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.Param;
@@ -58,7 +65,9 @@ public class TestDefaultParamGroupWriter {
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.res");
         
         final File toFile=tmpDir.newFile("exampleParamGroup_01.tsv");
-        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
+        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile)
+            .baseGpHref(Demo.gpHref)
+        .build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         
         assertEquals("toFile.exists", true, toFile.exists());
@@ -118,9 +127,37 @@ public class TestDefaultParamGroupWriter {
         appendValue(inputParam, gpFilePaths, new GroupId("train"), "all_aml_train.res");
         
         final File toFile=tmpDir.newFile("exampleParamGroup_02.tsv");
-        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile).build();
+        final DefaultParamGroupWriter writer=new DefaultParamGroupWriter.Builder(toFile)
+            .baseGpHref(Demo.gpHref)
+        .build();
         writer.writeParamGroup(groupInfo, inputParam, gpFilePaths);
         assertEquals("toFile.exists", true, toFile.exists());
+    }
+
+    @Test
+    public void getRowValue_URL_column() throws Exception {
+        final String ftpHref=Demo.dataFtpDir+"all_aml_test.gct";
+        final ExternalFile ftpFilePath=new ExternalFile(ftpHref);
+        final GenomeSpaceFile gsFilePath=TestGenomeSpaceFile.mockGsFileFromGsHelper("all_aml_test.gct");
+        
+        final GpFilePath uploadFilePath=GpFileObjFactory.getRequestedGpFileObj(Demo.gpConfig(), Demo.proxyHref + Demo.uploadPath());
+        assertEquals("relativeUri, 'Files' tab, expecting relative uri", 
+                Demo.uploadPath(), uploadFilePath.getRelativeUri().toString());
+        
+        final File toFile = tmpDir.newFile("test_group_input.tsv");
+        DefaultParamGroupWriter writer=ParamGroupHelper.initParamGroupWriter(Demo.proxyHref, toFile);
+        
+        checkUrlValue(writer, ftpHref, ftpFilePath);
+        checkUrlValue(writer, Demo.dataGsDir+"all_aml_test.gct", gsFilePath);
+        checkUrlValue(writer, Demo.proxyHref + Demo.uploadPath(), uploadFilePath);
+    }
+    
+    protected void checkUrlValue(DefaultParamGroupWriter writer, final String expected, final GpFilePath gpFilePath) {
+        final int rowIdx=0;
+        final ParamGroupWriter.Column column=ParamGroupWriter.Column.URL;
+        final GroupId groupId=new GroupId("test");
+        String val=writer.getRowValue(rowIdx, column, groupId, gpFilePath);
+        assertEquals("URL value", expected, val);
     }
 
 }

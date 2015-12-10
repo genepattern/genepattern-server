@@ -117,9 +117,9 @@ public class JobStatusBean {
 
         
         JobInfoManager jobInfoManager = new JobInfoManager();
-        final String gpUrl=UrlUtil.getGpUrl(request);
+        final String baseGpHref=UrlUtil.getBaseGpHref(request);
         final boolean includeJobStatus=true;
-        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo, includeJobStatus, gpUrl);
+        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo, includeJobStatus, baseGpHref);
           
         if (jobInfoWrapper == null) {
             String errorMessage = "Job # "+jobNumber+" is deleted.";
@@ -148,7 +148,7 @@ public class JobStatusBean {
             .userId(currentUserId)
             .jobInfo(jobInfo)
         .build();
-        this.jobStatus = new JobStatusLoaderFromDb(gpUrl).loadJobStatus(jobContext);
+        this.jobStatus = new JobStatusLoaderFromDb(baseGpHref).loadJobStatus(jobContext);
         GpConfig gpConfig=ServerConfigurationFactory.instance();
         this.showEstimatedQueuetime = gpConfig.getGPBooleanProperty(jobContext, GpConfig.PROP_SHOW_ESTIMATED_QUEUETIME, false);
     }

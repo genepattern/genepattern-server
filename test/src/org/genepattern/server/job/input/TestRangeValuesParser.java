@@ -1,6 +1,7 @@
 package org.genepattern.server.job.input;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,28 +18,28 @@ public class TestRangeValuesParser
     }
 
     private void doTest(final String numRangesSpec, final Double expectedMin, final Double expectedMax) throws Exception {
-        RangeValues<Integer> rangeValues= rvParser.parseRange(numRangesSpec);
-        Assert.assertNotNull(rangeValues);
-        Assert.assertEquals("min", rangeValues.getMin(), expectedMin);
-        Assert.assertEquals("max", rangeValues.getMax(), expectedMax);
+        RangeValues<Double> rangeValues= rvParser.parseRange(numRangesSpec);
+        assertNotNull(rangeValues);
+        assertEquals("min", rangeValues.getMin(), expectedMin);
+        assertEquals("max", rangeValues.getMax(), expectedMax);
     }
 
     @Test
     public void nullInput() throws Exception {
-        RangeValues rangeValues= rvParser.parseRange(null);
-        Assert.assertNull("rangeValues", rangeValues);
+        RangeValues<Double> rangeValues= rvParser.parseRange(null);
+        assertNull("rangeValues", rangeValues);
     }
 
     @Test
     public void emptyInput() throws Exception {
-        RangeValues rangeValues= rvParser.parseRange("");
-        Assert.assertNull("rangeValues", rangeValues);
+        RangeValues<Double> rangeValues= rvParser.parseRange("");
+        assertNull("rangeValues", rangeValues);
     }
 
     @Test
     public void whitespaceOnlyInput() throws Exception {
-        RangeValues rangeValues= rvParser.parseRange("     ");
-        Assert.assertNull("rangeValues", rangeValues);
+        RangeValues<Double> rangeValues= rvParser.parseRange("     ");
+        assertNull("rangeValues", rangeValues);
     }
 
     @Test
@@ -95,7 +96,7 @@ public class TestRangeValuesParser
     public void errorInvalidRangeSpecifier() {
         try {
             doTest("0-4", 0.0, 4.0);
-            Assert.fail("Exception expected");
+            fail("Exception expected");
         }
         catch (Exception e) {
             //expected
@@ -121,7 +122,7 @@ public class TestRangeValuesParser
     public void errorBadNegativeRange() throws Exception {
         try {
             doTest("-", null, 2.0);
-            Assert.fail("Exception expected. Error parsing range=-");
+            fail("Exception expected. Error parsing range=-");
         }
         catch (Exception e) {
             //expected

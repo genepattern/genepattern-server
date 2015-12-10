@@ -25,6 +25,8 @@ import org.genepattern.webservice.TaskInfo;
 public class SemanticUtil {
     private static Logger log = Logger.getLogger(SemanticUtil.class);
 
+    public static final String DIRECTORY_KIND = "directory";
+
     private SemanticUtil() {
     }
 
@@ -48,8 +50,45 @@ public class SemanticUtil {
         return extension;
     }
     
-    public static String getGzKind(File file) {
-        String name = file.getName();
+    /**
+     * Get the extension for the given filename. Examples,
+     * <pre>
+           <null>      --> null
+           file.ext    --> "ext"
+           file        --> ""
+           dir/        --> ""
+           .hidden.txt --> "txt"
+           .hidden     --> ""
+     * </pre>
+     * 
+     * @param name - the filename to query, null returns null
+     * @return
+     */
+    public static String getExtension(final String name) {
+        return getExtension(name, name == null ? false : name.endsWith("/"));
+    }
+
+    public static String getExtension(final String name, final boolean isDirectory) {
+        if (name == null) {
+            return null;
+        }
+        if (isDirectory) {
+            return "";
+        }
+        
+        String extension = "";
+        int idx = name.lastIndexOf(".");
+        if (idx > 0 && idx < (name.length() - 1)) {
+            extension = name.substring(idx + 1);
+        }
+        return extension;
+    }
+
+    public static String getGzKind(final File file) {
+        return getGzKind(file.getName());
+    }
+
+    public static String getGzKind(final String name) {
         // Get the index of the next to last period, assumes the .gz
         int index = name.substring(0, name.length() - 3).lastIndexOf(".");
         if (index > 0) {
@@ -59,6 +98,7 @@ public class SemanticUtil {
             return "gz";
         }
     }
+
 
     public static String getKind(File file) {
         String extension = getExtension(file);
@@ -70,6 +110,48 @@ public class SemanticUtil {
         }
         if (extension.equalsIgnoreCase("gz")) {
             return getGzKind(file);
+        }
+        return extension.toLowerCase();
+    }
+
+    public static String getKind(final File file, final String extension) {
+        if (file != null && file.exists()) {
+            // special-case for directory, only check if file exists
+            if (file.isDirectory()) {
+                return DIRECTORY_KIND;
+            }
+            // extension can be null
+            else if ("odf".equalsIgnoreCase(extension)) {
+                return getOdfKind(file);
+            }
+            else if ("gz".equalsIgnoreCase(extension)) {
+                return getGzKind(file);
+            }
+        }
+        if (extension==null) {
+            return null;
+        }
+        return extension.toLowerCase();
+    }
+
+    public static String getKindForUrl(final String filename, final String extension) {
+        boolean isDirectory=filename != null && filename.endsWith("/");
+        return getKindForUrl(filename, extension, isDirectory);
+    }
+
+    public static String getKindForUrl(final String filename, final String extension, final boolean isDirectory) {
+        if (isDirectory) {
+            return DIRECTORY_KIND;
+        }
+        if (filename==null) {
+            return extension;
+        }
+        // extension can be null
+        if ("gz".equalsIgnoreCase(extension)) {
+                return getGzKind(filename);
+        }
+        if (extension==null) {
+            return null;
         }
         return extension.toLowerCase();
     }

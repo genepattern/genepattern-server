@@ -6,7 +6,6 @@ package org.genepattern.server.webapp.uploads;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -313,7 +312,7 @@ public class UploadFilesBean {
     private void initModuleMenuItems() {
         kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
         
-        AdminDAO adminDao = new AdminDAO();
+        AdminDAO adminDao = new AdminDAO(mgr);
         if (currentTaskLsid != null) {
             initCurrentLsid(adminDao);
         }
@@ -518,31 +517,13 @@ public class UploadFilesBean {
 
         public FileInfoWrapper(final GpFilePath file) {
             this.file = file;
-            this.url=initUrl(file);
+            this.url=UrlUtil.getHref(UIBeanHelper.getRequest(), file);
             if (this.url.length()>0) {
                 this.encodedUrl=UrlUtil.encodeURIcomponent(url);
             }
             else {
                 this.encodedUrl="";
             }
-        }
-        
-        private String initUrl(final GpFilePath file) {
-            if (file==null) {
-                return "";
-            }
-            try {
-                URL urlObj=file.getUrl();
-                if (urlObj != null) {
-                    return urlObj.toExternalForm();
-                }
-            }
-            catch (Throwable t) {
-                log.error("Error initializing FileInfoWrapper", t);
-                return "";
-            }
-            log.debug("url is not initialized");
-            return "";
         }
         
         public String getType() {
@@ -644,7 +625,7 @@ public class UploadFilesBean {
         
         public List<ParameterInfoWrapper> getSendToBatch() {
             if (currentTaskInfo == null && currentTaskLsid != null) {
-                initCurrentLsid(new AdminDAO());
+                initCurrentLsid(new AdminDAO(mgr));
             }
             if (currentTaskInfo == null) {
                 return Collections.emptyList();
@@ -698,7 +679,7 @@ public class UploadFilesBean {
          */
         public List<ParameterInfoWrapper> getSendToParameters() {
             if (currentTaskInfo == null && currentTaskLsid != null) {
-                AdminDAO adminDao = new AdminDAO();
+                AdminDAO adminDao = new AdminDAO(mgr);
                 initCurrentLsid(adminDao);
             }
             if (currentTaskInfo == null) {

@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.ParameterInfoUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -55,7 +54,7 @@ public class TestFileDownloader {
 
     @Before
     public void setUp() throws ExecutionException {
-        mgr=DbUtil.getTestDbSession();
+        mgr=null;
         gpConfig=mock(GpConfig.class);
         when(gpConfig.getGpUrl()).thenReturn(gpUrl);
         jobContext=mock(GpContext.class);

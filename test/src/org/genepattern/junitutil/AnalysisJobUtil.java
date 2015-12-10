@@ -123,7 +123,7 @@ public class AnalysisJobUtil {
             // validate num values
             // and initialize input file (or parameter) lists as needed
             Param inputParam=jobInput.getParam( entry.getKey() );
-            ParamListHelper plh=new ParamListHelper(mgr, gpConfig, userContext, entry.getValue(), inputParam, initDefault);
+            ParamListHelper plh=new ParamListHelper(mgr, gpConfig, userContext, entry.getValue(), jobInput, inputParam, initDefault);
             plh.validateNumValues();
             plh.validateRange();
             plh.updatePinfoValue();

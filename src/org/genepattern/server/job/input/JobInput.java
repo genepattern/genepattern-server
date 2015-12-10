@@ -57,6 +57,24 @@ public class JobInput {
     public String getLsid() {
         return this.lsid;
     }
+    
+    public void setBaseGpHref(final String baseGpHref) {
+        Param param=new Param(ParamId.BASE_GP_HREF);
+        param.addValue(new ParamValue(baseGpHref));
+        setValue(ParamId.BASE_GP_HREF, param);
+    }
+    
+    public String getBaseGpHref() {
+        Param p=params.get(ParamId.BASE_GP_HREF);
+        if (p==null) {
+            return null;
+        }
+        if (p.getNumValues()==0) {
+            return null;
+        }
+        // return first value
+        return p.getValues().get(0).getValue();
+    }
 
     /**
      * The list of user-supplied parameter values.
@@ -72,6 +90,16 @@ public class JobInput {
      */
     public void addValue(final String name, final String value) {
         addValue(new ParamId(name), value, GroupId.EMPTY);
+    }
+    
+    /**
+     * Add a batch value for the param, use this when batching over more than one
+     * value for the given param.
+     * @param name
+     * @param value
+     */
+    public void addBatchValue(final String name, final String value) {
+        addValue(name, value, true);
     }
     
     public void addValue(final ParamId paramId, final ParamValue value) {

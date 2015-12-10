@@ -6,12 +6,20 @@ package org.genepattern.server.job.input;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -122,17 +130,32 @@ public class LoadModuleHelper {
     }
 
     
+    final GpConfig gpConfig;
     final GpContext userContext;
     final GetTaskStrategy getTaskStrategy;
     final JobInfoLoader jobInfoLoader;
     
+    /** @deprecated pass in a GpConfig */
     public LoadModuleHelper(final GpContext userContext) {
         this(userContext, null);
     }
+    /** @deprecated pass in a GpConfig */
     public LoadModuleHelper(final GpContext userContext, final GetTaskStrategy getTaskStrategyIn) {
         this(userContext, null, null);
     }
+    /** @deprecated pass in a GpConfig */
     public LoadModuleHelper(final GpContext userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) { 
+        this(ServerConfigurationFactory.instance(),
+                userContext, getTaskStrategyIn, jobInfoLoaderIn);
+    }
+    public LoadModuleHelper(final GpConfig gpConfig, final GpContext userContext) {
+        this(gpConfig, userContext, null);
+    }
+    public LoadModuleHelper(final GpConfig gpConfig, final GpContext userContext, final GetTaskStrategy getTaskStrategyIn) {
+        this(gpConfig, userContext, getTaskStrategyIn, null);
+    }
+    public LoadModuleHelper(final GpConfig gpConfig, final GpContext userContext, final GetTaskStrategy getTaskStrategyIn, final JobInfoLoader jobInfoLoaderIn) { 
+        this.gpConfig=gpConfig;
         if (userContext==null) {
             throw new IllegalArgumentException("userContext==null");
         }
@@ -267,10 +290,10 @@ public class LoadModuleHelper {
         initialValues.setLsid(lsid);
 
         //check if there are any batch parameters in the request
-        List batchParamsList = new ArrayList();
+        List<String> batchParamsList = new ArrayList<String>();
         if(parameterMap != null && parameterMap.get("_batchParam") != null)
         {
-            for(String requestParam : parameterMap.get("_batchParam"))
+            for(final String requestParam : parameterMap.get("_batchParam"))
             {
                 batchParamsList.add(requestParam);
             }
@@ -346,7 +369,7 @@ public class LoadModuleHelper {
             //3) if there's a matching request parameter, use that
             if (parameterMap.containsKey(pname)) {
                 JSONObject pFileGroupObjs = null;
-                Map<Integer, String> fileGroupLookupTable = new HashMap();
+                Map<Integer, String> fileGroupLookupTable = new HashMap<Integer, String>();
                 if(fileGroupsJson != null && fileGroupsJson.has(pname))
                 {
                     pFileGroupObjs = fileGroupsJson.getJSONObject(pname);
@@ -449,6 +472,7 @@ public class LoadModuleHelper {
                 //     specifically, it throws an exception when given an external url file.
                 // we rely on this exception being thrown
                 try {
+                    @SuppressWarnings("unused") // to throw exception
                     URL url = new URL(_fileParam);
                     fromFile = new ExternalFile(_fileParam);
                 }
@@ -459,7 +483,7 @@ public class LoadModuleHelper {
             if (fromFile==null) {
                 log.error("_fileParam is not a valid GpFilePath nor a valid external url: "+_fileParam);
             }
-            final Helper helper=new Helper(parameterInfos, fromFile, _formatParam);
+            final Helper helper=new Helper(gpConfig, parameterInfos, fromFile, _formatParam);
             if (fromFile instanceof JobResultFile) {
                 final String fromJobId=((JobResultFile) fromFile).getJobId();
                 final JobInfo fromJobInfo=jobInfoLoader.getJobInfo(userContext, fromJobId);
@@ -512,7 +536,7 @@ public class LoadModuleHelper {
         JSONArray paramGroupsJson = new JSONArray();
 
         //keep track of parameters without a group
-        ArrayList allParameters = new ArrayList();
+        ArrayList<String> allParameters = new ArrayList<String>();
 
         if(paramGroupJsonFile != null)
         {
@@ -601,7 +625,7 @@ public class LoadModuleHelper {
     private void validateParamGroupsJson(JSONArray paramsGroupsJson, ParameterInfo[] pInfos) throws Exception
     {
         //get the list of parameters
-        ArrayList parameters = new ArrayList();
+        ArrayList<String> parameters = new ArrayList<String>();
         for(int p=0;p<pInfos.length;p++)
         {
             parameters.add(pInfos[p].getName());
@@ -635,13 +659,15 @@ public class LoadModuleHelper {
 
     //helper class
     private static class Helper {
+        private final GpConfig gpConfig;
         private final ParameterInfo[] parameterInfos;
         private final GpFilePath sendFromFile;
         private final String sendFromFormat;
         //one and only one type per file
         private final List<GpFilePath> resultFiles=new ArrayList<GpFilePath>();
         
-        public Helper(final ParameterInfo[] parameterInfos, final GpFilePath sendFromFile, final String sendFromFormat) {
+        public Helper(final GpConfig gpConfig, final ParameterInfo[] parameterInfos, final GpFilePath sendFromFile, final String sendFromFormat) {
+            this.gpConfig=gpConfig;
             this.parameterInfos=parameterInfos;
             this.sendFromFile=sendFromFile;
             if (sendFromFile != null) {

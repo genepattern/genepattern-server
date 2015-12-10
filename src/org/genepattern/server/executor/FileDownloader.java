@@ -180,9 +180,9 @@ public class FileDownloader {
      * @param cacheFilter
      * @return
      */
-    protected static boolean isCachedValue(final GpConfig gpConfig, final String paramValue, UrlPrefixFilter dropDownFilter, UrlPrefixFilter cacheFilter) {
+    protected boolean isCachedValue(final String paramValue, UrlPrefixFilter dropDownFilter, UrlPrefixFilter cacheFilter) {
         // only if it's an external url
-        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, paramValue);
+        URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, jobInput, paramValue);
         if (externalUrl==null) {
             return false;
         }
@@ -205,7 +205,7 @@ public class FileDownloader {
         // filter values by prefix
         Set<FileValue> rval=null;
         for(ParamValue value : param.getValues()) {
-            final boolean accepted=isCachedValue(gpConfig, value.getValue(), dropDownFilter, cacheFilter);
+            final boolean accepted=isCachedValue(value.getValue(), dropDownFilter, cacheFilter);
             if (accepted) {
                 if (rval==null) {
                     // lazy-init rval

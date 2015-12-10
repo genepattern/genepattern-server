@@ -108,19 +108,19 @@ public class UploadFileServlet extends HttpServlet {
     private static UploadTreeJSON initUploadTreeFromBean(HttpServletRequest request, HttpServletResponse response) {
         final String url = request.getParameter("dir");
         final UploadFilesBean bean = getUploadsBean(request, response);
-        final List<GpFilePath> tree=initTreeLevelFromBean(bean, url);
+        final List<GpFilePath> tree=initTreeLevelFromBean(request, bean, url);
         final Map<String, SortedSet<TaskInfo>> kindToTaskInfo=bean.getKindToTaskInfo();
-        final UploadTreeJSON treeJson=treeToJson(tree, kindToTaskInfo);
+        final UploadTreeJSON treeJson=treeToJson(request, tree, kindToTaskInfo);
         return treeJson;
     }
 
-    private static UploadFilesBean getUploadsBean(HttpServletRequest request, HttpServletResponse response) {
+    private static UploadFilesBean getUploadsBean(final HttpServletRequest request, HttpServletResponse response) {
         // Get the FacesContext inside HttpServlet.
         FacesContext facesContext = FacesUtil.getFacesContext(request, response);   
         return (UploadFilesBean) facesContext.getApplication().createValueBinding("#{uploadFilesBean}").getValue(facesContext);
     }
     
-    private static List<GpFilePath> initTreeLevelFromBean(final UploadFilesBean bean, final String url) {
+    private static List<GpFilePath> initTreeLevelFromBean(final HttpServletRequest request, final UploadFilesBean bean, final String url) {
         List<GpFilePath> tree = null;
         if (url == null) {
             try {
@@ -150,13 +150,13 @@ public class UploadFileServlet extends HttpServlet {
         return new ArrayList<GpFilePath>(files);
     }
     
-    private static UploadTreeJSON treeToJson(final List<GpFilePath> tree, Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
+    private static UploadTreeJSON treeToJson(final HttpServletRequest request, final List<GpFilePath> tree, Map<String, SortedSet<TaskInfo>> kindToTaskInfo) {
         UploadTreeJSON json = null;
         if (tree != null && !tree.isEmpty()) {
-            json = new UploadTreeJSON(tree, "");
+            json = new UploadTreeJSON(request, tree, "");
         }
         else {
-            json = new UploadTreeJSON(null, UploadTreeJSON.EMPTY);
+            json = new UploadTreeJSON(request, null, UploadTreeJSON.EMPTY);
         }
         return json;
     }

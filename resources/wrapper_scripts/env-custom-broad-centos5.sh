@@ -8,6 +8,12 @@
 
 function initEnv() {
     use "$1" &>/dev/null
+    
+    # special-case for FLAME modules
+    if [ "$1" = "R-2.7" ]; then
+        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/xchip/gpdev/shared_libraries"
+    fi
+
 }
 
 putValue 'Matlab-2010b-MCR' '.matlab_2010b_mcr'

@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.GpFileObjFactory;
@@ -81,7 +82,8 @@ public class ServerFileServlet extends HttpServlet {
         return toReturn;
     }
 
-    private void loadTreeLevel(HttpServletRequest request, HttpServletResponse response) {
+    private void loadTreeLevel(final HttpServletRequest request, final HttpServletResponse response) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String url = request.getParameter("dir");
         
         List<GpFilePath> tree = null;
@@ -107,8 +109,7 @@ public class ServerFileServlet extends HttpServlet {
             GpFilePath dir;
             try {
                 GpContext context = getUserContext(request);
-                
-                dir = GpFileObjFactory.getRequestedGpFileObj(url);
+                dir = GpFileObjFactory.getRequestedGpFileObj(gpConfig, url);
                 dir.initMetadata();
                 ((ServerFilePath) dir).initChildren(context);
                 tree = dir.getChildren();
@@ -122,10 +123,10 @@ public class ServerFileServlet extends HttpServlet {
         
         ServerFileTreeJSON json = null;
         if (!tree.isEmpty()) {
-            json = new ServerFileTreeJSON(tree);
+            json = new ServerFileTreeJSON(request, tree);
         }
         else {
-            json = new ServerFileTreeJSON(null, ServerFileTreeJSON.EMPTY);
+            json = new ServerFileTreeJSON(request, null, ServerFileTreeJSON.EMPTY);
         }
         this.write(response, json);
     }

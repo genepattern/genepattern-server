@@ -9,9 +9,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -47,7 +51,12 @@ public class GenomeSpaceFile extends GpFilePath {
     Object gsSession = null;
     Map<String, String> conversionUrls = null;
     
+    /**
+     * should use GenomeSpaceFileHelper to create new instances
+     * @param gsSession
+     */
     public GenomeSpaceFile(Object gsSession) {
+        super(false); // required to flag this as an external url
         if (gsSession == null) {
             log.error("ERROR: null gsSession passed into GenomeSpaceFile constructor");
         }
@@ -137,6 +146,7 @@ public class GenomeSpaceFile extends GpFilePath {
     /**
      * Return whether this is a directory
      */
+    @Override
     public boolean isDirectory() {
         if (DIRECTORY_KIND.equals(getKind()))
             return true;
@@ -192,7 +202,7 @@ public class GenomeSpaceFile extends GpFilePath {
     }
     
     /**
-     * Sets the GenomeSpace URL for this file
+     * Sets the GenomeSpace URL for this file, does not initialize other values
      * @param url
      */
     public void setUrl(URL url) {
@@ -203,7 +213,12 @@ public class GenomeSpaceFile extends GpFilePath {
     public URL getUrl() throws Exception {
         return gsUrl;
     }
-    
+
+    @Override
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
+        return gsUrl;
+    }
+
     public String getEncodedUrl() {
         if (gsUrl==null) {
             return "";

@@ -52,6 +52,8 @@ public class ServerFilePath extends GpFilePath {
             log.error(e);
             throw new IllegalArgumentException(e);
         }
+        
+        setName(file.getName());
     }
 
     public URI getRelativeUri() {

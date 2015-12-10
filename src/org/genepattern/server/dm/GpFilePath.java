@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.util.SemanticUtil;
@@ -56,6 +57,38 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
     
+    /** flag indicating whether this is a local file path (callback to GP server) or an external URL */
+    private final boolean isLocal;
+    
+    public GpFilePath() {
+        this.isLocal=true;
+    }
+
+    protected GpFilePath(final boolean isLocal) {
+        this.isLocal=isLocal;
+    }
+    
+    /**
+     * Set name, extension, kind for this instance based on the given URL.
+     * Added as a helper method when creating external url instances.
+     * 
+     * @param url
+     */
+    public void initNameKindExtensionFromUrl(final URL url) {
+        final boolean keepTrailingSlash=true;
+        final String filename=UrlUtil.getFilenameFromUrl(url, keepTrailingSlash);
+        this.setName(filename);
+        
+        final String extension=SemanticUtil.getExtension(filename);
+        final String kind=UrlUtil.getKindFromUrl(url, filename, extension);
+        this.setKind(kind);
+        this.setExtension(extension);
+    }
+    
+    public boolean isLocal() {
+        return isLocal;
+    }
+    
     protected String owner = "";
     /**
      * Get the GP userid for the owner of the file.
@@ -75,52 +108,26 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * Get the fully qualified URL to this file.
      * @return
      * @throws Exception
+     * 
+     * @deprecated should pass in GpConfig
      */
     public URL getUrl() throws Exception {
-        String str="";
-        final URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
-        if (gpUrl==null) {
-            log.error("GenePatternURL is null");
-        }
-        else {
-            //expected
-            str += gpUrl.toString();
-        }
-        
-        final URI relativeUri = getRelativeUri();
-        if (relativeUri==null) {
-            //null relativeUri means use the GP URL
-            log.debug("known error: uri is null");
-        }
-        else {
-            //str += relativeUri.toString();
-            str = glue(str, relativeUri.toString());
-        }
-        if (isDirectory() && !str.endsWith("/")) {
-            str = str + "/";
-        }
-        URL url = new URL(str);
-        return url;
+        return getUrl(ServerConfigurationFactory.instance());
     }
     
-    /** append the gpUrl to the relative uri, making sure to not duplicate the '/' character. */
-    protected String glue(String prefix, String suffix) {
-        if (prefix.endsWith("/")) {
-            if (suffix.startsWith("/")) {
-                return prefix + suffix.substring(1);
-            }
-            else {
-                return prefix + "/" + suffix;
-            }
-        }
-        if (suffix.startsWith("/")) {
-            return prefix + suffix;
-        }
-        else {
-            return prefix + "/" + suffix;
-        }
+    /**
+     * Get the fully qualified URL to this file.
+     * @param gpConfig
+     * @return
+     * @throws Exception
+     * 
+     * @deprecated use relative paths when possible;
+     *     for a fully-qualified URL callback, use the incoming HttpServletRequest when possible. 
+     */
+    public URL getUrl(final GpConfig gpConfig) throws Exception {
+        return UrlUtil.getUrl(UrlUtil.getBaseGpHref(gpConfig), this);
     }
-
+    
     /**
      * Same as {@link java.io.File#isFile()}.
      * @return
@@ -190,6 +197,13 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     private int numParts = 1;    
     private int numPartsRecd = 0;
     
+    /**
+     * Get the name, suitable for creating/listing on the GP server file system.
+     * When initializing from an href, you must decode the path segment, before setting the name. E.g.
+     *     href="http://127.0.0.1:8080/gp/all%20aml%20test.gct"
+     *     name="all aml test.gct"
+     * @return the filename
+     */
     public String getName() {
         return name;
     }

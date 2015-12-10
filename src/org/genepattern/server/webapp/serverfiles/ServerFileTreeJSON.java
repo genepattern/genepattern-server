@@ -8,9 +8,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.genepattern.drm.Memory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFilePath;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,11 +33,11 @@ public class ServerFileTreeJSON extends JSONArray {
     public static final String TITLE = "title";
     public static final String ATTR = "attr";
     
-    public ServerFileTreeJSON(List<GpFilePath> files) {
-        this(files, "");
+    public ServerFileTreeJSON(final HttpServletRequest request, final List<GpFilePath> files) {
+        this(request, files, "");
     }
     
-    public ServerFileTreeJSON(List<GpFilePath> files, String code) {
+    public ServerFileTreeJSON(final HttpServletRequest request, final List<GpFilePath> files, final String code) {
         try {
             List<JSONObject> toAdd = new ArrayList<JSONObject>();
             
@@ -43,17 +46,21 @@ public class ServerFileTreeJSON extends JSONArray {
                 toAdd.add(fj);
             }
             else if (code.equals(SAVE_TREE)) {
-                for (GpFilePath gsf: files) {
-                    if (gsf.isDirectory()) {
-                        JSONObject fj = makeFileJSON(gsf, true);
-                        toAdd.add(fj);
+                if (files != null) {
+                    for (GpFilePath gsf: files) {
+                        if (gsf.isDirectory()) {
+                            JSONObject fj = makeFileJSON(request, gsf, true);
+                            toAdd.add(fj);
+                        }
                     }
                 }
             }
             else {
-                for (GpFilePath gsf: files) {
-                    JSONObject fj = makeFileJSON(gsf);
-                    toAdd.add(fj);
+                if (files != null) {
+                    for (GpFilePath gsf: files) {
+                        JSONObject fj = makeFileJSON(request, gsf);
+                        toAdd.add(fj);
+                    }
                 }
             }
             
@@ -69,16 +76,17 @@ public class ServerFileTreeJSON extends JSONArray {
         }
     }
     
-    public static JSONObject makeEmptyDirectory() throws JSONException {
+    protected static JSONObject makeEmptyDirectory() throws JSONException {
         JSONObject object = new JSONObject();
         object.put(DATA, "<em>Empty Directory</em>");
         return object;
     }
-    public static JSONObject makeFileJSON(GpFilePath file) throws Exception {
-        return makeFileJSON(file, false);
+
+    protected static JSONObject makeFileJSON(final HttpServletRequest request, final GpFilePath file) throws Exception {
+        return makeFileJSON(request, file, false);
     }
     
-    public static JSONObject makeFileJSON(GpFilePath file, boolean dirOnly) throws Exception {
+    protected static JSONObject makeFileJSON(final HttpServletRequest request, final GpFilePath file, final boolean dirOnly) throws Exception {
         JSONObject object = new JSONObject();
         
         JSONObject data = new JSONObject();
@@ -98,7 +106,9 @@ public class ServerFileTreeJSON extends JSONArray {
         }
 
         JSONObject attr = new JSONObject();
-        attr.put("href", file.getUrl());
+
+        final String href=UrlUtil.getHref(request, file);        
+        attr.put("href", href);
         if (dirOnly) { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
         else { attr.put("onclick", "JavaScript:handleServerFileClick(event, this); return false;"); }
         attr.put("name", file.getName());
@@ -109,7 +119,7 @@ public class ServerFileTreeJSON extends JSONArray {
             List<JSONObject> children = new ArrayList<JSONObject>();
             for (GpFilePath child : file.getChildren()) {
                 if (child.isDirectory() || !dirOnly) {
-                    JSONObject childJSON = makeFileJSON((ServerFilePath) child, dirOnly);
+                    JSONObject childJSON = makeFileJSON(request, (ServerFilePath) child, dirOnly);
                     children.add(childJSON);
                 }
             }
