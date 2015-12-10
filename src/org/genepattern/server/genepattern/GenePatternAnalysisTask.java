@@ -291,38 +291,84 @@ public class GenePatternAnalysisTask {
         return inputFileMode;
     }
 
-    /**
-     * Tests whether the specified URL refers to the local host.
-     * 
-     * @param url
-     *            The URL to check whether it refers to the local host.
-     * @return <tt>true</tt> if the specified URL refers to the local host.
+    /** 
+     * utility call to get the InetAddress of the local host. 
+     * @see #isLocalHost
      */
-    protected static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
-        String gpHost = null;
-        String hostAddress = null;
+    protected static InetAddress sys_localHost() {
         try {
-            URL gpUrl = gpConfig.getGenePatternURL();
-            gpHost = gpUrl.getHost();
-            hostAddress = InetAddress.getLocalHost().getHostAddress();
-        } 
-        catch (UnknownHostException uhe) {
+            return InetAddress.getLocalHost();
+        }
+        catch (UnknownHostException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e);
+            }
         }
         catch (Throwable t) {
             log.error(t);
         }
-
-        String requestedHost = url.getHost();
+        return null;
+    }
+    
+    protected static InetAddress sys_requestedAddress(final URL url) {
         try {
-            return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
-                    || requestedHost.equals("127.0.0.1")
-                    || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName()) || requestedHost.equals(gpHost) || InetAddress
-                    .getByName(requestedHost).getHostAddress().equals(hostAddress));
-        } 
-        catch (UnknownHostException x) {
-            log.error("Unknown host", x);
+            return InetAddress.getByName(url.getHost());
+        }
+        catch (UnknownHostException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e);
+            }
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        return null;
+    }
+
+    /**
+     * Tests whether the specified URL refers to the local host.
+     * 
+     * @param url, The URL to check whether it refers to the local host.
+     * @return <tt>true</tt> if the specified URL refers to the local host.
+     */
+    protected static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
+        if (url==null) {
             return false;
         }
+        if (url.toString().startsWith("<GenePatternURL>")) {
+            return true;
+        }
+        final String requestedHost=url.getHost();
+        if (requestedHost==null) {
+            return false;
+        }
+        if (requestedHost.equals("localhost")) {
+            return true;
+        }
+        if (requestedHost.equals("127.0.0.1")) {
+            return true;
+        }
+        // check GpConfig.genePatternURL (from genepattern.properties)
+        final URL gpUrl = gpConfig.getGenePatternURL();
+        if (gpUrl != null && requestedHost.equals(gpUrl.getHost())) {
+            return true;
+        }
+        
+        final InetAddress localHost=sys_localHost();
+        if (localHost != null) {
+            String ch=localHost.getCanonicalHostName();
+            if ( requestedHost.equals( ch ) ) {
+                return true;
+            }
+        }
+        
+        final InetAddress requestedAddress=sys_requestedAddress(url);
+        if (requestedAddress != null) {
+            final String localHostAddress=localHost!=null ? localHost.getHostAddress() : null;
+            final String requestedHostAddress=requestedAddress.getHostAddress();
+            return requestedHostAddress.equals(localHostAddress);
+        }
+        return false;
     }
 
     /**

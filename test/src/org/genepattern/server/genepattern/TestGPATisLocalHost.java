@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 import org.genepattern.junitutil.Demo;
 import org.genepattern.server.config.GpConfig;
@@ -56,7 +57,6 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(true, "http://127.0.0.1/gp" + Demo.uploadPath());
     }
 
-
     /**
      * When GpConfig.genePatternURL is set; 
      * use InetAddress.localHost.hostName to set up the test.
@@ -94,7 +94,18 @@ public class TestGPATisLocalHost {
         when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
         assertIsLocalHost(true, gpHref + Demo.uploadPath());
     }
+
+    @Test
+    public void externalHttpFile() {
+        assertIsLocalHost(false, Demo.dataHttpDir+"all_aml_test.gct");
+    }
     
+    @Test
+    public void externalHttpDir() {
+        assertIsLocalHost(false, Demo.dataHttpDir);
+    }
+    
+
     @Test
     public void externalFtpFile() {
         assertIsLocalHost(false, Demo.dataFtpDir+"all_aml_test.gct");
@@ -104,4 +115,31 @@ public class TestGPATisLocalHost {
     public void externalFtpDir() {
         assertIsLocalHost(false, Demo.dataFtpDir);
     }
+
+    // testing different cases where the gpurl does not exactly match the requested url
+    @Test
+    public void hostname() throws UnknownHostException {
+        final String hostname=InetAddress.getLocalHost().getHostName();
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    }
+
+    //TODO: @Ignore @Test
+    public void hostname_local() throws UnknownHostException {
+        final String hostname=InetAddress.getLocalHost().getHostName()+".local";
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    }
+
+    //TODO: @Ignore @Test
+    public void canonical() throws Exception {
+        //final String hostname="pcarr-test.mydomain.org";
+        final String hostname="pcarr-test";
+        final String gpHref="http://"+hostname+":8080/gp";
+        //final URL genePatternURL=new URL(gpHref+"/");
+        
+        //when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
+        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    }
+
 }
