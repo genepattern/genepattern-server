@@ -298,11 +298,11 @@ public class GenePatternAnalysisTask {
      *            The URL to check whether it refers to the local host.
      * @return <tt>true</tt> if the specified URL refers to the local host.
      */
-    protected boolean isLocalHost(URL url) {
+    protected static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
         String gpHost = null;
         String hostAddress = null;
         try {
-            URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
+            URL gpUrl = gpConfig.getGenePatternURL();
             gpHost = gpUrl.getHost();
             hostAddress = InetAddress.getLocalHost().getHostAddress();
         } 
@@ -1157,7 +1157,7 @@ public class GenePatternAnalysisTask {
                             }
                             else {
                                 final URL url = uri.toURL();
-                                final boolean isLocalHost=isLocalHost(url);
+                                final boolean isLocalHost=isLocalHost(gpConfig, url);
                                 if (log.isDebugEnabled()) {
                                     log.debug("isLocalHost("+url+")="+isLocalHost);
                                 }
