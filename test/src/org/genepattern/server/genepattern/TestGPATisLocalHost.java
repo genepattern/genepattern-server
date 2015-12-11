@@ -12,16 +12,17 @@ import java.net.UnknownHostException;
 import org.genepattern.junitutil.Demo;
 import org.genepattern.server.config.GpConfig;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestGPATisLocalHost {
-    GpConfig gpConfig;
+    private GpConfig gpConfig;
     
     @Before
     public void setUp() {
         gpConfig=Demo.gpConfig();
     }
-    
+
     protected void assertIsLocalHost(final boolean expected, final String urlSpec) {
         URL url=null;
         try {
@@ -116,7 +117,7 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(false, Demo.dataFtpDir);
     }
 
-    // testing different cases where the gpurl does not exactly match the requested url
+    // test-cases where the genePatternURL does not exactly match the requested url
     @Test
     public void hostname() throws UnknownHostException {
         final String hostname=InetAddress.getLocalHost().getHostName();
@@ -132,14 +133,50 @@ public class TestGPATisLocalHost {
     }
 
     //TODO: @Ignore @Test
-    public void canonical() throws Exception {
-        //final String hostname="pcarr-test.mydomain.org";
+    public void hostname_local_case_01() {
+        // /etc/hosts
+        // 127.0.0.1       localhost       gm28f-571       pcarr.local
+        final String hostname="pcarr.local";
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    }
+
+    //TODO: @Ignore @Test
+    public void hostname_local_case_02() {
+        // /etc/hosts
+        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
+        final String hostname="pcarr-test.mydomain.org";
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    }
+
+    //TODO: @Ignore @Test
+    public void hostname_local_case_03() {
+        // /etc/hosts
+        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
         final String hostname="pcarr-test";
-        final String gpHref="http://"+hostname+":8080/gp";
-        //final URL genePatternURL=new URL(gpHref+"/");
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    }
+    
+    //TODO: @Ignore @Test
+    public void host_ip_local_case_04() {
+        // /etc/hosts
+        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
+        final String hostname="10.1.3.17";
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(true, requestedValue);
+    } 
+    
+    @Test
+    public void host_ip_local_no_match_case_05() {
+        // request to IP address which is not a local callback
         
-        //when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
-        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+        // /etc/hosts
+        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
+        final String hostname="10.1.3.18";
+        final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
+        assertIsLocalHost(false, requestedValue);
     }
 
 }

@@ -63,7 +63,9 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.PasswordAuthentication;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -145,7 +147,11 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -291,25 +297,11 @@ public class GenePatternAnalysisTask {
         return inputFileMode;
     }
 
-    /** 
-     * utility call to get the InetAddress of the local host. 
-     * @see #isLocalHost
+    /**
+     * utility call to get the IP address to the url host. 
+     * @param url, presumably a link to a data file
+     * @return an InetAddress, or null if errors occur
      */
-    protected static InetAddress sys_localHost() {
-        try {
-            return InetAddress.getLocalHost();
-        }
-        catch (UnknownHostException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(e);
-            }
-        }
-        catch (Throwable t) {
-            log.error(t);
-        }
-        return null;
-    }
-    
     protected static InetAddress sys_requestedAddress(final URL url) {
         try {
             return InetAddress.getByName(url.getHost());
@@ -325,6 +317,40 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
+    protected static boolean isLocalIpAddress(final InetAddress addr) {
+        if (addr==null) {
+            return false;
+        }
+
+        // Check if the address is a valid special local or loop back
+        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+            return true;
+        }
+
+        // Check if the address is defined on any interface
+        NetworkInterface ni=null;
+        try {
+            ni=NetworkInterface.getByInetAddress(addr);
+            return ni != null;
+        } 
+        catch (final SocketException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("error in getByInetAddress, addr=", e);
+            }
+        }
+        catch (Throwable t) {
+            log.error("unexpected error in getByInetAddress, addr="+addr, t);
+        }
+        return false;
+    }
+    
+    protected static boolean isLocalIpAddress(final InetAddress addr, final NetworkInterface ni) {
+        if (ni != null) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Tests whether the specified URL refers to the local host.
      * 
@@ -335,13 +361,11 @@ public class GenePatternAnalysisTask {
         if (url==null) {
             return false;
         }
-        if (url.toString().startsWith("<GenePatternURL>")) {
-            return true;
-        }
         final String requestedHost=url.getHost();
         if (requestedHost==null) {
             return false;
         }
+        // short-circuit test for 'localhost' and '127.0.0.1' to avoid invoking InetAddress methods
         if (requestedHost.equals("localhost")) {
             return true;
         }
@@ -354,19 +378,11 @@ public class GenePatternAnalysisTask {
             return true;
         }
         
-        final InetAddress localHost=sys_localHost();
-        if (localHost != null) {
-            String ch=localHost.getCanonicalHostName();
-            if ( requestedHost.equals( ch ) ) {
-                return true;
-            }
-        }
-        
         final InetAddress requestedAddress=sys_requestedAddress(url);
         if (requestedAddress != null) {
-            final String localHostAddress=localHost!=null ? localHost.getHostAddress() : null;
-            final String requestedHostAddress=requestedAddress.getHostAddress();
-            return requestedHostAddress.equals(localHostAddress);
+            if (isLocalIpAddress(requestedAddress)) {
+                return true;
+            }
         }
         return false;
     }
