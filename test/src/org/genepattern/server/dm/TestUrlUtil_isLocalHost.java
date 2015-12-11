@@ -1,4 +1,4 @@
-package org.genepattern.server.genepattern;
+package org.genepattern.server.dm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -11,11 +11,12 @@ import java.net.UnknownHostException;
 
 import org.genepattern.junitutil.Demo;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.dm.UrlUtil;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestGPATisLocalHost {
+public class TestUrlUtil_isLocalHost {
     private GpConfig gpConfig;
     
     @Before
@@ -33,7 +34,7 @@ public class TestGPATisLocalHost {
         }
         assertEquals("isLocalHost('"+urlSpec+"')", 
                 expected, 
-                GenePatternAnalysisTask.isLocalHost(gpConfig, url));
+                UrlUtil.isLocalHost(gpConfig, url));
     }
     
     @Test
@@ -125,14 +126,16 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore @Test
+    //TODO: @Ignore 
+    @Test
     public void hostname_local() throws UnknownHostException {
         final String hostname=InetAddress.getLocalHost().getHostName()+".local";
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore @Test
+    //TODO: @Ignore 
+    @Test
     public void hostname_local_case_01() {
         // /etc/hosts
         // 127.0.0.1       localhost       gm28f-571       pcarr.local
@@ -141,7 +144,8 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore @Test
+    //TODO: @Ignore 
+    @Test
     public void hostname_local_case_02() {
         // /etc/hosts
         // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
@@ -150,7 +154,8 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore @Test
+    //TODO: @Ignore 
+    @Test
     public void hostname_local_case_03() {
         // /etc/hosts
         // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
@@ -159,7 +164,8 @@ public class TestGPATisLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
     
-    //TODO: @Ignore @Test
+    //TODO: @Ignore 
+    @Test
     public void host_ip_local_case_04() {
         // /etc/hosts
         // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
