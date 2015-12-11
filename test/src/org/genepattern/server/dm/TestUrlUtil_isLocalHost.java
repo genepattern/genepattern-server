@@ -12,7 +12,6 @@ import org.genepattern.junitutil.Demo;
 import org.genepattern.junitutil.MockInetUtil;
 import org.genepattern.server.config.GpConfig;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestUrlUtil_isLocalHost {
@@ -24,10 +23,14 @@ public class TestUrlUtil_isLocalHost {
     }
 
     protected void assertIsLocalHost(final boolean expected, final String urlSpec) {
-        assertIsLocalHost(expected, InetUtilDefault.instance(), urlSpec);
+        assertIsLocalHost(expected, null, InetUtilDefault.instance(), urlSpec);
     }
 
     protected void assertIsLocalHost(final boolean expected, final InetUtil inetUtil, final String urlSpec) {
+        assertIsLocalHost(expected, null, inetUtil, urlSpec);
+    }
+
+    protected void assertIsLocalHost(final boolean expected, final String baseGpHref, final InetUtil inetUtil, final String urlSpec) {
         URL url=null;
         try {
             url=new URL(urlSpec);
@@ -37,7 +40,39 @@ public class TestUrlUtil_isLocalHost {
         }
         assertEquals("isLocalHost('"+urlSpec+"')", 
                 expected, 
-                UrlUtil.isLocalHost(gpConfig, inetUtil, url));
+                UrlUtil.isLocalHost(gpConfig, baseGpHref, inetUtil, url));
+    }
+    
+    // test when baseGpHref is set in the JobInput 
+    @Test
+    public void proxy_genePatternUrl_notSet() throws MalformedURLException {
+        assertIsLocalHost(true, Demo.proxyHref, null, Demo.proxyHref + Demo.uploadPath());
+    }
+
+    @Test
+    public void proxy_genePatternUrl_notSet_upperCase() throws MalformedURLException {
+        assertIsLocalHost(true, Demo.proxyHref, null, "https://"+Demo.proxyHost.toUpperCase()+Demo.gpPath+ Demo.uploadPath());
+    }
+    
+    // baseGpHref corner-cases
+    @Test
+    public void baseHref_mismatch_gpUrl() {
+        assertIsLocalHost(true, Demo.proxyHref, null, Demo.gpHref + Demo.uploadPath());
+        
+    }
+
+    @Test
+    public void baseHref_mismatch_localhost() {
+        assertIsLocalHost(true, Demo.proxyHref, null, "http://localhost:8080/gp" + Demo.uploadPath());
+    }
+    
+    // legacy tests, when baseGpHref not set
+    @Test
+    public void inetUtilNull() {
+        assertIsLocalHost(false, null, null, Demo.dataHttpDir);
+        assertIsLocalHost(true, null, null, "http://localhost:8080/gp" + Demo.uploadPath());
+        assertIsLocalHost(true, null, null, "http://LOCALHOST/gp" + Demo.uploadPath());
+        assertIsLocalHost(true, null, null, "http://127.0.0.1:8080/gp" + Demo.uploadPath());
     }
     
     @Test
@@ -53,7 +88,7 @@ public class TestUrlUtil_isLocalHost {
 
     @Test
     public void localhost_upperCase() {
-        assertIsLocalHost(true, "http://LOCALHOST/gp" + Demo.uploadPath());
+        assertIsLocalHost(true, "http://LOCALHOST:8080/gp" + Demo.uploadPath());
         
     }
 
@@ -69,39 +104,24 @@ public class TestUrlUtil_isLocalHost {
     }
     
     /** 
-     * proxyUrl requires GenePatternURL to be set in genepattern.properties 
+     * legacy, proxyUrl requires GenePatternURL to be set in genepattern.properties 
      */
     @Test
     public void proxyRequest() throws MalformedURLException {
-        // mock config of Broad hosted GP server; InetUtil will not recognize the proxyUrl as a local.
-        MockInetUtil mock=new MockInetUtil();
-        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
         when(gpConfig.getGenePatternURL()).thenReturn(new URL(Demo.proxyUrl));
-        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
+        assertIsLocalHost(true, null, null, Demo.proxyHref + Demo.uploadPath());
     }
 
     @Test
     public void proxyRequest_upperCase() throws MalformedURLException {
-        MockInetUtil mock=new MockInetUtil();
-        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
         when(gpConfig.getGenePatternURL()).thenReturn(new URL(Demo.proxyUrl));
-        assertIsLocalHost(true, mock, "https://GPDEV.BROADINSTITUTE.ORG/gp" + Demo.uploadPath());
+        assertIsLocalHost(true, null, null, "https://GPDEV.BROADINSTITUTE.ORG/gp" + Demo.uploadPath());
     }
 
     @Test
     public void proxyRequest_gpUrl_upperCase() throws MalformedURLException {
-        MockInetUtil mock=new MockInetUtil();
-        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
         when(gpConfig.getGenePatternURL()).thenReturn(new URL("https://GPDEV.BROADINSTITUTE.ORG/gp/"));
-        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
-    }
-
-    //TODO: implement fix for this
-    @Ignore @Test
-    public void proxy_genePatternUrl_notSet() throws MalformedURLException {
-        MockInetUtil mock=new MockInetUtil();
-        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
-        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
+        assertIsLocalHost(true, null, null, Demo.proxyHref + Demo.uploadPath());
     }
 
     @Test

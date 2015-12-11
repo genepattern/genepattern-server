@@ -42,6 +42,9 @@ public class UrlUtil {
      * @return an InetAddress, or null if errors occur
      */
     protected static InetAddress sys_requestedAddress(final InetUtil inetUtil, final URL url) { 
+        if (inetUtil==null) {
+            throw new IllegalArgumentException("inetUtil==null");
+        }
         try {
             return inetUtil.getByName(url.getHost());
         }
@@ -68,6 +71,9 @@ public class UrlUtil {
 
         // Check if the address is defined on any interface
         Object ni=null;
+        if (inetUtil==null) {
+            throw new IllegalArgumentException("inetUtil==null");
+        }
         try {
             ni=inetUtil.getByInetAddress(addr);
             return ni != null;
@@ -96,11 +102,11 @@ public class UrlUtil {
      * @param url, The URL to check whether it refers to the local host.
      * @return <tt>true</tt> if the specified URL refers to the local host.
      */
-    public  static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
-        return isLocalHost(gpConfig, InetUtilDefault.instance(), url);
+    public  static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final URL url) {
+        return isLocalHost(gpConfig, baseGpHref, InetUtilDefault.instance(), url);
     }
     
-    public static boolean isLocalHost(final GpConfig gpConfig, final InetUtil inetUtil, final URL url) {
+    public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final InetUtil inetUtil, final URL url) {
         if (url==null || url.getHost()==null) {
             return false;
         }
@@ -112,16 +118,27 @@ public class UrlUtil {
         if (requestedHost.equals("127.0.0.1")) {
             return true;
         }
+
+        // check baseGpHref (from the job input)
+        if (!Strings.isNullOrEmpty(baseGpHref)) {
+            if (url.toExternalForm().toLowerCase().startsWith(baseGpHref.toLowerCase())) {
+                return true;
+            }
+        }
+        
         // check GpConfig.genePatternURL (from genepattern.properties)
         final URL gpUrl = gpConfig.getGenePatternURL();
         if (gpUrl != null && requestedHost.equalsIgnoreCase(gpUrl.getHost())) {
             return true;
         }
         
-        final InetAddress requestedAddress=sys_requestedAddress(inetUtil, url);
-        if (requestedAddress != null) {
-            if (isLocalIpAddress(inetUtil, requestedAddress)) {
-                return true;
+        // legacy code; requires non-null inetUtil
+        if (inetUtil != null) {
+            final InetAddress requestedAddress=sys_requestedAddress(inetUtil, url);
+            if (requestedAddress != null) {
+                if (isLocalIpAddress(inetUtil, requestedAddress)) {
+                    return true;
+                }
             }
         }
         return false;

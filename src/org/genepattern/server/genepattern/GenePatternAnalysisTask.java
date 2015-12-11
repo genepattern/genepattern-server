@@ -1130,7 +1130,11 @@ public class GenePatternAnalysisTask {
                             }
                             else {
                                 final URL url = uri.toURL();
-                                final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, url);
+                                String baseGpHref=null;
+                                if (jobContext.getJobInput() != null) {
+                                    baseGpHref=jobContext.getJobInput().getBaseGpHref();
+                                }
+                                final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, baseGpHref, url);
                                 if (log.isDebugEnabled()) {
                                     log.debug("isLocalHost("+url+")="+isLocalHost);
                                 }
