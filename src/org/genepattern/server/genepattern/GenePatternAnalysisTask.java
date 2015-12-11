@@ -63,7 +63,9 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.PasswordAuthentication;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -123,6 +125,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -145,7 +148,11 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -289,40 +296,6 @@ public class GenePatternAnalysisTask {
             }
         }
         return inputFileMode;
-    }
-
-    /**
-     * Tests whether the specified URL refers to the local host.
-     * 
-     * @param url
-     *            The URL to check whether it refers to the local host.
-     * @return <tt>true</tt> if the specified URL refers to the local host.
-     */
-    protected boolean isLocalHost(URL url) {
-        String gpHost = null;
-        String hostAddress = null;
-        try {
-            URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
-            gpHost = gpUrl.getHost();
-            hostAddress = InetAddress.getLocalHost().getHostAddress();
-        } 
-        catch (UnknownHostException uhe) {
-        }
-        catch (Throwable t) {
-            log.error(t);
-        }
-
-        String requestedHost = url.getHost();
-        try {
-            return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
-                    || requestedHost.equals("127.0.0.1")
-                    || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName()) || requestedHost.equals(gpHost) || InetAddress
-                    .getByName(requestedHost).getHostAddress().equals(hostAddress));
-        } 
-        catch (UnknownHostException x) {
-            log.error("Unknown host", x);
-            return false;
-        }
     }
 
     /**
@@ -1156,8 +1129,16 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             else {
-                                URL url = uri.toURL();
-                                if (isLocalHost(url)) {
+                                final URL url = uri.toURL();
+                                String baseGpHref=null;
+                                if (jobContext.getJobInput() != null) {
+                                    baseGpHref=jobContext.getJobInput().getBaseGpHref();
+                                }
+                                final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, baseGpHref, url);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("isLocalHost("+url+")="+isLocalHost);
+                                }
+                                if (isLocalHost) {
                                     try {
                                         File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {

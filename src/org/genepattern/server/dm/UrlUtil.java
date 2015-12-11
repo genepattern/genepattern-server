@@ -4,12 +4,16 @@
 package org.genepattern.server.dm;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +35,114 @@ import com.google.common.collect.ImmutableList;
  */
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
+
+    /**
+     * utility call to get the IP address to the url host. 
+     * @param url, presumably a link to a data file
+     * @return an InetAddress, or null if errors occur
+     */
+    protected static InetAddress sys_requestedAddress(final InetUtil inetUtil, final URL url) { 
+        if (inetUtil==null) {
+            throw new IllegalArgumentException("inetUtil==null");
+        }
+        try {
+            return inetUtil.getByName(url.getHost());
+        }
+        catch (UnknownHostException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e);
+            }
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        return null;
+    }
+
+    protected static boolean isLocalIpAddress(final InetUtil inetUtil, final InetAddress addr) {
+        if (addr==null) {
+            return false;
+        }
+
+        // Check if the address is a valid special local or loop back
+        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+            return true;
+        }
+
+        // Check if the address is defined on any interface
+        Object ni=null;
+        if (inetUtil==null) {
+            throw new IllegalArgumentException("inetUtil==null");
+        }
+        try {
+            ni=inetUtil.getByInetAddress(addr);
+            return ni != null;
+        } 
+        catch (final SocketException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("error in getByInetAddress, addr=", e);
+            }
+        }
+        catch (Throwable t) {
+            log.error("unexpected error in getByInetAddress, addr="+addr, t);
+        }
+        return false;
+    }
+    
+    protected static boolean isLocalIpAddress(final InetAddress addr, final NetworkInterface ni) {
+        if (ni != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tests whether the specified URL refers to the local host.
+     * 
+     * @param url, The URL to check whether it refers to the local host.
+     * @return <tt>true</tt> if the specified URL refers to the local host.
+     */
+    public  static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final URL url) {
+        return isLocalHost(gpConfig, baseGpHref, InetUtilDefault.instance(), url);
+    }
+    
+    public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final InetUtil inetUtil, final URL url) {
+        if (url==null || url.getHost()==null) {
+            return false;
+        }
+        final String requestedHost=url.getHost().toLowerCase();
+        // short-circuit test for 'localhost' and '127.0.0.1' to avoid invoking InetAddress methods
+        if (requestedHost.equals("localhost")) {
+            return true;
+        }
+        if (requestedHost.equals("127.0.0.1")) {
+            return true;
+        }
+
+        // check baseGpHref (from the job input)
+        if (!Strings.isNullOrEmpty(baseGpHref)) {
+            if (url.toExternalForm().toLowerCase().startsWith(baseGpHref.toLowerCase())) {
+                return true;
+            }
+        }
+        
+        // check GpConfig.genePatternURL (from genepattern.properties)
+        final URL gpUrl = gpConfig.getGenePatternURL();
+        if (gpUrl != null && requestedHost.equalsIgnoreCase(gpUrl.getHost())) {
+            return true;
+        }
+        
+        // legacy code; requires non-null inetUtil
+        if (inetUtil != null) {
+            final InetAddress requestedAddress=sys_requestedAddress(inetUtil, url);
+            if (requestedAddress != null) {
+                if (isLocalIpAddress(inetUtil, requestedAddress)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Get the baseUrl of the web application, inclusive of the contextPath, but not including the trailing slash.
