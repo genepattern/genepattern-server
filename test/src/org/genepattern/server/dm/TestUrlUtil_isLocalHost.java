@@ -1,8 +1,7 @@
 package org.genepattern.server.dm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -10,8 +9,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.genepattern.junitutil.Demo;
+import org.genepattern.junitutil.MockInetUtil;
 import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.dm.UrlUtil;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,6 +24,10 @@ public class TestUrlUtil_isLocalHost {
     }
 
     protected void assertIsLocalHost(final boolean expected, final String urlSpec) {
+        assertIsLocalHost(expected, InetUtilDefault.instance(), urlSpec);
+    }
+
+    protected void assertIsLocalHost(final boolean expected, final InetUtil inetUtil, final String urlSpec) {
         URL url=null;
         try {
             url=new URL(urlSpec);
@@ -34,7 +37,7 @@ public class TestUrlUtil_isLocalHost {
         }
         assertEquals("isLocalHost('"+urlSpec+"')", 
                 expected, 
-                UrlUtil.isLocalHost(gpConfig, url));
+                UrlUtil.isLocalHost(gpConfig, inetUtil, url));
     }
     
     @Test
@@ -48,6 +51,12 @@ public class TestUrlUtil_isLocalHost {
         
     }
 
+    @Test
+    public void localhost_upperCase() {
+        assertIsLocalHost(true, "http://LOCALHOST/gp" + Demo.uploadPath());
+        
+    }
+
     /** aka 127.0.0.1 */
     @Test
     public void loopback() {
@@ -58,43 +67,41 @@ public class TestUrlUtil_isLocalHost {
     public void loopback_noPort() {
         assertIsLocalHost(true, "http://127.0.0.1/gp" + Demo.uploadPath());
     }
-
-    /**
-     * When GpConfig.genePatternURL is set; 
-     * use InetAddress.localHost.hostName to set up the test.
-     * Note, requires properly configured '/etc/hosts' file. On my MacOS X dev machine:
-     * <pre>
-127.0.0.1       localhost       gm28f-571
-     * </pre>
+    
+    /** 
+     * proxyUrl requires GenePatternURL to be set in genepattern.properties 
      */
     @Test
-    public void customGenePatternURL_hostname() throws Exception {
-        final String hostname=InetAddress.getLocalHost().getHostName();
-        final String gpHref="http://"+hostname+":8080/gp";
-        final URL genePatternURL=new URL(gpHref+"/");
-        
-        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
-        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    public void proxyRequest() throws MalformedURLException {
+        // mock config of Broad hosted GP server; InetUtil will not recognize the proxyUrl as a local.
+        MockInetUtil mock=new MockInetUtil();
+        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
+        when(gpConfig.getGenePatternURL()).thenReturn(new URL(Demo.proxyUrl));
+        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
     }
 
     @Test
-    public void customGenePatternURL_hostname_local() throws Exception {
-        final String hostname=InetAddress.getLocalHost().getHostName()+".local";
-        final String gpHref="http://"+hostname+":8080/gp";
-        final URL genePatternURL=new URL(gpHref+"/");
-        
-        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
-        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    public void proxyRequest_upperCase() throws MalformedURLException {
+        MockInetUtil mock=new MockInetUtil();
+        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
+        when(gpConfig.getGenePatternURL()).thenReturn(new URL(Demo.proxyUrl));
+        assertIsLocalHost(true, mock, "https://GPDEV.BROADINSTITUTE.ORG/gp" + Demo.uploadPath());
     }
 
     @Test
-    public void customGenePatternURL_hostname_local_upperCase() throws Exception {
-        final String hostname=InetAddress.getLocalHost().getHostName().toUpperCase()+".local";
-        final String gpHref="http://"+hostname+":8080/gp";
-        final URL genePatternURL=new URL(gpHref+"/");
-        
-        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
-        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    public void proxyRequest_gpUrl_upperCase() throws MalformedURLException {
+        MockInetUtil mock=new MockInetUtil();
+        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
+        when(gpConfig.getGenePatternURL()).thenReturn(new URL("https://GPDEV.BROADINSTITUTE.ORG/gp/"));
+        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
+    }
+
+    //TODO: implement fix for this
+    @Ignore @Test
+    public void proxy_genePatternUrl_notSet() throws MalformedURLException {
+        MockInetUtil mock=new MockInetUtil();
+        mock.add(Demo.proxyHost, "34.173.100.22", false, false, null);
+        assertIsLocalHost(true, mock, Demo.proxyHref + Demo.uploadPath());
     }
 
     @Test
@@ -118,6 +125,48 @@ public class TestUrlUtil_isLocalHost {
         assertIsLocalHost(false, Demo.dataFtpDir);
     }
 
+    /**
+     * url request matches custom GenePatternURL in genepattern.properties:
+     *     GenePatternURL=http://{hostname}:8080/gp/
+     */
+    @Test
+    public void customGenePatternURL_hostname() throws Exception {
+        final String hostname=InetAddress.getLocalHost().getHostName();
+        final String gpHref="http://"+hostname+":8080/gp";
+        final URL genePatternURL=new URL(gpHref+"/");
+        
+        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
+        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    }
+
+    /**
+     * url request matches custom GenePatternURL in genepattern.properties:
+     *     GenePatternURL=http://{hostname}.local:8080/gp/
+     */
+    @Test
+    public void customGenePatternURL_hostname_local() throws Exception {
+        final String hostname=InetAddress.getLocalHost().getHostName()+".local";
+        final String gpHref="http://"+hostname+":8080/gp";
+        final URL genePatternURL=new URL(gpHref+"/");
+        
+        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
+        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    }
+
+    /**
+     * url request matches custom GenePatternURL in genepattern.properties:
+     *     GenePatternURL=http://{HOSTNAME}.local:8080/gp/
+     */
+    @Test
+    public void customGenePatternURL_hostname_local_upperCase() throws Exception {
+        final String hostname=InetAddress.getLocalHost().getHostName().toUpperCase()+".local";
+        final String gpHref="http://"+hostname+":8080/gp";
+        final URL genePatternURL=new URL(gpHref+"/");
+        
+        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
+        assertIsLocalHost(true, gpHref + Demo.uploadPath());
+    }
+
     // test-cases where the genePatternURL does not exactly match the requested url
     @Test
     public void hostname() throws UnknownHostException {
@@ -126,7 +175,6 @@ public class TestUrlUtil_isLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore 
     @Test
     public void hostname_local() throws UnknownHostException {
         final String hostname=InetAddress.getLocalHost().getHostName()+".local";
@@ -134,55 +182,39 @@ public class TestUrlUtil_isLocalHost {
         assertIsLocalHost(true, requestedValue);
     }
 
-    //TODO: @Ignore 
     @Test
     public void hostname_local_case_01() {
-        // /etc/hosts
-        // 127.0.0.1       localhost       gm28f-571       pcarr.local
-        final String hostname="pcarr.local";
+        final String hostname="test-user.local";
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
-        assertIsLocalHost(true, requestedValue);
+        assertIsLocalHost(true, MockInetUtil.instance(), requestedValue);
     }
 
-    //TODO: @Ignore 
     @Test
     public void hostname_local_case_02() {
-        // /etc/hosts
-        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
-        final String hostname="pcarr-test.mydomain.org";
+        final String hostname="test-user.mydomain.org";
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
-        assertIsLocalHost(true, requestedValue);
+        assertIsLocalHost(true, MockInetUtil.instance(), requestedValue);
     }
 
-    //TODO: @Ignore 
     @Test
     public void hostname_local_case_03() {
-        // /etc/hosts
-        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
-        final String hostname="pcarr-test";
+        final String hostname="test-user";
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
-        assertIsLocalHost(true, requestedValue);
+        assertIsLocalHost(true, MockInetUtil.instance(), requestedValue);
     }
     
-    //TODO: @Ignore 
     @Test
     public void host_ip_local_case_04() {
-        // /etc/hosts
-        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
-        final String hostname="10.1.3.17";
+        final String hostname=MockInetUtil.PRIVATE_IP;
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
-        assertIsLocalHost(true, requestedValue);
+        assertIsLocalHost(true, MockInetUtil.instance(), requestedValue);
     } 
     
     @Test
     public void host_ip_local_no_match_case_05() {
-        // request to IP address which is not a local callback
-        
-        // /etc/hosts
-        // 10.1.3.17       pcarr-test.mydomain.org pcarr-test
-        final String hostname="10.1.3.18";
+        final String hostname=MockInetUtil.PRIVATE_IP_OTHER;
         final String requestedValue="http://"+hostname+":8080/gp"+Demo.uploadPath();
-        assertIsLocalHost(false, requestedValue);
+        assertIsLocalHost(false, MockInetUtil.instance(), requestedValue);
     }
 
 }

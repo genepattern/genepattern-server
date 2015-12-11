@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
  * 
  * @author pcarr
  *
+ * Note: see http://tools.ietf.org/html/rfc2606
  */
 public class Demo {
     /** servlet context path is '/gp' */

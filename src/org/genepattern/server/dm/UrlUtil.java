@@ -41,9 +41,9 @@ public class UrlUtil {
      * @param url, presumably a link to a data file
      * @return an InetAddress, or null if errors occur
      */
-    protected static InetAddress sys_requestedAddress(final URL url) {
+    protected static InetAddress sys_requestedAddress(final InetUtil inetUtil, final URL url) { 
         try {
-            return InetAddress.getByName(url.getHost());
+            return inetUtil.getByName(url.getHost());
         }
         catch (UnknownHostException e) {
             if (log.isDebugEnabled()) {
@@ -56,7 +56,7 @@ public class UrlUtil {
         return null;
     }
 
-    protected static boolean isLocalIpAddress(final InetAddress addr) {
+    protected static boolean isLocalIpAddress(final InetUtil inetUtil, final InetAddress addr) {
         if (addr==null) {
             return false;
         }
@@ -67,9 +67,9 @@ public class UrlUtil {
         }
 
         // Check if the address is defined on any interface
-        NetworkInterface ni=null;
+        Object ni=null;
         try {
-            ni=NetworkInterface.getByInetAddress(addr);
+            ni=inetUtil.getByInetAddress(addr);
             return ni != null;
         } 
         catch (final SocketException e) {
@@ -96,14 +96,15 @@ public class UrlUtil {
      * @param url, The URL to check whether it refers to the local host.
      * @return <tt>true</tt> if the specified URL refers to the local host.
      */
-    public static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
-        if (url==null) {
+    public  static boolean isLocalHost(final GpConfig gpConfig, final URL url) {
+        return isLocalHost(gpConfig, InetUtilDefault.instance(), url);
+    }
+    
+    public static boolean isLocalHost(final GpConfig gpConfig, final InetUtil inetUtil, final URL url) {
+        if (url==null || url.getHost()==null) {
             return false;
         }
-        final String requestedHost=url.getHost();
-        if (requestedHost==null) {
-            return false;
-        }
+        final String requestedHost=url.getHost().toLowerCase();
         // short-circuit test for 'localhost' and '127.0.0.1' to avoid invoking InetAddress methods
         if (requestedHost.equals("localhost")) {
             return true;
@@ -113,13 +114,13 @@ public class UrlUtil {
         }
         // check GpConfig.genePatternURL (from genepattern.properties)
         final URL gpUrl = gpConfig.getGenePatternURL();
-        if (gpUrl != null && requestedHost.equals(gpUrl.getHost())) {
+        if (gpUrl != null && requestedHost.equalsIgnoreCase(gpUrl.getHost())) {
             return true;
         }
         
-        final InetAddress requestedAddress=sys_requestedAddress(url);
+        final InetAddress requestedAddress=sys_requestedAddress(inetUtil, url);
         if (requestedAddress != null) {
-            if (isLocalIpAddress(requestedAddress)) {
+            if (isLocalIpAddress(inetUtil, requestedAddress)) {
                 return true;
             }
         }
