@@ -107,7 +107,7 @@ public class UrlUtil {
     }
     
     public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final InetUtil inetUtil, final URL url) {
-        if (url==null || url.getHost()==null) {
+        if (url==null || Strings.isNullOrEmpty(url.getHost())) {
             return false;
         }
         final String requestedHost=url.getHost().toLowerCase();
