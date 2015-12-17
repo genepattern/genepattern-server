@@ -3,15 +3,14 @@
  *******************************************************************************/
 package org.genepattern.server.job.tag.dao;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
@@ -24,7 +23,8 @@ import org.genepattern.server.tag.Tag;
 import org.genepattern.webservice.JobInfo;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -33,30 +33,32 @@ import org.junit.rules.TemporaryFolder;
  */
 public class TestJobTagDao
 {
-    private HibernateSessionManager mgr;
-    private GpConfig gpConfig;
-    private JobTagDao jobTagDao;
-
+    @ClassRule
+    public static TemporaryFolder temp = new TemporaryFolder();
+    private static HibernateSessionManager mgr;
+    private static GpConfig gpConfig;
+    private static String user;
+    private static String admin;
+    
     private int gpJobNo;
     private JobInfo jobInfo;
-
-    static String user;
-    static String admin;
-
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
-
-    @Before
-    public void setUp() throws Exception
-    {
-        mgr=DbUtil.getTestDbSession();
-        final String userDir=temp.newFolder("users").getAbsolutePath();
+    private JobTagDao jobTagDao;
+    
+    @BeforeClass
+    public static void beforeClass() throws IOException, DbException, ExecutionException {
+        String userDir=temp.newFolder("users").getAbsolutePath();
         gpConfig=new GpConfig.Builder()
+            .webappDir(new File("website"))
             .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
         .build();
+        mgr=DbUtil.getTestDbSession();
         user=DbUtil.addUserToDb(gpConfig, mgr, "test");
         admin=DbUtil.addUserToDb(gpConfig, mgr, "admin");
+    }
 
+    @Before
+    public void setUp() throws Exception 
+    {
         // because of FK relation, must add an entry to the analysis_job table
         gpJobNo=AnalysisJobUtil.addJobToDb(mgr);
         jobInfo=mock(JobInfo.class);
@@ -65,7 +67,7 @@ public class TestJobTagDao
     }
 
     @After
-    public void tearDown() throws DbException
+    public void tearDown() throws DbException 
     {
         AnalysisJobUtil.deleteJobFromDb(mgr, gpJobNo);
     }
