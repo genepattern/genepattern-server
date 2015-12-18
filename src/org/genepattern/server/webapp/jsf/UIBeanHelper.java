@@ -20,8 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
@@ -177,31 +178,13 @@ public class UIBeanHelper {
      * Note if the GenePatternURL system property ends with a trailing '/', the slash is removed.
      * 
      * @return The server.
+     * 
+     * @deprecated Use UrlUtil class instead
      */
     public static String getServer() {
-        // Use the servlet request
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        if (request != null) {
-            String portStr = "";
-            int port = request.getServerPort();
-            if (port > 0) {
-                portStr = ":"+port;
-            }
-            return request.getScheme() + "://" + request.getServerName() + portStr + request.getContextPath();
-        }
-
-        // Otherwise use GenePatternURL if it is set
-        String server = ServerConfigurationFactory.instance().getGpUrl();
-        if (server != null && server.trim().length() > 0) {
-            if (server.endsWith("/")) {
-                server = server.substring(0, server.length() - 1);
-            }
-            return server;
-        }
-        
-        //TODO: handle this exception
-        log.error("Invalid servername: GenePatternURL is null and UIBeanHelper.request is null!");
-        return "http://localhost:8080/gp";
+        final GpConfig gpConfig=null; // <---- lazy init in UrlUtil
+        final HttpServletRequest request = UIBeanHelper.getRequest();
+        return UrlUtil.getBaseGpHref(gpConfig, request);
     }
 
 }
