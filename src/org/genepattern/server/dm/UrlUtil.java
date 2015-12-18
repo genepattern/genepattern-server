@@ -331,9 +331,14 @@ public class UrlUtil {
             log.warn("remove trailing slash from baseGpHref="+baseGpHref);
         }
         final String href=removeTrailingSlash(Strings.nullToEmpty(baseGpHref)) +
-                gpFilePath_internal.getRelativeUri() + 
-                (gpFilePath_internal.isDirectory() ? "/" : "");
-        return href;
+                gpFilePath_internal.getRelativeUri();
+        if (gpFilePath_internal.isDirectory()) {
+            // append '/' if necessary
+            return glue(href, "/");
+        }
+        else {
+            return href;
+        }
     }
     
     /**
