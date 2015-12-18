@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -22,8 +24,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.net.InetAddresses;
 
 /**
  * test-cases for UrlUtil#isLocalHost; 
@@ -48,12 +51,12 @@ import org.junit.runners.Parameterized.Parameters;
 public class TestUrlUtil_isLocalHost {
     /**
      * Utility method to get my IP addresses, those of the machine on which this process is running. 
-     * @return a list of computer addresses (ipv4 and ipv6)
+     * @return a list of InetAddress (IPv4 and IPv6)
      */
-    protected static List<String> getComputerAddresses() {
-        List<String> rval=new ArrayList<String>();
+    protected static List<InetAddress> getComputerAddresses() {
+        final List<InetAddress> rval=new ArrayList<InetAddress>();
         try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface iface = interfaces.nextElement();
                 // filters out 127.0.0.1 and inactive interfaces
@@ -63,8 +66,7 @@ public class TestUrlUtil_isLocalHost {
                 Enumeration<InetAddress> addresses = iface.getInetAddresses();
                 while(addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
-                    String ip = addr.getHostAddress();
-                    rval.add(ip);
+                    rval.add(addr);
                 }
             }
         } 
@@ -83,7 +85,7 @@ public class TestUrlUtil_isLocalHost {
      * @return
      * @throws UnknownHostException
      */
-    @Parameters(name="baseGpHref={0}")
+    @Parameters(name="hostname={0}")
     public static Collection<Object[]> data() throws UnknownHostException {
         final Set<String> hostnames=new LinkedHashSet<String>();
         hostnames.add(InetAddress.getLoopbackAddress().getHostName());
@@ -92,16 +94,16 @@ public class TestUrlUtil_isLocalHost {
         hostnames.add(InetAddress.getLocalHost().getHostAddress());
         // case-insensitive tests
         hostnames.add("LOCALHOST");
-        for(final String ip : getComputerAddresses()) {
-            hostnames.add(ip);
+        for(final InetAddress addr : getComputerAddresses()) {
+            final String uriStr=InetAddresses.toUriString(addr);
+            hostnames.add(uriStr);
         }
-        //hostnames.add( Demo.proxyHost );
+        hostnames.add( Demo.proxyHost );
         
         final List<Object[]> tests=new ArrayList<Object[]>();
         for(final String hostname : hostnames) {
-            tests.add(new Object[]{ "http://" + hostname + ":8080/gp" });
+            tests.add(new Object[]{ hostname });
         }
-        tests.add(new Object[]{ Demo.proxyHref });
         return tests;
     }
     
@@ -116,26 +118,29 @@ public class TestUrlUtil_isLocalHost {
         when(proxyConfig.toString()).thenReturn("proxy");
     }
  
-    public TestUrlUtil_isLocalHost() {
+    public TestUrlUtil_isLocalHost(String hostname) {
+        this.hostname=hostname;
+        this.baseGpHref="http://"+hostname+":8080/gp";
     }
 
     /** the hostname of the baseGpHref */
-    @Parameter
-    public String baseGpHref;
+    //@Parameter
+    public String hostname;
+    private String baseGpHref;
 
     protected static void assertIsLocalHost(final boolean expected, final GpConfig gpConfig, final String baseGpHref, InetUtil inetUtil, final String urlSpec) {
-        URL url=null;
+        URI uri=null;
         try {
-            url=new URL(urlSpec);
+            uri=new URI(urlSpec);
         }
-        catch (MalformedURLException e) {
+        catch (URISyntaxException e) {
             fail(e.getLocalizedMessage());
         }
         assertEquals("isLocalHost('"+urlSpec+"')", 
                 expected, 
-                UrlUtil.isLocalHost(gpConfig, baseGpHref, inetUtil, url));
+                UrlUtil.isLocalHost(gpConfig, baseGpHref, inetUtil, uri));
     }
-    
+
     @Test
     public void localhost() {
         assertIsLocalHost(true, gpConfig, baseGpHref, inetUtil, "http://localhost:8080/gp" + Demo.uploadPath());

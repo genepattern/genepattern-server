@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
@@ -27,35 +29,35 @@ public class TestUrlUtil_isLocalHost_corner_cases {
     }
     
     @Test
-    public void nullUrl() throws MalformedURLException {
-        final URL url=null;
+    public void nullUrl() {
+        final URI uri=null;
         assertEquals("url==null", false, 
-                UrlUtil.isLocalHost(gpConfig, Demo.gpHref, MockInetUtil.instance(), url));
+                UrlUtil.isLocalHost(gpConfig, Demo.gpHref, MockInetUtil.instance(), uri));
     }
 
     @Test
-    public void emptyUrlHost() throws MalformedURLException {
-        final URL url=new File("Test.txt").toURI().toURL();
+    public void emptyUrlHost() {
+        final URI uri=new File("Test.txt").toURI();
         assertEquals("url.host is empty", false,
-                UrlUtil.isLocalHost(gpConfig, Demo.gpHref, MockInetUtil.instance(), url));
+                UrlUtil.isLocalHost(gpConfig, Demo.gpHref, MockInetUtil.instance(), uri));
     }
     
     @Test
-    public void nullBaseHref_externalHttpFile() throws MalformedURLException {
+    public void nullBaseHref_externalHttpFile() throws URISyntaxException {
         String baseGpHref=null;
         assertEquals("external http file", false, 
-                UrlUtil.isLocalHost(gpConfig, baseGpHref, MockInetUtil.instance(), new URL(Demo.dataHttpDir+"all_aml_test.gct")));
+                UrlUtil.isLocalHost(gpConfig, baseGpHref, MockInetUtil.instance(), new URI(Demo.dataHttpDir+"all_aml_test.gct")));
     }
 
     @Test
-    public void nullBaseHref_proxy() throws MalformedURLException {
+    public void nullBaseHref_proxy() throws URISyntaxException {
         String baseGpHref=null;
         assertEquals("local file", true, 
-                UrlUtil.isLocalHost(proxyConfig, baseGpHref, MockInetUtil.instance(), new URL(Demo.proxyHref+Demo.uploadPath())));
+                UrlUtil.isLocalHost(proxyConfig, baseGpHref, MockInetUtil.instance(), new URI(Demo.proxyHref+Demo.uploadPath())));
     }
 
     @Test
-    public void nullBaseHref_proxy_upperCase() throws MalformedURLException {
+    public void nullBaseHref_proxy_upperCase() {
         assertIsLocalHost(true, proxyConfig, null, MockInetUtil.instance(), 
                 "https://"+Demo.proxyHost.toUpperCase()+Demo.gpPath+ Demo.uploadPath());
     }
