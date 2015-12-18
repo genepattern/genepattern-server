@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -239,6 +240,34 @@ public class UrlUtil {
         else {
             return getBaseGpHref(ServerConfigurationFactory.instance());
         }
+    }
+
+    /**
+     * Return a new string replacing the actual URL value with the '<GenePatternURL>' string literal; if the input value is 
+     * a callback to the server.
+     * E.g. replace 'http://127.0.0.1:8080/gp/users/test_user/my.txt' with '<GenePatternURL>users/test_user/my.txt'
+     * 
+     * @param gpConfig
+     * @param baseGpHref
+     * @param inetUtil
+     * @param urlSpec
+     * @return
+     */
+    public static String replaceGpUrl(final GpConfig gpConfig, final String baseGpHref, final String urlSpec) {
+        URI uri=null;
+        try {
+            uri=new URI(urlSpec);
+        }
+        catch (URISyntaxException e) {
+            return urlSpec;
+        }
+        final boolean isLocal=UrlUtil.isLocalHost(gpConfig, baseGpHref, uri);
+        if (!isLocal) {
+            return urlSpec;
+        }
+        
+        final String requestedGpUrl=UrlUtil.resolveBaseUrl(urlSpec, gpConfig.getGpPath()) + "/"; // add trailing slash
+        return urlSpec.replaceFirst(Pattern.quote(requestedGpUrl), "<GenePatternURL>");
     }
 
     /**
