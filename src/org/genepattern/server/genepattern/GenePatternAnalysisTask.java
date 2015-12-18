@@ -61,17 +61,13 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.NetworkInterface;
 import java.net.PasswordAuthentication;
-import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1660,12 +1656,12 @@ public class GenePatternAnalysisTask {
     private static JobInfoWrapper getJobInfoWrapper(final HibernateSessionManager mgr, final GpConfig gpConfig, String userId, int jobNumber) {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
-            JobInfoManager m = new JobInfoManager();
             String contextPath = gpConfig.getGpPath();
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
             String cookie = "";
+            JobInfoManager m = new JobInfoManager();
             return m.getJobInfo(cookie, contextPath, userId, jobNumber);
         }
         finally {
@@ -1956,6 +1952,8 @@ public class GenePatternAnalysisTask {
      * 
      * @param jobDir, the job results directory, e.g. GenePatternServer/Tomcat/webapps/gp/jobResults/<job_no>
      * @param jobInfoWrapper
+     * 
+     * @deprecated should re-implement this method without use of the JobInfoWrapper class
      */
     private static void cleanupInputFiles(File jobDir, JobInfoWrapper jobInfoWrapper) {
         for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
