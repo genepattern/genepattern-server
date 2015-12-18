@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -41,12 +42,12 @@ public class UrlUtil {
      * @param url, presumably a link to a data file
      * @return an InetAddress, or null if errors occur
      */
-    protected static InetAddress sys_requestedAddress(final InetUtil inetUtil, final URL url) { 
+    protected static InetAddress sys_requestedAddress(final InetUtil inetUtil, final URI uri) { 
         if (inetUtil==null) {
             throw new IllegalArgumentException("inetUtil==null");
         }
         try {
-            return inetUtil.getByName(url.getHost());
+            return inetUtil.getByName(uri.getHost());
         }
         catch (UnknownHostException e) {
             if (log.isDebugEnabled()) {
@@ -102,15 +103,15 @@ public class UrlUtil {
      * @param url, The URL to check whether it refers to the local host.
      * @return <tt>true</tt> if the specified URL refers to the local host.
      */
-    public  static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final URL url) {
-        return isLocalHost(gpConfig, baseGpHref, InetUtilDefault.instance(), url);
+    public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final URI uri) {
+        return isLocalHost(gpConfig, baseGpHref, InetUtilDefault.instance(), uri);
     }
     
-    public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final InetUtil inetUtil, final URL url) {
-        if (url==null || Strings.isNullOrEmpty(url.getHost())) {
+    public static boolean isLocalHost(final GpConfig gpConfig, final String baseGpHref, final InetUtil inetUtil, final URI uri) {
+        if (uri==null || Strings.isNullOrEmpty(uri.getHost())) {
             return false;
         }
-        final String requestedHost=url.getHost().toLowerCase();
+        final String requestedHost=uri.getHost().toLowerCase();
         // short-circuit test for 'localhost' and '127.0.0.1' to avoid invoking InetAddress methods
         if (requestedHost.equals("localhost")) {
             return true;
@@ -121,7 +122,7 @@ public class UrlUtil {
 
         // check baseGpHref (from the job input)
         if (!Strings.isNullOrEmpty(baseGpHref)) {
-            if (url.toExternalForm().toLowerCase().startsWith(baseGpHref.toLowerCase())) {
+            if (uri.toASCIIString().toLowerCase().startsWith(baseGpHref.toLowerCase())) {
                 return true;
             }
         }
@@ -134,7 +135,7 @@ public class UrlUtil {
         
         // legacy code; requires non-null inetUtil
         if (inetUtil != null) {
-            final InetAddress requestedAddress=sys_requestedAddress(inetUtil, url);
+            final InetAddress requestedAddress=sys_requestedAddress(inetUtil, uri);
             if (requestedAddress != null) {
                 if (isLocalIpAddress(inetUtil, requestedAddress)) {
                     return true;
@@ -239,6 +240,34 @@ public class UrlUtil {
         else {
             return getBaseGpHref(ServerConfigurationFactory.instance());
         }
+    }
+
+    /**
+     * Return a new string replacing the actual URL value with the '<GenePatternURL>' string literal; if the input value is 
+     * a callback to the server.
+     * E.g. replace 'http://127.0.0.1:8080/gp/users/test_user/my.txt' with '<GenePatternURL>users/test_user/my.txt'
+     * 
+     * @param gpConfig
+     * @param baseGpHref
+     * @param inetUtil
+     * @param urlSpec
+     * @return
+     */
+    public static String replaceGpUrl(final GpConfig gpConfig, final String baseGpHref, final String urlSpec) {
+        URI uri=null;
+        try {
+            uri=new URI(urlSpec);
+        }
+        catch (URISyntaxException e) {
+            return urlSpec;
+        }
+        final boolean isLocal=UrlUtil.isLocalHost(gpConfig, baseGpHref, uri);
+        if (!isLocal) {
+            return urlSpec;
+        }
+        
+        final String requestedGpUrl=UrlUtil.resolveBaseUrl(urlSpec, gpConfig.getGpPath()) + "/"; // add trailing slash
+        return urlSpec.replaceFirst(Pattern.quote(requestedGpUrl), "<GenePatternURL>");
     }
 
     /**
