@@ -63,7 +63,7 @@ public class JavascriptHandler {
      * 
      * @throws Exception
      */
-    public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
+    protected static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
     {
         final StringBuffer launchUrl = new StringBuffer();
         // For servlets in the default (root) context, HttpServletRequest.getContextPath returns ""

@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -31,18 +33,30 @@ public class TestJavascriptHandler
     private GpConfig gpConfig;
     private TaskInfo taskInfo;
     private TaskInfoAttributes tia;
+    private Map<String, List<String>> substitutedValues=new LinkedHashMap<String,List<String>>();
+    // use non-default ('/gp') servlet context path
+    final String gpContextPath="/gp-custom-context-path";
+    // default GenePatternURL set in 'genepattern.properties'
+    final String GenePatternURL="http://127.0.0.1:8080/gp/"; 
+    // client GpUrl as set in location bar in web browser
+    final String clientGpUrl="http://wm97e-54f.broadinstitute.org:8080"+gpContextPath;
+    private final int jobNo=41;
 
     @Before
-    public void setUp() {
+    public void setUp() throws MalformedURLException {
         gpConfig=mock(GpConfig.class);
         when(gpConfig.getGpPath()).thenReturn("/gp");
 
         tia = new TaskInfoAttributes();
         tia.put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_JAVASCRIPT);
-        
+        tia.put("commandLine", "clsfilecreator.html ? <input.file>");
+
         taskInfo=mock(TaskInfo.class);
         when(taskInfo.getLsid()).thenReturn(lsid);
         when(taskInfo.giveTaskInfoAttributes()).thenReturn(tia);
+        when(taskInfo.getTaskInfoAttributes()).thenReturn(tia);
+
+        substitutedValues.put("job.number", Arrays.asList(""+jobNo));
     }
 
     @Test
@@ -186,6 +200,44 @@ public class TestJavascriptHandler
         checkLaunchUrl("   ");
     }
 
+    @Test
+    public void generateLaunchUrl_userUpload() throws Exception {
+        when(gpConfig.getGpPath()).thenReturn(gpContextPath);
+        final String fileUrl=clientGpUrl+"/users/admin/all_aml_test.gct";
+        substitutedValues.put("input.file", Arrays.asList(clientGpUrl+"/users/admin/all_aml_test.gct")); 
+        assertEquals(
+                // expected
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
+                // actual
+                JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
+                );
+    }
+
+    @Test
+    public void generateLaunchUrl_jobUpload() throws Exception {
+        when(gpConfig.getGpPath()).thenReturn(gpContextPath);
+        final String fileUrl=clientGpUrl+"users/test/tmp/run8743873107529768988.tmp/input.file/1/all_aml_train.gct";
+        substitutedValues.put("input.file", Arrays.asList(fileUrl));
+        assertEquals(
+                // expected
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+ URLEncoder.encode(fileUrl, "UTF-8"),
+                // actual
+                JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
+                );
+    }
+
+    @Test
+    public void generateLaunchUrl_externalUrl() throws Exception  {
+        when(gpConfig.getGpPath()).thenReturn(gpContextPath);
+        final String fileUrl="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.gct";
+        substitutedValues.put("input.file", Arrays.asList(fileUrl));
+        assertEquals(
+                // expected
+                gpContextPath+"/tasklib/" + UrlUtil.encodeURIcomponent(lsid) + "/clsfilecreator.html?job.number="+jobNo+"&input.file="+URLEncoder.encode(fileUrl, "UTF-8"),
+                // actual
+                JavascriptHandler.generateLaunchUrl(gpConfig, taskInfo, substitutedValues)
+                );
+    }
 
 
 }
