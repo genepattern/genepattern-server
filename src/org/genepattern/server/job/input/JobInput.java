@@ -13,6 +13,8 @@ import java.util.Set;
 
 import org.genepattern.server.rest.GpServerException;
 
+import com.google.common.base.Strings;
+
 /**
  * Representation of user-supplied input parameters for a new job to be added to the GP server.
  * 
@@ -59,9 +61,15 @@ public class JobInput {
     }
     
     public void setBaseGpHref(final String baseGpHref) {
-        Param param=new Param(ParamId.BASE_GP_HREF);
-        param.addValue(new ParamValue(baseGpHref));
-        setValue(ParamId.BASE_GP_HREF, param);
+        //special-case, ignore null or empty
+        if (Strings.isNullOrEmpty(baseGpHref)) {
+            params.remove(ParamId.BASE_GP_HREF);
+        }
+        else {
+            Param param=new Param(ParamId.BASE_GP_HREF);
+            param.addValue(new ParamValue(baseGpHref));
+            setValue(ParamId.BASE_GP_HREF, param);
+        }
     }
     
     public String getBaseGpHref() {

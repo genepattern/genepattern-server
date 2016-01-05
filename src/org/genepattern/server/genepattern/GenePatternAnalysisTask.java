@@ -178,6 +178,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 
+import com.google.common.base.Strings;
+
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive metadata descriptions and obviating
  * programming effort by the task creator or user. Like other Omnigene AnalysisTasks, this one has an onJob(JobInfo
@@ -622,7 +624,7 @@ public class GenePatternAnalysisTask {
         finally {
             mgr.closeCurrentSession();
         }
-        
+        final String baseGpHref=jobContext.getBaseGpHref(); 
         final JobInfo jobInfo=jobContext.getJobInfo();
         final int parentJobId=jobInfo._getParentJobNumber();
         final TaskInfo taskInfo=jobContext.getTaskInfo();
@@ -715,6 +717,9 @@ public class GenePatternAnalysisTask {
         try {
             propsPre = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
                     taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
+                propsPre.setProperty("GenePatternURL", baseGpHref+"/");
+            }
         }
         catch (MalformedURLException e) {
             throw new JobDispatchException(e);
@@ -1126,10 +1131,6 @@ public class GenePatternAnalysisTask {
                             }
                             else {
                                 final URL url = uri.toURL();
-                                String baseGpHref=null;
-                                if (jobContext.getJobInput() != null) {
-                                    baseGpHref=jobContext.getJobInput().getBaseGpHref();
-                                }
                                 final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, baseGpHref, uri);
                                 if (log.isDebugEnabled()) {
                                     log.debug("isLocalHost("+uri+")="+isLocalHost);
@@ -1261,6 +1262,9 @@ public class GenePatternAnalysisTask {
         try {
             props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
+                props.setProperty("GenePatternURL", baseGpHref+"/");
+            }
         }
         catch (MalformedURLException e) {
             throw new JobDispatchException(e);

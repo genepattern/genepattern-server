@@ -159,6 +159,14 @@ public class ValueResolver {
             // make this an absolute path so that pipeline jobs running in their own directories see the right path
             value = new File(value).getAbsolutePath();
         }
+        
+        //special-case for <GenePatternURL>
+        if ("GenePatternURL".equals(subToken.pname)) {
+            final String baseGpHref=gpContext.getBaseGpHref();
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
+                value=baseGpHref+"/";
+            }
+        }
         return Arrays.asList(value);
     }
     
