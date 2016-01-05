@@ -200,6 +200,11 @@ public class TestJobInput {
         assertEquals("baseGpHref default", "http://127.0.0.1:8080/gp", jobInput.getBaseGpHref());
         jobInput.setBaseGpHref("https://gpdev.broadinstitute.org/gp");
         assertEquals("baseGpHref replaced", "https://gpdev.broadinstitute.org/gp", jobInput.getBaseGpHref());
+        
+        jobInput.setBaseGpHref(null);
+        assertEquals("setBaseGpHref(null)", null, jobInput.getBaseGpHref());
+        jobInput.setBaseGpHref("");
+        assertEquals("setBaseGpHref(<empty>)", null, jobInput.getBaseGpHref());
     }
 
 }

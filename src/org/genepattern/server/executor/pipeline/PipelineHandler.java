@@ -721,6 +721,7 @@ public class PipelineHandler {
         JobInput pipelineJobInput=pipelineJobContext.getJobInput();
         JobInput stepJobInput=new JobInput();
         stepJobInput.setLsid(submittedJob.getTaskLSID());
+        stepJobInput.setBaseGpHref(pipelineJobContext.getBaseGpHref());
         for(final ParameterInfo pinfo : submittedJob.getParameterInfoArray()) {
             final ParamId paramId=new ParamId(pinfo.getName());
             final String key = submittedJob.getTaskName() + stepNum + "." + pinfo.getName();
