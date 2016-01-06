@@ -5,6 +5,7 @@
 # Calls run-with-env.
 #
 # Usage: run-script -c <env.custom> -v <R.version>
+#     -l <libdir>, path to installation directory for the module
 #     -p <patches>, R_LIBS_SITE=<patches>/Library/R/<R.version> 
 #     [-d (TRUE|FALSE)], debug mode 
 #     [-m (TRUE|FALSE)], mkdirs 
@@ -12,8 +13,6 @@
 #
 
 _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-# add this directory to the path
-#export PATH="${_gp_script_dir}:${PATH}"
 
 #################################
 # parse args  (getopts)
@@ -21,12 +20,16 @@ _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 gp_mkdirs="TRUE";
 gp_debug="FALSE";
 idx=0
-while getopts c:v:p:d:m: opt "$@"; do
+while getopts c:v:l:p:d:m: opt "$@"; do
     case $opt in
         c)  env_custom="$OPTARG"
             ;;
         v) r_version="$OPTARG"
             ;;
+        # libdir ends with '/'
+        l) gp_libdir="$OPTARG"
+            ;;
+        # patches does not end with '/'
         p) gp_patches="$OPTARG"
             ;;
         d)
@@ -53,9 +56,9 @@ if [ "$1" = "--" ]; then
 fi
 
 #
-# build an array of args
+# Rscript wrapper command
 #
-MY_ARGS=( "${_gp_script_dir}/run-with-env.sh" \
+RSCRIPT_CMD=( "${_gp_script_dir}/run-with-env.sh" \
     -c "${env_custom}" \
     -u "R-${r_version}" \
     -e "GP_DEBUG=${gp_debug}" \
@@ -67,10 +70,38 @@ MY_ARGS=( "${_gp_script_dir}/run-with-env.sh" \
     -e "R_ENVIRON_USER=${_gp_script_dir}/R/${r_version}/Renviron.gp.site" \
     -e "R_PROFILE=${_gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
     -e "R_PROFILE_USER=${_gp_script_dir}/R/${r_version}/Rprofile.gp.custom" \
-    "Rscript" \
-    "$@" );
+    "Rscript" );
 
 #
-# exec
+# optionally validate/install R packages
 #
-exec "${MY_ARGS[@]}"
+
+# install packages report log file
+install_packages_log=".install.packages.log"
+# redirect stderr/stdout to this file
+install_packages_out=".install.packages.out"
+
+if [ -e "$gp_libdir/r.package.info" ]; then
+    # --no-save --quiet --slave --no-restore <gp.tools.dir>/R/install_packages/installPackages.R
+    INSTALL_PACKAGES_CMD=( "${RSCRIPT_CMD[@]}" \
+        "--no-save" "--quiet" "--slave" "--no-restore" \
+        "${_gp_script_dir}/R/installPackages.R" \
+        "${gp_libdir}r.package.info" \
+        "${install_packages_log}"
+    );
+
+    "${INSTALL_PACKAGES_CMD[@]}" >>"${install_packages_out}" 2>&1
+    
+    # check exit code
+    if [ $? -ne 0 ]; then
+        >&2 echo "Error installing R packages, see install_packages.out for details";
+        exit $1
+    fi
+fi
+
+
+#
+# run the module Rscript command
+#
+MODULE_CMD=( "${RSCRIPT_CMD[@]}" "$@" );
+"${MODULE_CMD[@]}"

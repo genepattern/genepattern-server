@@ -10,7 +10,7 @@ Optionally set a different template,
     ant ... -Dtemplate=template_run_with_env.properties
       
 (2) Merge wrapper.properties into the GP site custom.properties file
-    ant -Dwrapper.props=../../wrapper.properties -Dcustom.props=GP_HOME/resources/custom.properties
+    ant -Dwrapper.props=../../wrapper.properties -Dcustom.props=GP_HOME/resources/custom.properties merge-props
 First make a backup in ./build/custom.properties.backup
 Then merge wrapper.properties into the custom.props file
     </description>
