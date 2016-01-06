@@ -10,7 +10,7 @@ A common wrapper script will be called at runtime on the compute node, e.g.
 Edit <resources>/custom.properties file
 ==================================    
 You must first add entries to the <resources>/custom.properties file of your server. Start by looking at
-the wrapper.custom.properties file. Most of these entries will work for all servers. A few require 
+the wrapper.properties file. Most of these entries will work for all servers. A few require 
 site specific customization.
 
 Option 1: with the server shut down. Make edits to the custom.properties file and restart the server.

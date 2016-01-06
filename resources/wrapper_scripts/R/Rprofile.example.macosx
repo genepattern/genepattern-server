@@ -1,0 +1,4 @@
+local({
+   # Appropriate for platforms with binary packages (OS X), if install from source is not desired. Don't use for Linux.
+   options(install.packages.check.source = "no")
+})

@@ -41,6 +41,17 @@ function testJoinArray() {
 #    Something like: IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
 
 #
+# basic file exists test
+#
+testFileExists() {
+    assertTrue "fileExists('env-test.sh')" "[ -e 'env-test.sh' ]"
+    
+    prefix="env-";
+    suffix="test.sh";
+    assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
+}
+
+#
 # basic stress-testing of the env-hashmap.sh script
 #
 
