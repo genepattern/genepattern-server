@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -166,18 +165,6 @@ public class ParamListHelper {
         return _fileParam.substring(idx+1);
     }
 
-    /**
-     * Replace the actual url with the '<GenePatternURL>' substitution variable.
-     * @return
-     */
-    private static String insertGpUrlSubstitution(final GpConfig gpConfig, final String in) {
-        final String gpUrlStr=gpConfig.getGpUrl();
-        if (!in.startsWith(gpUrlStr)) {
-            return in;
-        }
-        return in.replaceFirst(Pattern.quote(gpUrlStr), "<GenePatternURL>");
-    }
-    
     //inputs
     final HibernateSessionManager mgr;
     final GpConfig gpConfig;
@@ -823,7 +810,7 @@ public class ParamListHelper {
             boolean replaceGpUrl=true;
             if (replaceGpUrl) {
                 final String in=parameterInfoRecord.getActual().getValue();
-                final String out=ParamListHelper.insertGpUrlSubstitution(gpConfig, in);
+                final String out=UrlUtil.replaceGpUrl(gpConfig, baseGpHref, in);
                 parameterInfoRecord.getActual().setValue(out);
             }
         }

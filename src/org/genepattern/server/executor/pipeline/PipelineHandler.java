@@ -35,6 +35,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -720,6 +721,7 @@ public class PipelineHandler {
         JobInput pipelineJobInput=pipelineJobContext.getJobInput();
         JobInput stepJobInput=new JobInput();
         stepJobInput.setLsid(submittedJob.getTaskLSID());
+        stepJobInput.setBaseGpHref(pipelineJobContext.getBaseGpHref());
         for(final ParameterInfo pinfo : submittedJob.getParameterInfoArray()) {
             final ParamId paramId=new ParamId(pinfo.getName());
             final String key = submittedJob.getTaskName() + stepNum + "." + pinfo.getName();
@@ -1277,10 +1279,9 @@ public class PipelineHandler {
                 return "";
             }
             attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-            //special-case: handle space ' ' char in filename
-            //TODO: make this more robust by using a standard method for transforming server files to URLs
-            fileName = fileName.replaceAll(" ", "%20");
-            String url = ServerConfigurationFactory.instance().getGpUrl() + "jobResults/" + fileName;
+            //special-case: handle space ' ' and other special-characters in file path
+            fileName=UrlUtil.encodeFilePath(new File(fileName));
+            String url = "<GenePatternURL>jobResults/" + fileName;
             return url;
         }
         catch (Exception e) {
@@ -1295,7 +1296,9 @@ public class PipelineHandler {
         if (fromJob==null) {
             throw new IllegalArgumentException("fromJob==null");
         }
-        log.debug("getOutputFileName, fromJob="+fromJob.getJobNumber()+"."+fromJob.getTaskName()+", fileStr="+fileStr);
+        if (log.isDebugEnabled()) {
+            log.debug("getOutputFileName, fromJob="+fromJob.getJobNumber()+"."+fromJob.getTaskName()+", fileStr="+fileStr);
+        }
         //special-case: use 'stdout' from previous job
         if ("stdout".equals(fileStr)) {
             //use STDOUT from Job
@@ -1641,11 +1644,6 @@ public class PipelineHandler {
         return model;
     }
 
-    /** @deprecated pass in a valid GpConfig */
-    public static void substituteLsidInInputFiles(final String lsidValue, final ParameterInfo[] parameterInfos) {
-        substituteLsidInInputFiles(ServerConfigurationFactory.instance(), lsidValue, parameterInfos);
-    }
-    
     /**
      * Substitute '<LSID>' in input files. 
      * This is a special case for steps in a pipeline which use input files from the pipeline or from a previous step in the pipeline.
@@ -1669,14 +1667,11 @@ public class PipelineHandler {
         }        
     }
     
-    public static String substituteLsidInInputFile(final GpConfig gpConfig, final String lsidValue, final String valueIn) {
+    protected static String substituteLsidInInputFile(final GpConfig gpConfig, final String lsidValue, final String valueIn) {
         final String lsidTag = "<LSID>";
         final String gpUrlTag = "<GenePatternURL>";
         if (valueIn != null && valueIn.startsWith(gpUrlTag)) {
-            // substitute <GenePatternURL> with actual value
-            String value = valueIn.replace(gpUrlTag, gpConfig.getGpUrl());
-            // substitute <LSID> flags for pipeline files
-            value = value.replace(lsidTag, lsidValue);
+            String value = valueIn.replace(lsidTag, lsidValue);
             return value;
         }
         else {

@@ -294,7 +294,8 @@ public class GenomeSpaceManager {
         // Second trial, clear the cached list, rebuild and try again
         int ran = 0;
         while (ran < 2) {
-            for (GenomeSpaceFile i : getAllDirectoriesLazy(session)) {
+            List<GenomeSpaceFile> dirList = ran == 0 ? getAllDirectoriesLazy(session) : getAllDirectories(session);
+            for (GenomeSpaceFile i : dirList) {
                 URL iUrl;
                 try {
                     iUrl = i.getUrl();
