@@ -120,7 +120,6 @@ public class GetIncludedTasks {
     
     private PipelineModel visitChildren(final HibernateSessionManager mgr, final TaskInfo taskInfo) {
         if (!taskInfo.isPipeline()) {
-            log.error("taskInfo is not a pipeline");
             return null;
         }
         
