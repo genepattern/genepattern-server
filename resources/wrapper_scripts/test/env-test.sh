@@ -40,6 +40,53 @@ function testJoinArray() {
 # 4) special-case: map one key to multiple values, e.g. R-2.15 requires GCC for a particular (custom) installation
 #    Something like: IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
 
+
+#
+# Get the root name from the given moduleName.
+# 
+# Usage: extractRootName <moduleName>
+#
+# Example,
+#    echo extractRootName "R/2.15.3"
+#    > "R"
+#
+function extractRootName() {
+    rootName="${1%%\/*}";
+    echo "$rootName";
+}
+
+#
+# basic extract prefix test
+# to extract 'R' from the pattern 'R/2.15.3'
+testRootModuleName() {
+    # standard use-case
+    moduleName="R/2.15.3"
+    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+    
+    # case 2: extra sub-package
+    moduleName="R/2.15/3"
+    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+    
+    # case 3: no sub-package
+    moduleName="R"
+    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+
+    # case 4: empty string
+    moduleName=""
+    assertEquals "rootName('$moduleName')" "" "$(extractRootName $moduleName)"
+}
+
+#
+# basic file exists test
+#
+testFileExists() {
+    assertTrue "fileExists('env-test.sh')" "[ -e 'env-test.sh' ]"
+    
+    prefix="env-";
+    suffix="test.sh";
+    assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
+}
+
 #
 # basic stress-testing of the env-hashmap.sh script
 #

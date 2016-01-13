@@ -3,49 +3,60 @@
  *******************************************************************************/
 package org.genepattern.server.tag.dao;
 
+import static org.junit.Assert.*;
+
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.tag.Tag;
-import org.junit.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by nazaire on 10/8/14.
  */
 public class TestTagDao
 {
-    private HibernateSessionManager mgr;
+    @ClassRule
+    public static TemporaryFolder temp = new TemporaryFolder();
+    private static HibernateSessionManager mgr;
+    private static GpConfig gpConfig;
+    private static String user;
+    private static String admin;
+    
     private TagDao dao;
 
-    static String user;
-    static String admin;
-
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
-
-    @Before
-    public void setUp() throws Exception
-    {
-        mgr=DbUtil.getTestDbSession();
-        final String userDir=temp.newFolder("users").getAbsolutePath();
-        final GpConfig gpConfig=new GpConfig.Builder()
+    @BeforeClass
+    public static void beforeClass() throws IOException, DbException, ExecutionException {
+        String userDir=temp.newFolder("users").getAbsolutePath();
+        gpConfig=new GpConfig.Builder()
+            .webappDir(new File("website"))
             .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
         .build();
+        mgr=DbUtil.getTestDbSession();
         user=DbUtil.addUserToDb(gpConfig, mgr, "test");
         admin=DbUtil.addUserToDb(gpConfig, mgr, "admin");
+    }
 
+    @Before
+    public void setUp() {
         dao = new TagDao(mgr);
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         DbUtil.deleteAllRows(mgr, Tag.class);
     }
 

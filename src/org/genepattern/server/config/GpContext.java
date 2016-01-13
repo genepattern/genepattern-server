@@ -321,6 +321,17 @@ public class GpContext {
         return jobPermissions.canWriteJob();
     }
     
+    /**
+     * Helper method to get the baseGpHref associated with a job or web request,
+     * Currently only implemented for a job context initialized with a jobinput field.
+     * @return the value or null if not set, e.g. 'http://127.0.0.1:8080/gp'
+     */
+    public String getBaseGpHref() {
+        if (this.jobInput != null) {
+            return this.jobInput.getBaseGpHref();
+        }
+        return null;
+    } 
     
     // Builder pattern
     public static final class Builder {

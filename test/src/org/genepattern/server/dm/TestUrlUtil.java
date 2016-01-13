@@ -7,6 +7,7 @@ import static org.genepattern.junitutil.Demo.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -104,6 +105,17 @@ public class TestUrlUtil {
                 relativeHref,
                 UrlUtil.getHref("", gpFilePath));
     }
+    
+    @Test
+    public void getHref_rootUploadDir() throws URISyntaxException {
+        GpFilePath rootUploadDir=mock(GpFilePath.class);
+        when(rootUploadDir.isDirectory()).thenReturn(true);
+        when(rootUploadDir.getRelativeUri()).thenReturn(new URI("/users/test/"));
+        when(rootUploadDir.getName()).thenReturn("uploads");
+        when(rootUploadDir.getRelativeFile()).thenReturn(new File("./"));
+        
+        assertEquals("", Demo.proxyHref + "/users/test/", UrlUtil.getHref(Demo.proxyHref, rootUploadDir));
+    }
 
     @Test(expected=IllegalArgumentException.class)
     public void getUrl_baseGpHref_notSet() throws MalformedURLException {
@@ -191,6 +203,9 @@ public class TestUrlUtil {
         
         assertEquals("special-case: null baseHref, null path -> {empty}/{empty}}", "/", 
                 UrlUtil.glue(null, null));
+        
+        assertEquals("special-case: double '//'", "/users/test/",
+                UrlUtil.glue("/users/test/", "/"));
     }
     
     protected void checkSplit(final String expectedServletPath, final String expectedPathInfo, final String gpContextPath, final String urlSpec) throws MalformedURLException, URISyntaxException {

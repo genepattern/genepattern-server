@@ -61,7 +61,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
@@ -69,7 +68,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,6 +121,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -145,7 +144,11 @@ import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.choice.Choice;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
@@ -174,6 +177,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
+
+import com.google.common.base.Strings;
 
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive metadata descriptions and obviating
@@ -289,40 +294,6 @@ public class GenePatternAnalysisTask {
             }
         }
         return inputFileMode;
-    }
-
-    /**
-     * Tests whether the specified URL refers to the local host.
-     * 
-     * @param url
-     *            The URL to check whether it refers to the local host.
-     * @return <tt>true</tt> if the specified URL refers to the local host.
-     */
-    protected boolean isLocalHost(URL url) {
-        String gpHost = null;
-        String hostAddress = null;
-        try {
-            URL gpUrl = ServerConfigurationFactory.instance().getGenePatternURL();
-            gpHost = gpUrl.getHost();
-            hostAddress = InetAddress.getLocalHost().getHostAddress();
-        } 
-        catch (UnknownHostException uhe) {
-        }
-        catch (Throwable t) {
-            log.error(t);
-        }
-
-        String requestedHost = url.getHost();
-        try {
-            return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
-                    || requestedHost.equals("127.0.0.1")
-                    || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName()) || requestedHost.equals(gpHost) || InetAddress
-                    .getByName(requestedHost).getHostAddress().equals(hostAddress));
-        } 
-        catch (UnknownHostException x) {
-            log.error("Unknown host", x);
-            return false;
-        }
     }
 
     /**
@@ -653,7 +624,7 @@ public class GenePatternAnalysisTask {
         finally {
             mgr.closeCurrentSession();
         }
-        
+        final String baseGpHref=jobContext.getBaseGpHref(); 
         final JobInfo jobInfo=jobContext.getJobInfo();
         final int parentJobId=jobInfo._getParentJobNumber();
         final TaskInfo taskInfo=jobContext.getTaskInfo();
@@ -746,6 +717,9 @@ public class GenePatternAnalysisTask {
         try {
             propsPre = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
                     taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
+                propsPre.setProperty("GenePatternURL", baseGpHref+"/");
+            }
         }
         catch (MalformedURLException e) {
             throw new JobDispatchException(e);
@@ -1156,8 +1130,12 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             else {
-                                URL url = uri.toURL();
-                                if (isLocalHost(url)) {
+                                final URL url = uri.toURL();
+                                final boolean isLocalHost=UrlUtil.isLocalHost(gpConfig, baseGpHref, uri);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("isLocalHost("+uri+")="+isLocalHost);
+                                }
+                                if (isLocalHost) {
                                     try {
                                         File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
@@ -1284,6 +1262,9 @@ public class GenePatternAnalysisTask {
         try {
             props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+            if (!Strings.isNullOrEmpty(baseGpHref)) {
+                props.setProperty("GenePatternURL", baseGpHref+"/");
+            }
         }
         catch (MalformedURLException e) {
             throw new JobDispatchException(e);
@@ -1679,12 +1660,12 @@ public class GenePatternAnalysisTask {
     private static JobInfoWrapper getJobInfoWrapper(final HibernateSessionManager mgr, final GpConfig gpConfig, String userId, int jobNumber) {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
-            JobInfoManager m = new JobInfoManager();
             String contextPath = gpConfig.getGpPath();
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
             String cookie = "";
+            JobInfoManager m = new JobInfoManager();
             return m.getJobInfo(cookie, contextPath, userId, jobNumber);
         }
         finally {
@@ -1975,6 +1956,8 @@ public class GenePatternAnalysisTask {
      * 
      * @param jobDir, the job results directory, e.g. GenePatternServer/Tomcat/webapps/gp/jobResults/<job_no>
      * @param jobInfoWrapper
+     * 
+     * @deprecated should re-implement this method without use of the JobInfoWrapper class
      */
     private static void cleanupInputFiles(File jobDir, JobInfoWrapper jobInfoWrapper) {
         for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {

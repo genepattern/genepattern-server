@@ -60,6 +60,23 @@ public class TestValueResolver
     }
     
     @Test
+    public void getTokens_quoted_arg() {
+        final String QUOTE_DELIM="\"";
+        String cmdLine="<run-with-env> -e R_LIBS -e "+QUOTE_DELIM+"R_LIBS_USER=' '"+QUOTE_DELIM;
+        assertEquals("getTokens('"+cmdLine+"')", 
+                Arrays.asList("<run-with-env>", "-e", "R_LIBS", "-e", "R_LIBS_USER=' '"), 
+                ValueResolver.getTokens(cmdLine));
+    }
+
+    @Test
+    public void getTokens_emptyString() {
+        String cmdLine="";
+        assertEquals("getTokens('"+cmdLine+"')", 
+                Arrays.asList(), 
+                ValueResolver.getTokens(cmdLine));
+    }
+    
+    @Test
     public void testListModeCmdWithChoice()
     {
         String paramName = "multi.choice";

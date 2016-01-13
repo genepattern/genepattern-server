@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import com.google.common.base.Strings;
  * 
  * @author pcarr
  *
+ * Note: see http://tools.ietf.org/html/rfc2606
  */
 public class Demo {
     /** servlet context path is '/gp' */
@@ -151,6 +153,15 @@ public class Demo {
         GpConfig gpConfig=mock(GpConfig.class);
         when(gpConfig.getGpPath()).thenReturn(gpPath);
         when(gpConfig.getGpUrl()).thenReturn(gpUrl);
+        // init genePatternURL
+        URL genePatternURL=null;
+        try {
+            genePatternURL=new URL(gpUrl);
+        }
+        catch (Throwable t) {
+            // ignore
+        }
+        when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
         return gpConfig;
     }
     

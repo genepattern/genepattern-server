@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="set-rscript" name="set-rscript">
+    <description>
+Utility script for ...
+(1) Add/update the R${R.version}_Rscript substitution in the ../../wrapper.properties file, based on the template.properties file.
+Must set the 'R.version', e.g.
+    ant -DR.version=2.15
+This script edits the ../../wrapper.properties file.
+Optionally set a different template,
+    ant ... -Dtemplate=template_run_with_env.properties
+      
+(2) Merge wrapper.properties into the GP site custom.properties file
+    ant -Dwrapper.props=../../wrapper.properties -Dcustom.props=GP_HOME/resources/custom.properties merge-props
+First make a backup in ./build/custom.properties.backup
+Then merge wrapper.properties into the custom.props file
+    </description>
+
+    <property name="gp.basedir" location="../../../.." />
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${gp.basedir}/lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="init">
+        <property name="build" location="build" />
+        <mkdir dir="${build}" />
+        <property name="prefix" value="_in" />
+        <property name="wrapper.props" location="../../wrapper.properties" />
+
+        <!-- init 'custom.props' -->
+        <condition property="custom.props.set">
+            <isset property="custom.props" />
+        </condition>
+        <available property="custom.props.exists" file="${custom.props}"/>
+        
+        <echo>custom.props=${custom.props}</echo>
+
+        <dirname property="custom.props.dir" file="${custom.props}" />
+        
+        <condition property="copy.custom.props">
+            <and>
+                <isset property="custom.props" />
+                <istrue value="${custom.props.exists}" />
+                <not><equals arg1="${custom.props.dir}" arg2="${build}" /></not>
+            </and>
+        </condition>
+
+        <!-- set to default value after checking for -Dcustom.props= -->
+        <property name="custom.props" location="${build}/custom.properties" />
+    </target>
+    
+    <target name="init-custom-props" depends="init" if="copy.custom.props" >
+        <!-- make a backup copy for the custom.props file, into the build directory -->
+        <fail unless="custom.props.exists" message="-Dcustom.props='${custom.props}', file does not exist" />
+        <basename property="custom.props.basename" file="${custom.props}" />
+        <copy file="${custom.props}" tofile="${build}/${custom.props.basename}.backup" 
+            overwrite="true"
+            failonerror="true"
+            quiet="false"
+        />
+    </target>
+
+    <target name="set-rscript" depends="init">
+        <input message="R.version, (e.g. 3.2): " addproperty="R.version" defaultvalue="3.2" />
+        <property name="Rscript.key" value="R${R.version}_Rscript" />
+        <property name="Rinstall_pkg.key" value="R${R.version}_install_pkg" /> 
+        <property name="template" location="template.properties" /> 
+
+        <!-- load the template; substituting ${R.version} -->
+        <property file="${template}" />
+        <echo level="verbose">${Rscript.key}=${Rscript}</echo>
+        <!-- add/update the property file -->
+        <propertyfile file="../../wrapper.properties">
+            <entry key="${Rscript.key}" value="${Rscript.value}" />
+            <entry key="${Rinstall_pkg.key}" value="${Rinstall_pkg.value}" />
+        </propertyfile>
+    </target>
+
+    <target name="merge-props" depends="init-custom-props" 
+        description="Merge 'wrapper.properties' into site 'custom.properties'"
+    >
+        <property file="${wrapper.props}" prefix="${prefix}" />
+
+        <!-- debugging: echoproperties prefix="${prefix}" / -->
+
+        <propertyselector property="prop.list" 
+            delimiter="," match="_in\.(.*)" select="\1" casesensitive="false" />
+
+        <sortlist property="prop.list" value="${prop.list}" 
+            override="true"
+            delimiter="," 
+            casesensitive="false"
+        />
+
+        <for list="${prop.list}" delimiter="," param="prop.entry">
+            <sequential>
+                <propertycopy override="true" name="prop.value" from="${prefix}.@{prop.entry}" />
+                <echo level="debug">@{prop.entry}=${prop.value}</echo>
+                <!-- add/update the property file -->
+                <propertyfile file="${custom.props}">
+                    <entry key="@{prop.entry}" value="${prop.value}" />
+                </propertyfile>
+            </sequential>
+        </for>
+    </target>
+    
+    <!-- not used -->
+    <macrodef name="sort-prop-file" 
+        description="for sorting a java .properties file with the unix sort command ">
+        <attribute name="file" /> 
+        <attribute name="validate" default="true" />
+        <sequential>
+            <exec executable="sort" failonerror="@{validate}">
+                <arg value="@{file}" />
+                <arg value="-o" />
+                <arg value="@{file}" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <!-- not used -->
+    <target name="remove-blank-lines">
+        <!-- remove blank lines -->
+        <move file="${custom.props}" tofile="${custom.props}.tmp">
+            <filterchain>
+                <tokenfilter>
+                    <ignoreblank/>
+                </tokenfilter>
+            </filterchain>
+        </move>
+        <move file="${custom.props}.tmp" tofile="${custom.props}" />
+    </target>
+
+    <target name="clean">
+        <delete dir="build" />
+    </target>
+
+</project>
