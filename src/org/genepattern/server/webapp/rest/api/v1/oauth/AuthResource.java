@@ -302,7 +302,7 @@ public class AuthResource {
             String token = oauthIssuerImpl.accessToken();
 
             // Register the access token with GenePattern
-            OAuthManager.instance().createTokenSession(username, token, clientID, OAuthManager.calcExpiry(CODE_EXPIRY_TIME));
+            OAuthManager.instance().createTokenSession(username, token, clientID, OAuthManager.calcExpiry(TOKEN_EXPIRY_TIME));
 
             // Build and return the token response
             OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
