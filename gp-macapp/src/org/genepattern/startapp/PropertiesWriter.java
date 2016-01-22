@@ -3,7 +3,12 @@
  *******************************************************************************/
 package org.genepattern.startapp;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -165,7 +170,6 @@ public class PropertiesWriter {
      * @throws IOException
      */
     public void writeInstallTime(File propFile, String workingDirString, String gpHomeDirString) throws IOException {
-        final String tomcatDir="<GENEPATTERN_APP_DIR>/Contents/Resources/GenePatternServer/Tomcat";
         List<String> lines = new ArrayList<String>();
 
         // Read the file and store changes

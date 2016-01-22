@@ -3,9 +3,13 @@
  *******************************************************************************/
 package org.genepattern.startapp;
 
-import java.io.*;
-import java.net.*;
-import java.util.Properties;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 /**
  * Class for correctly generating the LSID authority in the Mac app
