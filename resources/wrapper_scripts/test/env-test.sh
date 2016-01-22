@@ -88,6 +88,91 @@ testFileExists() {
 }
 
 #
+# Append an element to the end of the path; 
+# Usage: path=$(appendPath "${path}" "${element}")
+#
+appendPath() {
+    local path="${1}";
+    local element="${2}";
+    
+    # Note, to check for a directory: [ -d "$element" ] 
+    # To prepend, path="$element:$path"
+    
+    # if path is not set ... just set it to element
+    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
+    if [ -z "$path" ]; then
+        #echo "2, path not set";
+        path="$element";
+    elif [[ ":$path:" != *":$element:"* ]]; then
+        path="${path:+"$path:"}$element"
+    fi
+    # use echo to return a value
+    echo "$path"
+}
+
+testAppendPath() {
+    MY_PATH="/opt/dir1";
+    MY_PATH=$(appendPath "${MY_PATH}" "/opt/dir2")
+    assertEquals "appendPath" "/opt/dir1:/opt/dir2" "${MY_PATH}"
+}
+
+testAppendPath_ignoreDuplicate() {
+    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
+    
+    assertEquals "appendPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(appendPath "${MY_PATH}" "/opt/dir1");
+    
+    assertEquals "appendPath, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(appendPath "${MY_PATH}" "/opt/dir2");
+    
+    assertEquals "appendPath, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(appendPath "${MY_PATH}" "/opt/dir3");
+        
+    # sanity check
+    assertEquals "sanity check, not a dupe" "/opt/dir1:/opt/dir2:/opt/dir3:/opt/dir4" \
+        $(appendPath "${MY_PATH}" "/opt/dir4"); 
+}
+
+testAppendPath_toEmpty() {
+    MY_ARG="/new/pathelement";
+    unset MY_PATH;
+    MY_PATH=$(appendPath "${MY_PATH}" "${MY_ARG}")
+    assertEquals "appendPath" "/new/pathelement" "${MY_PATH}"
+}
+
+testMcrAtIndianaU() {
+    expected_mcr_path="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/runtime/glnxa64:\
+/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/bin/glnxa64:\
+/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/os/glnxa64:\
+/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64/native_threads:\
+/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64/server:\
+/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64";
+
+    # define path to root MCR dir
+    _mcr_root="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81";
+    # build MCR_LD_LIB_PATH elements
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/runtime/glnxa64")
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/bin/glnxa64")
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/os/glnxa64")
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64/native_threads")
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64/server")
+    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64")
+    # define new ld_lib_path
+    _ld_lib_path=$(appendPath "${LD_LIBRARY_PATH}" "${_mcr_path}")
+    # TODO: export LD_LIBRARY_PATH="${_ld_lib_path}"
+    # for debugging only: 
+echo "LD_LIBRARY_PATH=${_ld_lib_path}"
+    
+
+    _xapplresdir=$(appendPath "${XAPPLRESDIR}" "${_mcr_root}/X11/app-defaults")
+    # TODO: export XAPPLRESDIR="${_xapplresdir}"
+    # for debugging only: 
+echo "XAPPLRESDIR=${_xapplresdir}"
+    
+    assertEquals "mcr_path at IU from appendPath" "${expected_mcr_path}" "${_mcr_path}"
+}
+
+#
 # basic stress-testing of the env-hashmap.sh script
 #
 
