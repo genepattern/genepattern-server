@@ -10,7 +10,7 @@
 function initEnv() {
     # must source useuse each time
     . /broad/software/scripts/useuse
-    use "$1" &>/dev/null
+    reuse "$1" &>/dev/null
 
     # special-case for .libmesa_from_matlab-2014b
     if [ "$1" = ".libmesa_from_matlab-2014b" ]; then
