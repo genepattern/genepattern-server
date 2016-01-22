@@ -115,9 +115,6 @@ public class ConfigApp {
                     ex.printStackTrace();
                 }
 
-                // Run the shell script
-                // GenePattern.runShellScript(workingDir.getAbsolutePath());
-
                 // Show the dialog
                 JFrame frame = ConfigApp.instance();
                 JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");

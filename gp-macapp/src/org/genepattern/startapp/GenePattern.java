@@ -63,7 +63,18 @@ public class GenePattern {
     }
 
     protected static void copyDirectory(final File from, final File to) throws IOException {
+        //FileUtils.copyDirectory(from, to);
+        copyDir_sh(from,to);
+    }
+
+    protected static void copyDirectory_apache_commons_io(final File from, final File to) throws IOException {
         FileUtils.copyDirectory(from, to);
+    }
+
+    // copy directory as shell exec
+    protected static void copyDir_sh(final File from, final File to) throws IOException {
+        final String[] cmd={"cp", "-Rp", from.getAbsolutePath(), to.getAbsolutePath()};
+        Runtime.getRuntime().exec(cmd);
     }
     
     /**
@@ -150,7 +161,7 @@ public class GenePattern {
      *
      * @param workingDirectory
      */
-    public static void runShellScript(String workingDirectory) {
+    private static void runShellScript(String workingDirectory) {
         File workingDir = new File(workingDirectory);
 
         File catalinaPath = new File(workingDir.getParent(), "MacOS/GenePattern");
