@@ -4,7 +4,11 @@
 package org.genepattern.startapp;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 
@@ -92,6 +96,48 @@ public class GenePattern {
         return false;
     }
     
+    protected static boolean copyFile(final File from, final File to) {
+        if (!to.exists() || to.length()==0) {
+            try {
+                Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                return true;
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Append 'env-custom=env-custom-macos.sh' to end of custom.properties file
+     * 
+     * @param toCustomProps
+     * @throws IOException
+     */
+    protected static boolean editCustomProps(File toCustomProps) {
+        PrintWriter w=null;
+        try {
+            w=new PrintWriter(new FileWriter(toCustomProps, true));
+            w.println("#");
+            w.println("# site customization for MacOS X");
+            w.println("#");
+            w.println("env-custom=env-custom-macos.sh");
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+            return false;
+        }
+        finally {
+            if (w!=null) {
+                w.close();
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Lazily sets up the GP Home directory if needed
      *
@@ -102,8 +148,8 @@ public class GenePattern {
         File gpServer = new File(workingDir.getParent(), "Resources/GenePatternServer");
 
         // Get user and GP Home
-        String user = System.getProperty("user.name");
-        File gpHome = new File("/Users/" + user + "/.genepattern");
+        final String user = System.getProperty("user.name");
+        final File gpHome = new File("/Users/" + user + "/.genepattern");
 
         boolean createdDirectory = false;
 
@@ -135,7 +181,7 @@ public class GenePattern {
             createdDirectory = true;
         }
 
-        File resources = new File(gpHome, "resources");
+        final File resources = new File(gpHome, "resources");
         if (!resources.exists()) {
             File iResources = new File(gpServer, "resources");
             copyDirectory(iResources, resources);
@@ -162,6 +208,14 @@ public class GenePattern {
             copyDirectory(iUsers, users);
             createdDirectory = true;
         }
+        
+        // seed custom.properties from ./resources/wrapper_scripts/wrapper.properties
+        File fromWrapperProps = new File(gpServer, "resources/wrapper_scripts/wrapper.properties");
+        File toCustomProps = new File(resources, "custom.properties");
+        copyFile(fromWrapperProps, toCustomProps);
+        
+        // append 'env-custom=env-custom-macos.sh' to end of custom.properties file
+        editCustomProps(toCustomProps);
 
         return createdDirectory;
     }
