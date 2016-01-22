@@ -41,5 +41,5 @@ then
 else
     echo "launching config app..."
     # Otherwise launch the config app
-    java -cp "${APP_DIR}/Contents/Resources/bootstrap.jar:${APP_DIR}/Contents/Resources/javax.mail.jar:${APP_DIR}/Contents/Resources/jgoodies-forms-1.9.0.jar:${APP_DIR}/Contents/Resources/jgoodies-common-1.8.1.jar:${APP_DIR}/Contents/Resources/commons-io-2.0.1.jar" org.genepattern.startapp.GenePattern "${DIR}"
+    java -cp "${APP_DIR}/Contents/Resources/bootstrap.jar:${APP_DIR}/Contents/Resources/javax.mail.jar:${APP_DIR}/Contents/Resources/jgoodies-forms-1.9.0.jar:${APP_DIR}/Contents/Resources/jgoodies-common-1.8.1.jar" org.genepattern.startapp.GenePattern "${DIR}"
 fi
