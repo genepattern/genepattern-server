@@ -949,7 +949,7 @@ public class PipelineHandler {
         }
         JobResultFile gpFilePath = null;
         try {
-            gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(value);
+            gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(ServerConfigurationFactory.instance(), value);
         }
         catch (Exception e) {
             //this is to be expected ... 
@@ -1280,7 +1280,8 @@ public class PipelineHandler {
             }
             attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
             //special-case: handle space ' ' and other special-characters in file path
-            fileName=UrlUtil.encodeFilePath(new File(fileName));
+            //TODO: make this more robust by using a standard method for transforming server files to URLs
+            fileName = fileName.replaceAll(" ", "%20");
             String url = "<GenePatternURL>jobResults/" + fileName;
             return url;
         }
