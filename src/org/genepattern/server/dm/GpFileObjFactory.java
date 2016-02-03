@@ -364,9 +364,13 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public JobResultFile getRequestedJobResultFileObj(String urlStr) throws Exception {
+    static public JobResultFile getRequestedJobResultFileObj(final GpConfig gpConfig, String urlStr) throws Exception {
+        if (urlStr.startsWith("<GenePatternURL>")) {
+            urlStr=urlStr.replaceFirst("<GenePatternURL>", 
+                    ServerConfigurationFactory.instance().getGpPath() + "/");
+        }
         URI uri = getUri(urlStr);
-        final String[] split = UrlUtil.splitUri(ServerConfigurationFactory.instance().getGpPath(), uri);
+        final String[] split = UrlUtil.splitUri(gpConfig.getGpPath(), uri);
         String servletPath = split[0];
         String pathInfo = split[1];
         if ("/jobResults".equals(servletPath)) {
