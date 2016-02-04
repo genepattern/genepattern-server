@@ -81,9 +81,6 @@ public class CmdLineLsfRunner implements JobRunner {
     private Pattern lsfStatusPattern=null;
     // null means use default
     private Memory.Unit lsfMemoryUnit=Memory.Unit.gb;
-    
-    private LsfStatusChecker statusChecker=null;
-
 
     @Override
     public void stop() {
@@ -115,7 +112,8 @@ public class CmdLineLsfRunner implements JobRunner {
             log.trace("getStatus for jobId="+jobRecord.getExtJobId());
         }
         try {
-            DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord);
+            final LsfStatusChecker statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
+            final DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord);
             if (log.isTraceEnabled()) {
                 log.trace("jobStatus="+jobStatus);
             }
@@ -178,7 +176,7 @@ public class CmdLineLsfRunner implements JobRunner {
     }
     
     public void start() {
-        this.statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
+        //this.statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
     }
     
     protected LsfStatusChecker initLsfStatusChecker() {
