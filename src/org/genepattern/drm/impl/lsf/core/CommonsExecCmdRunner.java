@@ -5,6 +5,7 @@ package org.genepattern.drm.impl.lsf.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
@@ -19,12 +20,19 @@ import org.apache.log4j.Logger;
 
 public class CommonsExecCmdRunner implements CmdRunner {
     private static final Logger log = Logger.getLogger(CommonsExecCmdRunner.class);
-    private int numHeaderLines=0;
+    
+    // kill the process after 'timeout_millis' milliseconds
+    final Long timeout_millis;
+
+    // don't wrap arguments in quotation marks
+    final boolean handleQuoting=false;
     
     public CommonsExecCmdRunner() {
+        this(60L*1000L);
     }
-    public CommonsExecCmdRunner(int numHeaderLines) {
-        this.numHeaderLines=numHeaderLines;
+    
+    public CommonsExecCmdRunner(final long timeout_millis) {
+        this.timeout_millis=timeout_millis;
     }
 
     /**
@@ -32,27 +40,18 @@ public class CommonsExecCmdRunner implements CmdRunner {
      * Skip the first (header) line.
      */
     protected class LineReaderLogOutputStream extends LogOutputStream {
-//        public LineReaderLogOutputStream() {
-//            this(0);
-//        }
-//        public LineReaderLogOutputStream(int numHeaderLines) {
-//            this.numHeaderLines=numHeaderLines;
-//        }
-        
-//        private int numHeaderLines=0; //number of lines to skip
-        private List<String> lines = new ArrayList<String>();
+        private final List<String> lines = Collections.synchronizedList(new ArrayList<String>());
 
-        int lineNum=0;
         @Override
-        protected void processLine(String line, int level) {
-            ++lineNum; // first line is '1'
-            if (lineNum<=numHeaderLines) {
-                //ignore
-                return;
-            }
+        protected void processLine(final String line, final int level) {
             lines.add(line);
         }
         
+        @Override
+        protected void processLine(final String line) {
+            super.processLine(line);
+        }
+
         public List<String> getLines() {
             return lines;
         }
@@ -65,8 +64,7 @@ public class CommonsExecCmdRunner implements CmdRunner {
         final DefaultExecutor exec=new DefaultExecutor();
         // collect lines from stdout
         exec.setStreamHandler( new PumpStreamHandler( collectLines ) );
-        // kill the process after 60 seconds
-        exec.setWatchdog(new ExecuteWatchdog(60000));
+        exec.setWatchdog(new ExecuteWatchdog(timeout_millis));
         exec.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         try {
             exec.execute(cmdLine);
@@ -83,10 +81,9 @@ public class CommonsExecCmdRunner implements CmdRunner {
     }
 
     protected CommandLine initCommandLine(final List<String> gpCommand) {
-        boolean handleQuoting=false;
-        CommandLine cl=new CommandLine(gpCommand.get(0));
-        for(int i=1; i<gpCommand.size(); ++i) {
-            cl.addArgument(gpCommand.get(i), handleQuoting);
+        final CommandLine cl=new CommandLine(gpCommand.get(0));
+        for(final String arg : gpCommand.subList(1, gpCommand.size())) {
+            cl.addArgument(arg, handleQuoting);
         }
         return cl;
     }

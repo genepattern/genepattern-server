@@ -7,9 +7,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.genepattern.drm.DrmJobRecord;
@@ -237,22 +235,7 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
     // Note: max_swap, max_processes, and max_threads are not logged yet  
     
     @Test
-    public void checkStatus() throws Exception {
-        File lsfLogFile=new File(".lsf.out");  // doesn't exist, should be ignored
-        CmdRunner cmdRunner = new CmdRunner() {
-            @Override
-            public List<String> runCmd(List<String> cmd) throws CmdException {
-                // skip the first line of output
-                return Arrays.asList(new String[] { exampleOutput[1] });
-            }
-        };
-        LsfStatusChecker statusChecker=new LsfStatusChecker(cmdRunner);
-        DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord, lsfLogFile);
-        assertEquals(DrmJobState.RUNNING, jobStatus.getJobState());
-    }
-    
-    @Test
-    public void initStatusCmd() {
+    public void initStatusCmd() throws CmdException {
         final String extJobId="34000";
         jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
         .build();
@@ -261,35 +244,43 @@ JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME 
         assertEquals(Arrays.asList("bjobs", "-W", extJobId), statusChecker.initStatusCmd(jobRecord));
     }
     
-    @Test
-    public void initStatusCmd_nullExtJobId() {
-        final String extJobId="";
-        jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
+    @Test(expected=CmdException.class)
+    public void initStatusCmd_nullJobRecord() throws CmdException {
+        final LsfStatusChecker statusChecker=new LsfStatusChecker();
+        statusChecker.initStatusCmd(null);
+    }
+
+    @Test(expected=CmdException.class)
+    public void initStatusCmd_nullExtJobId() throws CmdException {
+        final String extJobId=null;
+        jobRecord=new DrmJobRecord.Builder(jobRecord)
+            .extJobId(extJobId)
         .build();
 
-        LsfStatusChecker statusChecker=new LsfStatusChecker();
-        assertEquals(Arrays.asList("bjobs", "-W"), statusChecker.initStatusCmd(jobRecord));
+        final LsfStatusChecker statusChecker=new LsfStatusChecker();
+        statusChecker.initStatusCmd(jobRecord);
+    }
+    
+    @Test(expected=CmdException.class)
+    public void initStatusCmd_emptyExtJobId() throws CmdException {
+        final String extJobId="";
+        jobRecord=new DrmJobRecord.Builder(jobRecord)
+            .extJobId(extJobId)
+        .build();
+
+        final LsfStatusChecker statusChecker=new LsfStatusChecker();
+        statusChecker.initStatusCmd(jobRecord);
     }
     
     @Test
-    public void initStatusCmd_emptyListOfJobRecords() {
-        List<DrmJobRecord> jobRecords=Collections.emptyList();
-        final String extJobId="";
-        jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
-        .build();
-
-        LsfStatusChecker statusChecker=new LsfStatusChecker();
-        assertEquals(Arrays.asList("bjobs", "-W"), statusChecker.initStatusCmd(jobRecords));
-    }
-    
-    @Test
-    public void initStatusCmd_customLsfStatusCmd() {
+    public void initStatusCmd_customLsfStatusCmd() throws CmdException {
         final String extJobId="34000";
             jobRecord=new DrmJobRecord.Builder(jobRecord).extJobId(extJobId)
         .build();
 
         LsfStatusChecker statusChecker=new LsfStatusChecker( 
                 Arrays.asList("bjobs", "-W", "-a"),
+                null,
                 null);
         assertEquals(Arrays.asList("bjobs", "-W", "-a", extJobId), statusChecker.initStatusCmd(jobRecord));
     }
