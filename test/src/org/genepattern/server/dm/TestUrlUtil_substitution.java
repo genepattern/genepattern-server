@@ -91,7 +91,9 @@ public class TestUrlUtil_substitution {
 
     @Test
     public void computerName() throws UnknownHostException { 
-        assertReplaceGpUrl(Demo.gpHref, "http://"+InetAddress.getLocalHost().getHostName()+":8080/gp" + Demo.uploadPath());
+        final InetAddress localAddr=InetAddress.getLocalHost();
+        final String hostname=localAddr.getHostName(); 
+        assertReplaceGpUrl(Demo.gpHref, "http://"+hostname+":8080/gp" + Demo.uploadPath());
     } 
 
     @Test

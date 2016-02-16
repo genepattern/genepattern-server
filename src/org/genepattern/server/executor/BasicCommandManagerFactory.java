@@ -71,7 +71,14 @@ public class BasicCommandManagerFactory {
             try {
                 constructor=svcClass.getConstructor(new Class[]{HibernateSessionManager.class});
             }
+            catch (NoSuchMethodException e) {
+                // ignore expected error
+                if (log.isDebugEnabled()) {
+                    log.debug("class '"+execObj.getClassname()+"' does not have a HibernateSessionManager.class constructor");
+                }
+            }
             catch (Throwable t) {
+                // ignore unexpected error
                 log.error("Unexpected error, ignored", t);
             }
             if (constructor != null) {

@@ -27,13 +27,26 @@ public class TestCmdLineRunner {
     }
     
     @Test
-    public void defaultLsfStatusCmd() {
+    public void defaultLsfStatusCmd() throws CmdException {
         cmd.setCommandProperties(cmdProps);
         assertEquals("lsf.statusCmd", 
                 Arrays.asList("bjobs", "-W", extJobId), 
                 cmd.initLsfStatusChecker().initStatusCmd(jobRecord));
     }
     
+    @Test
+    public void defaultLsfStatusCmdTimeout() {
+        cmd.setCommandProperties(cmdProps);
+        assertEquals("lsf.statusCmdTimeout", new Long(60L*1000L), (Long)cmd.initLsfStatusChecker().getLsfStatusCmdTimeout());
+    }
+    
+    @Test
+    public void customLsfStatusCmdTimeout() {
+        cmdProps.put(CmdLineLsfRunner.PROP_STATUS_CMD_TIMEOUT, "00:02:00"); // two minutes
+        cmd.setCommandProperties(cmdProps);
+        assertEquals("lsf.statusCmdTimeout", new Long(2L*60L*1000L), (Long)cmd.initLsfStatusChecker().getLsfStatusCmdTimeout());
+    }
+
     @Test
     public void defaultLsfStatusRegex() {
         assertEquals("lsf.statusRegex", 
@@ -42,7 +55,7 @@ public class TestCmdLineRunner {
     }
     
     @Test
-    public void customLsfStatusCmd() {
+    public void customLsfStatusCmd() throws CmdException {
         cmdProps.put(CmdLineLsfRunner.PROP_STATUS_CMD, new Value(Arrays.asList("bjobs", "-a", "-W")));
         cmd.setCommandProperties(cmdProps);
         assertEquals("lsf.statusCmd", 
