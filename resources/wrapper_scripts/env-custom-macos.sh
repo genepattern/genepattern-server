@@ -33,6 +33,12 @@ function initEnv() {
         R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
         GP_SET_R_PATH=true;
 
+    # set path for R-3.0
+    elif [ "$1" = "R-3.0" ]; then
+        # add Rscript to path
+        R_HOME=/Library/Frameworks/R.framework/Versions/3.0/Resources
+        GP_SET_R_PATH=true;
+
     # set path for R-2.15
     elif [ "$1" = "R-2.15" ]; then
         # add Rscript to path
