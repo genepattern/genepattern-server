@@ -2,12 +2,12 @@
 
 ##############################################################################
 #
-# wrapper script for starting the GenePattern Server
+# wrapper script for starting the GenePattern Server as a background process
 # Usage:
-#     nohup ./start-genepattern.sh &
+#     ./start-genepattern.sh
 #
 #     # optionally set server customization environment
-#     nohup ./start-genepattern.sh -c server-env-custom.sh &
+#     ./start-genepattern.sh -c server-env-custom.sh
 #
 # Options:
 # -c <env-custom-site.sh>, optionally set a site customization file
@@ -44,4 +44,4 @@ _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Otherwise, you must pass in the name (or fq path) to the site customization file,
 #    ./start-genepattern.sh -c env-custom-broad-rhel6.sh ...
 #
-"${_gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 -u UGER "${CATALINA_HOME}/bin/catalina-macapp.sh" run &
+nohup "${_gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 -u .lsf-7.0 -u UGER "${CATALINA_HOME}/bin/catalina-macapp.sh" run &
