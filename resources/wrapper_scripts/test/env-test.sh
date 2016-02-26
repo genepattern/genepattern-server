@@ -77,6 +77,37 @@ testRootModuleName() {
 }
 
 #
+# basic variable set test, 
+#     [ -z "${_my_var+x}" ] is true when _my_var is not set
+#
+testVarSet() {
+    local _my_var;
+    assertFalse " local _my_var; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+    
+    unset _my_var;
+    assertTrue " unset _my_var; '[ -z \${_my_var+x} ]' (expecting true)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var=;
+    assertFalse " _my_var=; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="";
+    assertFalse " _my_var=\"\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="my value";
+    assertFalse " _my_var=\"my value\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+}
+
+#
 # basic file exists test
 #
 testFileExists() {
@@ -475,6 +506,15 @@ testRunJava_custom_env_arg() {
     export GP_DEBUG="true";
     local expected=$'loading custom/java ...'
     assertEquals "run java" "$expected" "$('../run-java.sh' '-c' './test/env-lookup-shunit2.sh' '-version')"
+}
+
+#
+# example mapping a single environment to multiple environments, e.g.
+#     R-2.7=cairo,R-2.7
+#
+testMultiEnv() {
+    export GP_DEBUG="true";
+    local 
 }
 
 testRunRJava() {
