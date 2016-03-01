@@ -87,6 +87,7 @@ public class AuthResource {
     @GET
     @Path("/auth")
     public Response authorize(@Context HttpServletRequest request) throws URISyntaxException, OAuthSystemException {
+
         // Declare required variables
         OAuthAuthzRequest oauthRequest = null;
         OAuthIssuerImpl oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
@@ -108,6 +109,11 @@ public class AuthResource {
             Set<String> scopes = oauthRequest.getScopes();
             OAuthManager.validateScopes(scopes);
             String user = OAuthManager.userFromScope(scopes);
+
+            log.info("OAuth2 auth attempted | " +
+                "TYPE: " + responseType + " | " +
+                "CLIENT: " + clientID
+            );
 
             // Handle CODE requests
             if (responseType.equals(ResponseType.CODE.toString())) {
@@ -239,6 +245,12 @@ public class AuthResource {
             redirectURI = request.getParameter(OAuth.OAUTH_REDIRECT_URI);       // Use not implemented
             clientSecret = request.getParameter(OAuth.OAUTH_CLIENT_SECRET);     // Use not implemented
 
+            log.info("Attempting OAuth2 login | " +
+                "GRANT: " + grantType + " | " +
+                "USERNAME: " + username + " | " +
+                "CLIENT: " + clientID
+            );
+
             // The OLTU way of doing things (overly restrictive IMHO)
 //            // Get the request
 //            OAuthTokenRequest oauthRequest = new OAuthTokenRequest(request);
@@ -356,6 +368,8 @@ public class AuthResource {
 //                    .buildJSONMessage();
 //            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
 //        }
+
+        log.info("OAuth2 register attempted, returning not implemented error");
 
         OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(OAuthProblemException.error("register is not implemented")).buildJSONMessage();
         return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
