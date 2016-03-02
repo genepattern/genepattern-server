@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.genepattern.server.job.input.JobInput;
 
@@ -27,8 +28,12 @@ public class JobInputValues {
 
     public String lsid;
     public List<Param> params;
+    public List<String> tags = new ArrayList<String>();
     
     public JobInputValues() {
     }
-    
+
+    public List<String> getTags() {
+        return tags;
+    }
 }

@@ -6,10 +6,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +43,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
+import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApiImplV2;
@@ -178,6 +176,17 @@ public class JobsResource {
             final boolean initDefault=true;
             final JobInputApiImplV2 impl= new JobInputApiImplV2(initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
+
+            //check if there were tags specified for this job and add it to database
+            List<String> tags = jobInputValues.getTags();
+            if(tags != null && tags.size() > 0) {
+                Date date = new Date();
+                int gpJobNo = Integer.parseInt(jobId);
+                for (String tag : tags) {
+                    JobTagManager.addTag(jobContext.getUserId(), gpJobNo, tag, date, false);
+                }
+            }
+
             //JobReceipt receipt=impl.postBatchJob(jobContext, jobInput);
             //TODO: if necessary, add batch details to the JSON representation
             //if (receipt.getJobIds()==null) {
