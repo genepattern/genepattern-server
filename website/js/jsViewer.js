@@ -1,5 +1,6 @@
 (function( $ ) {
     $.widget("ui.gpJavascript", {
+        mainPaneId: "mainJsViewerPane",
         options: {
             taskName: "",
             taskLsid: "",
@@ -33,7 +34,7 @@
         _openJavascriptModule: function() {
             var self = this;
 
-            var mainViewerPane = $("<div/>").attr("id", "mainJsViewerPane").css("height", "100%").css("width", "100%");
+            var mainViewerPane = $("<div/>").attr("id", self.mainPaneId).css("height", "100%").css("width", "100%");
 
             var headerString = self.options.taskName;
             var version = self._getTaskVersion();
@@ -120,27 +121,15 @@
                     $(this).height($("#content").height());
                     //$(this).width($(this).contents().width());
                 });
-                //var viewerDiv = $("<div/>").attr("id", "jsViewer");
-                //viewerDiv.append(jsViewerFrame);
+
                 mainViewerPane.append(jsViewerFrame);
-                //$("#main-pane").append(jsViewerFrame);
 
-                /*var jsLayout = mainViewerPane.layout({
-                    spacing_closed: 0,
-                    spacing_open:   0,
-                    //north__paneSelector: ".jsViewerInfoBar",
-                    center__maskContents:		true // IMPORTANT - enable iframe masking
-                });*/
-
-                /*for(var property in jsLayout.panes){
-                    if(jsLayout.panes.hasOwnProperty(property)){
-                       // jsLayout.panes[property].css('border', 'none');
-                    }
-                }*/
             }, 2000 );
         },
         destroy: function() {
-            this.element.next().remove();
+            var self = this;
+            self.element.find("#" + self.mainPaneId).remove();
+            $.Widget.prototype.destroy.call(this);
         }
     });
 }( jQuery ));
