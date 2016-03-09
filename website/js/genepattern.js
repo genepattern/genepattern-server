@@ -2621,7 +2621,6 @@ function cleanUpPanels()
     $("#jobResults").hide();
     $("#infoMessageDiv").hide();
     $("#errorMessageDiv").hide();
-    $("#mainViewerPane").remove();
 }
 
  //this will load a javascript module
@@ -2660,6 +2659,11 @@ function loadJavascript(jobId, container, openInNewWindow) {
 
                     cleanUpPanels();
 
+                    //destroy the gpJavascript plugin if already initialized
+                    if(container.is( ":data('gpJavascript')" ))
+                    {
+                        container.gpJavascript("destroy");
+                    }
                     container.gpJavascript({
                         taskName: job.taskName,
                         taskLsid: job.taskLsid,
