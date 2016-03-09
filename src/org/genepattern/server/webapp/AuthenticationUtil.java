@@ -17,11 +17,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.genomespace.GenomeSpaceClient;
-import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceDatabaseManager;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceLogin;
+import org.genepattern.server.genomespace.*;
 
 /**
  * Utility methods for implementing HTTP Basic Authentication.
@@ -151,7 +147,15 @@ public class AuthenticationUtil {
             //if we are here, it means the gp user_id / password doesn't match
             //for GP-4540, it could be a GenomeSpace account
             log.debug("checking GenomeSpace credentials");
+
+            // Try to authenticate using provided GS username and password
             gpUserId = genomeSpaceAuthentication(userIdFromAuthorizationHeader, password);
+
+            // If that fails, try using a provided GS token
+            if (gpUserId == null) {
+                gpUserId = GenomeSpaceLoginManager.authenticateFromToken(req);
+            }
+
             if (gpUserId != null) {
                 //we have valid GS credentials and a linked GP account
                 authenticated=true;
