@@ -94,8 +94,8 @@ if [ -e "$gp_libdir/r.package.info" ]; then
     
     # check exit code
     if [ $? -ne 0 ]; then
-        >&2 echo "Error installing R packages, see install_packages.out for details";
-        exit $1
+        >&2 echo "Error installing R packages, see ${install_packages_out} for details";
+        exit $?
     fi
 fi
 
