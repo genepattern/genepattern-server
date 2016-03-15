@@ -77,6 +77,37 @@ testRootModuleName() {
 }
 
 #
+# basic variable set test, 
+#     [ -z "${_my_var+x}" ] is true when _my_var is not set
+#
+testVarSet() {
+    local _my_var;
+    assertFalse " local _my_var; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+    
+    unset _my_var;
+    assertTrue " unset _my_var; '[ -z \${_my_var+x} ]' (expecting true)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var=;
+    assertFalse " _my_var=; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="";
+    assertFalse " _my_var=\"\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="my value";
+    assertFalse " _my_var=\"my value\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+}
+
+#
 # basic file exists test
 #
 testFileExists() {
@@ -87,36 +118,15 @@ testFileExists() {
     assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
 }
 
-#
-# Append an element to the end of the path; 
-# Usage: path=$(appendPath "${path}" "${element}")
-#
-appendPath() {
-    local path="${1}";
-    local element="${2}";
-    
-    # Note, to check for a directory: [ -d "$element" ] 
-    # To prepend, path="$element:$path"
-    
-    # if path is not set ... just set it to element
-    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
-    if [ -z "$path" ]; then
-        #echo "2, path not set";
-        path="$element";
-    elif [[ ":$path:" != *":$element:"* ]]; then
-        path="${path:+"$path:"}$element"
-    fi
-    # use echo to return a value
-    echo "$path"
-}
-
 testAppendPath() {
+    source ../env-lookup.sh
     MY_PATH="/opt/dir1";
     MY_PATH=$(appendPath "${MY_PATH}" "/opt/dir2")
     assertEquals "appendPath" "/opt/dir1:/opt/dir2" "${MY_PATH}"
 }
 
 testAppendPath_ignoreDuplicate() {
+    source ../env-lookup.sh
     MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
     
     assertEquals "appendPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
@@ -134,6 +144,7 @@ testAppendPath_ignoreDuplicate() {
 }
 
 testAppendPath_toEmpty() {
+    source ../env-lookup.sh
     MY_ARG="/new/pathelement";
     unset MY_PATH;
     MY_PATH=$(appendPath "${MY_PATH}" "${MY_ARG}")
@@ -141,6 +152,7 @@ testAppendPath_toEmpty() {
 }
 
 testMcrAtIndianaU() {
+    source ../env-lookup.sh
     expected_mcr_path="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/runtime/glnxa64:\
 /N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/bin/glnxa64:\
 /N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/os/glnxa64:\
@@ -494,6 +506,15 @@ testRunJava_custom_env_arg() {
     export GP_DEBUG="true";
     local expected=$'loading custom/java ...'
     assertEquals "run java" "$expected" "$('../run-java.sh' '-c' './test/env-lookup-shunit2.sh' '-version')"
+}
+
+#
+# example mapping a single environment to multiple environments, e.g.
+#     R-2.7=cairo,R-2.7
+#
+testMultiEnv() {
+    export GP_DEBUG="true";
+    local 
 }
 
 testRunRJava() {
