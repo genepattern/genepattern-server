@@ -3,9 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.genepattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,6 +106,50 @@ public class TestCommandLineParser {
         assertEquals(
                 Arrays.asList("all_aml_test"),
                 CommandLineParser.resolveValue(gpConfig, gpContext, "<input.filename_basename>", parameterInfoMap, 0));
+    }
+
+    @Test
+    public void checkFileSubstitution_nullArg() {
+        assertArrayEquals("null arg", (String[])null, 
+                CommandLineParser.checkFileSubstitution((String)null));
+    }
+
+    @Test
+    public void checkFileSubstitution_emptyArg() {
+        assertArrayEquals("empty arg", (String[])null, 
+                CommandLineParser.checkFileSubstitution(""));
+    }
+
+    @Test
+    public void checkFileSubstitution_noMatch() {
+        final String arg="input.filename";
+        assertArrayEquals("checkFileSubstitution('"+arg+"')", (String[])null, 
+                CommandLineParser.checkFileSubstitution(arg));
+    }
+
+    @Test
+    public void checkFileSubstitution_notAnExtension() {
+        final String arg="input.filename_notAMatch";
+        assertArrayEquals("checkFileSubstitution('"+arg+"')", (String[])null, 
+                CommandLineParser.checkFileSubstitution(arg));
+    }
+
+    @Test
+    public void checkFileSubstitution_basename() {
+        assertArrayEquals("input.filename_basename",  new String[]{"input.filename", "_basename"}, 
+                CommandLineParser.checkFileSubstitution("input.filename_basename"));
+    }
+
+    @Test
+    public void checkFileSubstitution_extension() {
+        assertArrayEquals("input.filename_extension", new String[]{"input.filename", "_extension"}, 
+                CommandLineParser.checkFileSubstitution("input.filename_extension"));
+    }
+
+    @Test
+    public void checkFileSubstitution_file() {
+        assertArrayEquals("input.filename_file",      new String[]{"input.filename", "_file"}, 
+                CommandLineParser.checkFileSubstitution("input.filename_file"));
     }
 
     @Test

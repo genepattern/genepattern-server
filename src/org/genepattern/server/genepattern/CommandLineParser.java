@@ -27,6 +27,7 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 /**
  * Utility class for parameter substitution.
@@ -252,10 +253,7 @@ public class CommandLineParser {
                     value = gpConfig.getGPProperty(gpContext, paramName);
                 }
             }
-            // TODO: special-case for <<param>_basename>
-            //else if (paramName.endsWith("_basename")) {
-            //    
-            //}
+            // TODO: special-case for file substitutions, e.g. <param>_basename>
             else {
                 value = gpConfig.getGPProperty(gpContext, paramName);
             }
@@ -309,19 +307,47 @@ public class CommandLineParser {
         return rval;
     }
     
+    /**
+     * Helper method which checks for special-case input file substitutions. 
+     * Given a substitution parameter, e.g. "input.file_extension" (no brackets),
+     * return the referenced parameter name, e.g. "input.file" (no brackets),
+     * when the substitution parameter ends with one of the pre-set file substitutions,
+     *     _basename | _extension | _file
+     * 
+     * 
+     * @param key, the substitution parameter (no brackets)
+     * @return the parameter name or null if there is no match
+     */
+    protected static String[] checkFileSubstitution(final String key) {
+        if (Strings.isNullOrEmpty(key)) {
+            // no match
+            return null;
+        }
+        final String[] types={"_basename", "_extension", "_file"};
+        for (String type : types) {
+            if (key.endsWith(type)) {
+                String pname=key.substring(0, key.lastIndexOf(type));
+                return new String[]{ pname, type };
+            }
+        }
+        return null;
+    }
+
     protected static String getBasenameSubstitution(final GpConfig gpConfig, final GpContext gpContext, final String paramName, final Map<String,ParameterInfoRecord> parameterInfoMap) {
         if (paramName == null) {
             return null;
         }
-        
-        if (paramName.endsWith("_basename")) {
-            int endIndex=paramName.lastIndexOf("_basename");
-            Param matchingParam = getParam(gpContext, paramName.substring(0, endIndex));
-            if (matchingParam != null) {
-                if (matchingParam.getNumValues()>0) {
-                    Properties fileProps=initFileProps(matchingParam.getParamId().getFqName(), matchingParam.getValues().get(0).getValue());
-                    return fileProps.getProperty(paramName);
-                }
+        final String[] split=checkFileSubstitution(paramName);
+        if (split==null) {
+            return null;
+        }
+        final String paramName_ref=split[0]; // the referenced parameter
+        //final String paramName_type=split[1]; // the type of the parameter
+        final Param matchingParam = getParam(gpContext, paramName_ref);
+        if (matchingParam != null) {
+            if (matchingParam.getNumValues()>0) {
+                Properties fileProps=initFileProps(matchingParam.getParamId().getFqName(), matchingParam.getValues().get(0).getValue());
+                return fileProps.getProperty(paramName);
             }
         }
         return paramName;
