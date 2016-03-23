@@ -7,27 +7,20 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-import java.util.Date;
-import java.util.Properties;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.MailSender;
 
 /**
  * This class is a JSF backing bean for the Contact Page, linked to from the 'Contact Us' link.
@@ -100,28 +93,29 @@ public class ContactUsBean {
         return send(sendToAddress, smtpServer);
     }
     
-    private String send(final String sendToAddress, final String smtpServer) {
-        Properties p = new Properties();
-        p.put("mail.host", smtpServer);
-
-        Session mailSession = Session.getDefaultInstance(p, null);
-        mailSession.setDebug(false);
-        MimeMessage msg = new MimeMessage(mailSession);
-
+    public String send(final String sendToAddress, final String smtpServer) {
+        final MailSender m=new MailSender.Builder()
+            // set smtpServer
+            .smtpServer(smtpServer)
+            // set from
+            .replyTo(replyTo)
+            // set to
+            .sendToAddress(sendToAddress)
+            // set subject
+            .subject(subject)
+            // set message
+            .message(message)
+        .build();
         try {
-            msg.setSubject(subject);
-            msg.setText(message);
-            msg.setFrom(new InternetAddress(replyTo));
-            msg.setSentDate(new Date());
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(sendToAddress));
-            Transport.send(msg);
-        } catch (MessagingException e) {
-            log.error(e);
+            m.sendMessage();
+            this.sent=true;
+            return "success";
+        
+        }
+        catch (Exception e) {
             UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
             return "failure";
         }
-        sent = true;
-        return "success";
     }
 
     public boolean isSent() {
