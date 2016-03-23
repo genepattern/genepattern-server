@@ -68,7 +68,6 @@ public class ForgotPasswordBean {
 
     protected void sendResetPasswordMessage(final String to, final String newPassword) throws Exception {
         final MailSender m = new MailSender.Builder()
-            .from("no-reply@genepattern.org")
             .to(to)
             .subject("Your GenePattern Password")
             .message("Your GenePattern password has been reset to "

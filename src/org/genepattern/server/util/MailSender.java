@@ -32,6 +32,13 @@ public class MailSender {
     /** The default smtp.server=smtp.broadinstitute.org */
     public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org";
     
+    /** 
+     * Set the 'smtp.from.email' for notifications sent to end-users, such as from the 'forgot your password' link.
+     */
+    public static final String PROP_SMTP_FROM_EMAIL="smtp.from.email";
+    /** The default smtp.from.email=no-reply@genepattern.org */
+    public static final String DEFAULT_SMTP_FROM_EMAIL="no-reply@genepattern.org";
+    
     private final String smtpServer;
     private final String from; // aka replyTo
     private final String to; // aka sendToAddress
@@ -84,12 +91,13 @@ public class MailSender {
                  GpContext.getServerContext());
         }
         /**
-         * Pass in config objects to initialize default value for the 'smtp.server'
+         * Pass in config objects to initialize default values for the 'smtp.server'
          * @param gpConfig, the server configuration instance
          * @param gpContext, the server context
          */
         public Builder(final GpConfig gpConfig, final GpContext gpContext) {
             this.smtpServer = gpConfig.getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
+            this.from = gpConfig.getGPProperty(gpContext, PROP_SMTP_FROM_EMAIL, DEFAULT_SMTP_FROM_EMAIL);
         }
         
         public Builder smtpServer(final String smtpServer) {
