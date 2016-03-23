@@ -11,6 +11,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * Generic java based mail sender class, based on the Contact Us Bean.
@@ -21,12 +24,20 @@ import org.apache.log4j.Logger;
 public class MailSender {
     private static final Logger log = Logger.getLogger(MailSender.class);
 
-    final String smtpServer;
-    final String replyTo; // aka replyTo
-    final String sendToAddress;
-    final String subject;
-    final String message;
+    /**
+     * Set the 'smtp.server' property to change the mail.host that the javax.mail.Transport class uses to 
+     * send email messages.
+     */
+    public static final String PROP_SMTP_SERVER="smtp.server";
+    /** The default smtp.server=smtp.broadinstitute.org */
+    public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org";
     
+    private final String smtpServer;
+    private final String replyTo; // aka replyTo
+    private final String sendToAddress;
+    private final String subject;
+    private final String message;
+
     private MailSender(Builder b) {
         this.smtpServer=b.smtpServer;
         this.replyTo=b.replyTo;
@@ -68,6 +79,19 @@ public class MailSender {
         private String subject;
         private String message;
         
+        public Builder() {
+            this(ServerConfigurationFactory.instance(), 
+                 GpContext.getServerContext());
+        }
+        /**
+         * Pass in config objects to initialize default value for the 'smtp.server'
+         * @param gpConfig, the server configuration instance
+         * @param gpContext, the server context
+         */
+        public Builder(final GpConfig gpConfig, final GpContext gpContext) {
+            this.smtpServer = gpConfig.getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
+        }
+        
         public Builder smtpServer(final String smtpServer) {
             this.smtpServer=smtpServer;
             return this;
@@ -97,5 +121,4 @@ public class MailSender {
             return new MailSender(this);
         }
     }
-
 }

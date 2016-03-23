@@ -16,6 +16,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
@@ -40,9 +41,7 @@ import org.genepattern.server.util.MailSender;
 public class ContactUsBean {
     public static final String PROP_CONTACT_EMAIL="contact.us.email";
     public static final String DEFAULT_CONTACT_EMAIL="gp-help@broadinstitute.org";
-    public static final String PROP_SMTP_SERVER="smtp.server";
-    public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org"; 
-    
+
     private String subject;
 
     private String replyTo;
@@ -87,20 +86,14 @@ public class ContactUsBean {
     }
 
     public String send() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
-        final String sendToAddress = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
-        final String smtpServer = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
-        return send(sendToAddress, smtpServer);
-    }
-    
-    public String send(final String sendToAddress, final String smtpServer) {
-        final MailSender m=new MailSender.Builder()
-            // set smtpServer
-            .smtpServer(smtpServer)
+        final String contactUsEmail = gpConfig.getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
+        final MailSender m=new MailSender.Builder(gpConfig, gpContext)
             // set from
             .replyTo(replyTo)
             // set to
-            .sendToAddress(sendToAddress)
+            .sendToAddress(contactUsEmail)
             // set subject
             .subject(subject)
             // set message
@@ -110,7 +103,6 @@ public class ContactUsBean {
             m.sendMessage();
             this.sent=true;
             return "success";
-        
         }
         catch (Exception e) {
             UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
