@@ -65,6 +65,17 @@ public class EmailNotificationManager {
 	threads.remove(aThread);
     }
 
+    protected static String getFromAddress() {
+        // old way, used System.gptProperty("fqHostName")
+        // interim way, GpConfig.getGPProperty(gpContext, "fqHostName")
+        //final String fqHostName=ServerConfigurationFactory.instance().getGPProperty(GpContext.getServerContext(), "fqHostName");
+        //final String from = "GenePattern@" + fqHostName; 
+        // newer way, uses PROP_SMTP_FROM_EMAIL
+        final String from = ServerConfigurationFactory.instance().getGPProperty(GpContext.getServerContext(), 
+                MailSender.PROP_SMTP_FROM_EMAIL, MailSender.DEFAULT_SMTP_FROM_EMAIL);
+        return from;
+    }
+    
     public void sendJobCompletionEmail(String email, String user, String jobId) {
 	String status = "status unknown";
 	String moduleName = "";
@@ -80,7 +91,7 @@ public class EmailNotificationManager {
 	}
 
 	String addresses = email;
-    String from = "GenePattern@" + System.getProperty("fqHostName");
+	final String from=getFromAddress();
 	String subject = "Job " + jobId + " - " + moduleName + " - " + status;
 	StringBuffer msg = new StringBuffer();
 	msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
@@ -235,7 +246,8 @@ class JobWaitThread extends Thread {
 
 	    EmailNotificationManager em = EmailNotificationManager.getInstance();
 	    String addresses = email;
-	    String from = "GenePattern@" + System.getProperty("fqHostName");
+	    //final String from = "GenePattern@" + System.getProperty("fqHostName");
+	    final String from=EmailNotificationManager.getFromAddress();
 	    String subject = "Job " + jobID + " - status unavailable";
 	    StringBuffer msg = new StringBuffer();
 	    msg.append("There was a problem getting the status for job " + jobID);
