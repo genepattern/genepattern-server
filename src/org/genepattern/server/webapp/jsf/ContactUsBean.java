@@ -7,27 +7,21 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-import java.util.Date;
-import java.util.Properties;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.MailSender;
 
 /**
  * This class is a JSF backing bean for the Contact Page, linked to from the 'Contact Us' link.
@@ -47,9 +41,7 @@ import org.genepattern.server.user.UserDAO;
 public class ContactUsBean {
     public static final String PROP_CONTACT_EMAIL="contact.us.email";
     public static final String DEFAULT_CONTACT_EMAIL="gp-help@broadinstitute.org";
-    public static final String PROP_SMTP_SERVER="smtp.server";
-    public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org"; 
-    
+
     private String subject;
 
     private String replyTo;
@@ -94,34 +86,28 @@ public class ContactUsBean {
     }
 
     public String send() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
-        final String sendToAddress = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
-        final String smtpServer = ServerConfigurationFactory.instance().getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
-        return send(sendToAddress, smtpServer);
-    }
-    
-    private String send(final String sendToAddress, final String smtpServer) {
-        Properties p = new Properties();
-        p.put("mail.host", smtpServer);
-
-        Session mailSession = Session.getDefaultInstance(p, null);
-        mailSession.setDebug(false);
-        MimeMessage msg = new MimeMessage(mailSession);
-
+        final String contactUsEmail = gpConfig.getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
+        final MailSender m=new MailSender.Builder(gpConfig, gpContext)
+            // set from
+            .from(replyTo)
+            // set to
+            .to(contactUsEmail)
+            // set subject
+            .subject(subject)
+            // set message
+            .message(message)
+        .build();
         try {
-            msg.setSubject(subject);
-            msg.setText(message);
-            msg.setFrom(new InternetAddress(replyTo));
-            msg.setSentDate(new Date());
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(sendToAddress));
-            Transport.send(msg);
-        } catch (MessagingException e) {
-            log.error(e);
+            m.sendMessage();
+            this.sent=true;
+            return "success";
+        }
+        catch (Exception e) {
             UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
             return "failure";
         }
-        sent = true;
-        return "success";
     }
 
     public boolean isSent() {
