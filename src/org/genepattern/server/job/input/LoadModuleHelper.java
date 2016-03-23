@@ -348,9 +348,9 @@ public class LoadModuleHelper {
             
             //2) if it's a reloaded job, use that
             if (reloadedValues != null) {
-                boolean first=true;
                 final Param param=reloadedValues.getParam(pname);
                 if (param != null) {
+                    boolean first=true;
                     for(final Entry<GroupId,ParamValue> entry : param.getValuesAsEntries()) {
                         String rvalue = entry.getValue().getValue();
                         if (first) {
@@ -362,7 +362,9 @@ public class LoadModuleHelper {
                     }
                 } 
                 else {
-                    log.error("no values in previous job for, pname="+pname);
+                    if (log.isDebugEnabled()) {
+                        log.debug("no values in previous job for, pname="+pname);
+                    }
                 }
             }
 
