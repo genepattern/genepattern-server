@@ -20,6 +20,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.DNSClient;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -104,7 +106,8 @@ public class EmailNotificationManager {
 		    continue;
 		}
 		String domain = to.substring(at + 1);
-		String mailServer = System.getProperty("smtp.server");
+		final String mailServer = ServerConfigurationFactory.instance().getGPProperty( GpContext.getServerContext(), 
+		        MailSender.PROP_SMTP_SERVER, MailSender.DEFAULT_SMTP_SERVER);
 		TreeMap<Integer, String> tmHosts = null;
 		if (mailServer == null) {
 		    tmHosts = dnsClient.findMXServers(domain);
