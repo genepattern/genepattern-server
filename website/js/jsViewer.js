@@ -45,6 +45,15 @@
             var infoBar = $("<div class='ui-layout-north'/>").attr("id", "jsViewerInfoBar");
             infoBar.append("<label>" + headerString + "</label>");
 
+
+            if(self.options.taskLsid !== undefined && self.options.taskLsid !== null && self.options.taskLsid.length > 0)
+            {
+                var docLink = "../getTaskDoc.jsp?name=" + self.options.taskLsid;
+
+                infoBar.append($("<a>Documentation</a>").attr("href", docLink).attr("target", "_blank")
+                    .css("float", "right").css("font-weight", "normal").css("margin-right", "18px"));
+            }
+
             var actionBar = $("<span/>").attr("id", "actionBar");
 
             if (self.options.jobId !== undefined && self.options.jobId !== null && self.options.jobId.length > 0)
