@@ -33,15 +33,15 @@ public class MailSender {
     public static final String DEFAULT_SMTP_SERVER="smtp.broadinstitute.org";
     
     private final String smtpServer;
-    private final String replyTo; // aka replyTo
-    private final String sendToAddress;
+    private final String from; // aka replyTo
+    private final String to; // aka sendToAddress
     private final String subject;
     private final String message;
 
     private MailSender(Builder b) {
         this.smtpServer=b.smtpServer;
-        this.replyTo=b.replyTo;
-        this.sendToAddress=b.sendToAddress;
+        this.from=b.from;
+        this.to=b.to;
         this.subject=b.subject;
         this.message=b.message;
     }
@@ -61,9 +61,9 @@ public class MailSender {
         try {
             msg.setSubject(subject);
             msg.setText(message);
-            msg.setFrom(new InternetAddress(replyTo));
+            msg.setFrom(new InternetAddress(from));
             msg.setSentDate(new Date());
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(sendToAddress));
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             Transport.send(msg);
         } 
         catch (MessagingException e) {
@@ -74,8 +74,8 @@ public class MailSender {
     
     public static final class Builder {
         private String smtpServer;
-        private String replyTo; // aka replyTo
-        private String sendToAddress; // aka sendToAddress
+        private String from; // aka replyTo
+        private String to;   // aka sendToAddress, aka recipient
         private String subject;
         private String message;
         
@@ -97,13 +97,13 @@ public class MailSender {
             return this;
         }
         
-        public Builder replyTo(final String replyTo) {
-            this.replyTo=replyTo;
+        public Builder from(final String from) {
+            this.from=from;
             return this;
         }
         
-        public Builder sendToAddress(final String sendToAddress) {
-            this.sendToAddress=sendToAddress;
+        public Builder to(final String to) {
+            this.to=to;
             return this;
         }
         

@@ -91,9 +91,9 @@ public class ContactUsBean {
         final String contactUsEmail = gpConfig.getGPProperty(gpContext, PROP_CONTACT_EMAIL, DEFAULT_CONTACT_EMAIL);
         final MailSender m=new MailSender.Builder(gpConfig, gpContext)
             // set from
-            .replyTo(replyTo)
+            .from(replyTo)
             // set to
-            .sendToAddress(contactUsEmail)
+            .to(contactUsEmail)
             // set subject
             .subject(subject)
             // set message
