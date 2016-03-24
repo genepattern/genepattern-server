@@ -1375,12 +1375,6 @@ public class PipelineHandler {
             fileName = getOutputFilenameByType(fromJob, outputType, allResultFiles);
         }
         if (fileName != null) {
-            //TODO: can't get job results from sub-directories because of this code
-            int lastIdx = fileName.lastIndexOf(File.separator);
-            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1);
-            if (lastIdx != -1) {
-                fileName = fileName.substring(lastIdx + 1);
-            }
             return fileName;
         }
 
