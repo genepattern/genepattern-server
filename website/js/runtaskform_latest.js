@@ -3041,13 +3041,15 @@ function submitTask() {
             }
             else
             {
-                var openInNewWindow = "";
+                var openVisualizers = "&openVisualizers=true";
+
                 if(run_task_info.is_js_viewer && $("#launchJSNewWin").is(":checked"))
                 {
-                    openInNewWindow = "&openNewWindow=true";
+                    openVisualizers = "&openVisualizers=false";
+                    window.open("/gp/pages/jsViewer.jsf?jobNumber=" + response.jobId);
                 }
 
-                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + "&openVisualizers=true" + openInNewWindow);
+                window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + openVisualizers);
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

@@ -2730,7 +2730,7 @@ function loadJobStatus(jobId, forceVisualizers) {
         openVisualizers = getURLParameter("openVisualizers");
     }
 
-    if (openVisualizers) {
+    if (openVisualizers == "true") {
         openVisualizers = "&openVisualizers=true";
     }
     else {
