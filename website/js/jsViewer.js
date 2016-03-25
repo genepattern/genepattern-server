@@ -5,7 +5,8 @@
             taskName: "",
             taskLsid: "",
             jobId: "",
-            url: ""
+            url: "",
+            onCreateActionBar: null //a callback to add more options to the action bar
         },
         _create: function() {
 
@@ -43,7 +44,7 @@
             }
 
             var infoBar = $("<div class='ui-layout-north'/>").attr("id", "jsViewerInfoBar");
-            infoBar.append("<label>" + headerString + "</label>");
+            infoBar.append("<label>" + headerString + "</label>").css("margin-right", "7px");
 
 
             if(self.options.taskLsid !== undefined && self.options.taskLsid !== null && self.options.taskLsid.length > 0)
@@ -56,15 +57,9 @@
 
             var actionBar = $("<span/>").attr("id", "actionBar");
 
-            if (self.options.jobId !== undefined && self.options.jobId !== null && self.options.jobId.length > 0)
+            if(self.options.onCreateActionBar !== undefined && typeof self.options.onCreateActionBar === 'function')
             {
-                var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
-                actionBar.append(moreOptionsMenu);
-
-                moreOptionsMenu.click(function () {
-                    //open the slide out menu for the  job
-                    $("a[data-jobid='" + self.options.jobId + "']").click();
-                });
+                self.options.onCreateActionBar(actionBar);
             }
 
             var newWindowImage = $("<img id='openJSWin' src='../images/newWindow.png' width='17' height='17' title='Relaunch in a new window'/>");
@@ -120,14 +115,14 @@
                 }
             });
 
+            var height = $("#" + self.mainPaneId).parent().height();
             setTimeout(function(){
-                var jsViewerFrame = $("<iframe width='100%' height='500' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+                var jsViewerFrame = $("<iframe width='100%' height='" + height + "' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
                     mainViewerPane.unblock();
-
-                    $(this).height($("#content").height());
+                    $(this).height($("#" + self.mainPaneId).height());
                     //$(this).width($(this).contents().width());
                 });
 

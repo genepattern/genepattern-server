@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<!--
+~ Copyright 2013 The Broad Institute, Inc.
+~ SOFTWARE COPYRIGHT NOTICE
+~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+~
+~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+<f:view contentType="text/html">
+<head>
+    <!-- created by rebecca fagan, fagandesign -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="refresh" content="#{session.maxInactiveInterval}" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+
+    <title>
+        <ui:insert name="pageTitle">GenePattern </ui:insert>
+    </title>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery-ui-1.9.2.css?version=#{aboutBean.buildTag}" type="text/css" rel="stylesheet" />
+    <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.all.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" media="screen" />
+    <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico?version=#{aboutBean.buildTag}" rel="shortcut icon" />
+
+    <style>
+        #mainJsViewerPane
+        {
+            min-height: 505px;
+            width: 100%;
+        }
+
+        #jsViewer
+        {
+            height: 100%;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        #jsViewerInfoBar
+        {
+            background-color: #EAEAEA;
+            line-height: 20px;
+            padding-top: 2px;
+            width: 100%;
+            font-size: 14px;
+            font-weight: bold;
+            left: 30px;
+        }
+
+        #actionBar
+        {
+            margin-right: 5px;
+            margin-top: 2px;
+            margin-left: 7px;
+        }
+
+        #content
+        {
+            width: 100%;
+            min-height: 100%;
+        }
+        html, body
+        {
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+    <script type="text/javascript" language="javascript">
+        var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+        var createTaskAllowed = #{authorizationBean.createModuleAllowed};
+        var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+        var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+        var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+        var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
+        var adminServerAllowed = #{authorizationBean.adminServerAllowed};
+        var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
+        var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
+        var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
+        var username = "${requestScope.userID}";
+    </script>
+
+    <script src="/gp/js/jquery/jquery-1.8.3.js?version=#{aboutBean.buildTag}" type="text/javascript" />
+    <script src="/gp/js/jquery/jquery-ui-1.9.2.js?version=#{aboutBean.buildTag}" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.official.js?version=#{aboutBean.buildTag}" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js?version=#{aboutBean.buildTag}" type="text/javascript" />
+    <link href="/gp/js/themes/default/style.css?version=#{aboutBean.buildTag}" rel="stylesheet" type="text/css" />
+    <script src="/gp/js/jquery/ddsmoothmenu.js?version=#{aboutBean.buildTag}" type="text/javascript" />
+    <script type="text/javascript">var jq = jQuery.noConflict();</script>
+
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js?version=#{aboutBean.buildTag}" />
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.blockUI.js?version=#{aboutBean.buildTag}"></script>
+
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jsViewer.js"></script>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js"></script>
+</head>
+<body>
+<!--  Main content area -->
+<div id="content" class="content"> </div>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        function openJavascript(jobId, taskName, taskLsid, launchUrl) {
+            $("#content").gpJavascript({
+                taskName: taskName,
+                taskLsid: taskLsid,
+                jobId: jobId,
+                url: launchUrl  //The URL to the main javascript html file
+            });
+        }
+
+        openJavascript('#{jobStatusBean.jobInfo.jobNumber}', '#{jobStatusBean.jobInfo.taskName}', '#{jobStatusBean.jobInfo.taskLSID}', '#{jobStatusBean.jobInfo.launchUrl}');
+    });
+</script>
+
+<h:outputText rendered="#{!jobStatusBean.canViewJob}">
+    <h2>Permission Denied</h2>
+</h:outputText>
+</body>
+</f:view>
+</html>

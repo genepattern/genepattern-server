@@ -2674,7 +2674,7 @@ function loadJavascript(jobId, container, openInNewWindow) {
                 }
                 else
                 {
-                    window.open(job.launchUrl, '_blank');
+                    window.open("/gp/pages/jsViewer.jsf?jobNumber=" + job.jobId);
                 }
             }
         },
