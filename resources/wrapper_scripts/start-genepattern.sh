@@ -16,7 +16,7 @@
 #     case 2: 'env-custom.sh'
 #         No need for '-c' flag, 'env-custom.sh' is automatically loaded when it is present
 #     case 3: non-standard site customization
-#         -c env-custom-broad-rhel6.sh
+#         -c env-custom-macos.sh
 #     case 4: use a different site customization for the GP server process 
 #         -c server-env-custom.sh
 # More details in 'run-with-env.sh'
@@ -40,8 +40,7 @@ _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 #
 # wrapper script environment initialization
 # Works best with default site customization file, 'env-custom.sh'
-#     Hint: cp ./env-custom-broad-rhel6.sh env-custom.sh
 # Otherwise, you must pass in the name (or fq path) to the site customization file,
-#    ./start-genepattern.sh -c env-custom-broad-rhel6.sh ...
+#    ./start-genepattern.sh -c env-custom-macos.sh ...
 #
 nohup "${_gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 -u .lsf-7.0 -u UGER "${CATALINA_HOME}/bin/catalina-macapp.sh" run &

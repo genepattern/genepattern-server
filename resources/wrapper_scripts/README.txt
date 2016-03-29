@@ -51,9 +51,6 @@ E.g. edit custom.properties
     
 There are a number of built-in site customizations:
 - env-custom-macos.sh; works for standard MacOS X instance.
-- env-custom-IU; for GP@IU
-- env-custom-broad-centos5; for Broad hosted legacy CentOS 5 nodes (LSF queue)
-- env-custom-broad-rhel6; for Broad hosted RHEL6 nodes (UGER queue)
 
 These files will also potentially be replaced when you install new versions of GP.
 It is very likely that you will need to made edits to these files. Please coordinate
@@ -76,8 +73,8 @@ b) adding/replacing site-specific mappings, e.g.
     # optionally, map one canonical-name to a list of site-specific-names, e.g.
     putValue 'R-3.1' 'gcc/4.7.2, R/3.1'
 
-See env-default.sh or one of the other built-in site customization scripts
-such as env-custom-broad-rhel6.sh for more details.
+See env-default.sh or one of the other built-in site customization
+scripts for more details.
 
 ===========================================
 (3) R Programming Language configuration

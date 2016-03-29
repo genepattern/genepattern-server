@@ -266,11 +266,11 @@ testInitCustomValuePath() {
     assertEquals "default" "$(scriptDir)/env-custom.sh" "$(initCustomValuePath)"
     assertEquals "as arg, relative" "$(scriptDir)/env-lookup-shunit2.sh" "$(initCustomValuePath 'env-lookup-shunit2.sh')"
     assertEquals "as arg, fq path" "/opt/env-lookup-shunit2.sh" "$(initCustomValuePath '/opt/env-lookup-shunit2.sh')"
-    export GP_ENV_CUSTOM="env-custom-broad-centos5.sh"
-    assertEquals "env, relative" "$(scriptDir)/env-custom-broad-centos5.sh" "$(initCustomValuePath)"
+    export GP_ENV_CUSTOM="env-custom-macos.sh"
+    assertEquals "env, relative" "$(scriptDir)/env-custom-macos.sh" "$(initCustomValuePath)"
     unset GP_ENV_CUSTOM;
-    export GP_ENV_CUSTOM="/opt/env-custom-broad-centos5.sh"
-    assertEquals "env, fq path" "/opt/env-custom-broad-centos5.sh" "$(initCustomValuePath)"
+    export GP_ENV_CUSTOM="/opt/env-custom-macos.sh"
+    assertEquals "env, fq path" "/opt/env-custom-macos.sh" "$(initCustomValuePath)"
 }
 
 # 1) when the key is not in the map, return the key
@@ -335,14 +335,40 @@ testAddEnv() {
     assertEquals "_runtime_environments.size" "3" "${#_runtime_environments[@]}"
 }
 
-testAddEnvIU() {
+
+#
+# Example site customization, alias for cananical environment name
+#
+testAddEnv_alias_mcr() {
     source ../env-lookup.sh
-    sourceEnvCustom "env-custom-IU.sh"
+    source "env-custom-for-testing.sh"
+    assertEquals "alias 'Matlab-2013a-MCR' <- 'matlab/2013a'" 'matlab/2013a' "$(getValue 'Matlab-2013a-MCR')"
+    
+    addEnv 'Matlab-2013a-MCR'
+    assertEquals "addEnv 'Matlab-2013a-MCR', _runtime_envs[0]" "matlab/2013a" "${_runtime_environments[0]}"
+}
+
+
+#
+# Example site customization for R-3.0
+#      add 'gcc' dependency, R-3.0 depends on gcc
+#
+testAddEnv_dependency_r_3_0_on_gcc() {
+    source ../env-lookup.sh
+    source "env-custom-for-testing.sh"
     assertEquals "check values" 'gcc/4.7.2, R/3.0.1' "$(getValue 'R-3.0')"
 
     addEnv 'R-3.0'
     assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${_runtime_environments[0]}"
     assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
+}
+
+testAddEvn_set_default_java_version() {
+    source ../env-lookup.sh
+    source "env-custom-for-testing.sh"
+    
+    addEnv 'Java'
+    assertEquals "_runtime_envs[0]" "java/1.8.1" "${_runtime_environments[0]}"
 }
 
 #
