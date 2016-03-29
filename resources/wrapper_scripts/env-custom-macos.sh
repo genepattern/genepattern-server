@@ -46,11 +46,6 @@ function initEnv() {
         GP_SET_R_PATH=true;
     fi
 
-    # must opt-in to mkdirs
-    if ! [ -z ${GP_MKDIR_R_LIBS_SITE+x} ]; then
-        mkdir -p "${R_LIBS_SITE}"
-    fi
-
     # add R_HOME/bin to the PATH
     if ! [ -z ${GP_SET_R_PATH+x} ]; then
         export PATH=${R_HOME}/bin:${PATH}

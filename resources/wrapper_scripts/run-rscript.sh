@@ -5,8 +5,9 @@
 # Calls run-with-env.
 #
 # Usage: run-script -c <env.custom> -v <R.version>
+#     -n, dry-run 
 #     -l <libdir>, path to installation directory for the module
-#     -p <patches>, R_LIBS_SITE=<patches>/Library/R/<R.version> 
+#     -p <patches>, R_LIBS_SITE=<patches>/Library/<env-arch>/R/<R.version> 
 #     [-d (TRUE|FALSE)], debug mode 
 #     [-m (TRUE|FALSE)], mkdirs 
 #     <args>, Rscript command line args
@@ -19,8 +20,10 @@ _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 #################################
 gp_mkdirs="TRUE";
 gp_debug="FALSE";
+DRY_RUN="";
+gp_env_arch="";
 idx=0
-while getopts c:v:l:p:d:m: opt "$@"; do
+while getopts c:v:l:a:p:d:m:n opt "$@"; do
     case $opt in
         c)  env_custom="$OPTARG"
             ;;
@@ -28,6 +31,9 @@ while getopts c:v:l:p:d:m: opt "$@"; do
             ;;
         # libdir ends with '/'
         l) gp_libdir="$OPTARG"
+            ;;
+        # env-arch does not end with '/', can be empty
+        a) gp_env_arch="${OPTARG}/"
             ;;
         # patches does not end with '/'
         p) gp_patches="$OPTARG"
@@ -38,6 +44,8 @@ while getopts c:v:l:p:d:m: opt "$@"; do
         m)
             gp_mkdirs="$OPTARG"
             ;; 
+        n)  DRY_RUN="echo"
+            ;;
         *)
             # Unexpected option, exit with status of last command
             exit $?
@@ -55,6 +63,8 @@ if [ "$1" = "--" ]; then
     shift;
 fi
 
+_gp_r_libs_site="${gp_patches}/${gp_env_arch}Library/R/${r_version}"
+
 #
 # Rscript wrapper command
 #
@@ -62,10 +72,9 @@ RSCRIPT_CMD=( "${_gp_script_dir}/run-with-env.sh" \
     -c "${env_custom}" \
     -u "R-${r_version}" \
     -e "GP_DEBUG=${gp_debug}" \
-    -e "GP_MKDIR_R_LIBS_SITE=${gp_mkdirs}" \
     -e "R_LIBS=" \
     -e "R_LIBS_USER=' '" \
-    -e "R_LIBS_SITE=${gp_patches}/Library/R/${r_version}" \
+    -e "R_LIBS_SITE=${_gp_r_libs_site}" \
     -e "R_ENVIRON=${_gp_script_dir}/R/Renviron.gp.site" \
     -e "R_ENVIRON_USER=${_gp_script_dir}/R/${r_version}/Renviron.gp.site" \
     -e "R_PROFILE=${_gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
@@ -82,6 +91,11 @@ install_packages_log=".install.packages.log"
 install_packages_out=".install.packages.out"
 
 if [ -e "$gp_libdir/r.package.info" ]; then
+    # mkdirs
+    if [ "$gp_mkdirs" = "TRUE" ]; then
+        $DRY_RUN "mkdir" "-p" "${_gp_r_libs_site}"
+    fi
+
     # --no-save --quiet --slave --no-restore <gp.tools.dir>/R/install_packages/installPackages.R
     INSTALL_PACKAGES_CMD=( "${RSCRIPT_CMD[@]}" \
         "--no-save" "--quiet" "--slave" "--no-restore" \
@@ -90,7 +104,7 @@ if [ -e "$gp_libdir/r.package.info" ]; then
         "${install_packages_log}"
     );
 
-    "${INSTALL_PACKAGES_CMD[@]}" >>"${install_packages_out}" 2>&1
+    $DRY_RUN "${INSTALL_PACKAGES_CMD[@]}" >>"${install_packages_out}" 2>&1
     
     # check exit code
     if [ $? -ne 0 ]; then
@@ -104,4 +118,4 @@ fi
 # run the module Rscript command
 #
 MODULE_CMD=( "${RSCRIPT_CMD[@]}" "$@" );
-"${MODULE_CMD[@]}"
+$DRY_RUN "${MODULE_CMD[@]}"

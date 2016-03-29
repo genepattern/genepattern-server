@@ -556,4 +556,75 @@ testRunRJava_custom_env_arg() {
     assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
 }
 
+#
+# validate run-script.sh with no -a flag
+#
+testRunRscript_no_env_arch() {
+    local script_dir=$( cd ../ && pwd )    
+    local mock_patch_dir="/opt/genepattern/patches";
+    export GP_DEBUG="false"
+    
+    local expected="${script_dir}/run-with-env.sh \
+-c env-custom-macos.sh \
+-u R-2.15 \
+-e GP_DEBUG=FALSE \
+-e R_LIBS= \
+-e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
+-e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
+-e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
+-e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
+-e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
+Rscript \
+--version"
+    
+    assertEquals "run R2.15" \
+        "${expected}" \
+        "$('../run-rscript.sh' \
+            '-n' \
+            '-c' 'env-custom-macos.sh' \
+            '-v' '2.15' \
+            '-p' ${mock_patch_dir} \
+            '-l' '/opt/genepattern/tasks/MyModule.1' \
+            '-m' 'FALSE' \
+            '--' \
+            '--version')"
+}
+
+#
+# validate -a flag to run-rscript.sh command
+#
+testRunRscript_with_env_arch() {
+    local script_dir=$( cd ../ && pwd )    
+    local mock_patch_dir="/opt/genepattern/patches";
+    export GP_DEBUG="false"
+    
+    local expected="${script_dir}/run-with-env.sh \
+-c env-custom-macos.sh \
+-u R-2.15 \
+-e GP_DEBUG=FALSE \
+-e R_LIBS= \
+-e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${mock_patch_dir}/mock-env-arch/Library/R/2.15 \
+-e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
+-e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
+-e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
+-e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
+Rscript \
+--version"
+    
+    assertEquals "run R2.15" \
+        "${expected}" \
+        "$('../run-rscript.sh' \
+            '-n' \
+            '-c' 'env-custom-macos.sh' \
+            '-v' '2.15' \
+            '-p' ${mock_patch_dir} \
+            '-l' '/opt/genepattern/tasks/MyModule.1' \
+            '-a' 'mock-env-arch' \
+            '-m' 'FALSE' \
+            '--' \
+            '--version')"
+}
+
 . ${SHUNIT2_HOME}/src/shunit2
