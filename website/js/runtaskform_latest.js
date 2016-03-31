@@ -1195,7 +1195,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].allowMultiple = true;
 
-                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+                parent.find(".batchBox").append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
             }
             else
             {
@@ -1218,7 +1218,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         numericDiv.append(batchBox);
 
@@ -1476,7 +1476,7 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         textDiv.append(batchBox);
 
@@ -2230,7 +2230,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
             batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
             //batchCheck.button();
             batchBox.tooltip();
-            batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern-3-9-5' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+            batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
 
             //if this is a batch parameter then pre-select the batch checkbox
