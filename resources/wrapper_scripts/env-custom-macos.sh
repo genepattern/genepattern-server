@@ -27,6 +27,12 @@ function initEnv() {
     elif [ "$1" = "Java-1.8" ]; then
         setjdk 1.8
 
+    # set path for R-3.2
+    elif [ "$1" = "R-3.2" ]; then
+        # add Rscript to path
+        R_HOME=/Library/Frameworks/R.framework/Versions/3.2/Resources
+        GP_SET_R_PATH=true;
+
     # set path for R-3.1
     elif [ "$1" = "R-3.1" ]; then
         # add Rscript to path
@@ -43,6 +49,12 @@ function initEnv() {
     elif [ "$1" = "R-2.15" ]; then
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.15/Resources
+        GP_SET_R_PATH=true;
+
+    # set path for R-2.5
+    elif [ "$1" = "R-2.5" ]; then
+        # add Rscript to path
+        R_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
         GP_SET_R_PATH=true;
     fi
 
