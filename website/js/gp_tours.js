@@ -137,27 +137,8 @@ $(function()
         //create the steps
         var steps = [
             {
-                intro: '<div class="tour-header"> Batch Jobs </div> The batching feature has now been expanded to include all parameters instead of just files. ',
-                position: 'top'
-            },
-            {
-                element: "#numClustersBatchBox",
-                intro: '<div class="tour-header"> Batch Jobs </div> You can enable batching just by clicking on the Batch checkbox. ',
-                position: 'left'
-            },
-            {
-                element: ".previewBatch",
-                intro: '<div class="tour-header"> Preview Batch Jobs </div>  There is a <b>Preview Batch</b> button which allows you to preview the values will be set for each batch job.',
-                position: 'left'
-            },
-            {
-                element: "#batchMain",
-                intro: '<div class="tour-header"> Preview Batch Jobs </div> The Preview Batch dialog lists the total number of batch jobs that will be launched and for each job the value that will be set for the batched parameters.',
-                position: 'top'
-            },
-            {
-                intro: '<div class="tour-header"> The End</div> This is the end of the tour. To learn more about what'
-                    + ' is new, please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.5" target="_blank">release notes</a>.'
+                intro: '<div class="tour-header"> Release Notes </div> This is a bug fix release. For details '
+                    + ' please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.7" target="_blank">release notes</a>.'
             }
         ];
 
