@@ -106,6 +106,12 @@
                     }
                     return false;
                 }
+
+                function resetGSDialogState() {
+                    $("#saveTree").show();
+                    $(".gs-uploading").hide();
+                    $(".ui-dialog-buttonpane").show();
+                }
                 /* ]]> */
             </script>
             <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
@@ -145,6 +151,7 @@
                                     $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
                                     showSuccessMessage(data);
                                     refreshGenomeSpaceTree();
+                                    resetGSDialogState();
                                 },
                                 error:function (data, textStatus, jqXHR) {
                                     $("#genomeSpaceSaveDialog").dialog("close"); 			// Close the dialog
@@ -163,9 +170,7 @@
                                         showErrorMessage(data.statusText);
                                     }
 
-                                    $(".gs-uploading").hide();
-                                    $("#saveTree").show();
-                                    $(".ui-dialog-buttonpane").show();
+                                    resetGSDialogState();
                                 },
                                 dataType:"text"
                             });

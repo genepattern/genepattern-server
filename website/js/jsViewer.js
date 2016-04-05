@@ -1,10 +1,12 @@
 (function( $ ) {
     $.widget("ui.gpJavascript", {
+        mainPaneId: "mainJsViewerPane",
         options: {
             taskName: "",
             taskLsid: "",
             jobId: "",
-            url: ""
+            url: "",
+            onCreateActionBar: null //a callback to add more options to the action bar
         },
         _create: function() {
 
@@ -33,7 +35,7 @@
         _openJavascriptModule: function() {
             var self = this;
 
-            var mainViewerPane = $("<div/>").attr("id", "mainJsViewerPane").css("height", "100%").css("width", "100%");
+            var mainViewerPane = $("<div/>").attr("id", self.mainPaneId).css("height", "100%").css("width", "100%");
 
             var headerString = self.options.taskName;
             var version = self._getTaskVersion();
@@ -42,19 +44,22 @@
             }
 
             var infoBar = $("<div class='ui-layout-north'/>").attr("id", "jsViewerInfoBar");
-            infoBar.append("<label>" + headerString + "</label>");
+            infoBar.append("<label>" + headerString + "</label>").css("margin-right", "7px");
+
+
+            if(self.options.taskLsid !== undefined && self.options.taskLsid !== null && self.options.taskLsid.length > 0)
+            {
+                var docLink = "../getTaskDoc.jsp?name=" + self.options.taskLsid;
+
+                infoBar.append($("<a>Documentation</a>").attr("href", docLink).attr("target", "_blank")
+                    .css("float", "right").css("font-weight", "normal").css("margin-right", "18px"));
+            }
 
             var actionBar = $("<span/>").attr("id", "actionBar");
 
-            if (self.options.jobId !== undefined && self.options.jobId !== null && self.options.jobId.length > 0)
+            if(self.options.onCreateActionBar !== undefined && typeof self.options.onCreateActionBar === 'function')
             {
-                var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
-                actionBar.append(moreOptionsMenu);
-
-                moreOptionsMenu.click(function () {
-                    //open the slide out menu for the  job
-                    $("a[data-jobid='" + self.options.jobId + "']").click();
-                });
+                self.options.onCreateActionBar(actionBar);
             }
 
             var newWindowImage = $("<img id='openJSWin' src='../images/newWindow.png' width='17' height='17' title='Relaunch in a new window'/>");
@@ -110,37 +115,25 @@
                 }
             });
 
+            var height = $("#" + self.mainPaneId).parent().height();
             setTimeout(function(){
-                var jsViewerFrame = $("<iframe width='100%' height='500' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+                var jsViewerFrame = $("<iframe width='100%' height='" + height + "' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
                     mainViewerPane.unblock();
-
-                    $(this).height($("#content").height());
+                    $(this).height($("#" + self.mainPaneId).height());
                     //$(this).width($(this).contents().width());
                 });
-                //var viewerDiv = $("<div/>").attr("id", "jsViewer");
-                //viewerDiv.append(jsViewerFrame);
+
                 mainViewerPane.append(jsViewerFrame);
-                //$("#main-pane").append(jsViewerFrame);
 
-                /*var jsLayout = mainViewerPane.layout({
-                    spacing_closed: 0,
-                    spacing_open:   0,
-                    //north__paneSelector: ".jsViewerInfoBar",
-                    center__maskContents:		true // IMPORTANT - enable iframe masking
-                });*/
-
-                /*for(var property in jsLayout.panes){
-                    if(jsLayout.panes.hasOwnProperty(property)){
-                       // jsLayout.panes[property].css('border', 'none');
-                    }
-                }*/
             }, 2000 );
         },
         destroy: function() {
-            this.element.next().remove();
+            var self = this;
+            self.element.find("#" + self.mainPaneId).remove();
+            $.Widget.prototype.destroy.call(this);
         }
     });
 }( jQuery ));

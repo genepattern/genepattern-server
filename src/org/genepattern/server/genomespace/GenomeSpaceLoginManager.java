@@ -31,6 +31,8 @@ public class GenomeSpaceLoginManager {
     public static String GS_TOKEN_KEY = "GS_TOKEN";
     public static String GS_EMAIL_KEY = "GS_EMAIL";
     public static String GS_OPENID_KEY = "GS_OPENID";
+    public static String GS_TOKEN_HEADER = "gs-token";
+    public static String GS_USERNAME_HEADER = "gs-username";
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
     
@@ -171,6 +173,50 @@ public class GenomeSpaceLoginManager {
         }
         
         return gpUsername;
+    }
+
+    /**
+     * Checks the GenomeSpace token in the request, and returns the GenePattern username if authenticated
+     * Returns null if not authenticated or no GenomeSpace token is present
+     *
+     * @param request
+     * @return
+     */
+    public static String authenticateFromToken(HttpServletRequest request) {
+        // Get the token from the request
+        String gsToken = request.getHeader(GenomeSpaceLoginManager.GS_TOKEN_HEADER);
+        String gsUsername = request.getHeader(GenomeSpaceLoginManager.GS_USERNAME_HEADER);
+
+        // Return null if no token or username
+        if (gsToken == null) return null;
+        if (gsUsername == null) return null;
+
+        // Look up the associated GenePattern username
+        String gp_username = GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
+
+        // Return null if no associated GenePattern username
+        if (gp_username == null) return null;
+
+        // Attempt to log in using the GS token
+        try {
+            GpContext context = GpContext.getContextForUser(gp_username);
+            String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
+            GenomeSpaceLogin login = GenomeSpaceClientFactory.instance().submitLogin(genomeSpaceEnvironment, gsToken);
+
+            // Was not able to login using the provided token, return null
+            if (login == null) return null;
+
+            // Get the correct username because in the CDK as it stands now GsSession.getCachedUsernameForSSO() is sometimes stale
+            login.setUsername(gsUsername);
+
+            // Login was successful, set the right attributes in the session and return
+            setSessionAttributes(login, request.getSession());
+            return gp_username;
+        }
+        catch (Throwable t) {
+            log.info("Issue with logging into GenomeSpace via token");
+            return null;
+        }
     }
     
     /**

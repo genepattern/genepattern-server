@@ -1,7 +1,7 @@
 package org.genepattern.server.dm;
 
 import static org.genepattern.junitutil.Demo.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.net.MalformedURLException;
 
@@ -9,6 +9,7 @@ import org.genepattern.junitutil.Demo;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.util.LSID;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,6 +72,33 @@ public class TestGpFileObjFactory {
         //gpFilePath=
                 GpFileObjFactory.getRequestedGpFileObj(gpConfig, //proxyHref, 
                         dataGsDir +filename, new LSID(cleLsid));
+    }
+    
+    @Test
+    public void getRequestedJobResultFileObj_gpUrl_literal() throws Exception {
+        final GpFilePath gpFilePath=GpFileObjFactory.getRequestedJobResultFileObj(
+                gpConfig, "<GenePatternURL>jobResults/1/all_aml_test.gct");
+        assertNotNull(gpFilePath);
+        assertEquals("gpFilePath.name", "all_aml_test.gct", gpFilePath.getName());
+        assertTrue(gpFilePath instanceof JobResultFile);
+    }
+
+    @Test
+    public void getRequestedJobResultFileObj_gpUrl() throws Exception {
+        final GpFilePath gpFilePath=GpFileObjFactory.getRequestedJobResultFileObj(
+                gpConfig, Demo.gpUrl + "jobResults/1/all_aml_test.gct");
+        assertNotNull(gpFilePath);
+        assertEquals("gpFilePath.name", "all_aml_test.gct", gpFilePath.getName());
+        assertTrue(gpFilePath instanceof JobResultFile);
+    }
+
+    @Test
+    public void getRequestedJobResultFileObj_proxyUrl() throws Exception {
+        final GpFilePath gpFilePath=GpFileObjFactory.getRequestedJobResultFileObj(
+                gpConfig, Demo.proxyUrl + "jobResults/1/all_aml_test.gct");
+        assertNotNull(gpFilePath);
+        assertEquals("gpFilePath.name", "all_aml_test.gct", gpFilePath.getName());
+        assertTrue(gpFilePath instanceof JobResultFile);
     }
     
 }

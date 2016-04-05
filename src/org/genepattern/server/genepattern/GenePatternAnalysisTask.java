@@ -1261,7 +1261,7 @@ public class GenePatternAnalysisTask {
         final Properties props;
         try {
             props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
-                    environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+                    environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId(), false);
             if (!Strings.isNullOrEmpty(baseGpHref)) {
                 props.setProperty("GenePatternURL", baseGpHref+"/");
             }
@@ -2650,10 +2650,21 @@ public class GenePatternAnalysisTask {
      *            (therefore needing additional attributes added to substitution table)
      * @return Properties Properties object with all substitution name/value pairs defined
      * @author Jim Lerner
+     * @deprecated
      */
     private static Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
+        TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Map<String, String> env,
+        ParameterInfo[] formalParameters, String userID) 
+    throws MalformedURLException 
+    {
+        return setupProps(taskInfo, taskName, parentJobNumber, jobNumber, taskID, 
+                taskInfoAttributes, actuals, env,
+                formalParameters, userID,
+                true);  // <--- legacy (pre 3.9.7, copy all properties from System.properties)
+}
+    private static Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
 	    TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Map<String, String> env,
-	    ParameterInfo[] formalParameters, String userID) 
+	    ParameterInfo[] formalParameters, String userID, final boolean copyEnv) 
     throws MalformedURLException 
     {
         Properties props = new Properties();
@@ -2663,22 +2674,24 @@ public class GenePatternAnalysisTask {
         }
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
         try {
-            // copy environment variables into props
-            String key = null;
-            String value = null;
+            if (copyEnv) {
+                // copy environment variables into props
+                String key = null;
+                String value = null;
 
-            for (Enumeration<?> eVariables = System.getProperties().propertyNames(); eVariables.hasMoreElements();) {
-                key = (String) eVariables.nextElement();
-                value = System.getProperty(key, "");
-                props.put(key, value);
-            }
-            for (Iterator<String> eVariables = env.keySet().iterator(); eVariables.hasNext();) {
-                key = eVariables.next();
-                value = (String) env.get(key);
-                if (value == null) {
-                    value = "";
+                for (Enumeration<?> eVariables = System.getProperties().propertyNames(); eVariables.hasMoreElements();) {
+                    key = (String) eVariables.nextElement();
+                    value = System.getProperty(key, "");
+                    props.put(key, value);
                 }
-                props.put(key, value);
+                for (Iterator<String> eVariables = env.keySet().iterator(); eVariables.hasNext();) {
+                    key = eVariables.next();
+                    value = (String) env.get(key);
+                    if (value == null) {
+                        value = "";
+                    }
+                    props.put(key, value);
+                }
             }
             props.put(NAME, taskName);
             props.put(JOB_ID, Integer.toString(jobNumber));
@@ -2717,7 +2730,7 @@ public class GenePatternAnalysisTask {
             // populate props with the input parameters so that they can be looked up by name
             if (actuals != null) {
                 for (int i = 0; i < actuals.length; i++) {
-                    value = actuals[i].getValue();
+                    String value = actuals[i].getValue();
                     if (value == null) {
                         value = "";
                     }

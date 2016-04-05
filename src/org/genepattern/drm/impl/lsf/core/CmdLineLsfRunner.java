@@ -32,7 +32,11 @@ import edu.mit.broad.core.lsf.LsfJob;
 
 /**
  * LSF integration via the JobRunner API, the implementation uses external command line wrappers
- * for running the LSF commands. Additional configuration.properties: 'lsf.memoryUnit', 'lsf.statusCmd' and  'lsf.statusRegex'
+ * for running the LSF commands. Additional configuration.properties: 
+ *     'lsf.memoryUnit', 
+ *     'lsf.statusCmd',
+ *     'lsf.statusCmdTimeout',
+ *     'lsf.statusRegex'
  *  
  * @author pcarr
  *
@@ -66,6 +70,17 @@ public class CmdLineLsfRunner implements JobRunner {
     public static final String PROP_STATUS_CMD="lsf.statusCmd";
     
     /**
+     * optional customization parameter for setting the timeout for the status check command.
+     * In d-hh:mm:ss format.
+     * <pre>
+     * LSF:
+     *     configuration.properties:
+     *         lsf.statusCmdTimeout: 1-00:00:00
+     * </pre>
+     */
+    public static final String PROP_STATUS_CMD_TIMEOUT="lsf.statusCmdTimeout";
+    
+    /**
      * optional customization parameter for setting the regular expression used to parse the output of the lsf.statusCmd ('bjobs -W').
      * <pre>
        LSF:
@@ -80,10 +95,9 @@ public class CmdLineLsfRunner implements JobRunner {
     // null means use default
     private Pattern lsfStatusPattern=null;
     // null means use default
+    private Long lsfStatusCmdTimeout=null;
+    // null means use default
     private Memory.Unit lsfMemoryUnit=Memory.Unit.gb;
-    
-    private LsfStatusChecker statusChecker=null;
-
 
     @Override
     public void stop() {
@@ -115,7 +129,8 @@ public class CmdLineLsfRunner implements JobRunner {
             log.trace("getStatus for jobId="+jobRecord.getExtJobId());
         }
         try {
-            DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord);
+            final LsfStatusChecker statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern, lsfStatusCmdTimeout);
+            final DrmJobStatus jobStatus=statusChecker.checkStatus(jobRecord);
             if (log.isTraceEnabled()) {
                 log.trace("jobStatus="+jobStatus);
             }
@@ -157,6 +172,15 @@ public class CmdLineLsfRunner implements JobRunner {
         if (properties.containsKey(CmdLineLsfRunner.PROP_STATUS_CMD)) {
             this.lsfStatusCmd=new ArrayList<String>(properties.get(CmdLineLsfRunner.PROP_STATUS_CMD).getValues());
         }
+        if (properties.containsKey(CmdLineLsfRunner.PROP_STATUS_CMD_TIMEOUT)) {
+            final String lsfStatusCmdTimeoutStr=properties.getProperty(CmdLineLsfRunner.PROP_STATUS_CMD_TIMEOUT);
+            try {
+                this.lsfStatusCmdTimeout=Walltime.fromString(lsfStatusCmdTimeoutStr).asMillis();
+            }
+            catch (Throwable t) {
+                log.error("Error initializing "+PROP_STATUS_CMD_TIMEOUT+"='"+lsfStatusCmdTimeoutStr+"'", t);
+            }
+        }
         if (properties.containsKey(CmdLineLsfRunner.PROP_STATUS_REGEX)) {
             String lsfStatusRegex=properties.getProperty(CmdLineLsfRunner.PROP_STATUS_REGEX);
             try {
@@ -178,11 +202,10 @@ public class CmdLineLsfRunner implements JobRunner {
     }
     
     public void start() {
-        this.statusChecker=new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
     }
     
     protected LsfStatusChecker initLsfStatusChecker() {
-        return new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern);
+        return new LsfStatusChecker(lsfStatusCmd, lsfStatusPattern, lsfStatusCmdTimeout);
     }
 
     private File getLogFile(DrmJobSubmission drmJobSubmission) {

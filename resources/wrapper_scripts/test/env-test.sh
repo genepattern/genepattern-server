@@ -77,6 +77,37 @@ testRootModuleName() {
 }
 
 #
+# basic variable set test, 
+#     [ -z "${_my_var+x}" ] is true when _my_var is not set
+#
+testVarSet() {
+    local _my_var;
+    assertFalse " local _my_var; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+    
+    unset _my_var;
+    assertTrue " unset _my_var; '[ -z \${_my_var+x} ]' (expecting true)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var=;
+    assertFalse " _my_var=; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="";
+    assertFalse " _my_var=\"\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+    local _my_var="my value";
+    assertFalse " _my_var=\"my value\"; '[ -z \${_my_var+x} ]' (expecting false)" \
+        "[ -z ${_my_var+x} ]"
+
+    unset _my_var;
+}
+
+#
 # basic file exists test
 #
 testFileExists() {
@@ -87,36 +118,15 @@ testFileExists() {
     assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
 }
 
-#
-# Append an element to the end of the path; 
-# Usage: path=$(appendPath "${path}" "${element}")
-#
-appendPath() {
-    local path="${1}";
-    local element="${2}";
-    
-    # Note, to check for a directory: [ -d "$element" ] 
-    # To prepend, path="$element:$path"
-    
-    # if path is not set ... just set it to element
-    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
-    if [ -z "$path" ]; then
-        #echo "2, path not set";
-        path="$element";
-    elif [[ ":$path:" != *":$element:"* ]]; then
-        path="${path:+"$path:"}$element"
-    fi
-    # use echo to return a value
-    echo "$path"
-}
-
 testAppendPath() {
+    source ../env-lookup.sh
     MY_PATH="/opt/dir1";
     MY_PATH=$(appendPath "${MY_PATH}" "/opt/dir2")
     assertEquals "appendPath" "/opt/dir1:/opt/dir2" "${MY_PATH}"
 }
 
 testAppendPath_ignoreDuplicate() {
+    source ../env-lookup.sh
     MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
     
     assertEquals "appendPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
@@ -134,6 +144,7 @@ testAppendPath_ignoreDuplicate() {
 }
 
 testAppendPath_toEmpty() {
+    source ../env-lookup.sh
     MY_ARG="/new/pathelement";
     unset MY_PATH;
     MY_PATH=$(appendPath "${MY_PATH}" "${MY_ARG}")
@@ -141,6 +152,7 @@ testAppendPath_toEmpty() {
 }
 
 testMcrAtIndianaU() {
+    source ../env-lookup.sh
     expected_mcr_path="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/runtime/glnxa64:\
 /N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/bin/glnxa64:\
 /N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/os/glnxa64:\
@@ -254,11 +266,11 @@ testInitCustomValuePath() {
     assertEquals "default" "$(scriptDir)/env-custom.sh" "$(initCustomValuePath)"
     assertEquals "as arg, relative" "$(scriptDir)/env-lookup-shunit2.sh" "$(initCustomValuePath 'env-lookup-shunit2.sh')"
     assertEquals "as arg, fq path" "/opt/env-lookup-shunit2.sh" "$(initCustomValuePath '/opt/env-lookup-shunit2.sh')"
-    export GP_ENV_CUSTOM="env-custom-broad-centos5.sh"
-    assertEquals "env, relative" "$(scriptDir)/env-custom-broad-centos5.sh" "$(initCustomValuePath)"
+    export GP_ENV_CUSTOM="env-custom-macos.sh"
+    assertEquals "env, relative" "$(scriptDir)/env-custom-macos.sh" "$(initCustomValuePath)"
     unset GP_ENV_CUSTOM;
-    export GP_ENV_CUSTOM="/opt/env-custom-broad-centos5.sh"
-    assertEquals "env, fq path" "/opt/env-custom-broad-centos5.sh" "$(initCustomValuePath)"
+    export GP_ENV_CUSTOM="/opt/env-custom-macos.sh"
+    assertEquals "env, fq path" "/opt/env-custom-macos.sh" "$(initCustomValuePath)"
 }
 
 # 1) when the key is not in the map, return the key
@@ -323,14 +335,40 @@ testAddEnv() {
     assertEquals "_runtime_environments.size" "3" "${#_runtime_environments[@]}"
 }
 
-testAddEnvIU() {
+
+#
+# Example site customization, alias for cananical environment name
+#
+testAddEnv_alias_mcr() {
     source ../env-lookup.sh
-    sourceEnvCustom "env-custom-IU.sh"
+    source "env-custom-for-testing.sh"
+    assertEquals "alias 'Matlab-2013a-MCR' <- 'matlab/2013a'" 'matlab/2013a' "$(getValue 'Matlab-2013a-MCR')"
+    
+    addEnv 'Matlab-2013a-MCR'
+    assertEquals "addEnv 'Matlab-2013a-MCR', _runtime_envs[0]" "matlab/2013a" "${_runtime_environments[0]}"
+}
+
+
+#
+# Example site customization for R-3.0
+#      add 'gcc' dependency, R-3.0 depends on gcc
+#
+testAddEnv_dependency_r_3_0_on_gcc() {
+    source ../env-lookup.sh
+    source "env-custom-for-testing.sh"
     assertEquals "check values" 'gcc/4.7.2, R/3.0.1' "$(getValue 'R-3.0')"
 
     addEnv 'R-3.0'
     assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${_runtime_environments[0]}"
     assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
+}
+
+testAddEvn_set_default_java_version() {
+    source ../env-lookup.sh
+    source "env-custom-for-testing.sh"
+    
+    addEnv 'Java'
+    assertEquals "_runtime_envs[0]" "java/1.8.1" "${_runtime_environments[0]}"
 }
 
 #
@@ -496,6 +534,15 @@ testRunJava_custom_env_arg() {
     assertEquals "run java" "$expected" "$('../run-java.sh' '-c' './test/env-lookup-shunit2.sh' '-version')"
 }
 
+#
+# example mapping a single environment to multiple environments, e.g.
+#     R-2.7=cairo,R-2.7
+#
+testMultiEnv() {
+    export GP_DEBUG="true";
+    local 
+}
+
 testRunRJava() {
     export GP_DEBUG="true";
     local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
@@ -507,6 +554,77 @@ testRunRJava_custom_env_arg() {
     local env_custom="${test_script_dir}/env-lookup-shunit2.sh";
     local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
     assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
+}
+
+#
+# validate run-script.sh with no -a flag
+#
+testRunRscript_no_env_arch() {
+    local script_dir=$( cd ../ && pwd )    
+    local mock_patch_dir="/opt/genepattern/patches";
+    export GP_DEBUG="false"
+    
+    local expected="${script_dir}/run-with-env.sh \
+-c env-custom-macos.sh \
+-u R-2.15 \
+-e GP_DEBUG=FALSE \
+-e R_LIBS= \
+-e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
+-e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
+-e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
+-e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
+-e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
+Rscript \
+--version"
+    
+    assertEquals "run R2.15" \
+        "${expected}" \
+        "$('../run-rscript.sh' \
+            '-n' \
+            '-c' 'env-custom-macos.sh' \
+            '-v' '2.15' \
+            '-p' ${mock_patch_dir} \
+            '-l' '/opt/genepattern/tasks/MyModule.1' \
+            '-m' 'FALSE' \
+            '--' \
+            '--version')"
+}
+
+#
+# validate -a flag to run-rscript.sh command
+#
+testRunRscript_with_env_arch() {
+    local script_dir=$( cd ../ && pwd )    
+    local mock_patch_dir="/opt/genepattern/patches";
+    export GP_DEBUG="false"
+    
+    local expected="${script_dir}/run-with-env.sh \
+-c env-custom-macos.sh \
+-u R-2.15 \
+-e GP_DEBUG=FALSE \
+-e R_LIBS= \
+-e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${mock_patch_dir}/mock-env-arch/Library/R/2.15 \
+-e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
+-e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
+-e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
+-e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
+Rscript \
+--version"
+    
+    assertEquals "run R2.15" \
+        "${expected}" \
+        "$('../run-rscript.sh' \
+            '-n' \
+            '-c' 'env-custom-macos.sh' \
+            '-v' '2.15' \
+            '-p' ${mock_patch_dir} \
+            '-l' '/opt/genepattern/tasks/MyModule.1' \
+            '-a' 'mock-env-arch' \
+            '-m' 'FALSE' \
+            '--' \
+            '--version')"
 }
 
 . ${SHUNIT2_HOME}/src/shunit2

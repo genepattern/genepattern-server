@@ -111,9 +111,16 @@ public class LoginManager {
     public static String handleGenomeSpaceAuthentication(HttpServletRequest request, HttpServletResponse response) {
         String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
         if (gsUsername == null) return null;
-        
         String gp_username = null;
+
+        // Try to authenticate using GS information in the session
         gp_username = GenomeSpaceLoginManager.authenticate(request, response);
+
+        // Try to authenticate using a GS token attached to the request
+        if (gp_username == null) {
+            gp_username = GenomeSpaceLoginManager.authenticateFromToken(request);
+        }
+
         return gp_username;
     }
     

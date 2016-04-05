@@ -949,7 +949,7 @@ public class PipelineHandler {
         }
         JobResultFile gpFilePath = null;
         try {
-            gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(value);
+            gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(ServerConfigurationFactory.instance(), value);
         }
         catch (Exception e) {
             //this is to be expected ... 
@@ -1241,7 +1241,7 @@ public class PipelineHandler {
         log.debug("getInheritedFilename for inputParam="+inputParam.getName());
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
         @SuppressWarnings("rawtypes")
-        HashMap attributes = inputParam.getAttributes();
+        final HashMap attributes = inputParam.getAttributes();
         final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
         log.debug("taskStr="+taskStr);
@@ -1261,27 +1261,28 @@ public class PipelineHandler {
             log.error("Invalid stepNum: stepNum="+stepNum+", childJobs.length="+childJobs.length);
             return "";
         }
-        
-        log.debug("stepNum="+stepNum);
-        JobInfo fromJob = childJobs[stepNum];
-        if (fromJob==null) {
-            log.debug("fromJob==null");
+
+        final JobInfo fromJob = childJobs[stepNum];
+        if (log.isDebugEnabled()) {
+            log.debug("stepNum="+stepNum);
+            if (fromJob==null) {
+                log.debug("fromJob==null");
+            }
+            else {
+                log.debug("fromJob.id="+fromJob.getJobNumber()+", "+fromJob.getTaskName());
+            }
         }
-        else {
-            log.debug("fromJob.id="+fromJob.getJobNumber()+", "+fromJob.getTaskName());
-        }
-        String fileName = null;
         try {
-            fileName = getOutputFileName(mgr, dao, fromJob, fileStr);
-            log.debug("outputFileName="+fileName);
-            if (fileName == null || fileName.trim().length() == 0) {
+            final String outputFileName = getOutputFileName(mgr, dao, fromJob, fileStr);
+            if (log.isDebugEnabled()) { 
+                log.debug("outputFileName="+outputFileName); 
+            }
+            if (outputFileName == null || outputFileName.trim().length() == 0) {
                 //return an empty string if no output filename is found
                 return "";
             }
             attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-            //special-case: handle space ' ' and other special-characters in file path
-            fileName=UrlUtil.encodeFilePath(new File(fileName));
-            String url = "<GenePatternURL>jobResults/" + fileName;
+            final String url = "<GenePatternURL>jobResults/" + outputFileName;
             return url;
         }
         catch (Exception e) {
@@ -1290,6 +1291,25 @@ public class PipelineHandler {
         }
     }
     
+    /**
+     * Select an output file from the given upstream job in the pipeline. Selection is based on
+     * a number of different 'fileStr' types, select <fileStr> from <fromJob>, where fileStr is
+     * 
+     * 1) ?scatter[&options...], a scatter step
+     * 2) ?filelist[&options...], a gather step
+     * 3) stdout, select stdout from job
+     * 4) stderr, select stderr from job
+     * 5) <integer>, select Nth output from job
+     * 6) <file-type>, select (first) file-type from job
+     * 
+     * @param mgr, hibernate session required for '?filelist' type in scatter-gather pipeline  
+     * @param dao, AnalysisDAO instance for recursively generating the list of output files for a job
+     * @param fromJob, the completed job from which to select the output file
+     * @param fileStr, the specification for the type of output file to select
+     * @return
+     * @throws ServerConfigurationException
+     * @throws FileNotFoundException
+     */
     private static String getOutputFileName(final HibernateSessionManager mgr, final AnalysisDAO dao, final JobInfo fromJob, final String fileStr)
     throws ServerConfigurationException, FileNotFoundException 
     {
@@ -1299,29 +1319,38 @@ public class PipelineHandler {
         if (log.isDebugEnabled()) {
             log.debug("getOutputFileName, fromJob="+fromJob.getJobNumber()+"."+fromJob.getTaskName()+", fileStr="+fileStr);
         }
-        //special-case: use 'stdout' from previous job
-        if ("stdout".equals(fileStr)) {
-            //use STDOUT from Job
-            ParameterInfo stdoutParam = getStdoutFile(fromJob);
-            String fileName = null;
-            if (stdoutParam != null) {
-                fileName = stdoutParam.getValue();
-            }
-            return fileName;
-        }
-        //special-case: use 'stderr' from previous job
-        if ("stderr".equals(fileStr)) {
-            //use STDERR from Job
-            ParameterInfo stderrParam = getStderrFile(fromJob);
-            String fileName = null;
-            if (stderrParam != null) {
-                fileName = stderrParam.getValue();
-            }
-            return fileName;
+        
+        //special-case: scatter-step
+        if (fileStr.startsWith("?scatter")) {
+            //it's a scatter-step
+            return fromJob.getJobNumber() + fileStr;
         }
         
-        //get the ordered list of output files for the job
-        List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob);
+        // special-case: gather-step
+        if (fileStr.startsWith("?filelist")) {
+            try {
+                //it's a gather-step, write the filelist as an output of the fromJob 
+                final GpFilePath filelist = writeFileList(mgr, fromJob, fileStr);
+                final String fileName = fromJob.getJobNumber() + "/" + filelist.getRelativePath();
+                final String encodedValue = UrlUtil.encodeFilePath(new File(fileName));
+                return encodedValue;
+            }
+            catch (Exception e) {
+                log.error(e);
+            }
+        } 
+        
+        //special-case: use 'stdout' from previous job
+        if ("stdout".equals(fileStr)) {
+            final ParameterInfo stdoutParam = getStdoutFile(fromJob);
+            return getEncodedValue(stdoutParam);
+        }
+
+        //special-case: use 'stderr' from previous job
+        if ("stderr".equals(fileStr)) {
+            final ParameterInfo stderrParam = getStderrFile(fromJob);
+            return getEncodedValue(stderrParam);
+        } 
         
         //fileStr holds the reference to the output file, either an ordinal or a type
         int outputNum = -1;
@@ -1336,29 +1365,17 @@ public class PipelineHandler {
         }
         String fileName = null;
         if (outputNum > -1) {
+            //get the ordered list of output files for the job
+            final List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob);
             fileName = getNthOutputFilename(outputNum, allResultFiles);
         }
         else {
+            //get the ordered list of output files for the job
+            final List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob);
             fileName = getOutputFilenameByType(fromJob, outputType, allResultFiles);
         }
         if (fileName != null) {
-            //TODO: can't get job results from sub-directories because of this code
-            int lastIdx = fileName.lastIndexOf(File.separator);
-            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1);
-            if (lastIdx != -1) {
-                fileName = fileName.substring(lastIdx + 1);
-            }
             return fileName;
-        }
-
-        try {
-            String fileNameFromPattern = getOutputFileNameFromPattern(mgr, fromJob, fileStr);
-            if (fileNameFromPattern != null) {
-                return fileNameFromPattern;
-            }
-        }
-        catch (Exception e) {
-            log.error(e);
         }
 
         if (fileName == null) {
@@ -1368,29 +1385,14 @@ public class PipelineHandler {
     }
     
     /**
-     * Added this method to support scatter-gather pipelines.
-     * See the Pipeline Designer, which generates the values that we are checking for in this method.
+     * for scatter-gather feature, create a filelist file as an output file in the job results directory
+     * @param mgr
+     * @param fromJob
+     * @param fileStr, e.g. fileStr=?filelist[&filter=<list of patterns>]
      * 
-     *     ctl.options[ctl.options.length]  = new Option('scatter each output', '?scatter&filter=*');
-     *     ctl.options[ctl.options.length]  = new Option('file list of all outputs', '?filelist&filter=*');
-     * 
-     * @return
+     * @return the GpFilePath reference to the filelist file
+     * @throws Exception
      */
-    private static String getOutputFileNameFromPattern(final HibernateSessionManager mgr, final JobInfo fromJob, final String fileStr) throws Exception {
-        if (fileStr.startsWith("?scatter")) {
-            //it's a scatter-step
-            return fromJob.getJobNumber() + fileStr;
-        }
-        if (fileStr.startsWith("?filelist")) {
-            //it's a gather-step, write the filelist as an output of the fromJob 
-            final GpFilePath filelist = writeFileList(mgr, fromJob, fileStr);
-            return fromJob.getJobNumber() + "/" + filelist.getRelativePath();
-        } 
-        //unknown
-        return null;
-    }
-    
-    //fileStr=?filelist[&filter=<list of patterns>]
     private static GpFilePath writeFileList(final HibernateSessionManager mgr, final JobInfo fromJob, final String fileStr) throws Exception {
         boolean isInTransaction = false;
         AnalysisDAO dao = null;
@@ -1425,7 +1427,6 @@ public class PipelineHandler {
             GatherResults gatherResults = new GatherResults(fromJob, allResultFiles); 
             GpFilePath filelist = gatherResults.writeFilelist(filename, fileFilter);
             return filelist;            
-            //TODO: add the filelist to the fromJob
         }
         finally {
             if (!isInTransaction) {
@@ -1444,12 +1445,33 @@ public class PipelineHandler {
     private static String getNthOutputFilename(int fileIdx, List<ParameterInfo> jobResultFiles) {
         fileIdx = fileIdx - 1;
         if (fileIdx < 0 || fileIdx >= jobResultFiles.size()) {
-            //TODO: log error
+            log.error("invalid fileIdx="+fileIdx+", num files="+jobResultFiles.size());
             return "";
         }
-        ParameterInfo inheritedFile = jobResultFiles.get(fileIdx);
-        String filename = inheritedFile.getValue();
-        return filename;
+        final ParameterInfo inheritedFile = jobResultFiles.get(fileIdx);
+        return getEncodedValue(inheritedFile);
+    }
+
+    /**
+     * Get the url encoded value for the inherited file parameter, aka a 'use output from job ...' parameter.
+     * Values are in the form of,
+     *     <job_number>/<encoded_output_file_path>
+     * E.g.
+     *     1882/file%20path.txt
+     * 
+     * @param inheritedFile
+     * @return the encoded file path
+     */
+    protected static String getEncodedValue(final ParameterInfo inheritedFile) {
+        if (inheritedFile == null) {
+            return null;
+        }
+        final String filename = inheritedFile.getValue();
+        if (filename == null) {
+            return null;
+        }
+        final String encodedValue = UrlUtil.encodeFilePath(new File(filename));
+        return encodedValue;
     }
     
     /**
@@ -1492,17 +1514,20 @@ public class PipelineHandler {
         }
         
         if (fileName != null) {
-            return fileName;
+            final String encodedValue = UrlUtil.encodeFilePath(new File(fileName));
+            return encodedValue;
         }
-        
-        if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
+        else if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
             log.error("old version of pipeline: '"+fileStr+"' is deprecated");
             fileName = fileStr;
+            final String encodedValue = UrlUtil.encodeFilePath(new File(fileStr));
+            return encodedValue;
         }
-        
-        return fileName; 
+        else {
+            return null;
+        }
     }
-    
+
     /**
      * Recursively get an ordered list of all of the output files for the given job, 
      * filtering out execution log files.

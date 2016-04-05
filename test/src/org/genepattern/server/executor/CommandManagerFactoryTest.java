@@ -25,6 +25,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.GpServerProperties;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.util.MailSender;
 import org.genepattern.server.webapp.jsf.ContactUsBean;
 import org.genepattern.webservice.JobInfo;
 import org.junit.Before;
@@ -193,8 +194,8 @@ public class CommandManagerFactoryTest {
                 ContactUsBean.DEFAULT_CONTACT_EMAIL, 
                 jobProperties.getProperty(ContactUsBean.PROP_CONTACT_EMAIL));
         assertEquals("'smtp.server", 
-                ContactUsBean.DEFAULT_SMTP_SERVER, 
-                jobProperties.getProperty(ContactUsBean.PROP_SMTP_SERVER));
+                MailSender.DEFAULT_SMTP_SERVER, 
+                jobProperties.getProperty(MailSender.PROP_SMTP_SERVER));
     }
 
     /**

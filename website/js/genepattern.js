@@ -2621,7 +2621,6 @@ function cleanUpPanels()
     $("#jobResults").hide();
     $("#infoMessageDiv").hide();
     $("#errorMessageDiv").hide();
-    $("#mainViewerPane").remove();
 }
 
  //this will load a javascript module
@@ -2660,6 +2659,11 @@ function loadJavascript(jobId, container, openInNewWindow) {
 
                     cleanUpPanels();
 
+                    //destroy the gpJavascript plugin if already initialized
+                    if(container.is( ":data('gpJavascript')" ))
+                    {
+                        container.gpJavascript("destroy");
+                    }
                     container.gpJavascript({
                         taskName: job.taskName,
                         taskLsid: job.taskLsid,
@@ -2670,7 +2674,7 @@ function loadJavascript(jobId, container, openInNewWindow) {
                 }
                 else
                 {
-                    window.open(job.launchUrl, '_blank');
+                    window.open("/gp/pages/jsViewer.jsf?jobNumber=" + job.jobId);
                 }
             }
         },
@@ -2726,7 +2730,7 @@ function loadJobStatus(jobId, forceVisualizers) {
         openVisualizers = getURLParameter("openVisualizers");
     }
 
-    if (openVisualizers) {
+    if (openVisualizers == "true") {
         openVisualizers = "&openVisualizers=true";
     }
     else {

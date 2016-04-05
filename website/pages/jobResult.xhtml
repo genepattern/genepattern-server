@@ -247,10 +247,14 @@
                             {
                                 $("#jobResults").empty();
                                 $("#jobResults").append(div);
+
+                                //$("#main-pane").css("left", "0");
+                                //$("#main-pane").css("overflow", "hidden");
                             }
                             else
                             {
                                 $("#main-pane").append(div);
+                                //$("#main-pane").css("padding", "0px !important");
                             }
                         }
 
@@ -258,7 +262,20 @@
                             taskName: taskName,
                             taskLsid: taskLsid,
                             jobId: jobId,
-                            url: launchUrl  //The URL to the main javascript html file
+                            url: launchUrl,  //The URL to the main javascript html file
+                            onCreateActionBar: function(element)
+                            {
+                                if (jobId !== undefined && jobId !== null && jobId.length > 0)
+                                {
+                                    var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
+                                    element.append(moreOptionsMenu);
+
+                                    moreOptionsMenu.click(function () {
+                                        //open the slide out menu for the  job
+                                        $("a[data-jobid='" + jobId + "']").click();
+                                    });
+                                }
+                            }
                         });
 
                         mainLayout.close('west');
@@ -357,7 +374,7 @@
     </h:outputText>
     <h:outputText rendered="#{jobStatusBean.canViewJob and jobStatusBean.jobInfo.javascript and visualizerStatusBean.openVisualizers and visualizerStatusBean.openNewWindow}">
         <script type="text/javascript">
-            window.open('#{jobStatusBean.jobInfo.launchUrl}', '_blank');
+            window.open("/gp/pages/jsViewer.jsf?jobNumber=" + '#{jobStatusBean.jobInfo.jobNumber}');
         </script>
     </h:outputText>
     <h:outputText rendered="#{jobStatusBean.canViewJob and (!visualizerStatusBean.openVisualizers or !visualizerStatusBean.openNewWindow)}">

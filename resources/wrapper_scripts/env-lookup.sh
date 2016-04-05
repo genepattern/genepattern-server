@@ -14,6 +14,10 @@
 # Utility function for getting the directory which contains this script
 # Usage: scriptDir
 #
+# Note: the readlink -f command does not work on Mac OS X
+#     ---> don't do this
+#     local SCRIPT_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+#
 function scriptDir() {
     local SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
     echo "$SCRIPT_DIR";
@@ -106,4 +110,26 @@ function exportEnv() {
     export "$1"
 }
 
+#
+# Append an element to the end of the path; 
+# Usage: path=$(appendPath "${path}" "${element}")
+#
+function appendPath() {
+    local path="${1}";
+    local element="${2}";
+    
+    # Note, to check for a directory: [ -d "$element" ] 
+    # To prepend, path="$element:$path"
+    
+    # if path is not set ... just set it to element
+    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
+    if [ -z "$path" ]; then
+        #echo "2, path not set";
+        path="$element";
+    elif [[ ":$path:" != *":$element:"* ]]; then
+        path="${path:+"$path:"}$element"
+    fi
+    # use echo to return a value
+    echo "$path"
+}
 

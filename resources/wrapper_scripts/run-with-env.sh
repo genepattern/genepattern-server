@@ -21,13 +21,13 @@
 # The optional '-c' flag can set an alternate name for the customization file.
 # It must be the first arg to the script.
 # E.g. 
-#     ./run-with-env.sh -c env-custom-broad-centos5.sh -u R-3.1 echo "Hello" 
+#     ./run-with-env.sh -c env-custom-macos.sh -u R-3.1 echo "Hello" 
 #
 #
 # The GP_ENV_CUSTOM environment variable can also be used to set an alternate name for the
 # customization file.
 # E.g.
-#     export GP_ENV_CUSTOM="env-custom-broad-centos5.sh"; ./run-with-env.sh -u R-3.1 echo "Hello"
+#     export GP_ENV_CUSTOM="env-custom-macos.sh"; ./run-with-env.sh -u R-3.1 echo "Hello"
 #
 #
 # The optional '-e' flag can set an environment variable as a command line arg.
