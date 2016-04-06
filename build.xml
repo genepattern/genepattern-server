@@ -479,9 +479,15 @@
         </input>
 
         <available file="${signjar.keystore}" property="keyStore.present" />
-        
-        <property name="signjar.tsaurl" value="https://timestamp.geotrust.com/tsa" />
 
+        <!-- 
+          Set the time-stamp authority url for signing the jar file.
+              signjar ... -t {signjar.tsaurl} ...
+          Time-stamping allows signed jar files to be used after the signing certificate expires.
+          Additional time-stamp authorities are listed here (https://www.entrust.com/what-is-time-stamping/):
+              RFC 3161 (SHA-1) – http://timestamp.entrust.net/TSS/RFC3161sha1TS
+        -->
+        <property name="signjar.tsaurl" value="https://timestamp.geotrust.com/tsa" />
     </target>
 
     <target name="makeKeystore" depends="init-signjar" unless="keyStore.present">
