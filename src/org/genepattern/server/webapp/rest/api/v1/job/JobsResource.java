@@ -40,13 +40,19 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApiImplV2;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -1063,5 +1069,123 @@ public class JobsResource {
     {
         JobTagsResource res = new JobTagsResource();
         return res.deleteTag(jobNo, jobTagId, request);
+    }
+
+    /**
+     * Get substituted command line for the a job given the specified cmdLine
+     *
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{jobId}/cmdLine")
+    public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
+                               @PathParam("jobId") int jobId,
+                               @QueryParam("commandline") String cmdLine)
+    {
+        GpContext userContext = Util.getUserContext(request);
+        try {
+            final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
+            final GpContext jobContext;
+
+            try {
+                jobContext=GpContext.createContextForJob(mgr, userContext.getUserId(), jobId);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing jobContext for jobId="+jobId, t);
+                throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
+            }
+            finally {
+                mgr.closeCurrentSession();
+            }
+
+            TaskInfo taskInfo=jobContext.getTaskInfo();
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+
+            //String cmdLine = taskInfo.getTaskInfoAttributes().get(org.genepattern.util.GPConstants.COMMAND_LINE);
+            final List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramInfoMap);
+
+            JSONArray jsonArray=new JSONArray();
+            for(String arg : cmdLineArgsC)
+            {
+                jsonArray.put(arg);
+            }
+
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.put("commandline", jsonArray);
+            return Response.ok().entity(jsonObj.toString()).build();
+        }
+        catch (Exception e) {
+            log.error("Error getting commandline for job " + jobId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Get substituted command line for the task given the specified parameter values
+     *
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{jobId}/inputfiles")
+    public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
+                               @PathParam("jobId") int jobId)
+    {
+        GpContext userContext = Util.getUserContext(request);
+        try {
+            final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
+            final GpContext jobContext;
+
+            try {
+                jobContext=GpContext.createContextForJob(mgr, userContext.getUserId(), jobId);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing jobContext for jobId="+jobId, t);
+                throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
+            }
+            finally {
+                mgr.closeCurrentSession();
+            }
+
+            JSONArray inputFiles = new JSONArray();
+            JobInput jobInput = jobContext.getJobInput();
+
+            Map<String, ParameterInfoRecord> paramInfoMap =ParameterInfoRecord.initParamInfoMap(jobContext.getTaskInfo());
+            for(final Map.Entry<ParamId, Param> entry : jobInput.getParams().entrySet())
+            {
+                Param inputParam = entry.getValue();
+
+                final String pname = inputParam.getParamId().getFqName();
+                ParameterInfoRecord record = paramInfoMap.get(pname);
+
+                if(record != null && record.getFormal() != null && record.getFormal().isInputFile())
+                {
+                    List<ParamValue> paramValues = inputParam.getValues();
+                    for(ParamValue paramValue : paramValues)
+                    {
+                        String inputValue = paramValue.getValue();
+                        inputFiles.put(inputValue);
+
+                    }
+                }
+            }
+
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("inputFiles", inputFiles);
+            return Response.ok().entity(jsonObj.toString()).build();
+        }
+        catch (Exception e) {
+            log.error("Error getting commandline for job " + jobId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
     }
 }
