@@ -1072,7 +1072,25 @@ public class JobsResource {
     }
 
     /**
-     * Get substituted command line for the a job given the specified cmdLine
+     * Get substituted command line for a visualizer job given the specified cmdLine
+     * Given the following cmdline for MultiplotStudio:
+     *  /Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/jre/bin/java -Dfile.encoding=UTF8
+     *  -Dsun.java2d.d3d=true -Dsun.java2d.dpiaware=true -Dsun.java2d.ddscale=true -Dsun.java2d.translaccel=true -Xms192m
+     *  -XX:+UseG1GC -jar /Users/nazaire/IdeaProjects/VisualizerLauncher/visualizerLauncherDir/MultiplotStudio.jar <dataFile> <classFile>
+     *
+     *   The expected return value would be an array with the following values:
+     *  [0 = /Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/jre/bin/java
+     *  [1] = -Dfile.encoding=UTF8
+     *  [2] = -Dsun.java2d.d3d=true
+     *  [3] = {java.lang.String@3707}"-Dsun.java2d.dpiaware=true"
+     *  [4] = {java.lang.String@3708}"-Dsun.java2d.ddscale=true"
+     *  [5] = {java.lang.String@3709}"-Dsun.java2d.translaccel=true"
+     *  [6] = {java.lang.String@3710}"-Xms192m"
+     *  [7] = {java.lang.String@3711}"-XX:+UseG1GC"
+     *  [8] = {java.lang.String@3712}"-jar"
+     *  [9] = {java.lang.String@3713}"/Users/nazaire/IdeaProjects/VisualizerLauncher/visualizerLauncherDir/MultiplotStudio.jar"
+     *  [10] = {java.lang.String@3714}"ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+     *  [11] = {java.lang.String@3715}"ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls"
      *
      * @param request
      * @param response
@@ -1081,7 +1099,7 @@ public class JobsResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("{jobId}/cmdLine")
+    @Path("{jobId}/visualizerCmdLine")
     public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
                                @PathParam("jobId") int jobId,
                                @QueryParam("commandline") String cmdLine)
@@ -1106,7 +1124,6 @@ public class JobsResource {
             TaskInfo taskInfo=jobContext.getTaskInfo();
             final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
 
-            //String cmdLine = taskInfo.getTaskInfoAttributes().get(org.genepattern.util.GPConstants.COMMAND_LINE);
             final List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramInfoMap);
 
             JSONArray jsonArray=new JSONArray();
@@ -1126,7 +1143,7 @@ public class JobsResource {
     }
 
     /**
-     * Get substituted command line for the task given the specified parameter values
+     * Get input files as URLs for a job
      *
      * @param request
      * @param response
@@ -1135,7 +1152,7 @@ public class JobsResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("{jobId}/inputfiles")
+    @Path("{jobId}/visualizerInputFiles")
     public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
                                @PathParam("jobId") int jobId)
     {
@@ -1184,7 +1201,7 @@ public class JobsResource {
             return Response.ok().entity(jsonObj.toString()).build();
         }
         catch (Exception e) {
-            log.error("Error getting commandline for job " + jobId, e);
+            log.error("Error getting input files for job " + jobId, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
         }
     }
