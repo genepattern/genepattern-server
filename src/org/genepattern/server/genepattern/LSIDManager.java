@@ -11,6 +11,10 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -26,8 +30,8 @@ public class LSIDManager {
     private static final Logger log = Logger.getLogger(LSIDManager.class);
     
     private static LSIDManager inst = null;
-	private static LSIDUtil lsidUtil = LSIDUtil.getInstance();
-	private static String initialVersion = "1";
+	private static final LSIDUtil lsidUtil = LSIDUtil.getInstance();
+	private static final String initialVersion = "1";
 
     public static LSID getNextTaskLsid(final String requestedLSID) throws java.rmi.RemoteException {
         LSID taskLSID = null;
@@ -78,17 +82,30 @@ public class LSIDManager {
 		}
 	}
 
-    private static synchronized int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
+	/**
+	 * Get the next unique task or suite LSID identifier from the database.
+	 * 
+	 * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE
+	 * @return
+	 * @throws OmnigeneException
+	 */
+    private static synchronized int getNextLSIDIdentifier(final String namespace) throws OmnigeneException {
+        final String sequenceName=getSequenceName(namespace);
+        final HibernateSessionManager mgr=HibernateUtil.instance();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, sequenceName);
+    }
+
+    protected static String getSequenceName(final String namespace) {
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
-            return getDS().getNextTaskLSIDIdentifier();
+            return "lsid_identifier_seq";
         }
         else if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
-            return getDS().getNextSuiteLSIDIdentifier();
+            return "lsid_suite_identifier_seq";
         }
         else {
             throw new OmnigeneException("unknown Namespace for LSID: " + namespace);
         }
-
     }
 
 	/**
@@ -97,7 +114,7 @@ public class LSIDManager {
 	 * @return
 	 * @throws OmnigeneException
 	 */
-	protected synchronized String getNextID(String namespace) throws OmnigeneException {
+	protected synchronized String getNextID(final String namespace) throws OmnigeneException {
 		int nextId = getNextLSIDIdentifier(namespace);
 		return "" + nextId;
 	}
@@ -169,5 +186,4 @@ public class LSIDManager {
 					"Unable to find analysisJobDataSource: " + e.getMessage());
 		}
 	}
-
 }
