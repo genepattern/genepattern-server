@@ -1209,18 +1209,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
-     * get the next available suite LSID identifier from the database
-     * 
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return int next identifier in sequence
-     */
-    public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_suite_identifier_seq");
-    }
-
-    /**
      * get the next available LSID version for a given identifer from the database
      * 
      * @throws OmnigeneException
@@ -1249,16 +1237,6 @@ public class AnalysisDAO extends BaseDAO {
 	    throw new OmnigeneException(e);
 	}
     }
-
-    /**
-     * get the next available task LSID identifer from the database
-     * 
-     * @return int next identifier in sequence
-     */
-    public int getNextTaskLSIDIdentifier() {
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_identifier_seq");
-    };
 
     /**
      * get the next available LSID version for a given identifer from the database
