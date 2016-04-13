@@ -10,6 +10,7 @@ import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -22,6 +23,8 @@ import org.genepattern.webservice.OmnigeneException;
  * ensure that a particular ID and version is never given out more than once
  */
 public class LSIDManager {
+    private static final Logger log = Logger.getLogger(LSIDManager.class);
+    
     private static LSIDManager inst = null;
 	private static LSIDUtil lsidUtil = LSIDUtil.getInstance();
 	private static String initialVersion = "1";
@@ -33,13 +36,11 @@ public class LSIDManager {
                 taskLSID = new LSID(requestedLSID);
             } 
             catch (MalformedURLException mue) {
-                mue.printStackTrace();
-                // XXX what to do here? Create a new one from scratch!
+                log.error("Invalid requestedLsid='"+requestedLSID+"', Create a new one from scratch!", mue);
             }
         }
         LSIDManager lsidManager = LSIDManager.getInstance();
         if (taskLSID == null) {
-            // System.out.println("installNewTask: creating new LSID");
             taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
         } 
         else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
