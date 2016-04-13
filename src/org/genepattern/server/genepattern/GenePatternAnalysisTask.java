@@ -3367,34 +3367,11 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
-	LSID taskLSID = null;
-	if (requestedLSID != null && requestedLSID.length() > 0) {
-	    try {
-		taskLSID = new LSID(requestedLSID);
-	    } catch (MalformedURLException mue) {
-		mue.printStackTrace();
-		// XXX what to do here? Create a new one from scratch!
-	    }
-	}
-	LSIDManager lsidManager = LSIDManager.getInstance();
-	if (taskLSID == null) {
-	    // System.out.println("installNewTask: creating new LSID");
-	    taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
-	} else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-	    taskLSID = lsidManager.getNextIDVersion(requestedLSID);
-	} else {
-	    taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
-	}
-
-	return taskLSID;
-    }
-
     public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
     throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
-        taskLSID = getNextTaskLsid(requestedLSID);
+        taskLSID = LSIDManager.getNextTaskLsid(requestedLSID);
         taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator, installInfo);
         if ((probs != null) && (probs.size() > 0)) {
@@ -3561,7 +3538,7 @@ public class GenePatternAnalysisTask {
     /**
      * @deprecated - should pass in a TaskInstallInfo arg
      */
-    public static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final org.genepattern.server.webservice.server.Status taskIntegrator) 
+    private static String installNewTask(final String zipFilename, final String username, final int access_id, final boolean recursive, final org.genepattern.server.webservice.server.Status taskIntegrator) 
     throws TaskInstallationException 
     {
         return installNewTask(zipFilename, username, access_id, recursive, taskIntegrator, null);

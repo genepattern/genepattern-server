@@ -5,6 +5,8 @@
 
 package org.genepattern.server.genepattern;
 
+import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
+
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
@@ -31,6 +33,29 @@ public class LSIDManager {
 	private LSIDManager() {
 
 	}
+
+	public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
+    LSID taskLSID = null;
+    if (requestedLSID != null && requestedLSID.length() > 0) {
+        try {
+        taskLSID = new LSID(requestedLSID);
+        } catch (MalformedURLException mue) {
+        mue.printStackTrace();
+        // XXX what to do here? Create a new one from scratch!
+        }
+    }
+    LSIDManager lsidManager = LSIDManager.getInstance();
+    if (taskLSID == null) {
+        // System.out.println("installNewTask: creating new LSID");
+        taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+    } else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
+        taskLSID = lsidManager.getNextIDVersion(requestedLSID);
+    } else {
+        taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+    }
+
+    return taskLSID;
+    }
 
 	public static LSIDManager getInstance() {
 		if (inst == null) {
