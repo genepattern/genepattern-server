@@ -22,65 +22,60 @@ import org.genepattern.webservice.OmnigeneException;
  * ensure that a particular ID and version is never given out more than once
  */
 public class LSIDManager {
-
-
-	private static LSIDManager inst = null;
-
+    private static LSIDManager inst = null;
 	private static LSIDUtil lsidUtil = LSIDUtil.getInstance();
-
 	private static String initialVersion = "1";
 
-	private LSIDManager() {
-
-	}
-
-	public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
-    LSID taskLSID = null;
-    if (requestedLSID != null && requestedLSID.length() > 0) {
-        try {
-        taskLSID = new LSID(requestedLSID);
-        } catch (MalformedURLException mue) {
-        mue.printStackTrace();
-        // XXX what to do here? Create a new one from scratch!
+    public static LSID getNextTaskLsid(final String requestedLSID) throws java.rmi.RemoteException {
+        LSID taskLSID = null;
+        if (requestedLSID != null && requestedLSID.length() > 0) {
+            try {
+                taskLSID = new LSID(requestedLSID);
+            } 
+            catch (MalformedURLException mue) {
+                mue.printStackTrace();
+                // XXX what to do here? Create a new one from scratch!
+            }
         }
-    }
-    LSIDManager lsidManager = LSIDManager.getInstance();
-    if (taskLSID == null) {
-        // System.out.println("installNewTask: creating new LSID");
-        taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
-    } else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-        taskLSID = lsidManager.getNextIDVersion(requestedLSID);
-    } else {
-        taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+        LSIDManager lsidManager = LSIDManager.getInstance();
+        if (taskLSID == null) {
+            // System.out.println("installNewTask: creating new LSID");
+            taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+        } 
+        else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
+            taskLSID = lsidManager.getNextIDVersion(requestedLSID);
+        } 
+        else {
+            taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+        }
+        return taskLSID;
     }
 
-    return taskLSID;
+    public static LSIDManager getInstance() {
+        if (inst == null) {
+            inst = new LSIDManager();
+        }
+        return inst;
     }
 
-	public static LSIDManager getInstance() {
-		if (inst == null) {
-			inst = new LSIDManager();
-		}
-		return inst;
+	private LSIDManager() {
 	}
 
 	public String getAuthority() {
 		return lsidUtil.getAuthority();
 	}
-
 	
-	public LSID createNewID(String namespace) throws OmnigeneException {
+	public LSID createNewID(final String namespace) throws OmnigeneException {
 		try {
-			LSID newLSID = new LSID(getAuthority(), namespace,
+		    final LSID newLSID = new LSID(getAuthority(), namespace,
 					getNextID(namespace), initialVersion);
 			return newLSID;
-		} catch (MalformedURLException mue) {
+		} 
+		catch (MalformedURLException mue) {
 			mue.printStackTrace();
-			throw new OmnigeneException("Unable to create new LSID: "
-					+ mue.getMessage());
+			throw new OmnigeneException("Unable to create new LSID: " + mue.getMessage());
 		}
 	}
-    
 
     private static synchronized int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
@@ -95,19 +90,19 @@ public class LSIDManager {
 
     }
 
-	// get the next ID in the sequence from the DB
+	/**
+	 * Get the next ID in the sequence from the DB
+	 * @param namespace
+	 * @return
+	 * @throws OmnigeneException
+	 */
 	protected synchronized String getNextID(String namespace) throws OmnigeneException {
-
-	// XXX handle suites as well
-
 		int nextId = getNextLSIDIdentifier(namespace);
 		return "" + nextId;
 	}
 
-   
-    
-    /**
-     * get the next available LSID version for a given identifer from the
+	/**
+     * Get the next available LSID version for a given identifier from the
      * database
      * 
      * @throws OmnigeneException
@@ -123,8 +118,6 @@ public class LSIDManager {
             return getDS().getNextTaskLSIDVersion(lsid);
         }
     }
-
-    
 
 	public LSID getNextIDVersion(String id) throws OmnigeneException,
 			RemoteException {
@@ -149,9 +142,15 @@ public class LSIDManager {
 		return lsidUtil.getAuthorityType(lsid);
 	}
 
-	// compare authority types: 1=lsid1 is closer, 0=equal, -1=lsid2 is closer
-	// closer is defined as mine > Broad > foreign
-	public int compareAuthorities(LSID lsid1, LSID lsid2) {
+	/**
+	 * Compare authority types: 1=lsid1 is closer, 0=equal, -1=lsid2 is closer
+	 * closer is defined as mine > Broad > foreign
+	 * 
+	 * @param lsid1
+	 * @param lsid2
+	 * @return
+	 */
+	public int compareAuthorities(final LSID lsid1, final LSID lsid2) {
 		return lsidUtil.compareAuthorities(lsid1, lsid2);
 	}
 
