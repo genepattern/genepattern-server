@@ -9,6 +9,7 @@ import java.util.Vector;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.util.GPConstants;
@@ -35,7 +36,7 @@ public class PipelineCreationHelper {
    
     public String generateLSID(){
         try {
-            LSID taskLSID = GenePatternAnalysisTask.getNextTaskLsid(model.getLsid());
+            LSID taskLSID = LSIDManager.getNextTaskLsid(model.getLsid());
             model.setLsid( taskLSID.toString());        
             isLsidSet = true;
             return taskLSID.toString();
