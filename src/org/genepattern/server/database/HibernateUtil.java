@@ -212,8 +212,8 @@ public class HibernateUtil {
                 Transaction tx = session.getTransaction();
                 if (tx != null && tx.isActive()) {
                     tx.rollback();
+                    session.close();
                 }
-                session.close();
             }
             log.error(e);
             throw new OmnigeneException(e);
