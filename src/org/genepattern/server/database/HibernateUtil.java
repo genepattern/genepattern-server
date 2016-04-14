@@ -152,22 +152,48 @@ public class HibernateUtil {
         }
     }
 
-    public static int getNextSequenceValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final String sequenceName) {
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final String sequenceName) 
+    throws DbException
+    {
         final String dbVendor=gpConfig.getDbVendor();
         return getNextSequenceValue(mgr, dbVendor, sequenceName);
     }
     
-    public static int getNextSequenceValue(final HibernateSessionManager mgr, final String dbVendor, final String sequenceName) {
-        if (dbVendor.equalsIgnoreCase("ORACLE")) {
-            return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
-                    .uniqueResult()).intValue();
-        } 
-        else if (dbVendor.equalsIgnoreCase("HSQL")) {
-            return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
-        } 
-        else {
-            return getNextSequenceValueGeneric(mgr, sequenceName);
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final String dbVendor, final String sequenceName) 
+    throws DbException
+    {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            mgr.beginTransaction();
+            if (dbVendor.equalsIgnoreCase("ORACLE")) {
+                return getNextSequenceValueOracle(mgr, sequenceName);
+            } 
+            else if (dbVendor.equalsIgnoreCase("HSQL")) {
+                return getNextSequenceValueHsql(mgr, sequenceName);
+            } 
+            else {
+                return getNextSequenceValueGeneric(mgr, sequenceName);
+            }
         }
+        catch (Throwable t) {
+            log.error(t);
+            mgr.rollbackTransaction();
+            throw new DbException(t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+    }
+    
+    protected static int getNextSequenceValueOracle(final HibernateSessionManager mgr, final String sequenceName) {
+        return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
+                .uniqueResult()).intValue();
+    }
+    
+    protected static int getNextSequenceValueHsql(final HibernateSessionManager mgr, final String sequenceName) {
+        return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
     }
 
     /**
@@ -224,4 +250,31 @@ public class HibernateUtil {
             }
         }
     }
+
+    /**
+     * Experimental code; removed StatelessSession, delegate DB session management to the calling class.
+     * 
+     * Get the next integer value from the named sequence, using the 'SEQUENCE_TABLE' to simulate a sequence.
+     * 
+     * @param mgr
+     * @param sequenceName
+     * @return
+     */
+    protected static synchronized int getNextSequenceValueGeneric_txn(final HibernateSessionManager mgr, final String sequenceName) {
+        final Query query = mgr.getSession().createQuery("from org.genepattern.server.domain.Sequence where name = :name");
+        query.setString("name", sequenceName);
+        final Sequence seq = (Sequence) query.uniqueResult();
+        if (seq != null) {
+            int nextValue = seq.getNextValue();
+            seq.setNextValue(nextValue + 1);
+            mgr.getSession().update(seq);
+            return nextValue;
+        } 
+        else {
+            String errorMsg = "Sequence table does not have an entry for: " + sequenceName;
+            log.error(errorMsg);
+            throw new OmnigeneException(errorMsg);
+        }
+    }
+
 }
