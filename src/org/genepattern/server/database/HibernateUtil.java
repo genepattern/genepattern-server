@@ -17,7 +17,9 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Sequence;
 import org.genepattern.webservice.OmnigeneException;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
@@ -274,6 +276,60 @@ public class HibernateUtil {
             String errorMsg = "Sequence table does not have an entry for: " + sequenceName;
             log.error(errorMsg);
             throw new OmnigeneException(errorMsg);
+        }
+    }
+
+    /**
+     * Add a new entry to the SEQUENCE_TABLE.
+     * Example insert statement:
+       <pre>
+       insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
+       </pre>
+     * 
+     *  Workaround for this exception:
+     *      ids for this class must be manually assigned before calling save(): org.genepattern.server.domain.Sequence
+     *  This code won't work,
+     *  <pre>
+         Sequence seq=new Sequence();
+         seq.setName(seqName);
+         seq.setNextValue(1);
+         mgr.getSession().save(seq);
+     *  </pre>
+     *  Calling 'seq.setId(... next sequence id ...)' fixes the problem, but it requires knowing the next id. Cannot compute.
+     * @param seqName the name of a new entry in the SEQUENCE_TABLE, e.g. 'lsid_identifier_seq'
+     * @return The number of rows added
+     * 
+     * @throws DbException
+     *     - general DB connection errors
+     *     - when the sequence already exists
+     */
+    protected static int createSequence(final HibernateSessionManager mgr, final String seqName) throws DbException {
+        final boolean inTxn=mgr.isInTransaction();
+        try {
+            mgr.beginTransaction();
+            final String sql = "insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values(:seqName, :seqNextValue)";
+            final SQLQuery query = mgr.getSession().createSQLQuery(sql);
+            query.setString("seqName", seqName);
+            query.setInteger("seqNextValue", 1);
+            int rval=query.executeUpdate();
+            if (!inTxn) {
+                mgr.commitTransaction();
+            }
+            return rval;
+        }
+        catch (HibernateException e) {
+            if (e.getCause() != null) {
+                throw new DbException(e.getCause().getLocalizedMessage(), e.getCause());
+            }
+            throw new DbException(e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error: "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!inTxn) {
+                mgr.closeCurrentSession();
+            }
         }
     }
 
