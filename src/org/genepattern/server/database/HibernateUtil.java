@@ -21,6 +21,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.Transaction;
 
 
 public class HibernateUtil {
@@ -208,7 +209,11 @@ public class HibernateUtil {
         } 
         catch (Exception e) {
             if (session != null) {
-                session.getTransaction().rollback();
+                Transaction tx = session.getTransaction();
+                if (tx != null && tx.isActive()) {
+                    tx.rollback();
+                }
+                session.close();
             }
             log.error(e);
             throw new OmnigeneException(e);
