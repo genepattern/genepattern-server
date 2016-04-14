@@ -11,8 +11,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateUtil;
-import org.hibernate.HibernateException;
-import org.hibernate.SQLQuery;
 import org.junit.Before;
 import org.junit.Test;
 
