@@ -11,8 +11,6 @@ import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateUtil;
-import org.hibernate.HibernateException;
-import org.hibernate.SQLQuery;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +43,7 @@ public class HibernateUtilTest {
 
         try {
             if (createSequence) {
-                createSequence(seqName);
+                HibernateUtil.createSequence(mgr, seqName);
             }
             assertFalse("inTxn, before test, dbVendor="+dbVendor, 
                     mgr.isInTransaction());
@@ -193,73 +191,19 @@ public class HibernateUtilTest {
     @Test
     public void testCreateSequence() throws DbException {
         final String mySeqName="my_table_identifier_seq";
-        createSequence(mySeqName);
+        HibernateUtil.createSequence(mgr, mySeqName);
     }
     
     /** Expecting DbException because 'lsid_identifier_seq' is already in the sequence_table */
     @Test(expected=DbException.class)
     public void testCreateSequence_lsid_constraint_violation() throws DbException {
-        createSequence("lsid_identifier_seq");
+        HibernateUtil.createSequence(mgr, "lsid_identifier_seq");
     }
 
     /** Expecting DbException because 'lsid_suite_identifier_seq' is already in the sequence_table */
     @Test(expected=DbException.class)
     public void testCreateSequence_lsid_suite_constraint_violation() throws DbException {
-        createSequence("lsid_suite_identifier_seq");
-    }
-    
-    /**
-     * Add a new entry to the SEQUENCE_TABLE.
-     * Example insert statement:
-       <pre>
-       insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
-       </pre>
-     * 
-     *  Workaround for this exception:
-     *      ids for this class must be manually assigned before calling save(): org.genepattern.server.domain.Sequence
-     *  This code won't work,
-     *  <pre>
-         Sequence seq=new Sequence();
-         seq.setName(seqName);
-         seq.setNextValue(1);
-         mgr.getSession().save(seq);
-     *  </pre>
-     *  Calling 'seq.setId(... next sequence id ...)' fixes the problem, but it requires knowing the next id. Cannot compute.
-     * @param seqName the name of a new entry in the SEQUENCE_TABLE, e.g. 'lsid_identifier_seq'
-     * @return The number of rows added
-     * 
-     * @throws DbException
-     *     - general DB connection errors
-     *     - when the sequence already exists
-     */
-    protected int createSequence(final String seqName) throws DbException {
-        final boolean inTxn=mgr.isInTransaction();
-        try {
-            mgr.beginTransaction();
-            final String sql = "insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values(:seqName, :seqNextValue)";
-            final SQLQuery query = mgr.getSession().createSQLQuery(sql);
-            query.setString("seqName", seqName);
-            query.setInteger("seqNextValue", 1);
-            int rval=query.executeUpdate();
-            if (!inTxn) {
-                mgr.commitTransaction();
-            }
-            return rval;
-        }
-        catch (HibernateException e) {
-            if (e.getCause() != null) {
-                throw new DbException(e.getCause().getLocalizedMessage(), e.getCause());
-            }
-            throw new DbException(e);
-        }
-        catch (Throwable t) {
-            throw new DbException("Unexpected error: "+t.getLocalizedMessage(), t);
-        }
-        finally {
-            if (!inTxn) {
-                mgr.closeCurrentSession();
-            }
-        }
+        HibernateUtil.createSequence(mgr, "lsid_suite_identifier_seq");
     }
 
 }
