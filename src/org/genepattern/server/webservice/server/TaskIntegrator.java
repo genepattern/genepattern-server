@@ -45,12 +45,13 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
@@ -1095,7 +1096,8 @@ public class TaskIntegrator {
             if (lsid != null && lsid.length() > 0) {
                 try {
                     LSID l = new LSID(lsid);
-                    String authority = LSIDManager.getInstance().getAuthority();
+                    final String authority=ServerConfigurationFactory.instance()
+                            .getLsidAuthority(GpContext.getServerContext());
                     if (!l.getAuthority().equals(authority)) {
                         System.out.println("TaskIntegrator.modifyTask: resetting authority from " + l.getAuthority() + " to " + authority);
                         lsid = "";

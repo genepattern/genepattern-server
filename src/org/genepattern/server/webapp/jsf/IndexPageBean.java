@@ -21,9 +21,6 @@ import java.util.Vector;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
-import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -312,7 +309,6 @@ public class IndexPageBean {
                     continue;
                 }
                 hmLSIDsWithoutVersions.put(key, latestTaskInfo);
-                String authorityType = LSIDManager.getInstance().getAuthorityType(l);
 
                 if (isPublic || isMine) {
                     // get the name of the last version of this LSID

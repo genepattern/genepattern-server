@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
@@ -29,18 +30,21 @@ import org.genepattern.webservice.OmnigeneException;
 public class LSIDManager {
     private static final Logger log = Logger.getLogger(LSIDManager.class);
     
-    private static LSIDManager inst = null;
-	private static final LSIDUtil lsidUtil = LSIDUtil.getInstance();
 	private static final String initialVersion = "1";
+
+    private LSIDManager() {
+    }
 
 	/** @deprecated pass in a HibernateSession */
     public static LSID getNextTaskLsid(final String requestedLSID)  throws java.rmi.RemoteException {
         final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return getNextTaskLsid(mgr, gpConfig, requestedLSID);
+        final GpContext gpContext=GpContext.getServerContext();
+        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID);
     }
 
-    public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final String requestedLSID) throws java.rmi.RemoteException {
+    public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID) 
+    throws java.rmi.RemoteException {
         LSID taskLSID = null;
         if (requestedLSID != null && requestedLSID.length() > 0) {
             try {
@@ -50,43 +54,31 @@ public class LSIDManager {
                 log.error("Invalid requestedLsid='"+requestedLSID+"', Create a new one from scratch!", mue);
             }
         }
-        final LSIDManager lsidManager = LSIDManager.getInstance();
+        final String lsidAuthority=gpConfig.getLsidAuthority(gpContext);
         if (taskLSID == null) {
-            taskLSID = lsidManager.createNewID(mgr, gpConfig, TASK_NAMESPACE);
+            taskLSID = createNewID(mgr, gpConfig, gpContext, TASK_NAMESPACE);
         } 
-        else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-            taskLSID = lsidManager.getNextIDVersion(mgr, requestedLSID);
+        else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
+            taskLSID = getNextIDVersion(mgr, requestedLSID);
         } 
         else {
-            taskLSID = lsidManager.createNewID(mgr, gpConfig, TASK_NAMESPACE);
+            taskLSID = createNewID(mgr, gpConfig, gpContext, TASK_NAMESPACE);
         }
         return taskLSID;
     }
 
-    public static LSIDManager getInstance() {
-        if (inst == null) {
-            inst = new LSIDManager();
-        }
-        return inst;
-    }
-
-	private LSIDManager() {
-	}
-
-	public String getAuthority() {
-		return lsidUtil.getAuthority();
-	}
-	
-	/** @deprecated pass in a HibernateSession */
-    public LSID createNewID(final String namespace) throws OmnigeneException {
+	/** @deprecated call {@link #createNewID(HibernateSessionManager, GpConfig, GpContext, String)} instead */
+    public static LSID createNewID(final String namespace) throws OmnigeneException {
         final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return createNewID(mgr, gpConfig, namespace);
+        final GpContext gpContext=GpContext.getServerContext();
+        return createNewID(mgr, gpConfig, gpContext, namespace);
     }
 
-    public LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) {
+    public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace) {
 		try {
-		    final LSID newLSID = new LSID(getAuthority(), namespace,
+		    final String authority=gpConfig.getLsidAuthority(gpContext);
+		    final LSID newLSID = new LSID(authority, namespace,
 					getNextID(mgr, gpConfig, namespace), initialVersion);
 			return newLSID;
 		} 
@@ -132,7 +124,7 @@ public class LSIDManager {
 	 * @return
 	 * @throws OmnigeneException
 	 */
-	protected synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) throws OmnigeneException {
+	protected static synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) throws OmnigeneException {
 		int nextId = getNextLSIDIdentifier(mgr, gpConfig, namespace);
 		return "" + nextId;
 	}
@@ -155,7 +147,7 @@ public class LSIDManager {
         }
     }
 
-    protected LSID getNextIDVersion(final HibernateSessionManager mgr, final String id) throws OmnigeneException,
+    protected static LSID getNextIDVersion(final HibernateSessionManager mgr, final String id) throws OmnigeneException,
             RemoteException {
         try {
             LSID anId = new LSID(id);
@@ -174,39 +166,23 @@ public class LSIDManager {
 	 * @return the same lsid instance with a modified version
 	 * @throws MalformedURLException
 	 */
-	protected LSID getNextIDVersion(final HibernateSessionManager mgr, final LSID lsid) throws OmnigeneException, 
+	protected static LSID getNextIDVersion(final HibernateSessionManager mgr, final LSID lsid) throws OmnigeneException, 
 	            MalformedURLException {
 	    String lsidVersion=getNextLSIDVersion(mgr, lsid);
 	    lsid.setVersion(lsidVersion);
 	    return lsid;
 	}
 
-	public String getAuthorityType(LSID lsid) {
-		return lsidUtil.getAuthorityType(lsid);
+	/** @deprecated call {@link LSIDUtil#getAuthorityType(GpConfig, GpContext, LSID)} instead */
+	public static String getAuthorityType(final LSID lsid) {
+	    return LSIDUtil.getAuthorityType(lsid);
 	}
 
-	/**
-	 * Compare authority types: 1=lsid1 is closer, 0=equal, -1=lsid2 is closer
-	 * closer is defined as mine > Broad > foreign
-	 * 
-	 * @param lsid1
-	 * @param lsid2
-	 * @return
-	 */
-	public int compareAuthorities(final LSID lsid1, final LSID lsid2) {
-		return lsidUtil.compareAuthorities(lsid1, lsid2);
+	/** @deprecated call {@link LSIDUtil#getNearerLSID(GpConfig, GpContext, LSID, LSID)} instead */
+	public static LSID getNearerLSID(LSID lsid1, LSID lsid2) {
+		return LSIDUtil.getNearerLSID(lsid1, lsid2); // equal???
 	}
 
-	public LSID getNearerLSID(LSID lsid1, LSID lsid2) {
-		return lsidUtil.getNearerLSID(lsid1, lsid2); // equal???
-	}
-
-	/** @deprecated */
-    protected static AnalysisDAO getDS() throws OmnigeneException {
-        final HibernateSessionManager mgr=HibernateUtil.instance();
-        return getDS(mgr);
-    }
-    
     protected static AnalysisDAO getDS(final HibernateSessionManager mgr) throws OmnigeneException {
         AnalysisDAO ds;
         try {

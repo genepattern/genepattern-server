@@ -39,14 +39,14 @@ public class LSIDUtil {
     }
 
     /** @deprecated call {@link GpConfig#getLsidAuthority(GpContext)} instead. */
-    public String getAuthority() {
+    public static String getAuthority() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
         return gpConfig.getLsidAuthority(gpContext);
     }
     
     /** @deprecated call static {@link #getAuthorityType(GpConfig, GpContext, LSID)} instead  */
-    public String getAuthorityType(final LSID lsid) {
+    public static String getAuthorityType(final LSID lsid) {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
         return getAuthorityType(gpConfig, gpContext, lsid);
@@ -89,7 +89,7 @@ public class LSIDUtil {
     }
 
     /** @deprecated call static {@link #compareAuthorities(String, LSID, LSID)} instead  */
-    public int compareAuthorities(final LSID lsid1, final LSID lsid2) {
+    public static int compareAuthorities(final LSID lsid1, final LSID lsid2) {
         return compareAuthorities(getAuthority(), lsid1, lsid2);
     }
 
@@ -133,7 +133,7 @@ public class LSIDUtil {
     }
 
     /** @deprecated call static {@link #isAuthorityMine(GpConfig, GpContext, String)} instead  */
-    public boolean isAuthorityMine(final String lsid) {
+    public static boolean isAuthorityMine(final String lsid) {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
         return isAuthorityMine(gpConfig, gpContext, lsid);
@@ -152,8 +152,13 @@ public class LSIDUtil {
     }
 
     /** @deprecated call static {@link #getNearerLSID(String, LSID, LSID)} instead */
-    public LSID getNearerLSID(final LSID lsid1, final LSID lsid2) {
+    public static LSID getNearerLSID(final LSID lsid1, final LSID lsid2) {
         final String authorityMine=getAuthority();
+        return getNearerLSID(authorityMine, lsid1, lsid2);
+    }
+    
+    public static LSID getNearerLSID(final GpConfig gpConfig, final GpContext gpContext, final LSID lsid1, final LSID lsid2) {
+        final String authorityMine=gpConfig.getLsidAuthority(gpContext);
         return getNearerLSID(authorityMine, lsid1, lsid2);
     }
     

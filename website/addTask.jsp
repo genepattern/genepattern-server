@@ -105,7 +105,7 @@
                     parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(taskInfo.getParameterInfo());
                     tia = taskInfo.giveTaskInfoAttributes();
                     LSID lsid = new LSID((String) tia.get(GPConstants.LSID));
-                    boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+                    boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.isAuthorityMine(taskInfo.getLsid());
                     viewOnly = viewOnly || !editable;
 
                     if (!isMSIE && !viewOnly) {
@@ -356,7 +356,7 @@
                         continue;
                     }
                     hmLSIDsWithoutVersions.put(key, ti);
-                    authorityType = LSIDManager.getInstance().getAuthorityType(l);
+                    authorityType = LSIDManager.getAuthorityType(l);
                 } catch (MalformedURLException mue) {
                     l = null;
                 }
@@ -888,7 +888,7 @@
                                     <% } else {
                                         lsid = tia.get(GPConstants.LSID);
                                         l = new LSID(lsid);
-                                        authorityType = LSIDManager.getInstance().getAuthorityType(l);
+                                        authorityType = LSIDManager.getAuthorityType(l);
                                         if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
                                     %>
                                     <% } else { %>
