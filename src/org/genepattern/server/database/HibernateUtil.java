@@ -197,15 +197,6 @@ public class HibernateUtil {
     protected static int getNextSequenceValueHsql(final HibernateSessionManager mgr, final String sequenceName) {
         return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
     }
-    
-    protected static int getNextSequenceValueOracle(final HibernateSessionManager mgr, final String sequenceName) {
-        return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
-                .uniqueResult()).intValue();
-    }
-    
-    protected static int getNextSequenceValueHsql(final HibernateSessionManager mgr, final String sequenceName) {
-        return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
-    }
 
     /**
      * get the next available sequence. Sequences are not part of the sql 92 standard and are not portable. The syntax
