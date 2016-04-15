@@ -42,8 +42,6 @@ public class ServerSettingsBean implements Serializable {
     private String newCSKey = "";
     private String newCSValue = "";
     private Calendar cal = Calendar.getInstance();
-    private final String gpLogPath = "GpLogPath";
-    private final String wsLogPath = "WsLogPath";
 
     /**
      * 
@@ -384,7 +382,7 @@ public class ServerSettingsBean implements Serializable {
     private List<SelectItem> getSelectItems(String commaSeparatedValue) {
 	String selectItems = settings.getProperty(commaSeparatedValue);
 	if (selectItems == null) {
-	    return Collections.EMPTY_LIST;
+	    return Collections.emptyList();
 	}
 	String[] result = selectItems.split(",");
 	List<SelectItem> valuesLst = new ArrayList<SelectItem>();
@@ -607,27 +605,6 @@ public class ServerSettingsBean implements Serializable {
     public void setHibernatePassword(String hibernatePassword) {
 	if (hibernatePassword != null && !hibernatePassword.equals("")) {
 	    settings.put("hibernate.connection.password", hibernatePassword);
-	}
-    }
-
-    /**
-     * @return
-     */
-    public String getLsidShowRadio() {
-	String value = settings.getProperty("lsid.show");
-	return (value == null) ? "" : (value.equals("1") ? "true" : "false");
-    }
-
-    /**
-     * @param mode
-     */
-    public void setLsidShowRadio(String mode) {
-	if (mode != null) {
-	    if (mode.equals("true")) {
-		settings.put("lsid.show", "1");
-	    } else {
-		settings.put("lsid.show", "0");
-	    }
 	}
     }
 

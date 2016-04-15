@@ -4,12 +4,12 @@
 
 package org.genepattern.util;
 
-import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
-import static org.genepattern.util.GPConstants.SUITE_NAMESPACE;
-
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
  * @author Liefeld
@@ -25,16 +25,12 @@ public class LSIDUtil {
     public static final String BROAD_AUTHORITY = "broad.mit.edu";
 
     private static LSIDUtil inst = null;
-    private static String authority = "broad-cancer-genomics";
     private static final String SUITE_NAMESPACE_INCLUDE = "suite";
 
     private LSIDUtil() {
-        String auth = System.getProperty("lsid.authority");
-        if (auth != null) {
-            authority = auth;
-        }
     }
 
+    /** @deprecated replace use of this singleton with calls to static methods in the class or calls to the GpConfig class  */
     public static LSIDUtil getInstance() {
         if (inst == null) {
             inst = new LSIDUtil();
@@ -42,26 +38,41 @@ public class LSIDUtil {
         return inst;
     }
 
+    /** @deprecated call {@link GpConfig#getLsidAuthority(GpContext)} instead. */
     public String getAuthority() {
-        return authority;
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext gpContext=GpContext.getServerContext();
+        return gpConfig.getLsidAuthority(gpContext);
     }
-
-    public String getTaskNamespace() {
-        return TASK_NAMESPACE;
-    }
-
-    public String getSuiteNamespace() {
-        return SUITE_NAMESPACE;
-    }
-
+    
+    /** @deprecated call static {@link #getAuthorityType(GpConfig, GpContext, LSID)} instead  */
     public String getAuthorityType(final LSID lsid) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext gpContext=GpContext.getServerContext();
+        return getAuthorityType(gpConfig, gpContext, lsid);
+    }
+
+    public static String getAuthorityType(final GpConfig gpConfig, final GpContext gpContext, final LSID lsid) {
+        final String authorityMine=gpConfig.getLsidAuthority(gpContext);
+        return getAuthorityType(authorityMine, lsid);
+    }
+
+    /**
+     * Get the authority type for the given lsid.
+     * One of: MINE | BROAD | FOREIGN
+     * 
+     * @param authorityMine the 'lsid.authority' from {@link GpConfig#getLsidAuthority(GpContext)}
+     * @param lsid
+     * @return
+     */
+    public static String getAuthorityType(final String authorityMine, final LSID lsid) {
         String authorityType;
         if (lsid == null) {
             authorityType = AUTHORITY_MINE;
         } 
         else {
             final String lsidAuthority = lsid.getAuthority();
-            if (lsidAuthority.equals(authority)) {
+            if (lsidAuthority.equals(authorityMine)) {
                 authorityType = AUTHORITY_MINE;
             } 
             else if (lsidAuthority.equals(BROAD_AUTHORITY)) {
@@ -77,16 +88,23 @@ public class LSIDUtil {
         return authorityType;
     }
 
+    /** @deprecated call static {@link #compareAuthorities(String, LSID, LSID)} instead  */
+    public int compareAuthorities(final LSID lsid1, final LSID lsid2) {
+        return compareAuthorities(getAuthority(), lsid1, lsid2);
+    }
+
     /**
      * Compare authority types: 1=lsid1 is closer, 0=equal, -1=lsid2 is closer
      * closer is defined as mine > Broad > foreign
+     * 
+     * @param authorityMine, the server 'lsid.authority'
      * @param lsid1
      * @param lsid2
      * @return
      */
-    public int compareAuthorities(final LSID lsid1, final LSID lsid2) {
-        final String at1 = getAuthorityType(lsid1);
-        final String at2 = getAuthorityType(lsid2);
+    public static int compareAuthorities(final String authorityMine, final LSID lsid1, final LSID lsid2) {
+        final String at1 = getAuthorityType(authorityMine, lsid1);
+        final String at2 = getAuthorityType(authorityMine, lsid2);
         if (!at1.equals(at2)) {
             if (at1.equals(AUTHORITY_MINE)) {
                 return 1;
@@ -109,16 +127,23 @@ public class LSIDUtil {
      * 
      * @param lsid
      */
-    public boolean isAuthorityMine(final LSID lsid) {
-        final String authType = getAuthorityType(lsid);
+    public static boolean isAuthorityMine(final GpConfig gpConfig, final GpContext gpContext, final LSID lsid) {
+        final String authType = getAuthorityType(gpConfig, gpContext, lsid);
         return AUTHORITY_MINE.equals(authType);
     }
 
+    /** @deprecated call static {@link #isAuthorityMine(GpConfig, GpContext, String)} instead  */
     public boolean isAuthorityMine(final String lsid) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext gpContext=GpContext.getServerContext();
+        return isAuthorityMine(gpConfig, gpContext, lsid);
+    }
+
+    public static boolean isAuthorityMine(final GpConfig gpConfig, final GpContext gpContext, final String lsid) {
         LSID lsidObj;
         try {
             lsidObj = new LSID(lsid);
-            return isAuthorityMine(lsidObj);
+            return isAuthorityMine(gpConfig, gpContext, lsidObj);
         } 
         catch (MalformedURLException e) {
             log.error(e);
@@ -126,8 +151,14 @@ public class LSIDUtil {
         }
     }
 
+    /** @deprecated call static {@link #getNearerLSID(String, LSID, LSID)} instead */
     public LSID getNearerLSID(final LSID lsid1, final LSID lsid2) {
-        final int authorityComparison = compareAuthorities(lsid1, lsid2);
+        final String authorityMine=getAuthority();
+        return getNearerLSID(authorityMine, lsid1, lsid2);
+    }
+    
+    public static LSID getNearerLSID(final String authorityMine, final LSID lsid1, final LSID lsid2) {
+        final int authorityComparison = compareAuthorities(authorityMine, lsid1, lsid2);
         if (authorityComparison < 0)
             return lsid2;
         if (authorityComparison > 0) {

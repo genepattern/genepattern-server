@@ -7,12 +7,12 @@ import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.repository.SourceInfo.CreatedOnServer;
 import org.genepattern.server.repository.SourceInfo.FromRepo;
 import org.genepattern.server.repository.SourceInfo.FromUnknown;
 import org.genepattern.server.repository.SourceInfo.FromZip;
 import org.genepattern.util.LSID;
-import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -58,6 +58,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
         }
         
         
+        final GpContext serverContext=GpContext.getServerContext();
         if (lsidStr.toLowerCase().startsWith("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.")) {
             boolean isBeta=false;
             if (lsidVersion != null && lsidVersion.contains(LSID.VERSION_DELIMITER)) {
@@ -67,14 +68,12 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
                 isBeta=false;
             }
             if (!isBeta) {
-                GpContext serverContext=GpContext.getServerContext();
                 RepositoryInfo prod=
                         RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_PROD_URL);
                 return new FromRepo(prod);
             }
             else {
                 // assume it's from Broad beta repository
-                GpContext serverContext=GpContext.getServerContext();
                 RepositoryInfo beta=
                         RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_BETA_URL);
                 return new FromRepo(beta);
@@ -82,7 +81,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
         }
         
         boolean createdOnServer=false;
-        final String serverAuthority=LSIDUtil.getInstance().getAuthority();
+        final String serverAuthority=ServerConfigurationFactory.instance().getLsidAuthority(serverContext);
         if (lsid != null && serverAuthority.equals( lsid.getAuthority() )) {
             //assume it's created/edited on this server
             createdOnServer=true;
