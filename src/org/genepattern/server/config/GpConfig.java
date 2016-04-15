@@ -102,6 +102,9 @@ public class GpConfig {
      *
      */
     public static final String PROP_LSID_AUTHORITY="lsid.authority";
+    
+    /** default value in early versions of GP is 'broad-cancer-genomics'. */
+    public static final String DEFAULT_LSID_AUTHORITY="broad-cancer-genomics";
 
     /**
      * The version of the database for saving GP session data, default value is 'HSQL'. Other supported
