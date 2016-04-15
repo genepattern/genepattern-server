@@ -3311,7 +3311,7 @@ public class GenePatternAnalysisTask {
         String lsid = taskInfoAttributes.get(LSID);
         if (lsid == null || lsid.equals("")) {
             // System.out.println("installTask: creating new LSID");
-            lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
+            lsid = LSIDManager.createNewID(TASK_NAMESPACE).toString();
             taskInfoAttributes.put(LSID, lsid);
         }
 
