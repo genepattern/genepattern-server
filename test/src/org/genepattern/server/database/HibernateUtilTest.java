@@ -42,9 +42,7 @@ public class HibernateUtilTest {
         final int nextVal=1;
 
         try {
-            if (createSequence) {
-                HibernateUtil.createSequence(mgr, seqName);
-            }
+            HibernateUtil.createSequence(mgr, seqName);
             assertFalse("inTxn, before test, dbVendor="+dbVendor, 
                     mgr.isInTransaction());
             if (doInTxn) {
@@ -68,15 +66,17 @@ public class HibernateUtilTest {
         }
     }
     
-    protected void exactCheck(final boolean doInTxn, final String dbVendor, final String seqName, final int nextVal) throws DbException {
+    /** checks if the nextSequenceValue is an exact match to the expected value */
+    protected void exactCheck(final boolean doInTxn, final String dbVendor, final String seqName, final int expectedNextSequenceValue) throws DbException {
         final int actual=HibernateUtil.getNextSequenceValue(mgr, dbVendor, seqName);
         // exact match
-        assertEquals("nextSequenceValue('+seqName+'), dbVendor="+dbVendor, nextVal, 
+        assertEquals("nextSequenceValue('"+seqName+"'), dbVendor="+dbVendor, expectedNextSequenceValue, 
                 actual);
         assertEquals("inTxn, dbVendor="+dbVendor+" after call", doInTxn, 
                 mgr.isInTransaction());
     }
 
+    /** checks if the nextSequenceValue is > 0. */
     protected void fuzzyCheck(final boolean doInTxn, final String dbVendor, final String seqName) throws DbException {
         final int actual=HibernateUtil.getNextSequenceValue(mgr, dbVendor, seqName);
         // fuzzy match
@@ -85,15 +85,6 @@ public class HibernateUtilTest {
                 mgr.isInTransaction());
     }
     
-    /**
-     * test getNextSequenceValue, when called before a transaction (txn) is started;
-     * using default HSQL DB.
-     */
-    @Test
-    public void seqTest_hsqldb() throws DbException {
-        doSeqTest("mock_01", "HSQLDB", true, false);        
-    }
-
     @Test
     public void seqTest_hsqldb_lsid() throws DbException {
         boolean createSeq=false;
@@ -108,12 +99,12 @@ public class HibernateUtilTest {
     }
 
     /**
-     * Expecting DbException when 'lsid' sequence already exists
+     * test getNextSequenceValue, when called before a transaction (txn) is started;
+     * using default HSQL DB.
      */
-    @Test(expected=DbException.class)
-    public void seqTest_hsqldb_lsid_exception() throws DbException {
-        boolean createSeq=true;
-        doSeqTest("lsid", "HSQLDB", createSeq, false);        
+    @Test
+    public void seqTest_hsqldb() throws DbException {
+        doSeqTest("mock_01", "HSQLDB", true, false);        
     }
 
     /**
@@ -194,16 +185,17 @@ public class HibernateUtilTest {
         HibernateUtil.createSequence(mgr, mySeqName);
     }
     
-    /** Expecting DbException because 'lsid_identifier_seq' is already in the sequence_table */
-    @Test(expected=DbException.class)
-    public void testCreateSequence_lsid_constraint_violation() throws DbException {
-        HibernateUtil.createSequence(mgr, "lsid_identifier_seq");
+    /** when 'lsid_identifier_seq' is already in the sequence_table */
+    @Test
+    public void createSequence_alreadyExists_lsid() throws DbException {
+        assertEquals("createSequence('lsid_identifier_seq').rval", 0, 
+                HibernateUtil.createSequence(mgr, "lsid_identifier_seq"));
     }
 
-    /** Expecting DbException because 'lsid_suite_identifier_seq' is already in the sequence_table */
-    @Test(expected=DbException.class)
+    /** when 'lsid_suite_identifier_seq' is already in the sequence_table */
+    @Test
     public void testCreateSequence_lsid_suite_constraint_violation() throws DbException {
-        HibernateUtil.createSequence(mgr, "lsid_suite_identifier_seq");
+        assertEquals(0, HibernateUtil.createSequence(mgr, "lsid_suite_identifier_seq"));
     }
 
 }

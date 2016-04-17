@@ -280,7 +280,7 @@ public class HibernateUtil {
     }
 
     /**
-     * Add a new entry to the SEQUENCE_TABLE.
+     * Add a new entry to the SEQUENCE_TABLE if and only if there is not an existing entry with the given name.
      * Example insert statement:
        <pre>
        insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
@@ -293,20 +293,26 @@ public class HibernateUtil {
          Sequence seq=new Sequence();
          seq.setName(seqName);
          seq.setNextValue(1);
-         mgr.getSession().save(seq);
+         mgr.getSession().saveOrUpdate(seq);
      *  </pre>
      *  Calling 'seq.setId(... next sequence id ...)' fixes the problem, but it requires knowing the next id. Cannot compute.
      * @param seqName the name of a new entry in the SEQUENCE_TABLE, e.g. 'lsid_identifier_seq'
      * @return The number of rows added
      * 
-     * @throws DbException
-     *     - general DB connection errors
-     *     - when the sequence already exists
+     * @throws DbException for general DB connection errors
      */
     protected static int createSequence(final HibernateSessionManager mgr, final String seqName) throws DbException {
         final boolean inTxn=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
+
+            // double check if the sequence already exists
+            final boolean exists=hasSequence(mgr, seqName);
+            if (exists) {
+                log.warn("sequence already exists: "+seqName);
+                return 0;
+            }
+            
             final String sql = "insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values(:seqName, :seqNextValue)";
             final SQLQuery query = mgr.getSession().createSQLQuery(sql);
             query.setString("seqName", seqName);
@@ -331,6 +337,25 @@ public class HibernateUtil {
                 mgr.closeCurrentSession();
             }
         }
+    }
+    
+    /**
+     * Check if there is already a sequence in the database.
+     * 
+     * @param mgr
+     * @param sequenceName
+     * @return a count of the number of rows in the sequence_table with the given sequenceName
+     *     0, there is not a sequence
+     *     1, there is already a sequence
+     */
+    protected static boolean hasSequence(final HibernateSessionManager mgr, final String sequenceName) {
+        final Query query = mgr.getSession().createQuery("from org.genepattern.server.domain.Sequence where name = :name");
+        query.setString("name", sequenceName);
+        final Sequence seq = (Sequence) query.uniqueResult();
+        if (seq != null) {
+            return true;
+        }
+        return false;
     }
 
 }
