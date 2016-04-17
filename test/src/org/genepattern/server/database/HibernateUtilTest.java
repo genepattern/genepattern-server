@@ -42,7 +42,7 @@ public class HibernateUtilTest {
         final int nextVal=1;
 
         try {
-            HibernateUtil.createSequence(mgr, seqName);
+            HibernateUtil.createSequenceGeneric(mgr, seqName);
             assertFalse("inTxn, before test, dbVendor="+dbVendor, 
                     mgr.isInTransaction());
             if (doInTxn) {
@@ -179,23 +179,24 @@ public class HibernateUtilTest {
         }
     }
 
-    @Test
-    public void testCreateSequence() throws DbException {
-        final String mySeqName="my_table_identifier_seq";
-        HibernateUtil.createSequence(mgr, mySeqName);
-    }
-    
     /** when 'lsid_identifier_seq' is already in the sequence_table */
     @Test
-    public void createSequence_alreadyExists_lsid() throws DbException {
+    public void createSequenceGeneric_alreadyExists_lsid() throws DbException {
         assertEquals("createSequence('lsid_identifier_seq').rval", 0, 
-                HibernateUtil.createSequence(mgr, "lsid_identifier_seq"));
+                HibernateUtil.createSequenceGeneric(mgr, "lsid_identifier_seq"));
     }
 
     /** when 'lsid_suite_identifier_seq' is already in the sequence_table */
     @Test
-    public void testCreateSequence_lsid_suite_constraint_violation() throws DbException {
-        assertEquals(0, HibernateUtil.createSequence(mgr, "lsid_suite_identifier_seq"));
+    public void createSequenceGeneric_alreadyExists_lsid_suite() throws DbException {
+        assertEquals("createSequence('lsid_suite_identifier_seq').rval", 0, 
+                HibernateUtil.createSequenceGeneric(mgr, "lsid_suite_identifier_seq"));
+    }
+    
+    @Test
+    public void createSequenceGeneric_custom() throws DbException {
+        final String mySeqName="my_table_identifier_seq";
+        HibernateUtil.createSequenceGeneric(mgr, mySeqName);
     }
 
 }

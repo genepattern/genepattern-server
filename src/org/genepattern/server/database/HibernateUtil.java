@@ -301,13 +301,13 @@ public class HibernateUtil {
      * 
      * @throws DbException for general DB connection errors
      */
-    protected static int createSequence(final HibernateSessionManager mgr, final String seqName) throws DbException {
+    public static int createSequenceGeneric(final HibernateSessionManager mgr, final String seqName) throws DbException {
         final boolean inTxn=mgr.isInTransaction();
         try {
             mgr.beginTransaction();
 
             // double check if the sequence already exists
-            final boolean exists=hasSequence(mgr, seqName);
+            final boolean exists=hasSequenceGeneric(mgr, seqName);
             if (exists) {
                 log.warn("sequence already exists: "+seqName);
                 return 0;
@@ -348,7 +348,7 @@ public class HibernateUtil {
      *     0, there is not a sequence
      *     1, there is already a sequence
      */
-    protected static boolean hasSequence(final HibernateSessionManager mgr, final String sequenceName) {
+    protected static boolean hasSequenceGeneric(final HibernateSessionManager mgr, final String sequenceName) {
         final Query query = mgr.getSession().createQuery("from org.genepattern.server.domain.Sequence where name = :name");
         query.setString("name", sequenceName);
         final Sequence seq = (Sequence) query.uniqueResult();
