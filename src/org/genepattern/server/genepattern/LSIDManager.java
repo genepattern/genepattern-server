@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -75,47 +76,51 @@ public class LSIDManager {
         return createNewID(mgr, gpConfig, gpContext, namespace);
     }
 
-    public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace) {
+    public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace) 
+    throws OmnigeneException
+    {
 		try {
 		    final String authority=gpConfig.getLsidAuthority(gpContext);
-		    final LSID newLSID = new LSID(authority, namespace,
-					getNextID(mgr, gpConfig, namespace), initialVersion);
+		    final String identifier=getNextID(mgr, gpConfig, namespace);
+		    final LSID newLSID = new LSID(authority, namespace, identifier, initialVersion);
 			return newLSID;
 		} 
+		catch (final DbException e) {
+		    log.error(e);
+		    throw new OmnigeneException("Unable to create new LSID, DbException: " + e.getLocalizedMessage());
+		}
 		catch (final MalformedURLException mue) {
 		    log.error(mue);
 			throw new OmnigeneException("Unable to create new LSID: " + mue.getMessage());
 		}
 	}
 
-	/**
+    /**
 	 * Get the next unique task or suite LSID identifier from the database.
 	 * 
-	 * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE
+	 * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE or <custom_namespace>
 	 * @return
 	 * @throws OmnigeneException
 	 */
-    private static synchronized int getNextLSIDIdentifier(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) throws OmnigeneException {
+    private static synchronized int getNextLSIDIdentifier(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
+    throws DbException {
         final String sequenceName=getSequenceName(namespace);
-        try {
-            return HibernateUtil.getNextSequenceValue(mgr, gpConfig, sequenceName);
-        }
-        catch (Throwable t) {
-            log.error(t);
-            throw new OmnigeneException(""+t.getLocalizedMessage());
-        }
+        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, sequenceName);
     }
 
     protected static String getSequenceName(final String namespace) {
+        final String seqName;
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
-            return "lsid_identifier_seq";
+            seqName="lsid_identifier_seq";
         }
         else if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
-            return "lsid_suite_identifier_seq";
+            seqName="lsid_suite_identifier_seq";
         }
         else {
-            throw new OmnigeneException("unknown Namespace for LSID: " + namespace);
+            seqName=namespace+"_seq";
+            log.warn("custom Namespace for LSID: "+namespace+", sequenceName=" + seqName);
         }
+        return seqName;
     }
 
 	/**
@@ -124,7 +129,8 @@ public class LSIDManager {
 	 * @return
 	 * @throws OmnigeneException
 	 */
-	protected static synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) throws OmnigeneException {
+	protected static synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
+	throws DbException {
 		int nextId = getNextLSIDIdentifier(mgr, gpConfig, namespace);
 		return "" + nextId;
 	}
