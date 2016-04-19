@@ -11,6 +11,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.util.SemanticUtil;
@@ -233,5 +235,28 @@ public class GenomeSpaceFileHelper {
         }
 
         return parts[1];
+    }
+
+    public static boolean hasProtocolVersion(URL url) {
+        String path = url.getPath();
+        String[] parts = path.split("/");
+        if (parts.length >= 3) {
+            return Pattern.matches("^v?[0-9]*\\.?[0-9]+$", parts[2]);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static URL insertProtocolVersion(URL url) {
+        String path = url.getPath();
+        path = path.replace("/datamanager", "/datamanager/v1.0");
+        try {
+            URL toReturn = new URL(url.getProtocol() + "://" + url.getHost() + path);
+            return toReturn;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return url;
+        }
     }
 }

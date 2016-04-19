@@ -206,7 +206,13 @@ public class GenomeSpaceFile extends GpFilePath {
      * @param url
      */
     public void setUrl(URL url) {
-        gsUrl = url;
+        // Hack to ensure that GenomeSpace URLs have a protocol version number
+        if (GenomeSpaceFileHelper.hasProtocolVersion(url)) {
+            gsUrl = url;
+        }
+        else {
+            gsUrl = GenomeSpaceFileHelper.insertProtocolVersion(url);
+        }
     }
     
     @Override
