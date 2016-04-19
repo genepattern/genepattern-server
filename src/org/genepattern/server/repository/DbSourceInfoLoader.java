@@ -18,7 +18,6 @@ import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.RecordInstallInfoToDb;
 import org.genepattern.server.taskinstall.dao.TaskInstall;
 import org.genepattern.util.LSID;
-import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -140,7 +139,7 @@ public class DbSourceInfoLoader implements SourceInfoLoader {
         }
         
         boolean createdOnServer=false;
-        final String serverAuthority=LSIDUtil.getInstance().getAuthority();
+        final String serverAuthority=ServerConfigurationFactory.instance().getLsidAuthority(serverContext);
         if (lsid != null && serverAuthority.equals( lsid.getAuthority() )) {
             //assume it's created/edited on this server
             createdOnServer=true;

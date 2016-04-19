@@ -40,13 +40,19 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.rest.GpServerException;
 import org.genepattern.server.rest.JobInputApiImplV2;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -1063,5 +1069,140 @@ public class JobsResource {
     {
         JobTagsResource res = new JobTagsResource();
         return res.deleteTag(jobNo, jobTagId, request);
+    }
+
+    /**
+     * Get substituted command line for a visualizer job given the specified cmdLine
+     * Given the following cmdline for MultiplotStudio:
+     *  /Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/jre/bin/java -Dfile.encoding=UTF8
+     *  -Dsun.java2d.d3d=true -Dsun.java2d.dpiaware=true -Dsun.java2d.ddscale=true -Dsun.java2d.translaccel=true -Xms192m
+     *  -XX:+UseG1GC -jar /Users/nazaire/IdeaProjects/VisualizerLauncher/visualizerLauncherDir/MultiplotStudio.jar <dataFile> <classFile>
+     *
+     *   The expected return value would be an array with the following values:
+     *  [0 = /Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/jre/bin/java
+     *  [1] = -Dfile.encoding=UTF8
+     *  [2] = -Dsun.java2d.d3d=true
+     *  [3] = {java.lang.String@3707}"-Dsun.java2d.dpiaware=true"
+     *  [4] = {java.lang.String@3708}"-Dsun.java2d.ddscale=true"
+     *  [5] = {java.lang.String@3709}"-Dsun.java2d.translaccel=true"
+     *  [6] = {java.lang.String@3710}"-Xms192m"
+     *  [7] = {java.lang.String@3711}"-XX:+UseG1GC"
+     *  [8] = {java.lang.String@3712}"-jar"
+     *  [9] = {java.lang.String@3713}"/Users/nazaire/IdeaProjects/VisualizerLauncher/visualizerLauncherDir/MultiplotStudio.jar"
+     *  [10] = {java.lang.String@3714}"ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+     *  [11] = {java.lang.String@3715}"ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls"
+     *
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{jobId}/visualizerCmdLine")
+    public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
+                               @PathParam("jobId") int jobId,
+                               @QueryParam("commandline") String cmdLine)
+    {
+        GpContext userContext = Util.getUserContext(request);
+        try {
+            final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
+            final GpContext jobContext;
+
+            try {
+                jobContext=GpContext.createContextForJob(mgr, userContext.getUserId(), jobId);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing jobContext for jobId="+jobId, t);
+                throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
+            }
+            finally {
+                mgr.closeCurrentSession();
+            }
+
+            TaskInfo taskInfo=jobContext.getTaskInfo();
+            final Map<String,ParameterInfoRecord> paramInfoMap=ParameterInfoRecord.initParamInfoMap(taskInfo);
+
+            final List<String> cmdLineArgsC = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, paramInfoMap);
+
+            JSONArray jsonArray=new JSONArray();
+            for(String arg : cmdLineArgsC)
+            {
+                jsonArray.put(arg);
+            }
+
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.put("commandline", jsonArray);
+            return Response.ok().entity(jsonObj.toString()).build();
+        }
+        catch (Exception e) {
+            log.error("Error getting commandline for job " + jobId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+    }
+
+    /**
+     * Get input files as URLs for a job
+     *
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{jobId}/visualizerInputFiles")
+    public Response substitute(@Context HttpServletRequest request, @Context HttpServletResponse response,
+                               @PathParam("jobId") int jobId)
+    {
+        GpContext userContext = Util.getUserContext(request);
+        try {
+            final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
+            final GpContext jobContext;
+
+            try {
+                jobContext=GpContext.createContextForJob(mgr, userContext.getUserId(), jobId);
+            }
+            catch (Throwable t) {
+                log.error("Error initializing jobContext for jobId="+jobId, t);
+                throw new JobDispatchException("Error initializing jobContext for jobId="+jobId);
+            }
+            finally {
+                mgr.closeCurrentSession();
+            }
+
+            JSONArray inputFiles = new JSONArray();
+            JobInput jobInput = jobContext.getJobInput();
+
+            Map<String, ParameterInfoRecord> paramInfoMap =ParameterInfoRecord.initParamInfoMap(jobContext.getTaskInfo());
+            for(final Map.Entry<ParamId, Param> entry : jobInput.getParams().entrySet())
+            {
+                Param inputParam = entry.getValue();
+
+                final String pname = inputParam.getParamId().getFqName();
+                ParameterInfoRecord record = paramInfoMap.get(pname);
+
+                if(record != null && record.getFormal() != null && record.getFormal().isInputFile())
+                {
+                    List<ParamValue> paramValues = inputParam.getValues();
+                    for(ParamValue paramValue : paramValues)
+                    {
+                        String inputValue = paramValue.getValue();
+                        inputFiles.put(inputValue);
+
+                    }
+                }
+            }
+
+            JSONObject jsonObj=new JSONObject();
+            jsonObj.put("inputFiles", inputFiles);
+            return Response.ok().entity(jsonObj.toString()).build();
+        }
+        catch (Exception e) {
+            log.error("Error getting input files for job " + jobId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
     }
 }

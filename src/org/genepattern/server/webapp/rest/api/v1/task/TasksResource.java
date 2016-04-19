@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.task;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -39,6 +40,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.EulaInfo;
 import org.genepattern.server.eula.EulaManager;
 import org.genepattern.server.eula.InitException;
@@ -52,6 +54,7 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
@@ -567,7 +570,8 @@ public class TasksResource {
             final @Context HttpServletRequest request,
             @DefaultValue("true") @QueryParam("includeProperties") boolean includeProperties,
             @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
-            @DefaultValue("true") @QueryParam("includeEula") boolean includeEula
+            @DefaultValue("true") @QueryParam("includeEula") boolean includeEula,
+            @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles
             ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
@@ -586,7 +590,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula);
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -621,7 +625,12 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula) throws Exception
+    {
+        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false);
+    }
+
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles) throws Exception {
         GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         JSONObject jsonObj=new JSONObject();
         String href=getTaskInfoPath(request, taskInfo);
@@ -691,6 +700,21 @@ public class TasksResource {
             jsonObj.put("eulaInfo", eulaInfo);
         }
 
+        if(includeSupportFiles)
+        {
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(taskContext.getUserId());
+            File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+
+            String[] supportFilesRelativeUri = new String[allFiles.length];
+            for(int i=0;i<allFiles.length; i++)
+            {
+                File file =  allFiles[i];
+                TasklibPath tasklibPath = new TasklibPath(taskInfo, file.getName());
+                supportFilesRelativeUri[i] = tasklibPath.getRelativeUri().toString();
+            }
+
+            jsonObj.put("supportFiles", supportFilesRelativeUri);
+        }
         try {
             final LSID lsid=new LSID(taskInfo.getLsid());
             jsonObj.put("version", lsid.getVersion());
