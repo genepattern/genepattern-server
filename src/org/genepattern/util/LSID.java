@@ -319,21 +319,26 @@ public class LSID implements Comparable, Serializable {
 	}
 
 	public String getIncrementedMinorVersion() {
-		StringTokenizer stVersion = new StringTokenizer(version,
-				VERSION_DELIMITER);
-		String versionMinor = "";
-		while (stVersion.hasMoreTokens()) {
-			versionMinor = stVersion.nextToken();
-		}
-		int minor = 0;
-		try {
-			minor = Integer.parseInt(versionMinor);
-			minor++;
-		} catch (NumberFormatException nfe) {
-			System.err.println(version
-					+ " doesn't end in an integer minor number");
-		}
-		return version.substring(0, version.length() - versionMinor.length())
-				+ Integer.toString(minor);
+	    return LSID.getIncrementedMinorVersion(this.version);
 	}
+	
+    public static String getIncrementedMinorVersion(final String version) {
+        StringTokenizer stVersion = new StringTokenizer(version,
+                VERSION_DELIMITER);
+        String versionMinor = "";
+        while (stVersion.hasMoreTokens()) {
+            versionMinor = stVersion.nextToken();
+        }
+        int minor = 0;
+        try {
+            minor = Integer.parseInt(versionMinor);
+            minor++;
+        } catch (NumberFormatException nfe) {
+            System.err.println(version
+                    + " doesn't end in an integer minor number");
+        }
+        return version.substring(0, version.length() - versionMinor.length())
+                + Integer.toString(minor);
+    }
+
 }
