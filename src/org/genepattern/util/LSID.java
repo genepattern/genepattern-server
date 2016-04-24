@@ -14,7 +14,10 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.StringTokenizer;
 
-public class LSID implements Comparable, Serializable {
+public class LSID implements Comparable<LSID>, Serializable {
+
+    /** computed servialVersionUID */
+    private static final long serialVersionUID = -1579338628906221673L;
 
     String authority = "";
 
@@ -126,11 +129,7 @@ public class LSID implements Comparable, Serializable {
         return temp.toString();
     }
 
-    public int compareTo(Object o) throws ClassCastException {
-        if (!(o instanceof LSID)) {
-            throw new ClassCastException("Not an LSID");
-        }
-        LSID other = (LSID) o;
+    public int compareTo(final LSID other) throws ClassCastException {
         if (!isSimilar(other)) {
             String thisStr = this.toString().toLowerCase();
             String otherStr = other.toString().toLowerCase();
