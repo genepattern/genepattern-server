@@ -271,11 +271,11 @@ public class LSID implements Comparable<LSID>, Serializable {
         StringTokenizer stVersion = new StringTokenizer(version,
                 VERSION_DELIMITER);
         String versionMinor;
-        int minor;
         while (stVersion.hasMoreTokens()) {
             versionMinor = stVersion.nextToken();
             try {
-                minor = Integer.parseInt(versionMinor);
+                /* int minor = */ 
+                Integer.parseInt(versionMinor);
             } catch (NumberFormatException nfe) {
                 throw new MalformedURLException("Invalid LSID version in "
                         + toString() + DELIMITER + version);
