@@ -17,6 +17,32 @@ import com.google.common.collect.ImmutableList;
 public class LsidVersion implements Comparable<LsidVersion> {
     public static final int initialVersion=1;
 
+    public static enum Increment {
+        next("1"), // means fall back to default
+        major("1"), // next major
+        minor("0.1"), // next minor
+        patch("0.0.1") // next patch
+        ;
+        
+        public static Increment fromString(final String in) {
+            try {
+                return Increment.valueOf(in);
+            }
+            catch (Throwable t) {
+                //TODO: log error
+                return next;
+            }
+        }
+
+        final String initialVersion;
+        private Increment(final String initialVersion) {
+            this.initialVersion=initialVersion;
+        }
+        public String initialVersion() {
+            return initialVersion;
+        }
+    }
+
     /**
      * Create a new instance from a String.
      * Split the version string into a sequence of major and minor version elements.
