@@ -21,6 +21,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.util.LsidVersion;
 import org.genepattern.webservice.OmnigeneException;
 
 /**
@@ -30,21 +31,48 @@ import org.genepattern.webservice.OmnigeneException;
  */
 public class LSIDManager {
     private static final Logger log = Logger.getLogger(LSIDManager.class);
-    
-	private static final String initialVersion = "1";
 
     private LSIDManager() {
     }
 
 	/** @deprecated pass in a HibernateSession */
     public static LSID getNextTaskLsid(final String requestedLSID)  throws java.rmi.RemoteException {
+        return getNextTaskLsid(requestedLSID, LsidVersion.Increment.next);
+    }
+
+    public static LSID getNextTaskLsid(final String requestedLSID, final LsidVersion.Increment versionIncrement)  throws java.rmi.RemoteException {
         final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
-        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID);
+        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, versionIncrement);
     }
 
+    /** @deprecated pass in an increment */
     public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID) 
+    throws java.rmi.RemoteException {
+        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, LsidVersion.Increment.next);
+    }
+    
+    public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID, final LsidVersion.Increment versionIncrement) 
+    throws java.rmi.RemoteException {
+        return getNextLsid(mgr, gpConfig, gpContext, TASK_NAMESPACE, requestedLSID, versionIncrement);
+    }
+
+    public static LSID getNextLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace, final String requestedLSID)
+    throws java.rmi.RemoteException {
+        return getNextLsid(mgr, gpConfig, gpContext, namespace, requestedLSID, LsidVersion.Increment.next);
+    }
+    
+    /**
+     * 
+     * @param mgr
+     * @param gpConfig
+     * @param gpContext
+     * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE or <custom_namespace>
+     * @param requestedLSID
+     * @return
+     */
+    public static LSID getNextLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace, final String requestedLSID, final LsidVersion.Increment versionIncrement)
     throws java.rmi.RemoteException {
         LSID taskLSID = null;
         if (requestedLSID != null && requestedLSID.length() > 0) {
@@ -57,13 +85,13 @@ public class LSIDManager {
         }
         final String lsidAuthority=gpConfig.getLsidAuthority(gpContext);
         if (taskLSID == null) {
-            taskLSID = createNewID(mgr, gpConfig, gpContext, TASK_NAMESPACE);
+            taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
         } 
         else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
             taskLSID = getNextIDVersion(mgr, requestedLSID);
         } 
         else {
-            taskLSID = createNewID(mgr, gpConfig, gpContext, TASK_NAMESPACE);
+            taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
         }
         return taskLSID;
     }
@@ -76,24 +104,32 @@ public class LSIDManager {
         return createNewID(mgr, gpConfig, gpContext, namespace);
     }
 
+    /** @deprecated should pass in an initialVersion */
     public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace) 
     throws OmnigeneException
     {
-		try {
-		    final String authority=gpConfig.getLsidAuthority(gpContext);
-		    final String identifier=getNextID(mgr, gpConfig, namespace);
-		    final LSID newLSID = new LSID(authority, namespace, identifier, initialVersion);
-			return newLSID;
-		} 
-		catch (final DbException e) {
-		    log.error(e);
-		    throw new OmnigeneException("Unable to create new LSID, DbException: " + e.getLocalizedMessage());
-		}
-		catch (final MalformedURLException mue) {
-		    log.error(mue);
-			throw new OmnigeneException("Unable to create new LSID: " + mue.getMessage());
-		}
+        final String initialVersion = "1";
+        return createNewID(mgr, gpConfig, gpContext, namespace, initialVersion);
 	}
+
+    public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace, final String initialVersion) 
+    throws OmnigeneException
+    {
+        try {
+            final String authority=gpConfig.getLsidAuthority(gpContext);
+            final String identifier=getNextID(mgr, gpConfig, namespace);
+            final LSID newLSID = new LSID(authority, namespace, identifier, initialVersion);
+            return newLSID;
+        } 
+        catch (final DbException e) {
+            log.error(e);
+            throw new OmnigeneException("Unable to create new LSID, DbException: " + e.getLocalizedMessage());
+        }
+        catch (final MalformedURLException mue) {
+            log.error(mue);
+            throw new OmnigeneException("Unable to create new LSID: " + mue.getMessage());
+        }
+    }
 
     /**
 	 * Get the next unique task or suite LSID identifier from the database.
@@ -102,7 +138,7 @@ public class LSIDManager {
 	 * @return
 	 * @throws OmnigeneException
 	 */
-    private static synchronized int getNextLSIDIdentifier(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
+    public static synchronized int getNextLSIDIdentifier(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
     throws DbException {
         final String sequenceName=getSequenceName(namespace);
         return HibernateUtil.getNextSequenceValue(mgr, gpConfig, sequenceName);

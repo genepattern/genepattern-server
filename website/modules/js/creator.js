@@ -271,9 +271,12 @@ function saveModule()
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
+    var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
+
     var filesToDelete = module_editor.filesToDelete;
 
     var json = {};
+    json["versionIncrement"] =  versionIncrement;
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,

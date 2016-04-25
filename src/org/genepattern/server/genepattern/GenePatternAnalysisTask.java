@@ -169,6 +169,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LsidVersion;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -3369,9 +3370,14 @@ public class GenePatternAnalysisTask {
 
     public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
     throws OmnigeneException, RemoteException, TaskInstallationException {
+        return installNewTask(name, description, params, taskInfoAttributes, username, access_id, LsidVersion.Increment.next, taskIntegrator, installInfo);
+    }
+    
+    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, final LsidVersion.Increment versionIncrement, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
+    throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
-        taskLSID = LSIDManager.getNextTaskLsid(requestedLSID);
+        taskLSID = LSIDManager.getNextTaskLsid(requestedLSID, versionIncrement);
         taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator, installInfo);
         if ((probs != null) && (probs.size() > 0)) {
