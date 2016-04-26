@@ -67,6 +67,7 @@ import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.util.LsidVersion;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -1046,6 +1047,11 @@ public class TaskIntegrator {
      * @exception WebServiceException, If an error occurs
      */
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray, Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) 
+    throws WebServiceException {
+        return modifyTask(accessId, taskName, description, parameterInfoArray, taskAttributes, LsidVersion.Increment.next, dataHandlers, fileNames); 
+    }
+    
+    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray, Map taskAttributes, LsidVersion.Increment versionIncrement, DataHandler[] dataHandlers, String[] fileNames) 
     throws WebServiceException 
     {
         String taskType = (String)taskAttributes.get("taskType");
@@ -1098,6 +1104,7 @@ public class TaskIntegrator {
             isAuthorizedCreateTask(getUserName(), tia);
             taskAttributes.put(PRIVACY, accessId);
             lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray, new TaskInfoAttributes(taskAttributes), username, accessId, 
+                    versionIncrement,
                     new Status() {
                 public void beginProgress(String string) {
                 }
