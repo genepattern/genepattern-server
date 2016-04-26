@@ -17,10 +17,13 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.domain.Sequence;
 import org.genepattern.webservice.OmnigeneException;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.Transaction;
 
 
 public class HibernateUtil {
@@ -151,22 +154,48 @@ public class HibernateUtil {
         }
     }
 
-    public static int getNextSequenceValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final String sequenceName) {
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final String sequenceName) 
+    throws DbException
+    {
         final String dbVendor=gpConfig.getDbVendor();
         return getNextSequenceValue(mgr, dbVendor, sequenceName);
     }
     
-    public static int getNextSequenceValue(final HibernateSessionManager mgr, final String dbVendor, final String sequenceName) {
-        if (dbVendor.equalsIgnoreCase("ORACLE")) {
-            return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
-                    .uniqueResult()).intValue();
-        } 
-        else if (dbVendor.equalsIgnoreCase("HSQL")) {
-            return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
-        } 
-        else {
-            return getNextSequenceValueGeneric(mgr, sequenceName);
+    public static int getNextSequenceValue(final HibernateSessionManager mgr, final String dbVendor, final String sequenceName) 
+    throws DbException
+    {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            mgr.beginTransaction();
+            if (dbVendor.equalsIgnoreCase("ORACLE")) {
+                return getNextSequenceValueOracle(mgr, sequenceName);
+            } 
+            else if (dbVendor.equalsIgnoreCase("HSQL")) {
+                return getNextSequenceValueHsql(mgr, sequenceName);
+            } 
+            else {
+                return getNextSequenceValueGeneric(mgr, sequenceName);
+            }
         }
+        catch (Throwable t) {
+            log.error(t);
+            mgr.rollbackTransaction();
+            throw new DbException(t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+    }
+    
+    protected static int getNextSequenceValueOracle(final HibernateSessionManager mgr, final String sequenceName) {
+        return ((BigDecimal) mgr.getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
+                .uniqueResult()).intValue();
+    }
+    
+    protected static int getNextSequenceValueHsql(final HibernateSessionManager mgr, final String sequenceName) {
+        return (Integer) mgr.getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
     }
 
     /**
@@ -208,7 +237,11 @@ public class HibernateUtil {
         } 
         catch (Exception e) {
             if (session != null) {
-                session.getTransaction().rollback();
+                Transaction tx = session.getTransaction();
+                if (tx != null && tx.isActive()) {
+                    tx.rollback();
+                    session.close();
+                }
             }
             log.error(e);
             throw new OmnigeneException(e);
@@ -219,4 +252,110 @@ public class HibernateUtil {
             }
         }
     }
+
+    /**
+     * Experimental code; removed StatelessSession, delegate DB session management to the calling class.
+     * 
+     * Get the next integer value from the named sequence, using the 'SEQUENCE_TABLE' to simulate a sequence.
+     * 
+     * @param mgr
+     * @param sequenceName
+     * @return
+     */
+    protected static synchronized int getNextSequenceValueGeneric_txn(final HibernateSessionManager mgr, final String sequenceName) {
+        final Query query = mgr.getSession().createQuery("from org.genepattern.server.domain.Sequence where name = :name");
+        query.setString("name", sequenceName);
+        final Sequence seq = (Sequence) query.uniqueResult();
+        if (seq != null) {
+            int nextValue = seq.getNextValue();
+            seq.setNextValue(nextValue + 1);
+            mgr.getSession().update(seq);
+            return nextValue;
+        } 
+        else {
+            String errorMsg = "Sequence table does not have an entry for: " + sequenceName;
+            log.error(errorMsg);
+            throw new OmnigeneException(errorMsg);
+        }
+    }
+
+    /**
+     * Add a new entry to the SEQUENCE_TABLE if and only if there is not an existing entry with the given name.
+     * Example insert statement:
+       <pre>
+       insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_identifier_seq', 1);
+       </pre>
+     * 
+     *  Workaround for this exception:
+     *      ids for this class must be manually assigned before calling save(): org.genepattern.server.domain.Sequence
+     *  This code won't work,
+     *  <pre>
+         Sequence seq=new Sequence();
+         seq.setName(seqName);
+         seq.setNextValue(1);
+         mgr.getSession().saveOrUpdate(seq);
+     *  </pre>
+     *  Calling 'seq.setId(... next sequence id ...)' fixes the problem, but it requires knowing the next id. Cannot compute.
+     * @param seqName the name of a new entry in the SEQUENCE_TABLE, e.g. 'lsid_identifier_seq'
+     * @return The number of rows added
+     * 
+     * @throws DbException for general DB connection errors
+     */
+    public static int createSequenceGeneric(final HibernateSessionManager mgr, final String seqName) throws DbException {
+        final boolean inTxn=mgr.isInTransaction();
+        try {
+            mgr.beginTransaction();
+
+            // double check if the sequence already exists
+            final boolean exists=hasSequenceGeneric(mgr, seqName);
+            if (exists) {
+                log.warn("sequence already exists: "+seqName);
+                return 0;
+            }
+            
+            final String sql = "insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values(:seqName, :seqNextValue)";
+            final SQLQuery query = mgr.getSession().createSQLQuery(sql);
+            query.setString("seqName", seqName);
+            query.setInteger("seqNextValue", 1);
+            int rval=query.executeUpdate();
+            if (!inTxn) {
+                mgr.commitTransaction();
+            }
+            return rval;
+        }
+        catch (HibernateException e) {
+            if (e.getCause() != null) {
+                throw new DbException(e.getCause().getLocalizedMessage(), e.getCause());
+            }
+            throw new DbException(e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error: "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!inTxn) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * Check if there is already a sequence in the database.
+     * 
+     * @param mgr
+     * @param sequenceName
+     * @return a count of the number of rows in the sequence_table with the given sequenceName
+     *     0, there is not a sequence
+     *     1, there is already a sequence
+     */
+    protected static boolean hasSequenceGeneric(final HibernateSessionManager mgr, final String sequenceName) {
+        final Query query = mgr.getSession().createQuery("from org.genepattern.server.domain.Sequence where name = :name");
+        query.setString("name", sequenceName);
+        final Sequence seq = (Sequence) query.uniqueResult();
+        if (seq != null) {
+            return true;
+        }
+        return false;
+    }
+
 }

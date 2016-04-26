@@ -36,6 +36,7 @@ import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LsidVersion;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -1209,18 +1210,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
-     * get the next available suite LSID identifier from the database
-     * 
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return int next identifier in sequence
-     */
-    public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_suite_identifier_seq");
-    }
-
-    /**
      * get the next available LSID version for a given identifer from the database
      * 
      * @throws OmnigeneException
@@ -1251,16 +1240,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
-     * get the next available task LSID identifer from the database
-     * 
-     * @return int next identifier in sequence
-     */
-    public int getNextTaskLSIDIdentifier() {
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return HibernateUtil.getNextSequenceValue(mgr, gpConfig, "lsid_identifier_seq");
-    };
-
-    /**
      * get the next available LSID version for a given identifer from the database
      * 
      * @throws OmnigeneException
@@ -1287,6 +1266,30 @@ public class AnalysisDAO extends BaseDAO {
 	    log.error(e);
 	    throw new OmnigeneException(e);
 	}
+    }
+
+    public String getNextTaskLSIDVersion(final LSID existingLsid, final LsidVersion.Increment versionIncrement) throws OmnigeneException {
+        try {
+            final LSID nextLsid = existingLsid.copy();
+            final String requestedNextVersion=versionIncrement.nextVersion(existingLsid);
+            nextLsid.setVersion(requestedNextVersion);
+
+            final int count = this.getLsidCount(nextLsid);
+            if (count <= 0) {
+                if (log.isDebugEnabled()) {
+                    log.debug("from '"+existingLsid.getVersion()+"' to '"+nextLsid.getVersion()+"' is available");
+                }
+                return requestedNextVersion;
+            }
+
+            log.warn("from '"+existingLsid.getVersion()+"' to '"+nextLsid.getVersion()+"' version already exists, fall back to original implementation");
+            log.warn("existingLsid="+existingLsid+", versionIncrement="+versionIncrement);
+            return getNextTaskLSIDVersion(existingLsid);
+        } 
+        catch (final Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     public Integer getParentJobId(int jobId) {

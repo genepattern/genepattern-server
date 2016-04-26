@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 
 import com.google.common.base.Strings;
 
@@ -23,6 +24,8 @@ import com.google.common.base.Strings;
  * Note: see http://tools.ietf.org/html/rfc2606
  */
 public class Demo {
+    public static final GpContext serverContext=GpContext.getServerContext();
+    
     /** servlet context path is '/gp' */
     public static final String gpPath="/gp";
 
@@ -162,6 +165,10 @@ public class Demo {
             // ignore
         }
         when(gpConfig.getGenePatternURL()).thenReturn(genePatternURL);
+
+        when(gpConfig.getDbVendor()).thenReturn("HSQL");
+        when(gpConfig.getLsidAuthority(serverContext)).thenReturn(GpConfig.DEFAULT_LSID_AUTHORITY);
+
         return gpConfig;
     }
     
@@ -240,13 +247,22 @@ public class Demo {
     
     // generate server file uri paths
     private static final Random rnd = new Random();
-    protected static String randomInt() {
-        final int numDigits=6;
+    
+    /**
+     * Generate a random sequence of integers.
+     * @param numDigits number of characters in the sequence
+     * @return String
+     */
+    public static String randomSequence(final int numDigits) {
         final StringBuilder sb = new StringBuilder(numDigits);
         for(int i=0; i < numDigits; ++i) {
             sb.append((char)('0' + rnd.nextInt(10)));
         }
         return sb.toString();
+    }
+    
+    protected static String randomInt() {
+        return randomSequence(6);
     }
 
     /** default User Upload File, relative URI path */

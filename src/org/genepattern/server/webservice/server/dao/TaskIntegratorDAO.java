@@ -32,7 +32,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         Suite s = null;
 
         if (lsid == null || lsid.trim().equals("")) {
-            lsid = LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString();
+            lsid = LSIDManager.createNewID(SUITE_NAMESPACE).toString();
         } else { // see if suite already exists in database
             String hql = "from org.genepattern.server.domain.Suite where lsid = :lsid";
             Query query = getSession().createQuery(hql);

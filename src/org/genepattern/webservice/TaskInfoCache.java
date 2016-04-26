@@ -31,6 +31,8 @@ import org.genepattern.util.LSID;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import com.google.common.base.Strings;
+
 /**
  * Use this cache to fetch a TaskInfo for a given lsid.
  * @author pcarr
@@ -105,6 +107,9 @@ public class TaskInfoCache {
     }
 
     public void removeFromCache(final HibernateSessionManager mgr, final String lsid) {
+        if (Strings.isNullOrEmpty(lsid)) {
+            return;
+        }
         int taskId = findTaskId(mgr, lsid);
         DirectoryManager.removeTaskLibDirFromCache(lsid);
         removeFromCache(taskId);

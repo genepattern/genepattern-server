@@ -248,7 +248,7 @@ public class AdminDAO extends BaseDAO {
                         closestLSID = lsid;
                     } 
                     else {
-                        closestLSID = LSIDManager.getInstance().getNearerLSID(closestLSID, lsid);
+                        closestLSID = LSIDManager.getNearerLSID(closestLSID, lsid);
                     }
                     if (closestLSID == lsid) {
                         latestTask = t;
@@ -480,7 +480,7 @@ public class AdminDAO extends BaseDAO {
                 try {
                     LSID existingLsid = new LSID((String) t.getTaskInfoAttributes().get(GPConstants.LSID));
                     LSID currentLSID = new LSID((String) tasks[i].getTaskInfoAttributes().get(GPConstants.LSID));
-                    LSID closer = LSIDManager.getInstance().getNearerLSID(existingLsid, currentLSID);
+                    LSID closer = LSIDManager.getNearerLSID(existingLsid, currentLSID);
                     if (closer == currentLSID) {
                         map.put(tasks[i].getName(), tasks[i]);
                     }
