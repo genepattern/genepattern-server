@@ -1148,25 +1148,6 @@ public class TaskIntegrator {
                     }
                 }
             }
-            if (System.getProperty("save.task.plugin") != null) {
-                final String lsid1 = lsid;
-                new Thread() {
-                    public void run() {
-                        try {
-                            DataHandler handler = exportToZip(lsid1);
-                            File tempFile = File.createTempFile("task", "zip");
-                            FileOutputStream fis = new FileOutputStream(tempFile);
-                            handler.writeTo(fis);
-                            SaveTaskPlugin saveTaskPlugin = (SaveTaskPlugin) Class.forName(System.getProperty("save.task.plugin")).newInstance();
-                            saveTaskPlugin.taskSaved(tempFile);
-                            fis.close();
-                            tempFile.delete();
-                        } 
-                        catch (Exception x) {
-                        }
-                    }
-                }.start();
-            }
         } 
         catch (TaskInstallationException tie) {
             throw new WebServiceErrorMessageException(tie.getErrors());
