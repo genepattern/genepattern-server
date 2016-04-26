@@ -35,7 +35,7 @@
         _openJavascriptModule: function() {
             var self = this;
 
-            var mainViewerPane = $("<div/>").attr("id", self.mainPaneId).css("height", "100%").css("width", "100%");
+            var mainViewerPane = $("<div/>").attr("id", self.mainPaneId);
 
             var headerString = self.options.taskName;
             var version = self._getTaskVersion();
@@ -115,18 +115,20 @@
                 }
             });
 
-            var height = $("#" + self.mainPaneId).parent().height();
             setTimeout(function(){
-                var jsViewerFrame = $("<iframe width='100%' height='" + height + "' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
+                var jsViewerFrame = $("<iframe width='100%' height='100%' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
                     mainViewerPane.unblock();
-                    $(this).height($("#" + self.mainPaneId).height());
-                    //$(this).width($(this).contents().width());
                 });
 
-                mainViewerPane.append(jsViewerFrame);
+                var iframeWrapper = $("<div></div>")
+                    .attr("id", "iframe-wrapper")
+                    .append(jsViewerFrame);
+
+                mainViewerPane.append(iframeWrapper);
+                mainViewerPane.css("position", "");
 
             }, 2000 );
         },
