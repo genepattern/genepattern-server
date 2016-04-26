@@ -3,6 +3,8 @@ package org.genepattern.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -15,32 +17,71 @@ import com.google.common.collect.ImmutableList;
  *
  */
 public class LsidVersion implements Comparable<LsidVersion> {
+    private static final Logger log = Logger.getLogger(LsidVersion.class);
     public static final int initialVersion=1;
 
     public static enum Increment {
-        next("1"), // means fall back to default
-        major("1"), // next major
-        minor("0.1"), // next minor
-        patch("0.0.1") // next patch
+        next("1") { // means fall back to default
+            @Override
+            public String nextVersion(LSID lsid) {
+                return fromLsid(lsid).increment().toString();
+            }
+        }, 
+        major("1") {  // next major
+            @Override
+            public String nextVersion(LSID lsid) {
+                return fromLsid(lsid).nextMajor().toString();
+            } 
+        },
+        minor("0.1") { // next minor
+            @Override
+            public String nextVersion(LSID lsid) {
+                return fromLsid(lsid).nextMinor().toString();
+            } 
+        },
+        patch("0.0.1") { // next patch
+            @Override
+            public String nextVersion(LSID lsid) {
+                return fromLsid(lsid).nextPatch().toString();
+            } 
+        }
         ;
         
+        protected static LsidVersion fromLsid(final LSID lsid) {
+            return LsidVersion.fromString(lsid.getVersion());
+        }
+        
         public static Increment fromString(final String in) {
+            // special-case: null or empty means use default
+            if (Strings.isNullOrEmpty(in)) {
+                return next;
+            }
             try {
                 return Increment.valueOf(in);
             }
             catch (Throwable t) {
-                //TODO: log error
+                log.debug("Error initializing from '"+in+"': Use default value", t);
                 return next;
             }
         }
 
         final String initialVersion;
+
         private Increment(final String initialVersion) {
             this.initialVersion=initialVersion;
         }
+
+        /**
+         * Get the initial version.
+         */
         public String initialVersion() {
             return initialVersion;
         }
+        
+        /**
+         * Get the next version.
+         */
+        abstract public String nextVersion(final LSID lsid);
     }
 
     /**
