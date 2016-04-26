@@ -58,12 +58,14 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.util.LsidVersion;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -439,8 +441,20 @@ public class ModuleQueryServlet extends HttpServlet {
             return;
         }
 
+        String versionIncrement=""; // default (pre-3.9.8 rules)
         try {
             JSONObject moduleJSON = ModuleJSON.parseBundle(bundle);
+            try {
+                versionIncrement=moduleJSON.getString("versionIncrement");
+            }
+            catch (JSONException e) {
+                // not set
+                log.debug("Unexpected error getting versionIncrement from bundle", e);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("versionIncrement: "+versionIncrement);
+            }
+            
             ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
 
             String name = moduleObject.getName();
@@ -620,9 +634,11 @@ public class ModuleQueryServlet extends HttpServlet {
                 }
             }
 
+            final LsidVersion.Increment versionIncrementValue=LsidVersion.Increment.fromString(versionIncrement);
             String newLsid = null;
             if (moduleObject.getLsid() == null || moduleObject.getLsid().equals("")) {
                 newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
+                        versionIncrementValue,
                         new Status() {
                             public void beginProgress(String string) {
                             }
@@ -653,6 +669,7 @@ public class ModuleQueryServlet extends HttpServlet {
                         moduleObject.getDescription(),
                         pInfo,
                         tia,
+                        versionIncrementValue,
                         supportFiles,
                         supportFileNames);
             }

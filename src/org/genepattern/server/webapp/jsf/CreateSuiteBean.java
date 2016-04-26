@@ -203,7 +203,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             SuiteInfo theSuite;
             if (currentSuite == null) {
                 theSuite = new SuiteInfo();
-                theSuite.setLsid(LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString());
+                theSuite.setLsid(LSIDManager.createNewID(SUITE_NAMESPACE).toString());
             } else {
                 theSuite = currentSuite;
             }
