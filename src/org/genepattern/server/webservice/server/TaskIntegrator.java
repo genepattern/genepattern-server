@@ -25,7 +25,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -45,6 +44,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
@@ -1051,75 +1051,53 @@ public class TaskIntegrator {
         return modifyTask(accessId, taskName, description, parameterInfoArray, taskAttributes, LsidVersion.Increment.next, dataHandlers, fileNames); 
     }
     
-    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray, Map taskAttributes, LsidVersion.Increment versionIncrement, DataHandler[] dataHandlers, String[] fileNames) 
+    public String modifyTask(final int accessId, final String taskName, final String description, 
+            ParameterInfo[] parameterInfoArray, final Map taskAttributes, 
+            final LsidVersion.Increment versionIncrement,
+            final DataHandler[] dataHandlers, final String[] fileNames) 
     throws WebServiceException 
     {
-        String taskType = (String)taskAttributes.get("taskType");
+        final String username = getUserName();
+        final String taskType = (String)taskAttributes.get("taskType");
         if ("pipeline".equals(taskType)){
-            isAuthorized(getUserName(), "createPipeline");
+            isAuthorized(username, "createPipeline");
         }
         else {
-            isAuthorized(getUserName(), "createModule");
+            isAuthorized(username, "createModule");
         }
+        if (parameterInfoArray == null) {
+            parameterInfoArray = new ParameterInfo[0];
+        }
+        taskAttributes.put(PRIVACY, accessId);
 
-        String lsid = null;
-        String username = getUserName();
-        String oldLSID = null;
+        final String oldLSID = (String) taskAttributes.get(LSID);
+        String newLSID = null;
         try {
-            if (taskAttributes == null) {
-                taskAttributes = new HashMap();
-            }
-            if (parameterInfoArray == null) {
-                parameterInfoArray = new ParameterInfo[0];
-            }
-            lsid = (String) taskAttributes.get(LSID);
-            oldLSID = lsid;
-            // if an LSID is set, make sure that it is for the current authority, not the task's source, since it is now modified
-            if (lsid != null && lsid.length() > 0) {
-                try {
-                    LSID l = new LSID(lsid);
-                    final String authority=ServerConfigurationFactory.instance()
-                            .getLsidAuthority(GpContext.getServerContext());
-                    if (!l.getAuthority().equals(authority)) {
-                        System.out.println("TaskIntegrator.modifyTask: resetting authority from " + l.getAuthority() + " to " + authority);
-                        lsid = "";
-                        taskAttributes.put(LSID, lsid);
-                        // change owner to current user
-                        String owner = (String) taskAttributes.get(USERID);
-                        if (owner == null) {
-                            owner = "";
-                        }
-                        if (owner.length() > 0) {
-                            owner = " (" + owner + ")";
-                        }
-                        owner = username + owner;
-                        taskAttributes.put(USERID, owner);
-                    }
-                } 
-                catch (MalformedURLException mue) {
-                }
-            }
-
-            TaskInfoAttributes tia = new TaskInfoAttributes(taskAttributes);
-            isAuthorizedCreateTask(getUserName(), tia);
-            taskAttributes.put(PRIVACY, accessId);
-            lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray, new TaskInfoAttributes(taskAttributes), username, accessId, 
+            resetLsidAuthorityIfNecessary(taskAttributes, username);
+            newLSID =  GenePatternAnalysisTask.installNewTask(
+                    taskName, 
+                    description, 
+                    parameterInfoArray, 
+                    new TaskInfoAttributes(taskAttributes), 
+                    username, 
+                    accessId, 
                     versionIncrement,
                     new Status() {
-                public void beginProgress(String string) {
-                }
-                public void continueProgress(int percent) {
-                }
-                public void endProgress() {
-                }
-                public void statusMessage(String message) {
-                }
-            },
-            new InstallInfo(InstallInfo.Type.EDIT));
-            taskAttributes.put(LSID, lsid); 
+                        public void beginProgress(String string) {
+                        }
+                        public void continueProgress(int percent) {
+                        }
+                        public void endProgress() {
+                        }
+                        public void statusMessage(String message) {
+                        }
+                    },
+                    new InstallInfo(InstallInfo.Type.EDIT)
+            );
+            taskAttributes.put(LSID, newLSID); 
             // update so that upon return, the LSID is the new one
-            String attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, username);
-            File dir = new File(attachmentDir);
+            final String attachmentDir = DirectoryManager.getTaskLibDir(taskName, newLSID, username);
+            final File dir = new File(attachmentDir);
             for (int i = 0, length = dataHandlers != null ? dataHandlers.length : 0; i < length; i++) {
                 DataHandler dataHandler = dataHandlers[i];
                 File f = Util.getAxisFile(dataHandler);
@@ -1155,6 +1133,10 @@ public class TaskIntegrator {
                     }
                 }
             }
+            
+            if (log.isDebugEnabled()) {
+                log.debug("modifyTask, from oldLSID="+oldLSID+", to newLSID="+newLSID);
+            }
         } 
         catch (TaskInstallationException tie) {
             throw new WebServiceErrorMessageException(tie.getErrors());
@@ -1162,8 +1144,56 @@ public class TaskIntegrator {
         catch (Exception e) {
             throw new WebServiceException(e);
         }
-        TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), lsid);
-        return lsid;
+        TaskInfoCache.instance().removeFromCache(HibernateUtil.instance(), newLSID);
+        return newLSID;
+    }
+
+    /**
+     * If an LSID is set, make sure that it is for the current authority, not the task's source, since it is now modified.
+     * 
+     * @param taskAttributes
+     * @param lsid
+     * @param username
+     * @return
+     */
+    protected void resetLsidAuthorityIfNecessary(final Map taskAttributes, final String username) {
+        final String lsid = (String) taskAttributes.get(LSID);
+        if (lsid != null && lsid.length() > 0) {
+            LSID l;
+            try {
+                l = new LSID(lsid);
+            }
+            catch (final MalformedURLException mue) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error initializing LSID from lsid='"+lsid+"'", mue);
+                }
+                return;
+            }
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext gpContext=GpContext.getServerContext();
+            final String authority=gpConfig.getLsidAuthority(gpContext);
+            if (!l.getAuthority().equals(authority)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("lsid.authority does not match, requested='" + l.getAuthority() + "', server='" + authority + "'");
+                    log.debug("setting taskAttributes.LSID from '" + lsid + "' to " + "''");
+                }
+                // reset lsid to empty string
+                taskAttributes.put(LSID, ""); 
+                // change owner to current user
+                String owner = (String) taskAttributes.get(USERID);
+                if (owner == null) {
+                    owner = "";
+                }
+                if (owner.length() > 0) {
+                    owner = " (" + owner + ")";
+                }
+                owner = username + owner;
+                if (log.isDebugEnabled()) {
+                    log.debug("setting taskAttributes.OWNER from '" + taskAttributes.get(USERID) + "' to '" + owner+"'");
+                }
+                taskAttributes.put(USERID, owner);
+            }
+        }
     }
 
     protected String importZipFromURL(String url, int privacy, Status taskIntegrator) throws WebServiceException {
