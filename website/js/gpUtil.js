@@ -1,13 +1,46 @@
 /*
- * JavaScript Utility functions for the GenePattern project 
+ * JavaScript Utility functions for the GenePattern project. 
+ * 
+ * Use "this" as a Namespace Proxy, as suggested in this article,
+ *     https://javascriptweblog.wordpress.com/2010/12/07/namespacing-in-javascript/
  */
 
-var gpUtil = function() {
+/** declare global 'gpUtil' namespace variable */
+var gpUtil = {};
 
+/**
+ * Example usage:
+ *     var myGpUtil={};
+ *     # 1) custom gp context
+ *     InitGpUtil.call(myGpUtil,"/custom/gp/context");
+ *     # 2) default gp context
+ *     InitGpUtil.call(myGpUtil);
+ *     
+ */
+var InitGpUtil = function(customGpContext) {
+    /** private static helper function to initialize gpContext */
+    function initGpContext(customGpContext) {
+        return   customGpContext === undefined ? "/gp" 
+               : customGpContext === "" ? "/" 
+               : customGpContext ;
+    }
+
+    /** private variable */
+    var gpContext = initGpContext(customGpContext); 
+
+    // Declare public functions 
+    this.setGpContext = function(customGpContext) {
+        gpContext = initGpContext(customGpContext);
+    }
+
+    this.getGpContext = function getGpContext() {
+        return gpContext;
+    };
+    
     /**
      * helper function to test if an object is a string
      */
-    function isString(s) {
+    this.isString = function(s) {
         return typeof(s) === 'string' || s instanceof String;
     }
     
@@ -16,8 +49,8 @@ var gpUtil = function() {
      *     'May 27, 9:40 pm'
      * @param date, a valid Date object
      */
-    function formatDate(date) {
-        var dateFormat = $.datepicker.formatDate('M d, ', date) + formatTimeOfDay(date);
+    this.formatDate = function(date) {
+        var dateFormat = $.datepicker.formatDate('M d, ', date) + this.formatTimeOfDay(date);
         return dateFormat;
     }
     
@@ -27,16 +60,16 @@ var gpUtil = function() {
      * 
      * @param date, a valid Date object
      */
-    function formatTimeOfDay(date) {
+    this.formatTimeOfDay = function (date) {
         if (!date) {
             return "";
         }
         return date.getHours() %12 
-            + ':' + pad(date.getMinutes())
+            + ':' + this.pad(date.getMinutes())
             + ' ' + (date.getHours() >= 12 ? 'pm' : 'am');
     }
 
-    function pad(num) {
+    this.pad = function(num) {
         var norm = Math.abs(Math.floor(num));
         return (norm < 10 ? '0' : '') + norm;
     }
@@ -49,7 +82,7 @@ var gpUtil = function() {
      * 
      * @param offset, the offset in number of minutes, returned by Date.getTimezoneOffset.
      */
-    function formatTimezone(offset) {
+    this.formatTimezone = function(offset) {
         if (offset===undefined) {
             offset = new Date().getTimezoneOffset();
         }
@@ -58,9 +91,9 @@ var gpUtil = function() {
         }
         //invert the sign to match ISO 8601, e.g. for GMT-4 Date.getTimezoneOffset returns +4.
         return ""+(offset > 0 ? "-" : "+") // sign
-            + pad(offset / 60) // hours
+            + this.pad(offset / 60) // hours
             + ":"
-            + pad(offset % 60); // minutes
+            + this.pad(offset % 60); // minutes
     }
 
     /**
@@ -70,38 +103,38 @@ var gpUtil = function() {
      *     GMT-4 == '-04:00'
      *     GMT+7 == '+07:00'
      */
-    function getTimezoneOffsetIso() {
+    this.getTimezoneOffsetIso = function() {
         var theDate = new Date();
-        return formatTimezone(theDate.getTimezoneOffset());
+        return this.formatTimezone(theDate.getTimezoneOffset());
     }
 
     /**
      * Hide or show the div based on whether or not the cookie has been set.
      * By default the div is hidden, unless the cookie was set.
      */
-    function initToggleDiv(id, openLabel, closedLabel) {
+    this.initToggleDiv = function(id, openLabel, closedLabel) {
         if ($.cookie("show_"+id)) {
             //show it
-            toggleHideShowDiv(true, id, openLabel, closedLabel);
+            this.toggleHideShowDiv(true, id, openLabel, closedLabel);
         }
         else {
             //hide it
-            toggleHideShowDiv(false, id, openLabel, closedLabel);
+            this.toggleHideShowDiv(false, id, openLabel, closedLabel);
         }
     }
 
     /**
      * Toggle visibility of the div with the given id, saving visibility state as a cookie for subsequent page reloads.
      */
-    function toggleDiv(id, openLabel, closedLabel) {
+    this.toggleDiv = function(id, openLabel, closedLabel) {
         var show = !($("#"+id).is(":visible"));
-        toggleHideShowDiv(show, id, openLabel, closedLabel);
+        this.toggleHideShowDiv(show, id, openLabel, closedLabel);
     }
 
     /**
      * Helper method which optionally changes the content of the id{Label}.
      */
-    function toggleHideShowDiv(show, id, openLabel, closedLabel) {
+    this.toggleHideShowDiv = function(show, id, openLabel, closedLabel) {
         if (show===true) {
             $("#"+id).show();
         }
@@ -130,7 +163,7 @@ var gpUtil = function() {
      *     '?param=val, { param: [ "val" ] }
      *     '?params=val1&params=val2, { params : [ "val1", "val2" ] }
      */
-    function parseQueryString( queryString ) {
+    this.parseQueryString = function( queryString ) {
         if (!queryString) {
             queryString= window.location.search;
         }
@@ -172,20 +205,11 @@ var gpUtil = function() {
      * @param suffix - the text to search for
      * @returns {boolean}
      */
-    function endsWith(string, suffix) {
+    this.endsWith = function(string, suffix) {
         return string.length >= suffix.length
             && string.substr(string.length - suffix.length) === suffix;
     }
 
-    // declare 'public' functions
-    return {
-        formatTimezone:formatTimezone,
-        getTimezoneOffsetIso:getTimezoneOffsetIso,
-        formatDate:formatDate,
-        formatTimeOfDay:formatTimeOfDay,
-        initToggleDiv:initToggleDiv,
-        toggleDiv:toggleDiv,
-        parseQueryString:parseQueryString,
-        endsWith: endsWith
-    };
-}();
+};
+
+InitGpUtil.call(gpUtil);

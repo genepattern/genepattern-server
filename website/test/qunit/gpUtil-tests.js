@@ -1,5 +1,35 @@
-test("gpUtil", function() {
+test("gpUtil.gpContext", function() {
+    equal(gpUtil.getGpContext(), "/gp", "gpUtil.getGpContext(), default");
+    
+    var myGpUtil={};
+    InitGpUtil.call(myGpUtil);
+    equal(myGpUtil.getGpContext(), "/gp", "myGpUtil.getGpContext(), default");
 
+    // setGpContext to ROOT
+    myGpUtil.setGpContext("/");
+    equal(myGpUtil.getGpContext(), "/", "setGpContext('/')");
+    
+    // setGpContext to ROOT, special-case for empty string ("")
+    myGpUtil.setGpContext("");
+    equal(myGpUtil.getGpContext(), "/", "setGpContext('')");
+    
+    // setGpContext to custom value
+    myGpUtil.setGpContext("/custom/gp/context");
+    equal(myGpUtil.getGpContext(), "/custom/gp/context", "setGpContext('/custom/gp/context'");    
+
+    // initGpContext as ROOT
+    InitGpUtil.call(myGpUtil,"/");
+    equal(myGpUtil.getGpContext(), "/", "InitGpUtil with '/'");
+
+    InitGpUtil.call(myGpUtil,"");
+    equal(myGpUtil.getGpContext(), "/", "InitGpUtil with ''");
+    
+    // init custom context
+    InitGpUtil.call(myGpUtil,"/custom/gp/context");
+    equal(myGpUtil.getGpContext(), "/custom/gp/context", "InitGpUtil with '/custom/gp/context'");    
+});
+
+test("gpUtil.formatTimezone", function() {
     // test 'gpUtil.formatTimezone'
     equal(gpUtil.formatTimezone(), gpUtil.formatTimezone(new Date().getTimezoneOffset()), "formatTimezone, local timezone");
     equal(gpUtil.formatTimezone(240), "-04:00", "formatTimezone, GMT-4");
@@ -12,7 +42,15 @@ test("gpUtil", function() {
     equal(gpUtil.formatTimeOfDay(), "", "format am/pm, with null arg");
     equal(gpUtil.formatTimeOfDay(new Date("2007-06-29T15:55:10.237-04:00")), "3:55 pm", "format am/pm, pm");
     equal(gpUtil.formatTimeOfDay(new Date("2007-06-29T11:55:10.237-04:00")), "11:55 am", "format am/pm, am");
+});
 
+// simple test that the function returns a value
+test("gpUtil.getTimezoneOffsetIso", function() {
+    // function definition test
+    var tzOffsetIso=gpUtil.getTimezoneOffsetIso();
+    equal($.type(tzOffsetIso), "string", "jquery, is tzOffsetIso a string");
+    equal(typeof tzOffsetIso, "string", "typeof tzOffsetIso");
+    ok(tzOffsetIso.length > 0, "tzOffsetIso.length > 0");
 });
 
 /**

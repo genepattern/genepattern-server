@@ -7,6 +7,16 @@
 
   <script type="text/javascript" src="//code.jquery.com/jquery-1.8.3.min.js"></script>
   <script type="text/javascript" src="//code.jquery.com/ui/1.9.2/jquery-ui.min.js"></script>
+  
+  <!-- workaround to allow for custom servlet context path, use jQuery getScript -->
+  <script type="text/javascript">
+      var gpContext="/gp";
+      // jQuery getScript as a way to use $gpContext as a variable
+      // Note: this is not strictly loaded in order because these calls are asynchronous
+      $.getScript(gpContext+"/js/gpUtil.js");
+      $.getScript(gpContext+"/js/createChoiceDiv.js");
+      $.getScript(gpContext+"/js/runtaskform_latest.js");
+  </script>
 
 </head>
 <body>
@@ -15,9 +25,6 @@
   <script src="//code.jquery.com/qunit/qunit-1.14.0.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
-  <script type="text/javascript" src="../../js/gpUtil.js"></script>
-  <script type="text/javascript" src="../../js/createChoiceDiv.js"></script>
-  <script type="text/javascript" src="../../js/runtaskform_latest.js"></script>
   <script type="text/javascript" src="gpUtil-tests.js"></script>
   <script type="text/javascript" src="toggleDiv-tests.js"></script>
   <script type="text/javascript" src="createChoiceDiv-tests.js"></script>
