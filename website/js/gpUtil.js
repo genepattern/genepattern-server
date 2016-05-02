@@ -155,21 +155,22 @@ var InitGpUtil = function(customGpContext) {
     }
 
     /**
-     * Parse the given query string of the form '?{name1}={value}&{name2}={value}&{flag}
-     * @param the query string from a URL, for example window.location.search
-     *        If it is empty then it defaults to window.location.search
+     * Parse the window.location.query string of the form '?{name1}={value}&{name2}={value}&{flag}
+     * @param the search string from a URL, by default 'window.location.search', which is the '?' character followed
+     *     by the queryString.
      * @return a hash of decoded values, where the rhs value is an array. E.g.
      *     '?myFlag', { myFlag: [ "" ] }
      *     '?param=val, { param: [ "val" ] }
      *     '?params=val1&params=val2, { params : [ "val1", "val2" ] }
      */
-    this.parseQueryString = function( queryString ) {
-        if (!queryString) {
-            queryString= window.location.search;
+    this.parseQueryString = function( search ) {
+        if (search === undefined) {
+            search = window.location.search;
         }
         // strip leading '?'
-        if (queryString.charAt(0) == '?') {
-            queryString=queryString.substring(1);
+        var queryString=search;
+        if (search && search.charAt(0) == '?') {
+            queryString=search.substring(1);
         }
         if (!queryString) {
             return {};
