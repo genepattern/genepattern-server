@@ -10,7 +10,11 @@
   
   <!-- workaround to allow for custom servlet context path, use jQuery getScript -->
   <script type="text/javascript">
-      var gpContext="/gp";
+      // initialize the servlet context path; this page is 3 path-segments from {gpContext}
+      //     {protocol}://{host}{gpContext}/test/qunit/runner.html
+      var level=3;
+      var pathnames=window.location.pathname.split('/');
+      var gpContext=pathnames.slice(0, pathnames.length-level).join('/');
       // jQuery getScript as a way to use $gpContext as a variable
       // Note: this is not strictly loaded in order because these calls are asynchronous
       $.getScript(gpContext+"/js/gpUtil.js");
@@ -25,6 +29,7 @@
   <script src="//code.jquery.com/qunit/qunit-1.14.0.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
+  <script type="text/javascript" src="javascript-tests.js"></script>
   <script type="text/javascript" src="gpUtil-tests.js"></script>
   <script type="text/javascript" src="toggleDiv-tests.js"></script>
   <script type="text/javascript" src="createChoiceDiv-tests.js"></script>

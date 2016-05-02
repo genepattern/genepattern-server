@@ -1,0 +1,187 @@
+/**
+ * qunit tests for confirming (or denying) basic JavaScript coding assumptions.
+ * 
+ * Think of this as a scratch space experimenting with basic JavaScript constructs.
+ * For example the difference between '==' and '==='
+ */
+
+
+function initGpContextDefault() {
+    return initGpContextDefaultWindow(1)
+}
+
+function initGpContextDefaultWindow(level) {
+    return initGpContext(level, window)
+}
+
+/**
+ * A utility method to infer the servlet context path (default="/gp") from the current page, thus
+ * avoiding the need to hard-code the context path into the JavaScript library.
+ * Example usage, called from top-level page, e.g. '/gp/index.html
+ *     var gpContext=initGpContext(1);
+ * 
+ * Level is an integer >= 1 indicating the number of path-segments to the current page
+ * relative to {gpContext}. Examples,
+ * 
+ *     level: pathname
+ *         1: '{gpContext}/'
+ *         1: '{gpContext}/index.html
+ *         2: '{gpContext}/js/gpUtil.js
+ *         3: '{gpContext}/test/gpunit/runner.html
+ * 
+ * From the Java Servlet Spec
+ *     requestURI = contextPath + servletPath + pathInfo
+ *     
+ * From the javadoc for ServletContext.html#getContextPath(),
+ *     The context path is the portion of the request URI that is used to select the context of the request. 
+ *     The context path always comes first in a request URI. The path starts with a "/" character but does not
+ *     end with a "/" character. For servlets in the default (root) context, this method returns "".
+ * 
+ * From the URL Spec:
+ *     A path-absolute URL must be "/" followed by a path-relative URL.
+ *     A path-relative URL must be zero or more path segments, separated from each other by "/", and not start with "/".
+ * 
+ * 
+ * @param level
+ * @param mockWindow, when not set, defaults to 'window.location.pathname'
+ * @returns
+ */
+function initGpContext(level, mockWindow) {
+    var DEFAULT_CONTEXT_PATH="/gp";
+    
+    // for testing, use mockWindow when set
+    // otherwise default to the 'window' object
+    if (mockWindow===undefined) {
+        mockWindow=window;
+    }
+    var pathname=mockWindow.location.pathname;
+    if (pathname === undefined || (typeof pathname != "string") || pathname.length==0 || pathname.charAt(0) != '/') {
+        console.error("window.location.pathname not available, returning hard-coded contextPath='"+DEFAULT_CONTEXT_PATH+"'");
+        return DEFAULT_CONTEXT_PATH;
+    }
+    if ((typeof level != "integer") && level <= 0) {
+        console.error("level='"+level+"', must be an integer > 0, returning hard-coded contextPath='"+DEFAULT_CONTEXT_PATH+"'");
+        return DEFAULT_CONTEXT_PATH;
+    }
+    var pathnames=pathname.split('/');
+    var end=pathnames.length-level;
+    if (end <= 0) {
+        console.error("level="+level+", must be less than the number of path-segments in '"+pathname+"', returning hard-coded contextPath='"+DEFAULT_CONTEXT_PATH+"'");
+        return DEFAULT_CONTEXT_PATH;
+    }
+
+    return initGpContextNoCheck(level, mockWindow.location.pathname);
+}
+
+/**
+ * Get the servlet context path. Does not validate input args.
+ * @param level (default=1), must be > 0 and < num path-segments
+ * @param pathname (default=window.location.pathname)
+ */
+function initGpContextNoCheck(level, pathname) {
+    var pathnames=pathname.split('/');
+    var gpContext=pathnames.slice(0, pathnames.length-level).join('/');
+    return gpContext;
+}
+
+function mockWindow(mockPathname) {
+    var w = { 
+        location: {
+            pathname: mockPathname
+        }
+    };
+    return w;
+}
+
+test("javascript.basic", function() {
+    console.debug("window.location.pathname="+window.location.pathname);
+    equal(typeof window, "object", "typeof window" );
+    equal(typeof 0, "number", "typeof 0")   
+})
+
+test("servletContextPath", function() {
+    equal(initGpContext(3), '/gp', "From 'window.location.pathname', Note: won't work with non-default contextPath");
+
+    var pathname, gpContext, level;
+    
+    // default gpContext
+    gpContext="/gp";
+    level=1; pathname=gpContext+"/index.html";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=2; pathname=gpContext+"/js/gpUtil.js";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=3; pathname=gpContext+"/test/gpunit/runner.html"
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    // ... page with trailing slash
+    level=1; pathname=gpContext+"/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=2; pathname=gpContext+"/my-servlet-path/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+
+    // ROOT gpContext
+    gpContext="";
+    level=1; pathname=gpContext+"/index.html";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=2; pathname=gpContext+"/js/gpUtil.js";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=3; pathname=gpContext+"/test/gpunit/runner.html"
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    // ... page with trailing slash
+    level=1; pathname=gpContext+"/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=2; pathname=gpContext+"/my-servlet-path/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    
+    // custom gpContext, same level
+    gpContext="/gp-custom";
+    level=1; pathname=gpContext+"/index.html";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=2; pathname=gpContext+"/js/gpUtil.js";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=3; pathname=gpContext+"/test/gpunit/runner.html"
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    // ... page with trailing slash
+    level=1; pathname=gpContext+"/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=2; pathname=gpContext+"/my-servlet-path/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    
+    // custom gpContext, different level
+    gpContext="/gp-custom/diff-level";
+    level=1; pathname=gpContext+"/index.html";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=2; pathname=gpContext+"/js/gpUtil.js";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    level=3; pathname=gpContext+"/test/gpunit/runner.html"
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    // ... page with trailing slash
+    level=1; pathname=gpContext+"/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=2; pathname=gpContext+"/my-servlet-path/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
+    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+
+    // Invalid window.location.pathname 
+    equal(initGpContext(1, { location: {} }), '/gp', "Invalid input: window.location.pathname undefined");
+    equal(initGpContext(1, mockWindow(1)), '/gp', "Invalid input: window.location.pathname is not a string");
+    equal(initGpContext(1, mockWindow("")), '/gp', "Invalid input: window.location.pathname is an empty string");
+    equal(initGpContext(1, mockWindow("index.html")), '/gp', "Invalid input: window.location.pathname does not start with '/'");
+    
+    // Invalid input: level <= 0
+    equal(initGpContext(0, mockWindow("/gp-custom/index.html")), "/gp", "Invalid input: level=0, Must be > 0, use '/gp'");
+    equal(initGpContext(-1, mockWindow("/gp-custom/index.html")), "/gp", "Invalid input: level=-1, Must be > 0, use '/gp'");
+    
+    // Invalid input: pathSegments.length < level
+    level=3; pathname="/gp-custom/index.html";
+    equal(initGpContext(level, mockWindow(pathname)), "/gp", "Invalid input: level > num path-segments, level="+level+", pathname='"+pathname+"'");
+    level=4;
+    equal(initGpContext(level, mockWindow(pathname)), "/gp", "Invalid input: level > num path-segments, level="+level+", pathname='"+pathname+"'");
+
+});
