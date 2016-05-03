@@ -3236,7 +3236,7 @@ jQuery(document).ready(function() {
     });
 
     $("select[name='privacy'], select[name='quality'], " +
-        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
+        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion'], select[name='versionIncrement']").multiselect({
         multiple: false,
         header: false,
         selectedList: 1
