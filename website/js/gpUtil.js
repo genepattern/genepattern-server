@@ -351,7 +351,7 @@ var InitGpUtil = function(customGpContext) {
         }
         
         this.getSelectedValue = function() {
-            return selectedValue;
+            return this.selectedValue;
         }
     }
 

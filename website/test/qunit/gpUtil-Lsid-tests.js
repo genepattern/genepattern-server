@@ -100,8 +100,9 @@ test("gpUtil.LsidMenu-static", function() {
                           { value: "patch", name: "patch (X.Y.Z)" },
                          ];
     var lsidMenu=new gpUtil.LsidMenu();
-    deepEqual(lsidMenu.getOptions(), expected_options, "new LsidMenu().options");
-    equal(lsidMenu.getPatchLevel(), 1, "new LsidMenu().patchLevel");
+    deepEqual(lsidMenu.getOptions(), expected_options, "new LsidMenu().getOptions()");
+    equal(lsidMenu.getPatchLevel(), 1, "new LsidMenu().getPatchLevel()");
+    equal(lsidMenu.getSelectedValue(), "", "new LsidMenu().getSelectedValue()");
 
 });
 
