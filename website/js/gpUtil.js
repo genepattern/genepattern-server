@@ -18,6 +18,8 @@ var gpUtil = {};
  *     
  */
 var InitGpUtil = function(customGpContext) {
+    var that = this;
+    
     /** private static helper function to initialize gpContext */
     function initGpContext(customGpContext) {
         return   customGpContext === undefined ? "/gp" 
@@ -209,6 +211,148 @@ var InitGpUtil = function(customGpContext) {
     this.endsWith = function(string, suffix) {
         return string.length >= suffix.length
             && string.substr(string.length - suffix.length) === suffix;
+    }
+    
+    /*
+     *  lsid=urn:lsid:{lsid.authority}:{namespace}:{identifier}:{version}
+     */
+    this.Lsid = function Lsid(lsid) {
+        var lsidSpec = lsid;
+        var authority = null;
+        var namespace = null;
+        var identifier = null;
+        var version = null;
+        var versions = [];
+        
+        // parse the lsid into it's parts
+        function _init() {
+            if (typeof lsid === "string") {
+                var elements = lsid.split(":");
+                authority = elements[2];
+                namespace = elements[3];
+                identifier = elements[4];
+                version = elements[5];
+            }
+            // parse the version into it's parts
+            if (version) {
+                versions = version.split(".").map(Number);
+            }
+        } 
+
+        _init();
+
+        this.getAuthority = function() { return authority; }
+        this.getNamespace = function() { return namespace; }
+        this.getIdentifier = function() { return identifier; }
+        this.getVersion = function() { return version; }
+        this.getVersions = function() { return versions; } 
+        this.getPatchLevel = function() { return Math.max(1, versions.length); }
+    }
+    
+    this.Lsid.prototype.toString = function lsidToString() {
+        return this.lsidSpec;
+    }
+    
+    this.Lsid.prototype.compareVersion = function(to) {
+        if (to === undefined) {
+            console.error("compareVersion(to): to is undefined");
+            return -1;
+        }
+        if (to.getVersion === undefined) {
+            console.error("compareVersion(to): to.getVersion is undefined");
+            return -1;
+        }
+        
+        // special-case, versions.size==0 is always less than versions.size > 0
+        if (this.getVersions().length==0) {
+            if (to.getVersions().length==0) {
+                return 0;
+            }
+            return -1;
+        }
+        else if (to.getVersions().length==0) {
+            return 1;
+        }
+        
+        for(var i=0; i<this.getVersions().length; ++i) {
+            var v=this.getVersions()[i];
+            var ov =  i<to.getVersions().length ? to.getVersions()[i] : 0;
+            if (v < ov) {
+                return -1;
+            }
+            else if (v > ov) {
+                return 1;
+            }
+        }
+        
+        // if we are here, it means each element in versions matches each corresponding element in o.versions
+        if (this.getVersions().length==to.getVersions().length) {
+            return 0;
+        }
+        else if (this.getVersions().length < to.getVersions().length) {
+            return -1;
+        }
+        else {
+            return 1;
+        }
+    }
+    
+    /**
+     * Helper class for building the versionIncrement menu.
+     * @param lsid - the current lsid String
+     * @param lsidVersions - an array of lsid strings, all versions in the DB
+     */
+    this.LsidMenu = function LsidMenu(lsid, lsidVersions) {
+        this.currentLsid=lsid;
+        this.all= [];
+        if (lsidVersions !== undefined) {
+            for(var i = 0; i < lsidVersions.length; i++) {
+                this.all[i]=new that.Lsid(lsidVersions[i]);
+            }
+        }
+        this.all.sort(function(a,b) { return a.compareVersion(b); } );
+
+        this.patchLevel=1; // 1 is major, 2 is minor, 3 is patch, and so on ...
+        // initialize the options array, used to populate the drop-down menu
+        // each option has a value=[major | minor | patch | default], and a display-name
+        this.options = [];
+        this.selectedValue="default";
+        this.options=[
+         { "value": "", "name": "default" },
+         { "value": "major", "name": "major (X)" },
+         { "value": "minor", "name": "minor (X.Y)" },
+         { "value": "patch", "name": "patch (X.Y.Z)" }
+        ];
+        this.selectedValue="";
+        
+//        if (!lsid && (lsidVersions === undefined || lsidVersions.length==0)) {
+//            this.selectedValue="major";
+//            this.options= [ 
+//                { value: "major", name: "New major version (v1)" },
+//                { value: "minor", name: "New minor version (v0.1)" },
+//                { value: "patch", name: "New patch version (v0.0.1)" },
+//            ];
+//        }
+//        else {
+//            this.options= [ 
+//                           { value: "default", name: "" },
+//                           { value: "major", name: "Next major version (X)" },
+//                           { value: "minor", name: "Next minor version (X.Y)" },
+//                           { value: "patch", name: "Next patch version (X.Y.Z)" },
+//                       ];
+//        }
+        
+        this.getOptions = function() {
+            return this.options;
+        }
+        
+        this.getPatchLevel = function() {
+            return this.patchLevel;
+        }
+        
+        this.getSelectedValue = function() {
+            return selectedValue;
+        }
     }
 
 };
