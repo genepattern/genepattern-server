@@ -241,6 +241,7 @@ var InitGpUtil = function(customGpContext) {
 
         _init();
 
+        this.getLsid = function() { return lsidSpec; }
         this.getAuthority = function() { return authority; }
         this.getNamespace = function() { return namespace; }
         this.getIdentifier = function() { return identifier; }
@@ -300,48 +301,68 @@ var InitGpUtil = function(customGpContext) {
     /**
      * Helper class for building the versionIncrement menu.
      * @param lsid - the current lsid String
-     * @param lsidVersions - an array of lsid strings, all versions in the DB
+     * @param lsidVersions - an array of lsid strings
      */
     this.LsidMenu = function LsidMenu(lsid, lsidVersions) {
         this.currentLsid=lsid;
-        this.all= [];
-        if (lsidVersions !== undefined) {
+
+        // the level of the current version (aka patchLevel)
+        //     1 is major, 2 is minor, 3 is patch, and so on ...
+        this.patchLevel=1;
+        
+        // flag indicating if this is a New module
+        this.isNew= !lsid && (lsidVersions === undefined || lsidVersions.length==0);
+
+        // flag indicating if this is the latest version, isNew implies isLatest
+        this.isLatest=this.isNew; 
+        // initialize isLatest from (current) lsid and listVersions array
+        if (!this.isNew && lsid && lsidVersions !== undefined) {
+            var all=new Array();
+            var last=null;
             for(var i = 0; i < lsidVersions.length; i++) {
-                this.all[i]=new that.Lsid(lsidVersions[i]);
+                var lsidObj = new gpUtil.Lsid(lsidVersions[i]);
+                all.push( lsidObj );
+            }
+            all.sort(function(a,b) { return a.compareVersion(b); } );
+            last=all[all.length-1];
+            if (this.currentLsid === last.getLsid()) {
+                this.isLatest=true;
             }
         }
-        this.all.sort(function(a,b) { return a.compareVersion(b); } );
-
-        this.patchLevel=1; // 1 is major, 2 is minor, 3 is patch, and so on ...
+        
         // initialize the options array, used to populate the drop-down menu
         // each option has a value=[major | minor | patch | default], and a display-name
         this.options = [];
         this.selectedValue="default";
         this.options=[
-         { "value": "", "name": "default" },
-         { "value": "major", "name": "major (X)" },
-         { "value": "minor", "name": "minor (X.Y)" },
-         { "value": "patch", "name": "patch (X.Y.Z)" }
+            { "value": "default", "name": "" },
+            { "value": "major", "name": "major (X)" },
+            { "value": "minor", "name": "minor (X.Y)" },
+            { "value": "patch", "name": "patch (X.Y.Z)" }
         ];
-        this.selectedValue="";
         
-//        if (!lsid && (lsidVersions === undefined || lsidVersions.length==0)) {
-//            this.selectedValue="major";
-//            this.options= [ 
-//                { value: "major", name: "New major version (v1)" },
-//                { value: "minor", name: "New minor version (v0.1)" },
-//                { value: "patch", name: "New patch version (v0.0.1)" },
-//            ];
-//        }
-//        else {
-//            this.options= [ 
-//                           { value: "default", name: "" },
-//                           { value: "major", name: "Next major version (X)" },
-//                           { value: "minor", name: "Next minor version (X.Y)" },
-//                           { value: "patch", name: "Next patch version (X.Y.Z)" },
-//                       ];
-//        }
-        
+        if (this.isNew) {
+            this.selectedValue="major";
+            this.options= [ 
+                { value: "major", name: "New major version (v1)" },
+                { value: "minor", name: "New minor version (v0.1)" },
+                { value: "patch", name: "New patch version (v0.0.1)" },
+            ];
+        }
+        else if (this.isLatest) {
+            this.options= [ 
+                { value: "default", name: "" },
+                { value: "major", name: "Next major version (X)" },
+                { value: "minor", name: "Next minor version (X.Y)" },
+                { value: "patch", name: "Next patch version (X.Y.Z)" },
+            ];
+        }
+        else {
+            this.options= [
+                { value: "default", name: "" },
+            ];
+        }
+
         this.getOptions = function() {
             return this.options;
         }

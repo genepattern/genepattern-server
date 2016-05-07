@@ -245,9 +245,9 @@ Example usage:<br/>
 </li>
 </ul>
 
-Note: When there are collisions, which can happen when the version you are editing is not the latest installed version, 
-the system will automatically select the next unique version, increasing the patch level if needed. For best results
-in this circumstance use the default increment.
+Note: The Version Increment menu is only enabled when editing the latest installed version of a module.
+This avoids potential problems with duplicate version numbers (aka collisions). 
+The system will automatically select the next unique version, increasing the version level if needed.
 <br>
 
 <a name="VersionComment"></a><h4>Version Comment</h4>
