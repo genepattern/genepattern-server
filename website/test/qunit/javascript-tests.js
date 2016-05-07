@@ -93,6 +93,32 @@ function mockWindow(mockPathname) {
     return w;
 }
 
+/**
+ * Wrapper qunit deepEqual test which suppresses the expected console.error message.
+ * Calls,
+ *     deepEqual(_fn, expected_output, message);
+ *     
+ * @param _fn, the method to test
+ * @param expected_output, the expected output of the test _fn
+ * @param expected_error, the expected console.error message
+ * @param message, the test message
+ */
+function deepEqualHideConsole(_fn, expected_output, expected_error, message) {
+    var orig = console.error;
+    try {
+        var output = [];
+        console.error = function (message) {
+            output.push( message );
+        }
+        if (!message) { message = "actual test"; }
+        deepEqual(_fn(), expected_output, message);
+    }
+    finally {
+        console.error=orig;        
+    }
+    deepEqual(output, [ expected_error ], message + ", expected console.error");
+}
+
 test("javascript.basic", function() {
     //console.debug("window.location.pathname="+window.location.pathname);
     equal(typeof window, "object", "typeof window" );
@@ -177,85 +203,61 @@ test("servletContextPath", function() {
 
 test("mock-console.error", function() {
     var expected_error="expected error message";
-    consoleTest( function() { console.error(expected_error); }, undefined, expected_error, "validate mock console.error");
+    deepEqualHideConsole( function() { console.error(expected_error); }, undefined, expected_error, "validate mock console.error");
 });
 
 test("servletContextPath-invalid-input", function() {
+    var level, pathname;
     // Invalid window.location.pathname 
-    consoleTest( function() { return initGpContext(1, { location: {} }); }, 
+    deepEqualHideConsole( function() { return initGpContext(1, { location: {} }); }, 
         "/gp", 
         "window.location.pathname not available, returning hard-coded contextPath='/gp'",
         "Invalid input: window.location.pathname undefined"
     );
 
-    consoleTest( function() { return initGpContext(1, mockWindow(1)); }, 
+    deepEqualHideConsole( function() { return initGpContext(1, mockWindow(1)); }, 
         "/gp",
         "window.location.pathname not available, returning hard-coded contextPath='/gp'",
         "Invalid input: window.location.pathname is not a string"
     );
     
-    consoleTest( function() { return initGpContext(1, mockWindow("")); }, 
+    deepEqualHideConsole( function() { return initGpContext(1, mockWindow("")); }, 
         "/gp", 
         "window.location.pathname not available, returning hard-coded contextPath='/gp'",
         "Invalid input: window.location.pathname is an empty string"
     );
     
-    consoleTest( function() { return initGpContext(1, mockWindow("index.html")); },
+    deepEqualHideConsole( function() { return initGpContext(1, mockWindow("index.html")); },
         "/gp", 
         "window.location.pathname not available, returning hard-coded contextPath='/gp'",
         "Invalid input: window.location.pathname does not start with '/'"
     );
     
     // Invalid input: level <= 0
-    consoleTest( function() { return initGpContext(0, mockWindow("/gp-custom/index.html")); }, 
+    deepEqualHideConsole( function() { return initGpContext(0, mockWindow("/gp-custom/index.html")); }, 
         "/gp", 
         "level='0', must be an integer > 0, returning hard-coded contextPath='/gp'",
         "Invalid input: level=0, Must be > 0, use '/gp'"
     );
     
-    consoleTest( function() { return initGpContext(-1, mockWindow("/gp-custom/index.html")) }, 
+    deepEqualHideConsole( function() { return initGpContext(-1, mockWindow("/gp-custom/index.html")) }, 
         "/gp",
         "level='-1', must be an integer > 0, returning hard-coded contextPath='/gp'",
         "Invalid input: level=-1, Must be > 0, use '/gp'");
     
     // Invalid input: pathSegments.length < level
     level=3; pathname="/gp-custom/index.html";
-    consoleTest( function() { return initGpContext(level, mockWindow(pathname)) }, 
+    deepEqualHideConsole( function() { return initGpContext(level, mockWindow(pathname)) }, 
         "/gp", 
-        "level=3, must be less than the number of path-segments in '/gp-custom/index.html', returning hard-coded contextPath='/gp'",
+        "level="+level+", must be less than the number of path-segments in '"+pathname+"', returning hard-coded contextPath='/gp'",
         "Invalid input: level > num path-segments, level="+level+", pathname='"+pathname+"'");
 
     level=4;
-    consoleTest( function() { return initGpContext(level, mockWindow(pathname)) }, 
+    deepEqualHideConsole( function() { return initGpContext(level, mockWindow(pathname)) }, 
         "/gp",
-        "level=4, must be less than the number of path-segments in '/gp-custom/index.html', returning hard-coded contextPath='/gp'",
+        "level="+level+", must be less than the number of path-segments in '"+pathname+"', returning hard-coded contextPath='/gp'",
         "Invalid input: level > num path-segments, level="+level+", pathname='"+pathname+"'");
 
 });
 
-/**
- * Wrapper qunit deepEqual test which suppresses the expected console.error message.
- * Calls,
- *     deepEqual(_fn, expected_output, message);
- *     
- * @param _fn, the method to test
- * @param expected_output, the expected output of the test _fn
- * @param expected_error, the expected console.error message
- * @param message, the test message
- */
-function consoleTest(_fn, expected_output, expected_error, message) {
-    var orig = console.error;
-    try {
-        var output = [];
-        console.error = function (message) {
-            output.push( message );
-        }
-        if (!message) { message = "actual test"; }
-        deepEqual(_fn(), expected_output, message);
-    }
-    finally {
-        console.error=orig;        
-    }
-    deepEqual(output, [ expected_error ], message + ", expected console.error");
-}
 
