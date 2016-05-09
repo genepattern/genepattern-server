@@ -84,14 +84,29 @@ public class LSIDManager {
             }
         }
         final String lsidAuthority=gpConfig.getLsidAuthority(gpContext);
-        if (taskLSID == null) {
-            taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
-        } 
-        else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
-            taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
-        } 
-        else {
-            taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (taskLSID == null) {
+                taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
+            } 
+            else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
+                taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
+            } 
+            else {
+                taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
+            }
+        }
+        catch (Throwable t) {
+            // for debugging
+            if (log.isDebugEnabled()) {
+                log.debug("Error in getNextLsid for requestedLSID='"+requestedLSID+"', namespace='"+namespace+"'", t);
+            }
+            throw t;
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
         }
         return taskLSID;
     }
