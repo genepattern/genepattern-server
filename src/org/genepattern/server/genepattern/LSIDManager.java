@@ -35,7 +35,7 @@ public class LSIDManager {
     private LSIDManager() {
     }
 
-	/** @deprecated pass in a HibernateSession */
+    /** @deprecated pass in a HibernateSession */
     public static LSID getNextTaskLsid(final String requestedLSID)  throws java.rmi.RemoteException {
         return getNextTaskLsid(requestedLSID, LsidVersion.Increment.next);
     }
@@ -111,7 +111,7 @@ public class LSIDManager {
         return taskLSID;
     }
 
-	/** @deprecated call {@link #createNewID(HibernateSessionManager, GpConfig, GpContext, String)} instead */
+    /** @deprecated call {@link #createNewID(HibernateSessionManager, GpConfig, GpContext, String)} instead */
     public static LSID createNewID(final String namespace) throws OmnigeneException {
         final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
@@ -125,7 +125,7 @@ public class LSIDManager {
     {
         final String initialVersion = "1";
         return createNewID(mgr, gpConfig, gpContext, namespace, initialVersion);
-	}
+    }
 
     public static LSID createNewID(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String namespace, final String initialVersion) 
     throws OmnigeneException
@@ -147,12 +147,12 @@ public class LSIDManager {
     }
 
     /**
-	 * Get the next unique task or suite LSID identifier from the database.
-	 * 
-	 * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE or <custom_namespace>
-	 * @return
-	 * @throws OmnigeneException
-	 */
+     * Get the next unique task or suite LSID identifier from the database.
+     * 
+     * @param namespace is one of TASK_NAMESPACE or SUITE_NAMESPACE or <custom_namespace>
+     * @return
+     * @throws OmnigeneException
+     */
     public static synchronized int getNextLSIDIdentifier(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
     throws DbException {
         final String sequenceName=getSequenceName(namespace);
@@ -174,19 +174,19 @@ public class LSIDManager {
         return seqName;
     }
 
-	/**
-	 * Get the next ID in the sequence from the DB
-	 * @param namespace
-	 * @return
-	 * @throws OmnigeneException
-	 */
-	protected static synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
-	throws DbException {
-		int nextId = getNextLSIDIdentifier(mgr, gpConfig, namespace);
-		return "" + nextId;
-	}
+    /**
+     * Get the next ID in the sequence from the DB
+     * @param namespace
+     * @return
+     * @throws OmnigeneException
+     */
+    protected static synchronized String getNextID(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) 
+    throws DbException {
+        int nextId = getNextLSIDIdentifier(mgr, gpConfig, namespace);
+        return "" + nextId;
+    }
 
-	/**
+    /**
      * Get the next available LSID version for a given identifier from the
      * database
      * 
@@ -220,28 +220,28 @@ public class LSIDManager {
         }
     }
 
-	/**
-	 * Increment lsid version to next unique version in the database.
-	 * @param lsid
-	 * @return the same lsid instance with a modified version
-	 * @throws MalformedURLException
-	 */
-	protected static LSID getNextIDVersion(final HibernateSessionManager mgr, final LSID lsid, final LsidVersion.Increment versionIncrement) 
-	throws OmnigeneException, MalformedURLException {
-	    final String lsidVersion=getNextLSIDVersion(mgr, lsid, versionIncrement);
-	    lsid.setVersion(lsidVersion);
-	    return lsid;
-	}
+    /**
+     * Increment lsid version to next unique version in the database.
+     * @param lsid
+     * @return the same lsid instance with a modified version
+     * @throws MalformedURLException
+     */
+    protected static LSID getNextIDVersion(final HibernateSessionManager mgr, final LSID lsid, final LsidVersion.Increment versionIncrement) 
+    throws OmnigeneException, MalformedURLException {
+        final String lsidVersion=getNextLSIDVersion(mgr, lsid, versionIncrement);
+        lsid.setVersion(lsidVersion);
+        return lsid;
+    }
 
-	/** @deprecated call {@link LSIDUtil#getAuthorityType(GpConfig, GpContext, LSID)} instead */
-	public static String getAuthorityType(final LSID lsid) {
-	    return LSIDUtil.getAuthorityType(lsid);
-	}
+    /** @deprecated call {@link LSIDUtil#getAuthorityType(GpConfig, GpContext, LSID)} instead */
+    public static String getAuthorityType(final LSID lsid) {
+        return LSIDUtil.getAuthorityType(lsid);
+    }
 
-	/** @deprecated call {@link LSIDUtil#getNearerLSID(GpConfig, GpContext, LSID, LSID)} instead */
-	public static LSID getNearerLSID(LSID lsid1, LSID lsid2) {
-		return LSIDUtil.getNearerLSID(lsid1, lsid2); // equal???
-	}
+    /** @deprecated call {@link LSIDUtil#getNearerLSID(GpConfig, GpContext, LSID, LSID)} instead */
+    public static LSID getNearerLSID(LSID lsid1, LSID lsid2) {
+        return LSIDUtil.getNearerLSID(lsid1, lsid2); // equal???
+    }
 
     protected static AnalysisDAO getDS(final HibernateSessionManager mgr) throws OmnigeneException {
         AnalysisDAO ds;
