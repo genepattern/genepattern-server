@@ -16,7 +16,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<title>Create GenePattern Module</title>
-    <link href="/gp/skin/favicon.ico" rel="shortcut icon" />
+    <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" rel="shortcut icon" />
 
 	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/layout-default-1.4.0.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css" />
@@ -35,17 +35,18 @@
     <!-- Must load the skin CSS file last -->
     <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
 
-    <script src="/gp/js/jquery/jquery-1.8.3.js" type="text/javascript" />
-    <script src="/gp/js/jquery/jquery-ui-1.9.2.js" type="text/javascript" />
-	<script type="text/javascript" src="/gp/js/jquery/jquery.layout-1.4.0.js"></script>
-    <script type="text/javascript" src="js/creator.js"></script>
-    <script type="text/javascript" src="js/combobox.js"></script>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js"></script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-1.8.3.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-ui-1.9.2.js" type="text/javascript" />
+	<script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.layout-1.4.0.js" type="text/javascript" ></script>
+    <script src="js/creator.js" type="text/javascript" ></script>
+    <script src="js/combobox.js" type="text/javascript" ></script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js" type="text/javascript" ></script>
 
-    <script type="text/javascript" src="/gp/js/genepattern.js"/>
-    <script type="text/javascript" src="/gp/js/mainMenu.js"/>
-    <script src="/gp/js/jquery/ddsmoothmenu.js" type="text/javascript" />
-    <script src="/gp/js/menu.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/ddsmoothmenu.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/menu.js" type="text/javascript" />
+    <script src="#{facesContext.externalContext.requestContextPath}/js/gpUtil.js" type="text/javascript" />
 
    <script type="text/javascript" language="javascript">
         var contextRoot = '#{facesContext.externalContext.requestContextPath}';
@@ -91,7 +92,7 @@
 
     <!-- Footer -->
     <div class="ui-layout-south">
-        <a href="/gp/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="#{aboutBean.contactUs}">Contact Us</a>&#160;|&#160;
+        <a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</a>&#160;|&#160;<a href="#{aboutBean.contactUs}">Contact Us</a>&#160;|&#160;
         &copy;2003-2015&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
         <a href="http://www.broadinstitute.org" target="_blank"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/broad_logo.jpg" width="63" height="18" alt="Broad institute" />
         </a>
@@ -116,75 +117,75 @@
 
         <!-- top band with the logo -->
         <div id="topband" class="modtopband">
-            <a href="/gp/pages/index.jsf" target="_top">
-                <img src="/gp/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
+            <a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+                <img src="#{facesContext.externalContext.requestContextPath}/images/GP-logo.gif" alt="GenePattern" height="48" style="border: 0;" width="229" />
             </a>
         </div>
 
         <!-- horizontal navigation band -->
         <div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
             <ul>
-                <li><a href="/gp/pages/index.jsf">Modules &#38; Pipelines</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Modules &#38; Pipelines</a>
                     <ul>
                         <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');">New Pipeline</a></li>
                         <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('/gp/modules/creator.jsf');">New Module</a></li>
-                        <li class="createTaskAllowed"><a href="/gp/pages/taskCatalog.jsf">Install From Repository</a></li>
-                        <li><a href="/gp/pages/importTask.jsf">Install From ZIP</a></li>
-                        <li><a href="/gp/pages/manageTasks.jsf">Manage</a></li>
+                        <li class="createTaskAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">Install From Repository</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf">Install From ZIP</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageTasks.jsf">Manage</a></li>
                     </ul>
                 </li>
-                <li><a href="/gp/pages/manageSuite.jsf">Suites</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Suites</a>
                     <ul>
-                        <li class="createPrivateSuiteAllowed"><a href="/gp/pages/createSuite.jsf">New Suite</a></li>
-                        <li class="createPublicSuiteAllowed"><a href="/gp/pages/suiteCatalog.jsf">Install From Repository</a></li>
-                        <li><a href="/gp/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
-                        <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
+                        <li class="createPrivateSuiteAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/createSuite.jsf">New Suite</a></li>
+                        <li class="createPublicSuiteAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/suiteCatalog.jsf">Install From Repository</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Manage</a></li>
                     </ul>
                 </li>
-                <li><a href="/gp/jobResults">Job Results</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/jobResults">Job Results</a>
                     <ul>
-                        <li><a href="/gp/jobResults">Results Summary</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/jobResults">Results Summary</a></li>
                     </ul>
                 </li>
-                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?splash=resources">Resources</a>
                     <ul>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
                         <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
                         <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                     </ul>
                 </li>
-                <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?splash=downloads">Downloads</a>
                     <ul>
-                        <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
                     </ul>
                 </li>
-                <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>
+                <li class="adminServerAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Administration</a>
                     <ul>
-                        <li><a href="/gp/pages/serverSettings.jsf">Server Settings</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Server Settings</a></li>
                     </ul>
                 </li>
-                <li><a href="/gp/pages/index.jsf">Help</a>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Help</a>
                     <ul>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
-                        <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">Module Documentation</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
-                        <li><a href="/gp/pages/about.jsf">About</a></li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About</a></li>
                     </ul>
                 </li>
                 <li class="genomeSpaceMenu">
-                    <a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+                    <a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"><img src="#{facesContext.externalContext.requestContextPath}/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
                     <ul>
-                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
-                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
+                        <li class="genomeSpaceLoggedOut"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Login</a></li>
+                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Logout</a></li>
                         <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
                         <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
                     </ul>
@@ -209,7 +210,7 @@
                 </select>
             </span>
             <div id="gparcControls">
-             	<button id="publishGParc"><img src="/gp/images/gparc.png" width="16" height="16" alt="Submit to GParc" class="buttonIcon" />Submit to GParc</button>
+             	<button id="publishGParc"><img src="#{facesContext.externalContext.requestContextPath}/images/gparc.png" width="16" height="16" alt="Submit to GParc" class="buttonIcon" />Submit to GParc</button>
             	<br /><a id="whatIsGparc" href="#">What is GParc?</a>
             </div>
             <span id="modcontrols">
@@ -299,22 +300,17 @@
                     <td>
                         Version Increment:
                     </td>
-                    <td>
+                    <td colspan="3">
                         <select name="versionIncrement">
                             <option value="" selected="selected">default</option>
                             <option value="major">major (X)</option>
                             <option value="minor">minor (X.Y)</option>
                             <option value="patch">patch (X.Y.Z)</option>
                         </select>
-                    </td>
-                    <!--  
-                    <td colspan="3">
-                        <input type="text" name="version" size="100"/>
-                        <a href='createhelp.jsp#Version' target='help'>
+                        <a href='createhelp.jsp#VersionIncrement' target='help'>
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
-                    -->
                 </tr>
                 <tr>
                     <td>

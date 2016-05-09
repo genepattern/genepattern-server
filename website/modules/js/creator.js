@@ -153,6 +153,22 @@ function saveError(errorMessage)
     throw new Error(errorMessage);
 }
 
+function updateVersionIncrement(lsid, lsidVersions) {
+    $('select[name="versionIncrement"]').children().remove();
+    var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
+    var opts=lsidMenu.getOptions();
+    for(var i=0; i<opts.length; i++) {
+        $('select[name="versionIncrement"').append(
+                "<option value=\""+opts[i].value+"\">"+opts[i].name+"</option>");
+    }
+    $('select[name="versionIncrement"]').multiselect({
+        multiple: false,
+        header: false,
+        selectedList: 1
+    });
+    $('select[name="versionIncrement"]').val( lsidMenu.getSelectedValue() );
+}
+
 function updateModuleVersions(lsids)
 {
     if(lsids == undefined || lsids == null)
@@ -447,6 +463,9 @@ function editModule()
     {
         lsid = lsid.replace(/#/g, "");
         loadModule(lsid);
+    }
+    else {
+        updateVersionIncrement();
     }
 }
 
@@ -1895,6 +1914,8 @@ function loadModuleInfo(module)
         $('select[name="modversion"]').multiselect("refresh");
     }
 
+    updateVersionIncrement(module["LSID"], module["lsidVersions"]);
+    
     if(module["description"] !== undefined)
     {
         $('textarea[name="description"]').val(module["description"]);
@@ -3236,7 +3257,7 @@ jQuery(document).ready(function() {
     });
 
     $("select[name='privacy'], select[name='quality'], " +
-        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
+        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion'], select[name='versionIncrement']").multiselect({
         multiple: false,
         header: false,
         selectedList: 1
