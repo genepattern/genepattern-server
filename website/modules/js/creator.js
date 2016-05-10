@@ -157,16 +157,19 @@ function updateVersionIncrement(lsid, lsidVersions) {
     $('select[name="versionIncrement"]').children().remove();
     var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
     var opts=lsidMenu.getOptions();
-    for(var i=0; i<opts.length; i++) {
-        $('select[name="versionIncrement"').append(
+    if (opts && opts.length > 0) {
+        for(var i=0; i<opts.length; i++) {
+            $('select[name="versionIncrement"').append(
                 "<option value=\""+opts[i].value+"\">"+opts[i].name+"</option>");
+        }
     }
     $('select[name="versionIncrement"]').multiselect({
         multiple: false,
         header: false,
         selectedList: 1
-    });
-    $('select[name="versionIncrement"]').val( lsidMenu.getSelectedValue() );
+    })
+    .val( lsidMenu.getSelectedValue() )
+    .multiselect( lsidMenu.isEnabled() ? 'enable' : 'disable');
 }
 
 function updateModuleVersions(lsids)
