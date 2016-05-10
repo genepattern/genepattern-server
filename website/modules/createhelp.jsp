@@ -219,7 +219,7 @@ Upload a text file containing the End-User license agreement. Users will be prom
 before running the module. <br>
 
 <a name="VersionIncrement"></a><h4>Version increment</h4>
-Set the next lsid version based on the current version level {major}.{minor}.{patch}. For new modules, 
+Set the next module (LSID) version based on the current version level {major}.{minor}.{patch}. For new modules, 
 the initial major version is v1, the initial minor version is v0.1 and the initial patch version is v0.0.1. 
 By default, increment the current version level, (<em>e.g. save v1 as v2, v1.1 as v1.2</em>).
 Example usage:<br/>
