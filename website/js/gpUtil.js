@@ -374,6 +374,11 @@ var InitGpUtil = function(customGpContext) {
         this.getSelectedValue = function() {
             return this.selectedValue;
         }
+        
+        this.isEnabled = function() {
+            // drop-down is only enabled for New or Latest version
+            return this.isNew || this.isLatest;
+        }
     }
 
 };
