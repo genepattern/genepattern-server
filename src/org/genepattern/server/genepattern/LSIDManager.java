@@ -159,7 +159,7 @@ public class LSIDManager {
         return HibernateUtil.getNextSequenceValue(mgr, gpConfig, sequenceName);
     }
 
-    protected static String getSequenceName(final String namespace) {
+    public static String getSequenceName(final String namespace) {
         final String seqName;
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
             seqName="lsid_identifier_seq";

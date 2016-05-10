@@ -15,7 +15,7 @@ import org.genepattern.server.genepattern.LSIDManager;
  * 
  *     lsid=urn:lsid:{lsid.authority}:{namespace}:{identifier}:{version}
  * 
- * Initializes defaults: 
+ * Initializer defaults: 
  *     authority from GpConfig
  *     namespace is GPConfig.TASK_NAMESPACE
  *     identity from next DB sequence for namespace
@@ -25,70 +25,104 @@ import org.genepattern.server.genepattern.LSIDManager;
  *
  */
 public class LsidBuilder {
-    public static enum VersionIncrement {
-        NEXT_MAJOR,
-        NEXT_MINOR,
-        NEXT_PATCH
-    }
+    private static final String INITIAL_VERSION="1";
 
-    private static final String initialVersion="1";
-    private HibernateSessionManager mgr=null;
-    private GpConfig gpConfig=null;
-    private GpContext gpContext=null;
     private String authority=null;
-    private String namespace=null;
+    private String namespace=GPConstants.TASK_NAMESPACE;
     private String identifier=null;
-    private String version=null;
+    private String version=INITIAL_VERSION;
+    
+    private HibernateSessionManager _mgr=null;
+    private GpConfig _gpConfig=null;
+    private GpContext _gpContext=null;
 
-    public LsidBuilder mgr(final HibernateSessionManager mgr) {
-        this.mgr=mgr;
+    protected LsidBuilder mgrDefault() {
+        if (_mgr == null) {
+            return mgr(HibernateUtil.instance());
+        }
         return this;
     }
+
+    public LsidBuilder mgr(HibernateSessionManager mgr) {
+        this._mgr=mgr;
+        return this;
+    }
+    
+    protected LsidBuilder gpConfigDefault() {
+        if (_gpConfig == null) {
+            return gpConfig(ServerConfigurationFactory.instance());
+        }
+        return this;
+    }
+    
     public LsidBuilder gpConfig(final GpConfig gpConfig) {
-        this.gpConfig=gpConfig;
-        return this;
-    }
-    public LsidBuilder gpContext(final GpContext gpContext) {
-        this.gpContext=gpContext;
+        this._gpConfig=gpConfig;
         return this;
     }
 
+    protected LsidBuilder gpContextDefault() {
+        if (_gpContext == null) {
+            return gpContext(GpContext.getServerContext());
+        }
+        return this;
+    }
+
+    public LsidBuilder gpContext(final GpContext gpContext) {
+        this._gpContext=gpContext;
+        return this;
+    }
+    
+    public LsidBuilder authorityFromConfig() {
+        gpConfigDefault();
+        gpContextDefault();
+        return authorityFromConfig(_gpConfig, _gpContext);
+    }
+    public LsidBuilder authorityFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
+        authority=gpConfig.getLsidAuthority(gpContext);
+        return this;    
+    }
     public LsidBuilder authority(final String authority) {
         this.authority=authority;
         return this;
     }
+    
     public LsidBuilder namespace(final String namespace) {
         this.namespace=namespace;
         return this;
     }
+    
+    public LsidBuilder identifierFromDb() throws DbException {
+        mgrDefault();
+        gpConfigDefault();
+        return identifierFromDb(_mgr, _gpConfig, namespace);
+    }
+    
     public LsidBuilder identifier(final String identifier) {
         this.identifier=identifier;
         return this;
     }
+
+    public LsidBuilder identifierFromDb(final HibernateSessionManager mgr, final GpConfig gpConfig, final String namespace) throws DbException {
+        //this.identifier=""+LSIDManager.getNextLSIDIdentifier(mgr, gpConfig, namespace);
+        return identifierFromDb(mgr, gpConfig.getDbVendor(), namespace);
+    }
+    public LsidBuilder identifierFromDb(final HibernateSessionManager mgr, final String dbVendor, final String namespace) throws DbException {
+        final String sequenceName=LSIDManager.getSequenceName(namespace);
+        this.identifier=""+HibernateUtil.getNextSequenceValue(mgr, dbVendor, sequenceName); 
+        return this;
+    }
+    
     public LsidBuilder version(final String version) {
         this.version=version;
         return this;
     } 
-
-    private HibernateSessionManager getMgr() {
-        if (mgr==null) {
-            mgr=HibernateUtil.instance();
+    
+    public String getNamespace() {
+        if (namespace==null) {
+            // assume it's a new task lsid
+            return GPConstants.TASK_NAMESPACE;
         }
-        return mgr;
-    }
-
-    private GpConfig getGpConfig() {
-        if (gpConfig==null) {
-            gpConfig=ServerConfigurationFactory.instance();
-        }
-        return gpConfig;
-    }
-
-    private GpContext getGpContext() {
-        if (gpContext==null) {
-            gpContext=GpContext.getServerContext();
-        }
-        return gpContext;
+        return namespace;
     }
     
     /**
@@ -100,22 +134,15 @@ public class LsidBuilder {
     public LSID build() throws MalformedURLException, DbException { 
         LSID lsid=new LSID("");
         if (authority==null) {
-            authority=getGpConfig().getLsidAuthority(getGpContext());
+            authorityFromConfig();
         }
         lsid.setAuthority(authority);
-        if (namespace==null) {
-            // assume it's a new task lsid
-            namespace=GPConstants.TASK_NAMESPACE;
-        }
         lsid.setNamespace(namespace);
         if (identifier==null) {
             // get the next one from the database
-            identifier=""+LSIDManager.getNextLSIDIdentifier(getMgr(), gpConfig, namespace);
+            identifierFromDb();
         }
         lsid.setIdentifier(identifier);
-        if (version==null) {
-            version=initialVersion;
-        }
         lsid.setVersion(version);
         return lsid;
     }
