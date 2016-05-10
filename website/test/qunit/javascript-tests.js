@@ -96,7 +96,7 @@ function mockWindow(mockPathname) {
 /**
  * Wrapper qunit deepEqual test which suppresses the expected console.error message.
  * Calls,
- *     deepEqual(_fn, expected_output, message);
+ *     QUnit.assert.deepEqual(_fn, expected_output, message);
  *     
  * @param _fn, the method to test
  * @param expected_output, the expected output of the test _fn
@@ -111,102 +111,102 @@ function deepEqualHideConsole(_fn, expected_output, expected_error, message) {
             output.push( message );
         }
         if (!message) { message = "actual test"; }
-        deepEqual(_fn(), expected_output, message);
+        QUnit.assert.deepEqual(_fn(), expected_output, message);
     }
     finally {
         console.error=orig;        
     }
-    deepEqual(output, [ expected_error ], message + ", expected console.error");
+    QUnit.assert.deepEqual(output, [ expected_error ], message + ", expected console.error");
 }
 
-test("javascript.basic", function() {
+QUnit.test("javascript.basic", function(assert) {
     //console.debug("window.location.pathname="+window.location.pathname);
-    equal(typeof window, "object", "typeof window" );
-    equal(typeof 0, "number", "typeof 0") 
+    assert.equal(typeof window, "object", "typeof window" );
+    assert.equal(typeof 0, "number", "typeof 0") 
     
-    deepEqual("".split(".").map(Number), [ 0 ],  "''.split('.')");
-    deepEqual("1".split(".").map(Number), [1],  "'1'.split('.').map(Number)");
-    deepEqual("1.2".split(".").map(Number), [1, 2],  "'1.2'.split('.').map(Number)");
-    deepEqual("1.314.0.1".split(".").map(Number), [1, 314, 0, 1],  "'1.2'.split('.').map(Number)");
+    assert.deepEqual("".split(".").map(Number), [ 0 ],  "''.split('.')");
+    assert.deepEqual("1".split(".").map(Number), [1],  "'1'.split('.').map(Number)");
+    assert.deepEqual("1.2".split(".").map(Number), [1, 2],  "'1.2'.split('.').map(Number)");
+    assert.deepEqual("1.314.0.1".split(".").map(Number), [1, 314, 0, 1],  "'1.2'.split('.').map(Number)");
 })
 
-test("servletContextPath", function() {
-    equal(initGpContext(3), '/gp', "From 'window.location.pathname', Note: won't work with non-default contextPath");
+QUnit.test("servletContextPath", function(assert) {
+    assert.equal(initGpContext(3), '/gp', "From 'window.location.pathname', Note: won't work with non-default contextPath");
 
     var pathname, gpContext, level;
     
     // default gpContext
     gpContext="/gp";
     level=1; pathname=gpContext+"/index.html";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=2; pathname=gpContext+"/js/gpUtil.js";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=3; pathname=gpContext+"/test/gpunit/runner.html"
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     // ... page with trailing slash
     level=1; pathname=gpContext+"/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=2; pathname=gpContext+"/my-servlet-path/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
 
     // ROOT gpContext
     gpContext="";
     level=1; pathname=gpContext+"/index.html";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=2; pathname=gpContext+"/js/gpUtil.js";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=3; pathname=gpContext+"/test/gpunit/runner.html"
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     // ... page with trailing slash
     level=1; pathname=gpContext+"/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=2; pathname=gpContext+"/my-servlet-path/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     
     // custom gpContext, same level
     gpContext="/gp-custom";
     level=1; pathname=gpContext+"/index.html";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=2; pathname=gpContext+"/js/gpUtil.js";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=3; pathname=gpContext+"/test/gpunit/runner.html"
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     // ... page with trailing slash
     level=1; pathname=gpContext+"/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=2; pathname=gpContext+"/my-servlet-path/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     
     // custom gpContext, different level
     gpContext="/gp-custom/diff-level";
     level=1; pathname=gpContext+"/index.html";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=2; pathname=gpContext+"/js/gpUtil.js";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     level=3; pathname=gpContext+"/test/gpunit/runner.html"
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname);
     // ... page with trailing slash
     level=1; pathname=gpContext+"/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=2; pathname=gpContext+"/my-servlet-path/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
     level=3; pathname=gpContext+"/my-servlet-path/my-path-info/";
-    equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
+    assert.equal(initGpContext(level, mockWindow(pathname)), gpContext, "Context='"+gpContext+"', level="+level+", pathname="+pathname+" <-- trailing slash");
 
 });
 
-test("mock-console.error", function() {
+QUnit.test("mock-console.error", function(assert) {
     var expected_error="expected error message";
     deepEqualHideConsole( function() { console.error(expected_error); }, undefined, expected_error, "validate mock console.error");
 });
 
-test("servletContextPath-invalid-input", function() {
+QUnit.test("servletContextPath-invalid-input", function(assert) {
     var level, pathname;
     // Invalid window.location.pathname 
     deepEqualHideConsole( function() { return initGpContext(1, { location: {} }); }, 
