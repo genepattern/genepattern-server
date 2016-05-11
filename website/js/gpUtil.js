@@ -213,8 +213,10 @@ var InitGpUtil = function(customGpContext) {
             && string.substr(string.length - suffix.length) === suffix;
     }
     
-    /*
-     *  lsid=urn:lsid:{lsid.authority}:{namespace}:{identifier}:{version}
+    /**
+     * Lsid class
+     * @constructor
+     * @param lsid, urn:lsid:{lsid.authority}:{namespace}:{identifier}:{version}
      */
     this.Lsid = function Lsid(lsid) {
         var lsidSpec = lsid;
@@ -299,33 +301,33 @@ var InitGpUtil = function(customGpContext) {
     }
     
     /**
-     * Helper class for building the versionIncrement menu.
-     * @param lsid - the current lsid String
-     * @param lsidVersions - an array of lsid strings
+     * LsidMenu class, helper for building the versionIncrement menu.
+     * @constructor
+     * @param lsid, the current lsid String
+     * @param lsidVersions, an array of lsid strings, all installed versions of the current version.
      */
     this.LsidMenu = function LsidMenu(lsid, lsidVersions) {
-        this.currentLsid=lsid;
+        this.currentLsid = !lsid ? lsid : new that.Lsid(lsid);
+        this.hasVersions = $.isArray(lsidVersions) && lsidVersions.length > 0;
 
-        // the level of the current version (aka patchLevel)
-        //     1 is major, 2 is minor, 3 is patch, and so on ...
-        this.patchLevel=1;
-        
         // flag indicating if this is a New module
-        this.isNew= !lsid && (lsidVersions === undefined || lsidVersions.length==0);
+        this.isNew = !lsid && !this.hasVersions;
 
-        // flag indicating if this is the latest version, isNew implies isLatest
-        this.isLatest=this.isNew; 
-        // initialize isLatest from (current) lsid and listVersions array
-        if (!this.isNew && lsid && lsidVersions !== undefined) {
+        // flag indicating if this is the latest version
+        //     isNew implies isLatest
+        //     no versions implies isLatest
+        this.isLatest=this.isNew || !this.hasVersions; 
+        // initialize isLatest from (current) lsid and lsidVersions array
+        if (!this.isNew && lsid && this.hasVersions) {
             var all=new Array();
             var last=null;
             for(var i = 0; i < lsidVersions.length; i++) {
-                var lsidObj = new gpUtil.Lsid(lsidVersions[i]);
+                var lsidObj = new that.Lsid(lsidVersions[i]);
                 all.push( lsidObj );
             }
             all.sort(function(a,b) { return a.compareVersion(b); } );
             last=all[all.length-1];
-            if (this.currentLsid === last.getLsid()) {
+            if (this.currentLsid.getLsid() === last.getLsid()) {
                 this.isLatest=true;
             }
         }
@@ -367,8 +369,17 @@ var InitGpUtil = function(customGpContext) {
             return this.options;
         }
         
+        /**
+         * Get the level (aka patch level) of the current version,
+         *     1 is major, 2 is minor, 3 is patch, and so on ...
+         *  Delegates to the Lsid class.
+         */
         this.getPatchLevel = function() {
-            return this.patchLevel;
+            if (this.currentLsid) {
+                return this.currentLsid.getPatchLevel();
+            }
+            // fallback to 1, when there is no currentLsid
+            return 1;
         }
         
         this.getSelectedValue = function() {

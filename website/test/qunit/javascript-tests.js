@@ -128,7 +128,20 @@ QUnit.test("javascript.basic", function(assert) {
     assert.deepEqual("1".split(".").map(Number), [1],  "'1'.split('.').map(Number)");
     assert.deepEqual("1.2".split(".").map(Number), [1, 2],  "'1.2'.split('.').map(Number)");
     assert.deepEqual("1.314.0.1".split(".").map(Number), [1, 314, 0, 1],  "'1.2'.split('.').map(Number)");
-})
+    
+    
+});
+
+QUnit.test("jquery.basic", function(assert) {
+    // https://api.jquery.com/jQuery.isArray/
+    assert.equal($.isArray(), false, "$.isArray()" );
+    assert.equal($.isArray(null), false, "$.isArray(null)" );
+    assert.equal($.isArray(undefined), false, "$.isArray(undefined)" );
+    assert.equal($.isArray([]), true, "$.isArray([])" );
+    assert.equal($.isArray(["1"]), true, "$.isArray(['1'])" );
+    assert.equal($.isArray(["1", "2"]), true, "$.isArray(['1', '2'])" );
+    assert.equal($.isArray(new Array()), true, "$.isArray(new Array())" );
+});
 
 QUnit.test("servletContextPath", function(assert) {
     assert.equal(initGpContext(3), '/gp', "From 'window.location.pathname', Note: won't work with non-default contextPath");
