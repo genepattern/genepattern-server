@@ -1,11 +1,22 @@
 var lsidNoVersion="urn:lsid:my-authority:my-namespace:100";
 
+//helper to generate an array of lsid strings
+function makeLsidVersions(versions) {
+    var a=new Array();
+    for(var i=0; i<versions.length; ++i) {
+        a.push(lsidNoVersion+":"+versions[i]);
+    }
+    return a;
+};
+
  /**
  * Test the GpUtil.Lsid class
  *     lsid=urn:lsid:{lsid.authority}:{namespace}:{identifier}:{version}
  */
 QUnit.test("gpUtil.Lsid", function( assert ) { 
     var lsid=new gpUtil.Lsid(lsidNoVersion+":0");
+    assert.equal(lsid.getLsid(), lsidNoVersion+":0", "lsid.getLsid()");
+    assert.equal(lsid.getLsidNoVersion(), lsidNoVersion, "lsid.getLsidNoVersion()");
     assert.equal(lsid.authority, undefined, "lsid.authority should be private");
     assert.equal(lsid.getAuthority(), "my-authority", "lsid.getAuthority()");
     assert.equal(lsid.getNamespace(), "my-namespace", "lsid.getNamespace()");
@@ -17,15 +28,19 @@ QUnit.test("gpUtil.Lsid", function( assert ) {
     var version=""; lsid=new gpUtil.Lsid(lsidNoVersion); 
         assert.deepEqual(lsid.getVersions(), [], "getVersions(): version='"+version+"'");
         assert.equal(lsid.getPatchLevel(), 1, "getPatchLevel(): version='"+version+"'")
+        assert.equal(lsid.getLsidNoVersion(), lsidNoVersion, "lsid.getLsidNoVersion(): version='"+version+"'");
     version="1"; lsid=new gpUtil.Lsid(lsidNoVersion+":"+version); 
         assert.deepEqual(lsid.getVersions(), [1], "getVersions(): version='"+version+"'");
         assert.equal(lsid.getPatchLevel(), 1, "getPatchLevel(): version='"+version+"'")
+        assert.equal(lsid.getLsidNoVersion(), lsidNoVersion, "lsid.getLsidNoVersion(): version='"+version+"'");
     version="0.0.1"; lsid=new gpUtil.Lsid(lsidNoVersion+":"+version);
         assert.deepEqual(lsid.getVersions(), [0, 0, 1], "getVersions(): version='"+version+"'");
         assert.equal(lsid.getPatchLevel(), 3, "getPatchLevel(): version='"+version+"'")
+        assert.equal(lsid.getLsidNoVersion(), lsidNoVersion, "lsid.getLsidNoVersion(): version='"+version+"'");
     version="1.314.0.1"; lsid=new gpUtil.Lsid(lsidNoVersion+":"+version);
         assert.deepEqual(lsid.getVersions(), [1, 314, 0, 1], "getVersions(): version='"+version+"'");
-        assert.equal(lsid.getPatchLevel(), 4, "getPatchLevel(): version='"+version+"'")
+        assert.equal(lsid.getPatchLevel(), 4, "getPatchLevel(): version='"+version+"'");
+        assert.equal(lsid.getLsidNoVersion(), lsidNoVersion, "lsid.getLsidNoVersion(): version='"+version+"'"); 
 });
 
 /**
@@ -56,29 +71,48 @@ QUnit.test("gpUtil.Lsid.compare", function(assert) {
     compareTest("1.2.30", "1.2.30", 0);
     compareTest("1.2", "1.2.30", -1);
     compareTest("1.2.30", "1.2", 1);
-    
+});
+
+QUnit.test("gpUtil.LsidMenu.getAllVersions", function(assert) {
     // sort tests
     var unsorted = [ "1", "2", "3", "10", "1.1", "2.0.1", "2.10.1", "2.9" ];
     var alpha = unsorted.slice();
     alpha.sort();
     assert.deepEqual(alpha.sort(), [ "1", "1.1", "10", "2", "2.0.1", "2.10.1", "2.9", "3" ], "alpha sort");
-    
-    var unsorted_lsid = [];
-    for(var i=0; i<unsorted.length; i++) {
-        unsorted_lsid[i]=lsidNoVersion+":"+unsorted[i];
+
+    var unsortedLsidVersions=makeLsidVersions(unsorted);
+    var lsidMenu=new gpUtil.LsidMenu(undefined, unsortedLsidVersions); 
+    var sortedLsidVersions=makeLsidVersions(alpha);
+    var sortedLsidObjs=new Array();
+    for(var i=0; i<sortedLsidVersions.length; i++) {
+        sortedLsidObjs.push( new gpUtil.Lsid(sortedLsidVersions[i]) );
     }
-    var lsidMenu=new gpUtil.LsidMenu(undefined, unsorted_lsid);
-    
+    assert.deepEqual(lsidMenu.getAllVersions(), sortedLsidObjs, "LsidMenu.getAllVersions (sorted)");
 });
 
-// helper to generate an array of lsid strings
-function makeLsidVersions(versions) {
-    var a=new Array();
-    for(var i=0; i<versions.length; ++i) {
-        a.push(lsidNoVersion+":"+versions[i]);
-    }
-    return a;
-};
+QUnit.test("gpUtil.LsidMenu.getAllVersionsOptions", function(assert) {
+    // create menu, no current lsid
+    var lsid=undefined;
+    var versions=undefined;
+    var lsidVersions=undefined;
+
+    // undefined args
+    var lsidMenu=new gpUtil.LsidMenu(undefined, undefined);
+    assert.deepEqual(lsidMenu.getAllVersionsOptions(), [], "from undefined input");
+    
+    // undefined lsid, empty lsidVersions
+    lsidMenu=new gpUtil.LsidMenu(undefined, []);
+    assert.deepEqual(lsidMenu.getAllVersionsOptions(), [], "from empty lsidVersions array");
+    
+    var versions=["2", "1", "1.0.1" ];
+    lsidVersions=makeLsidVersions(versions);
+    lsidMenu=new gpUtil.LsidMenu(lsidNoVersion+":4", lsidVersions);
+    assert.deepEqual(lsidMenu.getAllVersionsOptions(), 
+        [ {"name": "1",     "value": lsidNoVersion+":1"},
+          {"name": "1.0.1", "value": lsidNoVersion+":1.0.1"},
+          {"name": "2",     "value": lsidNoVersion+":2"} ], 
+        "from versions array");
+});
 
 function assertLsidMenu_New(lsidMenu, message) {
     var expected_options=[ 
@@ -86,10 +120,10 @@ function assertLsidMenu_New(lsidMenu, message) {
         { value: "minor", name: "New minor version (v0.1)" },
         { value: "patch", name: "New patch version (v0.0.1)" },
     ];
-    assertLsidMenu(lsidMenu, expected_options, 1, "major", true, message);
+    assertLsidMenuNextVersion(lsidMenu, expected_options, "major", true, message);
 }
 
-function assertLsidMenu_Latest(version, versions, expected_versionLevel, message) {
+function assertLsidMenu_Latest(version, versions, message) {
     var lsid=lsidNoVersion+":"+version;
     var lsidVersions=makeLsidVersions(versions);
     var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
@@ -99,27 +133,26 @@ function assertLsidMenu_Latest(version, versions, expected_versionLevel, message
         { value: "minor", name: "Next minor version (X.Y)" },
         { value: "patch", name: "Next patch version (X.Y.Z)" }
     ];
-    assertLsidMenu(lsidMenu, expected_options, expected_versionLevel, "default", true, message);
+    assertLsidMenuNextVersion(lsidMenu, expected_options, "default", true, message);
 }
 
-function assertLsidMenu_Default(version, versions, expected_versionLevel, message) {
+function assertLsidMenu_Default(version, versions, message) {
     var lsid=lsidNoVersion+":"+version;
     var lsidVersions=makeLsidVersions(versions);
     var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
     var expected_options=[
         { value: "default", name: "" }
     ];
-    assertLsidMenu(lsidMenu, expected_options, expected_versionLevel, "default", false, message);
+    assertLsidMenuNextVersion(lsidMenu, expected_options, "default", false, message);
 }
 
-function assertLsidMenu(lsidMenu, expected_options, expected_versionLevel, expected_value, expected_enabled, message) {
-    QUnit.assert.deepEqual(lsidMenu.getOptions(),   expected_options,     "LsidMenu(<"+message+">) getOptions()");
-    QUnit.assert.equal(lsidMenu.getPatchLevel(),    expected_versionLevel, "LsidMenu(<"+message+">) getPatchLevel()");
-    QUnit.assert.equal(lsidMenu.getSelectedValue(), expected_value,            "LsidMenu(<"+message+">) getSelectedValue()");
-    QUnit.assert.equal(lsidMenu.isEnabled(),        expected_enabled,     "LsidMenu(<"+message+">) isEnabled()");
+function assertLsidMenuNextVersion(lsidMenu, expected_options, expected_value, expected_enabled, message) {
+    QUnit.assert.deepEqual(lsidMenu.getNextVersionOptions(), expected_options, "LsidMenu(<"+message+">) getNextVersionOptions()");
+    QUnit.assert.equal(lsidMenu.getNextVersionValue(),       expected_value,   "LsidMenu(<"+message+">) getNextVersionValue()");
+    QUnit.assert.equal(lsidMenu.isNextVersionEnabled(),      expected_enabled, "LsidMenu(<"+message+">) isNextVersionEnabled()");
 }
 
-QUnit.test("gpUtil.LsidMenu", function(assert) {
+QUnit.test("gpUtil.LsidMenu_nextVersionMenu", function(assert) {
     // tests for New module (variations on input lsid and lsidVersions)
     assertLsidMenu_New(new gpUtil.LsidMenu(), "No arg");
     assertLsidMenu_New(new gpUtil.LsidMenu(""), "''");
@@ -128,18 +161,16 @@ QUnit.test("gpUtil.LsidMenu", function(assert) {
 
     // Edit, current lsid is latest major
     var versions=["1", "2", "2.1", "2.1.1", "2.1.2", "2.2", "2.3", "3"];
-    var level=1;
-    assertLsidMenu_Latest("3", versions, level, "latest major");
+    assertLsidMenu_Latest("3", versions, "latest major");
     // Edit, current lsid is latest minor
-    level=2;
-    assertLsidMenu_Latest("2.3", ["1", "2", "2.1", "2.1.1", "2.1.2", "2.2", "2.3"], level, "latest minor");
+    assertLsidMenu_Latest("2.3", ["1", "2", "2.1", "2.1.1", "2.1.2", "2.2", "2.3"], "latest minor");
 
     // Edit, current lsid version is latest patch
-    level=3;
-    assertLsidMenu_Latest("2.1.2", ["1", "2", "2.1", "2.1.1", "2.1.2" ], level, "latest patch");
+    assertLsidMenu_Latest("2.1.2", ["1", "2", "2.1", "2.1.1", "2.1.2" ], "latest patch");
     
     // Edit, current lsid version is not-latest
-    assertLsidMenu_Default("2", versions, 1, "lsid<latest: major");
-    assertLsidMenu_Default("2.1", versions, 2, "lsid<latest: minor");
-    assertLsidMenu_Default("2.1.1", versions, 3, "lsid<latest: patch");
+    assertLsidMenu_Default("2",     versions, "lsid<latest: major");
+    assertLsidMenu_Default("2.1",   versions, "lsid<latest: minor");
+    assertLsidMenu_Default("2.1.1", versions, "lsid<latest: patch");
 });
+

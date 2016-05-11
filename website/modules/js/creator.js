@@ -153,11 +153,18 @@ function saveError(errorMessage)
     throw new Error(errorMessage);
 }
 
-function updateVersionIncrement(lsid, lsidVersions) {
+/**
+ * Update the Version Increment menu.
+ * @param lsidMenu, a gpUtil.LsidMenu object
+ */
+function updateVersionIncrement(lsidMenu) {
+    if (!lsidMenu) {
+        // default menu
+        lsidMenu=new gpUtil.LsidMenu();
+    }
     var menu=$('select[name="versionIncrement"]');
     menu.children().remove();
-    var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
-    var opts=lsidMenu.getOptions();
+    var opts=lsidMenu.getNextVersionOptions();
     if (opts && opts.length > 0) {
         for(var i=0; i<opts.length; i++) {
             menu.append(
@@ -169,42 +176,45 @@ function updateVersionIncrement(lsid, lsidVersions) {
         header: false,
         selectedList: 1
     })
-    .val( lsidMenu.getSelectedValue() )
-    .multiselect( lsidMenu.isEnabled() ? 'enable' : 'disable');
+    .val( lsidMenu.getNextVersionValue() )
+    .multiselect( lsidMenu.isNextVersionEnabled() ? 'enable' : 'disable');
 }
 
-function updateModuleVersions(lsids)
-{
-    if(lsids == undefined || lsids == null)
-    {
+/**
+ * Update the version menu.
+ * @param lsidMenu, a gpUtil.LsidMenu object
+ */
+function updateModuleVersions(lsidMenu) {
+    if (lsidMenu === undefined) {
+        return;
+    }
+    var all=lsidMenu.getAllVersions();
+    if (all === undefined || !all.length === 0) {
         return;
     }
 
-    var currentVersion = $('select[name="modversion"]').val();
-    $('select[name="modversion"]').children().remove();
-    var modVersionLsidList = lsids;
-    for(v =0;v<modVersionLsidList.length;v++)
-    {
-        var versionnum = modVersionLsidList[v];
-        var index = versionnum.lastIndexOf(":");
-        if(index == -1)
-        {
-            alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
-        }
-        var version = versionnum.substring(index+1, versionnum.length);
-        var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
-        $('select[name="modversion"]').append(modversion);
-        $('select[name="modversion"]').multiselect("refresh");
+    // select 
+    var menu=$('select[name="modversion"]');
+    var currentVersion=lsidMenu.getCurrentLsid().getLsid();
+    if (!currentVersion) {
+        console.error("Error getting currentVersion from lsidMenu object");
+        currentVersion = menu.val();
     }
-
-    $('select[name="modversion"]').change(function()
-    {
+    menu.children().remove();
+    var all=lsidMenu.getAllVersions();
+    if (all && all.length>0) {
+        // reverse-sort
+        for(var i=all.length-1; i>=0; --i) {
+            menu.append(
+                    "<option value=\""+all[i].getLsid()+"\">"+all[i].getVersion()+"</option>");
+        }
+    }
+    menu.change(function() {
         var editLocation = "creator.jsf?lsid=" + $(this).val();
         window.open(editLocation, '_self');
     });
-
-    $('select[name="modversion"]').val(currentVersion);
-    $('select[name="modversion"]').multiselect("refresh");
+    menu.val(currentVersion);
+    menu.multiselect("refresh");
 }
 
 function runModule(lsid)
@@ -396,7 +406,8 @@ function saveModulePost(moduleJson)
             }
 
             setDirty(false);
-            updateModuleVersions(versions);
+            var lsidMenu=new gpUtil.LsidMenu(newLsid, versions);
+            updateModuleVersions(lsidMenu);
 
             // Update the LSID upon successful save
             if (newLsid !== undefined && newLsid !== null)
@@ -1911,14 +1922,12 @@ function loadModuleInfo(module)
         $('#modtitle').val(module["name"]);
     }
 
+    var lsidMenu=new gpUtil.LsidMenu(module["LSID"], module["lsidVersions"]);
     if(module["lsidVersions"] !== undefined)
     {
-        updateModuleVersions(module["lsidVersions"]);
-        $('select[name="modversion"]').val(module["LSID"]);
-        $('select[name="modversion"]').multiselect("refresh");
+        updateModuleVersions(lsidMenu);
     }
-
-    updateVersionIncrement(module["LSID"], module["lsidVersions"]);
+    updateVersionIncrement(lsidMenu);
     
     if(module["description"] !== undefined)
     {

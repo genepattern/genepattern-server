@@ -128,8 +128,6 @@ QUnit.test("javascript.basic", function(assert) {
     assert.deepEqual("1".split(".").map(Number), [1],  "'1'.split('.').map(Number)");
     assert.deepEqual("1.2".split(".").map(Number), [1, 2],  "'1.2'.split('.').map(Number)");
     assert.deepEqual("1.314.0.1".split(".").map(Number), [1, 314, 0, 1],  "'1.2'.split('.').map(Number)");
-    
-    
 });
 
 QUnit.test("jquery.basic", function(assert) {

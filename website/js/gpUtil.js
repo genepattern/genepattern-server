@@ -220,6 +220,7 @@ var InitGpUtil = function(customGpContext) {
      */
     this.Lsid = function Lsid(lsid) {
         var lsidSpec = lsid;
+        var lsidNoVersion = "";
         var authority = null;
         var namespace = null;
         var identifier = null;
@@ -234,16 +235,19 @@ var InitGpUtil = function(customGpContext) {
                 namespace = elements[3];
                 identifier = elements[4];
                 version = elements[5];
+                // init base aka lsidNoVersion
+                lsidNoVersion = "urn:lsid:" + authority + ":" + namespace + ":" + identifier;
             }
             // parse the version into it's parts
             if (version) {
                 versions = version.split(".").map(Number);
             }
-        } 
+        }
 
         _init();
 
         this.getLsid = function() { return lsidSpec; }
+        this.getLsidNoVersion = function() { return lsidNoVersion; }
         this.getAuthority = function() { return authority; }
         this.getNamespace = function() { return namespace; }
         this.getIdentifier = function() { return identifier; }
@@ -301,7 +305,7 @@ var InitGpUtil = function(customGpContext) {
     }
     
     /**
-     * LsidMenu class, helper for building the versionIncrement menu.
+     * LsidMenu class, helper for building the nextVersion and allVersions drop-down menus.
      * @constructor
      * @param lsid, the current lsid String
      * @param lsidVersions, an array of lsid strings, all installed versions of the current version.
@@ -317,26 +321,41 @@ var InitGpUtil = function(customGpContext) {
         //     isNew implies isLatest
         //     no versions implies isLatest
         this.isLatest=this.isNew || !this.hasVersions; 
-        // initialize isLatest from (current) lsid and lsidVersions array
-        if (!this.isNew && lsid && this.hasVersions) {
-            var all=new Array();
-            var last=null;
+        
+        this.all=new Array(); // an array of Lsid, sorted by version
+        if (this.hasVersions) {
             for(var i = 0; i < lsidVersions.length; i++) {
                 var lsidObj = new that.Lsid(lsidVersions[i]);
-                all.push( lsidObj );
+                this.all.push( lsidObj );
             }
-            all.sort(function(a,b) { return a.compareVersion(b); } );
-            last=all[all.length-1];
+            this.all.sort(function(a,b) { return a.compareVersion(b); } );
+        }
+
+        // initialize isLatest from (current) lsid and lsidVersions array
+        if (!this.isNew && lsid && this.hasVersions) {
+            var last=null;
+            last=this.all[this.all.length-1];
             if (this.currentLsid.getLsid() === last.getLsid()) {
                 this.isLatest=true;
             }
         }
         
-        // initialize the options array, used to populate the drop-down menu
+        // initialize the allVersions_options array, used to populate the drop-down menu
+        this.allVersions_options = [];
+        if (this.hasVersions) {
+            for(var i = 0; i < this.all.length; i++) {
+                this.allVersions_options.push( { 
+                    "value": this.all[i].getLsid(), 
+                    "name":  this.all[i].getVersion()
+                });
+            }
+        }
+
+        // initialize the nextVersion_options array, used to populate the drop-down menu
         // each option has a value=[major | minor | patch | default], and a display-name
-        this.options = [];
-        this.selectedValue="default";
-        this.options=[
+        this.nextVersion_options = [];
+        this.nextVersion_value="default";
+        this.nextVersion_options=[
             { "value": "default", "name": "" },
             { "value": "major", "name": "major (X)" },
             { "value": "minor", "name": "minor (X.Y)" },
@@ -344,15 +363,15 @@ var InitGpUtil = function(customGpContext) {
         ];
         
         if (this.isNew) {
-            this.selectedValue="major";
-            this.options= [ 
+            this.nextVersion_value="major";
+            this.nextVersion_options= [ 
                 { value: "major", name: "New major version (v1)" },
                 { value: "minor", name: "New minor version (v0.1)" },
                 { value: "patch", name: "New patch version (v0.0.1)" },
             ];
         }
         else if (this.isLatest) {
-            this.options= [ 
+            this.nextVersion_options= [ 
                 { value: "default", name: "" },
                 { value: "major", name: "Next major version (X)" },
                 { value: "minor", name: "Next minor version (X.Y)" },
@@ -360,33 +379,38 @@ var InitGpUtil = function(customGpContext) {
             ];
         }
         else {
-            this.options= [
+            this.nextVersion_options= [
                 { value: "default", name: "" },
             ];
         }
-
-        this.getOptions = function() {
-            return this.options;
+        
+        /**
+         * get the currentLsid as an Lsid object
+         */
+        this.getCurrentLsid = function() {
+            return this.currentLsid;
         }
         
         /**
-         * Get the level (aka patch level) of the current version,
-         *     1 is major, 2 is minor, 3 is patch, and so on ...
-         *  Delegates to the Lsid class.
+         * get all versions, as a sorted array of Lsid objects
          */
-        this.getPatchLevel = function() {
-            if (this.currentLsid) {
-                return this.currentLsid.getPatchLevel();
-            }
-            // fallback to 1, when there is no currentLsid
-            return 1;
+        this.getAllVersions = function() {
+            return this.all;
+        }
+
+        this.getAllVersionsOptions = function() {
+            return this.allVersions_options;
+        }
+
+        this.getNextVersionOptions = function() {
+            return this.nextVersion_options;
         }
         
-        this.getSelectedValue = function() {
-            return this.selectedValue;
+        this.getNextVersionValue = function() {
+            return this.nextVersion_value;
         }
         
-        this.isEnabled = function() {
+        this.isNextVersionEnabled = function() {
             // drop-down is only enabled for New or Latest version
             return this.isNew || this.isLatest;
         }
