@@ -247,7 +247,8 @@ Example usage:<br/>
 
 Note: The Version Increment menu is only enabled when editing the latest installed version of a module.
 This avoids potential problems with duplicate version numbers (aka collisions). 
-The system will automatically select the next unique version, increasing the version level if needed.
+The system will automatically select the next unique version, increasing the version level 
+(<em>e.g. save v2.1 as v2.1.1</em>) if needed.
 <br>
 
 <a name="VersionComment"></a><h4>Version Comment</h4>
