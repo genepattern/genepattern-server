@@ -376,15 +376,6 @@ public class StartupServlet extends HttpServlet {
             getLog().error("Error initializing user upload directories: " + t.getLocalizedMessage(), t);
         }
         
-        //attempt to migrate job upload files from GP 3.3.2 (and earlier) to GP 3.3.3
-        try {
-            getLog().info("\tmigrating job upload directories ...");
-            MigrationTool.migrateJobUploads(HibernateUtil.instance(), ServerConfigurationFactory.instance());
-        }
-        catch (Throwable t) {
-            getLog().error("Error migrating job upload directories: " + t.getLocalizedMessage(), t);
-        }
-        
         // import installed plugins (aka patches) from the root plugin directory into the GP database
         try {
             getLog().info("\tmigrating installed plugins ...");

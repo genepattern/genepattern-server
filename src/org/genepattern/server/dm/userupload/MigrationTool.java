@@ -4,7 +4,6 @@
 package org.genepattern.server.dm.userupload;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.DbException;
-import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -43,92 +41,6 @@ import org.hibernate.SQLQuery;
  */
 public class MigrationTool {
     private static Logger log = Logger.getLogger(MigrationTool.class);
-
-    /**
-     * added this with the 3.3.3 release to correct a bug (which also exists in previous versions of GP) in the installer.
-     * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
-     * are not in the correct location on the file system.
-     */
-    public static void migrateJobUploads(final HibernateSessionManager mgr, final GpConfig gpConfig) throws DbException {
-        final String gpVersion =  gpConfig.getGenePatternVersion();
-        if (gpVersion == null) {
-            return;
-        }
-
-        //1) check the DB, if we have not yet migrated job upload files since this version of GP has been installed ...
-        final String KEY = "sync.job.uploads.complete";
-        PropsTable row=PropsTable.selectRow(mgr, KEY);
-        if (row != null && gpVersion.equals(row.getValue())) {
-            //if the flag is already set, exit
-            log.debug("job upload files already migrated for gpVersion="+gpVersion);
-            return;
-        }
-        
-        final GpContext serverContext = GpContext.getServerContext();
-        migrateJobUploadDirs(mgr, gpConfig, serverContext);
-
-        //finally) set the flag in the DB
-        PropsTable.saveProp(mgr, KEY, gpVersion);        
-    }
-    
-    private static void migrateJobUploadDirs(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext serverContext) {
-        File jobResultsDir = null;
-        try {
-            jobResultsDir = gpConfig.getRootJobDir(serverContext);
-        }
-        catch (Throwable t) {
-            log.error(t);
-            return;
-        }
-        
-        if (jobResultsDir == null) {
-            log.error("jobResultsDir == null");
-            return;
-        }
-        
-        if (!jobResultsDir.canRead()) {
-            log.error("Can't read jobResultsDir: "+jobResultsDir.getAbsolutePath());
-            return;
-        }
-        
-        String str = gpConfig.getTempDir(serverContext).getAbsolutePath();
-        File webUploadDir = new File(str);
-        if (!webUploadDir.canRead()) {
-            log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());
-            return;
-        }
-
-        /**
-         * Filter which only includes files where are 'job upload' directories. 
-         * A 'job upload' directory is created files uploaded via the Basic Upload option on the job submit form. 
-         * For example:
-         *     admin_run7240032464616637247.tmp
-         */
-        FileFilter fileFilter = new FileFilter() {
-            public boolean accept(File pathname) {
-                if (!pathname.isDirectory()) {
-                    //must be a directory
-                    return false;
-                }
-                String name = pathname.getName();
-                if (name.endsWith(".tmp")) {
-                    return true;
-                }
-                return false;
-            }
-        };
-        
-        File[] tempFiles = jobResultsDir.listFiles(fileFilter);
-        log.info("Found "+tempFiles.length+" .tmp files in jobResults dir: "+jobResultsDir.getAbsolutePath());
-        for(File tempFile : tempFiles) {
-            File dest = new File( webUploadDir, tempFile.getName() );
-            log.info("\tmigrating job upload dir to "+dest.getAbsolutePath());
-            boolean success = tempFile.renameTo(dest);
-            if (!success) {
-                log.error("Failed to rename: "+tempFile.getAbsolutePath());
-            }
-        }
-    }
 
     /**
      * Check for a flag in the DB indicating whether 
