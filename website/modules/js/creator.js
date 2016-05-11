@@ -154,16 +154,17 @@ function saveError(errorMessage)
 }
 
 function updateVersionIncrement(lsid, lsidVersions) {
-    $('select[name="versionIncrement"]').children().remove();
+    var menu=$('select[name="versionIncrement"]');
+    menu.children().remove();
     var lsidMenu=new gpUtil.LsidMenu(lsid, lsidVersions);
     var opts=lsidMenu.getOptions();
     if (opts && opts.length > 0) {
         for(var i=0; i<opts.length; i++) {
-            $('select[name="versionIncrement"').append(
+            menu.append(
                 "<option value=\""+opts[i].value+"\">"+opts[i].name+"</option>");
         }
     }
-    $('select[name="versionIncrement"]').multiselect({
+    menu.multiselect({
         multiple: false,
         header: false,
         selectedList: 1
