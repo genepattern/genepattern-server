@@ -31,7 +31,6 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.database.SchemaUpdater;
-import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.plugin.MigratePlugins;
@@ -365,15 +364,6 @@ public class StartupServlet extends HttpServlet {
         }
         catch (Exception e) {
             getLog().error("Error clearing system messages on restart: " + e.getLocalizedMessage(), e);
-        }
-        
-        //attempt to migrate user upload files from GP 3.3.2 to GP 3.3.3
-        try {
-            getLog().info("\tinitializing user upload directories ...");
-            MigrationTool.migrateUserUploads(HibernateUtil.instance());
-        }
-        catch (Throwable t) {
-            getLog().error("Error initializing user upload directories: " + t.getLocalizedMessage(), t);
         }
         
         // import installed plugins (aka patches) from the root plugin directory into the GP database
