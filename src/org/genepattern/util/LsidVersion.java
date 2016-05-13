@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class LsidVersion implements Comparable<LsidVersion> {
     private static final Logger log = Logger.getLogger(LsidVersion.class);
-    public static final int initialVersion=1;
 
     public static enum Increment {
         next("1") { // means fall back to default

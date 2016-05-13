@@ -20,10 +20,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -1305,9 +1302,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public JobInfo getParent(int jobId) throws OmnigeneException {
-//    }
-//
-//    public JobInfo getParent(final HibernateSessionManager mgr, final int jobId) throws OmnigeneException {
         final String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "
                 + " org.genepattern.server.domain.AnalysisJob as child "
                 + " where child.jobNo = :jobNo and parent.jobNo = child.parent ";
@@ -1318,7 +1312,6 @@ public class AnalysisDAO extends BaseDAO {
             return new JobInfo(parent);
         }
         return null;
-
     }
 
     /**

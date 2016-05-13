@@ -25,7 +25,7 @@ public class TestSchemaUpdater {
     private final File schemaDir=new File("website/WEB-INF/schema");
     private final String schemaPrefix="analysis_hypersonic-";
     private final int numSchemaFiles=26;
-    private final int numSchemaFiles_3_9_3=25;
+    private final int numSchemaFiles_3_9_3=24;  // re-wrote history in 3.9.8 release, deleted *-3.3.2.sql
 
     @Test
     public void initDbSchemaHsqlDb_toLatest() throws ExecutionException {
@@ -43,6 +43,10 @@ public class TestSchemaUpdater {
         assertEquals("tableExists('job_input_attribute'), dropped in v3.9.6",
                 false,
                 SchemaUpdater.tableExistsIgnoreCase(mgr, "job_input"));
+        
+        assertEquals("tableExists('upload_file'), dropped in v3.9.8",
+                false,
+                SchemaUpdater.tableExistsIgnoreCase(mgr, "upload_file"));
     }
     
     /**
@@ -112,7 +116,7 @@ public class TestSchemaUpdater {
     public void listSchemaFiles_update_expectedSchemaVersionNotSet() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, "3.9.1");
-        assertEquals("num schema files, updating from 3.9.1 to latest", 3, schemaFiles.size());
+        assertEquals("num schema files, updating from 3.9.1 to latest", 4, schemaFiles.size());
     }
 
     @Test
@@ -193,7 +197,7 @@ public class TestSchemaUpdater {
     @Test
     public void isUpToDate() {
         final String expectedSchemaVersion=null;
-        final String dbSchemaVersion="3.9.6";
+        final String dbSchemaVersion="3.9.8";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
         
         boolean upToDate=SchemaUpdater.isUpToDate(schemaFiles);

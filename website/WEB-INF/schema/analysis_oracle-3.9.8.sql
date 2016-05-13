@@ -1,0 +1,7 @@
+-- drop unused tables from DB
+--
+-- Note: must do this as a manual step because I haven't had a
+-- chance to test the Oracle equivalent of 'drop table if exists ...'
+-- 
+-- the 'upload_file' table was added in 3.3.2, but is no longer needed
+-- drop table upload_file;

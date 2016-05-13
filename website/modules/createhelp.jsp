@@ -218,6 +218,39 @@ or enhancement ideas.<br><br>
 Upload a text file containing the End-User license agreement. Users will be prompted to accept this license
 before running the module. <br>
 
+<a name="VersionIncrement"></a><h4>Version increment</h4>
+Set the next module (LSID) version based on the current version level {major}.{minor}.{patch}. For new modules, 
+the initial major version is v1, the initial minor version is v0.1 and the initial patch version is v0.0.1. 
+By default, increment the current version level, (<em>e.g. save v1 as v2, v1.1 as v1.2</em>).
+Example usage:<br/>
+<ul>
+<li><b>major (X)</b> save new major version ... 
+<ul><li><em>v1</em>, new module saves as v1.</li>
+    <li><em>v1 to v2</em>,     from major, <em>same as default</em></li>
+    <li><em>v1.4 to v2</em>,   from minor, decrease level</li>
+    <li><em>v1.0.1 to v2</em>, from patch, decrease level by 2</li>
+</ul>
+</li>
+<li><b>minor (X.Y)</b> save new minor version ... 
+<ul><li><em>v1 to v1.1</em>,     from major, increase version level</li>
+    <li><em>v1.1 to v1.2</em>,   from minor, <em>same as default</em></li>
+    <li><em>v1.0.1 to v1.1</em>, from patch, decrease level</li>
+</ul>
+</li>
+<li><b>patch (X.Y.Z)</b> save new patch version ...
+<ul><li><em>v1 to v1.0.1</em>, from major, increase version level by 2</li>
+    <li><em>v1.4 to v1.4.1</em>, from minor, increase version level</li>
+    <li><em>v1.0.1 to v1.0.2</em>, from patch, <em>same as default</em></li>
+</ul>
+</li>
+</ul>
+
+Note: The Version Increment menu is only enabled when editing the latest installed version of a module.
+This avoids potential problems with duplicate version numbers (aka collisions). 
+The system will automatically select the next unique version, increasing the version level 
+(<em>e.g. save v2.1 as v2.1.1</em>) if needed.
+<br>
+
 <a name="VersionComment"></a><h4>Version Comment</h4>
 Enter a brief description of the changes that you have made to the module. When GenePattern clients display a drop-down list of versions on the Install from Repository page, the comments for each version are visible in the drop-down list.
 <br><br>

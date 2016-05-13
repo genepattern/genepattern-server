@@ -55,8 +55,8 @@
                 var username = "${requestScope.userID}";
             </script>
             
-            <script type="text/javascript" src="/gp/js/jquery/jquery-1.8.3.js?version=#{aboutBean.buildTag}" />
-            <script type="text/javascript" src="/gp/js/jquery/jquery-ui-1.9.2.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-1.8.3.js?version=#{aboutBean.buildTag}" />
+            <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery-ui-1.9.2.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.official.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.cookie.js?version=#{aboutBean.buildTag}" />
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.jstree.js?version=#{aboutBean.buildTag}" />
@@ -112,7 +112,7 @@
 	            	// Load the modules
 	            	$.ajax({
                         cache: false,
-	                    url: '/gp/rest/v1/tasks/all.json',
+	                    url: '#{facesContext.externalContext.requestContextPath}/rest/v1/tasks/all.json',
 	                    dataType: 'json',
 	                    success: function(data, status, xhr) {
 	                    	all_modules = data.all_modules;
@@ -152,7 +152,7 @@
 	                });
 
 //	            	$.ajax({
-//	                    url: '/gp/rest/v1/suites/all.json',
+//	                    url: '#{facesContext.externalContext.requestContextPath}/rest/v1/suites/all.json',
 //	                    dataType: 'json',
 //	                    success: function(data, status, xhr) {
 //	                    	all_suites = data;
@@ -231,8 +231,8 @@
                 <!-- Custom Tooltips -->
                 <ul id="user-menu" style="display: none;">
                     <li class="showSystemMessageSpan" style="display: none;"><a href="#" onclick="showSystemMessage();">View System Message</a></li>
-                    <li><a href="/gp/pages/accountInfo.jsf">My Settings</a></li>
-                    <li><a href="/gp/logout">Sign Out</a></li>
+                    <li><a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">My Settings</a></li>
+                    <li><a href="#{facesContext.externalContext.requestContextPath}/logout">Sign Out</a></li>
                 </ul>
                 <div id="disk-quota-tooltip" style="display: none;"></div>
 
@@ -245,44 +245,44 @@
 	            <!-- horizontal navigation band -->
 	           	<div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
 		            <ul>
-		                <li><a href="/gp/pages/index.jsf">Modules &#38; Pipelines</a>
+		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Modules &#38; Pipelines</a>
 		                    <ul>
-		                        <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('/gp/pipeline/index.jsf');">New Pipeline</a></li>
-		                        <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('/gp/modules/creator.jsf');">New Module</a></li>
-		                        <li class="createTaskAllowed"><a href="/gp/pages/taskCatalog.jsf">Install From Repository</a></li>
-		                        <li><a href="/gp/pages/importTask.jsf">Install From ZIP</a></li>
-		                        <li><a href="/gp/pages/manageTasks.jsf">Manage</a></li>
+		                        <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf');">New Pipeline</a></li>
+		                        <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/modules/creator.jsf');">New Module</a></li>
+		                        <li class="createTaskAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">Install From Repository</a></li>
+		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf">Install From ZIP</a></li>
+		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageTasks.jsf">Manage</a></li>
 		                    </ul>
 		                </li>
-                        <li><a href="/gp/pages/manageSuite.jsf">Suites</a>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Suites</a>
                             <ul>
-                                <li class="createPrivateSuiteAllowed"><a href="/gp/pages/createSuite.jsf">New Suite</a></li>
-                                <li class="createPublicSuiteAllowed"><a href="/gp/pages/suiteCatalog.jsf">Install From Repository</a></li>
-                                <li><a href="/gp/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
-                                <li><a href="/gp/pages/manageSuite.jsf">Manage</a></li>
+                                <li class="createPrivateSuiteAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/createSuite.jsf">New Suite</a></li>
+                                <li class="createPublicSuiteAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/suiteCatalog.jsf">Install From Repository</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf?suite=1">Install From ZIP</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Manage</a></li>
                             </ul>
                         </li>
-		                <li><a id="job-results" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
+		                <li><a id="job-results" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
 		                    <ul>
-		                        <li><a href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
+		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
 		                    </ul>
 		                </li>
-		                <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
+		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?splash=resources">Resources</a>
 		                    <ul>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
 		                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
 		                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
-                                <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
 		                    </ul>
 		                </li>
-		                <li class="adminServerAllowed"><a href="/gp/pages/serverSettings.jsf">Administration</a>
+		                <li class="adminServerAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Administration</a>
 		                    <ul>
-		                        <li><a href="/gp/pages/serverSettings.jsf">Server Settings</a></li>
+		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Server Settings</a></li>
 		                    </ul>
 		                </li>
-		                <li><a href="/gp/pages/index.jsf">Help</a>
+		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Help</a>
 		                    <ul>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
@@ -292,16 +292,16 @@
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
-		                        <li><a href="/gp/pages/about.jsf">About</a></li>
+		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About</a></li>
 		                    </ul>
 		                </li>
 		                <li class="genomeSpaceMenu">
-		                	<a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+		                	<a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"><img src="#{facesContext.externalContext.requestContextPath}/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
 		                    <ul>
-		                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
-		                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
+		                        <li class="genomeSpaceLoggedOut"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Login</a></li>
+		                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Logout</a></li>
 		                        <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-		                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+		                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
 		                        <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
 		                        <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
 		                    </ul>
@@ -342,7 +342,7 @@
 		                    </div>
 		                    <div id="module-browse-button">
 		                    	<div class="current-job-status">
-                                    <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
+                                    <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                                 </div>
 		                        <button>Browse Modules &#x203a;</button>
 		                    </div>
@@ -350,7 +350,7 @@
                         <div id="left-nav-modules-list">
                             <div id="loading-modules">
                                 <h4>Loading GenePattern Modules...</h4>
-                                <img src="/gp/images/ajax.gif" height="100" width="100" alt="Loading..." />
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/ajax.gif" height="100" width="100" alt="Loading..." />
                             </div>
                             <div id="pinned-modules"></div>
                             <div id="recent-modules"></div>
@@ -360,7 +360,7 @@
                         <div class="left-nav-top">
                             <button id="left-nav-jobs-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                             <div class="current-job-status">
-                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                         </div>
                         <h:outputText rendered="!#{uiBean.newUI}">
@@ -369,7 +369,7 @@
                         <h:outputText rendered="#{uiBean.newUI}">
                             <div id="loading-jobs">
                                 <h4>Loading GenePattern Jobs...</h4>
-                                <img src="/gp/images/ajax.gif" height="100" width="100" alt="Loading..." />
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/ajax.gif" height="100" width="100" alt="Loading..." />
                             </div>
                             <div id="left-nav-jobs-list"></div>
                             <script type="text/javascript">
@@ -383,7 +383,7 @@
 	                <div id="left-nav-files" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
-                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="/gp/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
+                                <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                             <button id="left-nav-files-refresh" onclick="refreshUploadTree();"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                         </div>
