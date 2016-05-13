@@ -234,6 +234,7 @@
                 function openJavascript(jobId, taskName, taskLsid, launchUrl)
                 {
                     $("table.group").css("display", "none");
+                    $("#systemAlertMessage").hide();
 
                     if(getURLParameter("openVisualizers") == "true")
                     {
@@ -241,7 +242,7 @@
 
                         var div = $("#" + jsId);
                         if (div.length == 0) {
-                            div = $("<div/>").addClass("jsViewerDiv").attr("id", "javascript_" + jobId).css("height", "100%").css("width", "100%");
+                            div = $("<div/>").addClass("jsViewerDiv").attr("id", "javascript_" + jobId);
 
                             if(!isPipeline)
                             {
