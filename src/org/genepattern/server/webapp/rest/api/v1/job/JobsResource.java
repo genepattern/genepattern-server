@@ -178,8 +178,7 @@ public class JobsResource {
         final JSONObject rval=new JSONObject();
         try {
             //TODO: add support for batch jobs to REST API
-            final boolean removeEmptyValues=true;
-            final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues, removeEmptyValues);
+            final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
 
             final boolean initDefault=true;
             final JobInputApiImplV2 impl= new JobInputApiImplV2(initDefault);
