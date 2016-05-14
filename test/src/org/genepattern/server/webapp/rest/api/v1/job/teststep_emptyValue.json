@@ -1,0 +1,17 @@
+{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00008:0.3",
+"params": [
+    { "name": "errorMessage",   "values": [ "" ] },
+    { "name": "exitCode",       "values": [ "0" ] },
+    { "name": "runningTime",    "values": [ "0" ] },
+    { "name": "verbose",        "values": [ "yes" ] },
+    { "name": "copyInputFiles", "values": [ "no" ] },
+    { "name": "input0",         "values": [ "" ] },
+    { "name": "input1",         "values": [ "" ] },
+    { "name": "input2",         "values": [ "" ] },
+    { "name": "input3",         "values": [ "" ] },
+    { "name": "logLabel",       "values": [ "" ] },
+    
+    { "name": "nullParam",      "values": [ null ] },
+    { "name": "emptyListParam", "values": [ ] } 
+]
+}

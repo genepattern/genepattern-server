@@ -178,20 +178,10 @@ public class JobsResource {
         final JSONObject rval=new JSONObject();
         try {
             //TODO: add support for batch jobs to REST API
-            final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
+            final boolean removeEmptyValues=true;
+            final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues, removeEmptyValues);
 
-            // FIXME: Hack to handle empty strings with optional file params
-            Map<ParamId, Param> params = jobInput.getParams();
-            Set<ParamId> keys = params.keySet();
-            List<ParamId> toRemove = new ArrayList<ParamId>();
-            for (ParamId id : keys) {
-                Param param = params.get(id);
-                List<ParamValue> values = param.getValues();
-                if (values.size() == 1 && values.get(0).getValue().isEmpty()) toRemove.add(id);
-            }
-            for (ParamId id : toRemove) jobInput.removeValue(id);
-
-            final boolean initDefault=false;
+            final boolean initDefault=true;
             final JobInputApiImplV2 impl= new JobInputApiImplV2(initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
 

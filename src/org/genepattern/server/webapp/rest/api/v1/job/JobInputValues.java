@@ -8,12 +8,33 @@ import java.util.List;
 import org.genepattern.server.job.input.JobInput;
 
 public class JobInputValues {
-    public static final JobInput parseJobInput(JobInputValues jobInputValues) {
-        JobInput jobInput=new JobInput();
+    /**
+     * By default, remove empty ("") values.
+     */
+    public static final JobInput parseJobInput(JobInputValues jobInputValues) { 
+        return parseJobInput(jobInputValues, true);
+    }
+
+    /**
+     * FIXME: Hack to handle empty strings with optional file params
+     * 
+     * Create a new JobInput instance as a copy of the JobInputValues.
+     * 
+     * Remove empty values before adding the job, e.g.
+     *     { "name": "input.file", "values": [ "" ] }
+     * 
+     * @param jobInputValues
+     * @param removeEmptyValues, treat empty ("") values as 'not set'
+     * @return
+     */
+    public static final JobInput parseJobInput(final JobInputValues jobInputValues, final boolean removeEmptyValues) {
+        final JobInput jobInput=new JobInput();
         jobInput.setLsid(jobInputValues.lsid);
         for(final Param param : jobInputValues.params) {
             for(final String value : param.values) { 
-                jobInput.addValue(param.name, value, param.groupId, param.batchParam);
+                if (!removeEmptyValues || !"".equals(value)) {
+                    jobInput.addValue(param.name, value, param.groupId, param.batchParam);
+                }
             }
         }
         return jobInput;
