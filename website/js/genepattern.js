@@ -2625,6 +2625,9 @@ function cleanUpPanels()
 
  //this will load a javascript module
 function loadJavascript(jobId, container, openInNewWindow) {
+    $("table.group").hide();
+    $("#systemAlertMessage").hide();
+
     // Abort if there is no job id
     if (jobId === undefined || jobId === null || jobId === '') {
         return;
