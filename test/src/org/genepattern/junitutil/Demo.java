@@ -63,6 +63,7 @@ public class Demo {
     public static final String dataHttpDir="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
     public static final String dataHttpsDir="https://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
     public static final String dataGsDir="https://dm.genomespace.org/datamanager/v1.0/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
+    public static final String dataGsDir_noVersion="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
     
     // common file system paths, (as opposed to URI paths)
     /** 

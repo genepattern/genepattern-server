@@ -14,6 +14,8 @@ import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
 
+import com.google.common.base.Strings;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
@@ -477,27 +479,14 @@ public class GenomeSpaceClient {
     /**
      * Gets the URL to the GenomeSpace file provided the file and the given format for converting the file
      */
-    public URL getConvertedURL(Object gsSessionObject, GenomeSpaceFile file, String formatType) throws GenomeSpaceException {
-        GsSession gsSession = null;
-        if (gsSessionObject instanceof GsSession) {
-            gsSession = (GsSession) gsSessionObject;
+    public static URL getConvertedUrl(final GsSession gsSession, final GenomeSpaceFile file, final String formatType) throws GenomeSpaceException {
+        // Handle null file arg
+        if (file==null) {
+            throw new GenomeSpaceException("Unexpected arg, file==null");
         }
-        else {
-            log.error("Object other than GsSession passed into getConvertedURL(): " + gsSessionObject);
-            throw new GenomeSpaceException("Object other than GsSession passed into getConvertedURL(): " + gsSessionObject);
-        }
-        
-        // Declare necessary objects
-        DataManagerClient dmClient = gsSession.getDataManagerClient();
-        GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
-        
-        // Handle the null formatType condition
-        if (formatType == null) {
-            formatType = file.getExtension();
-        }
-        
-        // If converting to the file's base type, simply return the URL
-        if (formatType.equals(file.getExtension())) {
+        // Handle the null formatType, or ...
+        // ... conversion to the file's base type
+        if (Strings.isNullOrEmpty(formatType) || formatType.equals(file.getExtension())) {
             try {
                 return file.getUrl();
             }
@@ -507,22 +496,38 @@ public class GenomeSpaceClient {
             }
         }
         
+        // Handle null gsSession
+        if (gsSession == null) {
+            throw new GenomeSpaceException("ERROR: gsSession==null, Unable to convert the file " + file.getName() + " to: " + formatType);
+        }
+        
         // Find the correct GSDataFormat object
+        final GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
+        if (metadata == null) {
+            throw new GenomeSpaceException("ERROR: GsFile.getMetadata is null, Unable to convert the file " + file.getName() + " to: " + formatType);
+        }
+
         GSDataFormat format = null;
-        for (GSDataFormat i : metadata.getAvailableDataFormats()) {
+        for (final GSDataFormat i : metadata.getAvailableDataFormats()) {
             if (i.getFileExtension().equals(formatType)) {
                 format = i;
             }
         }
-        
+
         // Check if the format wasn't found
         if (format == null) {
             log.error("Unable to find an appropriate GSDataFormat object for: " + formatType);
-            throw new GenomeSpaceException("Unable to convert the file " + file.getName() + " to: " + formatType);
+            throw new GenomeSpaceException("ERROR: format='"+formatType+"' not found in availableDataFormats for file '" 
+                    + file.getName() + "'");
         }
         
         // Get the URL
-        return dmClient.getFileUrl(metadata, format);
+        final DataManagerClient dmClient = gsSession.getDataManagerClient();
+        if (dmClient==null) {
+            throw new GenomeSpaceException("ERROR: dmClient==null, Unable to convert '" + file.getName() + "' to '" + formatType + "'");
+        }
+        final URL url=dmClient.getFileUrl(metadata, format);
+        return GenomeSpaceFileHelper.insertProtocolVersion(url);
     }
 
     public Object obtainMetadata(Object gsSessionObject, URL gsUrl) throws GenomeSpaceException {

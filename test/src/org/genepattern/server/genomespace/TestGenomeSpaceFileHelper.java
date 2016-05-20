@@ -1,88 +1,58 @@
-package org.genepattern.server.dm;
+package org.genepattern.server.genomespace;
 
-import static org.genepattern.junitutil.Demo.dataGsDir;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.genepattern.junitutil.Demo;
-import org.genepattern.server.genomespace.GenomeSpaceFile;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.util.SemanticUtil;
-import org.genomespace.client.GsSession;
-import org.genomespace.datamanager.core.GSFileMetadata;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-public class TestGenomeSpaceFile {
+public class TestGenomeSpaceFileHelper {
+    // default GS url
+    final String gsUrl="https://dm.genomespace.org";
+    // default data file path, relative to GS url file prefix
+    final String filePath="/Home/userId/all_aml_test.tab";
 
-    /**
-     * Create a mock GenomeSpaceFile. Initialize name, kind, and extension in 
-     * GenomeSpaceFileHelper#createFile (warts and all).
-     * Matches runtime behavior circa GP 3.9.5 release.
-     * 
-     * @param filename, a relative path, not prefixed with a '/', e.g. "all_aml_test.gct"
-     * @return
-     * @throws MalformedURLException
-     */
-    public static GenomeSpaceFile mockGsFileFromGsHelper(final String filename) throws MalformedURLException {
-        final String urlSpec=dataGsDir+filename;
-        final GsSession gsSession=Mockito.mock(GsSession.class);
-        final GSFileMetadata metadata=Mockito.mock(GSFileMetadata.class);
-        final URL url=new URL(urlSpec);
-        return GenomeSpaceFileHelper.createFile(gsSession, url, metadata);
-    }
-    
-    /**
-     * Create a mock GenomeSpaceFile. Initialize name, kind, and extension from the incoming url.
-     * Uses the same heuristic as for other ExternalFile instances. 
-     * These differ slightly from the GsFileHelper.
-     * 
-     * @param filename, a relative path, not prefixed with a '/', e.g. "all_aml_test.gct"
-     * @return
-     * @throws MalformedURLException
-     */
-    public static GenomeSpaceFile mockGsFile(final String filename) throws MalformedURLException {
-        final String urlSpec=dataGsDir+filename;
-        final GsSession gsSession=Mockito.mock(GsSession.class);
-        final URL url=new URL(urlSpec);
-        if (!GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
-            throw new IllegalArgumentException("Not a GenomeSpace URL: " + url);
-        }
-
-        if (gsSession == null) {
-            throw new IllegalArgumentException("gsSession=null");
-        }
-
-        final GenomeSpaceFile file = new GenomeSpaceFile(gsSession);
-        // use generic helper method in GpFilePath to initialize name, kind and extension from the incoming url
-        file.initNameKindExtensionFromUrl(url);
-        file.setUrl(url);
-        return file;
-    }
-    
     @Test
-    public void createGsFileFromGsHelper() throws MalformedURLException {
-        String expectedUri=Demo.dataGsDir+"all_aml_test.gct";
-        final GpFilePath gpFilePath=mockGsFileFromGsHelper("all_aml_test.gct");
-        assertEquals("getName", "all_aml_test.gct", gpFilePath.getName());
-        assertEquals("getExtension", "gct", gpFilePath.getExtension());
-        assertEquals("getKind", "gct", gpFilePath.getKind());
-        assertEquals("relativeUri, expecting fully qualified uri", expectedUri,
-                gpFilePath.getRelativeUri().toString());
+    public void httpProtocol() throws MalformedURLException, URISyntaxException {
+        final String inputSpec="http://dm.genomespace.org/datamanager/file"+filePath;
+        final String  expected="http://dm.genomespace.org/datamanager/v1.0/file"+filePath;
+        assertEquals(new URL(expected), GenomeSpaceFileHelper.insertProtocolVersion(new URL(inputSpec)));
     }
 
     @Test
-    public void createGsFile() throws MalformedURLException {
-        String expectedUri=Demo.dataGsDir+"all_aml_test.gct";
-        final GpFilePath gpFilePath=mockGsFile("all_aml_test.gct");
-        assertEquals("getName", "all_aml_test.gct", gpFilePath.getName());
-        assertEquals("getExtension", "gct", gpFilePath.getExtension());
-        assertEquals("getKind", "gct", gpFilePath.getKind());
-        assertEquals("relativeUri, expecting fully qualified uri", expectedUri,
-                gpFilePath.getRelativeUri().toString());
+    public void noDataFormat() throws MalformedURLException, URISyntaxException {
+        final String inputSpec=gsUrl+"/datamanager/file"+filePath;
+        final String  expected=gsUrl+"/datamanager/v1.0/file"+filePath;
+        assertEquals(new URL(expected), GenomeSpaceFileHelper.insertProtocolVersion(new URL(inputSpec)));
+    }
+    
+    @Test
+    public void withDataFormat() throws MalformedURLException, URISyntaxException {
+        final String inputSpec=gsUrl+"/datamanager/file"+filePath+"?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        final String  expected=gsUrl+"/datamanager/v1.0/file"+filePath+"?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        assertEquals(new URL(expected), GenomeSpaceFileHelper.insertProtocolVersion(new URL(inputSpec)));
+    }
+    
+    @Test
+    public void fromGoogleDrive() throws MalformedURLException {
+        final String inputSpec=gsUrl+"/datamanager/file/Home/googledrive:test@email.com(lHv4L0eliPcV19HRCqwWQg==)/GenomeSpacePublic/all_aml(0Bx1oidMlPWQtN2RlQV8zd25Md1E)/all_aml_test.cls?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        final String  expected=gsUrl+"/datamanager/v1.0/file/Home/googledrive:test@email.com(lHv4L0eliPcV19HRCqwWQg==)/GenomeSpacePublic/all_aml(0Bx1oidMlPWQtN2RlQV8zd25Md1E)/all_aml_test.cls?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        assertEquals(new URL(expected), GenomeSpaceFileHelper.insertProtocolVersion(new URL(inputSpec)));
+    }
+
+    // input.path already starts with /datamanager/v1.0
+    @Test
+    public void noInsertNeeded() throws MalformedURLException {
+        final String inputSpec=gsUrl+"/datamanager/v1.0/file"+filePath+"?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        final String  expected=gsUrl+"/datamanager/v1.0/file"+filePath+"?dataformat=http://www.genomespace.org/datamanager/dataformat/gct";
+        assertEquals(new URL(expected), GenomeSpaceFileHelper.insertProtocolVersion(new URL(inputSpec)));
     }
     
     // helper test for GenomeSpace_Google drive url
@@ -97,7 +67,7 @@ public class TestGenomeSpaceFile {
                 GenomeSpaceFileHelper.extractFilename(url));
         }
     }
-    
+
     @Test
     public void getFilenameFromUrl_GenomeSpace_GoogleDrive() throws IOException {
         // simulate root path to a GenomeSpace user's shared google drive folder
@@ -117,11 +87,11 @@ public class TestGenomeSpaceFile {
                 // not working in GenomeSpaceHelper
                 false);
     }
-    
+
     // helper test for GenomeSpace custom converter url
     protected void checkGsKind(final String expectedKind, final String queryString, final boolean checkGsHelper) throws IOException {
         final String expectedName="CEL_IK50.tab";
-        URL url=new URL(dataGsDir+expectedName+queryString);
+        URL url=new URL(Demo.dataGsDir+expectedName+queryString);
         
         String filename=UrlUtil.getFilenameFromUrl(url);
         String extension=SemanticUtil.getExtension(filename);
@@ -155,5 +125,5 @@ public class TestGenomeSpaceFile {
          checkGsKind("tab", "?A=/dataformat/gct", false);
          checkGsKind("tab", "?/dataformat/gct", false);
     }
-
+    
 }
