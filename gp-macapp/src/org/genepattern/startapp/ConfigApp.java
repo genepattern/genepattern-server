@@ -39,11 +39,7 @@ public class ConfigApp {
     private JTextField emailField;
     private JTextField daysPurgeField;
     private JTextField timePurgeField;
-    private JTextField rField;
-    private JTextField perlField;
     private JPanel genepatternConfigPanel;
-    private JTextField r25Field;
-    private JTextField javaField;
 
     private static JFrame _instance;
     private static File workingDir;
@@ -64,7 +60,7 @@ public class ConfigApp {
         ConfigApp._instance = frame;
 
         // Set the working directory
-        String workingString = "/Users/tabor/workspace/genepattern-server/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        String workingString = "gp-macapp/resources/GenePattern.app/Contents/Resources";
         if (args.length >= 1) {
             workingString = args[0];
         }
@@ -150,10 +146,6 @@ public class ConfigApp {
         pw.setEmail(emailField.getText());
         pw.setDaysPurge(daysPurgeField.getText());
         pw.setTimePurge(timePurgeField.getText());
-        pw.setPerl(perlField.getText());
-        pw.setJava(javaField.getText());
-        pw.setR(rField.getText());
-        pw.setR25(r25Field.getText());
         pw.setRequirePassword(Boolean.toString(yesRadioButton.isSelected()));
 
         try {
@@ -217,10 +209,6 @@ public class ConfigApp {
         emailField.setText(data.getEmail());
         daysPurgeField.setText(data.getDaysPurge());
         timePurgeField.setText(data.getTimePurge());
-        rField.setText(data.getR());
-        r25Field.setText(data.getR25());
-        perlField.setText(data.getPerl());
-        javaField.setText(data.getJava());
     }
 
     /**
@@ -232,10 +220,6 @@ public class ConfigApp {
         data.setEmail(emailField.getText());
         data.setDaysPurge(daysPurgeField.getText());
         data.setTimePurge(timePurgeField.getText());
-        data.setR25(r25Field.getText());
-        data.setR(rField.getText());
-        data.setPerl(perlField.getText());
-        data.setJava(javaField.getText());
     }
 
     /**
@@ -250,12 +234,6 @@ public class ConfigApp {
         if (daysPurgeField.getText() != null ? !daysPurgeField.getText().equals(data.getDaysPurge()) : data.getDaysPurge() != null)
             return true;
         if (timePurgeField.getText() != null ? !timePurgeField.getText().equals(data.getTimePurge()) : data.getTimePurge() != null)
-            return true;
-        if (r25Field.getText() != null ? !r25Field.getText().equals(data.getR25()) : data.getR25() != null) return true;
-        if (rField.getText() != null ? !rField.getText().equals(data.getR()) : data.getR() != null) return true;
-        if (perlField.getText() != null ? !perlField.getText().equals(data.getPerl()) : data.getPerl() != null)
-            return true;
-        if (javaField.getText() != null ? !javaField.getText().equals(data.getJava()) : data.getJava() != null)
             return true;
         return false;
     }
@@ -291,12 +269,6 @@ public class ConfigApp {
         final JLabel label3 = new JLabel();
         label3.setText("Time of Day to Purge");
         genepatternConfigPanel.add(label3, cc.xy(1, 5));
-        final JLabel label4 = new JLabel();
-        label4.setText("R");
-        genepatternConfigPanel.add(label4, cc.xy(1, 7));
-        final JLabel label5 = new JLabel();
-        label5.setText("R 2.5");
-        genepatternConfigPanel.add(label5, cc.xy(1, 9));
         emailField = new JTextField();
         genepatternConfigPanel.add(emailField, cc.xy(3, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
         daysPurgeField = new JTextField();
@@ -305,18 +277,6 @@ public class ConfigApp {
         timePurgeField = new JTextField();
         timePurgeField.setText("23:00");
         genepatternConfigPanel.add(timePurgeField, cc.xy(3, 5, CellConstraints.FILL, CellConstraints.DEFAULT));
-        rField = new JTextField();
-        rField.setText("/usr/bin/r");
-        genepatternConfigPanel.add(rField, cc.xy(3, 7, CellConstraints.FILL, CellConstraints.DEFAULT));
-        r25Field = new JTextField();
-        r25Field.setText("/Library/Frameworks/R.framework/Versions/2.5/Resources");
-        genepatternConfigPanel.add(r25Field, cc.xy(3, 9, CellConstraints.FILL, CellConstraints.DEFAULT));
-        final JLabel label6 = new JLabel();
-        label6.setText("Perl");
-        genepatternConfigPanel.add(label6, cc.xy(1, 11));
-        perlField = new JTextField();
-        perlField.setText("/usr/bin/perl");
-        genepatternConfigPanel.add(perlField, cc.xy(3, 11, CellConstraints.FILL, CellConstraints.DEFAULT));
         final JLabel label7 = new JLabel();
         label7.setText("Require Password");
         genepatternConfigPanel.add(label7, cc.xy(1, 15));
@@ -327,12 +287,6 @@ public class ConfigApp {
         noRadioButton.setSelected(true);
         noRadioButton.setText("No");
         genepatternConfigPanel.add(noRadioButton, cc.xy(3, 17));
-        javaField = new JTextField();
-        javaField.setText("/usr");
-        genepatternConfigPanel.add(javaField, cc.xy(3, 13, CellConstraints.FILL, CellConstraints.DEFAULT));
-        final JLabel label8 = new JLabel();
-        label8.setText("Java");
-        genepatternConfigPanel.add(label8, cc.xy(1, 13));
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(yesRadioButton);

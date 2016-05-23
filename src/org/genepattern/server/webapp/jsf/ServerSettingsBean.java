@@ -68,7 +68,7 @@ public class ServerSettingsBean implements Serializable {
 	            "hibernate.connection.driver_class", "hibernate.connection.shutdown", "hibernate.connection.url", 
 	            "hibernate.connection.username", "hibernate.connection.password", "hibernate.dialect", 
 	            "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
-	    modes.put("Programming Languages", new String[] { "perl", "java", "R2.5", "R" });
+	    modes.put("Programming Languages", new String[] { "java", "R2.5", "R" });
 	    modes.put("Advanced", new String[] { 
 	            "DefaultPatchRepositoryURL", 
 	            "DefaultPatchURL", 

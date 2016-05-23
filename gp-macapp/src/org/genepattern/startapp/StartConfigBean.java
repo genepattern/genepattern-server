@@ -13,7 +13,6 @@ public class StartConfigBean {
     private String daysPurge;
     private String timePurge;
     private String hsqlPort;
-    private String perl;
     private String r;
     private String r25;
     private String java;
@@ -51,14 +50,6 @@ public class StartConfigBean {
 
     public void setHsqlPort(final String hsqlPort) {
         this.hsqlPort = hsqlPort;
-    }
-
-    public String getPerl() {
-        return perl;
-    }
-
-    public void setPerl(final String perl) {
-        this.perl = perl;
     }
 
     public String getR25() {
