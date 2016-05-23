@@ -25,44 +25,6 @@
         }
         /* ]]> */
     </script>
-    <h:form>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-            <tr>
-                <td>Programming Language Configurations</td>
-            </tr>
-        </table>
-        <p />
-        <table width="100%" border="0" cellpadding="5" cellspacing="0">
-            <tr valign="top">
-                <td>Java:</td>
-                <td>
-                    <h:inputText size="40" value="#{serverSettingsBean.settings['java']}" />
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>R 2.5 Home:</td>
-                <td>
-                    <h:inputText size="40" value="#{serverSettingsBean.settings['R2.5_HOME']}" />
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>R 2.0.1 Home:</td>
-                <td>
-                    <h:inputText size="40" value="#{serverSettingsBean.settings['R_HOME']}" />
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>&#160;</td>
-                <td>
-                    <h:commandButton value="Save" actionListener="#{serverSettingsBean.saveSettings}" />
-                    &#160;
-                    <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}" />
-                </td>
-            </tr>
-
-        </table>
-        <p />
-    </h:form>
 
     <h:form>
         <table width="100%" border="0" cellpadding="0" cellspacing="0"
@@ -82,11 +44,6 @@
                 <td>Java Visualizer VMOptions:</td>
                 <td><h:inputText size="40"
                                  value="#{serverSettingsBean.settings['visualizer_java_flags']}" /></td>
-            </tr>
-            <tr valign="top">
-                <td>R Options:</td>
-                <td><h:inputText size="40"
-                                 value="#{serverSettingsBean.settings['r_flags']}" /></td>
             </tr>
 
             <tr valign="top">
