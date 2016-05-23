@@ -29,7 +29,6 @@ public class PropertiesWriter {
     private String email = "";                           // Prompt user
     private String daysPurge = "7";                      // Prompt user
     private String timePurge = "23:00";                  // Prompt user
-    private String perl = "/usr/bin/perl";               // Prompt user
     private String java = "/usr";                        // Prompt user
     private String r = "/usr/bin/r";                     // Prompt user
     private String r25 = "/Library/Frameworks/R.framework/Versions/2.5/Resources";               // Prompt user
@@ -128,9 +127,6 @@ public class PropertiesWriter {
             }
             else if (line.contains("$purgeTime$")) {
                 line = line.replaceAll("\\$purgeTime\\$", timePurge);
-            }
-            else if (line.contains("$PERL$")) {
-                line = line.replaceAll("\\$PERL\\$", perl);
             }
             else if (line.contains("$require.password$")) {
                 line = line.replaceAll("\\$require.password\\$", requirePassword);
@@ -309,14 +305,6 @@ public class PropertiesWriter {
 
     public void setTimePurge(String timePurge) {
         this.timePurge = timePurge;
-    }
-
-    public String getPerl() {
-        return perl;
-    }
-
-    public void setPerl(String perl) {
-        this.perl = perl;
     }
 
     public String getJava() {

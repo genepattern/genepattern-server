@@ -40,7 +40,6 @@ public class ConfigApp {
     private JTextField daysPurgeField;
     private JTextField timePurgeField;
     private JTextField rField;
-    private JTextField perlField;
     private JPanel genepatternConfigPanel;
     private JTextField r25Field;
     private JTextField javaField;
@@ -64,7 +63,7 @@ public class ConfigApp {
         ConfigApp._instance = frame;
 
         // Set the working directory
-        String workingString = "/Users/tabor/workspace/genepattern-server/gp-macapp/dist/GenePattern.app/Contents/Resources";
+        String workingString = "gp-macapp/resources/GenePattern.app/Contents/Resources";
         if (args.length >= 1) {
             workingString = args[0];
         }
@@ -150,7 +149,6 @@ public class ConfigApp {
         pw.setEmail(emailField.getText());
         pw.setDaysPurge(daysPurgeField.getText());
         pw.setTimePurge(timePurgeField.getText());
-        pw.setPerl(perlField.getText());
         pw.setJava(javaField.getText());
         pw.setR(rField.getText());
         pw.setR25(r25Field.getText());
@@ -219,7 +217,6 @@ public class ConfigApp {
         timePurgeField.setText(data.getTimePurge());
         rField.setText(data.getR());
         r25Field.setText(data.getR25());
-        perlField.setText(data.getPerl());
         javaField.setText(data.getJava());
     }
 
@@ -234,7 +231,6 @@ public class ConfigApp {
         data.setTimePurge(timePurgeField.getText());
         data.setR25(r25Field.getText());
         data.setR(rField.getText());
-        data.setPerl(perlField.getText());
         data.setJava(javaField.getText());
     }
 
@@ -253,8 +249,6 @@ public class ConfigApp {
             return true;
         if (r25Field.getText() != null ? !r25Field.getText().equals(data.getR25()) : data.getR25() != null) return true;
         if (rField.getText() != null ? !rField.getText().equals(data.getR()) : data.getR() != null) return true;
-        if (perlField.getText() != null ? !perlField.getText().equals(data.getPerl()) : data.getPerl() != null)
-            return true;
         if (javaField.getText() != null ? !javaField.getText().equals(data.getJava()) : data.getJava() != null)
             return true;
         return false;
@@ -311,12 +305,6 @@ public class ConfigApp {
         r25Field = new JTextField();
         r25Field.setText("/Library/Frameworks/R.framework/Versions/2.5/Resources");
         genepatternConfigPanel.add(r25Field, cc.xy(3, 9, CellConstraints.FILL, CellConstraints.DEFAULT));
-        final JLabel label6 = new JLabel();
-        label6.setText("Perl");
-        genepatternConfigPanel.add(label6, cc.xy(1, 11));
-        perlField = new JTextField();
-        perlField.setText("/usr/bin/perl");
-        genepatternConfigPanel.add(perlField, cc.xy(3, 11, CellConstraints.FILL, CellConstraints.DEFAULT));
         final JLabel label7 = new JLabel();
         label7.setText("Require Password");
         genepatternConfigPanel.add(label7, cc.xy(1, 15));
