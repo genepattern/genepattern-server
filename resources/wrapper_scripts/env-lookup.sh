@@ -133,3 +133,26 @@ function appendPath() {
     echo "$path"
 }
 
+#
+# Prepend an element to the beginning of the path; 
+# Usage: path=$(prependPath "${element}" "${path}")
+#
+function prependPath() {
+    local element="${1}";
+    local path="${2}";
+    
+    # Note, to check for a directory: [ -d "$element" ] 
+    # To prepend, path="$element:$path"
+    
+    # if path is not set ... just set it to element
+    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
+    if [ -z "$path" ]; then
+        #echo "2, path not set";
+        path="$element";
+    elif [[ ":$path:" != *":$element:"* ]]; then
+        path="$element:$path";
+    fi
+    # use echo to return a value
+    echo "$path"
+}
+
