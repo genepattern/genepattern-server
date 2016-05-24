@@ -56,7 +56,6 @@ function initEnv() {
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
         GP_SET_R_PATH=true;
-    fi
     
     # set path for R-2.0
     elif [ "$1" = "R-2.0" ]; then

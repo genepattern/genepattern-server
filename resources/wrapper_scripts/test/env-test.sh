@@ -151,37 +151,37 @@ testAppendPath_toEmpty() {
     assertEquals "appendPath" "/new/pathelement" "${MY_PATH}"
 }
 
-testMcrAtIndianaU() {
+testPrependPath() {
     source ../env-lookup.sh
-    expected_mcr_path="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/runtime/glnxa64:\
-/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/bin/glnxa64:\
-/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/os/glnxa64:\
-/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64/native_threads:\
-/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64/server:\
-/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre/lib/amd64";
+    MY_PATH="/opt/dir1";
+    MY_PATH=$(prependPath "/opt/dir2" "${MY_PATH}")
+    assertEquals "prependPath" "/opt/dir2:/opt/dir1" "${MY_PATH}"
+}
 
-    # define path to root MCR dir
-    _mcr_root="/N/soft/rhel6/matlab/MATLAB_Compiler_Runtime/v81";
-    # build MCR_LD_LIB_PATH elements
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/runtime/glnxa64")
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/bin/glnxa64")
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/os/glnxa64")
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64/native_threads")
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64/server")
-    _mcr_path=$(appendPath "${_mcr_path}" "${_mcr_root}/sys/java/jre/glnxa64/jre/lib/amd64")
-    # define new ld_lib_path
-    _ld_lib_path=$(appendPath "${LD_LIBRARY_PATH}" "${_mcr_path}")
-    # TODO: export LD_LIBRARY_PATH="${_ld_lib_path}"
-    # for debugging only: 
-echo "LD_LIBRARY_PATH=${_ld_lib_path}"
+testPrependPath_ignoreDuplicate() {
+    source ../env-lookup.sh
+    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
     
+    assertEquals "prependPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prependPath "/opt/dir1" "${MY_PATH}");
+    
+    assertEquals "prependPath, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prependPath "/opt/dir2" "${MY_PATH}");
+    
+    assertEquals "prependPath, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prependPath "/opt/dir3" "${MY_PATH}");
+        
+    # sanity check
+    assertEquals "sanity check, not a dupe" "/opt/dir4:/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prependPath "/opt/dir4" "${MY_PATH}" ); 
+}
 
-    _xapplresdir=$(appendPath "${XAPPLRESDIR}" "${_mcr_root}/X11/app-defaults")
-    # TODO: export XAPPLRESDIR="${_xapplresdir}"
-    # for debugging only: 
-echo "XAPPLRESDIR=${_xapplresdir}"
-    
-    assertEquals "mcr_path at IU from appendPath" "${expected_mcr_path}" "${_mcr_path}"
+testPrependPath_toEmpty() {
+    source ../env-lookup.sh
+    MY_ARG="/new/pathelement";
+    unset MY_PATH;
+    MY_PATH=$(prependPath "${MY_ARG}" "${MY_PATH}")
+    assertEquals "prependPath" "/new/pathelement" "${MY_PATH}"
 }
 
 #
@@ -625,6 +625,29 @@ Rscript \
             '-m' 'FALSE' \
             '--' \
             '--version')"
+}
+
+#
+# double-check the syntax of the initEnv function in the env-custom-macos.sh script
+# These tests run on non-Mac systems; just validate that the bash syntax is correct
+# and that the PATH is set to the expected R Library location
+#
+# Note: The existing library does not remove an item from the PATH; make sure that the
+#     test cleans up after itself
+#
+testEnvCustomMacOs() {
+    source "../env-custom-macos.sh"
+    local PATH_ORIG="${PATH}"
+    
+    # test 1: R-2.0
+    initEnv R-2.0
+    assertEquals "R-2.0 PATH" "/Library/Frameworks/R.framework/Versions/2.0/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG}
+
+    # test 2: R-2.5
+    initEnv R-2.5
+    assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG} 
 }
 
 . ${SHUNIT2_HOME}/src/shunit2
