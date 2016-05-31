@@ -138,7 +138,7 @@ $(function()
         var steps = [
             {
                 intro: '<div class="tour-header"> Release Notes </div> This is a bug fix release. For details '
-                    + ' please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.7" target="_blank">release notes</a>.'
+                    + ' please see the <a href="http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.8" target="_blank">release notes</a>.'
             }
         ];
 
