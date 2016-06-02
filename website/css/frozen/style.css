@@ -1213,3 +1213,7 @@ strong.filtered-number {
     right: 10px;
     top: 10px;
 }
+
+.jsViewerDiv.ui-tabs-panel {
+    margin-top: 25px;
+}
