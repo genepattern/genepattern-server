@@ -20,7 +20,6 @@
 			<replacefilter token="$webmaster$" value="${WEBMASTER}" />
 			<replacefilter token="$GENEPATTERN_PORT$" value="${GENEPATTERN_PORT}" />
 			<replacefilter token="$HSQL_port$" value="${HSQL_PORT}" />
-			<replacefilter token="$PERL$" value="${PERL}" />
 			<replacefilter token="$JAVA$" value="${JAVA}" />
 			<replacefilter token="$R$" value="${R}" />
 			<replacefilter token="$LSID_AUTHORITY$" value="${LSID_AUTHORITY}" />

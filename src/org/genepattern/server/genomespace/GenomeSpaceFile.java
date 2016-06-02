@@ -20,6 +20,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
+import org.genomespace.client.GsSession;
 
 /**
  * Implementation of handling GenomeSpaceFiles in a way that extends GpFilePath
@@ -48,7 +49,7 @@ public class GenomeSpaceFile extends GpFilePath {
     private URI gsURI = null;
     private String path;
     boolean converted = false;
-    Object gsSession = null;
+    GsSession gsSession = null;
     Map<String, String> conversionUrls = null;
     
     /**
@@ -60,7 +61,12 @@ public class GenomeSpaceFile extends GpFilePath {
         if (gsSession == null) {
             log.error("ERROR: null gsSession passed into GenomeSpaceFile constructor");
         }
-        this.gsSession = gsSession;
+        else if (!(gsSession instanceof GsSession)) {
+            log.error("ERROR: expected arg of type GsSession in constructor");
+        }
+        else {
+            this.gsSession = (GsSession) gsSession;
+        }
     }
     
     /**
@@ -225,42 +231,39 @@ public class GenomeSpaceFile extends GpFilePath {
         return gsUrl;
     }
 
-    public String getEncodedUrl() {
-        if (gsUrl==null) {
-            return "";
-        }
-        final String encodedUrl=UrlUtil.encodeURIcomponent(gsUrl.toExternalForm());
-        return encodedUrl;
+    protected String getConvertedUrl(final String format) {
+        return getConvertedUrl(gsSession, this, format);
     }
-    
-    public String getEncodedConversionUrl(String format) {
-        if (gsSession == null) {
-            log.error("ERROR: Null gsSession found in getEncodedConversionUrl()");
-        }
-        URL url = null;
-        String urlString = "#";
+
+    protected static String getConvertedUrl(final GsSession gsSession, final GenomeSpaceFile gsFile, final String format) {
         try {
             if ("directory".equals(format)) {
-                url = this.getUrl();
+                return gsFile.getUrl().toString();
             }
             else {
-                url = GenomeSpaceClientFactory.instance().getConvertedURL(gsSession, this, format);
+                URL url = GenomeSpaceClient.getConvertedUrl(gsSession, gsFile, format);
+                url = GenomeSpaceFileHelper.insertProtocolVersion(url);
+                return url.toString();
             }
-            urlString = url.toString();
         }
-        catch (Exception e) {
-            log.error("Exception getting converted URL in getEncodedConversionUrl(): " + this.getName());
+        catch (Throwable t) {
+            log.error("Error getting converted URL for file="+gsFile.getName()+", format="+format, t);
+            return "#";
         }
-        return UrlUtil.encodeURIcomponent(urlString);
     }
     
+    protected String getEncodedConversionUrl(final String format) {
+        String convertedUrl=getConvertedUrl(format);
+        return UrlUtil.encodeURIcomponent(convertedUrl);
+    }
+
     public Map<String, String> getConversionUrls() {
         // Lazily initialize
         if (conversionUrls == null) {
             conversionUrls = new HashMap<String, String>();
 
             // Add URLs for conversion formats
-            Set<String> conversions = this.getConversionsWithKind();
+            final Set<String> conversions = this.getConversionsWithKind();
             if (conversions != null) {
                 for (String format : conversions) {
                     conversionUrls.put(format, this.getEncodedConversionUrl(format));

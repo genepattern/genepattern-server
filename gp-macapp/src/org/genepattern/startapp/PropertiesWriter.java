@@ -29,10 +29,6 @@ public class PropertiesWriter {
     private String email = "";                           // Prompt user
     private String daysPurge = "7";                      // Prompt user
     private String timePurge = "23:00";                  // Prompt user
-    private String perl = "/usr/bin/perl";               // Prompt user
-    private String java = "/usr";                        // Prompt user
-    private String r = "/usr/bin/r";                     // Prompt user
-    private String r25 = "/Library/Frameworks/R.framework/Versions/2.5/Resources";               // Prompt user
     private String requirePassword = "false";            // Prompt user
 
     private String lsid = "";                            // Generate
@@ -129,20 +125,8 @@ public class PropertiesWriter {
             else if (line.contains("$purgeTime$")) {
                 line = line.replaceAll("\\$purgeTime\\$", timePurge);
             }
-            else if (line.contains("$PERL$")) {
-                line = line.replaceAll("\\$PERL\\$", perl);
-            }
             else if (line.contains("$require.password$")) {
                 line = line.replaceAll("\\$require.password\\$", requirePassword);
-            }
-            else if (line.contains("$JAVA$")) {
-                line = line.replaceAll("\\$JAVA\\$", java);
-            }
-            else if (line.contains("$R_HOME$")) {
-                line = line.replaceAll("\\$R_HOME\\$", r);
-            }
-            else if (line.contains("$R25bin$")) {
-                line = line.replaceAll("\\$R25bin\\$", r25);
             }
             else if (line.contains("GenePatternVersion=")) {
                 line = "GenePatternVersion=" + gpVersionUpgrade;
@@ -309,38 +293,6 @@ public class PropertiesWriter {
 
     public void setTimePurge(String timePurge) {
         this.timePurge = timePurge;
-    }
-
-    public String getPerl() {
-        return perl;
-    }
-
-    public void setPerl(String perl) {
-        this.perl = perl;
-    }
-
-    public String getJava() {
-        return java;
-    }
-
-    public void setJava(String java) {
-        this.java = java;
-    }
-
-    public String getR() {
-        return r;
-    }
-
-    public void setR(String r) {
-        this.r = r;
-    }
-
-    public String getR25() {
-        return r25;
-    }
-
-    public void setR25(String r25) {
-        this.r25 = r25;
     }
 
     public String getRequirePassword() {

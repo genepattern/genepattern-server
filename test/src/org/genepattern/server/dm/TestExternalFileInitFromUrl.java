@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 
 import org.genepattern.server.genomespace.GenomeSpaceFile;
+import org.genepattern.server.genomespace.TestGenomeSpaceFile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

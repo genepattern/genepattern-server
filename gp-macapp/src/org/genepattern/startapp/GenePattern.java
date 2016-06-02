@@ -124,6 +124,9 @@ public class GenePattern {
             w.println("# site customization for MacOS X");
             w.println("#");
             w.println("env-custom=env-custom-macos.sh");
+            // hard-coded R_HOME and R2.5_HOME previously set in the dialog
+            w.println("R_HOME=/usr/bin/r");
+            w.println("R2.5_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources");
         }
         catch (Throwable t) {
             t.printStackTrace();

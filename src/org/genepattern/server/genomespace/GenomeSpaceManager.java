@@ -14,6 +14,7 @@ import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
+import org.genomespace.client.GsSession;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -416,10 +417,17 @@ public class GenomeSpaceManager {
     }
 
     public static URL getConvertedFileUrl(HttpSession session, String fileUrl, String fileType) {
-        Object gsSessionObject = session.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         GenomeSpaceFile file = getFile(session, fileUrl);
         try {
-            return GenomeSpaceClientFactory.instance().getConvertedURL(gsSessionObject, file, fileType);
+            final Object gsSessionObject = session.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+            if (!(gsSessionObject instanceof GsSession)) {
+                // FIXME: UIBeanHelper.setErrorMessage ...
+                log.error("Expecting GsSession instance from HttpSession.getAttribute('"+GenomeSpaceLoginManager.GS_SESSION_KEY+"')");
+                return null;
+            }
+            URL url=GenomeSpaceClient.getConvertedUrl((GsSession) gsSessionObject, file, fileType);
+            url = GenomeSpaceFileHelper.insertProtocolVersion(url);
+            return url;
         }
         catch (GenomeSpaceException e) {
             log.error("GenomeSpaceException in getConvertedFileUrl(): " + e.getMessage());

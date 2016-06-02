@@ -7,11 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -248,15 +249,38 @@ public class GenomeSpaceFileHelper {
         }
     }
 
-    public static URL insertProtocolVersion(URL url) {
-        String path = url.getPath();
-        path = path.replace("/datamanager", "/datamanager/v1.0");
+    public static URL insertProtocolVersion(final URL in) {
+        if (in==null) {
+            log.error("Invalid input: in==null");
+            return in;
+        }
+        URI u;
         try {
-            URL toReturn = new URL(url.getProtocol() + "://" + url.getHost() + path);
-            return toReturn;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return url;
+            u=in.toURI();
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid input, in="+in, e);
+            return in;
+        }
+        try {
+            if (u.getPath().startsWith("/datamanager/v1.0")) {
+                // no modification needed
+                if (log.isDebugEnabled()) {
+                    log.debug("input.path already starts with '/datamanager/v1.0', in="+in);
+                }
+                return in;
+            }
+            return new URI(
+                    u.getScheme(),
+                    u.getAuthority(),
+                    u.getPath().replaceFirst("/datamanager", "/datamanager/v1.0"), 
+                    u.getQuery(),
+                    u.getFragment())
+            .toURL();
+        }
+        catch (MalformedURLException | URISyntaxException e) {
+            log.error("Unexpected exception, in="+in, e);
+            return in;
         }
     }
 }
