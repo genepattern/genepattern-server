@@ -7,25 +7,9 @@
 
   <script type="text/javascript" src="//code.jquery.com/jquery-1.8.3.min.js"></script>
   <script type="text/javascript" src="//code.jquery.com/ui/1.9.2/jquery-ui.min.js"></script>
-  
-  <!-- use jQuery.getScript instead of '<script src="" />', as a way to use 
-       gpContext (default='/gp') as a variable -->
-  <script type="text/javascript">
-      // pass in level=3 as an arg to this anonymous function because this page
-      // is 3 path-path segments from {gpContext}
-      //     {protocol}://{host}{gpContext}/test/qunit/runner.html
-      var gpContext = (function(level) {
-           var pathnames=window.location.pathname.split('/');
-           return pathnames.slice(0, pathnames.length-level).join('/');
-      })(3);
-
-      // Note: this is not strictly loaded in order because these calls are asynchronous
-      // TODO: use $.Deferred.pipe()
-      $.getScript(gpContext+"/js/gpUtil.js");
-      $.getScript(gpContext+"/js/createChoiceDiv.js");
-      $.getScript(gpContext+"/js/runtaskform_latest.js");
-  </script>
-
+  <script type="text/javascript" src="../../js/gpUtil.js"></script>
+  <script type="text/javascript" src="../../js/createChoiceDiv.js"></script>
+  <script type="text/javascript" src="../../js/runtaskform_latest.js"></script>
 </head>
 <body>
   <div id="qunit"></div>
