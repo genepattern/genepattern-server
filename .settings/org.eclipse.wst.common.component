@@ -5,6 +5,7 @@
   <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
   <wb-resource deploy-path="/WEB-INF/classes" source-path="/clients/JavaGE/src"/>
   <wb-resource deploy-path="/WEB-INF/classes" source-path="/test/src"/>
+  <wb-resource deploy-path="/WEB-INF/classes" source-path="/gp-macapp/src"/>
   <dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/gp-3.2.3-lsf-queue/lib/broad-core-main-2.9.2.jar">
     <dependency-type>uses</dependency-type>
   </dependent-module>
