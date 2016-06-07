@@ -4,7 +4,7 @@
 create table TASK_INSTALL (
     lsid varchar(255) not null,
     user_id varchar(255),
-    date_installed timestamp,
+    date_installed timestamp null,
     source_type varchar(255),
     repo_url varchar(255),
     zipfile varchar(255),

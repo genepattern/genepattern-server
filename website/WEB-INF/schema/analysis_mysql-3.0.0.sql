@@ -56,8 +56,8 @@ create table ANALYSIS_JOB (
     JOB_NO integer not null auto_increment unique,
     TASK_ID integer,
     STATUS_ID integer,
-    DATE_SUBMITTED timestamp,
-    DATE_COMPLETED timestamp,
+    DATE_SUBMITTED timestamp null,
+    DATE_COMPLETED timestamp null,
     USER_ID varchar(511),
     ISINDEXED integer,
     ACCESS_ID integer,
@@ -131,8 +131,8 @@ CREATE TABLE GP_USER
   USER_ID            VARCHAR(255),
   GP_PASSWORD        TINYBLOB,
   EMAIL              VARCHAR(255),
-  LAST_LOGIN_DATE    TIMESTAMP,
-  REGISTRATION_DATE    TIMESTAMP,
+  LAST_LOGIN_DATE    TIMESTAMP NULL,
+  REGISTRATION_DATE    TIMESTAMP NULL,
   LAST_LOGIN_IP      VARCHAR(255),
   TOTAL_LOGIN_COUNT  INTEGER  DEFAULT 0  NOT NULL,
   PRIMARY KEY (USER_ID)
@@ -159,7 +159,7 @@ create table JOB_COMPLETION_EVENT
   task_lsid varchar(255),
   task_name varchar(255),
   completion_status varchar(255),
-  completion_date timestamp,
+  completion_date timestamp null,
   elapsed_time integer,
   primary key (id)
 );
