@@ -307,30 +307,6 @@
  <filter>
   <filter-name>RedirectToFQHostFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.RedirectToFQHostFilter</filter-class>
-  <init-param>
-   <description>
-   Boolean value indicating whether or not to use this filter. 
-   You can also just remove this filter from the filter-mapping.
-   </description>
-   <param-name>redirect.to.fq.host</param-name>
-   <param-value>false</param-value>
-  </init-param>
-  <init-param>
-   <description>
-   If the server is behind a cluster head or VPN  and needs to masquerade as if 
-   coming from a different system name than that which it would determine on its own, 
-   set fqHostName to that name.
-   
-   Set this to an empty value to cause the server to determine the fully qualified host name
-   by calling InetAddress.getLocalHost().getCanonicalHostName().
-   </description>
-   <param-name>fqHostName</param-name>
-   <param-value></param-value>
-  </init-param>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
  </filter>
  
  <filter>
@@ -340,19 +316,11 @@
    <param-name>org.genepattern.AuthorizationManagerFactory</param-name>
    <param-value>org.genepattern.server.util.AuthorizationManagerFactoryImpl</param-value>
   </init-param>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
  </filter>
 
  <filter>
   <filter-name>AuthenticationFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
   <init-param>
    <!--  List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he is redirected to the home page.  -->
    <param-name>no.login.required.redirect.to.home</param-name>
@@ -362,10 +330,6 @@
   <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
    <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf,GenomeSpaceOpenID, pages/genomespace/error.jsp, /pages/genomespace/associateAccount.jsf</param-value>
-  </init-param>
-  <init-param>
-   <param-name>login.page</param-name>
-   <param-value>/pages/login.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>home.page</param-name>
@@ -582,10 +546,6 @@
  <servlet>
   <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
   <load-on-startup>1</load-on-startup>
  </servlet>
  
@@ -652,10 +612,6 @@
   <display-name>JobResultsServlet</display-name>
   <servlet-name>JobResultsServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.JobResultsServlet</servlet-class>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
  </servlet>
  <servlet-mapping>
   <servlet-name>JobResultsServlet</servlet-name>
