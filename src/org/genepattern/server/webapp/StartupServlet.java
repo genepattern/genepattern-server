@@ -397,7 +397,7 @@ public class StartupServlet extends HttpServlet {
     /**
      * Set the servletContext; for Tomcat 5.5 this is set in the genepattern.properties file.
      * 
-     * For newer versions (>= 2.5) of the Servlet Spec (not yet implemented) this can be derived form the 
+     * For newer versions (>= 2.5) of the Servlet Spec (not yet implemented) this can be derived from the 
      * ServletConfig.
      *     see: http://stackoverflow.com/questions/3120860/servletcontext-getcontextpath
      *     
@@ -487,6 +487,8 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
         startupMessage.append("\twebappDir: " + this.webappDir + NL );
         startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
+        startupMessage.append("\tresourcesDir: "+ gpConfig.getResourcesDir() + NL);
+        startupMessage.append("\tresources: "+ gpConfig.getGPProperty(serverContext, "resources") + NL);
         startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
         startupMessage.append("\t" + GpConfig.PROP_PLUGIN_DIR+": "+ gpConfig.getRootPluginDir(serverContext) + NL);
         startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
@@ -574,7 +576,6 @@ public class StartupServlet extends HttpServlet {
                 System.setProperty(propName, propValue);
             }
             Properties sysProps = System.getProperties();
-            //String dir = sysProps.getProperty("genepattern.properties");
             propFile = new File(this.gpResourcesDir, "genepattern.properties");
             customPropFile = new File(this.gpResourcesDir, "custom.properties");
             Properties props = new Properties();
