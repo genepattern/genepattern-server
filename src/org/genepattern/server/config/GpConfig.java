@@ -306,7 +306,6 @@ public class GpConfig {
             this.substitutionParams.put("ant-script", antScriptCmd);
 
             this.substitutionParams.put("run_r_path", new File(webappDir, "WEB-INF/classes").getAbsolutePath());
-            
             if (in.resourcesDir != null) {
                 this.substitutionParams.put("R.suppress.messages.file", new File(in.resourcesDir, "R_suppress.txt").getAbsolutePath());
             }
@@ -339,6 +338,9 @@ public class GpConfig {
         this.gpLogFile=new File(logDir, "genepattern.log");
         this.webserverLogFile=new File(logDir, "webserver.log");
         this.resourcesDir=in.resourcesDir;
+        if (in.resourcesDir != null) {
+            this.substitutionParams.put("resources", resourcesDir.getAbsolutePath());
+        }
         if (in.gpWorkingDir==null) {
             // legacy server, assume startup in <GenePatternServer>/Tomcat folder.
             this.gpWorkingDir=new File("").getAbsoluteFile();
