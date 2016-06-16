@@ -404,10 +404,16 @@ public class StartupServlet extends HttpServlet {
      * @return the servlet context (e.g. "/gp").
      */
     protected String initGpServletContext(final ServletConfig servletConfig) {
+        if (log.isDebugEnabled()) {
+            log.debug("servlet version: "+
+                    servletConfig.getServletContext().getMajorVersion() + "." +
+                    servletConfig.getServletContext().getMinorVersion());
+        }
+        
         // set the servlet context; 
         String gpServletContext=System.getProperty("GP_Path", "/gp");
         if (!gpServletContext.startsWith("/")) {
-            getLog().warn("appending '/' to gpServletContext");
+            getLog().warn("prepending '/' to gpServletContext");
             gpServletContext = "/" + gpServletContext;
         }
         if (gpServletContext.endsWith("/")) {
