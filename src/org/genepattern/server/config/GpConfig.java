@@ -5,6 +5,7 @@ package org.genepattern.server.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -895,6 +896,24 @@ public class GpConfig {
         }
         catch (NumberFormatException e) {
             log.error("Error parsing long value for property, "+key+"="+val);
+            return defaultValue;
+        }
+    }
+
+    public BigDecimal getGPBigDecimalProperty(final GpContext gpContext, final String key) {
+        return getGPBigDecimalProperty(gpContext, key, null);
+    }
+
+    public BigDecimal getGPBigDecimalProperty(final GpContext gpContext, final String key, final BigDecimal defaultValue) {
+        final String val = getGPProperty(gpContext, key);
+        if (Strings.isNullOrEmpty(val)) {
+            return defaultValue;
+        }
+        try {
+            return new BigDecimal(val);
+        }
+        catch (NumberFormatException e) {
+            log.error("Error parsing numerical value for property, "+key+"='"+val+"'", e);
             return defaultValue;
         }
     }

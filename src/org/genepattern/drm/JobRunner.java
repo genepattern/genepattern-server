@@ -97,6 +97,8 @@ public interface JobRunner {
     public static final String PROP_NODE_COUNT="job.nodeCount";
     /** 'job.cpuCount', the number of cpus requested for the given job  */
     public static final String PROP_CPU_COUNT="job.cpuCount";
+    /** The 'job.priority' for the job as a numerical value */
+    public static final String PROP_PRIORITY="job.priority";
     /** 'job.extraArgs', additional command line arguments passed to the queuing system when submitting a job. */
     public static final String PROP_EXTRA_ARGS="job.extraArgs";
     /** The optional 'job.project' property specifies a queuing system specific project name for the job, for example the '-P' arg to the LSF bsub command. */
