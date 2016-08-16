@@ -61,7 +61,7 @@ public class Demo {
     // common data hrefs, external
     public static final String dataFtpDir="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/";
     public static final String dataHttpDir="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
-    public static final String dataHttpsDir="https://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
+    public static final String dataHttpsDir="http://software.broadinstitute.org/cancer/software/genepattern/data/all_aml/";
     public static final String dataGsDir="https://dm.genomespace.org/datamanager/v1.0/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
     public static final String dataGsDir_noVersion="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
     
