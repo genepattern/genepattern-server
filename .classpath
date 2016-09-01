@@ -40,8 +40,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/forms-1.0.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/gp-modules.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
-	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
-	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/itext-1.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jacc-1_0-fr.jar"/>
@@ -62,7 +60,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgroups-2.2.8.jar"/>
-	<classpathentry kind="lib" path="test/lib/jmock-2.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jnet.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/js.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-api.jar"/>
@@ -135,7 +132,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
 	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
 	<classpathentry kind="lib" path="test/lib/com.springsource.org.objenesis-1.0.0.jar"/>
-	<classpathentry kind="lib" path="test/lib/com.springsource.org.hamcrest.core-1.1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.mail.jar"/>

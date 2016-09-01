@@ -3,7 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import java.io.File;
