@@ -135,7 +135,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.mail.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/postgresql-9.4-1201.jdbc41.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/postgresql-9.4.1209.jre7.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/reflections-0.10-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-connector-2.5.1.jar"/>
