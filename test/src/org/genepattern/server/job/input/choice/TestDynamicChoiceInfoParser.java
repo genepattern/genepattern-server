@@ -339,7 +339,7 @@ public class TestDynamicChoiceInfoParser {
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        assertEquals("num choices from "+ftpUrl, 148, choiceInfo.getChoices().size());
+        assertEquals("num choices from "+ftpUrl, 157, choiceInfo.getChoices().size());
     }
 
     /**
