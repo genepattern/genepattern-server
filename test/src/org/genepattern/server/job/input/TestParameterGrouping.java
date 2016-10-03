@@ -13,7 +13,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -25,31 +24,26 @@ import org.mockito.Mockito;
 public class TestParameterGrouping
 {
     final static private String adminUserId="admin";
-    private static GpConfig gpConfig;
-    private static GpContext userContext;
-    private static TaskLoader taskLoader;
     final static private String tBAdvancedParamsLsid ="urn:lsid:8080.nazaire.69.173.118.131:genepatternmodules:6:4";
     final static private String moduleZipFile = "TestBasicAdvancedParameters_v4.zip";
     
     @Rule
     public TemporaryFolder temp= new TemporaryFolder();
 
-    @BeforeClass
-    static public void beforeClass()
+    @Test
+    public void testNumParamGroups() throws Exception
     {
-        gpConfig=Mockito.mock(GpConfig.class);
-        userContext=new GpContext.Builder()
+        // setup ...
+        final GpConfig gpConfig=Mockito.mock(GpConfig.class);
+        final GpContext userContext=new GpContext.Builder()
             .userId(adminUserId)
             .isAdmin(true)
             .build();
 
-        taskLoader=new TaskLoader();
+        final TaskLoader taskLoader=new TaskLoader();
         taskLoader.addTask(TestParameterGrouping.class, moduleZipFile);
-    }
-
-    @Test
-    public void testNumParamGroups() throws Exception
-    {
+        // ... end setup
+        
         TaskInfo taskInfo = taskLoader.getTaskInfo(tBAdvancedParamsLsid);
 
         InputStream paramGroupsInputStream = TaskUtil.getSupportFileFromZip(
