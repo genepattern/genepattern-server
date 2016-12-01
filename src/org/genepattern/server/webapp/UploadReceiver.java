@@ -48,6 +48,9 @@ public class UploadReceiver extends HttpServlet {
     }
     
     protected String getParameter(List<FileItem> parameters, String param) {
+        if (parameters==null) {
+            return null;
+        }
         Iterator<FileItem> it = parameters.iterator();
         while (it.hasNext()) {
             FileItem postParameter = it.next();

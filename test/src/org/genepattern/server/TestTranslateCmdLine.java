@@ -184,7 +184,7 @@ public class TestTranslateCmdLine {
             .webappDir(new File("website"))
         .build();
         assertEquals(
-                Arrays.asList("echo", "genepattern.version=3.9.8", "GenePatternVersion=3.9.8"),
+                Arrays.asList("echo", "genepattern.version=3.9.9", "GenePatternVersion=3.9.9"),
                 CommandLineParser.translateCmdLine(gpConfig, gpContext, "echo genepattern.version=<genepattern.version> GenePatternVersion=<GenePatternVersion>", parameterInfoMap));
     }
 

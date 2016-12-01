@@ -56,7 +56,7 @@ public class RegisterServerBean {
     private final HibernateSessionManager mgr;
     
     // not in properties file so it cannot be (easily) overridden, but can be configured via setRegistrationUrl
-    private String registrationUrl="http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";  
+    private String registrationUrl="http://portals.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";  
     private String email;
     private String name;
     private String title;
