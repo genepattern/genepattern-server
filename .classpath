@@ -13,14 +13,19 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-junit-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-launcher-1.6.5.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/analysistoolmgmt-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-swing-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/asm-3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis.jar" sourcepath="/Broad/Java/axis/axis-1_4/src"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-ant.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-schema.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/colt.jar"/>
+	<classpathentry kind="lib" path="test/lib/com.springsource.org.objenesis-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-chain-1.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-codec-1.6.jar"/>
@@ -28,27 +33,60 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-digester.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-el-1.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar" sourcepath="external-src/commons-exec-1.2/commons-exec-1.2-sources.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-fileupload-1.1.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-io-2.0.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-lang-2.5.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-validator-1.3.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/concurrent-1.3.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/dm-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dom.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ehcache-1.2.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/el-api.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/el-ri.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/forms-1.0.5.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/genson-1.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/gp-modules.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/guice-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-c3p0-3.6.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-commons-annotations-3.2.0.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-core-3.6.10.Final.jar" sourcepath="/Users/Shared/Broad/dev/maven-repo/org/hibernate/hibernate-core/3.6.10.Final/hibernate-core-3.6.10.Final-sources.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-entitymanager-3.6.10.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-validator-4.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.3.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/httpcore-4.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb-2.3.4.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/httpmime-4.3.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-common-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/itext-1.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jacc-1_0-fr.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.9.4.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/Jama-1.0.1.jar"/>
+	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-compiler.jar"/>
+	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-runtime.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-2.0.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jasperreports-extensions-1.3.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxen-1.1-beta-7.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.ws.rs-api-2.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.mail.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-api-2.2.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-impl-2.2.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxen-1.1-beta-7.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxp-api.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jboss-cache.jar"/>
@@ -58,6 +96,14 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jcommon-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdnc-0_6-all.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jdom.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-connector-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-client-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-common-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-core-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-json-jettison-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-multipart-2.5.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-2.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jgroups-2.2.8.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jnet.jar"/>
@@ -66,12 +112,20 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-facelets.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jsf-impl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jstl.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-log4j12-1.7.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jul-to-slf4j-1.7.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jettison-1.3.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
+	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jta-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
+	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ojdbc14.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/oromatcher.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.commons.encodedtoken-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.commons.json-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.jose.jws-1.0.0.jar"/>
@@ -87,84 +141,30 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.resourceserver-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.resourceserver-filter-1.0.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.oltu.oauth2.test-utils-1.0.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.servicemix.specs.stax-api-1.0-1.0.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/oromatcher.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/oscache-2.3.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/PDFBox-0.6.7a.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/proxool-0.8.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/postgresql-9.4.1209.jre7.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/reflections-0.10-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/saaj.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/sax.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-api-1.7.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-log4j12-1.7.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/snakeyaml-1.6.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/standard.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/stax-api-1.0-2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/tomahawk-1.1.3.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/trove.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/versioncheck.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xalan.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-io-2.0.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-lang-2.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/dm-messages-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-common-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-messages-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-api-2.2.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-impl-2.2.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jettison-1.3.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/org.apache.servicemix.specs.stax-api-1.0-1.0.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/stax-api-1.0-2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/guice-2.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/httpcore-4.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/nekohtml-1.9.14.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/openid4java-0.9.6.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-core-asl-1.9.4.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jgrapht-jdk1.6.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.12.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/commons-exec-1.2.jar" sourcepath="external-src/commons-exec-1.2/commons-exec-1.2-sources.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/joda-time-2.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/edtftpj.jar"/>
-	<classpathentry kind="lib" path="test/lib/mockito-core-1.9.5.jar"/>
-	<classpathentry kind="lib" path="test/lib/com.springsource.org.objenesis-1.0.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/mysql-connector-java-5.1.33-bin.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/guava-15.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.mail.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/postgresql-9.4.1209.jre7.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/reflections-0.10-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.3.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-apache-connector-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-client-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-common-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-container-servlet-core-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-json-jettison-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-media-multipart-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jersey-server-2.5.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/genson-1.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/httpmime-4.3.1.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/javax.ws.rs-api-2.0.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/validation-api-1.1.0.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-commons-annotations-3.2.0.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-core-3.6.10.Final.jar" sourcepath="/Users/Shared/Broad/dev/maven-repo/org/hibernate/hibernate-core/3.6.10.Final/hibernate-core-3.6.10.Final-sources.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-entitymanager-3.6.10.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/slf4j-api-1.7.2.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-c3p0-3.6.3.Final.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/cglib-2.2.0-b21.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-validator-4.1.0.Final.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-compiler.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-runtime.jar"/>
-	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jsp-api.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
