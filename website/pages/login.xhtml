@@ -23,8 +23,11 @@
             <h:outputText value="Username and password do not match." rendered="#{loginBean.invalidPassword}" style="color: red; font-weight: bold;" />
 
             <h:form onsubmit="return validateForm(this);" id="loginForm">
-                <div style="font-weight: bold;">
-                    Sign in with <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />GenomeSpace
+                <div>
+                    <div style="display: inline-block; padding-bottom: 19px; vertical-align: middle; font-weight: bold;">
+                        Sign in with
+                    </div>
+                    <img src="/gp/pages/genomespace/genomespacelogo.png" width="100"/>
                 </div>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="Username:" for="username" />

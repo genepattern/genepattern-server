@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -120,6 +122,14 @@ public class RegistrationBean {
      *                ignored
      */
     public void registerUser(ActionEvent event) {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        try {
+            GenomeSpaceLoginManager.registerUser(request, username, password, email);
+        } catch (GenomeSpaceException e) {
+            UIBeanHelper.setErrorMessage("Invalid username or email.");
+            return;
+        }
+
         try {
             UserAccountManager.instance().createUser(username, password, email);
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
@@ -127,13 +137,13 @@ public class RegistrationBean {
                 sendJoinMailingListRequest();
             }
             //redirect to main page
-            HttpServletRequest request = UIBeanHelper.getRequest();
             HttpServletResponse response = UIBeanHelper.getResponse();
             String contextPath = request.getContextPath();
             response.sendRedirect( contextPath );
         } 
         catch (Exception e) {
             log.error(e);
+            UIBeanHelper.setErrorMessage("");
             throw new RuntimeException(e);
         }
     }

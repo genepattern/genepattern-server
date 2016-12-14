@@ -43,7 +43,7 @@
         <ui:define name="pageTitle">Register User</ui:define>
         <ui:define name="body">
             <h:form onsubmit="return validateForm(this);" id="registrationForm">
-                <h2>Enter the following information to create an account.</h2>
+                <h2>Enter the following information to create a GenomeSpace account.</h2>
                 <b />
                 <h:panelGrid columns="2">
                     <h:outputLabel value="Username:" for="username" />
@@ -94,7 +94,7 @@
                     </h:panelGroup>
                     <h:outputText value="" />
                     <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create my account." class="little" actionListener="#{registrationBean.registerUser}" />
-                    <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create My Account" class="little" actionListener="#{registrationBean.registerUser}" />
+                    <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create GenomeSpace Account" class="little" actionListener="#{registrationBean.registerUser}" />
 
                 </h:panelGrid>
             </h:form>

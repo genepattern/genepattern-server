@@ -152,9 +152,7 @@ public class GenomeSpaceClient {
     
     /**
      * Registers a new user with GenomeSpace using the provided information
-     * @deprecated - We no longer directly handle GenomeSpace registration
      */
-    @Deprecated
     public void registerUser(String env, String username, String password, String regEmail) throws GenomeSpaceException {
         if (env == null) {
             log.error("Environment for GenomeSpace not set");
@@ -169,6 +167,30 @@ public class GenomeSpaceClient {
         }
         catch (Throwable t) {
             throw new GenomeSpaceException("Error registering GenomeSpace account for username: " + username + ": " + t.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Send a temporary password to the user's email address
+     *
+     * @param env
+     * @param username
+     * @throws GenomeSpaceException
+     */
+    public void resetPassword(String env, String username) throws GenomeSpaceException {
+        if (env == null) {
+            log.error("Environment for GenomeSpace not set");
+            env = "test";
+        }
+
+        try {
+            ConfigurationUrls.init(env);
+            GsSession.setGSToolName("GenePattern");
+            GsSession gsSession = new GsSession();
+            gsSession.getUserManagerClient().resetUserPassword(username);
+        }
+        catch (Throwable t) {
+            throw new GenomeSpaceException("Error resetting password for GenomeSpace account for username: " + username + ": " + t.getLocalizedMessage());
         }
     }
     

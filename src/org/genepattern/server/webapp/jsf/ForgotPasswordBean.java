@@ -10,9 +10,13 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.MailSender;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class ForgotPasswordBean {
     private static Logger log = Logger.getLogger(ForgotPasswordBean.class);
@@ -28,40 +32,14 @@ public class ForgotPasswordBean {
     }
 
     public String resetPassword() {
-        final User user = new UserDAO(HibernateUtil.instance()).findById(username);
-        if (user == null) {
-            UIBeanHelper.setErrorMessage("User not registered: " + username);
-            return "failure";
-        }
-        final String email = user.getEmail();
-        if (email == null || email.length() == 0) {
-            UIBeanHelper.setErrorMessage("No email address for username: " + username);
-            return "failure";
-        }
-        
-        final String newPassword = RandomStringUtils.randomNumeric(8);
-        byte[] encryptedPassword;
+        HttpServletRequest request = UIBeanHelper.getRequest();
         try {
-            // try to encrypt the password before sending the email.
-            encryptedPassword = EncryptionUtil.encrypt(newPassword);
-        }
-        catch (NoSuchAlgorithmException e) {
-            log.error(e);
-            UIBeanHelper.setErrorMessage("Server configuration error: Unable to encrypt password. "
-                    + "\nContact the GenePattern server administrator for help.");
-            return "failure";
-        } 
-        
-        try {
-            sendResetPasswordMessage(email, newPassword);
-            user.setPassword(encryptedPassword);
-            UIBeanHelper.setInfoMessage("Your new password has been sent to " + email + ".");
+            GenomeSpaceLoginManager.resetPassword(request);
+            UIBeanHelper.setInfoMessage("A temporary password was sent to your registered email.");
             return "success";
         }
-        catch (Exception e) {
-            log.error(e);
-            UIBeanHelper.setErrorMessage("Unable to send email to '"+email+"': " + e.getLocalizedMessage() + ". " +
-                    "Contact the GenePattern server administrator for help.");
+        catch (GenomeSpaceException e) {
+            UIBeanHelper.setErrorMessage(e.getMessage());
             return "failure";
         }
     }

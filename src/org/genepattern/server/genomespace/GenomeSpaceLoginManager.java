@@ -220,6 +220,42 @@ public class GenomeSpaceLoginManager {
     }
 
     /**
+     * Register a new GenomeSpace user
+     *
+     * @param request
+     * @param username
+     * @param password
+     * @param email
+     * @throws GenomeSpaceException
+     */
+    public static void registerUser(HttpServletRequest request, String username, String password, String email) throws GenomeSpaceException {
+        GpContext context = GpContext.getServerContext();
+        String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
+        GenomeSpaceClientFactory.instance().registerUser(genomeSpaceEnvironment, username, password, email);
+    }
+
+    /**
+     * Resets the GenomeSpace password for the user and emails the temporary login
+     *
+     * @param request
+     * @throws GenomeSpaceException
+     */
+    public static void resetPassword(HttpServletRequest request) throws GenomeSpaceException {
+        String gsUsername = request.getParameter("username");
+        if (gsUsername == null) throw new GenomeSpaceException("No username or email provided.");
+
+        GpContext context = GpContext.getServerContext();
+        String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
+
+        try {
+            GenomeSpaceClientFactory.instance().resetPassword(genomeSpaceEnvironment, gsUsername);
+        }
+        catch (GenomeSpaceException e) {
+            throw new GenomeSpaceException("Unknown username or email.");
+        }
+    }
+
+    /**
      * Gets the username and password from the login form and log into GenomeSpace
      * Returns null if not authenticated or no GenomeSpace token is present
      *
