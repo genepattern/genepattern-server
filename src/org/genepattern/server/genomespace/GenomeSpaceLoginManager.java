@@ -218,6 +218,65 @@ public class GenomeSpaceLoginManager {
             return null;
         }
     }
+
+    /**
+     * Gets the username and password from the login form and log into GenomeSpace
+     * Returns null if not authenticated or no GenomeSpace token is present
+     *
+     * @param request
+     * @return
+     */
+    public static String authenticateFromUsername(HttpServletRequest request) {
+        // Get the token from the request
+        String gsUsername = request.getParameter("username");
+        String gsPassword = request.getParameter("password");
+        if (gsPassword == null) {
+            gsPassword = request.getParameter("loginForm:password");
+        }
+
+        // Return null if no password or username
+        if (gsPassword == null) return null;
+        if (gsUsername == null) return null;
+
+        // Attempt to log in using the GS username and password
+        try {
+            GpContext context = GpContext.getServerContext();
+            String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
+
+            GenomeSpaceLogin login = GenomeSpaceClientFactory.instance().submitLogin(genomeSpaceEnvironment, gsUsername, gsPassword);
+            boolean success = login != null;
+
+            if (success) {
+                // Set session attributes
+                setSessionAttributes(login, request.getSession());
+
+                // Look up the associated GenePattern username
+                String gp_username = GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
+
+                // If not yet an associated GenePattern username, lazily create one
+                if (gp_username == null) {
+                    // Create the GenePattern account
+                    if (!UserAccountManager.instance().userExists(gsUsername)) {
+                        gp_username = login.getUsername();
+                        String gp_email = login.getEmail();
+                        UserAccountManager.instance().createUser(gp_username, gsPassword, gp_email);
+                    }
+
+                    // Associate GP and GS account in the database
+                    GenomeSpaceDatabaseManager.updateDatabase(gp_username, login.getAuthenticationToken(), gsUsername, login.getEmail());
+                }
+
+                return gp_username;
+            }
+            else {
+                return null;
+            }
+        }
+        catch (Throwable t) {
+            log.info("Issue with logging into GenomeSpace via username");
+            return null;
+        }
+    }
     
     /**
      * Generates an available GenePattern username based on the given GenomeSpace username
