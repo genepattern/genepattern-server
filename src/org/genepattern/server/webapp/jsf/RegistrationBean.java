@@ -18,8 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
+import org.genepattern.server.genomespace.*;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -125,21 +124,28 @@ public class RegistrationBean {
         HttpServletRequest request = UIBeanHelper.getRequest();
         try {
             GenomeSpaceLoginManager.registerUser(request, username, password, email);
-        } catch (GenomeSpaceException e) {
+        }
+        catch (GenomeSpaceException e) {
             UIBeanHelper.setErrorMessage("Invalid username or email.");
             return;
         }
 
         try {
-            UserAccountManager.instance().createUser(username, password, email);
-            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
+            // Create the user
+            //UserAccountManager.instance().createUser(username, password, email);
+            //LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
+
+            // Handle the mailing list
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
             }
-            //redirect to main page
+
+            // Email confirmation message
+            UIBeanHelper.setInfoMessage("A confirmation email has been sent to your email address. Please confirm your email and then log in.");
+
+            // Redirect to main page
             HttpServletResponse response = UIBeanHelper.getResponse();
-            String contextPath = request.getContextPath();
-            response.sendRedirect( contextPath );
+            response.sendRedirect("/gp/pages/login.jsf?emailConfirm=true");
         } 
         catch (Exception e) {
             log.error(e);

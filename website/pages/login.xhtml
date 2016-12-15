@@ -21,6 +21,7 @@
             <h:outputText value="Username and password do not match." style="color: red; font-weight: bold;" rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
             <h:outputText value="Username and password do not match." style="color: red; font-weight: bold;" rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
             <h:outputText value="Username and password do not match." rendered="#{loginBean.invalidPassword}" style="color: red; font-weight: bold;" />
+            <h:outputText value="A confirmation email has been sent to your email address. Please confirm your email and then log in." rendered="#{loginBean.emailSent}" style="font-weight: bold;" />
 
             <h:form onsubmit="return validateForm(this);" id="loginForm">
                 <div>

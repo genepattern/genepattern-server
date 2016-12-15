@@ -60,6 +60,10 @@ public class LoginBean {
         return unknownUser;
     }
 
+    public boolean isEmailSent() {
+        return UIBeanHelper.getRequest().getParameter("emailConfirm") != null;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
