@@ -18,6 +18,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.hsqldb.Server;
 
+import com.google.common.base.Strings;
+
 public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
     
@@ -53,10 +55,29 @@ public class HsqlDbUtil {
             return rval;
         }
         
-        Integer hsqlPort=gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001);
+        final Integer hsqlPort = initHsqlPort(gpConfig, gpContext);
         
         // initialize from the dbFilePath
         return initHsqlArgs(hsqlPort, dbFilePath);
+    }
+
+    protected static Integer initHsqlPort(final GpConfig gpConfig, final GpContext gpContext) {
+        // the HSQL_port can optionally be set in database_custom.properties
+        final String hsqlPort_db_custom=
+                gpConfig == null ? null :
+                    gpConfig.getDbProperties() == null ? null :
+                        gpConfig.getDbProperties().getProperty("HSQL_port");
+        if (!Strings.isNullOrEmpty(hsqlPort_db_custom)) {
+            try {
+                return Integer.parseInt(hsqlPort_db_custom);
+            }
+            catch (NumberFormatException e) {
+                log.error("Error parsing integer value for property, HSQL_port="+hsqlPort_db_custom+" in database_custom.properties");
+            }
+        }
+
+        // else fall back to GP <= 3.9.8 implementation, can only be set in genepattern.properties or custom.properties 
+        return gpConfig.getGPIntegerProperty(gpContext, "HSQL_port", 9001);
     }
     
     protected static File initDbFilePath(GpConfig gpConfig) throws DbException {
