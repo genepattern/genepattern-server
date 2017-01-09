@@ -65,6 +65,10 @@ public class UrlUtil {
             return false;
         }
 
+        if (addr.isSiteLocalAddress()) {
+            return true;
+        }
+
         // Check if the address is a valid special local or loop back
         if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
             return true;
