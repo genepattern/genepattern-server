@@ -80,6 +80,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             return (200 <= responseCode && responseCode <= 399);
         } 
         catch (IOException exception) {
+            log.debug("Unable to ping: "+url, exception);
             return false;
         }
         catch (Throwable t) {

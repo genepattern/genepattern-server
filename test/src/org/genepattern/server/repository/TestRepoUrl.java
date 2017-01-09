@@ -54,7 +54,7 @@ public class TestRepoUrl {
      * @return the details loaded from the remote url
      */
     protected static RepositoryInfo checkRepoInfoFromUrl(final String repoUrlStr) {
-        final int ping_timeout_millis=1000;
+        final int ping_timeout_millis=5000;
         URL repoUrl;
         try {
             repoUrl = new URL(repoUrlStr);
