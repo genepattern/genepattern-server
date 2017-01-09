@@ -38,9 +38,9 @@ import org.yaml.snakeyaml.Yaml;
  * <pre>
  *     <repoUrl>/about/about.yaml
  * e.g. for the Broad production repository,
- *     http://www.broadinstitute.org/webservices/gpModuleRepository/about/about.yaml
+ *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/about.yaml
  * e.g. for the Broad dev repository,
- *     http://www.broadinstitute.org/webservices/gpModuleRepository/about/dev/about.yaml
+ *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/dev/about.yaml
  * </pre>
  * 
  * If an about.yaml file is not present in the repository, 
@@ -88,6 +88,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         }
     }
     
+    //TODO: fix this, must pass in a valid gpConfig instance and load properties from there
     final static private List<String> getModuleRepositoryUrlsFromGpProps() { 
         final String moduleRepositoryUrls=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URLS, RepositoryInfo.DEFAULT_MODULE_REPOSITORY_URLS);
         if (moduleRepositoryUrls==null) {
@@ -376,7 +377,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
         return info;
     }
 
-    private RepositoryInfo initRepositoryInfo(final String repoUrl) {
+    private static RepositoryInfo initRepositoryInfo(final String repoUrl) {
         final URL url;
         try {
             url=new URL(repoUrl);
@@ -423,7 +424,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
      * 
      * @return
      */
-    private RepositoryInfo initDetailsFromRepo(final URL repoUrl) {
+    public static RepositoryInfo initDetailsFromRepo(final URL repoUrl) {
         if (repoUrl==null) {
             log.error("repoUrl==null");
             return null;

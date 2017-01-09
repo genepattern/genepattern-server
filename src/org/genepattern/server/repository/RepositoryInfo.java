@@ -16,11 +16,11 @@ public class RepositoryInfo {
     final static public String PROP_MODULE_REPOSITORY_URL="ModuleRepositoryURL";
     final static public String PROP_MODULE_REPOSITORY_URLS="ModuleRepositoryURLs";
     
-    final static public String BROAD_PROD_URL="http://www.broadinstitute.org/webservices/gpModuleRepository";
-    final static public String BROAD_BETA_URL="http://www.broadinstitute.org/webservices/betaModuleRepository";
-    final static public String BROAD_DEV_URL="http://www.broadinstitute.org/webservices/gpModuleRepository?env=dev";
+    final static public String BROAD_PROD_URL="http://software.broadinstitute.org/webservices/gpModuleRepository";
+    final static public String BROAD_BETA_URL="http://software.broadinstitute.org/webservices/betaModuleRepository";
+    final static public String BROAD_DEV_URL="http://software.broadinstitute.org/webservices/gpModuleRepository?env=dev";
     //internal path to gparc, http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository
-    final static public String GPARC_URL="http://www.broadinstitute.org/webservices/gparcModuleRepository";
+    final static public String GPARC_URL="http://software.broadinstitute.org/webservices/gparcModuleRepository";
     
     final static public String DEFAULT_MODULE_REPOSITORY_URLS=
             BROAD_PROD_URL+","+GPARC_URL+","+BROAD_BETA_URL;
@@ -30,6 +30,19 @@ public class RepositoryInfo {
      */
     final static public RepositoryInfoLoader getRepositoryInfoLoader(final GpContext userContext) {
         return new ConfigRepositoryInfoLoader(userContext);
+    }
+    
+    /**
+     * Is the module installed from the Broad production module repository.
+     * Handles the special-case for modules which were installed before the 
+     * module repository changed from the old 'www' url to the new 'software' url.
+     * 
+     * @param repoUrl, the REPO_URL from the TASK_INSTALL table
+     * @return true if the repoUrl matches the old or new prod repo
+     */
+    public static final boolean isBroadProdUrl(final String repoUrl) {
+        return repoUrl.equalsIgnoreCase(BROAD_PROD_URL) ||
+                repoUrl.equalsIgnoreCase("http://www.broadinstitute.org/webservices/gpModuleRepository");
     }
     
     private String label="";
