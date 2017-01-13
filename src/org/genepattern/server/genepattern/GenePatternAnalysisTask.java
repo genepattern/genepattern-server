@@ -3877,7 +3877,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static final String downloadTask(final String zipURL) throws IOException {
-        return downloadTask(zipURL, null, -1, true);
+        return FileDownloader.downloadTask(zipURL, null, -1, true);
     }
 
     /**
@@ -3892,70 +3892,7 @@ public class GenePatternAnalysisTask {
      */
     public static String downloadTask(final String zipURL, final org.genepattern.server.webservice.server.Status statusMonitor, final long expectedLength, final boolean verbose)
             throws IOException {
-        File zipFile = null;
-        long downloadedBytes = 0;
-        try {
-            log.debug("downloading file from zipUrl='"+zipURL+"'");
-            zipFile = File.createTempFile("task", ".zip");
-            zipFile.deleteOnExit();
-            final FileOutputStream os = new FileOutputStream(zipFile);
-            final URLConnection uc = new URL(zipURL).openConnection();
-            log.debug("opened connection");
-            long downloadSize = -1;
-            if (uc instanceof HttpURLConnection) {
-                downloadSize = ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
-            }
-            else if (expectedLength == -1) {
-                downloadSize = uc.getContentLength();
-            }
-            else {
-                downloadSize = expectedLength;
-            }
-            if ((statusMonitor != null) && (downloadSize != -1) && verbose) {
-                statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); 
-            }
-            if ((statusMonitor != null)) {
-                statusMonitor.beginProgress("download");
-            }
-            InputStream is = uc.getInputStream();
-            byte[] buf = new byte[100000];
-            int i;
-            long lastPercent = 0;
-            while ((i = is.read(buf, 0, buf.length)) > 0) {
-                downloadedBytes += i;
-                os.write(buf, 0, i);
-                if (downloadSize > -1) {
-                    long pctComplete = 100 * downloadedBytes / downloadSize;
-                    if (lastPercent != pctComplete) {
-                        if (statusMonitor != null) {
-                            // Each dot represents 100KB.
-                            statusMonitor.continueProgress((int) pctComplete);
-                        }
-                        lastPercent = pctComplete;
-                    }
-                }
-            }
-            is.close();
-            os.close();
-            if (downloadedBytes == 0) {
-                throw new IOException("Nothing downloaded from " + zipURL);
-            }
-            return zipFile.getPath();
-        }
-        catch (IOException ioe) {
-            log.info("Error in downloadTask: " + ioe.getMessage());
-            zipFile.delete();
-            throw ioe;
-        }
-        finally {
-            log.debug("downloaded " + downloadedBytes + " bytes");
-            if (statusMonitor != null) {
-                statusMonitor.endProgress();
-                if (verbose) {
-                    statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
-                }
-            }
-        }
+        return FileDownloader.downloadTask(zipURL, statusMonitor, expectedLength, verbose);
     }
 
     /**
