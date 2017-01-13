@@ -493,7 +493,7 @@ public class PluginManagerLegacy {
      */
     private static String downloadPatch(String url, Status taskIntegrator, long expectedContentLength) throws IOException {
         try {
-            return GenePatternAnalysisTask.downloadTask(url, taskIntegrator, expectedContentLength, false);
+            return GenePatternAnalysisTask.downloadTask(url, taskIntegrator, expectedContentLength);
         } 
         catch (IOException ioe) {
             if (ioe.getCause() != null) {

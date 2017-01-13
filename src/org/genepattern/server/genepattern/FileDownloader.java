@@ -11,6 +11,15 @@ import java.net.URLConnection;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.Status;
 
+/**
+ * File download utility for transferring files from remote URLs into the GP server file system.
+ * 
+ * Originally created from code in GenePatternAnalysisTask for downloading zip files 
+ * from the module repository.
+ * 
+ * @author pcarr
+ *
+ */
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
 
@@ -24,7 +33,7 @@ public class FileDownloader {
      * @return String filename of temporary downloaded file on server
      * @throws IOException
      */
-    public static String downloadTask(final String zipURL, final Status statusMonitor, final long expectedLength, final boolean verbose)
+    public static String downloadTask(final String zipURL, final Status statusMonitor, final long expectedLength)
             throws IOException {
         File zipFile = null;
         long downloadedBytes = 0;
@@ -45,7 +54,7 @@ public class FileDownloader {
             else {
                 downloadSize = expectedLength;
             }
-            if ((statusMonitor != null) && (downloadSize != -1) && verbose) {
+            if ((statusMonitor != null) && (downloadSize != -1)) {
                 statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); 
             }
             if ((statusMonitor != null)) {
@@ -85,9 +94,7 @@ public class FileDownloader {
             log.debug("downloaded " + downloadedBytes + " bytes");
             if (statusMonitor != null) {
                 statusMonitor.endProgress();
-                if (verbose) {
-                    statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
-                }
+                statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
             }
         }
     }
