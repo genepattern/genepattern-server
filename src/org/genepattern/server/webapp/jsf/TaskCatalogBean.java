@@ -26,6 +26,8 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.plugin.PatchInfo;
+import org.genepattern.server.plugin.PluginRegistryGpDb;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.ModuleRepository;
@@ -212,9 +214,9 @@ public class TaskCatalogBean {
 
     }
 
-    protected Map<String, InstallTask> loadPatchInfoMapFromRepository(final GpConfig gpConfig) {
+    protected Map<String, InstallTask> loadPatchInfoMapFromRepository(final GpConfig gpConfig, final GpContext gpContext) {
         try {
-            final String reposUrlStr=gpConfig.getGPProperty(GpContext.getServerContext(), "DefaultPatchRepositoryURL");
+            final String reposUrlStr=gpConfig.getGPProperty(gpContext, "DefaultPatchRepositoryURL");
             final URL reposUrl=new URL(reposUrlStr);
             final InstallTask[] patches = new ModuleRepository(reposUrl).parse(reposUrlStr);
             if (patches != null && patches.length > 0) {
@@ -242,13 +244,22 @@ public class TaskCatalogBean {
         return Collections.emptyMap();
     }
     
-    protected Set<String> getInstalledPatchLsids() {
-        String installedPatchLSIDsString = System.getProperty("installedPatchLSIDs");
-        Set<String> installedPatches = new HashSet<String>();
-        if (installedPatchLSIDsString != null) {
-            installedPatches.addAll(Arrays.asList(installedPatchLSIDsString.split(",")));
+    protected Set<String> getInstalledPatchLsids(final GpConfig gpConfig, final GpContext gpContext) {
+        try {
+            final List<PatchInfo> installedPatches = new PluginRegistryGpDb()
+                    .getInstalledPatches(gpConfig, gpContext);
+            if (installedPatches != null && installedPatches.size() > 0) {
+                final Set<String> installedPatchLsids=new HashSet<String>();
+                for(final PatchInfo patchInfo : installedPatches) {
+                    installedPatchLsids.add(patchInfo.getLsid());
+                }
+                return installedPatchLsids;                
+            }
         }
-        return installedPatches;
+        catch (Exception e) {
+            log.error("Error getting installed patches from database", e);
+        }
+        return Collections.emptySet();
     }
     
     /**
@@ -261,8 +272,15 @@ public class TaskCatalogBean {
             return;
         }
         
-        final Map<String, InstallTask> lsidToPatchMap = loadPatchInfoMapFromRepository(ServerConfigurationFactory.instance());
-        final Set<String> installedPatches=getInstalledPatchLsids();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext gpContext=GpContext.getServerContext();
+        final Map<String, InstallTask> lsidToPatchMap = loadPatchInfoMapFromRepository(gpConfig, gpContext);
+        if (lsidToPatchMap.isEmpty()) {
+            //short-circuit, no need to check for installed patches ...
+            // ... only listing entries from the repository
+            return;
+        }
+        final Set<String> installedPatches=getInstalledPatchLsids(gpConfig, gpContext);
         for (final MyTask task : tasks) {
             String temp = (String) task.getAttributes().get("requiredPatchLSIDs");
             String[] patchLsids = (temp != null && !"".equals(temp)) ? patchLsids = temp.split(",") : new String[0];
