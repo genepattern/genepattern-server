@@ -21,6 +21,9 @@ import java.util.Set;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
@@ -209,60 +212,81 @@ public class TaskCatalogBean {
 
     }
 
-    private void updatePatches() {
-        HashMap<String, InstallTask> lsidToPatchMap = new HashMap<String, InstallTask>();
+    protected Map<String, InstallTask> loadPatchInfoMapFromRepository(final GpConfig gpConfig) {
         try {
-            final String reposUrlStr = System.getProperty("DefaultPatchRepositoryURL");
+            final String reposUrlStr=gpConfig.getGPProperty(GpContext.getServerContext(), "DefaultPatchRepositoryURL");
             final URL reposUrl=new URL(reposUrlStr);
-            InstallTask[] patches = new ModuleRepository(reposUrl).parse(reposUrl.toExternalForm());
-            if (patches != null) {
+            final InstallTask[] patches = new ModuleRepository(reposUrl).parse(reposUrlStr);
+            if (patches != null && patches.length > 0) {
+                final Map<String, InstallTask> lsidToPatchMap = new HashMap<String, InstallTask>();
                 for (InstallTask t : patches) {
                     lsidToPatchMap.put(t.getLsid(), t);
                 }
+                return lsidToPatchMap;
             }
-        } catch (Exception e) {
-            log.error(e);
-            e.printStackTrace();
         }
-        List<MyTask> tasks = getTasks();
+        catch (MalformedURLException e) {
+            log.error(e);
+        }
+        catch (FileNotFoundException e) {
+            log.error(e);
+            
+        }
+        catch (Exception e) {
+            log.error(e);
+            
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        return Collections.emptyMap();
+    }
+    
+    protected Set<String> getInstalledPatchLsids() {
         String installedPatchLSIDsString = System.getProperty("installedPatchLSIDs");
         Set<String> installedPatches = new HashSet<String>();
         if (installedPatchLSIDsString != null) {
             installedPatches.addAll(Arrays.asList(installedPatchLSIDsString.split(",")));
         }
-        if (tasks != null) {
-
-            for (MyTask t : tasks) {
-
-                String temp = (String) t.getAttributes().get("requiredPatchLSIDs");
-                String[] patchLsids = (temp != null && !"".equals(temp)) ? patchLsids = temp.split(",") : new String[0];
-
-                List<Patch> patches = new ArrayList<Patch>();
-                for (String patchLsid : patchLsids) {
-                    patchLsid = patchLsid.trim();
-                    if (installedPatches.contains(patchLsid)) {
-                        // ignore patches that are already installed
-                        continue;
-                    }
-                    InstallTask installTaskPatch = lsidToPatchMap.get(patchLsid);
-                    if (installTaskPatch != null) {
-                        Patch patch = new Patch();
-                        patch.name = installTaskPatch.getName();
-                        patch.size = installTaskPatch.getDownloadSize();
-                        patches.add(patch);
-
-                    } else {
-                        log.info("Patch " + patchLsid + " required by " + t.getName()
-                                + " not found in patch repository.");
-
-                    }
-
-                }
-                t.setPatches(patches);
-
-            }
+        return installedPatches;
+    }
+    
+    /**
+     * optionally setPatches for each item in the list of tasks 
+     * 
+     */
+    private void updatePatches(final List<MyTask> tasks) {
+        if (tasks == null || tasks.size() == 0) {
+            //short-circuit
+            return;
         }
+        
+        final Map<String, InstallTask> lsidToPatchMap = loadPatchInfoMapFromRepository(ServerConfigurationFactory.instance());
+        final Set<String> installedPatches=getInstalledPatchLsids();
+        for (final MyTask task : tasks) {
+            String temp = (String) task.getAttributes().get("requiredPatchLSIDs");
+            String[] patchLsids = (temp != null && !"".equals(temp)) ? patchLsids = temp.split(",") : new String[0];
+            final List<Patch> patches = new ArrayList<Patch>();
+            for (String patchLsid : patchLsids) {
+                patchLsid = patchLsid.trim();
+                if (installedPatches.contains(patchLsid)) {
+                    // ignore patches that are already installed
+                    continue;
+                }
+                final InstallTask installTaskPatch = lsidToPatchMap.get(patchLsid);
+                if (installTaskPatch != null) {
+                    final Patch patch = new Patch();
+                    patch.name = installTaskPatch.getName();
+                    patch.size = installTaskPatch.getDownloadSize();
+                    patches.add(patch);
 
+                } 
+                else {
+                    log.info("Patch " + patchLsid + " required by " + task.getName() + " not found in patch repository.");
+                }
+            }
+            task.setPatches(patches);
+        }
     }
 
     public List<MyTask> getTasks() {
@@ -466,7 +490,7 @@ public class TaskCatalogBean {
 
         }
         Collections.sort(filteredTasks, new TaskNameComparator());
-        updatePatches();
+        updatePatches(filteredTasks);
 
     }
 
