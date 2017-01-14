@@ -214,11 +214,26 @@ public class TaskCatalogBean {
 
     }
 
-    protected Map<String, InstallTask> loadPatchInfoMapFromRepository(final GpConfig gpConfig, final GpContext gpContext) {
+    protected Map<String, InstallTask> loadPatchInfoMap(final GpConfig gpConfig, final GpContext gpContext) {
+        if (log.isDebugEnabled()) {
+            log.debug("returning empty map, method not implemented");
+        }
+        return Collections.emptyMap();
+    }
+
+    /** 
+     * @deprecated no longer working after changing DefaultPatchRepositoryURL
+     * 
+     * Example usage: 
+     * <pre>
+        final String defaultPatchRepositoryUrl=gpConfig.getGPProperty(gpContext, "DefaultPatchRepositoryURL");
+        return loadPatchInfoMapFromRepository(defaultPatchRepositoryUrl);
+     * </pre>
+     */
+    protected Map<String, InstallTask> loadPatchInfoMapFromRepository(final String patchReposUrlStr) {
         try {
-            final String reposUrlStr=gpConfig.getGPProperty(gpContext, "DefaultPatchRepositoryURL");
-            final URL reposUrl=new URL(reposUrlStr);
-            final InstallTask[] patches = new ModuleRepository(reposUrl).parse(reposUrlStr);
+            final URL patchReposUrl=new URL(patchReposUrlStr);
+            final InstallTask[] patches = new ModuleRepository(patchReposUrl).parse(patchReposUrlStr);
             if (patches != null && patches.length > 0) {
                 final Map<String, InstallTask> lsidToPatchMap = new HashMap<String, InstallTask>();
                 for (InstallTask t : patches) {
@@ -243,7 +258,7 @@ public class TaskCatalogBean {
         }
         return Collections.emptyMap();
     }
-    
+
     protected Set<String> getInstalledPatchLsids(final GpConfig gpConfig, final GpContext gpContext) {
         try {
             final List<PatchInfo> installedPatches = new PluginRegistryGpDb()
@@ -274,7 +289,7 @@ public class TaskCatalogBean {
         
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext gpContext=GpContext.getServerContext();
-        final Map<String, InstallTask> lsidToPatchMap = loadPatchInfoMapFromRepository(gpConfig, gpContext);
+        final Map<String, InstallTask> lsidToPatchMap = loadPatchInfoMap(gpConfig, gpContext);
         if (lsidToPatchMap.isEmpty()) {
             //short-circuit, no need to check for installed patches ...
             // ... only listing entries from the repository
