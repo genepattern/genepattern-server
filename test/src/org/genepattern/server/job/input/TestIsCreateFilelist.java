@@ -55,7 +55,8 @@ public class TestIsCreateFilelist {
     }
 
     protected GpConfig initGpConfig() throws IOException {
-        final String userDir=temp.newFolder("users").getAbsolutePath();
+        final File rootDir=temp.newFolder();
+        final String userDir=new File(rootDir, "users").getAbsolutePath();
         final GpConfig gpConfig=new GpConfig.Builder()
             .webappDir(new File("./website"))
             .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
