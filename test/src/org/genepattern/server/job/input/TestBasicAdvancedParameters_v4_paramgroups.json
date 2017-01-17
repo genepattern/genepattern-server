@@ -1,0 +1,4 @@
+[
+	{
+		name: "Basic/Required", description: "This contains the required parameters", hidden: false, parameters: ["basic.required.parameter.1", "basic.required.parameter.2"]}, {name: "Advanced", description: "This contains the advanced parameters", hidden: true, parameters: ["advanced.parameter.1", "advanced.parameter.2"]}, 
+	{name: "Basic", parameters: ["basic.parameter.1", "basic.parameter.2"]}]
