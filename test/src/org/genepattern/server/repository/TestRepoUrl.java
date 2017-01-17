@@ -58,8 +58,8 @@ public class TestRepoUrl {
         URL repoUrl;
         try {
             repoUrl = new URL(repoUrlStr);
-            final boolean success=ConfigRepositoryInfoLoader.ping(repoUrl.toExternalForm(), ping_timeout_millis);
-            assertTrue("ping", success);
+            final boolean success=ConfigRepositoryInfoLoader.ping(repoUrlStr, ping_timeout_millis);
+            assertTrue("ping "+repoUrlStr, success);
             return ConfigRepositoryInfoLoader.initDetailsFromRepo(repoUrl);
         }
         catch (MalformedURLException e) {
