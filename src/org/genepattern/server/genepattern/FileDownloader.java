@@ -23,6 +23,15 @@ import org.genepattern.server.webservice.server.Status;
 public class FileDownloader {
     private static final Logger log = Logger.getLogger(FileDownloader.class);
 
+    protected static long getContentLength(final URLConnection uc) {
+        if (uc instanceof HttpURLConnection) {
+            return ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
+        }
+        else {
+            return uc.getContentLength();
+        }
+    }
+    
     /**
      * downloads a file from a URL and returns the path to the local file to the caller.
      * 
@@ -33,7 +42,7 @@ public class FileDownloader {
      * @return String filename of temporary downloaded file on server
      * @throws IOException
      */
-    public static String downloadTask(final String zipURL, final Status statusMonitor, final long expectedLength)
+    public static String downloadTask(final String zipURL, final Status statusMonitor)
             throws IOException {
         File zipFile = null;
         long downloadedBytes = 0;
@@ -44,16 +53,7 @@ public class FileDownloader {
             final FileOutputStream os = new FileOutputStream(zipFile);
             final URLConnection uc = new URL(zipURL).openConnection();
             log.debug("opened connection");
-            long downloadSize = -1;
-            if (uc instanceof HttpURLConnection) {
-                downloadSize = ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
-            }
-            else if (expectedLength == -1) {
-                downloadSize = uc.getContentLength();
-            }
-            else {
-                downloadSize = expectedLength;
-            }
+            final long downloadSize = getContentLength(uc);
             if ((statusMonitor != null) && (downloadSize != -1)) {
                 statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); 
             }
@@ -67,7 +67,7 @@ public class FileDownloader {
             while ((i = is.read(buf, 0, buf.length)) > 0) {
                 downloadedBytes += i;
                 os.write(buf, 0, i);
-                if (downloadSize > -1) {
+                if (downloadSize > 0) {
                     long pctComplete = 100 * downloadedBytes / downloadSize;
                     if (lastPercent != pctComplete) {
                         if (statusMonitor != null) {

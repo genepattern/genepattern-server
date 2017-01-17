@@ -3877,7 +3877,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static final String downloadTask(final String zipURL) throws IOException {
-        return FileDownloader.downloadTask(zipURL, null, -1);
+        return FileDownloader.downloadTask(zipURL, null);
     }
 
     /**
@@ -3890,9 +3890,9 @@ public class GenePatternAnalysisTask {
      * @return String filename of temporary downloaded file on server
      * @throws IOException
      */
-    public static String downloadTask(final String zipURL, final org.genepattern.server.webservice.server.Status statusMonitor, final long expectedLength)
+    public static String downloadTask(final String zipURL, final org.genepattern.server.webservice.server.Status statusMonitor)
             throws IOException {
-        return FileDownloader.downloadTask(zipURL, statusMonitor, expectedLength);
+        return FileDownloader.downloadTask(zipURL, statusMonitor);
     }
 
     /**
