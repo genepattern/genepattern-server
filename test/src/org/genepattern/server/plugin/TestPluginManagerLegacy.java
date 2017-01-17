@@ -110,7 +110,7 @@ public class TestPluginManagerLegacy {
                 pluginMgr.getPatchDirectory(new LSID(ANT)));
     }
     
-    @Test(expected=ConfigurationException.class)
+    @Test(expected=JobDispatchException.class)
     public void getPatchDirectory_ConfigurationException() throws Exception {
         gpConfig=Mockito.mock(GpConfig.class);
         serverContext=Mockito.mock(GpContext.class);
