@@ -178,7 +178,7 @@ public class PluginManagerLegacy {
         } 
         for(final PatchInfo patchToInstall : patchesToInstall) {
             // download and install this patch
-            checkInstallPatch(patchToInstall, status);
+            installIfAbsent(patchToInstall, status);
         }
         // end of loop for each patch LSID for the task
         return true;
@@ -190,7 +190,7 @@ public class PluginManagerLegacy {
      * @param status indicator, can be null
      * @throws Exception
      */
-    protected void checkInstallPatch(final PatchInfo patchInfo, final Status status) throws Exception {
+    protected void installIfAbsent(final PatchInfo patchInfo, final Status status) throws Exception {
         final boolean isInTransaction=mgr.isInTransaction();
         if (mgr.isInTransaction()) {
             log.debug("isInTransaction="+isInTransaction+", closeCurrentSession");
