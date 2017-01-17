@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -32,14 +33,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.FileDownloader;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.LSID;
@@ -227,15 +227,15 @@ public class PluginManagerLegacy {
      * Get the location on the server file system for installing the patch.
      * @param patchLSID
      * @return
-     * @throws ConfigurationException, if there is no configured root plugin directory (e.g. '<GENEPATTERN_HOME>/patches')
+     * @throws JobDispatchException, if there is no configured root plugin directory (e.g. '<GENEPATTERN_HOME>/patches')
      */
     protected File getPatchDirectory(final LSID patchLSID) 
-    throws ConfigurationException
+    throws JobDispatchException
     {
         final String patchDirName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
         File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
         if (rootPluginDir==null) {
-            throw new ConfigurationException("Configuration error: Unable to get patch directory");
+            throw new JobDispatchException("Configuration error: Unable to get patch directory");
         }
         return new File(rootPluginDir, patchDirName);
     }
@@ -247,13 +247,7 @@ public class PluginManagerLegacy {
      */
     protected void installPatch(final PatchInfo patchInfo, final Status status) throws JobDispatchException {
         log.debug("installPatch, lsid="+patchInfo.getLsid()+", url="+patchInfo.getUrl());
-        File patchDirectory = null; 
-        try {
-            patchDirectory = getPatchDirectory(patchInfo.getPatchLsid());
-        }
-        catch (Throwable t) {
-            throw new JobDispatchException(t.getLocalizedMessage(), t);
-        }
+        final File patchDirectory = getPatchDirectory(patchInfo.getPatchLsid());
         if (status != null) {
             status.statusMessage("Downloading required patch from " + patchInfo.getUrl() + "...");
         }
@@ -420,16 +414,9 @@ public class PluginManagerLegacy {
      * @return
      * @throws IOException
      */
-    private static String downloadPatch(final String url, final Status taskIntegrator) throws IOException {
-        try {
-            return GenePatternAnalysisTask.downloadTask(url, taskIntegrator);
-        } 
-        catch (IOException ioe) {
-            if (ioe.getCause() != null) {
-                ioe = (IOException) ioe.getCause();
-            }
-            throw new IOException(ioe.toString() + " while downloading " + url);
-        }
+    protected static String downloadPatch(final String url, final Status status) throws IOException {
+        final URL patchUrl = new URL(url.replaceFirst("http://www.broadinstitute.org/", "http://software.broadinstitute.org/"));
+        return FileDownloader.downloadTask(patchUrl, status);
     }
 
     // unzip the patch files into their own directory
