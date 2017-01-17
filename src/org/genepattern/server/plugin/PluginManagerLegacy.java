@@ -420,12 +420,12 @@ public class PluginManagerLegacy {
     }
 
     // unzip the patch files into their own directory
-    private static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator) throws IOException {
-        explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
+    private static void explodePatch(String zipFilename, File patchDirectory, Status status) throws IOException {
+        explodePatch(zipFilename, patchDirectory, status, null);
     }
 
     // unzip the patch files into their own directory
-    private static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator, String zipEntryName)
+    private static void explodePatch(final String zipFilename, final File patchDirectory, final Status status, final String zipEntryName)
     throws IOException 
     {
         ZipFile zipFile = new ZipFile(zipFilename);
@@ -445,8 +445,8 @@ public class PluginManagerLegacy {
             }
             final File outFile = new File(patchDirectory, zipEntry.getName());
             if (zipEntry.isDirectory()) {
-                if (taskIntegrator != null) {
-                    taskIntegrator.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
+                if (status != null) {
+                    status.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
                 }
                 outFile.mkdirs();
                 continue;
@@ -487,7 +487,7 @@ public class PluginManagerLegacy {
     /**
      * Run the patch command line in the patch directory, returning the exit code from the executable.
      */
-    private static int executePatch(String[] commandLineArray, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
+    private static int executePatch(String[] commandLineArray, File patchDirectory, Status status) throws IOException, InterruptedException {
         if (log.isDebugEnabled()) {
             log.debug("patch dir="+patchDirectory);
             log.debug("patch commandLine ...");
@@ -509,9 +509,9 @@ public class PluginManagerLegacy {
         // there is no stdin to feed to the program. So if it asks, let it see EOF!
 
         // create threads to read from the command's stdout and stderr streams
-        Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
+        Thread outputReader = (status != null) ? antStreamCopier(process.getInputStream(), status)
                 : streamCopier(process.getInputStream(), System.out);
-        Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(
+        Thread errorReader = (status != null) ? antStreamCopier(process.getErrorStream(), status) : streamCopier(
                 process.getInputStream(), System.err);
 
         // drain the output and error streams
@@ -548,7 +548,7 @@ public class PluginManagerLegacy {
     }
 
     // copy an InputStream to a PrintStream until EOF
-    public static Thread streamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
+    public static Thread streamCopier(final InputStream is, final Status status) throws IOException {
     // create thread to read from the a process' output or error stream
     return new Thread(new Runnable() {
         public void run() {
@@ -556,8 +556,8 @@ public class PluginManagerLegacy {
         String line;
         try {
             while ((line = in.readLine()) != null) {
-            if (taskIntegrator != null && line != null) {
-                taskIntegrator.statusMessage(line);
+            if (status != null && line != null) {
+                status.statusMessage(line);
             }
             }
         } catch (IOException ioe) {
@@ -568,7 +568,7 @@ public class PluginManagerLegacy {
     }
 
     // copy an InputStream to a PrintStream until EOF
-    public static Thread antStreamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
+    public static Thread antStreamCopier(final InputStream is, final Status status) throws IOException {
     // create thread to read from the a process' output or error stream
     return new Thread(new Runnable() {
         public void run() {
@@ -580,8 +580,8 @@ public class PluginManagerLegacy {
             if ((idx = line.indexOf("[echo]")) >= 0) {
                 line = line.substring(idx + 6);
             }
-            if (taskIntegrator != null && line != null) {
-                taskIntegrator.statusMessage(line);
+            if (status != null && line != null) {
+                status.statusMessage(line);
             }
             }
         } catch (IOException ioe) {
