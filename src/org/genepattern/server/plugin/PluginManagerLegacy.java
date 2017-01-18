@@ -20,7 +20,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -81,30 +80,31 @@ public class PluginManagerLegacy {
      * @param taskInfo
      * @return
      */
-    protected List<PatchInfo> getRequiredPatches(final TaskInfo taskInfo) throws JobDispatchException {
+    protected static List<PatchInfo> getRequiredPatches(final TaskInfo taskInfo) throws JobDispatchException {
         final TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
         String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
         return getRequiredPatches(requiredPatchLSID, requiredPatchURL);
     }
     
-    protected List<PatchInfo> getRequiredPatches(final String requiredPatchLSIDs, final String requiredPatchURLs) 
+    protected static List<PatchInfo> getRequiredPatches(final String requiredPatchLSIDs, final String requiredPatchURLs) 
     throws JobDispatchException {
         // no patches required?
         if (requiredPatchLSIDs == null || requiredPatchLSIDs.length() == 0) {
             return Collections.emptyList();
         }
         
-        String[] requiredPatchLSIDArray = requiredPatchLSIDs.split(",");
-        String[] requiredPatchURLArray = (requiredPatchURLs != null && requiredPatchURLs.length() > 0 ? requiredPatchURLs.split(",")
+        final String[] requiredPatchLSIDArray = requiredPatchLSIDs.split(",");
+        final String[] requiredPatchURLArray = (requiredPatchURLs != null && requiredPatchURLs.length() > 0 ? requiredPatchURLs.split(",")
                 : new String[requiredPatchLSIDArray.length]);
         if (requiredPatchURLArray != null && requiredPatchURLArray.length != requiredPatchLSIDArray.length) {
             throw new JobDispatchException("manifest has " + requiredPatchLSIDArray.length + " patch LSIDs but " + requiredPatchURLArray.length + " URLs");
         }
-        List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
+        final List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
         for(int i=0; i<requiredPatchLSIDArray.length; ++i) {
             try {
-                PatchInfo patchInfo=new PatchInfo(requiredPatchLSIDArray[i], requiredPatchURLArray[i]);
+                final String patchUrl=updateUrlIfNecessary(requiredPatchURLArray[i]);
+                final PatchInfo patchInfo = new PatchInfo(requiredPatchLSIDArray[i], patchUrl);
                 patchInfos.add(patchInfo);
             }
             catch (MalformedURLException e) {
@@ -114,6 +114,27 @@ public class PluginManagerLegacy {
             }
         }
         return patchInfos;
+    }
+    
+    /**
+     * If necessary, change the given requiredPatchUrl from the manifest to the newer Broad 
+     * module repository url, 
+     *     from 'http://www.broadinstitute.org/...' 
+     *     to   'http://software.broadinstitute.org/...'.
+     * This is required because the patch downloader does not follow the redirect.
+     * 
+     * @param requiredPatchUrl the original value from the manifest file
+     * @return
+     */
+    protected static String updateUrlIfNecessary(final String requiredPatchUrl) {
+        if (requiredPatchUrl != null && requiredPatchUrl.startsWith("http://www.broadinstitute.org/")) {
+            final String updatedUrl=requiredPatchUrl.replaceFirst("http://www.broadinstitute.org/", "http://software.broadinstitute.org/");
+            log.warn("The 'www.broadinstitute.org' server is no longer available, updating url to: "+updatedUrl);
+            return updatedUrl;
+        }
+        else {
+            return requiredPatchUrl;
+        } 
     }
     
     protected List<PatchInfo> getPatchesToInstall(final TaskInfo taskInfo) throws Exception, MalformedURLException, JobDispatchException {
@@ -140,20 +161,6 @@ public class PluginManagerLegacy {
      */
     protected List<PatchInfo> getInstalledPatches() throws Exception {
         return pluginRegistry.getInstalledPatches(gpConfig, gpContext);
-    }
-    
-    protected String toStringOrEmpty(Object obj) {
-        if (obj==null) {
-            return "";
-        }
-        return obj.toString();
-    }
-
-    protected String toStringOrNull(Object obj) {
-        if (obj==null) {
-            return null;
-        }
-        return obj.toString();
     }
 
     /**
@@ -232,8 +239,14 @@ public class PluginManagerLegacy {
     protected File getPatchDirectory(final LSID patchLSID) 
     throws JobDispatchException
     {
+        return getPatchDirectory(gpConfig, gpContext, patchLSID);
+    }
+
+    protected static File getPatchDirectory(final GpConfig gpConfig, final GpContext gpContext, final LSID patchLSID) 
+    throws JobDispatchException
+    {
         final String patchDirName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
-        File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
+        final File rootPluginDir=gpConfig.getRootPluginDir(gpContext);
         if (rootPluginDir==null) {
             throw new JobDispatchException("Configuration error: Unable to get patch directory");
         }
@@ -245,15 +258,14 @@ public class PluginManagerLegacy {
      * running that command line after substitutions, and recording the result 
      * in the genepattern.properties patch registry
      */
-    protected void installPatch(final PatchInfo patchInfo, final Status status) throws JobDispatchException {
+    protected void installPatch(final PatchInfo patchInfo, final Status status) throws MalformedURLException, JobDispatchException {
         log.debug("installPatch, lsid="+patchInfo.getLsid()+", url="+patchInfo.getUrl());
-        final File patchDirectory = getPatchDirectory(patchInfo.getPatchLsid());
         if (status != null) {
             status.statusMessage("Downloading required patch from " + patchInfo.getUrl() + "...");
         }
         String zipFilename = null;
         try {
-            zipFilename = downloadPatch(patchInfo.getUrl(), status);
+            zipFilename = FileDownloader.downloadTask(patchInfo.getPatchUrl(), status);
         }
         catch (IOException e) {
             String errorMessage="Error downloading patch, lsid="+patchInfo.getLsid()+", url="+patchInfo.getUrl()+": "+e.getLocalizedMessage();
@@ -261,6 +273,7 @@ public class PluginManagerLegacy {
             throw new JobDispatchException(errorMessage, e);
         }
         
+        final File patchDirectory = getPatchDirectory(patchInfo.getPatchLsid());
         if (status != null) {
             status.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
         }
@@ -405,18 +418,6 @@ public class PluginManagerLegacy {
         final Map<String,ParameterInfoRecord> paramInfoMap=Collections.emptyMap();
         final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, gpContext, cmdLine, paramInfoMap);        
         return cmdLineArgs;
-    }
-
-    /**
-     * download the patch zip file from a URL
-     * @param url
-     * @param taskIntegrator
-     * @return
-     * @throws IOException
-     */
-    protected static String downloadPatch(final String url, final Status status) throws IOException {
-        final URL patchUrl = new URL(url.replaceFirst("http://www.broadinstitute.org/", "http://software.broadinstitute.org/"));
-        return FileDownloader.downloadTask(patchUrl, status);
     }
 
     // unzip the patch files into their own directory

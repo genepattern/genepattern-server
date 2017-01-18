@@ -5,6 +5,7 @@ package org.genepattern.server.plugin;
 
 import static org.genepattern.server.plugin.TestMigratePlugins.assertComparePatchInfo;
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,12 +17,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 
-import org.genepattern.junitutil.DbUtil;
+import org.genepattern.junitutil.Demo;
 import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.ConfigurationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -33,131 +32,135 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 public class TestPluginManagerLegacy {
-    final String ANT="urn:lsid:broadinstitute.org:plugin:Ant_1.8:1";
-    final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
-    final String Bowtie_2_1_0="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2";
-    final String Check_Python_2_6="urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2";
-    final String SAMTools_0_1_19="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2";
-    final String TopHat_2_0_11="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4";
+    final static String ANT="urn:lsid:broadinstitute.org:plugin:Ant_1.8:1";
+    final static String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";
+    final static String Bowtie_2_1_0="urn:lsid:broadinstitute.org:plugin:Bowtie_2.1.0:2";
+    final static String Check_Python_2_6="urn:lsid:broadinstitute.org:plugin:Check_Python_2.6:2";
+    final static String SAMTools_0_1_19="urn:lsid:broadinstitute.org:plugin:SAMTools_0_1_19:2";
+    final static String TopHat_2_0_11="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4";
     
     private HibernateSessionManager mgr;
-    private GpConfig gpConfig;
-    private GpContext serverContext;
-    private File gpHomeDir;
-    private File pluginDir;
-    private File resourcesDir;
-    
-    private final String ant_val="<java> -cp <tomcatCommonLib>/tools.jar -jar <tomcatCommonLib>/ant-launcher.jar -Dant.home=<tomcatCommonLib> -lib <tomcatCommonLib>";
-    private final String java_val="java";
-    private final String tomcatCommonLib_val=".";
-
-    private Properties systemProps;
-    private final String cmdLine="<ant> -f installAnt.xml -Dresources=<resources> -Dplugin.dir=<patches> -Dant-1.8_HOME=<ant-1.8_HOME>";
-    private List<String> expected;
-    
-    private List<PatchInfo> topHatPatchInfos;
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
-
     
     @Before
-    public void setUp() throws IOException, ExecutionException {
-        mgr=DbUtil.getTestDbSession();
-        gpHomeDir=tmp.newFolder(".genepattern");
-        pluginDir=tmp.newFolder("patches");
-        resourcesDir=tmp.newFolder("resources");
-        
-        systemProps=new Properties();
-        systemProps.setProperty("java", java_val);
-        systemProps.setProperty("tomcatCommonLib", tomcatCommonLib_val);
-        systemProps.setProperty("ant", ant_val);
-        systemProps.setProperty(GpConfig.PROP_PLUGIN_DIR, pluginDir.getAbsolutePath());
-
-        gpConfig=new GpConfig.Builder()
-            .resourcesDir(resourcesDir)
-            .addProperties(systemProps)
-        .build();
-        serverContext=GpContext.getServerContext();
-        
-        expected=Arrays.asList(
-            java_val, "-cp", tomcatCommonLib_val+"/tools.jar", "-jar", tomcatCommonLib_val+"/ant-launcher.jar", "-Dant.home="+tomcatCommonLib_val, "-lib", tomcatCommonLib_val, "-f", "installAnt.xml", "-Dresources="+resourcesDir.getAbsolutePath(), "-Dplugin.dir="+pluginDir.getAbsolutePath(), "-Dant-1.8_HOME=");
-        
-        topHatPatchInfos=Arrays.asList( 
+    public void setUp() {
+        mgr=mock(HibernateSessionManager.class);
+    }
+    
+    private static List<PatchInfo> initTopHatPatchInfos() throws MalformedURLException {
+        return Arrays.asList( 
             new PatchInfo(ANT,
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip"),
             new PatchInfo(Check_Python_2_6,
-                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Check_Python_2.6/broadinstitute.org:plugin/Check_Python_2.6/2/Check_Python_2_6.zip"),
+                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Check_Python_2.6/broadinstitute.org:plugin/Check_Python_2.6/2/Check_Python_2_6.zip"),
             new PatchInfo(Bowtie_2_1_0,
-                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/2/Bowtie_2_1_0.zip"),
+                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Bowtie_2.1.0/broadinstitute.org:plugin/Bowtie_2.1.0/2/Bowtie_2_1_0.zip"),
             new PatchInfo(SAMTools_0_1_19,
-                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
+                  "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/SAMTools_0.1.19/broadinstitute.org:plugin/SAMTools_0.1.19/2/SAMTools_0_1_19.zip"),
             new PatchInfo(TopHat_2_0_11,
-                "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
-        );
-
+                  "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
+        ); 
     }
 
     @Test
     public void getPatchDirectory() throws Exception {
-        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
-        
-        assertEquals(new File(pluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
+        final GpConfig gpConfig = mock(GpConfig.class);
+        final File rootPluginDir = new File(tmp.newFolder(), "patches");
+        when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(rootPluginDir);
+        final PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, Demo.serverContext, null);
+        assertEquals(new File(rootPluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
                 pluginMgr.getPatchDirectory(new LSID(ANT)));
     }
     
     @Test(expected=JobDispatchException.class)
-    public void getPatchDirectory_ConfigurationException() throws Exception {
-        gpConfig=Mockito.mock(GpConfig.class);
-        serverContext=Mockito.mock(GpContext.class);
-        when(gpConfig.getRootPluginDir(serverContext)).thenReturn(null);
-        
-        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
-
+    public void getPatchDirectory_JobDispatchException() throws Exception {
+        final GpConfig gpConfig=mock(GpConfig.class);
+        when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(null);
+        final PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, Demo.serverContext, null);
         pluginMgr.getPatchDirectory(new LSID(ANT));
     }
     
     @Test
-    public void createPluginCmdLine() {
-        List<String> actual=PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine);
-        assertEquals(expected, actual);
+    public void createPluginCmdLine() throws IOException {
+        final String pluginCmdLineFromManifest="<ant> -f installAnt.xml -Dresources=<resources> -Dplugin.dir=<patches> -Dant-1.8_HOME=<ant-1.8_HOME>";
+
+        // setup ...
+        final File tmpDir=tmp.newFolder();
+        final File resourcesDir=new File(tmpDir, "resources");
+        final File pluginDir=new File(tmpDir, "patches");
+        final String java_val="java";
+        final String ant_val="<java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher";
+        final String ant_1_8_home=new File("website/WEB-INF/tools/ant/apache-ant-1.8.4").getAbsolutePath();
+
+        final GpConfig gpConfig = Demo.gpConfig();
+        when(gpConfig.getGPProperty(Demo.serverContext, "ant")).thenReturn(ant_val);
+        when(gpConfig.getGPProperty(Demo.serverContext, "ant-1.8_HOME")).thenReturn(ant_1_8_home);
+        when(gpConfig.getGPProperty(Demo.serverContext, "java")).thenReturn(java_val);
+        when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
+        when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(pluginDir);
+        // ... end setup
+        
+        final List<String> expected=Arrays.asList(
+                java_val, "-Dant.home="+ant_1_8_home, "-cp", ant_1_8_home+"/lib/ant-launcher.jar", "org.apache.tools.ant.launch.Launcher",
+                    "-f", "installAnt.xml", "-Dresources="+resourcesDir.getAbsolutePath(), 
+                    "-Dplugin.dir="+pluginDir.getAbsolutePath(), 
+                    "-Dant-1.8_HOME="+ant_1_8_home);
+        assertThat(
+                // actual
+                PluginManagerLegacy.initCmdLineArray(gpConfig, Demo.serverContext, pluginCmdLineFromManifest), 
+                // expected
+                is(expected));
     }
     
     @Test
-    public void substitutePatches_whenPatchesNotSet() {
-        String cmdLine="echo patches=<patches>";
-        List<String> expected=Arrays.asList("echo", "patches="+new File(gpHomeDir,"patches").getAbsolutePath());
-        gpConfig=new GpConfig.Builder()
-            .gpHomeDir(gpHomeDir)
-        .build();
-        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine));
+    public void substitutePatches_whenPatchesNotSet() throws IOException {
+        final String cmdLine="echo patches=<patches>";
+        
+        // setup ...
+        final File tmpDir=tmp.newFolder();
+        final File pluginDir=new File(tmpDir, "patches");
+        final GpConfig gpConfig = mock(GpConfig.class);
+        when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(pluginDir);
+        // ... end setup
+        
+        assertThat(
+                // actual
+                PluginManagerLegacy.initCmdLineArray(gpConfig, Demo.serverContext, cmdLine), 
+                // expected
+                is(Arrays.asList("echo", "patches="+pluginDir.getAbsolutePath())));
     }
     
     @Test
-    public void substituteResources_whenResourcesNotSet() {
-        String cmdLine="echo resources=<resources>";
-        List<String> expected=Arrays.asList("echo", "resources="+new File(gpHomeDir,"resources").getAbsolutePath());
-        gpConfig=new GpConfig.Builder()
-            .gpHomeDir(gpHomeDir)
-        .build();
-        assertEquals(expected, PluginManagerLegacy.initCmdLineArray(gpConfig, serverContext, cmdLine));
+    public void substituteResources_whenResourcesNotSet() throws IOException {
+        final String cmdLine="echo resources=<resources>";
+        
+        // setup ...
+        final File tmpDir=tmp.newFolder();
+        final File resourcesDir=new File(tmpDir, "resources");
+        final GpConfig gpConfig = mock(GpConfig.class);
+        when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
+        // ... end setup
+        
+        assertThat(
+                // actual
+                PluginManagerLegacy.initCmdLineArray(gpConfig, Demo.serverContext, cmdLine),
+                // expected
+                is(Arrays.asList("echo", "resources="+resourcesDir.getAbsolutePath()))
+                );
     }
     
     @Test
     public void requiredPatches_none() throws Exception {
-        TaskInfo taskInfo=new TaskInfo();
+        final TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
-        List<PatchInfo> expected=Collections.emptyList();
         assertEquals("no '"+GPConstants.REQUIRED_PATCH_LSIDS+"' in manifest",
-                expected,
-                pluginMgr.getRequiredPatches(taskInfo));
+                Collections.emptyList(),
+                PluginManagerLegacy.getRequiredPatches(taskInfo));
     }
     
     @SuppressWarnings("unchecked")
@@ -166,69 +169,116 @@ public class TestPluginManagerLegacy {
         TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, "");
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
-        List<PatchInfo> expected=Collections.emptyList();
         assertEquals("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
-                expected,
-                pluginMgr.getRequiredPatches(taskInfo));
+                Collections.emptyList(),
+                PluginManagerLegacy.getRequiredPatches(taskInfo));
     }
     
     @SuppressWarnings("unchecked")
     @Test
     public void requiredPatches_onePatchLsidNoPatchUrl() throws Exception {
-        TaskInfo taskInfo=new TaskInfo();
+        final TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, BWA);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(BWA, null)),
-                pluginMgr.getRequiredPatches(taskInfo));
+                PluginManagerLegacy.getRequiredPatches(taskInfo));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void requiredPatches_twoPatchLsidNoPatchUrl() throws Exception {
-        TaskInfo taskInfo=new TaskInfo();
+        final TaskInfo taskInfo=new TaskInfo();
         taskInfo.giveTaskInfoAttributes();
         taskInfo.getAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, ANT+","+BWA);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
         
         assertComparePatchInfo("'"+GPConstants.REQUIRED_PATCH_LSIDS+"=' in manifest",
                 Arrays.asList(new PatchInfo(ANT, null), new PatchInfo(BWA, null)),
-                pluginMgr.getRequiredPatches(taskInfo));
+                PluginManagerLegacy.getRequiredPatches(taskInfo));
     }
     
     @Test
     public void requiredPatches_TopHat() throws Exception { 
-        File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
-        TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
-        List<PatchInfo> actual=pluginMgr.getRequiredPatches(taskInfo);
+        final File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
+        final TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
+        final List<PatchInfo> actual=PluginManagerLegacy.getRequiredPatches(taskInfo);
         assertNotNull(actual);
-        assertComparePatchInfo("", topHatPatchInfos, actual);
+        assertComparePatchInfo("", initTopHatPatchInfos(), actual);
+    }
+    
+    @Test
+    public void updateUrlIfNecessary_oldUrl() {
+        final String fromUrl="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        assertEquals("from old Broad repository", 
+                // expected
+                "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip", 
+                PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
+    }
+    
+    @Test
+    public void updateUrlIfNecessary_newUrl() {
+        final String fromUrl="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        assertEquals("from new Broad repository", 
+                // expected
+                "http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip", 
+                PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
+    }
+
+    @Test
+    public void updateUrlIfNecessary_noChange() {
+        final String fromUrl="http://www.example.com/repository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        assertEquals("from different repository", 
+                // expected
+                fromUrl, 
+                PluginManagerLegacy.updateUrlIfNecessary(fromUrl));
+    }
+    @Test
+    public void updateUrlIfNecessary_empty() {
+        assertEquals("empty arg", "", PluginManagerLegacy.updateUrlIfNecessary(""));
+    }
+
+    @Test
+    public void updateUrlIfNecessary_null() {
+        assertEquals("null arg", null, PluginManagerLegacy.updateUrlIfNecessary(null));
+    }
+    
+    @Test
+    public void requiredPatches_updateUrl() throws JobDispatchException {
+        final String lsidFromManifest=ANT;
+        final String urlFromManifest="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        final String urlExpected="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        
+        final TaskInfo taskInfo = new TaskInfo();
+        taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_LSIDS, lsidFromManifest);
+        taskInfo.giveTaskInfoAttributes().put(GPConstants.REQUIRED_PATCH_URLS, urlFromManifest);
+        
+        final List<PatchInfo> patchInfos = PluginManagerLegacy.getRequiredPatches(taskInfo);
+        assertEquals("num patches", 1, patchInfos.size());
+        assertEquals("patchInfos[0].lsid", lsidFromManifest, patchInfos.get(0).getLsid());
+        assertEquals("patchInfos[1].url", 
+                urlExpected,
+                patchInfos.get(0).getUrl());
     }
     
     @Test(expected=JobDispatchException.class)
     public void requiredPatches_mismatchedLsidAndUrl() throws Exception {
-        String requiredPatchLSIDs=ANT+","+Check_Python_2_6;
-        String requiredPatchURLs="http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext);
-        pluginMgr.getRequiredPatches(requiredPatchLSIDs, requiredPatchURLs);
+        final String requiredPatchLSIDs=ANT+","+Check_Python_2_6;
+        final String requiredPatchURLs="http://software.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/Ant_1_8/broadinstitute.org:plugin/Ant_1.8/1/Ant_1_8.zip";
+        PluginManagerLegacy.getRequiredPatches(requiredPatchLSIDs, requiredPatchURLs);
     }
     
     @Test
     public void patchesToInstall_TopHat_none_installed() throws Exception {
-        GpConfig gpConfig=mock(GpConfig.class);
-        GpContext gpContext=new GpContext.Builder().build();
-        PluginRegistry pluginRegistry=mock(PluginRegistry.class);
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, gpContext, pluginRegistry);
+        final GpConfig gpConfig=mock(GpConfig.class);
+        final PluginRegistry pluginRegistry=mock(PluginRegistry.class);
+        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, Demo.serverContext, pluginRegistry);
         
         File tophatManifest=FileUtil.getSourceFile(this.getClass(), "TopHat_manifest");
         TaskInfo taskInfo=TaskUtil.getTaskInfoFromManifest(tophatManifest);
         List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
-        assertComparePatchInfo("none installed", topHatPatchInfos, patchesToInstall);
+        assertComparePatchInfo("none installed", initTopHatPatchInfos(), patchesToInstall);
     }
 
     @Test
@@ -247,7 +297,7 @@ public class TestPluginManagerLegacy {
                 "http://www.broadinstitute.org/webservices/gpModuleRepository/download/prod/patch/?file=/TopHat_2.0.11/broadinstitute.org:plugin/TopHat_2.0.11/4/TopHat_2_0_11.zip")
                 );
         
-        PluginRegistry pluginRegistry=new PluginRegistry() {
+        final PluginRegistry pluginRegistry=new PluginRegistry() {
 
             @Override
             public List<PatchInfo> getInstalledPatches(GpConfig gpConfig, GpContext gpContext) throws Exception {
@@ -266,9 +316,9 @@ public class TestPluginManagerLegacy {
             }
         };
         
-        PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, serverContext, pluginRegistry);
-
-        List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
+        final GpConfig gpConfig = mock(GpConfig.class);
+        final PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, Demo.serverContext, pluginRegistry);
+        final List<PatchInfo> patchesToInstall=pluginMgr.getPatchesToInstall(taskInfo);
         assertComparePatchInfo("some installed", expected, patchesToInstall);
     }
 
