@@ -24,3 +24,12 @@ insert into patch_info (lsid) select
         'urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_3:1' as lsid from dual
     where not exists ( select lsid from patch_info where lsid = 
         'urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_3:1' );
+
+--
+-- update url of module repository
+--
+update gp_user_prop
+    set value = replace (
+        value, 'www.broadinstitute.org', 'software.broadinstitute.org')
+where key = 'ModuleRepositoryURL'
+
