@@ -326,16 +326,4 @@ public class ModuleRepository {
         return outputWriter.toString();
     }
 
-    public static void main(String[] args) { 
-        try {
-            String url = "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
-            ModuleRepository mr = new ModuleRepository(new URL(url));
-            mr.parse(url);
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // System.out.println(dumpDOM(root, 0));
-    }
 }
