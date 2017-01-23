@@ -205,11 +205,11 @@ public class PropertiesWriter {
      */
     private String replaceModRepoUrl(final String lineIn) {
         return lineIn.replaceAll(
-                Pattern.quote("www.broadinstitute.org/webservices/genepatternmodulerepository/suite"),
-                "software.broadinstitute.org/webservices/gpModuleRepository/suite")
+                Pattern.quote("//www.broadinstitute.org/webservices/genepatternmodulerepository/suite"),
+                "//software.broadinstitute.org/webservices/gpModuleRepository/suite")
             .replaceAll(
-                Pattern.quote("www.broadinstitute.org/webservices/gpModuleRepository"), 
-                "software.broadinstitute.org/webservices/gpModuleRepository");
+                Pattern.quote("//www.broadinstitute.org/webservices/"), 
+                "//software.broadinstitute.org/webservices/");
     }
     
     /**
