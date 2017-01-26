@@ -110,7 +110,7 @@ function mmLoadMenus() {
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
   mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('http://software.broadinstitute.org/cancer/software/genepattern/datasets/', '_blank')");
-  mm_menu_downloads.addMenuItem("GParc","window.open('http://www.broadinstitute.org/software/gparc/', '_blank')");
+  mm_menu_downloads.addMenuItem("GParc","window.open('http://www.gparc.org/', '_blank')");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
   mm_menu_downloads.menuBorder=0;
