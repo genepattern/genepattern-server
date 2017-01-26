@@ -43,11 +43,11 @@
          </li>
 	     <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
 	         <ul>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
 	             <li><a href="<%=aboutBean.getContactUs()%>">Report Bugs</a></li>
 	             <li><a href="<%=aboutBean.getContactUs()%>">Contact Us</a></li>
                  <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
-                 <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+                 <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                  <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/software/gparc/')">GParc</a></li>
 	         </ul>
 	     </li>
@@ -58,13 +58,13 @@
 	     </li>
 	     <li><a href="/gp/pages/index.jsf">Help</a>
 	         <ul>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+	             <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
 	             <li><a href="/gp/pages/about.jsf">About</a></li>
 	         </ul>
 	     </li>
