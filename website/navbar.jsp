@@ -47,7 +47,7 @@
 	             <li><a href="<%=aboutBean.getContactUs()%>">Report Bugs</a></li>
 	             <li><a href="<%=aboutBean.getContactUs()%>">Contact Us</a></li>
                  <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
-                 <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+                 <li><a href="JavaScript:Menu.go('//software.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                  <li><a href="JavaScript:Menu.go('http://www.gparc.org/')">GParc</a></li>
 	         </ul>
 	     </li>
