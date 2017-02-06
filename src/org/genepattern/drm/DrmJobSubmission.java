@@ -4,6 +4,7 @@
 package org.genepattern.drm;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class DrmJobSubmission {
     private final String walltimeStr;
     private final Integer nodeCount;
     private final Integer cpuCount;
+    private final BigDecimal priority;
     private final Value extraArgs;
     
     private DrmJobSubmission(Builder builder) {
@@ -103,6 +105,7 @@ public class DrmJobSubmission {
         this.walltimeStr=this._gpConfig.getGPProperty(jobContext, JobRunner.PROP_WALLTIME);
         this.nodeCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_NODE_COUNT);
         this.cpuCount=this._gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
+        this.priority=this._gpConfig.getGPBigDecimalProperty(jobContext, JobRunner.PROP_PRIORITY);
         this.extraArgs=this._gpConfig.getValue(jobContext, JobRunner.PROP_EXTRA_ARGS);
     }
     
@@ -303,6 +306,13 @@ public class DrmJobSubmission {
      */
     public Integer getCpuCount() {
         return cpuCount;
+    }
+
+    /**
+     * @return the optional 'job.priority' setting, default is null.
+     */
+    public BigDecimal getPriority() {
+        return priority;
     }
 
     /**

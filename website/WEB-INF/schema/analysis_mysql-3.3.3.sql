@@ -32,9 +32,9 @@ CREATE INDEX IDX_AJ_PARENT ON ANALYSIS_JOB(PARENT);
 create table JOB_SGE (
     GP_JOB_NO integer not null,
     SGE_JOB_ID varchar(255),
-    SGE_SUBMIT_TIME timestamp,
-    SGE_START_TIME timestamp,
-    SGE_END_TIME timestamp,
+    SGE_SUBMIT_TIME timestamp null,
+    SGE_START_TIME timestamp null,
+    SGE_END_TIME timestamp null,
     SGE_RETURN_CODE integer,
     SGE_JOB_COMPLETION_STATUS varchar(511),
     primary key (GP_JOB_NO));

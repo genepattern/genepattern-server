@@ -29,8 +29,10 @@ public class TestPatchInfoDao {
     @Test
     public void recordPatch() throws DbException, MalformedURLException {
         // test one, default entries 
-        List<PatchInfo> defaultEntries = TestPluginRegistrySystemProps.initDefaultInstalledPatchInfos();
-        assertComparePatchInfo("before recordPatch, expecting default list", defaultEntries, new PatchInfoDao(mgr).getInstalledPatches());
+        final List<PatchInfo> defaultEntries = TestPluginRegistrySystemProps.initDefaultInstalledPatchInfos();
+        assertComparePatchInfo("before recordPatch, expecting default list", 
+                defaultEntries, 
+                new PatchInfoDao(mgr).getInstalledPatches());
 
         // test two, record patch
         final String BWA="urn:lsid:broadinstitute.org:plugin:BWA_0_7_4:2";

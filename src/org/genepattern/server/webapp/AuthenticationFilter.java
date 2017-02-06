@@ -4,10 +4,7 @@
 
 package org.genepattern.server.webapp;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -46,41 +43,9 @@ public class AuthenticationFilter implements Filter {
     private String[] noAuthorizationRequiredPagesRedirect;
 
     public void init(FilterConfig filterconfig) throws ServletException {
-        String dir = filterconfig.getInitParameter("genepattern.properties");
-        File propFile = new File(dir, "genepattern.properties");
-        File customPropFile = new File(dir, "custom.properties");
-        Properties props = new Properties();
-
-        if (propFile.exists()) {
-            loadProperties(props, propFile);
-        }
-
-        if (customPropFile.exists()) {
-            loadProperties(props, customPropFile);
-        }
         noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig.getInitParameter("no.login.required.redirect.to.home"));
         noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
-    }
-
-    static void loadProperties(Properties props, File propFile) {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-        } 
-        catch (IOException e) {
-            log.error(e);
-        } 
-        finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } 
-                catch (IOException e) {
-                }
-            }
-        }
     }
 
     private static String[] csvToArray(String s) {

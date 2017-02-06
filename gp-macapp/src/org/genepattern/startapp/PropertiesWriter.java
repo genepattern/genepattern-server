@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * Write the necessary config to the correct files
@@ -106,47 +107,111 @@ public class PropertiesWriter {
     /**
      * Used to write necessary options selected by the user
      *
-     * @param propFile
+     * @param propFile, the genepattern.properties file
      * @throws IOException
      */
-    public void writeUserTime(File propFile) throws IOException {
-        List<String> lines = new ArrayList<String>();
+    public void writeUserTime(final File propFile) throws IOException {
+        final List<String> lines = new ArrayList<String>();
 
         // Read the file and store changes
-        BufferedReader in = new BufferedReader(new FileReader(propFile));
-        String line = in.readLine();
-        while (line != null) {
-            if (line.contains("$webmaster$")) {
-                line = line.replaceAll("\\$webmaster\\$", email);
-            }
-            else if (line.contains("$purgeJobsAfter$")) {
-                line = line.replaceAll("\\$purgeJobsAfter\\$", daysPurge);
-            }
-            else if (line.contains("$purgeTime$")) {
-                line = line.replaceAll("\\$purgeTime\\$", timePurge);
-            }
-            else if (line.contains("$require.password$")) {
-                line = line.replaceAll("\\$require.password\\$", requirePassword);
-            }
-            else if (line.contains("GenePatternVersion=")) {
-                line = "GenePatternVersion=" + gpVersionUpgrade;
-            }
-            else if (line.contains("tag=")) {
-                line = "tag=" + buildTagUpgrade;
-            }
-
-            lines.add(line);
-            line = in.readLine();
+        final BufferedReader in = new BufferedReader(new FileReader(propFile));
+        String lineIn = in.readLine();
+        while (lineIn != null) {
+            final String lineOut = writeLineUserTime(lineIn);
+            lines.add(lineOut);
+            lineIn = in.readLine();
         }
         in.close();
 
         // Write changes back to file
-        PrintWriter out = new PrintWriter(propFile);
-        for (String l : lines)
-            out.println(l);
+        final PrintWriter out = new PrintWriter(propFile);
+        for (final String line : lines) {
+            out.println(line);
+        }
         out.close();
     }
 
+    /**
+     * Process a single line from the genepattern.properties file,
+     * substitute values as necessary. Substitutions include:
+     *     - user options selected from the startup Swing app
+     *     - update the module repository url
+     *     - remove unused patch url 
+     * 
+     * @param lineIn
+     * @return
+     */
+    private String writeLineUserTime(final String lineIn) {
+        if (lineIn.contains("$webmaster$")) {
+            return lineIn.replaceAll("\\$webmaster\\$", email);
+        }
+        else if (lineIn.contains("$purgeJobsAfter$")) {
+            return lineIn.replaceAll("\\$purgeJobsAfter\\$", daysPurge);
+        }
+        else if (lineIn.contains("$purgeTime$")) {
+            return lineIn.replaceAll("\\$purgeTime\\$", timePurge);
+        }
+        else if (lineIn.contains("$require.password$")) {
+            return lineIn.replaceAll("\\$require.password\\$", requirePassword);
+        }
+        else if (lineIn.contains("GenePatternVersion=")) {
+            return "GenePatternVersion=" + gpVersionUpgrade;
+        }
+        else if (lineIn.contains("tag=")) {
+            return "tag=" + buildTagUpgrade;
+        }
+
+        // special-case for module repository url, changed from www.broadinstitute to software.broadinstitute, circa GP 3.9.9
+        else if (lineIn.startsWith("ModuleRepositoryURL=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        else if (lineIn.startsWith("DefaultModuleRepositoryURL=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        else if (lineIn.startsWith("ModuleRepositoryURLs=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        else if (lineIn.startsWith("SuiteRepositoryURL=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        else if (lineIn.startsWith("DefaultSuiteRepositoryURL=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        else if (lineIn.startsWith("SuiteRepositoryURLs=")) {
+            return replaceModRepoUrl(lineIn);
+        }
+        
+        // special-case for patch repository url, no longer supported, circa GP 3.9.9
+        else if (lineIn.startsWith("DefaultPatchRepositoryURL=")) {
+            return "";
+        }
+        else if (lineIn.startsWith("DefaultPatchURL=")) {
+            return "";
+        }
+        else if (lineIn.startsWith("patchQualifiers=")) {
+            return "";
+        }
+
+        return lineIn;
+    }
+
+    /**
+     * Special-case for module repository url change circa GP 3.9.9
+     *     Replace 'www.broadinstitute...' with 'software.broadinstitute...'
+     *     Replace '.../genepatternmodulerepository/suite' with '.../gpModuleRepository/suite'
+     * 
+     * @param lineIn
+     * @return
+     */
+    private String replaceModRepoUrl(final String lineIn) {
+        return lineIn.replaceAll(
+                Pattern.quote("//www.broadinstitute.org/webservices/genepatternmodulerepository/suite"),
+                "//software.broadinstitute.org/webservices/gpModuleRepository/suite")
+            .replaceAll(
+                Pattern.quote("//www.broadinstitute.org/webservices/"), 
+                "//software.broadinstitute.org/webservices/");
+    }
+    
     /**
      * Used to write the LSID authority at runtime
      *

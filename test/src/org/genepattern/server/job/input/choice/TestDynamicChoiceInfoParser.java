@@ -3,7 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -339,7 +339,7 @@ public class TestDynamicChoiceInfoParser {
         choiceInfoParser=new DynamicChoiceInfoParser(gpConfig, gpContext);
         
         final ChoiceInfo choiceInfo=choiceInfoParser.initChoiceInfo(pinfo);
-        assertEquals("num choices from "+ftpUrl, 148, choiceInfo.getChoices().size());
+        assertEquals("num choices from "+ftpUrl, 157, choiceInfo.getChoices().size());
     }
 
     /**

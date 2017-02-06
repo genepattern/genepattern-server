@@ -4560,8 +4560,8 @@ function InputParam(module, paramJSON) {
     this.initPWR(paramJSON.promptWhenRun);
 
     this.makePWR = function(name, desc, required) {
-        if (name === undefined) name = this.name;
-        if (desc === undefined) desc = this.description;
+        if (name === undefined || name === null) name = this.name;
+        if (desc === undefined || desc === null) desc = this.description;
         if (required === undefined) required = this.required;
 
         this.promptWhenRun = new PWRParam(this.module, this.name, name, desc, required);

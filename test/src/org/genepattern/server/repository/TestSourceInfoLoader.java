@@ -47,7 +47,7 @@ public class TestSourceInfoLoader {
         final SourceInfo fromBroadProd=sourceInfoLoader.getSourceInfo(cleTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromBroadProd);
         Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromBroadProd.getType());
-        Assert.assertEquals("sourceInfo.label", "Broad production", fromBroadProd.getLabel());
+        Assert.assertEquals("sourceInfo.label", "Broad production (new)", fromBroadProd.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromBroadProd.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromBroadProd.getBriefDescription());
         Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromBroadProd.getFullDescription());
@@ -71,7 +71,7 @@ public class TestSourceInfoLoader {
         final SourceInfo fromBroadBeta=sourceInfoLoader.getSourceInfo(pdTaskInfo);
         Assert.assertNotNull("expecting non-null sourceInfo", fromBroadBeta);
         Assert.assertEquals("sourceInfo.type", InstallInfo.Type.REPOSITORY, fromBroadBeta.getType());
-        Assert.assertEquals("sourceInfo.label", "Broad beta", fromBroadBeta.getLabel());
+        Assert.assertEquals("sourceInfo.label", "Broad beta (new)", fromBroadBeta.getLabel());
         Assert.assertNotNull("sourceInfo.iconImgSrc, unexpected null value", fromBroadBeta.getIconImgSrc());
         Assert.assertNotNull("sourceInfo.briefDescription, unexpected null value", fromBroadBeta.getBriefDescription());
         Assert.assertNotNull("sourceInfo.fullDescription, unexpected null value", fromBroadBeta.getFullDescription());

@@ -3876,95 +3876,23 @@ public class GenePatternAnalysisTask {
         return installNewTask(zipFilename, username, access_id, true, taskIntegrator, installInfo);
     }
 
-    public static String downloadTask(String zipURL) throws IOException {
-	return downloadTask(zipURL, null, -1);
+    public static final String downloadTask(final String zipURL) throws IOException {
+        return FileDownloader.downloadTask(zipURL, null);
     }
 
     /**
      * downloads a file from a URL and returns the path to the local file to the caller.
      * 
-     * @param zipURL
-     *            String URL of file to download
+     * @param zipURL String URL of file to download
+     * @param statusMonitor
+     * @param expectedLength
+     * @param verbose
      * @return String filename of temporary downloaded file on server
      * @throws IOException
-     *             if any problems occured in accessing the remote file or storing it locally
-     * @author Jim Lerner
      */
-    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength) throws IOException {
-	return downloadTask(zipURL, statusMonitor, expectedLength, true);
-    }
-
-    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength, boolean verbose)
-	    throws IOException {
-	File zipFile = null;
-	long downloadedBytes = 0;
-	try {
-	    zipFile = File.createTempFile("task", ".zip");
-	    zipFile.deleteOnExit();
-	    FileOutputStream os = new FileOutputStream(zipFile);
-	    URLConnection uc = new URL(zipURL).openConnection();
-	    log.info("opened connection");
-	    long downloadSize = -1;
-	    Map headerFields = uc.getHeaderFields();
-	    for (Iterator itHeaders = headerFields.keySet().iterator(); itHeaders.hasNext();) {
-		String name = (String) itHeaders.next();
-		String value = uc.getHeaderField(name);
-		// System.out.println(name + "=" + value);
-	    }
-	    if (uc instanceof HttpURLConnection) {
-		downloadSize = ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
-	    } else if (expectedLength == -1) {
-		downloadSize = uc.getContentLength();
-		// downloadSize = expectedLength;
-	    } else {
-		downloadSize = expectedLength;
-	    }
-	    if ((statusMonitor != null) && (downloadSize != -1) && verbose) {
-		statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); // Each
-		// dot
-	    }
-	    // represents
-	    // 100KB.");
-	    if ((statusMonitor != null)) {
-		statusMonitor.beginProgress("download");
-	    }
-	    InputStream is = uc.getInputStream();
-	    byte[] buf = new byte[100000];
-	    int i;
-	    long lastPercent = 0;
-	    while ((i = is.read(buf, 0, buf.length)) > 0) {
-		downloadedBytes += i;
-		os.write(buf, 0, i);
-		// System.out.print(new String(buf, 0, i));
-		if (downloadSize > -1) {
-		    long pctComplete = 100 * downloadedBytes / downloadSize;
-		    if (lastPercent != pctComplete) {
-			if (statusMonitor != null) {
-			    statusMonitor.continueProgress((int) pctComplete);
-			}
-			lastPercent = pctComplete;
-		    }
-		}
-	    }
-	    is.close();
-	    os.close();
-	    if (downloadedBytes == 0) {
-		throw new IOException("Nothing downloaded from " + zipURL);
-	    }
-	    return zipFile.getPath();
-	} catch (IOException ioe) {
-	    log.info("Error in downloadTask: " + ioe.getMessage());
-	    zipFile.delete();
-	    throw ioe;
-	} finally {
-	    System.out.println("downloaded " + downloadedBytes + " bytes");
-	    if (statusMonitor != null) {
-		statusMonitor.endProgress();
-		if (verbose) {
-		    statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
-		}
-	    }
-	}
+    public static String downloadTask(final String zipURL, final org.genepattern.server.webservice.server.Status statusMonitor)
+            throws IOException {
+        return FileDownloader.downloadTask(zipURL, statusMonitor);
     }
 
     /**

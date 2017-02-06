@@ -186,7 +186,7 @@ insert into SEQUENCE_TABLE (NAME, NEXT_VALUE) values('lsid_suite_identifier_seq'
 CREATE TABLE PROPS
 (
   -- "KEY" is a reserved word in MySQL
-  KEY text NOT NULL UNIQUE,
+  "KEY" text NOT NULL UNIQUE,
   VALUE text
 );
 
@@ -208,12 +208,12 @@ CREATE TABLE GP_USER
 CREATE TABLE GP_USER_PROP
 (
   ID serial,
-  KEY text,
+  "KEY" text,
   VALUE text,
   GP_USER_ID text NOT NULL,
   PRIMARY KEY (ID)
 );
-CREATE INDEX IDX_GP_USER_PROP_KEY ON GP_USER_PROP (KEY);
+CREATE INDEX IDX_GP_USER_PROP_KEY ON GP_USER_PROP ("KEY");
 
 /* Event logging */
 create table JOB_COMPLETION_EVENT

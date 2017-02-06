@@ -32,7 +32,7 @@ public class ZipCatalogUpload {
     public static final String PROD = "prod";
     public static final String MODULE = "module";
     public static final String PATCH = "patch";
-    public static final String BROAD_URL = "http://www.broadinstitute.org/webservices/gpModuleRepository/genepatternmodulerepository";
+    public static final String BROAD_URL = "http://software.broadinstitute.org/webservices/gpModuleRepository";
 
     @Test
     public void testUploadToDev() throws Exception {
@@ -61,7 +61,6 @@ public class ZipCatalogUpload {
 
     /**
      * @param targetURL
-     *                The url http://iwww.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
      * @param modulePatchOrSuite
      *                ZipCatalogUpload.MODULE or ZipCatalogUpload.PATCH
      * @param devOrProd
@@ -94,7 +93,6 @@ public class ZipCatalogUpload {
 
     /**
      * @param targetURL
-     *                The url http://iwww.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
      * @throws IOException
      *                 If an error occurs
      */
@@ -116,8 +114,8 @@ public class ZipCatalogUpload {
 
     private static void uploadFile(String targetURL, String modulePatchOrSuite, String devOrProd, File targetFile)
 	    throws IOException {
-	PostMethod filePost = new PostMethod(
-		"http://www.broadinstitute.org/webservices/gpModuleRepository/genepatternmodulerepository");
+	PostMethod filePost = new PostMethod( BROAD_URL );
+
 	HttpClient client = new HttpClient();
 	client.setState(new HttpState());
 	Part[] parts = { new FilePart("zipfilename", targetFile), new StringPart("repos", modulePatchOrSuite),

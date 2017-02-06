@@ -14,7 +14,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -63,23 +71,10 @@ public class ServerSettingsBean implements Serializable {
                     "ModuleRepositoryURL", "ModuleRepositoryURLs", "SuiteRepositoryURL", "SuiteRepositoryURLs" });
             modes.put("Proxy", new String[] { 
                     "http.proxyHost", "http.proxyPort", "http.proxyUser","http.proxyPassword", "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
-	    modes.put("Database", new String[] { 
-	            "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args", "HSQL.schema", 
-	            "hibernate.connection.driver_class", "hibernate.connection.shutdown", "hibernate.connection.url", 
-	            "hibernate.connection.username", "hibernate.connection.password", "hibernate.dialect", 
-	            "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
 	    modes.put("Programming Languages", new String[] { "java", "R2.5", "R" });
 	    modes.put("Advanced", new String[] { 
-	            "DefaultPatchRepositoryURL", 
-	            "DefaultPatchURL", 
-	            "patchQualifiers",
-	            "patches", 
-	            "ant", 
-	            "resources", 
-	            "index", 
-	            "tasklib", 
-	            "installedPatchLSIDs", 
-	            "num.threads" });
+	            "num.threads" 
+	    });
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);
 	    modes.put("System Message", null);

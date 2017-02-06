@@ -3,8 +3,7 @@
  *******************************************************************************/
 package org.genepattern.drm;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +21,8 @@ import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -99,18 +98,18 @@ public class TestDrmJobSubmission {
             .jobContext(jobContext)
             .commandLine(cmdLineArgs)
             .build();
-        Assert.assertEquals("jobNo", jobNo, job.getGpJobNo());
-        Assert.assertEquals("jobNo", jobNo.intValue(), job.getJobInfo().getJobNumber());
-        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), job.getWorkingDir().getAbsolutePath());
-        Assert.assertEquals("commandLine.length", cmdLineArgs.length, job.getCommandLine().size());
-        Assert.assertEquals("arg[0]", cmdLineArgs[0], job.getCommandLine().get(0));
-        Assert.assertEquals("arg[1]", cmdLineArgs[1], job.getCommandLine().get(1));
+        assertEquals("jobNo", jobNo, job.getGpJobNo());
+        assertEquals("jobNo", jobNo.intValue(), job.getJobInfo().getJobNumber());
+        assertEquals("workingDir", workingDir.getAbsolutePath(), job.getWorkingDir().getAbsolutePath());
+        assertEquals("commandLine.length", cmdLineArgs.length, job.getCommandLine().size());
+        assertEquals("arg[0]", cmdLineArgs[0], job.getCommandLine().get(0));
+        assertEquals("arg[1]", cmdLineArgs[1], job.getCommandLine().get(1));
         
-        Assert.assertEquals("env.length", 0, job.getEnvironmentVariables().size());
+        assertEquals("env.length", 0, job.getEnvironmentVariables().size());
         try {
             job.getEnvironmentVariables().put("newArg", "newValue");
             ///CLOVER:OFF
-            Assert.fail("environmentVariables should be unmodifiable");
+            fail("environmentVariables should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
@@ -119,18 +118,18 @@ public class TestDrmJobSubmission {
         try {
             job.getCommandLine().add("-P");
             ///CLOVER:OFF
-            Assert.fail("commandLine should be unmodifiable");
+            fail("commandLine should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
             //expected
         }
 
-        Assert.assertNull("job.queue", job.getQueue()); 
-        Assert.assertNull("job.walltime", job.getWalltime()); 
-        Assert.assertNull("job.nodeCount", job.getNodeCount()); 
-        Assert.assertNull("job.cpuCount", job.getCpuCount()); 
-        Assert.assertEquals("job.extraArgs.size", 2, job.getExtraArgs().size());        
+        assertNull("job.queue", job.getQueue()); 
+        assertNull("job.walltime", job.getWalltime()); 
+        assertNull("job.nodeCount", job.getNodeCount()); 
+        assertNull("job.cpuCount", job.getCpuCount()); 
+        assertEquals("job.extraArgs.size", 2, job.getExtraArgs().size());        
     }
     
     @Test(expected = UnsupportedOperationException.class)
@@ -138,7 +137,7 @@ public class TestDrmJobSubmission {
         final DrmJobSubmission drmJob = new DrmJobSubmission.Builder(workingDir)
             .jobContext(jobContext)
             .build();
-        Assert.assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
+        assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
         //should throw an exception
         drmJob.getCommandLine().add("-P");
     }
@@ -149,7 +148,7 @@ public class TestDrmJobSubmission {
             .jobContext(jobContext)
             .commandLine(new String[0])
             .build();
-        Assert.assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
+        assertEquals("Expecting emtpy list", 0, drmJob.getCommandLine().size());
         //should throw an exception
         drmJob.getCommandLine().add("-P");
     }
@@ -171,9 +170,9 @@ public class TestDrmJobSubmission {
             builder=builder.addArg(arg);
         }
         drmJob=builder.build();
-        Assert.assertEquals("jobNo", jobNo.intValue(), drmJob.getJobInfo().getJobNumber());
-        Assert.assertEquals("workingDir", workingDir.getAbsolutePath(), drmJob.getWorkingDir().getAbsolutePath());
-        Assert.assertThat("commandLine", Arrays.asList(cmdLineArgs), is(drmJob.getCommandLine()));
+        assertEquals("jobNo", jobNo.intValue(), drmJob.getJobInfo().getJobNumber());
+        assertEquals("workingDir", workingDir.getAbsolutePath(), drmJob.getWorkingDir().getAbsolutePath());
+        assertThat("commandLine", Arrays.asList(cmdLineArgs), CoreMatchers.is(drmJob.getCommandLine()));
     }
     
 //    @Test
@@ -188,15 +187,15 @@ public class TestDrmJobSubmission {
 //        try {
 //            drmJob.getExtraArgs().add("--extraArg=value");
 //            ///CLOVER:OFF
-//            Assert.fail("job.extraArgs should be unmodifiable");
+//            fail("job.extraArgs should be unmodifiable");
 //            ///CLOVER:ON
 //        }
 //        catch (UnsupportedOperationException e) {
 //            //expected
 //        }
-//        Assert.assertEquals("job.extraArgs.size", 2, drmJob.getExtraArgs().size());
-//        Assert.assertEquals("job.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
-//        Assert.assertEquals("job.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
+//        assertEquals("job.extraArgs.size", 2, drmJob.getExtraArgs().size());
+//        assertEquals("job.extraArgs[0]", "-P", drmJob.getExtraArgs().get(0));
+//        assertEquals("job.extraArgs[1]", "ProjectName", drmJob.getExtraArgs().get(1));
 //    }
 
     @Test
@@ -215,15 +214,15 @@ public class TestDrmJobSubmission {
         try {
             envOut.put("ENV_01", "Value_01");
             ///CLOVER:OFF
-            Assert.fail("job.environmentVariables should be unmodifiable");
+            fail("job.environmentVariables should be unmodifiable");
             ///CLOVER:ON
         }
         catch (UnsupportedOperationException e) {
             //expected
         }
-        Assert.assertEquals("env.length", 2, drmJob.getEnvironmentVariables().size());
-        Assert.assertEquals("env['ANT_OPTS']", "-Xmx2048m", drmJob.getEnvironmentVariables().get("ANT_OPTS"));
-        Assert.assertEquals("env['JAVA_OPTS']", "-XX:MaxPermSize=2g -Xmx2g", drmJob.getEnvironmentVariables().get("JAVA_OPTS"));
+        assertEquals("env.length", 2, drmJob.getEnvironmentVariables().size());
+        assertEquals("env['ANT_OPTS']", "-Xmx2048m", drmJob.getEnvironmentVariables().get("ANT_OPTS"));
+        assertEquals("env['JAVA_OPTS']", "-XX:MaxPermSize=2g -Xmx2g", drmJob.getEnvironmentVariables().get("JAVA_OPTS"));
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -247,9 +246,9 @@ public class TestDrmJobSubmission {
             .addEnvVar("JAVA_OPTS", "-XX:MaxPermSize=2g -Xmx2g")
             .build();
         
-        Assert.assertEquals("env.length", 2, drmJob.getEnvironmentVariables().size());
-        Assert.assertEquals("env['ANT_OPTS']", "-Xmx2048m", drmJob.getEnvironmentVariables().get("ANT_OPTS"));
-        Assert.assertEquals("env['JAVA_OPTS']", "-XX:MaxPermSize=2g -Xmx2g", drmJob.getEnvironmentVariables().get("JAVA_OPTS"));
+        assertEquals("env.length", 2, drmJob.getEnvironmentVariables().size());
+        assertEquals("env['ANT_OPTS']", "-Xmx2048m", drmJob.getEnvironmentVariables().get("ANT_OPTS"));
+        assertEquals("env['JAVA_OPTS']", "-XX:MaxPermSize=2g -Xmx2g", drmJob.getEnvironmentVariables().get("JAVA_OPTS"));
     }
     
     @Test
@@ -264,7 +263,7 @@ public class TestDrmJobSubmission {
         final GpContext userContext=GpContext.getContextForUser("test_user");
         Value javaXmx=config.getValue(userContext, "job.javaXmx");
 
-        Assert.assertEquals("job.javaXmx", "2gb", drmJob.getProperty("job.javaXmx"));
+        assertEquals("job.javaXmx", "2gb", drmJob.getProperty("job.javaXmx"));
     }
     
     @Test
@@ -352,9 +351,9 @@ public class TestDrmJobSubmission {
         final GpConfig config=ServerConfigurationFactory.instance();
         final GpContext userContext=GpContext.getContextForUser("test_user");
         //sanity check
-        Assert.assertEquals("executor.props", "PbsBigMem", config.getGPProperty(userContext, "executor.props")); 
+        assertEquals("executor.props", "PbsBigMem", config.getGPProperty(userContext, "executor.props")); 
         final String executorId=config.getGPProperty(userContext, "executor");
-        Assert.assertEquals("executor", "DemoPbsJobRunner", executorId);
+        assertEquals("executor", "DemoPbsJobRunner", executorId);
     }
     
     @Test
@@ -362,12 +361,12 @@ public class TestDrmJobSubmission {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext userContext=GpContext.getContextForUser("test_user");
         
-        Assert.assertEquals("executor.props for test_user", 
+        assertEquals("executor.props for test_user", 
                 "PbsBigMem",  
                 gpConfig.getGPProperty(userContext, "executor.props"));
         
         JobConfigParams jobConfigParams=JobConfigParams.initJobConfigParams(gpConfig, userContext);
-        Assert.assertNotNull("initJobConfigParams was null", jobConfigParams);
+        assertNotNull("initJobConfigParams was null", jobConfigParams);
     }
     
     @Test
@@ -383,7 +382,7 @@ public class TestDrmJobSubmission {
             .gpConfig(gpConfig)
             .build();
         
-        Assert.assertEquals("set memory in config", Memory.fromString("8g"), 
+        assertEquals("set memory in config", Memory.fromString("8g"), 
                 drmJobSubmission.getMemory());
     }
     
@@ -400,7 +399,7 @@ public class TestDrmJobSubmission {
             .gpConfig(gpConfig)
             .build();
         
-        Assert.assertEquals("set walltime in config", 
+        assertEquals("set walltime in config", 
                 Walltime.fromString("7-00:00:00"),
                 drmJobSubmission.getWalltime());
     }
@@ -410,7 +409,7 @@ public class TestDrmJobSubmission {
         DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
             .jobContext(jobContext)
             .build();
-        Assert.assertArrayEquals("default 'extraArgs' from 'drm_test.yaml'", 
+        assertArrayEquals("default 'extraArgs' from 'drm_test.yaml'", 
                 new String[]{"-P", "gpdev" },
                 drmJobSubmission.getExtraArgs().toArray());
     }
@@ -420,7 +419,7 @@ public class TestDrmJobSubmission {
         DrmJobSubmission drmJobSubmission = new DrmJobSubmission.Builder(workingDir)
             .jobContext(jobContext)
             .build();
-        Assert.assertArrayEquals("'customValue' from 'drm_test.yaml'", 
+        assertArrayEquals("'customValue' from 'drm_test.yaml'", 
                 new String[]{"A", "B", "C"},
                 drmJobSubmission.getValue("customValue").getValues().toArray());
     }
@@ -450,7 +449,7 @@ public class TestDrmJobSubmission {
             .logFile(absLogFile)
         .build();
         
-        Assert.assertEquals(absLogFile.getAbsolutePath(), job.getLogFile().getAbsolutePath());
+        assertEquals(absLogFile.getAbsolutePath(), job.getLogFile().getAbsolutePath());
     }
     
     @Test
@@ -460,7 +459,7 @@ public class TestDrmJobSubmission {
             .logFilename(".lsf.out")
         .build();
         
-        Assert.assertEquals(
+        assertEquals(
                 new File(workingDir, ".lsf.out").getAbsolutePath(), 
                 job.getRelativeFile(job.getLogFile()).getAbsolutePath()); 
     }

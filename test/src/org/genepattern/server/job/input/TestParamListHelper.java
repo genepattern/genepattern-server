@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 import org.genepattern.junitutil.DbUtil;
@@ -31,27 +32,24 @@ import org.junit.rules.TemporaryFolder;
  */
 public class TestParamListHelper {
     
-    final String userId="testUser";
-    private String ftpValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
-    private String httpValue="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls";
+    private static final String userId="testUser";
+    private static final String ftpValue="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/dummy_file_1.txt";
+    private static final String httpValue="http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls";
 
     private HibernateSessionManager mgr;
-    GpConfig gpConfig;
-    GpContext jobContext;
-    ParameterInfo formalParam;
-    ParamValue ftpVal;
-    ParamValue httpVal;
-    JobInput jobInput;
+    private GpContext jobContext;
+    private ParameterInfo formalParam;
+    private ParamValue ftpVal;
+    private ParamValue httpVal;
+    private JobInput jobInput;
     
     // setup download folder(s)
     @Rule
-    public TemporaryFolder temp= new TemporaryFolder();
-    private File gpHomeDir;
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
         mgr=DbUtil.getTestDbSession();
-        //mgr=Mockito.mock(HibernateSessionManager.class);
         formalParam= ParameterInfoUtil.initFilelistParam("input.files");
         jobInput=new JobInput();
         jobInput.addValue("input.files", ftpValue);
@@ -60,15 +58,17 @@ public class TestParamListHelper {
         when(jobContext.getUserId()).thenReturn(userId);
         ftpVal=jobInput.getParam("input.files").getValues().get(0);
         httpVal=jobInput.getParam("input.files").getValues().get(1);
-        
-        gpHomeDir=temp.newFolder("gpHome");
-        gpConfig=new GpConfig.Builder()
-            .webappDir(new File("website"))
-            .gpHomeDir(gpHomeDir)
-            .genePatternURL(new URL(Demo.gpUrl))
-        .build();
     }
 
+    protected static GpConfig initGpConfig(final File gpHomeDir) throws IOException {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
+            .webappDir(new File("website"))
+            .genePatternURL(new URL(Demo.gpUrl))
+        .build();
+        return gpConfig;
+    }
+    
     /**
      * Simulate server configured cache.
      * <pre>
@@ -76,22 +76,19 @@ public class TestParamListHelper {
      * </pre>
      * @return
      */
-    protected GpContext initCachedContext() {
-        GpContext mockContext=new GpContext.Builder()
-            .userId(userId)
-        .build();
-        
+    protected static GpConfig initCachedConfig(final File gpHomeDir) {
         // need to customize the properties
-        gpConfig=new GpConfig.Builder()
+        GpConfig gpConfig=new GpConfig.Builder()
+            .gpHomeDir(gpHomeDir)
             .webappDir(new File("website"))
             .addProperty(UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL, "ftp://gpftp.broadinstitute.org/")
-            .gpHomeDir(gpHomeDir)
         .build();
-        
-        Value value=gpConfig.getValue(mockContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL);
-        assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
-        assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
-        return mockContext;
+        return gpConfig;
+    }
+    
+    protected File createGpHomeDir() throws IOException {
+        final File rootDir=temp.newFolder();
+        return new File(rootDir, "gpHome");
     }
     
     /**
@@ -100,6 +97,9 @@ public class TestParamListHelper {
      */
     @Test
     public void ftpInput() throws Exception {
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
+
         Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
@@ -114,6 +114,9 @@ public class TestParamListHelper {
     
     @Test
     public void httpInput() throws Exception {
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
+
         Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
@@ -128,10 +131,17 @@ public class TestParamListHelper {
 
     @Test
     public void ftpInput_cached() throws Exception {
-        GpContext mockContext = initCachedContext();
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig cachedConfig=initCachedConfig(gpHomeDir);
+        final GpContext userContext=new GpContext.Builder()
+            .userId(userId)
+        .build();
+        final Value value=cachedConfig.getValue(userContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL);
+        assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
+        assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
         
         //final boolean downloadExternalUrl=true;
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, mockContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
+        final Record record=ParamListHelper.initFromValue(mgr, cachedConfig, userContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", true, record.isCached);
@@ -145,7 +155,7 @@ public class TestParamListHelper {
                 false,
                 record.getGpFilePath().getServerFile().exists());
 
-        ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
+        ParamListHelper.downloadFromRecord(mgr, cachedConfig, userContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,
                 record.getGpFilePath().getServerFile().exists());
@@ -153,9 +163,17 @@ public class TestParamListHelper {
 
     @Test
     public void httpInput_not_cached() throws Exception {
-        final GpContext mockContext = initCachedContext();
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig cachedConfig=initCachedConfig(gpHomeDir);
+        final GpContext mockContext=new GpContext.Builder()
+            .userId(userId)
+        .build();
 
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, mockContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
+        Value value=cachedConfig.getValue(mockContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL);
+        assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
+        assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
+
+        Record record=ParamListHelper.initFromValue(mgr, cachedConfig, mockContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
         assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
@@ -166,7 +184,7 @@ public class TestParamListHelper {
                 new File(gpHomeDir,"users/"+userId+"/uploads/tmp/external/www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_train.cls"),
                 record.getGpFilePath().getServerFile());
         
-        ParamListHelper.downloadFromRecord(mgr, gpConfig, mockContext, record);
+        ParamListHelper.downloadFromRecord(mgr, cachedConfig, mockContext, record);
         assertEquals("gpFilePath.serverFile.exists, after download",
                 true,
                 record.getGpFilePath().getServerFile().exists());
@@ -175,6 +193,8 @@ public class TestParamListHelper {
     
     @Test
     public void httpInput_serverUrl() throws Exception {
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
         assertEquals("double-check gpUrl", Demo.gpUrl, gpConfig.getGpUrl());
         
         final String value=Demo.gpHref + Demo.uploadPath("all_aml_test.gct");
@@ -191,6 +211,8 @@ public class TestParamListHelper {
     // e.g. <GenePatternURL>...
     @Test
     public void httpInput_serverUrl_substitution() throws Exception {
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
         final String value="<GenePatternURL>" + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);
         
@@ -204,6 +226,8 @@ public class TestParamListHelper {
 
     @Test
     public void httpInput_serverUrl_proxyHref() throws Exception {
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
         final String value=Demo.proxyHref + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);
 

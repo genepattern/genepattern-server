@@ -245,12 +245,6 @@ public class AuthResource {
             redirectURI = request.getParameter(OAuth.OAUTH_REDIRECT_URI);       // Use not implemented
             clientSecret = request.getParameter(OAuth.OAUTH_CLIENT_SECRET);     // Use not implemented
 
-            log.info("Attempting OAuth2 login | " +
-                "GRANT: " + grantType + " | " +
-                "USERNAME: " + username + " | " +
-                "CLIENT: " + clientID
-            );
-
             // The OLTU way of doing things (overly restrictive IMHO)
 //            // Get the request
 //            OAuthTokenRequest oauthRequest = new OAuthTokenRequest(request);
@@ -309,6 +303,13 @@ public class AuthResource {
             else {
                 throw OAuthProblemException.error("unknown grant_type");
             }
+
+            // Log the successful authentication
+            log.info("Successful OAuth2 login | " +
+                    "GRANT: " + grantType + " | " +
+                    "USERNAME: " + username + " | " +
+                    "CLIENT: " + clientID
+            );
 
             // Generate the access token
             String token = oauthIssuerImpl.accessToken();

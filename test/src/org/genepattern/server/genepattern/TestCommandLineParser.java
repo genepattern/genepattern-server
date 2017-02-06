@@ -18,7 +18,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.hamcrest.Matchers;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -248,7 +248,7 @@ public class TestCommandLineParser {
         final List<String> actual=ValueResolver.resolveValue(gpConfig, gpContext, cmdLine, gpatRuntimeProps, paramInfoMap);
         //arrayEquals(actual, expected);
         
-        assertThat(actual, Matchers.is(expected));
+        assertThat(actual, CoreMatchers.is(expected));
     }
     
 }
