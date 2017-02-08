@@ -4,6 +4,7 @@
 package org.genepattern.server.database;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collections;
@@ -148,6 +149,14 @@ public class TestSchemaUpdater {
         assertEquals("'3.9.3'.compare('3.9.3-a')", true, c<0);
     }
     
+    @Test
+    public void dbSchemaFilter_compare_v3_to_v10() {
+        final DbSchemaFilter dbSchemaFilter=new DbSchemaFilter.Builder().build();
+        assertTrue("'3.9.3' < '3.9.10'",  
+                dbSchemaFilter.compare(new File("analysis_hypersonic-3.9.3.sql"), new File("analysis_hypersonic-3.9.10.sql"))
+                < 0);
+    }
+
     @Test
     public void acceptSchemaVersion_newInstall() {
         DbSchemaFilter filter=new DbSchemaFilter.Builder().build();
