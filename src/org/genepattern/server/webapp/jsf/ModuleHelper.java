@@ -52,7 +52,12 @@ public class ModuleHelper {
     public ModuleCategory getRecentlyUsed() {
         AdminDAO dao = new AdminDAO();
         String userId = UIBeanHelper.getUserId();
-        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId, UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+        int recentJobsToShow = Integer.parseInt(
+            new UserDAO().getPropertyValue(userId, 
+                UserPropKey.RECENT_JOBS_TO_SHOW, 
+                UserPropKey.RECENT_JOB_TO_SHOW_DEFAULT
+            )
+        );
         return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId(), recentJobsToShow));
     }
 

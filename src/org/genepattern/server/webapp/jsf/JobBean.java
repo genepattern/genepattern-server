@@ -561,7 +561,13 @@ public class JobBean {
             return recentJobs;
         }
 
-        int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(getUserProps(), UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
+        int recentJobsToShow = Integer.parseInt(
+            UserDAO.getPropertyValue(
+                getUserProps(), 
+                UserPropKey.RECENT_JOBS_TO_SHOW, 
+                UserPropKey.RECENT_JOB_TO_SHOW_DEFAULT
+            )
+        );
         AnalysisDAO ds = new AnalysisDAO();
 
         List<JobInfo> recentJobInfos = ds.getRecentJobsForUser(userId, recentJobsToShow, JobSortOrder.JOB_NUMBER);

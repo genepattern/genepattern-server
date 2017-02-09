@@ -863,7 +863,12 @@ public class JobsResource {
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO(mgr);
             Set<UserProp> props = userDao.getUserProps(userContext.getUserId());
-            int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(props, UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
+            int recentJobsToShow = Integer.parseInt(
+                UserDAO.getPropertyValue(
+                    props, 
+                    UserPropKey.RECENT_JOBS_TO_SHOW, 
+                    UserPropKey.RECENT_JOB_TO_SHOW_DEFAULT
+            ));
 
             // Get the recent jobs
             AnalysisDAO dao = new AnalysisDAO(mgr);
