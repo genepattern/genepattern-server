@@ -62,21 +62,4 @@
        	</java>
 	</target>
 
-
-
-	<target name="create_database">
-		<java classname="edu.mit.genome.gp.server.CreateDatabase" fork="true">
-		    <jvmarg value="-Dgenepattern.properties=${basedir}/../resources"/>
-     		    <jvmarg value="-Dlog4j.configuration=${basedir}/../resources/log4j.properties"/>
-     		    <arg value="${basedir}/../modules"/> 
-     		    <classpath>
-     		    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
-        			<include name="**/*.jar"/>
-    			</fileset>      
- 		   	<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
-     		    </classpath>
-	       	</java>
-	</target>
-
-
 </project>
