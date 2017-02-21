@@ -29,7 +29,7 @@ public class TestPatchInfoDao {
     @Test
     public void recordPatch() throws DbException, MalformedURLException {
         // test one, default entries 
-        final List<PatchInfo> defaultEntries = TestPluginRegistrySystemProps.initDefaultInstalledPatchInfos();
+        final List<PatchInfo> defaultEntries = TestPluginManagerLegacy.initDefaultInstalledPatchInfos();
         assertComparePatchInfo("before recordPatch, expecting default list", 
                 defaultEntries, 
                 new PatchInfoDao(mgr).getInstalledPatches());
