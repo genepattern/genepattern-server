@@ -2232,8 +2232,8 @@ public class GenePatternAnalysisTask {
 	return value;
     }
 
-    private static boolean validateCPU(String expected) throws JobDispatchException {
-        String actual = System.getProperty("os.arch");
+    private static boolean validateCPU(final String expected) throws JobDispatchException {
+        final String actual = GpConfig.getJavaProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
         if (expected.equals("")) {
             return true;
@@ -2278,7 +2278,7 @@ public class GenePatternAnalysisTask {
             }
         }
         if (!valid) {
-            String actual = System.getProperty("os.name");
+            String actual = GpConfig.getJavaProperty("os.name");
             throw new JobDispatchException("Cannot " + action + " on this platform. Task requires on of " + expected
                     + " operating systems, but this server is running " + actual);
         }
@@ -2286,7 +2286,7 @@ public class GenePatternAnalysisTask {
     }
     
     private static boolean validateOSEntry(final String _expected, final String _action) throws JobDispatchException {
-        final String _actual = System.getProperty("os.name");
+        final String _actual = GpConfig.getJavaProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
         final String expected = _expected.toLowerCase();
         final String actual = _actual.toLowerCase();
@@ -2524,7 +2524,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Fill returned Properties with everything that the user can get a substitution for, including all
-     * System.getProperties() properties plus all of the actual ParameterInfo name/value pairs.
+     * System properties plus all of the actual ParameterInfo name/value pairs.
      * <p/>
      * <p/>
      * Each input file gets additional entries for the directory (INPUT_PATH) the file name (just filename, no path) aka
@@ -2619,7 +2619,7 @@ public class GenePatternAnalysisTask {
             if (taskID != -1) {
                 taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
                 File f = new File(taskLibDir);
-                taskLibDir = f.getPath() + System.getProperty("file.separator");
+                taskLibDir = f.getPath() + GpConfig.getJavaProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
             
@@ -3710,7 +3710,7 @@ public class GenePatternAnalysisTask {
 
                     // unzip using ants classes to allow file permissions to be retained
                     boolean useAntUnzip = true;
-                    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                    if (!GpConfig.getJavaProperty("os.name").toLowerCase().startsWith("windows")) {
                         useAntUnzip = false;
                         Execute execute = new Execute();
                         execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
@@ -4138,8 +4138,8 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * return boolean indicating whether a filename represents a file type (as found in
-     * System.getProperties(files.{code,doc,binary}))
+     * return boolean indicating whether a filename represents a file type 
+     * as found in 'files.code', 'files.doc', or 'files.binary' properties.
      */
     private static boolean hasEnding(String filename, List<String> fileEndings) {
         boolean ret = false;
@@ -4166,22 +4166,23 @@ public class GenePatternAnalysisTask {
         return vEntries;
     }
 
-    // implements FilenameFilter, but static
+    /** implements FilenameFilter, but static */
     public static boolean accept(File dir, String name) {
-	return isDocFile(name);
+        return isDocFile(name);
     }
 
-    /* TODO: put all of this stuff in database and look it up when requested */
-
-    // LHS is what is presented to user, RHS is what java System.getProperty()
-    // returns
+    /**
+     * LHS is presented to user, RHS is the Java System property.
+     */
     public static String[] getCPUTypes() {
-	return new String[] { ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc" };
+	    return new String[] { ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc" };
     }
 
-    // LHS=show to user, RHS=what System.getProperty("os.name") returns
+    /**
+     * LHS is presented to user, RHS is the Java System property 'os.name'
+     */
     public static String[] getOSTypes() {
-	return new String[] { ANY, "Linux=linux", "MacOS=Mac OS X", "Solaris=solaris", "Tru64=OSF1", "Windows=Windows" };
+        return new String[] { ANY, "Linux=linux", "MacOS=Mac OS X", "Solaris=solaris", "Tru64=OSF1", "Windows=Windows" };
     }
 
     public static String[] getTaskTypes() {

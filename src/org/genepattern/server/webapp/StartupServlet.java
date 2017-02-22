@@ -233,7 +233,7 @@ public class StartupServlet extends HttpServlet {
         }
         else {
             System.err.println("gpHomeDir and gpWorkingDir are not defined, setting log dir relative to 'user.dir'");
-            logDir=new File(System.getProperty("user.dir"), "logs");
+            logDir=new File(GpConfig.getJavaProperty("user.dir"), "logs");
         }
         
         try {
@@ -456,7 +456,7 @@ public class StartupServlet extends HttpServlet {
     }
 
     private void announceStartup() {
-        final String NL = System.getProperty("line.separator");
+        final String NL = GpConfig.getJavaProperty("line.separator");
         final String STARS = "****************************************************************************";
         StringBuffer startupMessage = new StringBuffer();
         startupMessage.append(NL + STARS + NL);
@@ -485,20 +485,20 @@ public class StartupServlet extends HttpServlet {
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
-        final String NL = System.getProperty("line.separator");
+        final String NL = GpConfig.getJavaProperty("line.separator");
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
         startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
-        startupMessage.append("\tJava Version: " + System.getProperty("java.version") + NL );
+        startupMessage.append("\tJava Version: " + GpConfig.getJavaProperty("java.version") + NL );
         startupMessage.append("\twebappDir: " + this.webappDir + NL );
-        startupMessage.append("\tuser.dir: " + System.getProperty("user.dir") + NL);
+        startupMessage.append("\tuser.dir: " + GpConfig.getJavaProperty("user.dir") + NL);
         startupMessage.append("\tresourcesDir: "+ gpConfig.getResourcesDir() + NL);
         startupMessage.append("\tresources: "+ gpConfig.getGPProperty(serverContext, "resources") + NL);
         startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
         startupMessage.append("\t" + GpConfig.PROP_PLUGIN_DIR+": "+ gpConfig.getRootPluginDir(serverContext) + NL);
         startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: " + System.getProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\tjava.io.tmpdir: " + GpConfig.getJavaProperty("java.io.tmpdir") + NL );
         startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
         startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
         startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);

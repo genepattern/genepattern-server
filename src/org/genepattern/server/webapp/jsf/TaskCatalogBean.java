@@ -443,9 +443,9 @@ public class TaskCatalogBean {
     }
 
     private String getOS() {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-        boolean isMac = System.getProperty("mrj.version") != null;
-        boolean isLinux = System.getProperty("os.name").toLowerCase().startsWith("linux");
+        boolean isWindows = GpConfig.getJavaProperty("os.name").toLowerCase().startsWith("windows");
+        boolean isMac = GpConfig.getJavaProperty("mrj.version") != null;
+        boolean isLinux = GpConfig.getJavaProperty("os.name").toLowerCase().startsWith("linux");
 
         if (isWindows) { // remove all tasks that are not windows or
             // any

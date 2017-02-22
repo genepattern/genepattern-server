@@ -318,7 +318,6 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     
     @Override
     public RepositoryInfo getCurrentRepository() {
-        //final String moduleRepositoryUrl=System.getProperty(RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
         RepositoryInfo info=getRepository(currentRepository);
         if (info != null) {
             return info;

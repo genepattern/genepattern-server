@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.genepattern.server.config.GpConfig;
+
 /**
  * 
  * @author Joshua Gould
@@ -28,7 +30,7 @@ public class LocalModuleDirectoryManager {
     private String directoryName;
     private String moduleLsid;
     private String moduleName;
-    private String directory = System.getProperty("java.io.tmpdir");
+    private String directory = GpConfig.getJavaProperty("java.io.tmpdir");
 
     /**
      * Creates a new instance of <tt>LocalModuleDirectoryManager</tt>/

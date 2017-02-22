@@ -36,6 +36,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
+import org.genepattern.server.config.GpConfig;
+
 public class RunVisualizer {
     protected static final String JAVA = "java";
     protected static final String JAVA_FLAGS = "java_flags";
@@ -151,14 +153,14 @@ public class RunVisualizer {
         }
         params.put(RunVisualizerConstants.LIBDIR, libdirPath + File.separator);
 
-        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
-                + (System.getProperty("os.name").startsWith("Windows") ? ".exe" : "");
+        final String java = GpConfig.getJavaProperty("java.home") + File.separator + 
+            "bin" + File.separator + "java" + 
+            (GpConfig.getJavaProperty("os.name").startsWith("Windows") ? ".exe" : "");
         params.put(JAVA, java);
         String javaFlags = (String) params.get(JAVA_FLAGS);
         if (javaFlags == null) {
             javaFlags = "";
         }
-
         params.put(JAVA_FLAGS, javaFlags);
 
         String portStr = "";
@@ -363,7 +365,7 @@ public class RunVisualizer {
     protected boolean validateCPU() throws IOException {
         String expected = (String) params.get(RunVisualizerConstants.CPU_TYPE);
         String taskName = (String) params.get(RunVisualizerConstants.NAME);
-        String actual = System.getProperty("os.arch");
+        final String actual = GpConfig.getJavaProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
 
         if (expected.equals("")) {
@@ -387,7 +389,7 @@ public class RunVisualizer {
     protected boolean validateOS() throws IOException {
         String expected = (String) params.get(RunVisualizerConstants.OS);
         String taskName = (String) params.get(RunVisualizerConstants.NAME);
-        String actual = System.getProperty("os.name");
+        String actual = GpConfig.getJavaProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
 
         if (expected.equals(""))
