@@ -48,7 +48,6 @@ import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +59,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
@@ -272,29 +270,6 @@ public class GenePatternAnalysisTask {
      */
     public GenePatternAnalysisTask(ExecutorService executor) {
         this.executor = executor;
-    }
-
-    public static INPUT_FILE_MODE getInputFileMode() {
-        INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
-        String inputFileModeProp = System.getProperty("input.file.mode");
-        if (inputFileModeProp != null) {
-            if (inputFileModeProp.equals("copy")) {
-                inputFileMode = INPUT_FILE_MODE.COPY;
-                log.info("Input file mode set to copy.");
-            } 
-            else if (inputFileModeProp.equals("move")) {
-                inputFileMode = INPUT_FILE_MODE.MOVE;
-                log.info("Input file mode set to move.");
-            } 
-            else if (inputFileModeProp.equals("path")) {
-                inputFileMode = INPUT_FILE_MODE.PATH;
-                log.info("Input file mode set to path.");
-            } 
-            else {
-                log.info("Unknown value for property input.file.mode. Valid options are 'copy', 'move', and 'path'.");
-            }
-        }
-        return inputFileMode;
     }
 
     /**
@@ -674,7 +649,7 @@ public class GenePatternAnalysisTask {
                     "There is no record of agreement for userId="+jobInfo.getUserId());
         }
        
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
+        //INPUT_FILE_MODE inputFileMode = getInputFileMode();
         JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;
@@ -906,51 +881,8 @@ public class GenePatternAnalysisTask {
                         continue;
                     }
 
-                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                        //TODO: don't do this for uploaded files
-                        attrsCopy.remove(ParameterInfo.TYPE);
-                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                    } 
-                    else {
-                        File outFile = null;
-                        String inputFilename = new File(originalPath).getName();
-                        // strip off the AxisNNNNNaxis_ prefix
-                        int underscoreIndex = -1;
-                        if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
-                            inputFilename = inputFilename.substring(underscoreIndex + 1);
-                        }
-                        // outDir is job directory
-                        outFile = new File(outDir, inputFilename);
-                        int counter = 1;
-                        while (outFile.exists()) { // in case two input files have the same name
-                            outFile = new File(outDir, inputFilename + "-" + counter);
-                            counter++;
-                        }
-
-                        if (inputFileMode == INPUT_FILE_MODE.COPY) {
-                            if (!copyFile(inFile, outFile)) {
-                                vProblems.add("Unable to copy " + inFile + " to " + outFile);
-                                continue;
-                            }
-                            //TODO: mark for delete on handleJobCompletion
-                            outFile.deleteOnExit(); // mark for delete, just in case
-                        } 
-                        else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
-                            if (!rename(inFile, outFile, true)) {
-                                vProblems.add("Unable to move " + inFile + " to " + outFile);
-                                continue;
-                            }
-                            //TODO: mark for move back on handleJobCompletion
-                        }
-
-                        attrsCopy.put(ORIGINAL_PATH, originalPath);
-                        try {
-                            pinfo.setValue(outFile.getCanonicalPath());
-                        }
-                        catch (IOException e) {
-                            throw new JobDispatchException(e);
-                        }
-                    }
+                    attrsCopy.remove(ParameterInfo.TYPE);
+                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
                 } 
                 else if (j >= formalParamsLength) {
                     log.debug("params[" + j + "]=" + paramsCopy[j].getName() + " has no formal parameter defined");
@@ -974,7 +906,7 @@ public class GenePatternAnalysisTask {
                     boolean isURL = false;
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
                         // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
-                        if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+                        if (new File(originalPath).exists()) {
                             boolean isInTaskLib = false;
                             boolean canRead = false;
                             try {
@@ -1117,17 +1049,10 @@ public class GenePatternAnalysisTask {
                                     }
 
                                     File f = new File(uri);
-                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        pinfo.setValue(f.getAbsolutePath());
-                                        //TODO: don't remove
-                                        attrsCopy.remove(ParameterInfo.TYPE);
-                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                        downloadUrl = false;
-                                    } 
-                                    else {
-                                        is = new FileInputStream(f);
-                                        name = f.getName();
-                                    }
+                                    pinfo.setValue(f.getAbsolutePath());
+                                    attrsCopy.remove(ParameterInfo.TYPE);
+                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                    downloadUrl = false;
                                 }
                             }
                             else {
@@ -1140,22 +1065,10 @@ public class GenePatternAnalysisTask {
                                     try {
                                         File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
-                                            if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                pinfo.setValue(file.getAbsolutePath());
-                                                //TODO: don't remove
-                                                attrsCopy.remove(ParameterInfo.TYPE);
-                                                attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                                downloadUrl = false;
-                                            } 
-                                            else {
-                                                name = file.getName();
-                                                //special case for axis: e.g. Axis23118.att_all_aml_test.gct
-                                                if (name.startsWith("Axis")) {
-                                                    int endIdx = name.indexOf(".att_") + ".att_".length();
-                                                    name = name.substring(endIdx);
-                                                }
-                                                is = new BufferedInputStream(new FileInputStream(file));
-                                            }
+                                            pinfo.setValue(file.getAbsolutePath());
+                                            attrsCopy.remove(ParameterInfo.TYPE);
+                                            attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                            downloadUrl = false;
                                         }
                                     } 
                                     catch (IllegalArgumentException e) {
@@ -2673,7 +2586,6 @@ public class GenePatternAnalysisTask {
         if (formalParameters != null) {
             formalParamsLength = formalParameters.length;
         }
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
         try {
             if (copyEnv) {
                 // copy environment variables into props
@@ -2764,10 +2676,6 @@ public class GenePatternAnalysisTask {
                                     }
                                 }
 
-                                if (inputFileMode != INPUT_FILE_MODE.PATH) {
-                                    // file is moved to job directory
-                                    props.put(inputParamName, baseName);
-                                }
                                 props.put(inputParamName + INPUT_PATH, new String(outDirName));
 
                                 // filename without path
