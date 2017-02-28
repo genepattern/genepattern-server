@@ -199,7 +199,7 @@ public class GpServerProperties {
 
     private Map<String,Record> propertiesList = new LinkedHashMap<String,Record>();
 
-    private final boolean useSystemProperties; // default = true;
+    private final boolean useSystemProperties; // default = false;
     private final boolean usePropertiesFiles;  // default = true;
     private final File resourcesDir; // can be null
     
@@ -250,34 +250,30 @@ public class GpServerProperties {
     }
     
     public String getProperty(final String key) {
-        return getProperty(key, this.usePropertiesFiles, this.useSystemProperties);
+        if (this.usePropertiesFiles) {
+            if (serverProps.containsKey(key)) {
+                return serverProps.get(key);
+            }
+        }
+        if (this.useSystemProperties) {
+            return System.getProperty(key);
+        }
+        return null;
     }
-    
+
     public String getProperty(final String key, final String defaultValue) {
         String rval=getProperty(key);
         if (rval==null) {
             return defaultValue;
         }
         return rval;
-    }
-    
-    private String getProperty(final String key, final boolean usePropertiesFiles, final boolean useSystemProperties) {
-        if (usePropertiesFiles) {
-            if (serverProps.containsKey(key)) {
-                return serverProps.get(key);
-            }
-        }
-        if (useSystemProperties) {
-            return System.getProperty(key);
-        }
-        return null;
-    }
+    } 
     
     public Value getValue(GpContext context, final String key) {
         if (context==null) {
             context=GpContext.getServerContext();
         }
-        final String prop=getProperty(key, context.getCheckPropertiesFiles(), context.getCheckSystemProperties());
+        final String prop=getProperty(key);
         if (prop==null) {
             return null;
         }
@@ -302,7 +298,7 @@ public class GpServerProperties {
     
     public static final class Builder {
         private boolean initFromSystemProperties = true;
-        private boolean useSystemProperties = true;
+        private boolean useSystemProperties = false;
         private boolean usePropertiesFiles = true;
         private File resourcesDir=null;
         private File gpPropertiesFile=null;

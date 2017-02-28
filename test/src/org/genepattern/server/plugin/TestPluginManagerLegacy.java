@@ -50,6 +50,23 @@ public class TestPluginManagerLegacy {
     public void setUp() {
         mgr=mock(HibernateSessionManager.class);
     }
+
+    public static final String defaultInstalledPatchLSIDs=
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1,"+
+            "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1,"+
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2,"+
+            "urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_1:0.1,"+
+            "urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_3:1";
+
+    public static final List<PatchInfo> initDefaultInstalledPatchInfos() throws MalformedURLException {
+        return PluginManagerLegacy.getInstalledPatches(defaultInstalledPatchLSIDs);
+    }
     
     private static List<PatchInfo> initTopHatPatchInfos() throws MalformedURLException {
         return Arrays.asList( 

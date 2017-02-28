@@ -22,10 +22,6 @@ import org.genepattern.webservice.TaskInfoCache;
 public class GpContext {
     private static final Logger log = Logger.getLogger(GpContext.class);
 
-    //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
-    private boolean checkSystemProperties = true;
-    //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
-    private boolean checkPropertiesFiles = true;
     private String userId = null;
     private TaskInfo taskInfo = null;
     private File taskLibDir = null;  // aka installation dir, the directory to which the task was installed
@@ -202,21 +198,21 @@ public class GpContext {
     public GpContext() {
     }
 
-    void setCheckSystemProperties(boolean b) {
-        this.checkSystemProperties = b;
-    }
+//    void setCheckSystemProperties(boolean b) {
+//        this.checkSystemProperties = b;
+//    }
+//
+//    public boolean getCheckSystemProperties() {
+//        return checkSystemProperties;
+//    }
 
-    public boolean getCheckSystemProperties() {
-        return checkSystemProperties;
-    }
-
-    void setCheckPropertiesFiles(boolean b) {
-        this.checkPropertiesFiles = b;
-    }
-
-    public boolean getCheckPropertiesFiles() {
-        return checkPropertiesFiles;
-    }
+//    void setCheckPropertiesFiles(boolean b) {
+//        this.checkPropertiesFiles = b;
+//    }
+//
+//    public boolean getCheckPropertiesFiles() {
+//        return checkPropertiesFiles;
+//    }
 
     void setUserId(String userId) {
         this.userId = userId;

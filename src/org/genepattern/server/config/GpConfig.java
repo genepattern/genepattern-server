@@ -772,6 +772,25 @@ public class GpConfig {
     }
 
     /**
+     * Get java system property.
+     * @param key
+     * @return
+     */
+    public static String getJavaProperty(final String key) {
+        return System.getProperty(key);
+    }
+    
+    /**
+     * Get java system property.
+     * @param key
+     * @param def
+     * @return
+     */
+    public static String getJavaProperty(final String key, final String def) {
+        return System.getProperty(key, def);
+    }
+
+    /**
      * Get the value from the 'build.properties' file.
      * @param key
      * @return
@@ -979,7 +998,7 @@ public class GpConfig {
      * 
      * @return
      */
-    protected File getGpHomeDir() {
+    public File getGpHomeDir() {
         return this.gpHomeDir;
     }
 

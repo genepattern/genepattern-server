@@ -246,7 +246,6 @@ class JobWaitThread extends Thread {
 
 	    EmailNotificationManager em = EmailNotificationManager.getInstance();
 	    String addresses = email;
-	    //final String from = "GenePattern@" + System.getProperty("fqHostName");
 	    final String from=EmailNotificationManager.getFromAddress();
 	    String subject = "Job " + jobID + " - status unavailable";
 	    StringBuffer msg = new StringBuffer();

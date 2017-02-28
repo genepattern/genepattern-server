@@ -135,7 +135,6 @@ public class RunGenePatternTaskMain {
 			out.write("\n2: " + args[2]);
 			out.write("\n3: " + args[3]);
 			out.write("\n4: " + args[4]);
-			//System.setProperty("DEBUG", "true");
 
 			String taskArgs[] = new String[args.length - 5];
 			System.arraycopy(args, 5, taskArgs, 0, taskArgs.length);

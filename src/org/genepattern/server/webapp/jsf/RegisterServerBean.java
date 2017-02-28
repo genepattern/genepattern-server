@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.PropsTable;
@@ -151,7 +152,7 @@ public class RegisterServerBean {
     public String  registerServer() {
         AboutBean about = new AboutBean();
         
-        String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
+        String os = GpConfig.getJavaProperty("os.name") + ", "+ GpConfig.getJavaProperty("os.version");
         String genepatternVersion = about.getGenePatternVersion();
         String buildTag = about.getBuildTag();
         URLConnection conn = null;
@@ -231,7 +232,7 @@ public class RegisterServerBean {
         AboutBean about = new AboutBean();
 
         System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered"); 
-        String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
+        String os = GpConfig.getJavaProperty("os.name") + ", "+ GpConfig.getJavaProperty("os.version");
         String genepatternVersion = about.getGenePatternVersion();
         String buildTag = about.getBuildTag();
 

@@ -71,6 +71,18 @@ public class PluginManagerLegacy {
         this.pluginRegistry=pluginRegistry;
     }
     
+    public static final List<PatchInfo> getInstalledPatches(final String installedPatches) throws MalformedURLException {
+        String[] installedPatchLSIDs = new String[0];
+        if (installedPatches != null) {
+            installedPatchLSIDs = installedPatches.split(",");
+        }
+        List<PatchInfo> patchInfos=new ArrayList<PatchInfo>();
+        for(final String patchLsid : installedPatchLSIDs) {
+            patchInfos.add(new PatchInfo(patchLsid, null));
+        }
+        return patchInfos;
+    }
+    
     public static PluginRegistry initDefaultPluginRegistry(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
         return new PluginRegistryGpDb(mgr);
     }
