@@ -1,19 +1,20 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
-public class CustomProperties {
+public class CustomProperties implements Serializable {
     private static final Logger log = Logger.getLogger("CustomSettings.class");
+    private static final long serialVersionUID = 1330010307546274883L;
     
     public static final String GP_URL = "GenePatternURL";
 
@@ -41,7 +42,7 @@ public class CustomProperties {
         //first remove any existing keys with same name
         removeDuplicateCustomSetting(key);
         customSettings.add(new KeyValuePair(key, value));
-        PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+        storeChangesToCustomProperties(true);
     }
 
     private void removeDuplicateCustomSetting(final String key) {
@@ -68,7 +69,7 @@ public class CustomProperties {
             if (element.getKey().equals(keyToRemove)) {
                 customSettings.remove(element);
                 System.getProperties().remove(keyToRemove);
-                PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+                storeChangesToCustomProperties(true);
                 break;
             }
         }
@@ -78,24 +79,27 @@ public class CustomProperties {
         KeyValuePair gpURL = new KeyValuePair(GP_URL, genepatternURL);
         removeDuplicateCustomSetting(GP_URL);
         customSettings.add(gpURL);
-        PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
+        storeChangesToCustomProperties(true);
     }
 
-    public void storeChangesToCustomProperties() {
+    /**
+     * Save custom properties to file system and optionally reload the
+     * genepattern.properties and custom.properties files.
+     * 
+     * @param reloadConfiguration
+     */
+    public void storeChangesToCustomProperties(final boolean reloadConfiguration) {
         PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
-        //reload of genepattern.properties and custom.properties files after making changes
-        //    ServerConfigurationFactory.reloadConfiguration();
+        if (reloadConfiguration) {
+            ServerConfigurationFactory.reloadConfiguration();
+        }
     }
 
     protected static List<KeyValuePair> initCustomSettings() {
         try {
-            Properties tmp = PropertiesManager_3_2.getCustomProperties();
-            List<KeyValuePair> customSettings = new ArrayList<KeyValuePair>();
-            for (Map.Entry entry : tmp.entrySet()) {
-                customSettings.add(new KeyValuePair((String) entry.getKey(), (String) entry.getValue()));
-            }
-            return customSettings;
-        } 
+            final Properties customProps = PropertiesManager_3_2.getCustomProperties();
+            return KeyValuePair.createListFromProperties(customProps);
+        }
         catch (IOException ioe) {
             log.error(ioe);
             return null;

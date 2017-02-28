@@ -5,10 +5,28 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import org.genepattern.server.dm.UrlUtil;
 
 public class KeyValuePair implements Serializable {
+    private static final long serialVersionUID = 7245950250797266267L;
+
+    /**
+     * Create a new List of KeyValuePair items from a Properties instance.
+     * @param props
+     * @return
+     */
+    public static final List<KeyValuePair> createListFromProperties(final Properties props) {
+        final List<KeyValuePair> customSettings = new ArrayList<KeyValuePair>();
+        for(final String key : props.stringPropertyNames()) {
+            customSettings.add(new KeyValuePair(key, props.getProperty(key)));
+        }
+        return customSettings;        
+    }
+
     private String altKey;
     private String key;
     private String value;

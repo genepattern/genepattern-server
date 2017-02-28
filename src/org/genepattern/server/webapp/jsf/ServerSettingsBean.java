@@ -727,9 +727,9 @@ public class ServerSettingsBean implements Serializable {
     public void saveSettings(ActionEvent event) {
         UIBeanHelper.setInfoMessage("Property successfully updated");
         PropertiesManager_3_2.storeChanges(settings);
-        customProperties.storeChangesToCustomProperties();
         //force reload of genepattern.properties and custom.properties files
-        ServerConfigurationFactory.reloadConfiguration();
+        final boolean reloadConfiguration=true;
+        customProperties.storeChangesToCustomProperties(reloadConfiguration);
     }
 
     /**
