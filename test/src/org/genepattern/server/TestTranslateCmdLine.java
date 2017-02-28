@@ -50,9 +50,6 @@ public class TestTranslateCmdLine {
             .configFile(new File("resources/config_local_job_runner.yaml"))
         .build();
         gpContext=mock(GpContext.class);
-        // need the next two lines to enable getting values for added properties
-        when(gpContext.getCheckPropertiesFiles()).thenReturn(true);
-        when(gpContext.getCheckSystemProperties()).thenReturn(true);
         jobInfo=mock(JobInfo.class);
         when(gpContext.getJobInfo()).thenReturn(jobInfo);
         taskInfo=mock(TaskInfo.class);
