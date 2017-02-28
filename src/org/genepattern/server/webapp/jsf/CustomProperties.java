@@ -2,12 +2,10 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -99,13 +97,9 @@ public class CustomProperties implements Serializable {
 
     protected static List<KeyValuePair> initCustomSettings() {
         try {
-            Properties tmp = PropertiesManager_3_2.getCustomProperties();
-            List<KeyValuePair> customSettings = new ArrayList<KeyValuePair>();
-            for (Map.Entry entry : tmp.entrySet()) {
-                customSettings.add(new KeyValuePair((String) entry.getKey(), (String) entry.getValue()));
-            }
-            return customSettings;
-        } 
+            final Properties customProps = PropertiesManager_3_2.getCustomProperties();
+            return KeyValuePair.createListFromProperties(customProps);
+        }
         catch (IOException ioe) {
             log.error(ioe);
             return null;
