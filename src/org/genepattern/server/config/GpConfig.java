@@ -998,7 +998,7 @@ public class GpConfig {
      * 
      * @return
      */
-    protected File getGpHomeDir() {
+    public File getGpHomeDir() {
         return this.gpHomeDir;
     }
 

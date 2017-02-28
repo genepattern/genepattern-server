@@ -493,6 +493,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tJava Version: " + GpConfig.getJavaProperty("java.version") + NL );
         startupMessage.append("\twebappDir: " + this.webappDir + NL );
         startupMessage.append("\tuser.dir: " + GpConfig.getJavaProperty("user.dir") + NL);
+        startupMessage.append("\tGENEPATTERN_HOME: "+ gpConfig.getGpHomeDir() + NL);
         startupMessage.append("\tresourcesDir: "+ gpConfig.getResourcesDir() + NL);
         startupMessage.append("\tresources: "+ gpConfig.getGPProperty(serverContext, "resources") + NL);
         startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
