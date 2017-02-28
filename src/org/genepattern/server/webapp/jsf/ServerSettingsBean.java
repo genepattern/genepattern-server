@@ -693,7 +693,6 @@ public class ServerSettingsBean implements Serializable {
         customProperties.deleteCustomSetting(keyToRemove);
     }
 
-
     /**
      * @param event
      */

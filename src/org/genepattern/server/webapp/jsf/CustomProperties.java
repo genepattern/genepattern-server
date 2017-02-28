@@ -2,6 +2,8 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +14,17 @@ import org.genepattern.server.util.PropertiesManager_3_2;
 
 public class CustomProperties {
     private static final Logger log = Logger.getLogger("CustomSettings.class");
+    
     public static final String GP_URL = "GenePatternURL";
+
+    private static final Comparator<KeyValuePair> sortByKeyIgnoreCase = new Comparator<KeyValuePair>() {
+        @Override
+        public int compare(final KeyValuePair o1, final KeyValuePair o2) {
+            final String k1 = o1 == null ? "" : o1.getKey();
+            final String k2 = o2 == null ? "" : o2.getKey();
+            return k1.compareToIgnoreCase(k2);
+        } 
+    };
 
     private final List<KeyValuePair> customSettings;
     
@@ -21,6 +33,7 @@ public class CustomProperties {
     }
     
     public List<KeyValuePair> getCustomSettings() {
+        Collections.sort(customSettings, sortByKeyIgnoreCase);
         return customSettings;
     }
     
