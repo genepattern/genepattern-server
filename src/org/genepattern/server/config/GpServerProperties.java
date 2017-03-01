@@ -16,6 +16,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -83,7 +84,7 @@ public class GpServerProperties {
             ///CLOVER:OFF
             log.error("unexpected error reading file="+propFile.getAbsolutePath(), t);
             return null;
-            ///CLOVER:ONvoid
+            ///CLOVER:ON
         }
         finally {
             if (fis != null) {
@@ -162,13 +163,13 @@ public class GpServerProperties {
 
     public static class Record {
         private final File propFile;
-        private long dateLoaded = System.currentTimeMillis();
-        private final Properties props=new Properties();
-        
+        private final long dateLoaded;
+        private final ImmutableMap<String,String> props;
+
         public Record(final Properties from) {
             this.propFile=null;
             this.dateLoaded=System.currentTimeMillis();
-            this.props.putAll(from);
+            this.props=Maps.fromProperties(from);
         }
 
         public Record(final File propFile) {
@@ -176,24 +177,25 @@ public class GpServerProperties {
                 throw new IllegalArgumentException("propFile==null");
             }
             this.propFile=propFile;
-            reloadProps();
+            final Properties props=loadProps(propFile);
+            this.dateLoaded = System.currentTimeMillis();
+            this.props=Maps.fromProperties(props);
         }
         
-        public Properties getProperties() {
+        protected ImmutableMap<String,String> getProperties() {
             return props;
         }
         
+        public File getPropertiesFile() {
+            return propFile;
+        }
+
         public long getDateLoaded() {
             return dateLoaded;
         }
-        
-        public void reloadProps() {
-            props.clear();
-            dateLoaded = System.currentTimeMillis();
-            Long success=loadProps(props, propFile);
-            if (success!=null) {
-                dateLoaded=success;
-            }
+
+        public Record reloadProps() {
+            return new Record(propFile);
         }
     }
 
@@ -219,19 +221,19 @@ public class GpServerProperties {
                 log.debug("system.properties loaded at "+new Date(systemProps.getDateLoaded()));
             }
             propertiesList.put("system.properties", systemProps);
-            flattened.putAll(systemProps.getProperties());
+            flattened.putAll(systemProps.props);
         }
         if (in.gpPropertiesFile != null) {
             log.debug("loading genepattern.properties from file="+in.gpPropertiesFile);
             Record gpProps=new Record(in.gpPropertiesFile);
             propertiesList.put("genepattern.properties", gpProps);
-            flattened.putAll(gpProps.getProperties());
+            flattened.putAll(gpProps.props);
         }
         if (in.customPropertiesFile != null && in.customPropertiesFile.exists()) {
             log.debug("loading custom.properties from file="+in.customPropertiesFile);
             Record customProps=new Record(in.customPropertiesFile);
             propertiesList.put("custom.properties", customProps);
-            flattened.putAll(customProps.getProperties());
+            flattened.putAll(customProps.props);
         }
         if (in.customProperties != null) {
             flattened.putAll(in.customProperties);
@@ -240,7 +242,7 @@ public class GpServerProperties {
             log.debug("loading build.properties from file="+in.buildPropertiesFile);
             Record buildProps=new Record(in.buildPropertiesFile);
             propertiesList.put("build.properties", buildProps);
-            flattened.putAll(buildProps.getProperties());
+            flattened.putAll(buildProps.props);
         }
         this.serverProps=Maps.fromProperties(flattened);
     }

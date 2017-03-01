@@ -3,6 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,7 +13,6 @@ import java.util.Properties;
 
 
 import org.genepattern.junitutil.FileUtil;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -34,10 +36,10 @@ public class TestGpServerPropertiesRecord {
 
     @Test()
     public void testFromFile() {
-            final File testProps=FileUtil.getSourceFile(this.getClass(), "test.properties");
+        final File testProps=FileUtil.getSourceFile(this.getClass(), "test.properties");
         GpServerProperties.Record record=new GpServerProperties.Record(testProps);
-        Assert.assertEquals("properties.size", 1, record.getProperties().size());
-        Assert.assertEquals("GenePatternURL", "http://testserver.test.com/gp/", record.getProperties().get("GenePatternURL"));
+        assertEquals("properties.size", 1, record.getProperties().size());
+        assertEquals("GenePatternURL", "http://testserver.test.com/gp/", record.getProperties().get("GenePatternURL"));
     }
 
     @Test()
@@ -47,8 +49,8 @@ public class TestGpServerPropertiesRecord {
         GpServerProperties.Record record=new GpServerProperties.Record(props);
         // verify that the record is based on a snapshot copy of the properties from the constructor
         props.clear();
-        Assert.assertEquals("properties.size", 1, record.getProperties().size());
-        Assert.assertEquals("GenePatternURL", "http://127.0.0.1:8080/gp/", record.getProperties().get("GenePatternURL"));
+        assertEquals("properties.size", 1, record.getProperties().size());
+        assertEquals("GenePatternURL", "http://127.0.0.1:8080/gp/", record.getProperties().get("GenePatternURL"));
     }
 
     @Test(expected = IllegalArgumentException.class )
@@ -66,15 +68,30 @@ public class TestGpServerPropertiesRecord {
         writePropsToFile(props, testProps);
         
         GpServerProperties.Record record=new GpServerProperties.Record(testProps);
-        Assert.assertEquals("properties.size", 1, record.getProperties().size());
-        Assert.assertEquals("GenePatternURL", "http://127.0.0.1:8080/gp/", record.getProperties().get("GenePatternURL"));
+        assertEquals("properties.size", 1, record.getProperties().size());
+        assertEquals("GenePatternURL", "http://127.0.0.1:8080/gp/", record.getProperties().get("GenePatternURL"));
         boolean success=testProps.delete();
-        Assert.assertEquals("deleted tmp testPropsFile="+testProps, true, success);
+        assertEquals("deleted tmp testPropsFile="+testProps, true, success);
         final long initDateLoaded=record.getDateLoaded();
         Thread.sleep(100);
-        record.reloadProps();
-        Assert.assertEquals("properties.size", 0, record.getProperties().size());
-        Assert.assertTrue("check dateLoaded", record.getDateLoaded()>initDateLoaded);
+        record = record.reloadProps();
+        assertEquals("properties.size", 0, record.getProperties().size());
+        assertTrue("check dateLoaded", record.getDateLoaded()>initDateLoaded);
+    }
+    
+    @SuppressWarnings("deprecation")
+    @Test 
+    public void immutableProperties() {
+        final File testProps=FileUtil.getSourceFile(this.getClass(), "test.properties");
+        GpServerProperties.Record record=new GpServerProperties.Record(testProps);
+        try {
+            record.getProperties().put("GenePatternURL", "bogusValue");
+        }
+        catch (Throwable t) {
+            // ignore (expected = UnsupportedOperationException.class)
+        }
+        assertEquals("properties.size", 1, record.getProperties().size());
+        assertEquals("GenePatternURL", "http://testserver.test.com/gp/", record.getProperties().get("GenePatternURL"));
     }
     
 }
