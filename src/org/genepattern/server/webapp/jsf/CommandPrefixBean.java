@@ -34,7 +34,7 @@ public class CommandPrefixBean {
     private String defaultCommandPrefix;
     private String newPrefixName;
     private String newPrefixValue;
-    private List newMappingLSID;
+    private List<String> newMappingLSID;
     private String newMappingPrefix;
 
     PropertiesManager_3_2 pm = null;
@@ -170,11 +170,11 @@ public class CommandPrefixBean {
         this.newPrefixValue = newPrefix;
     }
 
-    public List getNewMappingLSID() {
+    public List<String> getNewMappingLSID() {
         return newMappingLSID;
     }
 
-    public void setNewMappingLSID(List newMappingLSID) {
+    public void setNewMappingLSID(List<String> newMappingLSID) {
         this.newMappingLSID = newMappingLSID;
     }
 
@@ -231,11 +231,9 @@ public class CommandPrefixBean {
      *            ignored
      */
     public void savePrefixTaskMapping(ActionEvent event) throws MalformedURLException, WebServiceException {
-        Properties p = pm.getTaskPrefixMapping();
-
-        for (String anLsid : (List<String>) newMappingLSID) {
-            String lsid = lsidFromName(anLsid);
-
+        final Properties p = pm.getTaskPrefixMapping();
+        for (final String anLsid : newMappingLSID) {
+            final String lsid = lsidFromName(anLsid);
             p.setProperty(lsid, newMappingPrefix);
         }
         pm.saveProperties(TASK_PREFIX_MAPPING, p);
