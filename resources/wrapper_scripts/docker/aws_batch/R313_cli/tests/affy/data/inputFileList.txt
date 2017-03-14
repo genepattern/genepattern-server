@@ -1,0 +1,1 @@
+/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/R313_cli/tests/affy/data/HuEx-1_0-st-v2.colon-cancer-data-set.zip

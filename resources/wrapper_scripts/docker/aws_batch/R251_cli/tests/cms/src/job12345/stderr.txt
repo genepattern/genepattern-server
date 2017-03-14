@@ -1,0 +1,1 @@
+Error: Could not find or load main class B.commons-math-1.2.jar:.Users.liefeld.dockerProjects.modules.cms.src.trove.jar:.Users.liefeld.dockerProjects.modules.cms.src.Jama-1.0.2.jar:.Users.liefeld.dockerProjects.modules.cms.src.colt.jar:.Users.liefeld.dockerProjects.modules.cms.src.jsci-core.jar

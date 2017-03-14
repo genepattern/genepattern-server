@@ -1,0 +1,4 @@
+Error in GP.affyst.efc(files.to.process, normalize, background.correct,  : 
+  No CEL files were found in the input file(s)
+Calls: tryCatch -> tryCatchList -> GP.affyst.efc
+Execution halted
