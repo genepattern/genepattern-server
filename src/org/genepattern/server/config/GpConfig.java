@@ -709,9 +709,11 @@ public class GpConfig {
      * Get the 'default' command prefix declared in the resources/commandPrefix.properties file.
      */
     public String getDefaultCommandPrefix() {
-        return serverProperties
+        return Strings.nullToEmpty(
+            serverProperties
                 .getCommandPrefixProps()
-                .getProps().getOrDefault("default", "");
+                .getProps().get("default")
+        );
     }
 
     /**
