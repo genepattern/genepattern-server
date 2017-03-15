@@ -16,7 +16,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -26,13 +25,17 @@ import com.google.common.collect.Maps;
  * 
  * The following properties files are loaded, in order, after reading System.properties:
  *     genepattern.properties, custom.properties, and build.properties.
- * 
+ *     
+ * Additional properties files are loaded as Records, but must be accessed individually. Their values are not
+ * flattened into the stored properties.
+ *     commandPrefix.properties
+ *     taskPrefixMapping.properties
  * 
  * @author pcarr
  */
 public class GpServerProperties {
-    private static Logger log = Logger.getLogger(GpServerProperties.class);
-    
+    private static final Logger log = Logger.getLogger(GpServerProperties.class);
+
     /**
      * Helper method for initializing a new Properties instance from a config file.
      * Errors are reported to the log file.
@@ -41,9 +44,9 @@ public class GpServerProperties {
      * @param propFile
      * @return
      */
-    public static Properties loadProps(File propFile) {
-        Properties props=new Properties();
-        Long dateLoaded=loadProps(props, propFile);
+    public static Properties loadProps(final File propFile) {
+        final Properties props=new Properties();
+        final Long dateLoaded=loadProps(props, propFile);
         if (dateLoaded==null) {
             log.debug("dateLoaded==null");
         }
@@ -68,7 +71,7 @@ public class GpServerProperties {
         }
         if (!propFile.exists()) {
             log.debug("File does not exist, propFile="+propFile);
-            return null;
+            return System.currentTimeMillis();
         }
         FileInputStream fis = null;
         try {
@@ -109,7 +112,9 @@ public class GpServerProperties {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static void writeProperties(final Properties props, final File propFile, final String comment) throws FileNotFoundException, IOException {
+    public static void writeProperties(final Properties props, final File propFile, final String comment)
+    throws FileNotFoundException, IOException 
+    {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(propFile);
@@ -121,7 +126,29 @@ public class GpServerProperties {
             }
         }
     }
-    
+
+    public static boolean writePropertiesIgnoreError(final Properties props, final File propFile, final String comment)
+    {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(propFile);
+            props.store(fos, comment);
+            return true;
+        }
+        catch (IOException e) {
+            return false;
+        }
+        finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                }
+                catch (IOException e) { 
+                }
+            }
+        }
+    }
+
     /**
      * Save custom plugin properties into the custom.properties file for the server.
      * You must reload the configuration to guarantee that the updates are available to the
@@ -161,44 +188,6 @@ public class GpServerProperties {
         GpServerProperties.writeProperties(customProps, customPropsFile, comment);
     }
 
-    public static class Record {
-        private final File propFile;
-        private final long dateLoaded;
-        private final ImmutableMap<String,String> props;
-
-        public Record(final Properties from) {
-            this.propFile=null;
-            this.dateLoaded=System.currentTimeMillis();
-            this.props=Maps.fromProperties(from);
-        }
-
-        public Record(final File propFile) {
-            if (propFile==null) {
-                throw new IllegalArgumentException("propFile==null");
-            }
-            this.propFile=propFile;
-            final Properties props=loadProps(propFile);
-            this.dateLoaded = System.currentTimeMillis();
-            this.props=Maps.fromProperties(props);
-        }
-        
-        protected ImmutableMap<String,String> getProperties() {
-            return props;
-        }
-        
-        public File getPropertiesFile() {
-            return propFile;
-        }
-
-        public long getDateLoaded() {
-            return dateLoaded;
-        }
-
-        public Record reloadProps() {
-            return new Record(propFile);
-        }
-    }
-
     private Map<String,Record> propertiesList = new LinkedHashMap<String,Record>();
 
     private final boolean useSystemProperties; // default = false;
@@ -206,7 +195,14 @@ public class GpServerProperties {
     private final File resourcesDir; // can be null
     
     private final Map<String,String> serverProps;
-    
+
+    // additional properties files
+    private final Record gpProps;
+    private final Record customProps;
+    private final Record buildProps;
+    private final Record commandPrefixProps;
+    private final Record taskPrefixMappingProps;
+
     private GpServerProperties(final Builder in) {
         log.debug("initializing GpServerProperties...");
         this.useSystemProperties=in.useSystemProperties;
@@ -223,28 +219,32 @@ public class GpServerProperties {
             propertiesList.put("system.properties", systemProps);
             flattened.putAll(systemProps.props);
         }
-        if (in.gpPropertiesFile != null) {
-            log.debug("loading genepattern.properties from file="+in.gpPropertiesFile);
-            Record gpProps=new Record(in.gpPropertiesFile);
+        this.gpProps=Record.createFromPropertiesFile(in.gpPropsFile);
+        if (this.gpProps != null) {
+            log.debug("loading genepattern.properties from file="+in.gpPropsFile);
             propertiesList.put("genepattern.properties", gpProps);
             flattened.putAll(gpProps.props);
         }
-        if (in.customPropertiesFile != null && in.customPropertiesFile.exists()) {
-            log.debug("loading custom.properties from file="+in.customPropertiesFile);
-            Record customProps=new Record(in.customPropertiesFile);
+        this.customProps=Record.createFromPropertiesFile(in.customPropsFile);
+        if (this.customProps != null) {
+            log.debug("loading custom.properties from file="+in.customPropsFile);
             propertiesList.put("custom.properties", customProps);
             flattened.putAll(customProps.props);
         }
         if (in.customProperties != null) {
             flattened.putAll(in.customProperties);
         }
-        if (in.buildPropertiesFile != null && in.buildPropertiesFile.exists()) {
-            log.debug("loading build.properties from file="+in.buildPropertiesFile);
-            Record buildProps=new Record(in.buildPropertiesFile);
+        this.buildProps=Record.createFromPropertiesFile(in.buildPropsFile);
+        if (this.buildProps != null) {
+            log.debug("loading build.properties from file="+in.buildPropsFile);
             propertiesList.put("build.properties", buildProps);
             flattened.putAll(buildProps.props);
         }
         this.serverProps=Maps.fromProperties(flattened);
+        
+        // additional records
+        this.commandPrefixProps=Record.createFromPropertiesFile(in.commandPrefixPropsFile);
+        this.taskPrefixMappingProps=Record.createFromPropertiesFile(in.taskPrefixMappingPropsFile);
     }
     
     public File getResourcesDir() {
@@ -290,12 +290,21 @@ public class GpServerProperties {
     public boolean isSetInGpProperties(final String key) {
         return isSetIn("genepattern.properties", key);
     }
+    
     protected boolean isSetIn(final String fileType, final String key) {
         Record record=propertiesList.get(fileType);
         if (record==null) {
             return false;
         }
-        return record.getProperties().containsKey(key);
+        return record.getProps().containsKey(key);
+    }
+    
+    public Record getCommandPrefixProps() {
+        return commandPrefixProps;
+    }
+    
+    public Record getTaskPrefixMappingProps() {
+        return taskPrefixMappingProps;
     }
     
     public static final class Builder {
@@ -303,9 +312,11 @@ public class GpServerProperties {
         private boolean useSystemProperties = false;
         private boolean usePropertiesFiles = true;
         private File resourcesDir=null;
-        private File gpPropertiesFile=null;
-        private File customPropertiesFile=null;
-        private File buildPropertiesFile=null;
+        private File gpPropsFile=null;
+        private File customPropsFile=null;
+        private File buildPropsFile=null;
+        private File commandPrefixPropsFile=null;
+        private File taskPrefixMappingPropsFile=null;
         private Properties customProperties=null;
 
         public Builder initFromSystemProperties(final boolean initFromSystemProperties) {
@@ -325,17 +336,22 @@ public class GpServerProperties {
             return this;
         }
         public Builder gpProperties(final File gpProperties) {
-            this.gpPropertiesFile=gpProperties;
+            this.gpPropsFile=gpProperties;
             return this;
         }
         
         public Builder customProperties(final File customProperties) {
-            this.customPropertiesFile=customProperties;
+            this.customPropsFile=customProperties;
             return this;
         }
         
         public Builder buildProperties(final File buildProperties) {
-            this.buildPropertiesFile=buildProperties;
+            this.buildPropsFile=buildProperties;
+            return this;
+        }
+        
+        public Builder commandPrefixProperties(final File commandPrefixProperties) {
+            this.commandPrefixPropsFile=commandPrefixProperties;
             return this;
         }
         
@@ -358,16 +374,21 @@ public class GpServerProperties {
             return this;
         }
         
+        protected File initPropFile(final File propFile, final String name) {
+            if (propFile==null && resourcesDir != null) {
+                return new File(resourcesDir, name);
+            }
+            else {
+                return propFile;
+            }
+        }
+
         public GpServerProperties build() throws IllegalArgumentException {
-            if (gpPropertiesFile==null && resourcesDir != null) {
-                gpPropertiesFile=new File(resourcesDir, "genepattern.properties");
-            }
-            if (customPropertiesFile==null && resourcesDir != null) {
-                customPropertiesFile=new File(resourcesDir, "custom.properties");
-            }
-            if (buildPropertiesFile==null && resourcesDir != null) {
-                buildPropertiesFile=new File(resourcesDir, "build.properties");
-            }
+            gpPropsFile                = initPropFile(gpPropsFile,                "genepattern.properties");
+            customPropsFile            = initPropFile(customPropsFile,            "custom.properties");
+            buildPropsFile             = initPropFile(buildPropsFile,             "build.properties");
+            commandPrefixPropsFile     = initPropFile(commandPrefixPropsFile,     "commandPrefix.properties");
+            taskPrefixMappingPropsFile = initPropFile(taskPrefixMappingPropsFile, "taskPrefixMapping.properties");
             return new GpServerProperties(this);
         }
     }
