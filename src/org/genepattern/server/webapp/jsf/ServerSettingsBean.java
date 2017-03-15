@@ -34,6 +34,8 @@ import org.genepattern.server.purger.PurgerFactory;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.util.PropertiesManager_3_2;
 
+import com.google.common.base.Strings;
+
 public class ServerSettingsBean implements Serializable {
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
 
@@ -671,9 +673,9 @@ public class ServerSettingsBean implements Serializable {
      * @param event
      */
     public void saveNewCustomSetting(ActionEvent event) {
-        if (newCSKey != "" && newCSValue != "") {
+        if (newCSKey != "" && newCSValue != null) {
             //if this is a GP_URL set using add custom new property
-            if(newCSKey.equals(CustomProperties.GP_URL)) {
+            if(newCSKey.equals(CustomProperties.GP_URL) && !Strings.isNullOrEmpty(newCSValue)) {
                 genepatternURL = newCSValue;
                 saveGenePatternURL(event);
             }
