@@ -15,48 +15,37 @@ import java.text.ParseException;
 import java.util.StringTokenizer;
 
 public class LSID implements Comparable<LSID>, Serializable {
-
     /** computed servialVersionUID */
     private static final long serialVersionUID = -1579338628906221673L;
-
-    String authority = "";
-
-    String namespace = "";
-
-    String identifier = "";
-
-    String version = "";
-
-    protected boolean precomputed = false;
-
+    
     public static final String URN = "urn";
-
     public static final String SCHEME = "lsid";
-
     public static final String DELIMITER = ":";
-
     public static final String VERSION_DELIMITER = ".";
 
     // URN encoding constants
-
     protected static final String encodable = "\\\"&<>[]^`{|}~%/?#";
-
     protected static final String escape = "%";
-
     protected static final String UTF8 = "utf-8";
+
+    protected String authority = "";
+    protected String namespace = "";
+    protected String identifier = "";
+    protected String version = "";
+    protected boolean precomputed = false;
 
     // sample valid LSID:
     // urn:lsid:broadinstitute.org:genepatternmodule:123:2
 
-    public LSID(String lsid) throws MalformedURLException {
+    public LSID(final String lsid) throws MalformedURLException {
         if (lsid == null || lsid.length() == 0) {
             // empty initializer is okay, it will be set later
             return;
         }
-        String usage = lsid + " must be of the form " + URN + DELIMITER
+        final String usage = lsid + " must be of the form " + URN + DELIMITER
                 + SCHEME + DELIMITER + "authority" + DELIMITER + "namespace"
                 + DELIMITER + "identifier" + DELIMITER + "version";
-        StringTokenizer stLSID = new StringTokenizer(lsid, DELIMITER);
+        final StringTokenizer stLSID = new StringTokenizer(lsid, DELIMITER);
         int numParts = stLSID.countTokens();
         if (numParts != 5 && numParts != 6) {
             throw new MalformedURLException("Wrong number of parts: " + usage);
@@ -179,10 +168,8 @@ public class LSID implements Comparable<LSID>, Serializable {
                 }
             }
             if (stOtherVersion.hasMoreTokens()) {
-                // other version has more parts than this, but was equal until
-                // now
-                // That means that it has an extra minor level and is therefore
-                // later
+                // other version has more parts than this, but was equal until now
+                // That means that it has an extra minor level and is therefore later
                 return 1;
             }
             // completely equal!
