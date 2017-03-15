@@ -45,7 +45,7 @@ public class TestParamListHelper {
     
     // setup download folder(s)
     @Rule
-    public TemporaryFolder temp= new TemporaryFolder();
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -86,13 +86,18 @@ public class TestParamListHelper {
         return gpConfig;
     }
     
+    protected File createGpHomeDir() throws IOException {
+        final File rootDir=temp.newFolder();
+        return new File(rootDir, "gpHome");
+    }
+    
     /**
      * by default, externalUrl values are cached to the user tmp directory.
      * @throws Exception
      */
     @Test
     public void ftpInput() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
 
         Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
@@ -109,7 +114,7 @@ public class TestParamListHelper {
     
     @Test
     public void httpInput() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
 
         Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
@@ -126,7 +131,7 @@ public class TestParamListHelper {
 
     @Test
     public void ftpInput_cached() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig cachedConfig=initCachedConfig(gpHomeDir);
         final GpContext userContext=new GpContext.Builder()
             .userId(userId)
@@ -158,7 +163,7 @@ public class TestParamListHelper {
 
     @Test
     public void httpInput_not_cached() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig cachedConfig=initCachedConfig(gpHomeDir);
         final GpContext mockContext=new GpContext.Builder()
             .userId(userId)
@@ -188,7 +193,7 @@ public class TestParamListHelper {
     
     @Test
     public void httpInput_serverUrl() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
         assertEquals("double-check gpUrl", Demo.gpUrl, gpConfig.getGpUrl());
         
@@ -206,7 +211,7 @@ public class TestParamListHelper {
     // e.g. <GenePatternURL>...
     @Test
     public void httpInput_serverUrl_substitution() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
         final String value="<GenePatternURL>" + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);
@@ -221,7 +226,7 @@ public class TestParamListHelper {
 
     @Test
     public void httpInput_serverUrl_proxyHref() throws Exception {
-        final File gpHomeDir=temp.newFolder("gpHome");
+        final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
         final String value=Demo.proxyHref + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);

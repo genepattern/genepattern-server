@@ -8,15 +8,28 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.util.LsidVersion;
 
 import com.google.common.collect.Range;
 
 /**
  * Helper class for filtering and sorting the list of database schema files
- * (aka DDL scripts) in the WEB-INF/schema directory.
+ * (aka DDL scripts) in the WEB-INF/schema directory. Filter and sort based on the filename pattern:
  * 
- * Match all <schemaPrefix><schemaVersion>.sql files.
- * Sort alphabetically (case-insensitive) by <schemaVersion>.
+ *     {schemaPrefix}{schemaVersion}.sql
+ *     
+ * For example, when filename=analysis-hypersonic-1.3.0.sql
+ *     schemaPrefix="analysis-hypersonic-"
+ *     schemaVersion="1.3.0"
+ * 
+ * Use semantic versioning to sort the files by schemaVersion.
+ *     schemaVersion=X.Y.Z, where X, Y, and Z are integer values.
+ * 
+ * Note: Circa GP 3.9.9, "pre-release" version and "build metadata" are not implemented.
+ * The schemaVersion is sorted alphabetically (case-insensitive) as a fallback.
+ * 
+ * For example,
+ *     schemaVersion=1.3.0-prerelease will fall back to alphabetical sorting.
  * 
  * @author pcarr
  *
@@ -71,6 +84,11 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
         return initSchemaVersionFromFilename(schemaPrefix, schemaFile);
     }
     
+    protected LsidVersion initSchemaLsidVersion(final File schemaFile) {
+        final String versionString = initSchemaVersionFromFilename(schemaPrefix, schemaFile);
+        return LsidVersion.fromString(versionString);
+    }
+    
     /**
      * Given a schemaPrefix and a schemaFile
      * @param schemaPrefix, e.g. 'analysis_hypersonic-'
@@ -114,9 +132,20 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
     }
 
     public int compare(final File f1, final File f2) {
-        final String schemaVersion1=initSchemaVersion(f1);
-        final String schemaVersion2=initSchemaVersion(f2);
-        return schemaVersion1.compareToIgnoreCase(schemaVersion2);
+        final String versionString1=initSchemaVersion(f1);
+        final String versionString2=initSchemaVersion(f2); 
+        try {
+            final LsidVersion schemaVersion1=initSchemaLsidVersion(f1);
+            final LsidVersion schemaVersion2=initSchemaLsidVersion(f2);
+            return schemaVersion1.compareTo(schemaVersion2); 
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error comparing ", t);
+            return versionString1.compareToIgnoreCase(versionString2); 
+        }
+        finally {
+            
+        }
     }
     
     /**

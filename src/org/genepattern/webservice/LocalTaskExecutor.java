@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.util.JobDownloader;
 
 /**
@@ -121,8 +122,8 @@ public class LocalTaskExecutor extends TaskExecutor {
 
             substitutions.put("libdir", libdir + File.separator);
             if (substitutions.get(LocalTaskExecutor.JAVA) == null) {
-                String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
-                        + (System.getProperty("os.name").startsWith("Windows") ? ".exe" : "");
+                String java = GpConfig.getJavaProperty("java.home") + File.separator + "bin" + File.separator + "java"
+                        + (GpConfig.getJavaProperty("os.name").startsWith("Windows") ? ".exe" : "");
                 substitutions.put(LocalTaskExecutor.JAVA, java);
             }
 

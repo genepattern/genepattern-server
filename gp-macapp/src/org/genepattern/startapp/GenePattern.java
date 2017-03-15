@@ -8,8 +8,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -111,6 +114,28 @@ public class GenePattern {
     }
     
     /**
+     * Rename the file, keeping it in the same directory.
+     * @param fromFile
+     * @param newName
+     * @return
+     */
+    protected static boolean moveFile(final File fromFile, final String newName) {
+        if (!fromFile.exists()) {
+            // short-circuit, file doesn't exist
+            return false;
+        }
+        try {
+            final Path source=fromFile.toPath();
+            Files.move(source, source.resolveSibling(newName));
+            return true;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
      * Append 'env-custom=env-custom-macos.sh' to end of custom.properties file
      * 
      * @param toCustomProps
@@ -185,10 +210,23 @@ public class GenePattern {
         }
 
         final File resources = new File(gpHome, "resources");
+        final File iResources = new File(gpServer, "resources");
         if (!resources.exists()) {
-            File iResources = new File(gpServer, "resources");
+            // new install
             copyDirectory(iResources, resources);
             createdDirectory = true;
+        }
+        else {
+            // updated install
+            final File repoYaml = new File(resources, "repo.yaml");
+            if (repoYaml.exists()) {
+                // special-case for 'repo.yaml' file
+                // move the old one 
+                final String timestamp = new SimpleDateFormat("yyyy-MM-dd-HHmmss").format(new Date());
+                moveFile(repoYaml, "repo_backup_"+timestamp+".yaml");
+                final File iRepoYaml = new File(iResources, "repo.yaml");
+                copyFile(iRepoYaml, repoYaml);
+            }
         }
 
         File taskLib = new File(gpHome, "taskLib");

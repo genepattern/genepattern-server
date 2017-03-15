@@ -3,64 +3,76 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
-import java.io.File;
-import java.io.InputStream;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.genepattern.junitutil.TaskLoader;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.TaskUtil;
-import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.config.GpContext;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
-import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 /**
  * Created by nazaire on 2/11/14.
  */
 public class TestParameterGrouping
 {
-    final static private String adminUserId="admin";
-    final static private String tBAdvancedParamsLsid ="urn:lsid:8080.nazaire.69.173.118.131:genepatternmodules:6:4";
-    final static private String moduleZipFile = "TestBasicAdvancedParameters_v4.zip";
+    /**
+     * Mock a TaskInfo as if it were loaded from the TestBasicAdvancedParameters_v4.zip file.
+     */
+    protected static TaskInfo initMockTaskInfo() {
+        return initMockTaskInfo(new String[] {
+                "basic.required.parameter.1", 
+                "basic.required.parameter.2",
+                "basic.parameter.1",
+                "basic.parameter.2",
+                "advanced.parameter.1",
+                "advanced.parameter.2"
+        });
+    }
     
-    @Rule
-    public TemporaryFolder temp= new TemporaryFolder();
+    /**
+     * General utility method for created a mock TaskInfo
+     * when the method under test extracts a list of parameter names 
+     * from the TaskInfo#parameterInfoArray.
+     * 
+     * @param pnames parameter names declared in the manifest file
+     * @return a new mock TaskInfo
+     */
+    protected static TaskInfo initMockTaskInfo(final String[] pnames) {
+        final List<ParameterInfo> pinfos = new ArrayList<ParameterInfo>();
+        for(final String pname : pnames) {
+            ParameterInfo mockPinfo = mock(ParameterInfo.class);
+            when(mockPinfo.getName()).thenReturn(pname);
+            pinfos.add(mockPinfo);
+        }
+        final ParameterInfo[] mockPinfos=pinfos.toArray(new ParameterInfo[pnames.length]);
+        // ... extracted from TaskInfo object
+        final TaskInfo taskInfo = mock(TaskInfo.class);
+        when(taskInfo.getParameterInfoArray()).thenReturn(mockPinfos);
+        
+        return taskInfo;
+    }
 
+    protected TaskInfo initTaskInfoFromZip() {
+        return TaskUtil.getTaskInfoFromZip(this.getClass(), "TestBasicAdvancedParameters_v4.zip");
+    }
+    
     @Test
     public void testNumParamGroups() throws Exception
     {
-        // setup ...
-        final GpConfig gpConfig=Mockito.mock(GpConfig.class);
-        final GpContext userContext=new GpContext.Builder()
-            .userId(adminUserId)
-            .isAdmin(true)
-            .build();
-
-        final TaskLoader taskLoader=new TaskLoader();
-        taskLoader.addTask(TestParameterGrouping.class, moduleZipFile);
-        // ... end setup
-        
-        TaskInfo taskInfo = taskLoader.getTaskInfo(tBAdvancedParamsLsid);
-
-        InputStream paramGroupsInputStream = TaskUtil.getSupportFileFromZip(
-                TestParameterGrouping.class, moduleZipFile, "paramgroups.json");
-
-        if(paramGroupsInputStream == null)
-        {
-           Assert.fail("Could not open file paramgroups.json");
-        }
-
-        File paramGroupsFile = temp.newFile("paramgroups.json");
-        TaskUtil.writeSupportFileToFile(paramGroupsInputStream, paramGroupsFile);
-
-        LoadModuleHelper loadModuleHelper = new LoadModuleHelper(gpConfig, userContext, taskLoader);
-        JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, paramGroupsFile);
+        final TaskInfo taskInfo = initMockTaskInfo();
+        //final TaskInfo taskInfo = initTaskInfoFromZip();
+        final File paramGroupsFile = FileUtil.getSourceFile(this.getClass(), "TestBasicAdvancedParameters_v4_paramgroups.json");
 
         //check that there were three parameter groups defined
-        Assert.assertEquals(paramGroupsJson.length(), 3);
+        final JSONArray paramGroupsJson = LoadModuleHelper.getParameterGroupsJson(taskInfo, paramGroupsFile);
+        assertEquals("num param groups", paramGroupsJson.length(), 3);
     }
 }

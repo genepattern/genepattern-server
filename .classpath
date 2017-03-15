@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
-		<attributes>
-			<attribute name="owner.project.facets" value="java"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="website/WEB-INF/src"/>
 	<classpathentry kind="src" path="test/src"/>
-	<classpathentry kind="src" path="gp-macapp/src"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-junit-1.6.5.jar"/>
@@ -64,7 +59,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-validator-4.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpclient-4.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpcore-4.3.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb-2.3.4.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/httpmime-4.3.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-common-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/identityServer-messages-0.1-SNAPSHOT.jar"/>

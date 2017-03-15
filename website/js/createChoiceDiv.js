@@ -124,7 +124,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://www.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         selectChoiceDiv.append(batchBox);
 

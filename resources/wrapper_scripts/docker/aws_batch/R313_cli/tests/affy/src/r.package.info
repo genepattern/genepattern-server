@@ -1,0 +1,28 @@
+package,requested_version,archive_name,src_URL,Mac_URL,Windows_URL
+getopt,1.20.0,CRAN
+optparse,1.3.2,CRAN
+R.methodsS3,1.7.0,CRAN
+R.oo,1.19.0,CRAN
+R.utils,2.1.0,CRAN
+DBI,0.3.1,CRAN
+RSQLite,1.0.0,CRAN
+iterators,1.0.7,CRAN
+foreach,1.4.2,CRAN
+bit,1.1-12,CRAN
+# NOTE: 'ff' must be present in order to install 'oligoClasses' and 'oligo', but must NOT be loaded
+# by the module as it causes a breaking-behavior change and leads to errors.
+ff,2.2-13,CRAN
+BiocGenerics
+S4Vectors
+IRanges
+XVector
+GenomeInfoDb
+GenomicRanges
+Biobase
+zlibbioc
+Biostrings
+affyio
+affxparser
+preprocessCore
+oligoClasses
+oligo

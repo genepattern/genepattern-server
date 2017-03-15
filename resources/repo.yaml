@@ -32,7 +32,7 @@
 #
 --- # Details for the Broad production repository
 {
-"url": "http://www.broadinstitute.org/webservices/gpModuleRepository",
+"url": "http://software.broadinstitute.org/webservices/gpModuleRepository",
 "label": "Broad production",
 "icon": "/gp/images/broad-symbol.gif",
 "brief": "A repository of GenePattern modules curated by the GenePattern team.",
@@ -42,20 +42,20 @@
 }
 --- # Details for the GParc repository
 {
-"url": "http://www.broadinstitute.org/webservices/gparcModuleRepository",
+"url": "http://software.broadinstitute.org/webservices/gparcModuleRepository",
 "label": "GParc (GenePattern Archive)",
 "icon": "/gp/images/gparc_logo.png",
 "brief": "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
 "full": "GParc, short for GenePattern Archive, is both a GenePattern module repository and a web-based community.  
     The repository contains GenePattern modules contributed by members of the GenePattern community, for use by 
     that community. The GenePattern team does not curate GParc modules.  Community members can go to 
-    the <a href=\"http://www.broadinstitute.org/software/gparc/\">GParc website</a> to share, browse, 
+    the <a href=\"http://software.broadinstitute.org/software/gparc/\">GParc website</a> to share, browse, 
     discuss and rate the modules. The GParc website also provides resources to assist in the
     authoring and testing of GenePattern modules."
 }
 --- # Details for the Broad beta repository
 {
-"url": "http://www.broadinstitute.org/webservices/betaModuleRepository",
+"url": "http://software.broadinstitute.org/webservices/betaModuleRepository",
 "label": "Broad beta",
 "icon": "/gp/images/broad_beta.png",
 "brief": "A GenePattern module repository containing beta releases of GenePattern modules.",

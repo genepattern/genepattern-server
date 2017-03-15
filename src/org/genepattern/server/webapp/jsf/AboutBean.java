@@ -85,10 +85,10 @@ public class AboutBean {
     }
 
     /**
-     * @return the java version on which the server is running, <code>System.getProperty("java.version")</code>
+     * @return the java version on which the server is running, system property "java.version"
      */
     public String getJavaVersion() {
-        String javaVersion = System.getProperty("java.version", "");
+        String javaVersion = GpConfig.getJavaProperty("java.version", "");
         return javaVersion;
     }
 

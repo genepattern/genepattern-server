@@ -1,0 +1,34 @@
+#ConvertLineEndings
+#Fri Dec 02 10:27:31 EST 2016
+JVMLevel=
+LSID=urn\:lsid\:broad.mit.edu\:cancer.software.genepattern.module.analysis\:00002\:2
+author=Joshua Gould, Broad Institute
+commandLine=<perl> <libdir>to_host.pl <input.filename> <output.file>
+cpuType=any
+description=Converts line endings to the host operating system's format.
+language=Perl
+name=ConvertLineEndings
+os=any
+p1_MODE=IN
+p1_TYPE=FILE
+p1_default_value=
+p1_description=The input file (any non-binary file format)
+p1_name=input.filename
+p1_optional=
+p1_prefix_when_specified=
+p1_type=java.io.File
+p1_value=
+p2_default_value=<input.filename_basename>.cvt.<input.filename_extension>
+p2_description=The output file
+p2_name=output.file
+p2_optional=
+p2_prefix_when_specified=
+p2_type=java.lang.String
+p2_value=
+pipelineModel=
+privacy=public
+quality=production
+serializedModel=
+taskType=Preprocess & Utilities
+userid=GenePattern (gp-help@broad.mit.edu)
+version=

@@ -25,7 +25,6 @@ public class AccessManager {
     public static boolean isAllowed(String host, String address) {
 
         List<String> okClients = getAllowedClients();
-        // String clientList = System.getProperty("gp.allowed.clients");
 
         if (okClients != null) {
             for (int i = 0; i < okClients.size(); i++) {

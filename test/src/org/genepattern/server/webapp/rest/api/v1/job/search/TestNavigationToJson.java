@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.webservice.JobInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +58,24 @@ public class TestNavigationToJson {
                 );
         
         JSONObject nav=results.navigationDetailsToJson();
-        Assert.assertEquals("{\"filterLinks\":[{},{}],\"groupIds\":[\"*\",\"admin\"],\"page\":1,\"batchIds\":[\"15\",\"16\"],\"numPages\":4,\"numItems\":0}", nav.toString());
+        
+        /* manually compare JSON object, expected ...
+           { 
+             "filterLinks": [{},{}],
+             "groupIds": ["*","admin"],
+             "page": 1,
+             "batchIds": ["15","16"],
+             "numPages": 4,
+             "numItems": 0
+           }
+         */
+        assertEquals("nav.length", 6, nav.length());
+        assertEquals("nav['filterLinks']", "[{},{}]", nav.getJSONArray("filterLinks").toString());
+        assertEquals("nav['groupIds']", "[\"*\",\"admin\"]", nav.getJSONArray("groupIds").toString());
+        assertEquals("nav['page']", "1", nav.getString("page"));
+        assertEquals("nav['batchIds']", "[\"15\",\"16\"]", nav.getJSONArray("batchIds").toString());
+        assertEquals("nav['numPages']", "4", nav.getString("numPages"));
+        assertEquals("nav['numItems']", "0", nav.getString("numItems"));
      }
     
     @Test
@@ -68,7 +85,7 @@ public class TestNavigationToJson {
         .build();
         JSONObject nav=results.navigationDetailsToJson();
         
-        Assert.assertEquals("by default, the current page is", 
+        assertEquals("by default, the current page is", 
                 1,
                 nav.get("page")
                 );
@@ -86,12 +103,12 @@ public class TestNavigationToJson {
         
         
         //by default, the current page is set, and it's 1
-        Assert.assertEquals("page", 
+        assertEquals("page", 
                 1,
                 nav.get("page")
                 );
 
-        Assert.assertEquals("navLinks.current.name==1", "1",
+        assertEquals("navLinks.current.name==1", "1",
                 nav.getJSONObject("navLinks").getJSONObject("current").get("name")
                 );
     }

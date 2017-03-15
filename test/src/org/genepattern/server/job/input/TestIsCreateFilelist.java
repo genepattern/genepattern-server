@@ -18,11 +18,8 @@ import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit tests for initializing numValues from a ParameterInfo.
@@ -40,9 +37,6 @@ public class TestIsCreateFilelist {
     final static private String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00006:0.7";
     final static private String ftpFile="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct";
     
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
-
     @BeforeClass
     static public void beforeClass() throws IOException {
         taskLoader=new TaskLoader();
@@ -55,10 +49,8 @@ public class TestIsCreateFilelist {
     }
 
     protected GpConfig initGpConfig() throws IOException {
-        final String userDir=temp.newFolder("users").getAbsolutePath();
         final GpConfig gpConfig=new GpConfig.Builder()
             .webappDir(new File("./website"))
-            .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
         .build();
         return gpConfig;
     }
@@ -77,7 +69,7 @@ public class TestIsCreateFilelist {
                 initGpConfig(), 
                 jobContext, record, jobInput, param, false);
 
-        Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
+        assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
     
     @Test
@@ -92,7 +84,7 @@ public class TestIsCreateFilelist {
                 initGpConfig(), 
                 jobContext, record, jobInput, param, false);
 
-        Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
+        assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
     
     @Test
@@ -106,7 +98,7 @@ public class TestIsCreateFilelist {
                 initGpConfig(), 
                 jobContext, record, jobInput, param, false);
 
-        Assert.assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
+        assertFalse(paramName+".isCreateFilelist", plh.isCreateFilelist());
     }
     
     /**
@@ -271,7 +263,7 @@ public class TestIsCreateFilelist {
                 DbUtil.getTestDbSession(), 
                 initGpConfig(), 
                 jobContext, record, jobInput, param, false);
-        Assert.assertEquals("isCreateFilelist", expectedCreateFilelist, plh.isCreateFilelist());
+        assertEquals("isCreateFilelist", expectedCreateFilelist, plh.isCreateFilelist());
     }
 
 }

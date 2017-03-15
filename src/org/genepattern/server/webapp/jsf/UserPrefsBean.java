@@ -44,7 +44,12 @@ public class UserPrefsBean {
         catch (IOException e) {
             log.error("Unable to retrive historySize property", e);
         }
-        recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, (historySize == null) ? "10" : historySize);
+        recentJobsProp = dao.getProperty(userId, 
+                UserPropKey.RECENT_JOBS_TO_SHOW, 
+                (historySize == null) ? 
+                        UserPropKey.RECENT_JOB_TO_SHOW_DEFAULT 
+                        : 
+                        historySize);
         
         Set<String> groupSet = UserAccountManager.instance().getGroupMembership().getGroups(userId);
         groups = new ArrayList<String>(groupSet);

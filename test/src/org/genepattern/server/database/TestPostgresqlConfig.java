@@ -160,11 +160,11 @@ public class TestPostgresqlConfig {
     }
     
     /**
-     * PostgeSQL integration test. Initialize the genepattern schema by running through
-     * all of the DDL scripts. To set this up, first delete the DB if necessary, then create a new one ...
+     * PostgeSQL integration test. 
+     * Initializes the genepattern schema by running through all of the DDL scripts.
      * 
-     *     drop database genepattern;
-     *     create database genepattern owner = genepattern;
+     * To set this up, first delete the DB if necessary, then create a new one.
+     * See top-level comments for details.
      *   
      * @throws Throwable
      */
@@ -184,7 +184,7 @@ public class TestPostgresqlConfig {
         
         // do a test query
         dbSchemaVersion=PropsTable.selectValue(sessionMgr, "schemaVersion");
-        final String toVersion="3.9.8";
+        final String toVersion="3.9.9";
         assertEquals("after update", toVersion, dbSchemaVersion);
     }
 

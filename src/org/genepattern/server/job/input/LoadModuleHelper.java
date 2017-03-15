@@ -519,7 +519,7 @@ public class LoadModuleHelper {
         return initialValues;
     }
 
-    public JSONArray getParameterGroupsJson(TaskInfo taskInfo, File paramGroupJsonFile) throws Exception
+    public static JSONArray getParameterGroupsJson(final TaskInfo taskInfo, final File paramGroupJsonFile) throws Exception
     {
         if (taskInfo == null) {
             throw new IllegalArgumentException("taskInfos==null");
@@ -532,7 +532,7 @@ public class LoadModuleHelper {
         return getParameterGroupsJson(taskInfo.getParameterInfoArray(), paramGroupJsonFile);
     }
 
-    public JSONArray getParameterGroupsJson(ParameterInfo[] pArray, File paramGroupJsonFile) throws Exception
+    public static JSONArray getParameterGroupsJson(final ParameterInfo[] pArray, final File paramGroupJsonFile) throws Exception
     {
 
         JSONArray paramGroupsJson = new JSONArray();
@@ -624,7 +624,7 @@ public class LoadModuleHelper {
         return paramGroupsJson;
     }
 
-    private void validateParamGroupsJson(JSONArray paramsGroupsJson, ParameterInfo[] pInfos) throws Exception
+    private static void validateParamGroupsJson(final JSONArray paramsGroupsJson, final ParameterInfo[] pInfos) throws Exception 
     {
         //get the list of parameters
         ArrayList<String> parameters = new ArrayList<String>();
@@ -632,6 +632,11 @@ public class LoadModuleHelper {
         {
             parameters.add(pInfos[p].getName());
         }
+        validateParamGroupsJson(paramsGroupsJson, parameters);
+    }
+
+    private static void validateParamGroupsJson(JSONArray paramsGroupsJson, final ArrayList<String> parameters) throws Exception
+    {
 
         for(int i=0;i<paramsGroupsJson.length();i++)
         {

@@ -76,8 +76,8 @@ public abstract class SourceInfo {
         public FromRepo(final RepositoryInfo repositoryInfo) {
             super(InstallInfo.Type.REPOSITORY, repositoryInfo.getLabel(), repositoryInfo.getIconImgSrc());
             this.repositoryInfo=repositoryInfo;
-            if (this.repositoryInfo.getUrl().toExternalForm().equalsIgnoreCase("http://www.broadinstitute.org/webservices/gpModuleRepository")) {
-                this.showSourceInfo=false;
+            if (RepositoryInfo.isBroadProdUrl(""+repositoryInfo.getUrl())) {
+                this.showSourceInfo=false;                
             }
             // if there is no icon for the repository, show a blank image
             if (this.repositoryInfo.getIconImgSrc()==null || this.repositoryInfo.getIconImgSrc().length()==0) {

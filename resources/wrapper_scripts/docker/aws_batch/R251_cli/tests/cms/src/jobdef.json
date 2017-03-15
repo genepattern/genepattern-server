@@ -1,0 +1,39 @@
+{
+    "jobDefinitionName": "generic_module",
+    "type": "container",
+    "parameters": {
+        "taskLib":"src",
+        "inputFileDirectory": "job_22345",
+        "s3_root":"noSuchBucket",
+	    "exe1": "perl",
+        "exe2":"to_host.pl",
+        "working_dir": "job1"
+    },
+    "containerProperties": {
+        "image": "liefeld/cle_cli_2",
+        "vcpus": 2,
+        "memory": 200,
+        "command": [
+            "/usr/local/bin/runS3OnBatch.sh",
+            "Ref::taskLib",
+            "Ref::inputFileDirectory",
+            "Ref::s3_root",
+            "Ref::working_dir",
+            "Ref::exe1",
+            "Ref::exe2"
+        ],
+        "jobRoleArn": "arn:aws:iam::718039241689:role/BATCH-EFS-ROLE",
+        "volumes": [],
+        "environment": [ {
+                "name": "STDOUT_FILENAME", 
+                "value": "stdout.txt"
+            },
+            {
+                  "name": "STDOUT_FILENAME",
+                  "value": "stdout.txt"
+              }  
+		],
+        "mountPoints": [],
+        "ulimits": []
+    }
+}

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -177,7 +178,7 @@ public abstract class TaskExecutor {
 	}
 
 	protected static boolean validateCPU(String expected) {
-		String actual = System.getProperty("os.arch");
+		final String actual = GpConfig.getJavaProperty("os.arch");
 		// eg. "x86", "i386", "ppc", "alpha", "sparc"
 
 		if (expected.equals("")) {
@@ -195,15 +196,10 @@ public abstract class TaskExecutor {
 			return true;
 		}
 		return false;
-		//		if(System.getProperty(GPConstants.COMMAND_PREFIX, null) != null) {
-		// FIXME
-		//			return true;
-		//	} // don't validate for LSF
-
 	}
 
 	protected static boolean validateOS(String expected) {
-		String actual = System.getProperty("os.name");
+		final String actual = GpConfig.getJavaProperty("os.name");
 		// eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
 
 		if (expected.equals("")) {
@@ -222,11 +218,6 @@ public abstract class TaskExecutor {
 				&& actual.startsWith(MicrosoftBeginning)) {
 			return true;
 		}
-
-		//	if(System.getProperty(GPConstants.COMMAND_PREFIX, null) != null) {
-		// FIXME
-		//		return true;
-		//	} // don't validate for LSF
 
 		return false;
 	}

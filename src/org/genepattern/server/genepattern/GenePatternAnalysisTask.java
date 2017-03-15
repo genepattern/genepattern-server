@@ -7,7 +7,6 @@ package org.genepattern.server.genepattern;
 import static org.genepattern.util.GPConstants.ACCESS_PRIVATE;
 import static org.genepattern.util.GPConstants.ANY;
 import static org.genepattern.util.GPConstants.COMMAND_LINE;
-import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
 import static org.genepattern.util.GPConstants.CPU_TYPE;
 import static org.genepattern.util.GPConstants.DESCRIPTION;
 import static org.genepattern.util.GPConstants.INPUT_BASENAME;
@@ -48,7 +47,6 @@ import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +58,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
@@ -254,6 +251,7 @@ public class GenePatternAnalysisTask {
         VISUALIZER,
         JAVASCRIPT,
         PIPELINE,
+        /** @depecated */
         PASS_BY_REFERENCE
     };
 
@@ -272,29 +270,6 @@ public class GenePatternAnalysisTask {
      */
     public GenePatternAnalysisTask(ExecutorService executor) {
         this.executor = executor;
-    }
-
-    public static INPUT_FILE_MODE getInputFileMode() {
-        INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
-        String inputFileModeProp = System.getProperty("input.file.mode");
-        if (inputFileModeProp != null) {
-            if (inputFileModeProp.equals("copy")) {
-                inputFileMode = INPUT_FILE_MODE.COPY;
-                log.info("Input file mode set to copy.");
-            } 
-            else if (inputFileModeProp.equals("move")) {
-                inputFileMode = INPUT_FILE_MODE.MOVE;
-                log.info("Input file mode set to move.");
-            } 
-            else if (inputFileModeProp.equals("path")) {
-                inputFileMode = INPUT_FILE_MODE.PATH;
-                log.info("Input file mode set to path.");
-            } 
-            else {
-                log.info("Unknown value for property input.file.mode. Valid options are 'copy', 'move', and 'path'.");
-            }
-        }
-        return inputFileMode;
     }
 
     /**
@@ -674,8 +649,8 @@ public class GenePatternAnalysisTask {
                     "There is no record of agreement for userId="+jobInfo.getUserId());
         }
        
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        JOB_TYPE jobType = initJobType(taskInfo);
+        //INPUT_FILE_MODE inputFileMode = getInputFileMode();
+        final JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;
         ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -690,10 +665,10 @@ public class GenePatternAnalysisTask {
 
         // check OS and CPU restrictions of TaskInfoAttributes against this server
         // eg. "x86", "ppc", "alpha", "sparc"
-        validateCPU(taskInfoAttributes.get(CPU_TYPE));
+        validateCPU(gpConfig, taskInfoAttributes.get(CPU_TYPE));
         String expected = taskInfoAttributes.get(OS);
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
-        validateOS(expected, "run " + taskName);
+        validateOS(gpConfig, expected, "run " + taskName);
         try {
             PluginManagerLegacy pluginManager=new PluginManagerLegacy(mgr, gpConfig, jobContext);
             pluginManager.validatePatches(taskInfo, null);
@@ -906,51 +881,8 @@ public class GenePatternAnalysisTask {
                         continue;
                     }
 
-                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                        //TODO: don't do this for uploaded files
-                        attrsCopy.remove(ParameterInfo.TYPE);
-                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                    } 
-                    else {
-                        File outFile = null;
-                        String inputFilename = new File(originalPath).getName();
-                        // strip off the AxisNNNNNaxis_ prefix
-                        int underscoreIndex = -1;
-                        if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
-                            inputFilename = inputFilename.substring(underscoreIndex + 1);
-                        }
-                        // outDir is job directory
-                        outFile = new File(outDir, inputFilename);
-                        int counter = 1;
-                        while (outFile.exists()) { // in case two input files have the same name
-                            outFile = new File(outDir, inputFilename + "-" + counter);
-                            counter++;
-                        }
-
-                        if (inputFileMode == INPUT_FILE_MODE.COPY) {
-                            if (!copyFile(inFile, outFile)) {
-                                vProblems.add("Unable to copy " + inFile + " to " + outFile);
-                                continue;
-                            }
-                            //TODO: mark for delete on handleJobCompletion
-                            outFile.deleteOnExit(); // mark for delete, just in case
-                        } 
-                        else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
-                            if (!rename(inFile, outFile, true)) {
-                                vProblems.add("Unable to move " + inFile + " to " + outFile);
-                                continue;
-                            }
-                            //TODO: mark for move back on handleJobCompletion
-                        }
-
-                        attrsCopy.put(ORIGINAL_PATH, originalPath);
-                        try {
-                            pinfo.setValue(outFile.getCanonicalPath());
-                        }
-                        catch (IOException e) {
-                            throw new JobDispatchException(e);
-                        }
-                    }
+                    attrsCopy.remove(ParameterInfo.TYPE);
+                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
                 } 
                 else if (j >= formalParamsLength) {
                     log.debug("params[" + j + "]=" + paramsCopy[j].getName() + " has no formal parameter defined");
@@ -974,7 +906,7 @@ public class GenePatternAnalysisTask {
                     boolean isURL = false;
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
                         // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
-                        if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+                        if (new File(originalPath).exists()) {
                             boolean isInTaskLib = false;
                             boolean canRead = false;
                             try {
@@ -1117,17 +1049,10 @@ public class GenePatternAnalysisTask {
                                     }
 
                                     File f = new File(uri);
-                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        pinfo.setValue(f.getAbsolutePath());
-                                        //TODO: don't remove
-                                        attrsCopy.remove(ParameterInfo.TYPE);
-                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                        downloadUrl = false;
-                                    } 
-                                    else {
-                                        is = new FileInputStream(f);
-                                        name = f.getName();
-                                    }
+                                    pinfo.setValue(f.getAbsolutePath());
+                                    attrsCopy.remove(ParameterInfo.TYPE);
+                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                    downloadUrl = false;
                                 }
                             }
                             else {
@@ -1140,22 +1065,10 @@ public class GenePatternAnalysisTask {
                                     try {
                                         File file = localInputUrlToFile(mgr, gpConfig, jobContext, url);
                                         if (file != null) {
-                                            if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                pinfo.setValue(file.getAbsolutePath());
-                                                //TODO: don't remove
-                                                attrsCopy.remove(ParameterInfo.TYPE);
-                                                attrsCopy.remove(ParameterInfo.INPUT_MODE);
-                                                downloadUrl = false;
-                                            } 
-                                            else {
-                                                name = file.getName();
-                                                //special case for axis: e.g. Axis23118.att_all_aml_test.gct
-                                                if (name.startsWith("Axis")) {
-                                                    int endIdx = name.indexOf(".att_") + ".att_".length();
-                                                    name = name.substring(endIdx);
-                                                }
-                                                is = new BufferedInputStream(new FileInputStream(file));
-                                            }
+                                            pinfo.setValue(file.getAbsolutePath());
+                                            attrsCopy.remove(ParameterInfo.TYPE);
+                                            attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                            downloadUrl = false;
                                         }
                                     } 
                                     catch (IllegalArgumentException e) {
@@ -1292,15 +1205,15 @@ public class GenePatternAnalysisTask {
             else {
                 String commandPrefix = null;
                 try {
-                    commandPrefix = getCommandPrefix(jobType, taskInfo.getLsid());
+                    commandPrefix = gpConfig.getCommandPrefix(jobContext);
                 }
                 catch (MalformedURLException e) {
                     throw new JobDispatchException(e);
                 }
-                if (commandPrefix != null) {
+                if (!Strings.isNullOrEmpty(commandPrefix)) {
                     cmdLine = commandPrefix + " " + cmdLine;
                 }
-                
+
                 final Map<String,String> propsMap=CommandLineParser.propsToMap(props);
                 final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
                 if (log.isDebugEnabled()) {
@@ -2157,41 +2070,6 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 
-     * 1. task version specific entry in task prefix mapping 
-     * 2. task versionless entry in task prefix mapping 
-     * 3. default command prefix only applies to non-visualizers
-     * 
-     * @param taskInfoAttributes
-     * @return null if no command prefix is specified.
-     * @throws MalformedURLException
-     */
-    private String getCommandPrefix(JOB_TYPE jobType, String lsidStr) throws MalformedURLException {
-        PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
-        Properties tpm = pm.getTaskPrefixMapping();
-        Properties prefixes = pm.getCommandPrefixes();
-
-        String commandPrefixName = tpm.getProperty(lsidStr);
-        String commandPrefix = null;
-
-        if (commandPrefixName == null) {
-            LSID lsid = new LSID(lsidStr);
-            lsidStr = lsid.toStringNoVersion();
-            commandPrefixName = tpm.getProperty(lsidStr);
-        }
-        if (commandPrefixName != null) {
-            commandPrefix = prefixes.getProperty(commandPrefixName);
-        }
-
-        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER) && !(jobType == JOB_TYPE.JAVASCRIPT)) {
-            // check for default prefix, unless it's a visualizer
-            commandPrefix = prefixes.getProperty("default", null);
-        }
-
-        return commandPrefix;
-    }
-
-    /**
      * remove special params that should not be added to the command line.
      */
     public static ParameterInfo[] stripOutSpecialParams(ParameterInfo[] inParams) {
@@ -2319,8 +2197,8 @@ public class GenePatternAnalysisTask {
 	return value;
     }
 
-    private static boolean validateCPU(String expected) throws JobDispatchException {
-        String actual = System.getProperty("os.arch");
+    private static boolean validateCPU(final GpConfig gpConfig, final String expected) throws JobDispatchException {
+        final String actual = GpConfig.getJavaProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
         if (expected.equals("")) {
             return true;
@@ -2335,27 +2213,27 @@ public class GenePatternAnalysisTask {
         if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding)) {
             return true;
         }
-        if (System.getProperty(COMMAND_PREFIX, null) != null) {
+        if (!Strings.isNullOrEmpty(gpConfig.getDefaultCommandPrefix())) {
             return true; // don't validate for LSF
         }
         throw new JobDispatchException("Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a " + actual);
     }
 
-    private static boolean validateOS(String expected, String action) throws JobDispatchException {
+    private static boolean validateOS(final GpConfig gpConfig, String expected, String action) throws JobDispatchException {
         if (expected == null || expected.trim().length() == 0) {
             return true;
         }
         //split on ';'
         String[] entries = expected.split(";");
         if (entries.length == 1) {
-            return validateOSEntry(entries[0], action);
+            return validateOSEntry(gpConfig, entries[0], action);
         }
         
         //only need one valid entry
         boolean valid = false;
         for(String entry : entries) {
             try {
-                boolean v = validateOSEntry(entry.trim(), action);
+                boolean v = validateOSEntry(gpConfig, entry.trim(), action);
                 if (v) {
                     valid = true;
                 }
@@ -2365,15 +2243,15 @@ public class GenePatternAnalysisTask {
             }
         }
         if (!valid) {
-            String actual = System.getProperty("os.name");
+            String actual = GpConfig.getJavaProperty("os.name");
             throw new JobDispatchException("Cannot " + action + " on this platform. Task requires on of " + expected
                     + " operating systems, but this server is running " + actual);
         }
         return true;
     }
     
-    private static boolean validateOSEntry(final String _expected, final String _action) throws JobDispatchException {
-        final String _actual = System.getProperty("os.name");
+    private static boolean validateOSEntry(final GpConfig gpConfig, final String _expected, final String _action) throws JobDispatchException {
+        final String _actual = GpConfig.getJavaProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
         final String expected = _expected.toLowerCase();
         final String actual = _actual.toLowerCase();
@@ -2396,8 +2274,8 @@ public class GenePatternAnalysisTask {
         if (expected.startsWith("mac") && actual.startsWith("mac")) {
             return true;
         }
-        if (System.getProperty(COMMAND_PREFIX, null) != null) {
-            return true; // don't validate for LSF
+        if (!Strings.isNullOrEmpty(gpConfig.getDefaultCommandPrefix())) {
+            return true; // don't validate for LSF 
         }
         throw new JobDispatchException("Cannot " + _action + " on this platform. Task requires a " + _expected
                 + " operating system, but this server is running " + actual);
@@ -2611,7 +2489,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Fill returned Properties with everything that the user can get a substitution for, including all
-     * System.getProperties() properties plus all of the actual ParameterInfo name/value pairs.
+     * System properties plus all of the actual ParameterInfo name/value pairs.
      * <p/>
      * <p/>
      * Each input file gets additional entries for the directory (INPUT_PATH) the file name (just filename, no path) aka
@@ -2673,7 +2551,6 @@ public class GenePatternAnalysisTask {
         if (formalParameters != null) {
             formalParamsLength = formalParameters.length;
         }
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
         try {
             if (copyEnv) {
                 // copy environment variables into props
@@ -2707,7 +2584,7 @@ public class GenePatternAnalysisTask {
             if (taskID != -1) {
                 taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
                 File f = new File(taskLibDir);
-                taskLibDir = f.getPath() + System.getProperty("file.separator");
+                taskLibDir = f.getPath() + GpConfig.getJavaProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
             
@@ -2764,10 +2641,6 @@ public class GenePatternAnalysisTask {
                                     }
                                 }
 
-                                if (inputFileMode != INPUT_FILE_MODE.PATH) {
-                                    // file is moved to job directory
-                                    props.put(inputParamName, baseName);
-                                }
                                 props.put(inputParamName + INPUT_PATH, new String(outDirName));
 
                                 // filename without path
@@ -3281,17 +3154,17 @@ public class GenePatternAnalysisTask {
         taskInfo.setParameterInfoArray(params);
 
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext gpContext=GpContext.getServerContext();
             //validate the OS
             final String os = taskInfoAttributes.get(OS);
-            boolean validOs=validateOS(os, "install " + name);
+            boolean validOs=validateOS(gpConfig, os, "install " + name);
             if (!validOs) {
                 Vector<String> v=new Vector<String>();
                 v.add("validOs==false, "+OS+"="+os);
                 return v;
             }
             //if necessary, install patches
-            GpConfig gpConfig=ServerConfigurationFactory.instance();
-            GpContext gpContext=GpContext.getServerContext();
             PluginManagerLegacy pluginManager=new PluginManagerLegacy(org.genepattern.server.database.HibernateUtil.instance(), gpConfig, gpContext);
             pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters
@@ -3802,7 +3675,7 @@ public class GenePatternAnalysisTask {
 
                     // unzip using ants classes to allow file permissions to be retained
                     boolean useAntUnzip = true;
-                    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                    if (!GpConfig.getJavaProperty("os.name").toLowerCase().startsWith("windows")) {
                         useAntUnzip = false;
                         Execute execute = new Execute();
                         execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
@@ -3876,95 +3749,23 @@ public class GenePatternAnalysisTask {
         return installNewTask(zipFilename, username, access_id, true, taskIntegrator, installInfo);
     }
 
-    public static String downloadTask(String zipURL) throws IOException {
-	return downloadTask(zipURL, null, -1);
+    public static final String downloadTask(final String zipURL) throws IOException {
+        return FileDownloader.downloadTask(zipURL, null);
     }
 
     /**
      * downloads a file from a URL and returns the path to the local file to the caller.
      * 
-     * @param zipURL
-     *            String URL of file to download
+     * @param zipURL String URL of file to download
+     * @param statusMonitor
+     * @param expectedLength
+     * @param verbose
      * @return String filename of temporary downloaded file on server
      * @throws IOException
-     *             if any problems occured in accessing the remote file or storing it locally
-     * @author Jim Lerner
      */
-    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength) throws IOException {
-	return downloadTask(zipURL, statusMonitor, expectedLength, true);
-    }
-
-    public static String downloadTask(String zipURL, org.genepattern.server.webservice.server.Status statusMonitor, long expectedLength, boolean verbose)
-	    throws IOException {
-	File zipFile = null;
-	long downloadedBytes = 0;
-	try {
-	    zipFile = File.createTempFile("task", ".zip");
-	    zipFile.deleteOnExit();
-	    FileOutputStream os = new FileOutputStream(zipFile);
-	    URLConnection uc = new URL(zipURL).openConnection();
-	    log.info("opened connection");
-	    long downloadSize = -1;
-	    Map headerFields = uc.getHeaderFields();
-	    for (Iterator itHeaders = headerFields.keySet().iterator(); itHeaders.hasNext();) {
-		String name = (String) itHeaders.next();
-		String value = uc.getHeaderField(name);
-		// System.out.println(name + "=" + value);
-	    }
-	    if (uc instanceof HttpURLConnection) {
-		downloadSize = ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
-	    } else if (expectedLength == -1) {
-		downloadSize = uc.getContentLength();
-		// downloadSize = expectedLength;
-	    } else {
-		downloadSize = expectedLength;
-	    }
-	    if ((statusMonitor != null) && (downloadSize != -1) && verbose) {
-		statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); // Each
-		// dot
-	    }
-	    // represents
-	    // 100KB.");
-	    if ((statusMonitor != null)) {
-		statusMonitor.beginProgress("download");
-	    }
-	    InputStream is = uc.getInputStream();
-	    byte[] buf = new byte[100000];
-	    int i;
-	    long lastPercent = 0;
-	    while ((i = is.read(buf, 0, buf.length)) > 0) {
-		downloadedBytes += i;
-		os.write(buf, 0, i);
-		// System.out.print(new String(buf, 0, i));
-		if (downloadSize > -1) {
-		    long pctComplete = 100 * downloadedBytes / downloadSize;
-		    if (lastPercent != pctComplete) {
-			if (statusMonitor != null) {
-			    statusMonitor.continueProgress((int) pctComplete);
-			}
-			lastPercent = pctComplete;
-		    }
-		}
-	    }
-	    is.close();
-	    os.close();
-	    if (downloadedBytes == 0) {
-		throw new IOException("Nothing downloaded from " + zipURL);
-	    }
-	    return zipFile.getPath();
-	} catch (IOException ioe) {
-	    log.info("Error in downloadTask: " + ioe.getMessage());
-	    zipFile.delete();
-	    throw ioe;
-	} finally {
-	    System.out.println("downloaded " + downloadedBytes + " bytes");
-	    if (statusMonitor != null) {
-		statusMonitor.endProgress();
-		if (verbose) {
-		    statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
-		}
-	    }
-	}
+    public static String downloadTask(final String zipURL, final org.genepattern.server.webservice.server.Status statusMonitor)
+            throws IOException {
+        return FileDownloader.downloadTask(zipURL, statusMonitor);
     }
 
     /**
@@ -4302,8 +4103,8 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * return boolean indicating whether a filename represents a file type (as found in
-     * System.getProperties(files.{code,doc,binary}))
+     * return boolean indicating whether a filename represents a file type 
+     * as found in 'files.code', 'files.doc', or 'files.binary' properties.
      */
     private static boolean hasEnding(String filename, List<String> fileEndings) {
         boolean ret = false;
@@ -4330,22 +4131,23 @@ public class GenePatternAnalysisTask {
         return vEntries;
     }
 
-    // implements FilenameFilter, but static
+    /** implements FilenameFilter, but static */
     public static boolean accept(File dir, String name) {
-	return isDocFile(name);
+        return isDocFile(name);
     }
 
-    /* TODO: put all of this stuff in database and look it up when requested */
-
-    // LHS is what is presented to user, RHS is what java System.getProperty()
-    // returns
+    /**
+     * LHS is presented to user, RHS is the Java System property.
+     */
     public static String[] getCPUTypes() {
-	return new String[] { ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc" };
+	    return new String[] { ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc" };
     }
 
-    // LHS=show to user, RHS=what System.getProperty("os.name") returns
+    /**
+     * LHS is presented to user, RHS is the Java System property 'os.name'
+     */
     public static String[] getOSTypes() {
-	return new String[] { ANY, "Linux=linux", "MacOS=Mac OS X", "Solaris=solaris", "Tru64=OSF1", "Windows=Windows" };
+        return new String[] { ANY, "Linux=linux", "MacOS=Mac OS X", "Solaris=solaris", "Tru64=OSF1", "Windows=Windows" };
     }
 
     public static String[] getTaskTypes() {

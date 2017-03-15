@@ -108,7 +108,12 @@ public class TagManager {
     
     private void addRecent(final GpContext context) {
         AdminDAO adminDao = new AdminDAO();
-        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(context.getUserId(), UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+        int recentJobsToShow = Integer.parseInt(
+                new UserDAO().getPropertyValue(
+                        context.getUserId(), 
+                        UserPropKey.RECENT_JOBS_TO_SHOW, 
+                        UserPropKey.RECENT_JOB_TO_SHOW_DEFAULT
+        ));
         TaskInfo[] recentModules = adminDao.getRecentlyRunTasksForUser(context.getUserId(), recentJobsToShow);
         
         for (TaskInfo recent : recentModules) {
