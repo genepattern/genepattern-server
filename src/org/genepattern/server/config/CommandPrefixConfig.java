@@ -8,6 +8,8 @@ import java.util.Properties;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.WebServiceException;
 
+import com.google.common.base.Strings;
+
 /**
  * Helper class for setting the command line prefix for a job based on the settings in the
  *     'commandPrefix.properties' and 'taskPrefixMapping.properties' files.
@@ -44,10 +46,10 @@ public class CommandPrefixConfig {
         final String commandPrefixName = getCommandPrefixName(taskPrefixMapping, lsid);
 
         final Map<String,String> commandPrefixProps=gpConfig.getCommandPrefixProps().getProps();
-        final String commandPrefixCustom=commandPrefixProps.getOrDefault(commandPrefixName, null);
+        final String commandPrefixCustom=commandPrefixProps.get(commandPrefixName);
         if (commandPrefixCustom == null && isCommandLineJob) {
             // default command prefix only applies to command line jobs
-            return gpConfig.getCommandPrefixProps().getProps().getOrDefault("default", null);
+            return gpConfig.getCommandPrefixProps().getProps().get("default");
         }
         return commandPrefixCustom;
     }
@@ -64,9 +66,9 @@ public class CommandPrefixConfig {
      */
     protected static String getCommandPrefixName(final Map<String,String> taskPrefixMapping, final LSID lsid) 
     {
-        final String commandPrefixName = taskPrefixMapping.getOrDefault( lsid.toString(), null );
+        final String commandPrefixName = taskPrefixMapping.get( lsid.toString() );
         if (commandPrefixName == null) {
-            return taskPrefixMapping.getOrDefault( lsid.toStringNoVersion(), null );
+            return taskPrefixMapping.get( lsid.toStringNoVersion() );
         }
         else {
             return commandPrefixName;
@@ -87,7 +89,8 @@ public class CommandPrefixConfig {
     }
 
     public String getDefaultCommandPrefix() {
-        return gpConfig().getCommandPrefixProps().getProps().getOrDefault("default", "");
+        final String prefix=gpConfig().getCommandPrefixProps().getProps().get("default");
+        return Strings.nullToEmpty(prefix);
     }
 
     /**
@@ -115,10 +118,10 @@ public class CommandPrefixConfig {
         final String commandPrefixName = getCommandPrefixName(taskPrefixMapping, lsid);
 
         final Map<String,String> commandPrefixProps=gpConfig.getCommandPrefixProps().getProps();
-        final String commandPrefixCustom=commandPrefixProps.getOrDefault(commandPrefixName, null);
+        final String commandPrefixCustom=commandPrefixProps.get(commandPrefixName);
         if (commandPrefixCustom == null && isCommandLineJob) {
             // default command prefix only applies to command line jobs
-            return gpConfig.getCommandPrefixProps().getProps().getOrDefault("default", null);
+            return gpConfig.getCommandPrefixProps().getProps().get("default");
         }
         return commandPrefixCustom;
     }
