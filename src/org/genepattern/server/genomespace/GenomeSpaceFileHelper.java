@@ -278,7 +278,7 @@ public class GenomeSpaceFileHelper {
                     u.getFragment())
             .toURL();
         }
-        catch (MalformedURLException | URISyntaxException e) {
+        catch (Exception e) {
             log.error("Unexpected exception, in="+in, e);
             return in;
         }

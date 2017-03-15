@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genomespace.*;
 import org.genepattern.server.webapp.LoginManager;
 
@@ -113,14 +115,7 @@ public class RegistrationBean {
         this.joinMailingList = joinMailingList;
     }
 
-    /**
-     * Register a new user. For now this uses an action listener since we are redirecting to a page outside of the JSF
-     * framework. This should be changed to an action to use jsf navigation in the future.
-     * 
-     * @param event --
-     *                ignored
-     */
-    public void registerUser(ActionEvent event) {
+    private void registerUserSSO(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
         try {
             GenomeSpaceLoginManager.registerUser(request, username, password, email);
@@ -146,11 +141,48 @@ public class RegistrationBean {
             // Redirect to main page
             HttpServletResponse response = UIBeanHelper.getResponse();
             response.sendRedirect("/gp/pages/login.jsf?emailConfirm=true");
-        } 
+        }
         catch (Exception e) {
             log.error(e);
             UIBeanHelper.setErrorMessage("");
             throw new RuntimeException(e);
+        }
+    }
+
+    private void registerUserDefault(ActionEvent event) {
+        try {
+            UserAccountManager.instance().createUser(username, password, email);
+            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
+            if (this.isJoinMailingList()){
+                sendJoinMailingListRequest();
+            }
+            //redirect to main page
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            String contextPath = request.getContextPath();
+            response.sendRedirect( contextPath );
+        }
+        catch (Exception e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Register a new user. For now this uses an action listener since we are redirecting to a page outside of the JSF
+     * framework. This should be changed to an action to use jsf navigation in the future.
+     * 
+     * @param event --
+     *                ignored
+     */
+    public void registerUser(ActionEvent event) {
+        GpContext context = UIBeanHelper.getUserContext();
+        boolean genepatternSSO = ServerConfigurationFactory.instance().getGPBooleanProperty(context, "ssoAuthentication", false);
+        if (genepatternSSO) {
+            registerUserSSO(event);
+        }
+        else {
+            registerUserDefault(event);
         }
     }
 

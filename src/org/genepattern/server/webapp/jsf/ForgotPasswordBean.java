@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
@@ -31,7 +33,7 @@ public class ForgotPasswordBean {
         this.username = username;
     }
 
-    public String resetPassword() {
+    private String resetPasswordSSO() {
         HttpServletRequest request = UIBeanHelper.getRequest();
         try {
             GenomeSpaceLoginManager.resetPassword(request);
@@ -41,6 +43,56 @@ public class ForgotPasswordBean {
         catch (GenomeSpaceException e) {
             UIBeanHelper.setErrorMessage(e.getMessage());
             return "failure";
+        }
+    }
+
+    private String resetPasswordDefault() {
+        final User user = new UserDAO(HibernateUtil.instance()).findById(username);
+        if (user == null) {
+            UIBeanHelper.setErrorMessage("User not registered: " + username);
+            return "failure";
+        }
+        final String email = user.getEmail();
+        if (email == null || email.length() == 0) {
+            UIBeanHelper.setErrorMessage("No email address for username: " + username);
+            return "failure";
+        }
+
+        final String newPassword = RandomStringUtils.randomNumeric(8);
+        byte[] encryptedPassword;
+        try {
+            // try to encrypt the password before sending the email.
+            encryptedPassword = EncryptionUtil.encrypt(newPassword);
+        }
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+            UIBeanHelper.setErrorMessage("Server configuration error: Unable to encrypt password. "
+                    + "\nContact the GenePattern server administrator for help.");
+            return "failure";
+        }
+
+        try {
+            sendResetPasswordMessage(email, newPassword);
+            user.setPassword(encryptedPassword);
+            UIBeanHelper.setInfoMessage("Your new password has been sent to " + email + ".");
+            return "success";
+        }
+        catch (Exception e) {
+            log.error(e);
+            UIBeanHelper.setErrorMessage("Unable to send email to '"+email+"': " + e.getLocalizedMessage() + ". " +
+                    "Contact the GenePattern server administrator for help.");
+            return "failure";
+        }
+    }
+
+    public String resetPassword() {
+        GpContext context = UIBeanHelper.getUserContext();
+        boolean genepatternSSO = ServerConfigurationFactory.instance().getGPBooleanProperty(context, "ssoAuthentication", false);
+        if (genepatternSSO) {
+            return resetPasswordSSO();
+        }
+        else {
+            return resetPasswordDefault();
         }
     }
 

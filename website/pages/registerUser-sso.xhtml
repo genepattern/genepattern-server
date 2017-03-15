@@ -1,0 +1,104 @@
+<!--
+  ~ Copyright 2012 The Broad Institute, Inc.
+  ~ SOFTWARE COPYRIGHT NOTICE
+  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+  ~
+  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="validationInit">
+            <script type="text/javascript" language="javascript">
+                /* <![CDATA[ */
+                function onLoad() {
+                    var objForm = document.forms["registrationForm"];
+                    objForm.username.required = 1;
+                    objForm.username.err = "Missing or invalid username";
+
+                    objForm.password.required = 1;
+                    objForm.password.err = "Missing or invalid password";
+
+                    objForm.passwordConfirm.equals = "password";
+                    objForm.passwordConfirm.err = "Passwords do not match";
+
+                    objForm.email.required = 1;
+                    objForm.email.regexp = "JSVAL_RX_EMAIL";
+                    objForm.email.err = "Missing or invalid email";
+
+                    objForm.emailConfirm.equals = "email";
+                    objForm.emailConfirm.err = "Emails do not match";
+                }
+                /* ]]> */
+
+            </script>
+        </ui:define>
+
+        <ui:define name="pageTitle">Register User</ui:define>
+        <ui:define name="body">
+            <h:form onsubmit="return validateForm(this);" id="registrationForm">
+                <h2>Enter the following information to create a GenomeSpace account.</h2>
+                <b />
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="Username:" for="username" />
+                    <t:inputText size="50" value="#{registrationBean.username}" id="username"
+                                 required="true" requiredMessage="Username is required"
+                                 validator="#{registrationBean.validateNewUsername}">
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputText>
+
+                    <h:outputLabel value="Password:" for="password" rendered="#{registrationBean.passwordRequired}" />
+                    <t:inputSecret size="50" value="#{registrationBean.password}" id="password"
+                                   required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}" rendered="#{registrationBean.passwordRequired}">
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputSecret>
+
+                    <h:outputLabel value="Re-enter password:" for="passwordConfirm" rendered="#{registrationBean.passwordRequired}" />
+                    <t:inputSecret size="50" value="#{registrationBean.passwordConfirm}" id="passwordConfirm"
+                                   binding="#{registrationBean.passwordConfirmComponent}" rendered="#{registrationBean.passwordRequired}">
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputSecret>
+
+                    <h:outputLabel value="Email:" for="email" rendered="#{registrationBean.passwordRequired}" />
+                    <t:inputText size="50" value="#{registrationBean.email}" id="email"
+                                 required="true" requiredMessage="Email is required" validator="#{registrationBean.validateEmail}" rendered="#{registrationBean.passwordRequired}">
+                        <t:validateEmail />
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputText>
+
+                    <h:outputLabel value="Re-enter email:" for="emailConfirm" rendered="#{registrationBean.passwordRequired}" />
+                    <t:inputText size="50" value="#{registrationBean.emailConfirm}" id="emailConfirm"
+                                 binding="#{registrationBean.emailConfirmComponent}" rendered="#{registrationBean.passwordRequired}">
+                        <t:validateEmail />
+                        <f:attribute name="forceId" value="true" />
+                    </t:inputText>
+
+                    <h:outputText value="" rendered="${registrationBean.passwordRequired}" />
+                    <h:panelGroup rendered="${registrationBean.passwordRequired}">
+                        <h:selectBooleanCheckbox title="emailUpdates" value="#{registrationBean.joinMailingList}">
+                        </h:selectBooleanCheckbox>
+                        <h:outputText value="Add me to the GenePattern users mailing list" />
+                    </h:panelGroup>
+
+                    <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService" />
+                    <h:panelGroup id="termsOfService" rendered="#{registrationBean.showTermsOfService}">
+                        <h:outputText value="By clicking on 'I accept' below you are agreeing to the " />
+                        <h:outputLink target="_blank" value="/gp/pages/terms.jsf"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
+                        <h:outputText value="." />
+                    </h:panelGroup>
+                    <h:outputText value="" />
+                    <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create my account." class="little" actionListener="#{registrationBean.registerUser}" />
+                    <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create GenomeSpace Account" class="little" actionListener="#{registrationBean.registerUser}" />
+
+                </h:panelGrid>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

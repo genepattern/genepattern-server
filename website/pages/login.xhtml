@@ -15,50 +15,92 @@
       xmlns:t="http://myfaces.apache.org/tomahawk">
 
 
-    <ui:composition template="/templates/common.xhtml">
-        <ui:define name="pageTitle">GenePattern Sign in</ui:define>
-        <ui:define name="body">
-            <h:outputText value="Username and password do not match." style="color: red; font-weight: bold;" rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
-            <h:outputText value="Username and password do not match." style="color: red; font-weight: bold;" rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
-            <h:outputText value="Username and password do not match." rendered="#{loginBean.invalidPassword}" style="color: red; font-weight: bold;" />
-            <h:outputText value="A confirmation email has been sent to your email address. Please confirm your email and then log in." rendered="#{loginBean.emailSent}" style="font-weight: bold;" />
+<ui:composition template="/templates/common.xhtml">
+    <ui:define name="validationInit">
+        <script type="text/javascript" language="javascript">
+            /* <![CDATA[ */
+            function onLoad() {
+                var objForm = document.forms["loginForm"];
+                objForm.username.required = 1;
+                objForm.username.err = "Username is required";
+            }
+            /* ]]> */
 
-            <h:form onsubmit="return validateForm(this);" id="loginForm">
-                <div>
-                    <div style="display: inline-block; padding-bottom: 19px; vertical-align: middle; font-weight: bold;">
-                        Sign in with
-                    </div>
-                    <img src="/gp/pages/genomespace/genomespacelogo.png" width="100"/>
-                </div>
-                <h:panelGrid columns="2">
-                    <h:outputLabel value="Username:" for="username" />
-                    <t:inputText size="50" value="#{loginBean.username}" id="username" required="true" requiredMessage="Username is required">
-                        <f:attribute name="forceId" value="true" />
-                    </t:inputText>
+        </script>
+    </ui:define>
+    <ui:define name="pageTitle">GenePattern Sign in</ui:define>
+    <ui:define name="body">
+        <table cols="2">
+            <tr>
+                <td width="400" valign="top">
+                    <h:form onsubmit="return validateForm(this);" id="loginForm">
+                        <table width="330">
+                            <tr>
+                                <td><span style="font-weight: bold;"> Sign in to
+					GenePattern</span></td>
+                                <td align="right"><h:outputLink
+                                        value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
+                                        rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
+                                    Click to Register
+                                </h:outputLink></td>
+                            </tr>
+                        </table>
 
-                    <h:outputLabel value="Password:" for="password" rendered="#{loginBean.passwordRequired}"></h:outputLabel>
-                    <t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}">
-                        <f:attribute name="forceId" value="true" />
-                    </t:inputSecret>
-                </h:panelGrid>
-                <h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
-                <table width="330">
-                    <tr>
-                        <td>
-                            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf" rendered="#{loginBean.passwordRequired}">
-                                Forgot your password?
-                            </h:outputLink>
-                        </td>
-                        <td align="right">
-                            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf" rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
-                                Click to Register
-                            </h:outputLink>
-                        </td>
-                    </tr>
-                </table>
-            </h:form>
-        </ui:define>
+                        <h:outputText
+                                value="Username and password do not match."
+                                style="color: red; font-weight: bold;"
+                                rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
+
+                        <h:outputText
+                                value="Username and password do not match."
+                                style="color: red; font-weight: bold;"
+                                rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
 
 
-    </ui:composition>
+                        <h:outputText value="Username and password do not match."
+                                      rendered="#{loginBean.invalidPassword}"
+                                      style="color: red; font-weight: bold;" />
+
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Username:" for="username" />
+                            <t:inputText size="50" value="#{loginBean.username}" id="username" required="true" requiredMessage="Username is required">
+                                <f:attribute name="forceId" value="true" />
+                            </t:inputText>
+
+                            <h:outputLabel value="Password:" for="password"
+                                           rendered="#{loginBean.passwordRequired}"></h:outputLabel>
+                            <t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}">
+                                <f:attribute name="forceId" value="true" />
+                            </t:inputSecret>
+                        </h:panelGrid>
+                        <h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
+                        <br />
+                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
+                                      rendered="#{loginBean.passwordRequired}">
+                            Forgot your password?
+                        </h:outputLink>
+
+                    </h:form>
+                </td>
+
+                <td width="400" valign="top">
+                    <h:form onsubmit="return validateForm(this);" id="gsLoginForm" rendered="#{genomeSpaceBean.genomeSpaceEnabled}">
+                        <!-- #{genomeSpaceBean.referAndForward} -->
+                        <h:outputLink value="../GenomeSpaceOpenID">
+                            <h:graphicImage url="genomespace/genomespacelogo.png" />
+                            <f:verbatim>
+                                <br />
+                                <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />&#160;
+                                <span style="font-weight: bold;">Sign in Using GenomeSpace</span>
+                            </f:verbatim>
+                            <f:param name="login" value="Login" />
+                        </h:outputLink>
+                    </h:form>
+                </td>
+            </tr>
+        </table>
+    </ui:define>
+
+
+</ui:composition>
 </html>

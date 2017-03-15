@@ -71,6 +71,9 @@ default.properties:
     gparcUploadURL: http://www.gparc.org/server_upload.php
     gparcSubmitURL: http://www.gparc.org/uniqid
 
+    # Use Single Sign-On
+    ssoAuthentication: false
+
     #
     # Google Analytics, available in 3.9.2+
     #

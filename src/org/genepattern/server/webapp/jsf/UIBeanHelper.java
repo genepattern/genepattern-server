@@ -4,11 +4,11 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.Enumeration;
-import java.util.Map;
+import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.util.GPConstants;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -18,12 +18,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.apache.log4j.Logger;
-import org.genepattern.server.config.GpConfig;
-import org.genepattern.server.config.GpContext;
-import org.genepattern.server.dm.UrlUtil;
-import org.genepattern.util.GPConstants;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Enumeration;
+import java.util.Map;
 
 public class UIBeanHelper {
     private static Logger log = Logger.getLogger(UIBeanHelper.class);
