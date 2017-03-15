@@ -6,6 +6,7 @@ package org.genepattern.server.config;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -703,7 +704,30 @@ public class GpConfig {
     public Map<String,String> getBuildProperties() {
         return  buildProperties;
     }
-    
+
+    /**
+     * Get the 'default' command prefix declared in the resources/commandPrefix.properties file.
+     */
+    public String getDefaultCommandPrefix() {
+        return serverProperties
+                .getCommandPrefixProps()
+                .getProps().getOrDefault("default", "");
+    }
+
+    /**
+     * Get the properties loaded from the resources/commandPrefix.properties file.
+     */
+    protected Record getCommandPrefixProps() {
+        return serverProperties.getCommandPrefixProps();
+    }
+
+    /**
+     * Get the properties loaded from the resources/taskPrefixMapping.properties file.
+     */
+    protected Record getTaskPrefixMappingProps() {
+        return serverProperties.getTaskPrefixMappingProps();
+    }
+
     /**
      * Get the database configuration properties loaded from the <resources>/database_default.properties and
      * optionally from the <resources>/database_custom.properties files.
@@ -981,6 +1005,24 @@ public class GpConfig {
             return queueId;
         }
         return defaultValue;
+    }
+    
+    /**
+     * Get the optional command line prefix for a job.
+     * 
+     * @param jobContext
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public String getCommandPrefix(final GpContext jobContext) 
+    throws IllegalArgumentException, MalformedURLException
+    {
+        if (jobContext==null) {
+            throw new IllegalArgumentException("jobContext is null");
+        }
+        final boolean isCommandLineJob = TaskType.JOB == jobContext.getTaskType();
+        final String lsidStr = jobContext.getLsid();
+        return CommandPrefixConfig.getCommandPrefix(this, isCommandLineJob, lsidStr);
     }
 
     //helper methods for locating server files and folders

@@ -52,7 +52,7 @@
                     <h:inputText size="50" value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal" />
                 </td>
                 <td width="10%">
-                    <h:commandLink value="add prefix" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
+                    <h:commandLink value="add prefix" actionListener="#{commandPrefixBean.addPrefix}" />
                 </td>
             </tr>
             <tr class="settingperameter">
@@ -138,7 +138,7 @@
                     </h:selectOneMenu>
                 </td>
                 <td width="10%">
-                    <h:commandLink value="add mapping" actionListener="#{commandPrefixBean.savePrefixTaskMapping}" />
+                    <h:commandLink value="add mapping" actionListener="#{commandPrefixBean.addTaskPrefixMapping}" />
                 </td>
             </tr>
         </table>

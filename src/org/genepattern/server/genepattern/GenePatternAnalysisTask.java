@@ -7,7 +7,6 @@ package org.genepattern.server.genepattern;
 import static org.genepattern.util.GPConstants.ACCESS_PRIVATE;
 import static org.genepattern.util.GPConstants.ANY;
 import static org.genepattern.util.GPConstants.COMMAND_LINE;
-import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
 import static org.genepattern.util.GPConstants.CPU_TYPE;
 import static org.genepattern.util.GPConstants.DESCRIPTION;
 import static org.genepattern.util.GPConstants.INPUT_BASENAME;
@@ -252,6 +251,7 @@ public class GenePatternAnalysisTask {
         VISUALIZER,
         JAVASCRIPT,
         PIPELINE,
+        /** @depecated */
         PASS_BY_REFERENCE
     };
 
@@ -650,7 +650,7 @@ public class GenePatternAnalysisTask {
         }
        
         //INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        JOB_TYPE jobType = initJobType(taskInfo);
+        final JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;
         ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -665,10 +665,10 @@ public class GenePatternAnalysisTask {
 
         // check OS and CPU restrictions of TaskInfoAttributes against this server
         // eg. "x86", "ppc", "alpha", "sparc"
-        validateCPU(taskInfoAttributes.get(CPU_TYPE));
+        validateCPU(gpConfig, taskInfoAttributes.get(CPU_TYPE));
         String expected = taskInfoAttributes.get(OS);
         // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
-        validateOS(expected, "run " + taskName);
+        validateOS(gpConfig, expected, "run " + taskName);
         try {
             PluginManagerLegacy pluginManager=new PluginManagerLegacy(mgr, gpConfig, jobContext);
             pluginManager.validatePatches(taskInfo, null);
@@ -1205,15 +1205,15 @@ public class GenePatternAnalysisTask {
             else {
                 String commandPrefix = null;
                 try {
-                    commandPrefix = getCommandPrefix(jobType, taskInfo.getLsid());
+                    commandPrefix = gpConfig.getCommandPrefix(jobContext);
                 }
                 catch (MalformedURLException e) {
                     throw new JobDispatchException(e);
                 }
-                if (commandPrefix != null) {
+                if (!Strings.isNullOrEmpty(commandPrefix)) {
                     cmdLine = commandPrefix + " " + cmdLine;
                 }
-                
+
                 final Map<String,String> propsMap=CommandLineParser.propsToMap(props);
                 final List<String> cmdLineArgs = CommandLineParser.createCmdLine(gpConfig, jobContext, cmdLine, propsMap, paramInfoMap);
                 if (log.isDebugEnabled()) {
@@ -2070,41 +2070,6 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 
-     * 1. task version specific entry in task prefix mapping 
-     * 2. task versionless entry in task prefix mapping 
-     * 3. default command prefix only applies to non-visualizers
-     * 
-     * @param taskInfoAttributes
-     * @return null if no command prefix is specified.
-     * @throws MalformedURLException
-     */
-    private String getCommandPrefix(JOB_TYPE jobType, String lsidStr) throws MalformedURLException {
-        PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
-        Properties tpm = pm.getTaskPrefixMapping();
-        Properties prefixes = pm.getCommandPrefixes();
-
-        String commandPrefixName = tpm.getProperty(lsidStr);
-        String commandPrefix = null;
-
-        if (commandPrefixName == null) {
-            LSID lsid = new LSID(lsidStr);
-            lsidStr = lsid.toStringNoVersion();
-            commandPrefixName = tpm.getProperty(lsidStr);
-        }
-        if (commandPrefixName != null) {
-            commandPrefix = prefixes.getProperty(commandPrefixName);
-        }
-
-        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER) && !(jobType == JOB_TYPE.JAVASCRIPT)) {
-            // check for default prefix, unless it's a visualizer
-            commandPrefix = prefixes.getProperty("default", null);
-        }
-
-        return commandPrefix;
-    }
-
-    /**
      * remove special params that should not be added to the command line.
      */
     public static ParameterInfo[] stripOutSpecialParams(ParameterInfo[] inParams) {
@@ -2232,7 +2197,7 @@ public class GenePatternAnalysisTask {
 	return value;
     }
 
-    private static boolean validateCPU(final String expected) throws JobDispatchException {
+    private static boolean validateCPU(final GpConfig gpConfig, final String expected) throws JobDispatchException {
         final String actual = GpConfig.getJavaProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
         if (expected.equals("")) {
@@ -2248,27 +2213,27 @@ public class GenePatternAnalysisTask {
         if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding)) {
             return true;
         }
-        if (System.getProperty(COMMAND_PREFIX, null) != null) {
+        if (!Strings.isNullOrEmpty(gpConfig.getDefaultCommandPrefix())) {
             return true; // don't validate for LSF
         }
         throw new JobDispatchException("Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a " + actual);
     }
 
-    private static boolean validateOS(String expected, String action) throws JobDispatchException {
+    private static boolean validateOS(final GpConfig gpConfig, String expected, String action) throws JobDispatchException {
         if (expected == null || expected.trim().length() == 0) {
             return true;
         }
         //split on ';'
         String[] entries = expected.split(";");
         if (entries.length == 1) {
-            return validateOSEntry(entries[0], action);
+            return validateOSEntry(gpConfig, entries[0], action);
         }
         
         //only need one valid entry
         boolean valid = false;
         for(String entry : entries) {
             try {
-                boolean v = validateOSEntry(entry.trim(), action);
+                boolean v = validateOSEntry(gpConfig, entry.trim(), action);
                 if (v) {
                     valid = true;
                 }
@@ -2285,7 +2250,7 @@ public class GenePatternAnalysisTask {
         return true;
     }
     
-    private static boolean validateOSEntry(final String _expected, final String _action) throws JobDispatchException {
+    private static boolean validateOSEntry(final GpConfig gpConfig, final String _expected, final String _action) throws JobDispatchException {
         final String _actual = GpConfig.getJavaProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
         final String expected = _expected.toLowerCase();
@@ -2309,8 +2274,8 @@ public class GenePatternAnalysisTask {
         if (expected.startsWith("mac") && actual.startsWith("mac")) {
             return true;
         }
-        if (System.getProperty(COMMAND_PREFIX, null) != null) {
-            return true; // don't validate for LSF
+        if (!Strings.isNullOrEmpty(gpConfig.getDefaultCommandPrefix())) {
+            return true; // don't validate for LSF 
         }
         throw new JobDispatchException("Cannot " + _action + " on this platform. Task requires a " + _expected
                 + " operating system, but this server is running " + actual);
@@ -3189,17 +3154,17 @@ public class GenePatternAnalysisTask {
         taskInfo.setParameterInfoArray(params);
 
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext gpContext=GpContext.getServerContext();
             //validate the OS
             final String os = taskInfoAttributes.get(OS);
-            boolean validOs=validateOS(os, "install " + name);
+            boolean validOs=validateOS(gpConfig, os, "install " + name);
             if (!validOs) {
                 Vector<String> v=new Vector<String>();
                 v.add("validOs==false, "+OS+"="+os);
                 return v;
             }
             //if necessary, install patches
-            GpConfig gpConfig=ServerConfigurationFactory.instance();
-            GpContext gpContext=GpContext.getServerContext();
             PluginManagerLegacy pluginManager=new PluginManagerLegacy(org.genepattern.server.database.HibernateUtil.instance(), gpConfig, gpContext);
             pluginManager.validatePatches(taskInfo, taskIntegrator);
             //validate input parameters, must call this after validatePatches because some patches add substitution parameters

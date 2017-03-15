@@ -4,131 +4,119 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
-import static org.genepattern.util.GPConstants.TASK_PREFIX_MAPPING;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
-import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.server.config.CommandPrefixConfig;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class CommandPrefixBean {
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
-    private IAdminClient admin;
-    private String defaultCommandPrefix;
+/**
+ * Backing bean for the Server Settings | Command Line Prefix page
+ * 
+ * @author pcarr
+ */
+public class CommandPrefixBean { 
+    private IAdminClient _admin;
+    private IAdminClient getAdmin() {
+        if (_admin == null) {
+            _admin = new LocalAdminClient(UIBeanHelper.getUserId());
+        }
+        return _admin;
+    }
+
+    private CommandPrefixConfig _cfg;
+    private CommandPrefixConfig cfg() {
+        if (_cfg==null) {
+            _cfg = new CommandPrefixConfig();
+        }
+        return _cfg;
+    }
+    private void resetCfg() {
+        this._cfg=null;
+    }
+
+    // for the 'save default' link
+    private String _defaultCommandPrefix;
+    
+    // for the 'add prefix' link
     private String newPrefixName;
     private String newPrefixValue;
-    private List<String> newMappingLSID;
-    private String newMappingPrefix;
-
-    PropertiesManager_3_2 pm = null;
+    
+    // for the 'For Modules ...' GUI
+    private List<String> selectedForModuleNames;
+    // for the '... Use Prefix ...' GUI
+    private String selectedCommandPrefixName;
 
     public CommandPrefixBean() {
-        if (!AuthorizationHelper.adminServer()) {
-            throw new FacesException("You don' have the required permissions to administer the server.");
+        final String userId=UIBeanHelper.getUserId();
+        final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+        if (!isAdmin) {
+            throw new FacesException("You don't have the required permissions to administer the server."); 
         }
-        admin = new LocalAdminClient(UIBeanHelper.getUserId());
-        pm = PropertiesManager_3_2.getInstance();
-        defaultCommandPrefix = pm.getCommandPrefixes().getProperty("default", "");
-        setDefault();
+        this._defaultCommandPrefix=cfg().getDefaultCommandPrefix();
+    }
+
+    protected String getKey(String keyName) {
+        final Map<String, String> params = UIBeanHelper.getExternalContext().getRequestParameterMap();
+        return params.get(keyName);
+    }
+
+    protected String nameFromLSID(final IAdminClient admin, final String lsid) throws WebServiceException {
+        final TaskInfo task = admin.getTask(lsid);
+        if (task != null) {
+            return task.getName();
+        }
+        else {
+            return lsid;
+        }
+    }
+
+    protected String lsidFromName(final IAdminClient admin, final String name) throws MalformedURLException, WebServiceException {
+        final TaskInfo task = admin.getTask(name);
+        if (task != null) {
+            LSID lsid = new LSID((String) task.getTaskInfoAttributes().get("LSID"));
+            return lsid.toStringNoVersion();
+        } 
+        else {
+            return name;
+        }
     }
 
     public String getDefaultCommandPrefix() {
-        return defaultCommandPrefix;
+        return cfg().getDefaultCommandPrefix();
     }
 
-    public void setDefaultCommandPrefix(String defaultCommandPrefix) {
-        this.defaultCommandPrefix = defaultCommandPrefix;
-        if (defaultCommandPrefix == null) {
-            defaultCommandPrefix = "";
-        }
+    public void setDefaultCommandPrefix(final String defaultCommandPrefix) {
+        this._defaultCommandPrefix = Strings.nullToEmpty(defaultCommandPrefix);
     }
 
-    public void saveDefaultCommandPrefix(ActionEvent event) {
-        UIBeanHelper.setInfoMessage("Property successfully updated");
-        setDefault();
-        System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
-    }
-
-    private void setDefault() {
-        Properties p = pm.getCommandPrefixes();
-        p.setProperty("default", defaultCommandPrefix);
-        pm.saveProperties(COMMAND_PREFIX, p);
-    }
-
-    private static final Comparator<Map.Entry<Object, Object>> PREFIX_NAME_COMPARATOR = new Comparator<Map.Entry<Object,Object>>() {
-        public int compare(Entry<Object, Object> arg0, Entry<Object, Object> arg1) {
-            Object k0 = arg0 == null ? null : arg0.getKey();
-            Object k1 = arg1 == null ? null : arg1.getKey();
-            String s0 = k0 == null ? "" : k0 instanceof String ? (String) k0 : "";
-            String s1 = k1 == null ? "" : k1 instanceof String ? (String) k1 : "";
-            return s0.compareToIgnoreCase(s1);
-        }
-    };
-    
-    private static final TaskPrefixMappingComparator TASK_PREFIX_MAPPING_COMPARATOR = new TaskPrefixMappingComparator();
-    private static class TaskPrefixMappingComparator implements Comparator<KeyValuePair> {
-        private boolean sortByKey = true;
-        public void setSortByKey(boolean b) {
-            this.sortByKey = b;
-        }
-
-        public int compare(KeyValuePair arg0, KeyValuePair arg1) {
-            String k0 = arg0 == null ? "" : arg0.getKey();
-            String k1 = arg1 == null ? "" : arg1.getKey();
-            String v0 = arg0 == null ? "" : arg0.getValue();
-            String v1 = arg1 == null ? "" : arg1.getValue();
-            
-            //sort by key then by value
-            if (sortByKey) {
-                int c = k0.compareToIgnoreCase(k1);
-                if (c == 0) {
-                    c = v0.compareToIgnoreCase(v1);
-                }
-                return c;
-            }
-            //sort by value then by key
-            else {
-                int c = v0.compareToIgnoreCase(v1);
-                if (c == 0) {
-                    c = k0.compareToIgnoreCase(k1);
-                }
-                return c;
-            }
-        }
-    };
-
-    public List<Map.Entry<Object, Object>> getCommandPrefixes() {
-        //return new ArrayList(pm.getCommandPrefixes().entrySet());
-        Properties cmdPrefixes = pm.getCommandPrefixes();
-        Set<Map.Entry<Object,Object>> entrySet = cmdPrefixes.entrySet();
-        List<Map.Entry<Object,Object>> prefixes = new ArrayList<Map.Entry<Object,Object>>(entrySet);
-        Collections.sort(prefixes,PREFIX_NAME_COMPARATOR);
+    public ImmutableList<KeyValuePair> getCommandPrefixes() {
+        final Properties cmdPrefixes = cfg().getCommandPrefixProperties();
+        final ImmutableList<KeyValuePair> prefixes = KeyValuePair.listFromProperties(cmdPrefixes);
         return prefixes;
     }
 
     public List<SelectItem> getCommandPrefixesAsSelectItems() {
         List<SelectItem> out = new ArrayList<SelectItem>();
-        
-        List<Map.Entry<Object,Object>> cmdPrefixes = getCommandPrefixes();
-        for (Map.Entry<Object,Object> entry : cmdPrefixes) {
-            String key = (String) entry.getKey();
+        List<KeyValuePair> cmdPrefixes = getCommandPrefixes();
+        for (KeyValuePair entry : cmdPrefixes) {
+            String key = entry.getKey();
             out.add(new SelectItem(key, key));
         }
         return out;
@@ -140,18 +128,18 @@ public class CommandPrefixBean {
      * @return
      */
     public List<KeyValuePair> getTaskPrefixMapping() throws WebServiceException {
-        List<KeyValuePair> out = new ArrayList<KeyValuePair>();
-        Properties taskPrefixMapping = pm.getTaskPrefixMapping();
+        final IAdminClient admin=getAdmin();
+        final Properties taskPrefixMapping = cfg().getTaskPrefixMappingProperties();
 
-        // return tastPrefixMapping; by name not LSID as we really keep it
-        for (Object lsidStr : taskPrefixMapping.keySet()) {
-            String name = nameFromLSID((String) lsidStr);
-            out.add(new KeyValuePair(name, (String) lsidStr, taskPrefixMapping.getProperty((String) lsidStr)));
+        // return taskPrefixMapping; by name not LSID as we really keep it
+        final SortedSet<KeyValuePair> s = new TreeSet<KeyValuePair>(KeyValuePair.sortByKeyValueIgnoreCase);
+        
+        for(final String lsidStr : taskPrefixMapping.stringPropertyNames()) {
+            final String name = nameFromLSID(admin, lsidStr);
+            final String value = taskPrefixMapping.getProperty(lsidStr);
+            s.add(new KeyValuePair(name, lsidStr, value));
         }
-        //TODO: allow this to be set from web page, 
-        //TASK_PREFIX_MAPPING_COMPARATOR.setSortByKey(false);
-        Collections.sort(out,TASK_PREFIX_MAPPING_COMPARATOR);
-        return out;
+        return ImmutableList.copyOf( s );
     }
 
     public String getNewPrefixName() {
@@ -171,102 +159,85 @@ public class CommandPrefixBean {
     }
 
     public List<String> getNewMappingLSID() {
-        return newMappingLSID;
+        return selectedForModuleNames;
     }
 
     public void setNewMappingLSID(List<String> newMappingLSID) {
-        this.newMappingLSID = newMappingLSID;
+        this.selectedForModuleNames = newMappingLSID;
     }
 
     public String getNewMappingPrefix() {
-        return newMappingPrefix;
+        return selectedCommandPrefixName;
     }
 
     public void setNewMappingPrefix(String newMappingPrefix) {
-        this.newMappingPrefix = newMappingPrefix;
+        this.selectedCommandPrefixName = newMappingPrefix;
+    }
+    
+    /*
+     * ====================
+     * Actions handlers 
+     * ====================
+     */
+
+    /** handle 'save default' link */
+    public void saveDefaultCommandPrefix(final ActionEvent event) {
+        UIBeanHelper.setInfoMessage("Property successfully updated");
+        cfg().saveDefaultCommandPrefix(this._defaultCommandPrefix);
+        resetCfg();
     }
 
     /**
-     * Save a new set of prefixes for use in mappings
-     *
-     * @param event --
-     *            ignored
+     * handle 'add prefix' link.
+     * 
+     * Save {newPrefixName}={newPrefixValue} into the commandPrefix.properties file.
      */
-    public void saveCommandPrefixes(ActionEvent event) {
-        Properties p = pm.getCommandPrefixes();
-        p.setProperty(newPrefixName, newPrefixValue);
-        pm.saveProperties(COMMAND_PREFIX, p);
+    public void addPrefix(final ActionEvent event) {
+        cfg().addCommandPrefix(newPrefixName, newPrefixValue);
+        resetCfg();
     }
-
-    public void deletePrefix(ActionEvent event) {
-        String prefixToDelete = getKey("aPrefixKey");
-        Properties cp = pm.getCommandPrefixes();
-        cp.remove(prefixToDelete);
-        pm.saveProperties(COMMAND_PREFIX, cp);
-
-        Properties tpm = pm.getTaskPrefixMapping();
-        boolean tpmChanged = false;
-        for (Object oKey : tpm.keySet()) {
-            String key = (String) oKey;
-            String prefixInUse = tpm.getProperty(key);
-            if (prefixInUse.equals(prefixToDelete)) {
-                tpm.remove(key);
-                tpmChanged = true;
-            }
-        }
-        if (tpmChanged)
-            pm.saveProperties(TASK_PREFIX_MAPPING, tpm);
-    }
-
-    private String getKey(String keyName) {
-        Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
-        String key = (String) params.get(keyName);
-        return key;
+    
+    /** 
+     * handle 'delete' prefix link 
+     * 
+     * Remove {aPrefixKey} from the commandPrefix.properties file.
+     * Make sure to clean up taskPrefixMapping.properties file as needed.
+     */
+    public void deletePrefix(final ActionEvent event) {
+        final String prefixToDelete = getKey("aPrefixKey");
+        cfg().deleteCommandPrefix(prefixToDelete);
+        resetCfg();
     }
 
     /**
-     * Save the mappings between a task and a prefix
-     *
-     * @param event --
-     *            ignored
+     * handle 'add mapping' link.
+     * 
+     * Save selection to taskPrefixMapping.properties file, of the form
+     *     baseLsid={selectedCommandPrefixName}
+     * 
+     * The {selectForModuleNames} property is a list of selected module names.
      */
-    public void savePrefixTaskMapping(ActionEvent event) throws MalformedURLException, WebServiceException {
-        final Properties p = pm.getTaskPrefixMapping();
-        for (final String anLsid : newMappingLSID) {
-            final String lsid = lsidFromName(anLsid);
-            p.setProperty(lsid, newMappingPrefix);
+    public void addTaskPrefixMapping(final ActionEvent event) throws MalformedURLException, WebServiceException {
+        final IAdminClient admin = getAdmin();
+        List<String> baseLsids=new ArrayList<String>();
+        for(final String fromName : selectedForModuleNames) {
+            final String lsid = lsidFromName(admin, fromName);
+            baseLsids.add(lsid);
         }
-        pm.saveProperties(TASK_PREFIX_MAPPING, p);
+        cfg().addTaskPrefixMapping(baseLsids, selectedCommandPrefixName);
+        resetCfg();
     }
 
+    /** 
+     * handle 'delete' mapping link. 
+     * 
+     * Delete {aPrefixMapKey} from the taskPrefixMapping.properties file.
+     */
     public void deleteTaskPrefixMapping(ActionEvent event) throws MalformedURLException, WebServiceException {
-        String k = lsidFromName(getKey("aPrefixMapKey"));
-        Properties p = pm.getTaskPrefixMapping();
-
-        p.remove(k);
-        pm.saveProperties(TASK_PREFIX_MAPPING, p);
-
-    }
-
-    protected String nameFromLSID(String lsid) throws WebServiceException {
-
-        TaskInfo task = admin.getTask(lsid);
-        if (task != null)
-            return task.getName();
-        else
-            return lsid;
-
-    }
-
-    protected String lsidFromName(String name) throws MalformedURLException, WebServiceException {
-
-        TaskInfo task = admin.getTask(name);
-        if (task != null) {
-            LSID lsid = new LSID((String) task.getTaskInfoAttributes().get("LSID"));
-            return lsid.toStringNoVersion();
-        } else {
-            return name;
-        }
+        final IAdminClient admin = getAdmin();
+        final String baseLsid = lsidFromName(admin, getKey("aPrefixMapKey"));
+        cfg().deleteTaskPrefixMapping(baseLsid);
+        resetCfg();
     }
 
 }
