@@ -41,7 +41,7 @@ public class ModuleJSON extends JSONObject {
     
     public ModuleJSON(TaskInfo info, String username) {
         try {
-            final List<String> categories=new CategoryUtil().getCategoriesFromManifest(info);
+            final List<String> categories=CategoryUtil.getCategoriesFromManifest(info);
             
             this.setLsid(info.getLsid());
             this.setName(info.getName());
