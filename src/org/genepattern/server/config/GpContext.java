@@ -21,16 +21,7 @@ import org.genepattern.webservice.TaskInfoCache;
 
 public class GpContext {
     private static final Logger log = Logger.getLogger(GpContext.class);
-
-    private String userId = null;
-    private TaskInfo taskInfo = null;
-    private File taskLibDir = null;  // aka installation dir, the directory to which the task was installed
-    private JobInfo jobInfo = null;
-    private Integer jobNumber = null;
-    private JobInput jobInput = null;
-    private boolean isAdmin=false;
-    private JobPermissions jobPermissions=null;
-
+    
     public static GpContext createContextForUser(final String userId) {
         return createContextForUser(userId, false);
     }
@@ -192,27 +183,21 @@ public class GpContext {
         return context;
     }
 
+    private String userId = null;
+    private TaskInfo taskInfo = null;
+    private TaskType taskType = null;
+    private File taskLibDir = null;  // aka installation dir, the directory to which the task was installed
+    private JobInfo jobInfo = null;
+    private Integer jobNumber = null;
+    private JobInput jobInput = null;
+    private boolean isAdmin=false;
+    private JobPermissions jobPermissions=null;
+
     /**
      * @deprecated
      */
     public GpContext() {
     }
-
-//    void setCheckSystemProperties(boolean b) {
-//        this.checkSystemProperties = b;
-//    }
-//
-//    public boolean getCheckSystemProperties() {
-//        return checkSystemProperties;
-//    }
-
-//    void setCheckPropertiesFiles(boolean b) {
-//        this.checkPropertiesFiles = b;
-//    }
-//
-//    public boolean getCheckPropertiesFiles() {
-//        return checkPropertiesFiles;
-//    }
 
     void setUserId(String userId) {
         this.userId = userId;
@@ -223,6 +208,9 @@ public class GpContext {
 
     public void setTaskInfo(TaskInfo taskInfo) {
         this.taskInfo = taskInfo;
+        if (this.taskInfo != null) {
+            this.taskType=TaskType.initTaskType(this.taskInfo);
+        }
     }
     public TaskInfo getTaskInfo() {
         return this.taskInfo;
@@ -294,6 +282,10 @@ public class GpContext {
             return jobInfo.getTaskName();
         }
         return null;
+    }
+    
+    public TaskType getTaskType() {
+        return taskType;
     }
 
     void setJobPermissions(final JobPermissions jobPermissions) {

@@ -98,7 +98,7 @@ public class CustomProperties implements Serializable {
     protected static List<KeyValuePair> initCustomSettings() {
         try {
             final Properties customProps = PropertiesManager_3_2.getCustomProperties();
-            return KeyValuePair.createListFromProperties(customProps);
+            return KeyValuePair.fromProperties(customProps);
         }
         catch (IOException ioe) {
             log.error(ioe);
