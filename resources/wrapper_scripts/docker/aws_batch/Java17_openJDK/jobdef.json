@@ -24,7 +24,7 @@
 
             }
         ],
-        "image": "liefeld/java8_cli",
+        "image": "liefeld/java7_openjdk_cli",
         "memory": 2000,
         "mountPoints": [],
         "ulimits": [],

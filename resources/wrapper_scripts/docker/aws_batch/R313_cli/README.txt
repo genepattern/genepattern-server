@@ -33,5 +33,14 @@ This directory (for now) also includes the full source for the AffySTExpressionF
 Also note it will almost certainly fail running in local docker on a mac since it needs >2GB memory and on OSX (at the time of writing) containers are capped at 2GB
 
 
+Preparing for release
+
+All of the test scripts and jobdef.json files reference the tag of a docker container.  As originally written they all refer to containers under /liefeld on dockerhub (since that where I started testing) but these containers will have to be rebuilt and pushed as official /genepattern containers on Dockerhub and then the AWS batch jobdefinitions will either need to be editted to use the new containers, or new ones submitted (after editting  the jobdef.json files).
+
+Similarly its using a compute environment on batch (TedTest) that we should replace with a production instance of.
+
+Also we'll need to adjust the runOnBatchAndS3.sh files in all the test directories to use the new job definitions and compute environments. 
+
+
 
 

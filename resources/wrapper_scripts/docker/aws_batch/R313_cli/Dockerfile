@@ -5,9 +5,7 @@ COPY runS3OnBatch.sh /usr/local/bin/runS3OnBatch.sh
 RUN mkdir /build
 
 COPY Dockerfile /build/Dockerfile
-COPY runOnBatchAndS3.sh /build/runOnBatchAndS3.sh
-COPY runLocal.sh /build/runLocal.sh
-COPY installPackages.R /build/source/installPackages.R
+COPY ../../../R/installPackages.R /build/source/installPackages.R
 COPY tests/affy/src/r.package.info /build/source/r.package.info
 
 RUN apt-get update && apt-get upgrade --yes && \

@@ -6,14 +6,14 @@
 #
 # current arg is just job #
 #
-TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch
-TASKLIB=$TEST_ROOT/Java18/tests/selectfeaturescolumns/src
-INPUT_FILE_DIRECTORIES=$TEST_ROOT/Java18/tests/selectfeaturescolumns/data
+TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/Java18_openjdk/tests
+TASKLIB=$TEST_ROOT/selectfeaturescolumns/src
+INPUT_FILE_DIRECTORIES=$TEST_ROOT/selectfeaturescolumns/data
 JOB_DEFINITION_NAME="Java18_Generic"
 JOB_ID=gp_job_AffyST_Java18_SFC_$1
 JOB_QUEUE=TedTest
 S3_ROOT=s3://moduleiotest
-WORKING_DIR=$TEST_ROOT/Java18/tests/selectfeaturescolumns/job_12
+WORKING_DIR=$TEST_ROOT/selectfeaturescolumns/job_12
 
 COMMAND_LINE="java -cp $TASKLIB/SelectFeaturesColumns.jar:$TASKLIB/gp-modules.jar org.genepattern.modules.selectfeaturescolumns.SelectFeaturesColumns $INPUT_FILE_DIRECTORIES/all_aml_train.gct $WORKING_DIR/testout.gct -t1-2"
 
