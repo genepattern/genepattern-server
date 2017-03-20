@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -38,6 +39,12 @@ import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * An implementation of a local job runner using the Apache Commons Exec package.
@@ -181,6 +188,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
         try {
             logCommandLine(gpJob);
+            logInputFiles(gpJob);
             initStatus(gpJob);
             final long pending_interval_ms=getPendingInterval();
             if (pending_interval_ms > 0L) {
@@ -446,4 +454,31 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
     }
 
+    protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
+        if (paramInfoMap == null || ! paramInfoMap.containsKey(pname)) {
+            return null;
+        }
+        return paramInfoMap.get(pname).getFormal();
+    }
+    
+    protected void logInputFiles(final DrmJobSubmission gpJob) {
+        if (log.isDebugEnabled()) {
+            final Map<String,ParameterInfoRecord> paramInfoMap = 
+                    ParameterInfoRecord.initParamInfoMap(gpJob.getJobContext().getTaskInfo());
+
+            // walk through all of the input values
+            final JobInput jobInput=gpJob.getJobContext().getJobInput();
+            for(final Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
+                final String pname = entry.getKey().getFqName();
+                final Param param = entry.getValue();
+                final ParameterInfo formalParam = getFormalParam(paramInfoMap, pname);
+                if (formalParam != null && formalParam.isInputFile()) {
+                    int i=0;
+                    for(final ParamValue paramValue : param.getValues()) {
+                        log.debug(""+pname+"["+i+"]: "+paramValue.getValue());
+                    }
+                }
+            }
+        }
+    }
 }

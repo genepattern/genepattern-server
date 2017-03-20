@@ -1,35 +1,60 @@
 #!/usr/bin/env bash
 
+[[ "${_env_hashmap_inited:-}" -eq 1 ]] && return || readonly _env_hashmap_inited=1
+
 #
 # implement associative array as functions for bash 3 compatibility
 #
 
-function _env_hashmap_checkInit() { 
-  # initialize new bash3 compatible hashmap
-  if [ -z "${_env_hashmap_inited+1}" ]; then    
-    declare _env_hashmap_inited="true";
-    declare -a _hashmap_keys=();
-    declare -a _hashmap_vals=();
-    declare -a _runtime_environments=();
-  fi
-}
-
-# allows this script to be sourced more than once, without blowing away pre-existing keys and vals
-_env_hashmap_checkInit;
+declare -a _hashmap_keys=();
+declare -a _hashmap_vals=();
+declare -a _runtime_environments=();
 
 function indexOf() {
     local key="${1}"
     local i=0;
-    for str in "${_hashmap_keys[@]}"; do
-        if [ "$str" = "$key" ]; then
-            echo "${i}"
-            return
-        else
-            ((i++))
-        fi
-    done
+    if [[ ${#_hashmap_keys[@]} -eq 0 ]];
+    then 
+        echo "-1"
+        return
+    else
+        local str;
+        for str in "${_hashmap_keys[@]}"; do
+            if [[ "$str" = "$key" ]]; then
+                echo "${i}"
+                return
+            else
+                ((i++))
+            fi
+        done
+    fi
     echo "-1"
 }
+export -f indexOf;
+readonly -f indexOf;
+
+#function indexOfParameterized() {
+#    local key_table="${1}_keys";
+#    local key="${2}"
+#    local i=0;
+#    #if [[ ${#_hashmap_keys[@]} -eq 0 ]];
+#    if [[ ${#!key_table[@]} -eq 0 ]];
+#        then 
+#        echo "-1"
+#        return
+#    else
+#        local str;
+#        for str in "${!key_table[@]}"; do
+#            if [[ "$str" = "$key" ]]; then
+#                echo "${i}"
+#                return
+#            else
+#                ((i++))
+#            fi
+#        done
+#    fi
+#    echo "-1"
+#}
 
 function putValue() {
     if [ "$#" -eq 2 ]
@@ -45,8 +70,17 @@ function putValue() {
         echo "Usage: putValue <key> [<value>]"
         exit 1
     fi
+    
+    # special-case for empty map
+    if [[ ${#_hashmap_keys[@]} -eq 0 ]];
+    then
+        _hashmap_keys=( "${key}" );
+        _hashmap_vals=( "${val}" );
+        return;
+    fi
+    
     local idx=$(indexOf $key);
-    if [ $idx = "-1" ]; then
+    if [[ "${idx}" = "-1" ]]; then
         _hashmap_keys=( "${_hashmap_keys[@]}" "${key}" )
         _hashmap_vals=( "${_hashmap_vals[@]}" "${val}" )
     else 
@@ -54,6 +88,8 @@ function putValue() {
         _hashmap_vals[$idx]=$val;
     fi
 }
+export -f putValue;
+readonly -f putValue;
 
 function getValue() {
     local key="${1}"
@@ -67,17 +103,51 @@ function getValue() {
         return;
     fi
 }
+export -f getValue;
+readonly -f getValue;
+
+#function getParameterizedValue() {
+#    local map="${1}";
+#    local key="${2}"
+#    local idx=$(indexOf "${key}");
+#    if [ $idx = "-1" ]; then
+#        echo "${key}";
+#        return;
+#    else 
+#        local val="${_hashmap_vals[$idx]}";
+#        echo "${val}";
+#        return;
+#    fi
+#}
+#export -f getValue;
+#readonly -f getValue;
 
 function clearValues() {
     _hashmap_keys=();
     _hashmap_vals=();
     _runtime_environments=();
 }
+export -f clearValues;
+readonly -f clearValues;
 
-function echoValues() {
-    echo "keys=${_hashmap_keys[@]}"
-    echo "_hashmap_vals=${_hashmap_vals[@]}"
-}
+#function _clearValues() {
+#  local _arg="_hashmap";
+#  local keys="${arg}_keys";
+#  local vals="${arg}_vals";
+#  
+#}
+#    local arg="_hashmap";
+#    local keys="${arg}_keys";
+#    local vals="${arg}_vals";
+#
+#    ${!keys}=();
+#    ${!vals}=();
+#    
+#    _hashmap_keys=();
+#    _hashmap_vals=();
+#    _runtime_environments=();
+#}
+
 
 #
 # module runtime environment specific functions
@@ -92,9 +162,44 @@ function addEnv() {
     IFS="$oldIFS"
 
     # step through each value
-    for index in "${!valArr[@]}"
+    local idx;
+    for idx in "${!valArr[@]}"
     do
-        _runtime_environments=( "${_runtime_environments[@]}" "${valArr[index]}" )
+        #_runtime_environments=( "${_runtime_environments[@]}" "${valArr[idx]}" )
+        if [[ ${#_runtime_environments[@]} -eq 0 ]];
+        then
+            _runtime_environments=( "${valArr[idx]}" )
+        else
+            _runtime_environments=( "${_runtime_environments[@]}" "${valArr[idx]}" )
+        fi
     done
 }
+export -f addEnv;
+readonly -f addEnv;
 
+function echoValues() {
+    echo "keys=${_hashmap_keys[@]}"
+    echo "_hashmap_vals=${_hashmap_vals[@]}"
+}
+export -f echoValues;
+readonly -f echoValues;
+
+function echoHashmap() {
+    if [[ ${#_hashmap_keys[@]} -eq 0 ]];
+    then 
+        echo "_hashmap: (no values)"
+        return;
+    else
+        local idx=0;
+        local key;
+        local val;
+        echo "_hashmap ...";
+        for key in "${_hashmap_keys[@]}"; do
+            val="${_hashmap_vals[$idx]}";
+            echo "    $key=$val";
+            ((idx++))
+        done
+    fi
+}
+export -f echoHashmap;
+readonly -f echoHashmap;

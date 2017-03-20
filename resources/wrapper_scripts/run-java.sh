@@ -10,26 +10,13 @@
 # 2) directly call run-with-env.sh
 #    "${script_dir}/run-with-env.sh" -u Java java "${@}" 
 
+function run_java() {
+    local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+    source "${__dir}/gp-common.sh"
+    parseArgs "${@}";
+    addEnv "Java";
+    initModuleEnvs;
+    java "${__gp_module_cmd[@]}"
+}
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-# add this directory to the path
-export PATH="${_gp_script_dir}:${PATH}"
-
-source "${_gp_script_dir}/env-lookup.sh"
-sourceEnvDefault
-# special-case: check for -c <gp_env_custom> 
-if [ "$1" = "-c" ]; then
-    shift;
-    sourceEnvCustom "$1"
-    shift;
-else
-    sourceEnvCustom
-fi
-
-addEnv "Java"
-for module in "${_runtime_environments[@]}"
-do
-  initEnv "${module}"
-done
-
-java "${@}"
+run_java "${@}"

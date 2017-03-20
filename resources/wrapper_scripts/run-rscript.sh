@@ -13,7 +13,7 @@
 #     <args>, Rscript command line args
 #
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+__gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 #################################
 # parse args  (getopts)
@@ -68,17 +68,17 @@ _gp_r_libs_site="${gp_patches}/${gp_env_arch}Library/R/${r_version}"
 #
 # Rscript wrapper command
 #
-RSCRIPT_CMD=( "${_gp_script_dir}/run-with-env.sh" \
+RSCRIPT_CMD=( "${__gp_script_dir}/run-with-env.sh" \
     -c "${env_custom}" \
     -u "R-${r_version}" \
     -e "GP_DEBUG=${gp_debug}" \
     -e "R_LIBS=" \
     -e "R_LIBS_USER=' '" \
     -e "R_LIBS_SITE=${_gp_r_libs_site}" \
-    -e "R_ENVIRON=${_gp_script_dir}/R/Renviron.gp.site" \
-    -e "R_ENVIRON_USER=${_gp_script_dir}/R/${r_version}/Renviron.gp.site" \
-    -e "R_PROFILE=${_gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
-    -e "R_PROFILE_USER=${_gp_script_dir}/R/${r_version}/Rprofile.gp.custom" \
+    -e "R_ENVIRON=${__gp_script_dir}/R/Renviron.gp.site" \
+    -e "R_ENVIRON_USER=${__gp_script_dir}/R/${r_version}/Renviron.gp.site" \
+    -e "R_PROFILE=${__gp_script_dir}/R/${r_version}/Rprofile.gp.site" \
+    -e "R_PROFILE_USER=${__gp_script_dir}/R/${r_version}/Rprofile.gp.custom" \
     "Rscript" );
 
 #
