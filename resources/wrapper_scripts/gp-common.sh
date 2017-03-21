@@ -28,6 +28,8 @@ else
     
     readonly __gp_script_file="${__gp_script_dir}/$(basename "${BASH_SOURCE[0]}")";
     readonly __gp_script_base="$(basename ${__gp_script_file} .sh)";
+    
+    source "${__gp_script_dir}/env-hashmap.sh"
 fi
 
 declare __gp_env_custom_arg="";
@@ -208,9 +210,6 @@ function extractRootName() {
 #}
 #export -f sourceEnvCustom;
 
-source "${__gp_script_dir}/env-hashmap.sh"
-source "${__gp_script_dir}/env-lookup.sh"
-
 function debugEnv() {
     echo               "GP_DEBUG: ${GP_DEBUG}";
     echo          "GP_ENV_CUSTOM: ${GP_ENV_CUSTOM}";
@@ -256,7 +255,7 @@ function parseArgs() {
     # optional -c <__gp_env_custom_arg>
     if [ "${1:-}" = "-c" ]; then
         shift;
-        __gp_env_custom_arg="${1}";
+        __gp_env_custom_arg="${1:-}";
         shift;
     fi
     
@@ -289,7 +288,7 @@ function parseArgs() {
     #
     # optionally clean up options delimiter '--' 
     #
-    if [ "$1" = "--" ]; then
+    if [ "${1:-}" = "--" ]; then
         shift;
     fi
 

@@ -6,11 +6,8 @@
 
 readonly __test_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# called before each test
-setUp() {
-    unset GP_ENV_CUSTOM
-    unset GP_DEBUG
-    
+# called once before running any test
+oneTimeSetUp()  {
     # Exit on error. Append || true if you expect an error.
     set -o errexit
     # Exit on error inside any functions or subshells.
@@ -26,6 +23,12 @@ setUp() {
     set +o errexit
 }
 
+# called before each test
+setUp() {
+    unset GP_ENV_CUSTOM
+    unset GP_DEBUG
+}
+
 # called after each test
 tearDown() {
     clearValues;
@@ -33,6 +36,162 @@ tearDown() {
     unset GP_DEBUG
 }
 
+
+#
+# high level test cases ... 
+#
+# After parseArgs ...
+#
+#     * get the site defaults script
+#     * ... confirm that it was loaded
+#     * get the optional site customization script, confirm that it was loaded
+#     * ... confirm that it was loaded
+#     * get the list of declared environment variables
+#     * ... confirm that they were set
+#     * get the list of declared environment modules
+#
+# After loadEnvironmentModules ...
+#     * ... confirm that the environment modules were loaded
+#     * special-case: set an environment variable in the site-customization script
+#     * special-case: override environment module 
+
+#     * confirm that the environment modules were loaded
+
+#
+# Glossary
+#     'environment variable' - an environment variable is set via the export command,
+#         export NAME=VALUE
+#
+#     'environment module' - an environment module is a named requirement that is loaded in 
+#         a platform specific way.
+#         Also known as a 'dotkit' or a 'package' or a 'software requirement' or a 'library'. 
+#         It is a dendency or requirement that must be present (aka loaded into the environment,
+#         or otherwise provisioned) before running the module command line.
+
+#     2) get the list of environment modules to load
+#
+#     __gp_script_dir/env-default.sh
+#     __gp_env_custom_script
+#
+#     GP_ENV_CUSTOM 
+# 1) verify that the '-c' arg sets the __gp_env_
+#
+
+# test parseArgs(), with no site customization config
+# TODO: testArraySet() { }
+
+## return 0, success if there are environments
+## return 1, failure if there are no environments
+function hasEnvs() {
+    if [[ 0 -eq $(numEnvs) ]]; then 
+        return 1;
+    else 
+        return 0;
+    fi
+}
+
+testEnvHashmapInit() {
+    # initial
+    echoCounts;
+    assertEquals "numKeys initial" "0" \
+        $(numKeys)
+    assertTrue "numKeys -eq 0, initial" \
+        "[ 0 -eq $(numKeys) ]"
+    assertTrue "isEmpty (initial)" \
+        "[ isEmpty ]"
+
+    # putValue (1st)
+    putValue "key_01" "value_01"
+    echoCounts;
+    assertEquals "putValue 1, numKeys" "1" $(numKeys)
+    assertTrue "putValue 1, numKeys -eq 1, 1" "[ 1 -eq $(numKeys) ]"
+
+    # putValue (2nd)
+    putValue "key_02" "value_02"
+    echoCounts;
+    assertEquals "putValue 2, numKeys" "2" $(numKeys)
+    assertTrue "putValue 2, [ 2 -eq \$\(numKeys\) ], 1" "[ 2 -eq $(numKeys) ]"
+
+    #assertFalse "isEmpty, after putValue" "[ isEmpty ]"
+
+    #[[ isEmpty ]] || fail "expecting empty _hashmap";
+    #if isEmpty; then
+    #    fail "Expecting non-empty _hashmap";
+    #fi
+    
+    #assertEquals "numEnvs" "0" "$(numEnvs)"
+    
+    #[[ hasEnvs ]] || fail "expecting empty _runtime_environments";
+    #if hasEnvs ; then
+    #    fail "expecting no _runtime_environments"
+    #fi
+    
+    #addEnv "python/2.5"
+    #assertEquals "numEnvs" "1" "$(numEnvs)"
+
+    # assertEquals "hasEnvs" "0" "$(hasEnvs)"
+
+    #[[ "0" = "$(numEnvs)" ]] || fail "numEnvs"; 
+    #[[ hasEnvs ]] && fail "expecting no _runtime_environments";
+#    [[ isRuntimeEnvironmentsEmpty ]] || fail "expecting empty _runtime_environments";
+#        #source ../gp-common.sh
+
+# ${#_hashmap_keys[@]}
+# ${arr[@]:0}
+# ${_hashmap_keys[@]+"${_hashmap_keys[@]}"}
+
+    #count() {
+    #    echo $# ; 
+    #}
+    #echo count "${_hashmap_keys[@]:0}";
+        
+#    [[ ${#_hashmap_keys[@]} -eq 0 ]] || \
+#        fail "expecting empty _hashmap_keys array";
+#    [[ ${#_hashmap_vals[@]} -eq 0 ]] || \
+#        fail "expecting empty _hashmap_vals array";
+#    [[ ${#_runtime_environments[@]} -eq 0 ]] || \
+#        fail "expecting empty _runtime_environments array";
+
+#    fun() {
+#        echo "Function name:  ${FUNCNAME}"
+#        echo "The number of positional parameter : $#"
+#        echo "All parameters or arguments passed to the function: '$@'"
+#        shift;
+#        echo "shift, then first arg: ${1:-}";
+#        echo
+#        }
+#    
+#    fun
+#    fun ""
+#    fun "1" "2" "3" 
+#    fun '-c' 'env-custom-macos.sh' 
+        
+    #declare -a _my_arr=(1 2 3);
+    #[[ ${#_my_arr[@]} -eq 0 ]] || fail "expecting _my_arr to have no values";
+        
+    #if ! [[ ${#_my_arr[@]} -eq 0 ]]; then 
+    #    fail "expecting _my_arr to have no values";
+    #fi
+
+    #[[ -z ${_my_arr+x} ]] && fail "expecting _my_arr to be set";
+        
+    #[[ -z ${_hashmap_keys+x} ]] && fail "expecting _hashmap_keys to be set";
+}
+
+testSiteDefaultsScript() {
+    parseArgs
+}
+
+testParseArgs_default() {
+    local -a args=("-u" "Java-1.8" "java");
+    parseArgs "${args[@]}";
+    assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
+    assertEquals "__gp_env_custom_script" "" "${__gp_env_custom_script}"
+}
+
+#
+# low level, bash scripting specific test cases
+#
 join() {
     local IFS=$1;
     shift;
@@ -213,6 +372,11 @@ testPutValue_NoKey() {
 }
 
 testPutValueWithSpaces() {
+    echoCounts;
+    assertEquals "numKeys initial" "0" $(numKeys)
+    assertTrue "numKeys -eq 0, initial" "[ 0 -eq $(numKeys) ]"
+    assertTrue "isEmpty (initial)" "[ isEmpty ]"
+    
     putValue "A" "a" 
     putValue "B" "a space" 
     assertEquals "indexOf('B')" "1" $(indexOf 'B')
@@ -293,13 +457,6 @@ testEnvCustomScript_GP_ENV_CUSTOM() {
         "/opt/gp/my-custom.sh" "$(envCustomScript)"
 }
 
-# test parseArgs(), with no site customization config
-testParseArgs_default() {
-    local -a args=("-u" "Java-1.8" "java");
-    parseArgs "${args[@]}";
-    assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
-    assertEquals "__gp_env_custom_script" "" "${__gp_env_custom_script}"
-}
 
 # test parseArgs(), with '-c' <env-custom> arg
 testParseArgs_env_custom_arg() {
@@ -689,4 +846,4 @@ testEnvCustomMacOs() {
     export PATH=${PATH_ORIG} 
 }
 
-. ${SHUNIT2_HOME}/src/shunit2
+ source ${SHUNIT2_HOME}/src/shunit2

@@ -34,7 +34,7 @@ for example a local GP server running MacOS X, an HPC server with DotKit (http:/
 an HPC server with the Environment Modules (http://modules.sourceforge.net/). 
 
 You should not edit the 'run-with-env.sh', 'run-rscript.sh' (or any other run-*.sh) shell scripts.
-You also should not edit the 'env-default.sh', 'env-hashmap.sh', or 'env-lookup.sh' shell scripts.
+You also should not edit the 'gp-common.sh', 'env-default.sh', or 'env-hashmap.sh' shell scripts.
 It is possible that future updates to the GP server will replace these static scripts with newer versions.
 
 
