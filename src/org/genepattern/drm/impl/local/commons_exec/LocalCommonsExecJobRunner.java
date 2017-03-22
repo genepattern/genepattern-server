@@ -58,7 +58,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
 
     private String defaultLogFile=null;
     
-    private long getPendingInterval() {
+    protected long getPendingInterval() {
         return 0L;
         // for debugging, keep jobs in the pending state for a little while
         //return 5L+ (Long) Math.round((60.0*1000.0*Math.random()));
@@ -90,22 +90,22 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     }
 
     private ConcurrentMap<Integer,DrmJobStatus> statusMap=new ConcurrentHashMap<Integer, DrmJobStatus>();
-    private ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
+    protected ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
     
     private ExecutorService pendingExec=null;
-    private ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
+    protected ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
     
     // more accurate reporting a user-cancelled tasks
     private Set<Integer> cancelledJobs = new HashSet<Integer>();
     
-    private void initStatus(DrmJobSubmission gpJob) {
+    protected void initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
             .submitTime(new Date())
         .build();
         statusMap.put(gpJob.getGpJobNo(), status);
     }
     
-    private void updateStatus_startJob(DrmJobSubmission gpJob) {
+    protected void updateStatus_startJob(DrmJobSubmission gpJob) {
         DrmJobStatus updated = new DrmJobStatus.Builder(statusMap.get(gpJob.getGpJobNo()))
             .startTime(new Date())
             .jobState(DrmJobState.RUNNING)
@@ -113,7 +113,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         statusMap.put(gpJob.getGpJobNo(), updated);
     }
     
-    private void updateStatus_complete(int gpJobNo, int exitCode, ExecuteException exception) {
+    protected void updateStatus_complete(int gpJobNo, int exitCode, ExecuteException exception) {
         DrmJobStatus status = statusMap.get(gpJobNo);
         DrmJobStatus.Builder b;
         if (status == null) {
@@ -138,7 +138,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         statusMap.put(gpJobNo, b.build());
     }
     
-    private DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
+    protected DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
         cancelledJobs.add(gpJobNo);
         log.debug("updateStatus_cancel, gpJobNo="+gpJobNo+", isPending="+isPending);
         DrmJobStatus status = statusMap.get(gpJobNo);
@@ -199,7 +199,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return ""+gpJob.getGpJobNo();
     }
     
-    private Future<?> sleepThenStart(final long pending_interval_ms, final DrmJobSubmission gpJob) {
+    protected Future<?> sleepThenStart(final long pending_interval_ms, final DrmJobSubmission gpJob) {
         if (pendingExec==null) {
             pendingExec=Executors.newSingleThreadExecutor();
         }
@@ -342,7 +342,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return exec;
     }
 
-    private Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+    protected Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
@@ -367,7 +367,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
      * 
      * @author pcarr
      */
-    private void logCommandLine(final DrmJobSubmission job) {
+    protected void logCommandLine(final DrmJobSubmission job) {
         final File jobLogFile=job.getLogFile(); 
         final File commandLogFile;
         if (jobLogFile==null && defaultLogFile==null) {
@@ -387,11 +387,11 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         logCommandLine(commandLogFile, job);
     }
     
-    private void logCommandLine(final File logFile, final DrmJobSubmission job) { 
+    protected void logCommandLine(final File logFile, final DrmJobSubmission job) { 
         logCommandLine(logFile, job.getCommandLine());
     }
 
-    private void logCommandLine(final File logFile, final List<String> args) { 
+    protected void logCommandLine(final File logFile, final List<String> args) { 
         log.debug("saving command line to log file ...");
         String commandLineStr = "";
         boolean first = true;

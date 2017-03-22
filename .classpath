@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="website/WEB-INF/src"/>
+	<classpathentry kind="src" path="gp-awsbatch-queue/src"/>
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>

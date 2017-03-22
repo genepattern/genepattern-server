@@ -466,7 +466,7 @@ public class StartupServlet extends HttpServlet {
  
     protected void announceReady() {
         AboutBean about = new AboutBean();
-        String message = "GenePattern server version " + about.getFull() + 
+        String message = "Ted's GenePattern server version " + about.getFull() + 
             " build " + about.getBuildTag() + 
             " built " + about.getDate() + " is ready.";
 
