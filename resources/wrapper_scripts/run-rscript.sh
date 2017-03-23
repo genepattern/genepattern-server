@@ -22,9 +22,25 @@ gp_mkdirs="TRUE";
 gp_debug="FALSE";
 DRY_RUN="";
 gp_env_arch="";
+
+# optional '-c <env-custom>' flag
+if [[ "${1:-}" = "-c" ]]; then
+    shift; 
+    # only set if '-c' has an argument
+    if ! [[ -z "${1+x}" || $1 = -* ]]; then
+        env_custom="${1:-}";
+        echo "found match for env_custom=${env_custom}";
+        shift;
+    else
+        echo "no match for env_custom, skipping";
+    fi
+fi
+
 while getopts c:v:l:a:p:d:m:n opt "$@"; do
     case $opt in
-        c)  env_custom="$OPTARG"
+        c)  
+            #env_custom="$OPTARG"
+            echo "ignoring '-c' arg"
             ;;
         v) r_version="$OPTARG"
             ;;
@@ -66,8 +82,15 @@ _gp_r_libs_site="${gp_patches}/${gp_env_arch}Library/R/${r_version}"
 #
 # Rscript wrapper command
 #
+declare -a c_opts=( "-c" "${env_custom}" );
+if [[ -z "${env_custom:-}" ]]; then
+    c_opts=();
+else
+    c_opts=('-c' "${env_custom}");
+fi
+
 RSCRIPT_CMD=( "${__gp_script_dir}/run-with-env.sh" \
-    -c "${env_custom}" \
+    "${c_opts[@]}" \
     -u "R-${r_version}" \
     -e "GP_DEBUG=${gp_debug}" \
     -e "R_LIBS=" \
