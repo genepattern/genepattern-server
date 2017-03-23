@@ -18,11 +18,14 @@ function run_rjava() {
     local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
     source "${__dir}/gp-common.sh"
     
-    # optional -c <__gp_env_custom_arg>
-    if [ "${1:-}" = "-c" ]; then
-        shift;
-        __gp_env_custom_arg="${1}";
-        shift;
+    # optional '-c <env-custom>' flag
+    if [[ "${1:-}" = "-c" ]]; then
+        shift; 
+        # only set if '-c' has an argument
+        if ! [[ -z "${1+x}" || $1 = -* ]]; then
+            __gp_env_custom_arg="${1:-}";
+            shift;
+        fi
     fi
     
     local r_version="${1}"
@@ -33,15 +36,12 @@ function run_rjava() {
     __gp_module_cmd=( "$@" );
 
     # process '-e' flags immediately
-    setEnvironmentVariables;
+    exportEnvs;
 
     # process '-c' flag next
-    __gp_env_custom_script=$(envCustomScript "${__gp_env_custom_arg}");
-    if [[ ! -f "${__gp_env_custom_script}" ]]; then
-        # it's not a regular file
-        __gp_env_custom_script="";
-    fi
-    sourceSiteCustomizationScripts;
+    sourceEnvScripts;
+    
+    # process '-u' flags after site-customization
     addModuleEnvs;
 
     # <---- end
