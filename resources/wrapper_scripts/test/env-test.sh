@@ -4,10 +4,16 @@
 # shunit2 test cases for wrapper script code
 #
 
-readonly __test_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 # called once before running any test
 oneTimeSetUp()  {
+    readonly __test_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    readonly __parent_dir="$(cd "${__test_script_dir}/.."  && pwd)"
+    readonly __gp_common_script="${__parent_dir}/gp-common.sh";
+    
+    # just for illustration, not presently used
+    readonly __gp_script_file="${GP_SCRIPT_DIR}/$(basename "${BASH_SOURCE[0]}")";
+    readonly __gp_script_base="$(basename ${__gp_script_file} .sh)";
+
     # Exit on error. Append || true if you expect an error.
     set -o errexit
     # Exit on error inside any functions or subshells.
@@ -19,7 +25,12 @@ oneTimeSetUp()  {
     # Turn on traces, useful while debugging but commented out by default
     #set -o xtrace
 
-    source ../gp-common.sh
+    # source 'gp-common.sh'
+    if [ -f "${__gp_common_script}" ]; then
+        source "${__gp_common_script}";
+    else
+        fail "gp-common-script not found: ${__gp_common_script}";
+    fi
     set +o errexit
 }
 
@@ -36,12 +47,12 @@ tearDown() {
     unset GP_DEBUG
 }
 
-
 #
-# high level test cases ... 
+# All tests are run after 'source gp-common.sh'
+#
+# items to test ... 
 #
 # After parseArgs ...
-#
 #     * get the site defaults script
 #     * ... confirm that it was loaded
 #     * get the optional site customization script, confirm that it was loaded
@@ -54,9 +65,9 @@ tearDown() {
 #     * ... confirm that the environment modules were loaded
 #     * special-case: set an environment variable in the site-customization script
 #     * special-case: override environment module 
-
+#
 #     * confirm that the environment modules were loaded
-
+#
 #
 # Glossary
 #     'environment variable' - an environment variable is set via the export command,
@@ -67,115 +78,77 @@ tearDown() {
 #         Also known as a 'dotkit' or a 'package' or a 'software requirement' or a 'library'. 
 #         It is a dendency or requirement that must be present (aka loaded into the environment,
 #         or otherwise provisioned) before running the module command line.
-
-#     2) get the list of environment modules to load
-#
-#     __gp_script_dir/env-default.sh
-#     __gp_env_custom_script
-#
-#     GP_ENV_CUSTOM 
-# 1) verify that the '-c' arg sets the __gp_env_
 #
 
-# test parseArgs(), with no site customization config
-# TODO: testArraySet() { }
+# test GP_SCRIPT_DIR 
+test_gp_script_dir() {
+  assertEquals "GP_SCRIPT_DIR" "${__parent_dir}" \
+    "${GP_SCRIPT_DIR:-}";
 
-## return 0, success if there are environments
-## return 1, failure if there are no environments
-function hasEnvs() {
-    if [[ 0 -eq $(numEnvs) ]]; then 
-        return 1;
-    else 
-        return 0;
-    fi
+  # the remaining tests are for debugging,
+  #     they may not be essential for production 
+  assertEquals "gp::script_dir" "${__parent_dir}" \
+    "$(gp::script_dir)";
+  assertEquals "gp::source_dir (no args)" "${__test_script_dir}" \
+    "$(gp::source_dir)";
+  assertEquals "gp::source_dir (relative arg)" "${__test_script_dir}" \
+    "$(gp::source_dir 'env-test.sh')";
+  assertEquals "gp::source_dir (fq arg)" "${__parent_dir}" \
+    "$(gp::source_dir "${__gp_common_script}")";
+
+  # special-case: Mac OS X error
+  #     'readlink: illegal option -- f'
+  # skip the test, keeping it for future reference
+  startSkipping
+  if ! isSkipping; then
+    assertEquals "default (no args), with readlink"  \
+      "${__test_script_dir}" \
+      "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")";
+  fi
+  endSkipping;
 }
 
-testEnvHashmapInit() {
-    # initial
-    echoCounts;
-    assertEquals "numKeys initial" "0" \
-        $(numKeys)
-    assertTrue "numKeys -eq 0, initial" \
-        "[ 0 -eq $(numKeys) ]"
-    assertTrue "isEmpty (initial)" \
-        "[ isEmpty ]"
+testParseArgs_c_arg_not_set() {
+    parseArgs '-c' '-u' 'Java-1.8' 'java' '--version';
 
-    # putValue (1st)
-    putValue "key_01" "value_01"
-    echoCounts;
-    assertEquals "putValue 1, numKeys" "1" $(numKeys)
-    assertTrue "putValue 1, numKeys -eq 1, 1" "[ 1 -eq $(numKeys) ]"
+    assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
+    assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
+        "${__gp_env_custom_script}"
+    assertEquals "__gp_module_cmd" \
+        "java --version" \
+        "${__gp_module_cmd[*]:0}";
+}
 
-    # putValue (2nd)
-    putValue "key_02" "value_02"
-    echoCounts;
-    assertEquals "putValue 2, numKeys" "2" $(numKeys)
-    assertTrue "putValue 2, [ 2 -eq \$\(numKeys\) ], 1" "[ 2 -eq $(numKeys) ]"
+testParseArgs_c_arg_at_end() {
+    parseArgs "-c";
 
-    #assertFalse "isEmpty, after putValue" "[ isEmpty ]"
+    assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
+    assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
+        "${__gp_env_custom_script}"
+    assertEquals "__gp_module_cmd" \
+        "" \
+        "${__gp_module_cmd[*]:0}"
+}
 
-    #[[ isEmpty ]] || fail "expecting empty _hashmap";
-    #if isEmpty; then
-    #    fail "Expecting non-empty _hashmap";
-    #fi
-    
-    #assertEquals "numEnvs" "0" "$(numEnvs)"
-    
-    #[[ hasEnvs ]] || fail "expecting empty _runtime_environments";
-    #if hasEnvs ; then
-    #    fail "expecting no _runtime_environments"
-    #fi
-    
-    #addEnv "python/2.5"
-    #assertEquals "numEnvs" "1" "$(numEnvs)"
+testParseArgs_default_full_test() {
+    local -a args=('-u' 'Java-1.8' 'java' '--version');
+    parseArgs "${args[@]}";
 
-    # assertEquals "hasEnvs" "0" "$(hasEnvs)"
+    # debugEnv
+    assertEquals "env_default" "${GP_SCRIPT_DIR}/env-default.sh" \
+        "${__gp_env_default_script}"
+    assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
+    assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
+        "${__gp_env_custom_script}"
 
-    #[[ "0" = "$(numEnvs)" ]] || fail "numEnvs"; 
-    #[[ hasEnvs ]] && fail "expecting no _runtime_environments";
-#    [[ isRuntimeEnvironmentsEmpty ]] || fail "expecting empty _runtime_environments";
-#        #source ../gp-common.sh
-
-# ${#_hashmap_keys[@]}
-# ${arr[@]:0}
-# ${_hashmap_keys[@]+"${_hashmap_keys[@]}"}
-
-    #count() {
-    #    echo $# ; 
-    #}
-    #echo count "${_hashmap_keys[@]:0}";
-        
-#    [[ ${#_hashmap_keys[@]} -eq 0 ]] || \
-#        fail "expecting empty _hashmap_keys array";
-#    [[ ${#_hashmap_vals[@]} -eq 0 ]] || \
-#        fail "expecting empty _hashmap_vals array";
-#    [[ ${#_runtime_environments[@]} -eq 0 ]] || \
-#        fail "expecting empty _runtime_environments array";
-
-#    fun() {
-#        echo "Function name:  ${FUNCNAME}"
-#        echo "The number of positional parameter : $#"
-#        echo "All parameters or arguments passed to the function: '$@'"
-#        shift;
-#        echo "shift, then first arg: ${1:-}";
-#        echo
-#        }
-#    
-#    fun
-#    fun ""
-#    fun "1" "2" "3" 
-#    fun '-c' 'env-custom-macos.sh' 
-        
-    #declare -a _my_arr=(1 2 3);
-    #[[ ${#_my_arr[@]} -eq 0 ]] || fail "expecting _my_arr to have no values";
-        
-    #if ! [[ ${#_my_arr[@]} -eq 0 ]]; then 
-    #    fail "expecting _my_arr to have no values";
-    #fi
-
-    #[[ -z ${_my_arr+x} ]] && fail "expecting _my_arr to be set";
-        
-    #[[ -z ${_hashmap_keys+x} ]] && fail "expecting _hashmap_keys to be set";
+    # check requested environment variables
+    assertEquals "num '-e' args" "0" "${#__gp_e_args[@]}"
+    # check requested modules
+    assertEquals "num '-u' args" "1" "${#__gp_u_args[@]}"
+    # check command line
+    assertEquals "__gp_module_cmd" \
+        'java --version' \
+        "${__gp_module_cmd[*]}"
 }
 
 testSiteDefaultsScript() {
@@ -185,31 +158,15 @@ testSiteDefaultsScript() {
 testParseArgs_default() {
     local -a args=("-u" "Java-1.8" "java");
     parseArgs "${args[@]}";
-    assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
-    assertEquals "__gp_env_custom_script" "" "${__gp_env_custom_script}"
-}
-
-#
-# low level, bash scripting specific test cases
-#
-join() {
-    local IFS=$1;
-    shift;
-    echo "$*";
-}
-
-function testJoinArray() {
-    declare -a myArray=('arg1' 'arg2');
-    assertEquals "join, no delim" "arg1 arg2" "$(join ' ' ${myArray[@]})"
-    assertEquals "join, custom delim" "arg1,arg2" "$(join ',' ${myArray[@]})"
+    #assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
+    #assertEquals "__gp_env_custom_script" "" "${__gp_env_custom_script}"
 }
 
 #
 # for debugging initialization of dir, file, and base variables
 # no tests run
-function testDirname() { 
+function echoDirname() { 
     echo "GP_SCRIPT_DIR=${GP_SCRIPT_DIR}";
-    echo "__gp_script_dir=${__gp_script_dir}";
     echo "__gp_script_file=${__gp_script_file}";
     echo "__gp_script_base=${__gp_script_base}";
     echo "__test_script_dir=${__test_script_dir}";
@@ -348,15 +305,133 @@ testPrependPath_toEmpty() {
 # basic stress-testing of the env-hashmap.sh script
 #
 #
+
+#function __count_args() { echo "${#@}"; }
+function __count_args() { echo $#; }
+
+_my_size_of() {
+    #local my_var="${1}[@]";
+    #echo "$(__size_of $(echo "${!my_var}"))";
+    local array_name="${1}";
+    #echo "array_name: ${array_name}";
+    local my_var="${array_name}[@]";
+    #echo "my_var: ${my_var}";
+    #__size_of $(echo "${!my_var:0}");
+    #echo "$(__size_of $(echo "${!my_var:0}"))";
+    #__count_args "${!my_var:0}";
+    __size_of "${!my_var:0}";
+}
+
+#
+# get the number of elements in an array
+#
+# this makes an 'indirect reference' to the 
+# named array
+#
+# Usage:
+#     declare -a my_arr=();
+#     echo "$( numValues my_arr )";
+#
+#function numValues() { 
+#    array="${1}[@]";
+#    echo $(__size_of "${!array:0}");
+#}
+
+#numValues() {
+#    local array_name="${1}";
+#    local my_var="${array_name}[@]";
+#    echo "$(__size_of $(echo "${!my_var}"))";
+#}
+
+numValues() {
+    #local array_name="${1}";
+    local my_var="${1}[@]";
+    #__size_of "${!my_var:0}";
+    
+    echo $(__size_of "${!my_var:0}");
+}
+
+debugNumValues() {
+    echo "__size_of keys: $(__size_of "${_hashmap_keys[@]:0}")";
+    echo "__size_of envs: $(__size_of "${__gp_module_envs[@]:0}")";
+    
+    local my_var="_hashmap_keys[@]";
+    echo "__my_var: ${my_var}";
+    echo "!__my_var: ${!my_var:0}";
+    #echo "#!__my_var: ${#!my_var:0}";
+    numValues _hashmap_keys
+    
+    local -a my_copy=("${!my_var:0}"); 
+    echo "#my_copy: ${#my_copy[@]}";
+    #arrayClone=("${oldArray[@]}")
+}
+
+
+testNumValues() {
+    assertEquals "__count_args" "0" "$(__count_args)"
+    assertEquals "__count_args" "4" "$(__count_args this is a test)"
+    declare -a my_arr=("this" "is" "a" "test");
+    assertEquals "__count_args my_arr" "4" "$(__count_args "${my_arr[@]}")"
+    my_arr=("this is" "a" "test");
+    assertEquals "__count_args with spaces" "3" "$(__count_args "${my_arr[@]}")"
+    
+    unset my_arr;
+    assertEquals "numValues <unset>" "0" "$(_my_size_of my_arr)";
+    
+    my_arr=();
+    assertEquals "numValues <empty>" "0" "$(_my_size_of my_arr)";
+    
+    my_arr=( 1 );
+    assertEquals "numValues (1 item)" "1" "$(_my_size_of my_arr)";
+
+    
+    my_arr=( "one element" );
+    assertEquals "numValues with spaces" "1" "$(_my_size_of my_arr)";
+        
+    #declare -a my_arr=(1 2 3);
+    #echo "numValues my_arr: $(numValues my_arr)";    
+}
+
+testEnvHashmapInit() {
+    # initial
+    assertEquals "numKeys initial" \
+        "0" $(numKeys)
+    assertEquals "numEnvs initial" \
+        "0" $(numEnvs)
+    assertTrue   "numKeys -eq 0 initial" \
+        "[ 0 -eq $(numKeys) ]"
+    assertTrue   "[ numEnvs -eq 0 ] initial" \
+        "[ 0 -eq $(numEnvs) ]"
+    assertTrue   "isEmpty initial" \
+        "[ isEmpty ]"
+    assertTrue   "isEmptyEnv initial" \
+        "[ isEmptyEnv ]"
+
+    # putValue (1st)
+    putValue "key_01" "value_01"
+    assertEquals "numKeys, 1st" \
+        "1" $(numKeys)
+    assertTrue   "[ 1 -eq numKeys ], 1st" \
+        "[ 1 -eq $(numKeys) ]"
+
+    # putValue (2nd)
+    putValue "key_02" "value_02"
+    assertEquals "numKeys, 2nd" \
+        "2" "$(numKeys)"
+    assertTrue   "[ 2 -eq numKeys ], 2nd" \
+        "[ 2 -eq $(numKeys) ]"
+            
+}
+
 testEnvHashMap() {
     putValue "A" "a"
     putValue "B" "b"
     putValue "C" "c"
     
-    assertTrue "hasIndex('A')"  "[ $(indexOf 'A') -gt -1 ]"
-    assertTrue "hasIndex('B')"  "[ $(indexOf 'B') -gt -1 ]"
-    assertTrue "hasIndex('C')"  "[ $(indexOf 'C') -gt -1 ]"
-    assertTrue "not hasIndex('D')"  "! [ $(indexOf 'D') -gt -1 ]"
+    assertTrue "hasIndex('A')"  "[ $(__indexOf 'A') -gt -1 ]"
+    assertTrue "hasIndex('B')"  "[ $(__indexOf 'B') -gt -1 ]"
+    assertTrue "hasIndex('C')"  "[ $(__indexOf 'C') -gt -1 ]"
+    assertTrue "not hasIndex('D')"  "! [ $(__indexOf 'D') -gt -1 ]"
     assertEquals "getValue('A')" "a" $(getValue 'A')
     assertEquals "getValue('B')" "b" $(getValue 'B')
     assertEquals "getValue('C')" "c" $(getValue 'C')
@@ -364,6 +439,11 @@ testEnvHashMap() {
     # sourcing env-hashmap.sh a second time should not clear the hash map 
     source ../env-hashmap.sh
     assertEquals "after source env-hashmap.sh a 2nd time, getValue('C')" "c" $(getValue 'C')
+
+    # clearValues does reset the map
+    clearValues
+    assertTrue "after clearValues, not hasIndex('C')"  "! [ $(__indexOf 'C') -gt -1 ]"
+    assertEquals "after clearValues, getValue('C')" "C" $(getValue 'C')
 }
 
 testPutValue_NoKey() {
@@ -372,34 +452,33 @@ testPutValue_NoKey() {
 }
 
 testPutValueWithSpaces() {
-    echoCounts;
     assertEquals "numKeys initial" "0" $(numKeys)
     assertTrue "numKeys -eq 0, initial" "[ 0 -eq $(numKeys) ]"
     assertTrue "isEmpty (initial)" "[ isEmpty ]"
     
     putValue "A" "a" 
     putValue "B" "a space" 
-    assertEquals "indexOf('B')" "1" $(indexOf 'B')
+    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
     assertEquals "getValue('B')" "a space" "$(getValue 'B')"
 }
 
 testPutValueWithDelims() {
     putValue "A" "a" 
     putValue "B" "val1, val2" 
-    assertEquals "indexOf('B')" "1" $(indexOf 'B')
+    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
     assertEquals "getValue('B')" "val1, val2" "$(getValue 'B')"
 }
 
 testPutKeyWithSpaces() {
     putValue "A" "a"
     putValue "B KEY" "b"
-    assertEquals "indexOf('B KEY')" "1" $(indexOf 'B KEY')
+    assertEquals "__indexOf('B KEY')" "1" $(__indexOf 'B KEY')
     assertEquals "getValue('B KEY')" "b" "$(getValue 'B KEY')"
 }
 
 testGetValueWithDelims() {
     putValue "R-2.15" "R-2.15, GCC-4.9" 
-    assertEquals "indexOf('R-2.15')" "0" $(indexOf 'R-2.15')
+    assertEquals "__indexOf('R-2.15')" "0" $(__indexOf 'R-2.15')
     assertEquals "getValue('R-2.15')" "R-2.15, GCC-4.9" "$(getValue 'R-2.15')"
 
     # split into values
@@ -407,63 +486,65 @@ testGetValueWithDelims() {
     IFS=', ' read -a valueArray <<< "$value"
     assertEquals "valueArray[0]" "R-2.15" "${valueArray[0]}"
     assertEquals "valueArray[1]" "GCC-4.9" "${valueArray[1]}"
-    
-    # example code, step through each value
-    #for index in "${!valueArray[@]}"
-    #do
-    #  echo "$index ${valueArray[index]}"
-    #done
 }
 
 #
 # basic testing of convertPath() utility function
 #
 testConvertPath() {
-    assertEquals "no arg" "$(scriptDir)/" $(convertPath)
-    assertEquals "relative path" "$(scriptDir)/env-custom.sh" $(convertPath 'env-custom.sh')
-    assertEquals "full path to dir" "/opt/genepattern" $(convertPath '/opt/genepattern')
-    assertEquals "full path to dir, trailing slash" "/opt/genepattern/" $(convertPath '/opt/genepattern/')
-    assertEquals "full path to file" "/opt/genepattern/test.sh" $(convertPath '/opt/genepattern/test.sh') 
+    assertEquals "no arg" "${GP_SCRIPT_DIR}/" \
+        $(convertPath)
+    assertEquals "relative path" "${GP_SCRIPT_DIR}/env-custom.sh" \
+        $(convertPath 'env-custom.sh')
+    assertEquals "fq path to dir" "/opt/genepattern" \
+        $(convertPath '/opt/genepattern')
+    assertEquals "fq path to dir, trailing slash" "/opt/genepattern/" \
+        $(convertPath '/opt/genepattern/')
+    assertEquals "fq path to file" "/opt/genepattern/test.sh" \
+        $(convertPath '/opt/genepattern/test.sh') 
 }
 
-#
-# test envCustomScript() utility function, 
-#      when passed an 'env-custom' arg
-#
+
+
+# test setEnvCustomScript() utility function
 testEnvCustomScript() {
-    assertEquals "envCustomScript <no arg>" \
-        "${__gp_script_dir}/env-custom.sh" "$(envCustomScript)"
-    assertEquals "envCustomScript <empty string>" \
-        "${__gp_script_dir}/env-custom.sh" "$(envCustomScript '')"
-    assertEquals "envCustomScript <relative path>" \
-        "${__gp_script_dir}/my-custom.sh" "$(envCustomScript 'my-custom.sh')"
-    assertEquals "envCustomScript <fq path>" \
-        "/opt/gp/my-custom.sh" "$(envCustomScript '/opt/gp/my-custom.sh')"
-}
+    function envCustomScript() {
+        setEnvCustomScript "${1-}";
+        echo "${__gp_env_custom_script}";
+    }
 
-#
-# test envCustomScript() utility function
-#     when GP_ENV_CUSTOM environment variable is set
-#
-testEnvCustomScript_GP_ENV_CUSTOM() {
-    export GP_ENV_CUSTOM="";
-    assertEquals "GP_ENV_CUSTOM='' <empty string>" \
-        "${__gp_script_dir}/env-custom.sh" "$(envCustomScript)"
-    export GP_ENV_CUSTOM="my-custom.sh";
-    assertEquals "GP_ENV_CUSTOM <relative path>" \
-        "${__gp_script_dir}/my-custom.sh" "$(envCustomScript)"
-    export GP_ENV_CUSTOM="/opt/gp/my-custom.sh";
-    assertEquals "envCustomScript <fq path>" \
-        "/opt/gp/my-custom.sh" "$(envCustomScript)"
-}
+    local readonly _fq_path="/opt/gp/my custom with spaces.sh";
+    unset GP_ENV_CUSTOM;
+    assertEquals "default" \
+        "${__parent_dir}/env-custom.sh" \
+        "$(envCustomScript)"
+    assertEquals "empty string" \
+        "${__parent_dir}/env-custom.sh" \
+        "$(envCustomScript '')"
+        assertEquals "custom -c arg, relative" \
+        "${__parent_dir}/env-custom-macos.sh" \
+        "$(envCustomScript 'env-custom-macos.sh')"
+    assertEquals "custom -c arg, fully qualified" \
+        "${_fq_path}" \
+        "$(envCustomScript "${_fq_path}")"
 
+    GP_ENV_CUSTOM="env-custom-macos.sh";
+    assertEquals "export GP_ENV_CUSTOM, relative" \
+        "${__parent_dir}/env-custom-macos.sh" \
+        "$(envCustomScript)";
+    GP_ENV_CUSTOM="${_fq_path}";
+    assertEquals "export GP_ENV_CUSTOM, relative" \
+        "${_fq_path}" \
+        "$(envCustomScript)";
+        unset GP_ENV_CUSTOM;
+}
 
 # test parseArgs(), with '-c' <env-custom> arg
 testParseArgs_env_custom_arg() {
   args=('-c' 'env-custom-macos.sh' '-u' 'Java-1.8' 'java');
   parseArgs "${args[@]}";
   assertEquals "__gp_env_custom_arg" "env-custom-macos.sh" "${__gp_env_custom_arg}"
-  assertEquals "__gp_env_custom_script" "${__gp_script_dir}/env-custom-macos.sh" "${__gp_env_custom_script}"
+  assertEquals "__gp_env_custom_script" "${GP_SCRIPT_DIR}/env-custom-macos.sh" "${__gp_env_custom_script}"
 }
 
 # test parseArgs, with '-e' GP_ENV_CUSTOM=<env-custom> arg
@@ -471,7 +552,7 @@ testParseArgs_environment_arg() {
   args=('-e' 'GP_ENV_CUSTOM=env-custom-macos.sh' '-u' 'Java-1.8' 'java');
   parseArgs "${args[@]}";
   assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
-  assertEquals "__gp_env_custom_script" "${__gp_script_dir}/env-custom-macos.sh" "${__gp_env_custom_script}"
+  assertEquals "__gp_env_custom_script" "${GP_SCRIPT_DIR}/env-custom-macos.sh" "${__gp_env_custom_script}"
 }
 
 # test parseArgs, with export GP_ENV_CUSTOM=<env-custom>
@@ -480,7 +561,7 @@ testParseArgs_environment_var() {
   args=('-u' 'Java-1.8' 'java');
   parseArgs "${args[@]}";
   assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
-  assertEquals "__gp_env_custom_script" "${__gp_script_dir}/env-custom-macos.sh" "${__gp_env_custom_script}"
+  assertEquals "__gp_env_custom_script" "${GP_SCRIPT_DIR}/env-custom-macos.sh" "${__gp_env_custom_script}"
 }
 
 testInitCustomValuesFromEnv() {
@@ -497,15 +578,15 @@ testInitCustomValuesFromEnv() {
 # 1) when the key is not in the map, return the key
 testGetValue_NoEntry() {
     local key="Java-1.7";
-    assertEquals "indexOf($key)" "-1" $(indexOf $key)
+    assertEquals "__indexOf($key)" "-1" $(__indexOf $key)
     assertEquals "getValue($key)" "$key" $(getValue $key)
 }
 
 # 2) when the key is one of the canonical keys and there is no customization, return the default value
 testGetValue_CanonicalEntry() {
-    assertTrue "indexOf('Java-1.7') before sourceEnvDefault" "[ "-1" -eq "$(indexOf 'Java-1.7')" ]"
+    assertTrue "__indexOf('Java-1.7') before sourceEnvDefault" "[ "-1" -eq "$(__indexOf 'Java-1.7')" ]"
     source ../env-default.sh
-    assertTrue "indexOf('Java-1.7')" "[ "-1" -ne "$(indexOf 'Java-1.7')" ]"
+    assertTrue "__indexOf('Java-1.7')" "[ "-1" -ne "$(__indexOf 'Java-1.7')" ]"
 }
 
 # 3) when the key is one of the canonical keys and there is a customization, return the custom value
@@ -540,19 +621,18 @@ testAddEnv() {
     addEnv 'R-3.1';
     
     # expecting three entries
-    assertEquals "_runtime_environments.size" "3" "${#_runtime_environments[@]}"
+    assertEquals "__gp_module_envs.size" "3" "${#__gp_module_envs[@]}"
 }
 
-
 #
-# Example site customization, alias for cananical environment name
+# Example site customization, alias for canonical environment name
 #
 testAddEnv_alias_mcr() {
     source "env-custom-for-testing.sh"
     assertEquals "alias 'Matlab-2013a-MCR' <- 'matlab/2013a'" 'matlab/2013a' "$(getValue 'Matlab-2013a-MCR')"
     
     addEnv 'Matlab-2013a-MCR'
-    assertEquals "addEnv 'Matlab-2013a-MCR', _runtime_envs[0]" "matlab/2013a" "${_runtime_environments[0]}"
+    assertEquals "addEnv 'Matlab-2013a-MCR', _runtime_envs[0]" "matlab/2013a" "${__gp_module_envs[0]}"
 }
 
 
@@ -565,15 +645,29 @@ testAddEnv_dependency_r_3_0_on_gcc() {
     assertEquals "check values" 'gcc/4.7.2, R/3.0.1' "$(getValue 'R-3.0')"
 
     addEnv 'R-3.0'
-    assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${_runtime_environments[0]}"
-    assertEquals "_runtime_envs[1]" "R/3.0.1" "${_runtime_environments[1]}"
+    assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${__gp_module_envs[0]}"
+    assertEquals "_runtime_envs[1]" "R/3.0.1" "${__gp_module_envs[1]}"
 }
 
 testAddEvn_set_default_java_version() {
     source "env-custom-for-testing.sh"
-    
     addEnv 'Java'
-    assertEquals "_runtime_envs[0]" "java/1.8.1" "${_runtime_environments[0]}"
+    assertEquals "_runtime_envs[0]" "java/1.8.1" "${__gp_module_envs[0]}"
+}
+
+#
+# low level, bash scripting specific test cases
+#
+join() {
+    local IFS=$1;
+    shift;
+    echo "$*";
+}
+
+function testJoinArray() {
+    declare -a myArray=('arg1' 'arg2');
+    assertEquals "join, no delim" "arg1 arg2" "$(join ' ' ${myArray[@]})"
+    assertEquals "join, custom delim" "arg1,arg2" "$(join ',' ${myArray[@]})"
 }
 
 #
@@ -609,6 +703,9 @@ testBashParseArgs() {
 
 testExportEnv_basic() {
     unset MY_KEY
+    
+    assertEquals "exportEnv (no arg), sanity check" "" "$(exportEnv)"
+    exportEnv
     
     local input="MY_KEY=MY_VAL"
     exportEnv "$input"
@@ -790,7 +887,7 @@ Rscript \
 #
 # validate -a flag to run-rscript.sh command
 #
-testRunRscript_with_env_arch() {
+testRunRscript_with_env_arch_arg() {
     local script_dir=$( cd ../ && pwd )    
     local mock_patch_dir="/opt/genepattern/patches";
     export GP_DEBUG="false"
@@ -809,7 +906,7 @@ testRunRscript_with_env_arch() {
 Rscript \
 --version"
     
-    assertEquals "run R2.15" \
+    assertEquals "run R2.15 with '-a' 'mock-env-arch' arg" \
         "${expected}" \
         "$('../run-rscript.sh' \
             '-n' \
@@ -821,6 +918,49 @@ Rscript \
             '-m' 'FALSE' \
             '--' \
             '--version')"
+
+    local expected_no_env_arch="${script_dir}/run-with-env.sh \
+-c env-custom-macos.sh \
+-u R-2.15 \
+-e GP_DEBUG=FALSE \
+-e R_LIBS= \
+-e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
+-e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
+-e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
+-e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
+-e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
+Rscript \
+--version"
+
+#    # <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
+#    assertEquals "run R2.15, env-arch not set" \
+#        "${expected_no_env_arch}" \
+#        "$('../run-rscript.sh' \
+#            '-n' \
+#            '-c' 'env-custom-macos.sh' \
+#            '-a' \
+#            '-v' '2.15' \
+#            '-p' ${mock_patch_dir} \
+#            '-l' '/opt/genepattern/tasks/MyModule.1' \
+#            '-m' 'FALSE' \
+#            '--' \
+#            '--version')"
+
+## <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
+#    assertEquals "run R2.15 with '-e' 'GP_ENV_ARCH=mock-env-arch' arg" \
+#        "${expected}" \
+#        "$('../run-rscript.sh' \
+#            '-n' \
+#            '-c' 'env-custom-macos.sh' \
+#            '-e' 'GP_ENV_ARCH=mock_env_arch' \
+#            '-v' '2.15' \
+#            '-p' ${mock_patch_dir} \
+#            '-l' '/opt/genepattern/tasks/MyModule.1' \
+#            '-m' 'FALSE' \
+#            '--' \
+#            '--version')"
+
 }
 
 #
@@ -845,5 +985,54 @@ testEnvCustomMacOs() {
     assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
     export PATH=${PATH_ORIG} 
 }
+
+#
+# Prepend an element to the beginning of the path; 
+# Usage: path=$(prependPath "${element}" "${path}")
+#
+function prependPath() {
+    local element="${1}";
+    local path="${2}";
+    
+    # Note, to check for a directory: [ -d "$element" ] 
+    # To prepend, path="$element:$path"
+    
+    # if path is not set ... just set it to element
+    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
+    if [[ -z "$path" ]]; then
+        #echo "2, path not set";
+        path="$element";
+    elif [[ ":$path:" != *":$element:"* ]]; then
+        path="$element:$path";
+    fi
+    # use echo to return a value
+    echo "$path"
+}
+
+#
+# Append an element to the end of the path; 
+# Usage: path=$(appendPath "${path}" "${element}")
+#
+function appendPath() {
+    local path="${1}";
+    local element="${2}";
+    
+    # Note, to check for a directory: [ -d "$element" ] 
+    # To prepend, path="$element:$path"
+    
+    # if path is not set ... just set it to element
+    # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
+    if [ -z "$path" ]; then
+        #echo "2, path not set";
+        path="$element";
+    elif [[ ":$path:" != *":$element:"* ]]; then
+        path="${path:+"$path:"}$element"
+    fi
+    # use echo to return a value
+    echo "$path"
+}
+
+
+
 
  source ${SHUNIT2_HOME}/src/shunit2
