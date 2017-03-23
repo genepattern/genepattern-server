@@ -27,6 +27,13 @@ function initEnv() {
     elif [ "$1" = "Java-1.8" ]; then
         setjdk 1.8
 
+
+    # set path for R-3.3
+    elif [ "$1" = "R-3.3" ]; then
+        # add Rscript to path
+        R_HOME=/Library/Frameworks/R.framework/Versions/3.3/Resources
+        GP_SET_R_PATH=true;
+
     # set path for R-3.2
     elif [ "$1" = "R-3.2" ]; then
         # add Rscript to path
@@ -65,6 +72,7 @@ function initEnv() {
 
     # add R_HOME/bin to the PATH
     if ! [ -z ${GP_SET_R_PATH+x} ]; then
+        echo "adding '${R_HOME}/bin' to the PATH ..."
         export PATH=${R_HOME}/bin:${PATH}
     fi
 
