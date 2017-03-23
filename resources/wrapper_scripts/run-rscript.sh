@@ -22,7 +22,6 @@ gp_mkdirs="TRUE";
 gp_debug="FALSE";
 DRY_RUN="";
 gp_env_arch="";
-idx=0
 while getopts c:v:l:a:p:d:m:n opt "$@"; do
     case $opt in
         c)  env_custom="$OPTARG"
@@ -51,7 +50,6 @@ while getopts c:v:l:a:p:d:m:n opt "$@"; do
             exit $?
             ;;
     esac
-    idx=$((idx+1))
     # need this line to remove the option from the cmdline
     shift $((OPTIND-1)); OPTIND=1
 done
