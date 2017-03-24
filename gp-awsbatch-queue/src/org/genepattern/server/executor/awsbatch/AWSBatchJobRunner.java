@@ -44,6 +44,10 @@ public class AWSBatchJobRunner implements JobRunner{
     
     private static  HashMap<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
     
+    private static String checkStatusScript;
+    private static String submitJobScript;
+    private static String synchWorkingDirScript;
+    private static String cancelJobScript;
     
     
     public void setCommandProperties(CommandProperties properties) {
@@ -51,7 +55,18 @@ public class AWSBatchJobRunner implements JobRunner{
         if (properties==null) {
             log.debug("commandProperties==null");
             return;
-        }
+        } 
+        submitJobScript =  properties.getProperty("submitJobScript");
+        checkStatusScript = properties.getProperty("checkStatusScript");
+        synchWorkingDirScript = properties.getProperty("synchWorkingDirScript");
+        cancelJobScript = properties.getProperty("cancelJobScript");
+        if ((submitJobScript == null) | (checkStatusScript == null) | (synchWorkingDirScript == null) | (cancelJobScript == null)) {
+            throw new RuntimeException("Need the yaml config file to specify submitJobScript, checkStatusScript, synchWorkingDirScript, cancelJobScript in the AWSBatchJobRunner configuration.properties");
+        } 
+        
+        
+        
+        
         defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
 
@@ -151,14 +166,11 @@ public class AWSBatchJobRunner implements JobRunner{
             //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsCheckStatus.sh");
+            CommandLine cl= new CommandLine(this.checkStatusScript);
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
             try {
-                System.out.println("\n --- --- Executing: " + cl.toString());
-                
-                
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -207,7 +219,7 @@ public class AWSBatchJobRunner implements JobRunner{
         //
         DefaultExecutor exec=new DefaultExecutor();
         exec.setStreamHandler( new PumpStreamHandler(outputStream));
-        CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsSyncDirectory.sh");
+        CommandLine cl= new CommandLine(this.synchWorkingDirScript);
         // tasklib
         cl.addArgument(jobRecord.getWorkingDir().getAbsolutePath());
         final Map<String,String> cmdEnv=null;
@@ -287,7 +299,7 @@ public class AWSBatchJobRunner implements JobRunner{
             //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsCancelJob.sh");
+            CommandLine cl= new CommandLine(this.cancelJobScript);
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
@@ -370,16 +382,13 @@ public class AWSBatchJobRunner implements JobRunner{
          * First pass the arguments needed by the AWS launch script, then follow
          * with the normal GenePattern command line
          */
-        // MyScript - should get this from some per-module configuration
-        File gpServer = new File(gpJob.getWorkingDir().getParentFile().getParent(), "resources/wrapper_scripts/docker/aws_batch/scripts/");
-
         String awsBatchScript = null; // default
         Value value = gpJob.getValue("aws_batch_script");
         if (value != null) {
             awsBatchScript = value.getValue();
         }
         else {
-            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_script defined in the custom.yaml");
+            awsBatchScript = submitJobScript;
         }
         String awsBatchJobDefinition = null; // default
 
@@ -391,7 +400,7 @@ public class AWSBatchJobRunner implements JobRunner{
             throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
         }
 
-        File wrapperScript = new File(gpServer, awsBatchScript);
+        File wrapperScript = new File(awsBatchScript);
 
         cl = new CommandLine(wrapperScript.getAbsolutePath());
 
@@ -417,7 +426,6 @@ public class AWSBatchJobRunner implements JobRunner{
         try {
             
             inputDir = new  File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
-            System.out.println("inputDir is " + inputDir.getAbsolutePath());
             inputDir.mkdir();
            
             for (File inputFile : inputFiles) {
