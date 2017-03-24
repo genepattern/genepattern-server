@@ -8,13 +8,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -32,9 +30,11 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
-
+import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.webservice.ParameterInfo;
 
 
 public class AWSBatchJobRunner implements JobRunner{
@@ -151,11 +151,14 @@ public class AWSBatchJobRunner implements JobRunner{
             //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine("/Users/liefeld/GenePattern/gp_dev/tedsandbox/awsCheckStatus.sh");
+            CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsCheckStatus.sh");
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
             try {
+                System.out.println("\n --- --- Executing: " + cl.toString());
+                
+                
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -204,7 +207,7 @@ public class AWSBatchJobRunner implements JobRunner{
         //
         DefaultExecutor exec=new DefaultExecutor();
         exec.setStreamHandler( new PumpStreamHandler(outputStream));
-        CommandLine cl= new CommandLine("/Users/liefeld/GenePattern/gp_dev/tedsandbox/awsSyncDirectory.sh");
+        CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsSyncDirectory.sh");
         // tasklib
         cl.addArgument(jobRecord.getWorkingDir().getAbsolutePath());
         final Map<String,String> cmdEnv=null;
@@ -284,7 +287,7 @@ public class AWSBatchJobRunner implements JobRunner{
             //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine("/Users/liefeld/GenePattern/gp_dev/tedsandbox/awsCancelJob.sh");
+            CommandLine cl= new CommandLine("/Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/awsCancelJob.sh");
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
@@ -304,44 +307,162 @@ public class AWSBatchJobRunner implements JobRunner{
     
     
     
-   
+    protected static ArrayList<File> getInputFiles(final DrmJobSubmission gpJob,  HashMap<String,String> urlToFileMap){
+        
+        ArrayList<File> inputFiles = new ArrayList<File>();
+        File gpServer = new File(gpJob.getWorkingDir().getParentFile().getParent());
+        
+        String gpBaseHref = gpJob.getJobContext().getJobInput().getBaseGpHref();
+        ParameterInfo[] params = gpJob.getJobContext().getTaskInfo().getParameterInfoArray();
+        try {
+        for (int i=0; i < params.length; i++){
+            if (params[i].getName().toLowerCase().endsWith(".filename")){
+                List<ParamValue> vals = gpJob.getJobContext().getJobInput().getParamValues(params[i].getName());
+                if (vals != null){
+                    for (ParamValue val: vals){
+                        String value = val.getValue();
+                       
+                        if (value.startsWith(gpBaseHref)) {
+                           
+                            String path = value.substring(gpBaseHref.length());
+                            File fileMaybe = new File(gpServer, path.replace("/tmp/", "/uploads/tmp/"));
+                            if (fileMaybe.exists()){
+                                urlToFileMap.put(value, fileMaybe.getAbsolutePath());
+                                inputFiles.add(fileMaybe);
+                            }
+                         } else {
+                            try {
+                                File f = new File(value);
+                                if (f.exists()) inputFiles.add(f);
+                            } catch(Exception e){
+                                // swallow and ignore
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        
+        return inputFiles;
+    }
 
 
-    protected static CommandLine initCommand(final DrmJobSubmission gpJob) {
-        if (gpJob==null) {
+    protected static CommandLine initCommand( DrmJobSubmission gpJob) {
+        if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
         }
         List<String> gpCommand = gpJob.getCommandLine();
-        if (gpCommand==null) {
+        if (gpCommand == null) {
             throw new IllegalArgumentException("gpJob.commandLine==null");
         }
-        if (gpCommand.size()==0) {
+        if (gpCommand.size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
-        boolean handleQuoting=false;
-        
-        
-        /** 
-         * First pass the arguments needed by the AWS launch script, then follow with the normal GenePattern command line
+        boolean handleQuoting = false;
+
+        CommandLine cl;
+
+        /**
+         * First pass the arguments needed by the AWS launch script, then follow
+         * with the normal GenePattern command line
          */
         // MyScript - should get this from some per-module configuration
-        CommandLine cl= new CommandLine("/Users/liefeld/GenePattern/gp_dev/tedsandbox/runJava17OnBatch.sh");
-        
+        File gpServer = new File(gpJob.getWorkingDir().getParentFile().getParent(), "resources/wrapper_scripts/docker/aws_batch/scripts/");
+
+        String awsBatchScript = null; // default
+        Value value = gpJob.getValue("aws_batch_script");
+        if (value != null) {
+            awsBatchScript = value.getValue();
+        }
+        else {
+            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_script defined in the custom.yaml");
+        }
+        String awsBatchJobDefinition = null; // default
+
+        Value jobDefValue = gpJob.getValue("aws_batch_job_definition_name");
+        if (jobDefValue != null) {
+            awsBatchJobDefinition = jobDefValue.getValue();
+        }
+        else {
+            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
+        }
+
+        File wrapperScript = new File(gpServer, awsBatchScript);
+
+        cl = new CommandLine(wrapperScript.getAbsolutePath());
+
         // tasklib
         cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath());
-       
-        
+
         // workdir
         cl.addArgument(gpJob.getWorkingDir().getAbsolutePath());
-        
-        // input file directory
-        cl.addArgument("/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/Java17_oracle_jdk/tests/selectfeaturescolumns/data");
-        
-     
-        
-        for(int i=0; i<gpCommand.size(); ++i) {
-            cl.addArgument(gpCommand.get(i), handleQuoting);
+
+        // aws batch job definition name
+        cl.addArgument(awsBatchJobDefinition);
+
+        // job name to have in AWS batch displays
+        cl.addArgument("GP_Job_" + gpJob.getGpJobNo() );
+
+        // TODO: Get the list of input files - peter is developing the code for
+        // this. Here is the temporary hack to
+        // make one module (SelectFeaturesColumns) work just to test out more of
+        // the process from end to end
+        File inputDir;
+        HashMap<String,String> urlToFileMap = new HashMap<String,String>();
+        ArrayList<File> inputFiles =  getInputFiles(gpJob,urlToFileMap);
+        try {
+            
+            inputDir = new  File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
+            System.out.println("inputDir is " + inputDir.getAbsolutePath());
+            inputDir.mkdir();
+           
+            for (File inputFile : inputFiles) {
+                DefaultExecutor exec=new DefaultExecutor();
+                exec.setWorkingDirectory(inputDir);
+                CommandLine link = new CommandLine("ln");
+                link.addArgument("-s");
+                link.addArgument(inputFile.getAbsolutePath());
+                link.addArgument(inputFile.getName());
+                
+                File linkedFile = new File(inputDir,inputFile.getName() );
+                
+                urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
+                Map env = null;
+                exec.execute(link, env);
+            }
+            
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new IllegalArgumentException("could not collect input files: "); 
         }
+        
+        // job name to have in AWS batch displays
+        cl.addArgument(inputDir.getAbsolutePath() );
+       
+        
+        // input files
+        //cl.addArgument("/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/Java17_oracle_jdk/tests/selectfeaturescolumns/data/all_aml_train.gct");
+
+
+        for (int i = 0; i < gpCommand.size(); ++i) {
+            String commandPart = gpCommand.get(i);
+            
+            boolean wroteIt = false;
+            // TODO this will fail for URLS but is meant as proof of concept
+            for (File inputFile : inputFiles) {
+                String filename = inputFile.getName();
+                if (commandPart.endsWith(filename)){
+                    commandPart = urlToFileMap.get(filename);
+                }
+            }
+            
+            cl.addArgument(commandPart, handleQuoting);
+        }
+
         return cl;
     }
     
