@@ -23,41 +23,60 @@ gp_debug="FALSE";
 DRY_RUN="";
 gp_env_arch="";
 
-# optional '-c <env-custom>' flag
-if [[ "${1:-}" = "-c" ]]; then
-    shift; 
-    # only set if '-c' has an argument
-    if ! [[ -z "${1+x}" || $1 = -* ]]; then
-        env_custom="${1:-}";
-        echo "found match for env_custom=${env_custom}";
-        shift;
-    else
-        echo "no match for env_custom, skipping";
-    fi
-fi
+############################################################
+# Function: hasArg, check for missing arg in getopts loop
+# Output:
+#   return 0, success, expected, when there is an arg
+#   return 1, failure, unexpected, when the arg is missing
+# Usage:
+#   hasArg 
+# Example:
+#   if hasArg; then
+#     env_custom="${OPTARG:-}"
+#   fi
+#
+# This is useful for processing command line options which should
+# have an argument, but which may not, e.g.
+#     <run-with-env> -c -u java/1.8 java ..., missing -c arg
+#     <run-with-env> -a -u java/1.8 java ..., missing -a arg
+############################################################
+hasArg() {        
+  # only set if the current option has an argument, e.g.
+  #   -c env-custom-macos.sh  
+  #     [[ -z "${OPTARG+x}" ]] means next arg is not set
+  #     [[  $OPTARG = -*  ]] means next arg starts with '-'
+  if ! [[ -z "${OPTARG+x}" || $OPTARG = -* ]]; then
+    # success
+    return 0;
+  else
+    # failure
+    OPTIND=${1:-2};
+    return 1;
+  fi
+}
 
 while getopts c:v:l:a:p:d:m:n opt "$@"; do
     case $opt in
-        c)  
-            #env_custom="$OPTARG"
-            echo "ignoring '-c' arg"
+        c)  if hasArg; then
+              env_custom="${OPTARG:-}"
+            fi 
             ;;
-        v) r_version="$OPTARG"
+        v) r_version="${OPTARG}"
             ;;
         # libdir ends with '/'
-        l) gp_libdir="$OPTARG"
+        l) gp_libdir="${OPTARG}"
             ;;
         # env-arch does not end with '/', can be empty
-        a) gp_env_arch="${OPTARG}/"
+        a) if hasArg; then
+             gp_env_arch="${OPTARG}/"
+           fi
             ;;
         # patches does not end with '/'
-        p) gp_patches="$OPTARG"
+        p) gp_patches="${OPTARG}"
             ;;
-        d)
-            gp_debug="$OPTARG"
+        d) gp_debug="${OPTARG}"
             ;;
-        m)
-            gp_mkdirs="$OPTARG"
+        m) gp_mkdirs="${OPTARG}"
             ;; 
         n)  DRY_RUN="echo"
             ;;

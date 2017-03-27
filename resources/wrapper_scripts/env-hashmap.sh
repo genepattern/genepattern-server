@@ -7,8 +7,8 @@
 #     source env-hashmap.sh
 # Declared variables:
 #   __gp_module_envs
-#   _hashmap_keys
-#   _hashmap_vals
+#   __gp_env_map_keys
+#   __gp_env_map_vals
 # Declared functions:
 #   putValue canonical-name [local-name][,local-name]* 
 #   getValue canonical-name
@@ -16,16 +16,16 @@
 #   clearValues
 #   
 #   (helpers)
-#   __indexOf() {
-#
+#   __indexOf
+#   echoEnvMap
 ############################################################
 
 if [[ "${_env_hashmap_inited:-}" -eq 1 ]]; then
     return;
 else 
     readonly _env_hashmap_inited=1;
-    declare -a _hashmap_keys=();
-    declare -a _hashmap_vals=();
+    declare -a __gp_env_map_keys=();
+    declare -a __gp_env_map_vals=();
     declare -a __gp_module_envs=();
 fi
 
@@ -34,8 +34,8 @@ fi
 # Usage:
 #   putValue canonical-name [site-specific-name]*
 # Output: Makes changes to these variables
-#   _hashmap_keys
-#   _hashmap_vals
+#   __gp_env_map_keys
+#   __gp_env_map_vals
 # Examples:
 # 1) override canonical name with local name,
 #     putValue 'matlab-mcr/2010b' '.matlab_2010b_mcr'
@@ -62,18 +62,18 @@ putValue() {
     # special-case for empty map
     # if isEmpty; then
     if [[ 0 -eq $(numKeys) ]]; then
-        _hashmap_keys=( "${key}" );
-        _hashmap_vals=( "${val}" );
+        __gp_env_map_keys=( "${key}" );
+        __gp_env_map_vals=( "${val}" );
         return;
     fi
 
     local idx=$(__indexOf "${key}");
     if [[ "${idx}" = "-1" ]]; then
-        _hashmap_keys=( "${_hashmap_keys[@]}" "${key}" )
-        _hashmap_vals=( "${_hashmap_vals[@]}" "${val}" )
+        __gp_env_map_keys=( "${__gp_env_map_keys[@]}" "${key}" )
+        __gp_env_map_vals=( "${__gp_env_map_vals[@]}" "${val}" )
     else 
-        _hashmap_keys[$idx]=$key;
-        _hashmap_vals[$idx]=$val;
+        __gp_env_map_keys[$idx]=$key;
+        __gp_env_map_vals[$idx]=$val;
     fi
 }
 
@@ -85,7 +85,7 @@ putValue() {
 #   site-specific-name, defaults to canonical-name
 # References:
 #   __indexOf()
-#   _hashmap_vals
+#   __gp_env_map_vals
 ############################################################
 getValue() {
     local key="${1}"
@@ -94,7 +94,7 @@ getValue() {
         echo "${key}";
         return;
     else 
-        local val="${_hashmap_vals[$idx]}";
+        local val="${__gp_env_map_vals[$idx]}";
         echo "${val}";
         return;
     fi
@@ -133,7 +133,7 @@ addEnv() {
 # Usage:
 #   __indexOf key
 # References:
-#   _hashmap_keys
+#   __gp_env_map_keys
 ############################################################
 __indexOf() {
     local key="${1}";
@@ -144,7 +144,7 @@ __indexOf() {
         return;
     else
         local str;
-        for str in "${_hashmap_keys[@]}"; do
+        for str in "${__gp_env_map_keys[@]}"; do
             if [[ "$str" = "$key" ]]; then
                 echo "${i}";
                 return;
@@ -159,86 +159,67 @@ __indexOf() {
 ############################################################
 # Function: clearValues, reset the map
 # References:
-#   _hashmap_keys
-#   _hashmap_vals
+#   __gp_env_map_keys
+#   __gp_env_map_vals
 #   _gp_module_envs
 ############################################################
 clearValues() {
-    _hashmap_keys=();
-    _hashmap_vals=();
+    __gp_env_map_keys=();
+    __gp_env_map_vals=();
     __gp_module_envs=();
 }
 
+############################################################
+# Functions: 
+#   numKeys, count the number of __gp_env_map_keys
+#   numEnvs, count the number of __gp_module_envs
+#   __num_args (helper), the number of positional parameters
 #
-# helper functions to workaround 'unbound variable' error 
-# with empty arrays in 'set -u' mode.
+# This is a workaround for the 'unbound variable' error when
+# in 'set -u' mode and the variable is not set or 
+# is an empty array
 #
-# for example, 
-#     declare -a _my_arr=();
-# adding a value to an empty array causes an ERROR
-#     _my_arr=( "${_my_arr[@]}" "new_value" )
-# checking the size causes the same error
+# Background: this example code fails
+#   set -u
+#   declare -a _my_arr=();
+#   # case 1: adding an element to the array causes error
+#   _my_arr=( "${_my_arr[@]}" "new_value" )
+#   # case 2: checking the size causes the same error
 #     if [[ ${#_my_arr[@]} -eq 0 ]]; 
-#
-# Instead check the size indirectly ...
-# This doesn't work
-#     count() { echo $# ; } ; _my_arr=() ; count "${_my_arr[@]}"
-# This does work,
-#     count() { echo $# ; } ; _my_arr=() ; count "${_my_arr[@]:0}"
-#
-# See the Bash documentation on the set builtin, and this 
-# stack overflow article
-#     http://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-
-__size_of() { echo "$#"; }
-
+# As a workaround, count the number of elements in the array
+# using echo and a function call, use parameter expansion as a 
+# guard for unset variables.
+#   # this doesn't work
+#   count() { echo $# ; } ; _my_arr=() ; count "${_my_arr[@]}"
+#   # This does work
+#   count() { echo $# ; } ; _my_arr=() ; count "${_my_arr[@]:0}"
+############################################################
 numKeys() { 
-    echo $(__size_of "${_hashmap_keys[@]:0}");
+    echo $(__num_args "${__gp_env_map_keys[@]:0}");
 }
 
 numEnvs() { 
-    echo $(__size_of "${__gp_module_envs[@]:0}"); 
+    echo $(__num_args "${__gp_module_envs[@]:0}"); 
 }
+__num_args() { echo $#; }
 
-# return 0, success if there are no keys
-# return 1, failure if there are keys
-isEmpty() {
-    if [[ 0 -eq $(numKeys) ]]; then return 0;
-    else return 1;
-    fi
-}
-
-# return 0, success if there are no runtime environments
-# return 1, failure if there are runtime environments
-isEmptyEnv() {
-    if [[ 0 -eq $(numEnvs) ]]; then return 0;
-    else return 1;
-    fi
-}
-
-echoCounts() {
-    echo "num keys: $(numKeys)";
-    echo "num envs: $(numEnvs)";
-}
-
-echoValues() {
-    echo "keys=${_hashmap_keys[@]}"
-    echo "_hashmap_vals=${_hashmap_vals[@]}"
-}
-
-echoHashmap() {
-    if [[ ${#_hashmap_keys[@]} -eq 0 ]];
-    then 
-        echo "_hashmap: (no values)"
+############################################################
+# Function: echoEnvMap, for debugging, 
+#   print the __gp_env_map keys and vals
+############################################################
+echoEnvMap() {
+    local pad="${1:-    }";
+    if [[ -z ${__gp_env_map_keys+x} ]]; then
+        echo "${pad}__gp_env_map:  (no items)";
         return;
     else
         local idx=0;
         local key;
         local val;
-        echo "_hashmap ...";
-        for key in "${_hashmap_keys[@]}"; do
-            val="${_hashmap_vals[$idx]}";
-            echo "    $key=$val";
+        echo "${pad}__gp_env_map:  (${#__gp_env_map_keys[@]} items)";
+        for key in "${__gp_env_map_keys[@]}"; do
+            val="${__gp_env_map_vals[$idx]}";
+            echo "${pad}    $key=$val";
             ((idx++))
         done
     fi

@@ -17,11 +17,11 @@
 #   env-hashmap.sh - bash3 compatible alternative to an associative array
 #
 # Globals:
-#   GP_SCRIPT_DIR
-#   GP_ENV_CUSTOM
+#   GP_SCRIPT_DIR, set the fully qualified path to the wrapper-scripts directory
+#   GP_ENV_CUSTOM, set the name or path to the env-custom file
 #
 # Declared variables:
-#   GP_SCRIPT_DIR - fully qualified path to the wrapper_scripts directory
+#   GP_SCRIPT_DIR - by default it is the parent dir of gp-common.sh
 #   __gp_env_custom_script - the path to the site customization file
 #   __gp_module_envs - the list of required runtime environments, aka dotkits
 #   __gp_module_cmd - the command to run
@@ -32,9 +32,10 @@
 #   addModuleEnvs     process '-u' flags, initialize module environments
 #   initModuleEnvs    load module environments
 #   parseArgs         parse the wrapper command line args
-#   run               all steps necesary to run the module command line
+#   run               all steps necessary to run the module command line
 #
 #   (helpers)
+#   parseOpt
 #   exportEnv key=[value]
 #   (included in env-hashmap.sh)
 #   putValue canonical-name [local-name][,local-name]*
@@ -58,6 +59,7 @@ else
     fi
     readonly __gp_env_default_script="${GP_SCRIPT_DIR}/env-default.sh";
     source "${GP_SCRIPT_DIR}/env-hashmap.sh"
+    
 fi
 
 declare __gp_env_custom_arg="";
@@ -107,32 +109,43 @@ function parseArgs() {
     __gp_u_args=();
     __gp_module_cmd=();
 
-    # optional '-c <env-custom>' flag
-    if [[ "${1:-}" = "-c" ]]; then
-        shift; 
-        # only set if '-c' has an argument
-        #     [[ -z "${1+x}" ]] mean next arg, $1, is not set
-        #     [[  $1 = -*  ]] means next arg starts with '-'
-        if ! [[ -z "${1+x}" || $1 = -* ]]; then
-            __gp_env_custom_arg="${1:-}";
-            shift;
-        fi
-    fi
+#    # optional '-c <env-custom>' flag
+#    if [[ "${1:-}" = "-c" ]]; then
+#        shift; 
+#        # only set if '-c' has an argument
+#        #     [[ -z "${1+x}" ]] means next arg, $1, is not set
+#        #     [[  $1 = -*  ]] means next arg starts with '-'
+#        if ! [[ -z "${1+x}" || $1 = -* ]]; then
+#            __gp_env_custom_arg="${1:-}";
+#            shift;
+#        fi
+#    fi
         
     # optional run-with-env args, of the form ...
     #     -u <env-name>
     #     -e <env>=<value>
     local _e_idx=0;
     local u_idx=0;
-    while getopts u:e: opt "$@"; do
-        case $opt in
+    # reset OPTIND
+    OPTIND=1
+    while getopts c:u:e: opt "$@"; do
+        # debug: echo "opt=${opt}, OPTIND=${OPTIND}, OPTARG=${OPTARG}";
+        case "$opt" in
+            c)
+                # optional '-c <env-custom>' flag
+                # debug: echo "    parsing '-c' '${OPTARG}'";
+                if hasArg; then
+                    __gp_env_custom_arg="$OPTARG";
+                    #echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
+                fi
+                ;;
             e)
-                #echo "    parsing '-e' '${OPTARG}'";
+                # debug: echo "    parsing '-e' '${OPTARG}'";
                 __gp_e_args[$_e_idx]="$OPTARG";
                 _e_idx=$((_e_idx+1));
                 ;; 
             u)
-                #echo "    parsing '-u' '${OPTARG}'";
+                # debug: echo "    parsing '-u' '${OPTARG}'";
                 __gp_u_args[$u_idx]="$OPTARG";
                 u_idx=$((u_idx+1));
                 ;;
@@ -158,9 +171,52 @@ function parseArgs() {
 
     # process '-c' flag, source site-customization file(s)
     sourceEnvScripts
+#    __gp_env_custom_script="$(convertPath "${GP_ENV_CUSTOM:-${__gp_env_custom_arg:-env-custom.sh}}")";
+#    # load 'env-default.sh' script
+#    if [ -f "${__gp_env_default_script}" ]; then
+#        source "${__gp_env_default_script}";
+#    fi
+#    # optionally load 'env-custom'
+#    if [ -f "${__gp_env_custom_script}" ];
+#    then 
+#        source "${__gp_env_custom_script}";
+#    fi
 
     # process '-u' flags, initialize module environments
     addModuleEnvs;
+}
+
+############################################################
+# Function: hasArg, check for missing arg in getopts loop
+# Output:
+#   return 0, success, expected, when there is an arg
+#   return 1, failure, unexpected, when the arg is missing
+# Usage:
+#   hasArg 
+# Example:
+#   if hasArg; then
+#     env_custom="${OPTARG:-}"
+#   fi
+#
+# This is useful for processing command line options which should
+# have an argument, but which may not, e.g.
+#     <run-with-env> -c -u java/1.8 java ..., missing -c arg
+#     <run-with-env> -a -u java/1.8 java ..., missing -a arg
+############################################################
+hasArg() {        
+  # only set if the current option has an argument, e.g.
+  #   -c env-custom-macos.sh  
+  #     [[ -z "${OPTARG+x}" ]] means next arg is not set
+  #     [[  $OPTARG = -*  ]] means next arg starts with '-'
+  if ! [[ -z "${OPTARG+x}" || $OPTARG = -* ]]; then
+    # success
+    return 0;
+  else
+    # failure
+    #   reset OPTIND to '2', can be overridden with $1 arg 
+    OPTIND=${1:-2};
+    return 1;
+  fi
 }
 
 ############################################################
@@ -341,7 +397,6 @@ function convertPath() {
     fi
 }
 
-
 ############################################################
 # extractRootName, helper function, get the root name from 
 # the full moduleName.
@@ -356,47 +411,23 @@ function extractRootName() {
     echo "$rootName";
 }
 
-
 ############################################################
-# for debugging, gp::sourceDir, 
-# get the fully qualified directory path of the current 
-# bash script. This is a workaround for Mac OS X error
-#   'readlink: illegal option -- f'
-#
-# Usage:
-#   gp::source_dir [<filename>]
-# Arguments:
-#   filename, optional, default=${BASH_SOURCE[0]} 
-#
-# Note: this command may not work as expected with 
-# symbolic links.
+# for debugging, echo variables
+#   note, not for production, can be helpful for debugging
+# after parseArgs
 ############################################################
-function gp::source_dir() { 
-    local __arg="${1:-BASH_SOURCE[0]}";
-    echo "$( cd "$( dirname "${__arg}" )" && pwd )";
-}
-
-############################################################
-# for debugging, gp:script_dir, 
-# get the full path to the wrapper_scripts directory 
-# can be used to test the 'gp::source_dir' function
-#
-# Usage: 
-#   gp::script_dir
-############################################################
-function gp::script_dir() {
-    echo $(gp::source_dir "${BASH_SOURCE[0]}" );
-}
-
-function debugEnv() {
-    echo                "GP_DEBUG: ${GP_DEBUG:-}";
-    echo "__gp_env_default_script: ${__gp_env_default_script}";
-    echo          "GP_ENV_CUSTOM: ${GP_ENV_CUSTOM:-}";
-    echo     "__gp_env_custom_arg: ${__gp_env_custom_arg}";
-    echo  "__gp_env_custom_script: ${__gp_env_custom_script}";
-    echoHashmap
-    echo   "__gp_module_envs: ${__gp_module_envs[@]}"
-    echo         "__gp_module_cmd: ${__gp_module_cmd[@]}"
+function echoEnv() {
+    echo "                GP_DEBUG: ${GP_DEBUG:- (not set)}";
+    echo "           GP_SCRIPT_DIR: ${GP_SCRIPT_DIR:-}";
+    echo "           GP_ENV_CUSTOM: ${GP_ENV_CUSTOM:- (not set)}";
+    echo "     __gp_env_custom_arg: ${__gp_env_custom_arg:- (not set)}";
+        echo " __gp_env_default_script: ${__gp_env_default_script:- (not set)}";
+    echo "  __gp_env_custom_script: ${__gp_env_custom_script:- (not set)}";
+    echo "             __gp_e_args: ${__gp_e_args[@]:- (none)}";
+    echo "             __gp_u_args: ${__gp_u_args[@]:- (none)}";
+        echoEnvMap "            ";
+    echo "        __gp_module_envs: ${__gp_module_envs[@]:- (none)}"
+    echo "         __gp_module_cmd: ${__gp_module_cmd[@]:- (not set)}"
 }
 
 ############################################################
