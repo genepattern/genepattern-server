@@ -1,0 +1,27 @@
+--- R	2017-03-28 02:32:37.000000000 -0400
++++ R.updated_v3.1.3	2017-03-28 02:25:51.000000000 -0400
+@@ -1,7 +1,8 @@
+ #!/bin/sh
+ # Shell wrapper for R executable.
+ 
+-R_HOME_DIR=/Library/Frameworks/R.framework/Resources
++readonly __script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++R_HOME_DIR="$(cd "${__script_dir}/.."  && pwd)"
+ if test "${R_HOME_DIR}" = "/Library/Frameworks/lib/R"; then
+    case "darwin13.4.0" in
+    linux*)
+@@ -32,11 +33,11 @@
+ fi
+ R_HOME="${R_HOME_DIR}"
+ export R_HOME
+-R_SHARE_DIR=/Library/Frameworks/R.framework/Resources/share
++R_SHARE_DIR="${R_HOME_DIR}/share"
+ export R_SHARE_DIR
+-R_INCLUDE_DIR=/Library/Frameworks/R.framework/Resources/include
++R_INCLUDE_DIR="${R_HOME_DIR}/include"
+ export R_INCLUDE_DIR
+-R_DOC_DIR=/Library/Frameworks/R.framework/Resources/doc
++R_DOC_DIR="${R_HOME_DIR}/doc"
+ export R_DOC_DIR
+ 
+ # Since this script can be called recursively, we allow R_ARCH to

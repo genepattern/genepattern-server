@@ -27,7 +27,6 @@ function initEnv() {
     elif [ "$1" = "Java-1.8" ]; then
         setjdk 1.8
 
-
     # set path for R-3.3
     elif [ "$1" = "R-3.3" ]; then
         # add Rscript to path
@@ -42,9 +41,27 @@ function initEnv() {
 
     # set path for R-3.1
     elif [ "$1" = "R-3.1" ]; then
-        # add Rscript to path
-        R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
+        # add Rscript to path 
+        export R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
         GP_SET_R_PATH=true;
+
+        # note: you must edit your local R/3.1 installation 
+        #   in order to work with multiple versions of R
+        #   this is only strictly necessary if you install a newer (than 3.1)
+        #   version of R on your Mac.
+        #
+        # use the include ./R/3.1/R_v3.1.3.patch file
+        # 
+        #   cd /Library/Frameworks/R.framework/Versions/3.1/Resources/bin
+        #   # first, backup the existing R file
+        #   cp R R.orig
+        #   # then, apply the patch
+        #   patch < R_v3.1.3.patch
+        # these export statements have no effect ...
+        #   export R_HOME_DIR=/Library/Frameworks/R.framework/Versions/3.1/Resources
+        #   export R_SHARE_DIR="${R_HOME_DIR}/share"
+        #   export R_INCLUDE_DIR="${R_HOME_DIR}/include"
+        #   export R_DOC_DIR="${R_HOME_DIR}/doc"
 
     # set path for R-3.0
     elif [ "$1" = "R-3.0" ]; then
