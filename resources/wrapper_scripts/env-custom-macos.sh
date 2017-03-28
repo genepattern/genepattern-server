@@ -4,7 +4,6 @@
 # Custom runtime environment for MacOS X installation
 #
 
-
 #
 # Initialize runtime environment. 
 #     Usage: initEnv <runtime-env-name>
@@ -13,34 +12,38 @@
 # See env-default.sh for canonical runtime environment names
 #
 function initEnv() {
-    if ! [ -z ${GP_DEBUG+x} ]; then
+    if ! [[ -z ${GP_DEBUG+x} ]]; then
         # only when the GP_DEBUG flag is set
         echo "loading $1 ..."
         echo R_LIBS_SITE=${R_LIBS_SITE}
     fi
     
-    # set path for Java-1.7
-    if [ "$1" = "Java-1.7" ]; then
+    case "${1}" in
+      java/1.7|Java-1.7) 
+        # set path for Java-1.7
         setjdk 1.7
+        ;;
 
-    # set path for Java-1.8
-    elif [ "$1" = "Java-1.8" ]; then
+      java/1.8|Java-1.8)
+        # set path for Java-1.8
         setjdk 1.8
+        ;;
 
-    # set path for R-3.3
-    elif [ "$1" = "R-3.3" ]; then
-        # add Rscript to path
+      R/3.3|R-3.3)
+        # set path for R-3.3
         R_HOME=/Library/Frameworks/R.framework/Versions/3.3/Resources
         GP_SET_R_PATH=true;
+        ;;
 
-    # set path for R-3.2
-    elif [ "$1" = "R-3.2" ]; then
+      R/3.2|R-3.2)
+        # set path for R-3.2
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.2/Resources
         GP_SET_R_PATH=true;
+        ;;
 
-    # set path for R-3.1
-    elif [ "$1" = "R-3.1" ]; then
+      R/3.1|R-3.1)
+        # set path for R-3.1
         # add Rscript to path 
         export R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
         GP_SET_R_PATH=true;
@@ -62,33 +65,38 @@ function initEnv() {
         #   export R_SHARE_DIR="${R_HOME_DIR}/share"
         #   export R_INCLUDE_DIR="${R_HOME_DIR}/include"
         #   export R_DOC_DIR="${R_HOME_DIR}/doc"
+        ;;
 
-    # set path for R-3.0
-    elif [ "$1" = "R-3.0" ]; then
+      R/3.0|R-3.0)
+        # set path for R-3.0
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.0/Resources
         GP_SET_R_PATH=true;
+        ;;
 
-    # set path for R-2.15
-    elif [ "$1" = "R-2.15" ]; then
+      R/2.15|R-2.15)
+        # set path for R-2.15
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.15/Resources
         GP_SET_R_PATH=true;
+        ;;
 
-    # set path for R-2.5
-    elif [ "$1" = "R-2.5" ]; then
+      R/2.5|R-2.5)
+        # set path for R-2.5
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
         GP_SET_R_PATH=true;
-    
-    # set path for R-2.0
-    elif [ "$1" = "R-2.0" ]; then
+        ;;
+
+      R/2.0|R-2.0)
+        # set path for R-2.0
         R_HOME=/Library/Frameworks/R.framework/Versions/2.0/Resources
         GP_SET_R_PATH=true;
-    fi
+        ;;
+    esac
 
     # add R_HOME/bin to the PATH
-    if ! [ -z ${GP_SET_R_PATH+x} ]; then
+    if ! [[ -z ${GP_SET_R_PATH+x} ]]; then
         echo "adding '${R_HOME}/bin' to the PATH ..."
         export PATH=${R_HOME}/bin:${PATH}
     fi
