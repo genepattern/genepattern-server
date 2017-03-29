@@ -1,6 +1,8 @@
 package org.genepattern.server.genepattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.*;
 
@@ -14,6 +16,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * Created by nazaire on 8/13/15.
@@ -526,5 +529,50 @@ public class TestValueResolver
                 Arrays.asList("--multi", "A VALUE,B VALUE"), 
                 actual);
 
-    }    
+    }
+    
+    @Test
+    public void substituteValue_emptyValue() {
+        final String arg="-a <env-arch>";
+        
+        //GpConfig gpConfig=mock(GpConfig.class);
+        final GpConfig gpConfig=new GpConfig.Builder()
+                .addProperty("env-arch", "rhel6")
+        .build();
+        
+        GpContext jobContext=mock(GpContext.class);
+        Map<String,String> dict=Collections.emptyMap();
+        Map<String,ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
+        // gpConfig.getGPProperty(gpContext, subToken.pname);
+        //when(gpConfig.getGPProperty(jobContext, "env-arch")).thenReturn("");
+        
+        List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, arg, dict, parameterInfoMap);
+        assertEquals("substitute(<env-arch>), expecting list containing one empty string",
+                Arrays.asList(""),
+                actual);
+    }
+    
+    // <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
+    @Test
+    public void substitute_run_script() {
+        final String value="<wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>";
+        
+        final GpConfig gpConfig=new GpConfig.Builder()
+                .addProperty("wrapper-scripts", "/gp_home/resources/wrapper_scripts")
+                //.addProperty("env-custom", value)
+                .addProperty("env-arch", "rhel6")
+        .build();
+        GpContext jobContext=mock(GpContext.class);
+
+        final Map<String, String> propsMap = Collections.emptyMap();
+        final Map<String, ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
+        List<String> actual=ValueResolver.resolveValue(
+                gpConfig, jobContext,
+                value, propsMap, parameterInfoMap);
+        assertEquals("substitute run-rscript command",
+                Arrays.asList("/gp_home/resources/wrapper_scripts/run-rscript.sh", "-c"),
+                actual);
+
+        
+    }
 }

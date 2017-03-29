@@ -167,6 +167,10 @@ public class ValueResolver {
                 value=baseGpHref+"/";
             }
         }
+        if (value==null) {
+            log.error("Missing substitution value for '"+subToken.pname+"', substituting empty string");
+            value="";
+        }
         return Arrays.asList(value);
     }
     
