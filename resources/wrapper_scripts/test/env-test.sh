@@ -4,6 +4,7 @@
 # shunit2 test cases for wrapper script code
 #
 
+
 # called once before running any test
 oneTimeSetUp()  {
     readonly __test_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -50,36 +51,6 @@ tearDown() {
 #
 # All tests are run after 'source gp-common.sh'
 #
-# items to test ... 
-#
-# After parseArgs ...
-#     * get the site defaults script
-#     * ... confirm that it was loaded
-#     * get the optional site customization script, confirm that it was loaded
-#     * ... confirm that it was loaded
-#     * get the list of declared environment variables
-#     * ... confirm that they were set
-#     * get the list of declared environment modules
-#
-# After loadEnvironmentModules ...
-#     * ... confirm that the environment modules were loaded
-#     * special-case: set an environment variable in the site-customization script
-#     * special-case: override environment module 
-#
-#     * confirm that the environment modules were loaded
-#
-#
-# Glossary
-#     'environment variable' - an environment variable is set via the export command,
-#         export NAME=VALUE
-#
-#     'environment module' - an environment module is a named requirement that is loaded in 
-#         a platform specific way.
-#         Also known as a 'dotkit' or a 'package' or a 'software requirement' or a 'library'. 
-#         It is a dendency or requirement that must be present (aka loaded into the environment,
-#         or otherwise provisioned) before running the module command line.
-#
-
 
 ############################################################
 # test gp-common functions
@@ -128,6 +99,12 @@ test_gp_script_dir() {
       "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")";
   fi
   endSkipping;
+  
+  # temp, for R script rewrite
+  #local _r_home_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
+  local _r_home_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
+  echo "_r_home_dir: ${_r_home_dir}";
+  assertEquals "parent_dir check" "${__parent_dir}" "${_r_home_dir}"
 }
 
 # test gp-common::exportEnv
@@ -229,9 +206,17 @@ test_rootModuleName() {
     assertEquals "rootName('$moduleName')" "" "$(extractRootName $moduleName)"
 }
 
+# test gp-common::echoEnv
+test_echoEnv() {
+    putValue "java/1.8"
+    putValue "python/2.5"
+    echoEnv
+}
+
 ############################################################
 # test gp-common:parseArgs
 ############################################################
+
 # test parseArgs() with '-c' <env-custom> arg
 test_parseArgs_c_flag() {
   parseArgs '-c' 'env-custom-macos.sh' 'echo' 'Hello, World!';
@@ -260,8 +245,9 @@ test_parseArgs_c_flag_missing_arg() {
 #   missing arg at end of options
 test_parseArgs_c_flag_missing_arg_at_end() {
 
-  # note: must add '--' between run-with-env args and module command 
-  #     this will fail, parseArgs '-c' 'echo' 'Hello, World!'
+  # note: must add '--' between run-with-env args and module command, e.g.
+  #   this fails: parseArgs '-c' 'echo' 'Hello, World!'
+  #   this works: parseArgs '-c' '--' 'echo' 'Hello, World!'
   parseArgs '-c' '--' 'echo' 'Hello, World!'
   assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
   assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
@@ -295,6 +281,7 @@ test_parseArgs_GP_ENV_CUSTOM() {
     "${__gp_module_cmd[*]:0}"
 }
 
+# test parseArgs, '-e' 'KEY=VAL'
 test_parseArgs_e_flag() {
     local -a args=('-e' 'MY_KEY=MY_VAL' '-e' 'MY_KEY2=MY_VAL2' 'echo' 'Hello, World!');
     parseArgs "${args[@]}";
@@ -304,6 +291,7 @@ test_parseArgs_e_flag() {
     assertEquals "__gp_e_args" "MY_KEY=MY_VAL MY_KEY2=MY_VAL2" "${__gp_e_args[*]:-}"
 }
 
+# test parseArgs, '-u' canonical-name
 test_parseArgs_u_flag() {
     assertEquals "parseArgs -u Java" \
       "Java" \
@@ -322,6 +310,7 @@ test_parseArgs_u_flag() {
       "$(parseArgs "-u" "Java 1.8" && echo "${__gp_u_args[*]}")"
 }
 
+# test parseArgs, example java command
 test_parseArgs_java_cmd() {
     local -a args=('-u' 'Java-1.8' 'java' '--version');
     parseArgs "${args[@]}";
@@ -342,6 +331,7 @@ test_parseArgs_java_cmd() {
         "${__gp_module_cmd[*]}"
 }
 
+# test parseArgs, sanity check with no args
 test_parseArgs_no_args() {
     parseArgs
     assertEquals "env_default" "${GP_SCRIPT_DIR}/env-default.sh" \
@@ -360,100 +350,146 @@ test_parseArgs_no_args() {
         "${__gp_module_cmd[*]:-}"
 }
 
-# test gp-common::echoEnv
-test_echoEnv() {
-    putValue "java/1.8"
-    putValue "python/2.5"
-    echoEnv
-}
-
-# tests for rscript with '-c' and '-a' flags
-test_rscript_cmd() {
+# test 'run-rscript' substitution
+#   run-rscript.sh -c <env-custom> -a <env-arch> -l <libdir> -p <patches> -v 2.15 --
+# Variations
+#     # original production version circa gp/3.9.9
+#     -c <env-custom> -l <libdir> -p <patches>
+#     # customized on gpprod for 'env-arch' flag
+#     -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
+#     # [not implemented] set as -e environment variables
+#     -e GP_ENV_CUSTOM=<env-custom> -e GP_ENV_ARCH=<env-arch> -l <libdir> -p <patches>
+#
+# R2.15_Rscript=
+#   <run-rscript> -v 2.15 --
+#   run-rscript.sh -c <env-custom> -a <env-arch> -l <libdir> -p <patches> -v 2.15 --
+test_run_rscript() { 
   local script_dir=$( cd ../ && pwd )    
-  local mock_patch_dir="patches";
-  local mock_lib_dir="taskLib/ConvertLineEndings.2.1"
+  local patches="patches";
+  local libdir="taskLib/ConvertLineEndings.2.1"
   export GP_DEBUG="false"
-  
-  local my_env_arch="macosx"
-  local my_env_custom="env-custom-macos.sh"
 
-  assertEquals "run-rscript, dry-run, -c env-custom, -a env-arch" \
-    "${script_dir}/run-with-env.sh \
--c ${my_env_custom} \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/${my_env_arch}/Library/R/2.15 \
+  # expected '-n', dry_run output
+  local expected="";
+  # template to be modified before assertions
+  local expected_template="${script_dir}/run-with-env.sh EXPECTED_ENV_CUSTOM \
+-u R-2.15 -e GP_DEBUG=FALSE -e R_LIBS= -e R_LIBS_USER=' ' \
+-e R_LIBS_SITE=${patches}/EXPECTED_ENV_ARCHLibrary/R/2.15 \
 -e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
 -e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
 -e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
 -e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version" \
-    "$(../run-rscript.sh -n -c ${my_env_custom} \
--l ${mock_lib_dir} -p ${mock_patch_dir} \
--a ${my_env_arch} \
--v 2.15 -- --version)";
+Rscript --version";
+
+  # test-case: -c env-custom-centos5.sh -a centos5
+  expected="${expected_template/EXPECTED_ENV_CUSTOM/-c env-custom-centos5.sh}";
+  expected="${expected/EXPECTED_ENV_ARCH/centos5/}";
+  assertEquals "run-rscript, -c <env-custom> -a <env-arch>" \
+    "${expected}" \
+    "$(../run-rscript.sh -n -c env-custom-centos5.sh -l ${libdir} -p ${patches} -a centos5 -v 2.15 -- --version)"
+
+  # test-case: no '-c' option, no '-a' option
+  expected="${expected_template/EXPECTED_ENV_CUSTOM }";
+  expected="${expected/EXPECTED_ENV_ARCH}";
+  assertEquals "run-rscript, no '-c' option, no '-a' option" \
+    "${expected}" \
+    "$(../run-rscript.sh -n -l ${libdir} -p ${patches} -v 2.15 -- --version)"
+    
+  # test-case: -c <env-custom>, no '-a' option
+  expected="${expected_template/EXPECTED_ENV_CUSTOM/-c env-custom-macos.sh}";
+  expected="${expected/EXPECTED_ENV_ARCH}";
+  assertEquals "run-rscript, -c <env-custom>, no '-a' option" \
+    "${expected}" \
+    "$(../run-rscript.sh -n -c env-custom-macos.sh -l ${libdir} -p ${patches} -v 2.15 -- --version)"
+
+  # test-case: '-a' missing arg
+  expected="${expected_template/EXPECTED_ENV_CUSTOM/-c env-custom-macos.sh}";
+  expected="${expected/EXPECTED_ENV_ARCH}";
+  assertEquals "run-rscript, '-a' missing arg" \
+    "${expected}" \
+    "$(../run-rscript.sh -n -c env-custom-macos.sh -l ${libdir} -p ${patches} -a -v 2.15 -- --version)"
+
+  # test-case: '-a' empty arg
+  expected="${expected_template/EXPECTED_ENV_CUSTOM/-c env-custom-macos.sh}";
+  expected="${expected/EXPECTED_ENV_ARCH}";
+  assertEquals "run-rscript, '-a' empty arg" \
+    "${expected}" \
+    "$(../run-rscript.sh -n -c env-custom-macos.sh -l ${libdir} -p ${patches} -a '' -v 2.15 -- --version)"
 }
 
-test_rscript_cmd_env_custom_and_env_arch_not_set() {
-  local script_dir=$( cd ../ && pwd )    
-  local mock_patch_dir="patches";
-  local mock_lib_dir="taskLib/ConvertLineEndings.2.1"
-  export GP_DEBUG="false"
+# test 'run-rjava' substitution
+#   run-rjava=<wrapper-scripts>/run-rjava.sh -c <env-custom>
+# Variations
+#   R2.5_Rjava=<run-rjava> 2.5 <rjava_flags> -cp <run_r_path> RunR
+#   rjava_flags=-Xmx512m
+#   run_r_path=<webappDir>/WEB-INF/classes
+test_run_rjava() {
+    export GP_DEBUG="true";
+    local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
+    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '2.5' '-version')"
+}
+
+# test run-rjava.sh with '-c' arg
+test_run_rjava_env_custom_arg() {
+    export GP_DEBUG="true";
+    local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
+    assertEquals "run R2.5" \
+      "$expected" \
+      "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
+}
+
+# test <run-rjava> substitution with hello.R input
+# note: this is as full integration test which invokes R 
+#   via the java RunR wrapper command
+#   this test may fail on systems where R is not configured
+#   it is ok to skip this test if necessary 
+test_run_rjava_hello() {
+  unset GP_DEBUG;
+  local run_r_path="../../../website/WEB-INF/classes/"
+  local cmd;
+  local out;
+
+  # test-case: default site-customization    
+  local cmd="../run-rjava.sh 2.5 -Xmx512m -cp ${run_r_path} RunR hello.R hello"
+  local out="$($cmd)";
+  assertTrue "run-rjava, output ends with 'Hello, world!'" \
+    "[[ \"${out}\" = *\"Hello, world!\" ]]"
   
-  #local my_env_arch="macosx"
-  #local my_env_custom="env-custom-macos.sh"
-
-  assertEquals "run-rscript, dry-run, -a (env-arch not set)" \
-    "${script_dir}/run-with-env.sh \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
--e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
--e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
--e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
--e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version" \
-    "$(../run-rscript.sh -n -c \
--l ${mock_lib_dir} -p ${mock_patch_dir} \
--a \
--v 2.15 -- --version)";
+  # test-case: -c env-custom-macos.sh
+  cmd="../run-rjava.sh -c env-custom-macos.sh 2.5 -Xmx512m -cp ${run_r_path} RunR hello.R hello"
+  out="$($cmd)";
+  assertTrue "run-rjava with '-c', output ends with 'Hello, world!'" \
+    "[[ \"${out}\" = *\"Hello, world!\" ]]"
 }
 
-test_rscript_cmd_env_arch_not_set() {
-  local script_dir=$( cd ../ && pwd )    
-  local mock_patch_dir="patches";
-  local mock_lib_dir="taskLib/ConvertLineEndings.2.1"
-  export GP_DEBUG="false"
-  
-  #local my_env_arch="macosx"
-  local my_env_custom="env-custom-macos.sh"
+#
+# double-check the syntax of the initEnv function in the env-custom-macos.sh script
+# These tests run on non-Mac systems; just validate that the bash syntax is correct
+# and that the PATH is set to the expected R Library location
+#
+# Note: The existing library does not remove an item from the PATH; make sure that the
+#     test cleans up after itself
+#
+test_env_custom_macos() {
+    source "../env-custom-macos.sh"
+    local PATH_ORIG="${PATH}"
+    
+    # test 1: R-2.0
+    initEnv R-2.0
+    assertEquals "R-2.0 PATH" "/Library/Frameworks/R.framework/Versions/2.0/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG}
 
-  assertEquals "run-rscript, dry-run, -a (env-arch not set)" \
-    "${script_dir}/run-with-env.sh \
--c ${my_env_custom} \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
--e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
--e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
--e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
--e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version" \
-    "$(../run-rscript.sh -n -c ${my_env_custom} \
--l ${mock_lib_dir} -p ${mock_patch_dir} \
--a \
--v 2.15 -- --version)";
+    # test 2: R-2.5
+    initEnv R-2.5
+    assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG} 
+    
+    # test 3: r/2.5 canonical name
+    putValue 'r/2.5' 'R-2.5'
+    initEnv 'r/2.5'
+    assertEquals "r/2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG} 
 }
-
 
 #
 # basic '-z' condition test
@@ -466,7 +502,7 @@ Rscript \
 # assertFalse 
 #     <condition> && fail <message>
 #
-testVarSet() {
+test_var_set() {
     unset _my_var;
     [[ -z "${_my_var+x}" ]] \
          || fail '(unbound) _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
@@ -491,7 +527,7 @@ testVarSet() {
 #
 # basic file exists test
 #
-testFileExists() {
+test_file_exists() {
     assertTrue "fileExists('env-test.sh')" "[ -e 'env-test.sh' ]"
     
     prefix="env-";
@@ -499,13 +535,13 @@ testFileExists() {
     assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
 }
 
-testAppendPath() {
+test_appendPath() {
     MY_PATH="/opt/dir1";
     MY_PATH=$(appendPath "${MY_PATH}" "/opt/dir2")
     assertEquals "appendPath" "/opt/dir1:/opt/dir2" "${MY_PATH}"
 }
 
-testAppendPath_ignoreDuplicate() {
+test_appendPath_ignoreDuplicate() {
     MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
     
     assertEquals "appendPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
@@ -522,7 +558,7 @@ testAppendPath_ignoreDuplicate() {
         $(appendPath "${MY_PATH}" "/opt/dir4"); 
 }
 
-testAppendPath_toEmpty() {
+test_appendPath_toEmpty() {
     MY_ARG="/new/pathelement";
     unset MY_PATH;
     set +o nounset
@@ -531,13 +567,13 @@ testAppendPath_toEmpty() {
     assertEquals "appendPath" "/new/pathelement" "${MY_PATH}"
 }
 
-testPrependPath() {
+test_prependPath() {
     MY_PATH="/opt/dir1";
     MY_PATH=$(prependPath "/opt/dir2" "${MY_PATH}")
     assertEquals "prependPath" "/opt/dir2:/opt/dir1" "${MY_PATH}"
 }
 
-testPrependPath_ignoreDuplicate() {
+test_prependPath_ignoreDuplicate() {
     MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
     
     assertEquals "prependPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
@@ -554,7 +590,7 @@ testPrependPath_ignoreDuplicate() {
         $(prependPath "/opt/dir4" "${MY_PATH}" ); 
 }
 
-testPrependPath_toEmpty() {
+test_prependPath_toEmpty() {
     MY_ARG="/new/pathelement";
     unset MY_PATH;
     set +o nounset
@@ -568,7 +604,7 @@ testPrependPath_toEmpty() {
 #
 #
 
-testEnvHashmapInit() {
+test_env_hashmap_init() {
     # initial
     assertEquals "numKeys initial" \
         "0" $(numKeys)
@@ -599,7 +635,7 @@ testEnvHashmapInit() {
             
 }
 
-testEnvHashMap() {
+test_env_hashmap() {
     putValue "A" "a"
     putValue "B" "b"
     putValue "C" "c"
@@ -623,12 +659,12 @@ testEnvHashMap() {
 }
 
 
-testPutValue_NoKey() {
+test_putValue_NoKey() {
     putValue 'Java-1.7'
     assertEquals "getValue('Java-1.7')" "Java-1.7" "$(getValue 'Java-1.7')"
 }
 
-testPutValueWithSpaces() {
+test_putValueWithSpaces() {
     assertEquals "numKeys initial" "0" $(numKeys)
     assertTrue "numKeys -eq 0, initial" "[ 0 -eq $(numKeys) ]"
     assertTrue "isEmpty (initial)" "[ isEmpty ]"
@@ -639,21 +675,21 @@ testPutValueWithSpaces() {
     assertEquals "getValue('B')" "a space" "$(getValue 'B')"
 }
 
-testPutValueWithDelims() {
+test_putValueWithDelims() {
     putValue "A" "a" 
     putValue "B" "val1, val2" 
     assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
     assertEquals "getValue('B')" "val1, val2" "$(getValue 'B')"
 }
 
-testPutKeyWithSpaces() {
+test_putKeyWithSpaces() {
     putValue "A" "a"
     putValue "B KEY" "b"
     assertEquals "__indexOf('B KEY')" "1" $(__indexOf 'B KEY')
     assertEquals "getValue('B KEY')" "b" "$(getValue 'B KEY')"
 }
 
-testGetValueWithDelims() {
+test_getValueWithDelims() {
     putValue "R-2.15" "R-2.15, GCC-4.9" 
     assertEquals "__indexOf('R-2.15')" "0" $(__indexOf 'R-2.15')
     assertEquals "getValue('R-2.15')" "R-2.15, GCC-4.9" "$(getValue 'R-2.15')"
@@ -871,165 +907,6 @@ testRunJava_custom_env_arg() {
 }
 
 #
-# example mapping a single environment to multiple environments, e.g.
-#     R-2.7=cairo,R-2.7
-#
-testMultiEnv() {
-    export GP_DEBUG="true";
-    local 
-}
-
-testRunRJava() {
-    export GP_DEBUG="true";
-    local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
-    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '2.5' '-version')"
-}
-
-testRunRJava_custom_env_arg() {
-    export GP_DEBUG="true";
-    local env_custom="${__test_script_dir}/env-lookup-shunit2.sh";
-    local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
-    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
-}
-
-#
-# validate run-script.sh with no -a flag
-#
-testRunRscript_no_env_arch() {
-    local script_dir=$( cd ../ && pwd )    
-    local mock_patch_dir="/opt/genepattern/patches";
-    export GP_DEBUG="false"
-    
-    local expected="${script_dir}/run-with-env.sh \
--c env-custom-macos.sh \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
--e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
--e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
--e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
--e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version"
-    
-    assertEquals "run R2.15" \
-        "${expected}" \
-        "$('../run-rscript.sh' \
-            '-n' \
-            '-c' 'env-custom-macos.sh' \
-            '-v' '2.15' \
-            '-p' ${mock_patch_dir} \
-            '-l' '/opt/genepattern/tasks/MyModule.1' \
-            '-m' 'FALSE' \
-            '--' \
-            '--version')"
-}
-
-#
-# validate -a flag to run-rscript.sh command
-#
-testRunRscript_with_env_arch_arg() {
-    local script_dir=$( cd ../ && pwd )    
-    local mock_patch_dir="/opt/genepattern/patches";
-    export GP_DEBUG="false"
-    
-    local expected="${script_dir}/run-with-env.sh \
--c env-custom-macos.sh \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/mock-env-arch/Library/R/2.15 \
--e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
--e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
--e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
--e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version"
-    
-    assertEquals "run R2.15 with '-a' 'mock-env-arch' arg" \
-        "${expected}" \
-        "$('../run-rscript.sh' \
-            '-n' \
-            '-c' 'env-custom-macos.sh' \
-            '-v' '2.15' \
-            '-p' ${mock_patch_dir} \
-            '-l' '/opt/genepattern/tasks/MyModule.1' \
-            '-a' 'mock-env-arch' \
-            '-m' 'FALSE' \
-            '--' \
-            '--version')"
-
-    local expected_no_env_arch="${script_dir}/run-with-env.sh \
--c env-custom-macos.sh \
--u R-2.15 \
--e GP_DEBUG=FALSE \
--e R_LIBS= \
--e R_LIBS_USER=' ' \
--e R_LIBS_SITE=${mock_patch_dir}/Library/R/2.15 \
--e R_ENVIRON=${script_dir}/R/Renviron.gp.site \
--e R_ENVIRON_USER=${script_dir}/R/2.15/Renviron.gp.site \
--e R_PROFILE=${script_dir}/R/2.15/Rprofile.gp.site \
--e R_PROFILE_USER=${script_dir}/R/2.15/Rprofile.gp.custom \
-Rscript \
---version"
-
-#    # <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
-#    assertEquals "run R2.15, env-arch not set" \
-#        "${expected_no_env_arch}" \
-#        "$('../run-rscript.sh' \
-#            '-n' \
-#            '-c' 'env-custom-macos.sh' \
-#            '-a' \
-#            '-v' '2.15' \
-#            '-p' ${mock_patch_dir} \
-#            '-l' '/opt/genepattern/tasks/MyModule.1' \
-#            '-m' 'FALSE' \
-#            '--' \
-#            '--version')"
-
-## <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
-#    assertEquals "run R2.15 with '-e' 'GP_ENV_ARCH=mock-env-arch' arg" \
-#        "${expected}" \
-#        "$('../run-rscript.sh' \
-#            '-n' \
-#            '-c' 'env-custom-macos.sh' \
-#            '-e' 'GP_ENV_ARCH=mock_env_arch' \
-#            '-v' '2.15' \
-#            '-p' ${mock_patch_dir} \
-#            '-l' '/opt/genepattern/tasks/MyModule.1' \
-#            '-m' 'FALSE' \
-#            '--' \
-#            '--version')"
-
-}
-
-#
-# double-check the syntax of the initEnv function in the env-custom-macos.sh script
-# These tests run on non-Mac systems; just validate that the bash syntax is correct
-# and that the PATH is set to the expected R Library location
-#
-# Note: The existing library does not remove an item from the PATH; make sure that the
-#     test cleans up after itself
-#
-testEnvCustomMacOs() {
-    source "../env-custom-macos.sh"
-    local PATH_ORIG="${PATH}"
-    
-    # test 1: R-2.0
-    initEnv R-2.0
-    assertEquals "R-2.0 PATH" "/Library/Frameworks/R.framework/Versions/2.0/Resources/bin:${PATH_ORIG}" "${PATH}";
-    export PATH=${PATH_ORIG}
-
-    # test 2: R-2.5
-    initEnv R-2.5
-    assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
-    export PATH=${PATH_ORIG} 
-}
-
-#
 # Prepend an element to the beginning of the path; 
 # Usage: path=$(prependPath "${element}" "${path}")
 #
@@ -1089,15 +966,15 @@ function appendPath() {
 #   echo "my_arr.length: ${#my_arr[@]}";
 ############################################################
 array_length() {
-    local array_name="${1}";
-    local array_ref="${array_name}[@]"
-    if [[ -z ${!array_name+x} ]]; then
-      echo "0";
-      return
-    fi
-    declare -a arr_copy=( "${!array_ref}" )
-    echo "${#arr_copy[@]}";
-  }
+  local array_name="${1}";
+  local array_ref="${array_name}[@]"
+  if [[ -z ${!array_name+x} ]]; then
+    echo "0";
+    return
+  fi
+  declare -a arr_copy=( "${!array_ref}" )
+  echo "${#arr_copy[@]}";
+}
 
 test_num_args() {
     assertEquals "__num_args" "0" "$(__num_args)"

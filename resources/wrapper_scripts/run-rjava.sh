@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-#
-# Wrapper script for running R as a java command. This is for
-#     R modules which pre-date the use of the Rscript command. 
-#
+
+############################################################
+# run-rjava.sh
+#   Java wrapper for legacy R modules, which pre-date the 
+# Rscript command.
 # Usage:
-#     run-rjava.sh -c <env-custom> <r-version> <java-flags> -cp <classpath> RunR <args>
-#
-# Example module commandLines
-#     commandLine=<R2.15_Rjava> <libdir>hello.R hello
-#     commandLine=<R2.5> <libdir>hello.R hello
-#
+#   run-rjava.sh -c env-custom r-version java-flags -cp classpath RunR args
+# Example module commandLine
+#   commandLine=<R2.5> <libdir>hello.R hello
+#   commandLine=<R2.15_Rjava> <libdir>hello.R hello
 # Configuration
-#     run-rjava=<wrapper-scripts>/run-rjava.sh -c <env-custom>
-#     R2.15_Rjava=<run-rjava> 2.15 <rjava_flags> -cp <run_r_path> RunR
+#   run-rjava=<wrapper-scripts>/run-rjava.sh -c <env-custom>
+#   R2.15_Rjava=<run-rjava> 2.15 <rjava_flags> -cp <run_r_path> RunR
+############################################################
 
 function run_rjava() {
     local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -31,7 +31,6 @@ function run_rjava() {
     local r_version="${1}"
     shift;
 
-    # ---> copied from gp-common::parseArgs ...
     # the remaining args are the module command line
     __gp_module_cmd=( "$@" );
 
@@ -44,7 +43,6 @@ function run_rjava() {
     # process '-u' flags after site-customization
     addModuleEnvs;
 
-    # <---- end
     # customization for run-rjava.sh script
     addEnv "R-${r_version}"
     addEnv "Java"
@@ -56,4 +54,3 @@ function run_rjava() {
 }
 
 run_rjava "${@}"
-

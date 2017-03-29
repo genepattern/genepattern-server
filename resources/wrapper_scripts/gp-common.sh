@@ -74,11 +74,6 @@ declare -a __gp_module_cmd=();
 ############################################################
 # parseArgs, parse command line args, initialize
 #   environment variables and site customization scripts
-#
-# Parse run-with-env command line args
-#     input: ${@}, the command line to the script
-#     output: an updated command line array, with run-with-env params stripped.
-#
 # Usage:
 #   parseArgs [-c env-custom] [-e key[=[val]]]* [-u module-name]* \
 #     [--] module_cmd [module_arg]*
@@ -91,15 +86,9 @@ declare -a __gp_module_cmd=();
 #   module_cmd, required, the executable
 #   module_args, optional, the list of module command line arguments
 #
-# Examples,
-#
-#     # set 'env-custom' as '-c' arg, must be first arg 
+# Examples:
 #     parseArgs '-c' 'env-custom-macos.sh' ...
-#
-#     # set 'env-custom' as '-e' environment arg
 #     parseArgs -e GP_ENV_CUSTOM=env-custom-macos.sh ...
-#
-#     # set 'env-custom' as a environment variable
 #     GP_ENV_CUSTOM=env-custom-macos.sh ; parseArgs ...
 ############################################################
 function parseArgs() {
@@ -108,25 +97,13 @@ function parseArgs() {
     __gp_e_args=(); 
     __gp_u_args=();
     __gp_module_cmd=();
-
-#    # optional '-c <env-custom>' flag
-#    if [[ "${1:-}" = "-c" ]]; then
-#        shift; 
-#        # only set if '-c' has an argument
-#        #     [[ -z "${1+x}" ]] means next arg, $1, is not set
-#        #     [[  $1 = -*  ]] means next arg starts with '-'
-#        if ! [[ -z "${1+x}" || $1 = -* ]]; then
-#            __gp_env_custom_arg="${1:-}";
-#            shift;
-#        fi
-#    fi
         
     # optional run-with-env args, of the form ...
     #     -u <env-name>
     #     -e <env>=<value>
     local _e_idx=0;
-    local u_idx=0;
-    # reset OPTIND
+    local _u_idx=0;
+    # reset OPTIND, for testing
     OPTIND=1
     while getopts c:u:e: opt "$@"; do
         # debug: echo "opt=${opt}, OPTIND=${OPTIND}, OPTARG=${OPTARG}";
@@ -146,8 +123,8 @@ function parseArgs() {
                 ;; 
             u)
                 # debug: echo "    parsing '-u' '${OPTARG}'";
-                __gp_u_args[$u_idx]="$OPTARG";
-                u_idx=$((u_idx+1));
+                __gp_u_args[$_u_idx]="$OPTARG";
+                _u_idx=$((_u_idx+1));
                 ;;
             *)
                 # Unexpected option, exit with status of last command
@@ -171,16 +148,6 @@ function parseArgs() {
 
     # process '-c' flag, source site-customization file(s)
     sourceEnvScripts
-#    __gp_env_custom_script="$(convertPath "${GP_ENV_CUSTOM:-${__gp_env_custom_arg:-env-custom.sh}}")";
-#    # load 'env-default.sh' script
-#    if [ -f "${__gp_env_default_script}" ]; then
-#        source "${__gp_env_default_script}";
-#    fi
-#    # optionally load 'env-custom'
-#    if [ -f "${__gp_env_custom_script}" ];
-#    then 
-#        source "${__gp_env_custom_script}";
-#    fi
 
     # process '-u' flags, initialize module environments
     addModuleEnvs;
@@ -431,19 +398,41 @@ function echoEnv() {
 }
 
 ############################################################
-# run the command line
-# call this from an executable shell script
-# see run-with-env.sh for an example
-#
-# Usage:
-#   local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-#   source "${__dir}/gp-common.sh"
-#   run "${@}"
+# for debugging, echo command and path
 ############################################################
-function run() {
+function echoCmdEnv() {
+    echo cmd="${__gp_module_cmd[@]}"
+    local a=${__gp_module_cmd[0]:-""};
+    if ! [[ -z ${a:-} ]]; then
+      echo "which $a: $(which $a)";
+    fi
+    #echo "which Rscript: $(which Rscript)"
+    echo "PATH: ${PATH}"
+}
+
+############################################################
+# Function: run_with_env
+#   Parse run-with-env args, initialize the environment,
+#   and execute the command.
+#
+# Call this function from an executable shell script.
+# Example command line call:
+#   run-with-env.sh -c env_custom_macosh.sh -u java/1.8 java -version
+# Example function call, wrapped in a main function in run-with-env.sh:
+#   main() {
+#     local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+#     source "${__dir}/gp-common.sh"
+#     run_with_env "${@}"
+#   }
+#   main "${@}"
+# See run-with-env.sh for more documentation
+############################################################
+function run_with_env() {
     parseArgs "${@}";
     initModuleEnvs;
+    # debug: echoCmdEnv
     "${__gp_module_cmd[@]}";
 }
+
 
 
