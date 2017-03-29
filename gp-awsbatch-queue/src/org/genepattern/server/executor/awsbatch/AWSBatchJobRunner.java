@@ -41,7 +41,7 @@ public class AWSBatchJobRunner implements JobRunner{
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
     /** generic implementation of getOrDefault, for use in Java 1.7 */
-    public static final <K,V> V getOrDefault(final Map<K,V> map, Object key, V defaultValue) {
+    public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
         V value=map.get(key);
         if (value != null) {
             return value;
