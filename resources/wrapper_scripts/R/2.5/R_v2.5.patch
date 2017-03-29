@@ -1,15 +1,14 @@
---- R.orig	2017-03-28 01:40:41.000000000 -0400
-+++ R	2017-03-28 22:05:36.000000000 -0400
-@@ -1,7 +1,7 @@
+--- R	2007-07-01 11:29:32.000000000 -0400
++++ R.updated	2017-03-28 20:47:04.000000000 -0400
+@@ -1,18 +1,18 @@
  #!/bin/sh
  # Shell wrapper for R executable.
  
 -R_HOME_DIR=/Library/Frameworks/R.framework/Resources
 +R_HOME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
- if test "${R_HOME_DIR}" = "/Library/Frameworks/lib/R"; then
-    case "darwin13.4.0" in
-    linux*)
-@@ -32,11 +32,11 @@
+ if test -n "${R_HOME}" && \
+    test "${R_HOME}" != "${R_HOME_DIR}"; then
+   echo "WARNING: ignoring environment value of R_HOME"
  fi
  R_HOME="${R_HOME_DIR}"
  export R_HOME
