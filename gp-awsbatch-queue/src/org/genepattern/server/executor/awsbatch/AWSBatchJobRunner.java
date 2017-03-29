@@ -40,6 +40,15 @@ import org.genepattern.webservice.ParameterInfo;
 public class AWSBatchJobRunner implements JobRunner{
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
+    /** generic implementation of getOrDefault, for use in Java 1.7 */
+    public static final <K,V> V getOrDefault(final Map<K,V> map, Object key, V defaultValue) {
+        V value=map.get(key);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
     private String defaultLogFile=null;
     
     private static  HashMap<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
@@ -177,7 +186,7 @@ public class AWSBatchJobRunner implements JobRunner{
                 
                 DrmJobStatus.Builder b;
                 b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
-                b.jobState(batchToGPStatusMap.getOrDefault(awsStatus, DrmJobState.UNDETERMINED));
+                b.jobState(getOrDefault(batchToGPStatusMap, awsStatus, DrmJobState.UNDETERMINED));
                 System.out.println("-- get status called on job "+ jobRecord.getGpJobNo() + "  found " + awsStatus);
                 if (awsStatus.equalsIgnoreCase("SUCCEEDED")){
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
