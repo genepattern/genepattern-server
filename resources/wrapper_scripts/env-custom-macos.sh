@@ -97,7 +97,10 @@ function initEnv() {
 
     # add R_HOME/bin to the PATH
     if ! [[ -z ${GP_SET_R_PATH+x} ]]; then
-        echo "adding '${R_HOME}/bin' to the PATH ..."
+        if ! [[ -z ${GP_DEBUG+x} ]]; then
+            # only when the GP_DEBUG flag is set
+            echo "adding '${R_HOME}/bin' to the PATH ..."
+        fi
         export PATH=${R_HOME}/bin:${PATH}
     fi
 
