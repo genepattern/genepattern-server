@@ -2,9 +2,13 @@ package org.genepattern.server.genepattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.genepattern.junitutil.ParameterInfoBuilder;
 import org.genepattern.server.config.GpConfig;
@@ -16,7 +20,6 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Created by nazaire on 8/13/15.
@@ -272,7 +275,7 @@ public class TestValueResolver
         formalSingleParam.setName(singleValueParam);
 
         formalSingleParam.setValue(choiceSpec2);
-        HashMap attributesOne=new HashMap();
+        HashMap<String,String> attributesOne=new HashMap<String,String>();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("optional", "on");
         attributesOne.put("type", "java.lang.String");
@@ -331,7 +334,7 @@ public class TestValueResolver
 
         ParameterInfo formalSingleParam = new ParameterInfo();
         formalSingleParam.setName(singleValueParam);
-        HashMap attributesOne = new HashMap();
+        HashMap<String,String> attributesOne = new HashMap<String,String>();
         attributesOne.put(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET], "--input ");
         attributesOne.put("name", singleValueParam);
         attributesOne.put("optional", "on");
@@ -339,7 +342,7 @@ public class TestValueResolver
         formalSingleParam.setAttributes(attributesOne);
 
         ParameterInfo formalMultiParam = new ParameterInfo();
-        HashMap attributesTwo = new HashMap();
+        HashMap<String,String> attributesTwo = new HashMap<String,String>();
         formalMultiParam.setName(multiValueParam);
         attributesTwo.put("numValues", "0+");
         attributesTwo.put("listMode", "cmd_opt");
@@ -530,49 +533,44 @@ public class TestValueResolver
                 actual);
 
     }
-    
-    @Test
-    public void substituteValue_emptyValue() {
-        final String arg="-a <env-arch>";
-        
-        //GpConfig gpConfig=mock(GpConfig.class);
-        final GpConfig gpConfig=new GpConfig.Builder()
-                .addProperty("env-arch", "rhel6")
-        .build();
-        
-        GpContext jobContext=mock(GpContext.class);
-        Map<String,String> dict=Collections.emptyMap();
-        Map<String,ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
-        // gpConfig.getGPProperty(gpContext, subToken.pname);
-        //when(gpConfig.getGPProperty(jobContext, "env-arch")).thenReturn("");
-        
-        List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, arg, dict, parameterInfoMap);
-        assertEquals("substitute(<env-arch>), expecting list containing one empty string",
-                Arrays.asList(""),
-                actual);
+
+    /**
+     * parameterized test substiteValue <env-arch>
+     */
+    protected void do_env_arch_test(final String arg, final String env_arch, final String expected) { 
+        final GpConfig.Builder b=new GpConfig.Builder();
+        if (env_arch != null) {
+            b.addProperty("env-arch", env_arch);
+        }
+        final GpConfig gpConfig=b.build();
+ 
+        final GpContext jobContext=mock(GpContext.class);
+        final Map<String,String> dict=Collections.emptyMap();
+        final Map<String,ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
+        assertEquals("substitute('"+arg+"'), env-arch="+env_arch,
+            Arrays.asList(expected),
+            ValueResolver.substituteValue(gpConfig, jobContext, arg, dict, parameterInfoMap));
     }
     
-    // <wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>
+    /**
+     * test substituteValue for <env-arch> variations
+     */
     @Test
-    public void substitute_run_script() {
-        final String value="<wrapper-scripts>/run-rscript.sh -c <env-custom> -l <libdir> -p <patches> -a <env-arch>";
+    public void substituteValue_env_arch() {
+        // test case: '-a <env-arch>'        
+        do_env_arch_test("-a <env-arch>", "rhel6", "-a rhel6");
+        do_env_arch_test("-a <env-arch>", null, "-a ");
+        do_env_arch_test("-a <env-arch>", "", "-a "); // empty
         
-        final GpConfig gpConfig=new GpConfig.Builder()
-                .addProperty("wrapper-scripts", "/gp_home/resources/wrapper_scripts")
-                //.addProperty("env-custom", value)
-                .addProperty("env-arch", "rhel6")
-        .build();
-        GpContext jobContext=mock(GpContext.class);
+        // test case: '-A<env-arch>'
+        do_env_arch_test("-A<env-arch>", "rhel6", "-Arhel6");
+        do_env_arch_test("-A<env-arch>", null, "-A");
+        do_env_arch_test("-A<env-arch>", "", "-A");
 
-        final Map<String, String> propsMap = Collections.emptyMap();
-        final Map<String, ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
-        List<String> actual=ValueResolver.resolveValue(
-                gpConfig, jobContext,
-                value, propsMap, parameterInfoMap);
-        assertEquals("substitute run-rscript command",
-                Arrays.asList("/gp_home/resources/wrapper_scripts/run-rscript.sh", "-c"),
-                actual);
-
-        
+        // test case: '-e GP_EVN_ARCH=<env-arch>'
+        do_env_arch_test("-e GP_ENV_ARCH=<env-arch>", "rhel6", "-e GP_ENV_ARCH=rhel6");
+        do_env_arch_test("-e GP_ENV_ARCH=<env-arch>", null, "-e GP_ENV_ARCH=");
+        do_env_arch_test("-e GP_ENV_ARCH=<env-arch>", "", "-e GP_ENV_ARCH=");
     }
+
 }
