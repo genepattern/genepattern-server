@@ -797,6 +797,22 @@ public class GpConfig {
         return value;
     }
 
+    /** 
+     * generic implementation of getOrDefault which works in Java 1.7.
+     * Use as an alternative to the similar method in the Map interface. 
+     *     // requires Java 1.8+
+     *     map.getOrDefault(key, defaultValue)
+     *     // works with Java 1.7
+     *     GpConfig.getOrDefault(map, key, defaultValue); 
+     */
+    public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
+        V value=map.get(key);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
     /**
      * Get java system property.
      * @param key
