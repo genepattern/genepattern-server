@@ -1,0 +1,13 @@
+
+local({
+   # Set repositories as desired.  Here, we are using the R Studio cloud mirror for CRAN and the default Bioconductor site.
+   # Note that these BioC settings are specific to the version of R: 
+   #   see http://bioconductor.org/about/release-announcements/#release-versions
+   options("repos" = c(CRAN="http://cran.rstudio.com",
+                       BioCsoft="https://bioconductor.org/packages/3.4/bioc",
+                       BioCann="https://bioconductor.org/packages/3.4/data/annotation",
+                       BioCexp="https://bioconductor.org/packages/3.4/data/experiment",
+                       BioCextra="https://bioconductor.org/packages/3.4/extra"),
+           "BioC_mirror" = "http://bioconductor.org"
+   )
+})
