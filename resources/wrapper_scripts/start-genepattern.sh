@@ -26,8 +26,8 @@
 #     CATALINA_HOME
 ##############################################################################
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-. "$_gp_script_dir/init-genepattern.sh"
+__gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+. "$__gp_script_dir/init-genepattern.sh"
 
 #
 # (alternative): hard-coded environment initialization
@@ -43,4 +43,4 @@ _gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Otherwise, you must pass in the name (or fq path) to the site customization file,
 #    ./start-genepattern.sh -c env-custom-macos.sh ...
 #
-nohup "${_gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 -u .lsf-7.0 -u UGER "${CATALINA_HOME}/bin/catalina-macapp.sh" run &
+nohup "${__gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 -u .lsf-7.0 -u UGER "${CATALINA_HOME}/bin/catalina-macapp.sh" run &

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -38,6 +39,12 @@ import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.rest.ParameterInfoRecord;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * An implementation of a local job runner using the Apache Commons Exec package.
@@ -58,7 +65,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
 
     private String defaultLogFile=null;
     
-    private long getPendingInterval() {
+    protected long getPendingInterval() {
         return 0L;
         // for debugging, keep jobs in the pending state for a little while
         //return 5L+ (Long) Math.round((60.0*1000.0*Math.random()));
@@ -90,22 +97,22 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     }
 
     private ConcurrentMap<Integer,DrmJobStatus> statusMap=new ConcurrentHashMap<Integer, DrmJobStatus>();
-    private ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
+    protected ConcurrentMap<Integer,Executor> execMap=new ConcurrentHashMap<Integer, Executor>();
     
     private ExecutorService pendingExec=null;
-    private ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
+    protected ConcurrentMap<Integer,Future<?>> pendingMap=new ConcurrentHashMap<Integer, Future<?>>();
     
     // more accurate reporting a user-cancelled tasks
     private Set<Integer> cancelledJobs = new HashSet<Integer>();
     
-    private void initStatus(DrmJobSubmission gpJob) {
+    protected void initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
             .submitTime(new Date())
         .build();
         statusMap.put(gpJob.getGpJobNo(), status);
     }
     
-    private void updateStatus_startJob(DrmJobSubmission gpJob) {
+    protected void updateStatus_startJob(DrmJobSubmission gpJob) {
         DrmJobStatus updated = new DrmJobStatus.Builder(statusMap.get(gpJob.getGpJobNo()))
             .startTime(new Date())
             .jobState(DrmJobState.RUNNING)
@@ -113,7 +120,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         statusMap.put(gpJob.getGpJobNo(), updated);
     }
     
-    private void updateStatus_complete(int gpJobNo, int exitCode, ExecuteException exception) {
+    protected void updateStatus_complete(int gpJobNo, int exitCode, ExecuteException exception) {
         DrmJobStatus status = statusMap.get(gpJobNo);
         DrmJobStatus.Builder b;
         if (status == null) {
@@ -138,7 +145,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         statusMap.put(gpJobNo, b.build());
     }
     
-    private DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
+    protected DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
         cancelledJobs.add(gpJobNo);
         log.debug("updateStatus_cancel, gpJobNo="+gpJobNo+", isPending="+isPending);
         DrmJobStatus status = statusMap.get(gpJobNo);
@@ -181,6 +188,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
         try {
             logCommandLine(gpJob);
+            logInputFiles(gpJob);
             initStatus(gpJob);
             final long pending_interval_ms=getPendingInterval();
             if (pending_interval_ms > 0L) {
@@ -199,7 +207,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return ""+gpJob.getGpJobNo();
     }
     
-    private Future<?> sleepThenStart(final long pending_interval_ms, final DrmJobSubmission gpJob) {
+    protected Future<?> sleepThenStart(final long pending_interval_ms, final DrmJobSubmission gpJob) {
         if (pendingExec==null) {
             pendingExec=Executors.newSingleThreadExecutor();
         }
@@ -342,7 +350,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         return exec;
     }
 
-    private Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+    protected Executor runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
@@ -367,7 +375,7 @@ public class LocalCommonsExecJobRunner implements JobRunner {
      * 
      * @author pcarr
      */
-    private void logCommandLine(final DrmJobSubmission job) {
+    protected void logCommandLine(final DrmJobSubmission job) {
         final File jobLogFile=job.getLogFile(); 
         final File commandLogFile;
         if (jobLogFile==null && defaultLogFile==null) {
@@ -387,11 +395,11 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         logCommandLine(commandLogFile, job);
     }
     
-    private void logCommandLine(final File logFile, final DrmJobSubmission job) { 
+    protected void logCommandLine(final File logFile, final DrmJobSubmission job) { 
         logCommandLine(logFile, job.getCommandLine());
     }
 
-    private void logCommandLine(final File logFile, final List<String> args) { 
+    protected void logCommandLine(final File logFile, final List<String> args) { 
         log.debug("saving command line to log file ...");
         String commandLineStr = "";
         boolean first = true;
@@ -446,4 +454,31 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         }
     }
 
+    protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
+        if (paramInfoMap == null || ! paramInfoMap.containsKey(pname)) {
+            return null;
+        }
+        return paramInfoMap.get(pname).getFormal();
+    }
+    
+    protected void logInputFiles(final DrmJobSubmission gpJob) {
+        if (log.isDebugEnabled()) {
+            final Map<String,ParameterInfoRecord> paramInfoMap = 
+                    ParameterInfoRecord.initParamInfoMap(gpJob.getJobContext().getTaskInfo());
+
+            // walk through all of the input values
+            final JobInput jobInput=gpJob.getJobContext().getJobInput();
+            for(final Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
+                final String pname = entry.getKey().getFqName();
+                final Param param = entry.getValue();
+                final ParameterInfo formalParam = getFormalParam(paramInfoMap, pname);
+                if (formalParam != null && formalParam.isInputFile()) {
+                    int i=0;
+                    for(final ParamValue paramValue : param.getValues()) {
+                        log.debug(""+pname+"["+i+"]: "+paramValue.getValue());
+                    }
+                }
+            }
+        }
+    }
 }

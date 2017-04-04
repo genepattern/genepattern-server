@@ -6,6 +6,7 @@
 #
 # Usage: run-with-env.sh \
 #    [-c <env-custom-site.sh>] \ 
+#    [-e GP_ENV_CUSTOM=<env-custom-site.sh>] \
 #    -u <dotkit-id.0> -u <dotkit-id.1> ... -u <dotkit-id.N> \  
 #    -e <key0=value> ... -e <keyN=value> \
 #    <cmd> [<args>]
@@ -38,44 +39,11 @@
 #     special-case: set the env variable as an empty value like this, -e "MY_KEY"
 #
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-# add this directory to the path
-export PATH="${_gp_script_dir}:${PATH}"
 
-source "${_gp_script_dir}/env-lookup.sh"
-sourceEnvDefault
-# special-case: check for -c <gp_env_custom> 
-if [ "$1" = "-c" ]; then
-    shift;
-    sourceEnvCustom "$1"
-    shift;
-else
-    sourceEnvCustom
-fi
+function main() {
+    local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+    source "${__dir}/gp-common.sh"
+    run_with_env "${@}"
+}
 
-idx=0
-while getopts u:e: opt "$@"; do
-    case $opt in
-        u)
-            addEnv "$OPTARG"
-            ;;
-        e)
-            exportEnv "$OPTARG"
-            ;; 
-        *)
-            # Unexpected option, exit with status of last command
-            exit $?
-            ;;
-    esac
-    idx=$((idx+1))
-    # need this line to remove the option from the cmdline
-    shift $((OPTIND-1)); OPTIND=1
-done
-
-for module in "${_runtime_environments[@]}"
-do
-  initEnv "${module}"
-done
-
-# run the command
-"${@}" 
+main "${@}"

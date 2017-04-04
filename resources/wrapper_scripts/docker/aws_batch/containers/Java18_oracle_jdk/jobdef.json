@@ -1,0 +1,43 @@
+{
+    "containerProperties": {
+        "command": [
+            "/usr/local/bin/runS3OnBatch.sh",
+            "Ref::taskLib",
+            "Ref::inputFileDirectory",
+            "Ref::s3_root",
+            "Ref::working_dir",
+            "Ref::exe1"
+        ],
+        "jobRoleArn": "arn:aws:iam::718039241689:role/BATCH-EFS-ROLE",
+        "environment": [
+            {
+                "name": "STDOUT_FILENAME",
+                "value": "./.gp_metadata/stdout.txt"
+            },
+            {
+                "name": "STDOUT_FILENAME",
+                "value": "./.gp_metadata/stdout.txt"
+            },
+            {
+                "name": "EXITCODE_FILENAME",
+                "value": "./.gp_metadata/exit_code.txt"
+
+            }
+        ],
+        "image": "liefeld/java18_oracle",
+        "memory": 2000,
+        "mountPoints": [],
+        "ulimits": [],
+        "vcpus": 2,
+        "volumes": []
+    },
+    "jobDefinitionName": "Java18_Oracle_Generic",
+    "parameters": {
+        "exe1": "-u",
+        "inputFileDirectory": "job_22345",
+        "s3_root": "noSuchBucket",
+        "taskLib": "src",
+        "working_dir": "job1"
+    },
+    "type": "container"
+}

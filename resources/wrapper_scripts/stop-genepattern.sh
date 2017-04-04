@@ -14,7 +14,7 @@
 #     CATALINA_HOME
 ##############################################################################
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-. "$_gp_script_dir/init-genepattern.sh"
+__gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+. "$__gp_script_dir/init-genepattern.sh"
 
-"${_gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 "${CATALINA_HOME}/bin/catalina-macapp.sh" stop &
+"${__gp_script_dir}/run-with-env.sh" "$@" -u Java-1.8 "${CATALINA_HOME}/bin/catalina-macapp.sh" stop &

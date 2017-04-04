@@ -34,7 +34,7 @@ for example a local GP server running MacOS X, an HPC server with DotKit (http:/
 an HPC server with the Environment Modules (http://modules.sourceforge.net/). 
 
 You should not edit the 'run-with-env.sh', 'run-rscript.sh' (or any other run-*.sh) shell scripts.
-You also should not edit the 'env-default.sh', 'env-hashmap.sh', or 'env-lookup.sh' shell scripts.
+You also should not edit the 'gp-common.sh', 'env-default.sh', or 'env-hashmap.sh' shell scripts.
 It is possible that future updates to the GP server will replace these static scripts with newer versions.
 
 
@@ -49,11 +49,14 @@ Make edits to the env-custom.sh file.
 E.g. edit custom.properties
     env-custom=env-custom-macos.sh
     
+Note: the 'env-default.sh' file (if it is present) will always be loaded first,
+   followed by the optional site customization file.
+
 There are a number of built-in site customizations:
 - env-custom-macos.sh; works for standard MacOS X instance.
 
 These files will also potentially be replaced when you install new versions of GP.
-It is very likely that you will need to made edits to these files. Please coordinate
+It is very likely that you will need to make edits to these files. Please coordinate
 with the GP Team so that these edits are incorporated into the next release of GP.
 
 Additional documentation is in the comments in the run-with-env.sh script.

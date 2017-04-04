@@ -649,7 +649,6 @@ public class GenePatternAnalysisTask {
                     "There is no record of agreement for userId="+jobInfo.getUserId());
         }
        
-        //INPUT_FILE_MODE inputFileMode = getInputFileMode();
         final JOB_TYPE jobType = initJobType(taskInfo);
 
         int formalParamsLength = 0;

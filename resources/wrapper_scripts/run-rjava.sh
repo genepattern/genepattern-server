@@ -1,35 +1,56 @@
 #!/usr/bin/env bash
-#
-# Wrapper script for running R as a java command
-#
-# arg1: the version number of R to run, e.g. '2.15'
-#
 
-_gp_script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-# add this directory to the path
-export PATH="${_gp_script_dir}:${PATH}"
+############################################################
+# run-rjava.sh
+#   Java wrapper for legacy R modules, which pre-date the 
+# Rscript command.
+# Usage:
+#   run-rjava.sh -c env-custom r-version java-flags -cp classpath RunR args
+# Example module commandLine
+#   commandLine=<R2.5> <libdir>hello.R hello
+#   commandLine=<R2.15_Rjava> <libdir>hello.R hello
+# Configuration
+#   run-rjava=<wrapper-scripts>/run-rjava.sh -c <env-custom>
+#   R2.15_Rjava=<run-rjava> 2.15 <rjava_flags> -cp <run_r_path> RunR
+############################################################
 
-source "${_gp_script_dir}/env-lookup.sh"
-sourceEnvDefault
-# special-case: check for -c <gp_env_custom> 
-if [ "$1" = "-c" ]; then
+function run_rjava() {
+    local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+    source "${__dir}/gp-common.sh"
+    
+    # optional '-c <env-custom>' flag
+    if [[ "${1:-}" = "-c" ]]; then
+        shift; 
+        # only set if '-c' has an argument
+        if ! [[ -z "${1+x}" || $1 = -* ]]; then
+            __gp_env_custom_arg="${1:-}";
+            shift;
+        fi
+    fi
+    
+    local r_version="${1}"
     shift;
-    sourceEnvCustom "$1"
-    shift;
-else
-    sourceEnvCustom
-fi
 
-r_version="${1}"
-shift;
+    # the remaining args are the module command line
+    __gp_module_cmd=( "$@" );
 
-addEnv "R-${r_version}"
-addEnv "Java"
-for module in "${_runtime_environments[@]}"
-do
-  initEnv "${module}"
-done
+    # process '-e' flags immediately
+    exportEnvs;
 
-r=`which R`
-rhome=${r%/*/*}
-java "-DR_HOME=${rhome}" -Dr_flags='--no-save --quiet --slave --no-restore' "$@"
+    # process '-c' flag next
+    sourceEnvScripts;
+    
+    # process '-u' flags after site-customization
+    addModuleEnvs;
+
+    # customization for run-rjava.sh script
+    addEnv "R-${r_version}"
+    addEnv "Java"
+    initModuleEnvs;
+
+    r=`which R`
+    rhome=${r%/*/*}
+    java "-DR_HOME=${rhome}" -Dr_flags='--no-save --quiet --slave --no-restore' "$@"
+}
+
+run_rjava "${@}"
