@@ -45,7 +45,11 @@ public class ValueResolver {
     }
     
     public static List<String> resolveValue(final GpConfig gpConfig, final GpContext gpContext, final String value, final Map<String, String> propsMap, final Map<String, ParameterInfoRecord> parameterInfoMap) {
-        return resolveValue(gpConfig, gpContext, value, propsMap, parameterInfoMap, 0);
+        final List<String> v=resolveValue(gpConfig, gpContext, value, propsMap, parameterInfoMap, 0);
+        if (log.isDebugEnabled()) {
+            log.debug(value+" ==> "+v);
+        }
+        return v;
     }
 
     //TODO: MAX_DEPTH check
@@ -166,6 +170,10 @@ public class ValueResolver {
             if (!Strings.isNullOrEmpty(baseGpHref)) {
                 value=baseGpHref+"/";
             }
+        }
+        if (value==null) {
+            log.error("Missing substitution value for '"+subToken.pname+"', substituting empty string");
+            value="";
         }
         return Arrays.asList(value);
     }

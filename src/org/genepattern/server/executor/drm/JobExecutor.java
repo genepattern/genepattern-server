@@ -210,7 +210,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
-    public JobExecutor() {  
+    public JobExecutor() {
         this( HibernateUtil.instance(), JobEventBus.instance() );
     }
     
@@ -223,8 +223,6 @@ public class JobExecutor implements CommandExecutor2 {
     }
     
     public JobExecutor(final HibernateSessionManager mgr, final EventBus eventBus) {
-        System.out.println("===>>>  RUNNING IN THE DEVELOPMENT CODEBASE");
-
         this.mgr=mgr;
         this.eventBus=eventBus;
     }
@@ -776,10 +774,6 @@ public class JobExecutor implements CommandExecutor2 {
 
     @Override
     public void runCommand(final GpContext jobContext, String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, File stdinFile) throws CommandExecutorException {
-       
-        log.error("RUNNING IN THE DEVELOPMENT CODEBASE");
-        
-        
         if (jobContext==null) {
             throw new IllegalArgumentException("jobContext==null");
         }

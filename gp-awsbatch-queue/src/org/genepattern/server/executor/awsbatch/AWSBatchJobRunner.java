@@ -41,6 +41,15 @@ import org.json.JSONObject;
 public class AWSBatchJobRunner implements JobRunner{
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
+    /** generic implementation of getOrDefault, for use in Java 1.7 */
+    public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
+        V value=map.get(key);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
     private String defaultLogFile=null;
     
     private static  HashMap<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
@@ -183,8 +192,8 @@ public class AWSBatchJobRunner implements JobRunner{
                 DrmJobStatus.Builder b;
                 b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
                 b.jobState(batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
-                 System.out.println(" == " + batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
                 if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")){
+
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
                     // JSON instead of just the ID and then read it into a JSON obj from which we pull the status
                     // and sometimes the other details

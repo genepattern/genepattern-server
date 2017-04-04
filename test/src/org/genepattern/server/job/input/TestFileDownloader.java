@@ -3,7 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.job.input;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,18 +25,17 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.input.cache.CachedFtpDir;
 import org.genepattern.server.job.input.cache.CachedFtpFile;
+import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.cache.CommonsNet_3_3_Impl;
 import org.genepattern.server.job.input.cache.DownloadException;
-import org.genepattern.server.job.input.cache.CachedFtpFileFactory;
 import org.genepattern.server.job.input.cache.EdtFtpJImpl;
 import org.genepattern.server.job.input.choice.ftp.FtpEntry;
 import org.genepattern.server.job.input.choice.ftp.ListFtpDirException;
-import org.junit.Assert;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
 
 /**
  * jUnit tests for downloading an input file from an external URL.
@@ -62,15 +61,14 @@ public class TestFileDownloader {
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
     private File tmpDir;
-    private File userDir;
     private HibernateSessionManager mgr;
     private GpConfig gpConfig;
     private GpContext gpContext;
     
     @Before
     public void setUp() throws IOException, ExecutionException {
-        tmpDir=temp.newFolder("tmp");
-        userDir=temp.newFolder("users");
+        tmpDir=temp.newFolder();
+        final File userDir=new File(tmpDir, "users");
         mgr=DbUtil.getTestDbSession();
         gpConfig=new GpConfig.Builder()
             .addProperty("user.root.dir", userDir.getAbsolutePath())  // <---- the root directory into which user files are saved
@@ -92,7 +90,7 @@ public class TestFileDownloader {
         final boolean mayInterruptIfRunning=true;
         final boolean isCancelled=future.cancel(mayInterruptIfRunning);
         if (!isCancelled) {
-            Assert.fail("future.cancel returned false");
+            fail("future.cancel returned false");
         }
         
         //does cancel have any effect?
@@ -123,10 +121,10 @@ public class TestFileDownloader {
                 return;
             }
             if (expected) {
-                Assert.assertTrue( "file transfer still going, cancelWorked="+cancelWorked+", shutdownWorked="+shutdownWorked, cancelWorked || shutdownWorked);
+                assertTrue( "file transfer still going, cancelWorked="+cancelWorked+", shutdownWorked="+shutdownWorked, cancelWorked || shutdownWorked);
             }
             else {
-                Assert.assertFalse("Expecting cancellation to fail", cancelWorked || shutdownWorked);
+                assertFalse("Expecting cancellation to fail", cancelWorked || shutdownWorked);
             }
         }
     }
@@ -140,12 +138,12 @@ public class TestFileDownloader {
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
-            Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
+            fail("IOException downloading file: "+e.getLocalizedMessage());
         }
         
         //size check
-        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
-        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
+        assertEquals("name check", smallFile_expectedName, toFile.getName());
+        assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
     
     @Test
@@ -157,12 +155,12 @@ public class TestFileDownloader {
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (IOException e) {
-            Assert.fail("IOException downloading file: "+e.getLocalizedMessage());
+            fail("IOException downloading file: "+e.getLocalizedMessage());
         }
         
         //size check
-        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
-        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
+        assertEquals("name check", smallFile_expectedName, toFile.getName());
+        assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
     
     @Test
@@ -174,12 +172,12 @@ public class TestFileDownloader {
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
-            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
+            fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
         
         //size check
-        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
-        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
+        assertEquals("name check", smallFile_expectedName, toFile.getName());
+        assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
     @Test
@@ -191,12 +189,12 @@ public class TestFileDownloader {
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
-            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
+            fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
 
         //size check
-        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
-        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
+        assertEquals("name check", smallFile_expectedName, toFile.getName());
+        assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
     @Test
@@ -208,11 +206,11 @@ public class TestFileDownloader {
             cachedFtpFile.downloadFile(fromUrl, toFile);
         }
         catch (Throwable e) {
-            Assert.fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
+            fail("Error downloading file: "+e.getClass().getName()+" - "+e.getLocalizedMessage());
         }
         //size check
-        Assert.assertEquals("name check", smallFile_expectedName, toFile.getName());
-        Assert.assertEquals("size check", smallFile_expectedLength, toFile.length());
+        assertEquals("name check", smallFile_expectedName, toFile.getName());
+        assertEquals("size check", smallFile_expectedLength, toFile.length());
     }
 
     /**
@@ -270,7 +268,7 @@ public class TestFileDownloader {
         if (!toParent.exists()) {
             boolean success=toFile.getParentFile().mkdirs();
             if (!success) {
-                Assert.fail("failed to create parent dir before download, parentDir="+toParent);
+                fail("failed to create parent dir before download, parentDir="+toParent);
             }
         }
         cancellationTest(true, toFile, new Callable<File>() {
@@ -294,7 +292,7 @@ public class TestFileDownloader {
         expected.add(new FtpEntry("03.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/03.txt"));
         expected.add(new FtpEntry("04.txt", "ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.dir/A/04.txt"));
         
-        Assert.assertEquals("filesToDownload", expected, files);
+        assertEquals("filesToDownload", expected, files);
     }
     
     /**
@@ -305,22 +303,22 @@ public class TestFileDownloader {
     public void testDirectoryDownload() throws DownloadException {
         final CachedFtpDir cachedFtpDir = new CachedFtpDir(mgr, gpConfig, gpContext, dirUrl);
 
-        Assert.assertFalse("cachedFtpDir is already downloaded, localPath="+cachedFtpDir.getLocalPath().getServerFile(), cachedFtpDir.isDownloaded());
+        assertFalse("cachedFtpDir is already downloaded, localPath="+cachedFtpDir.getLocalPath().getServerFile(), cachedFtpDir.isDownloaded());
         final GpFilePath localDirPath=cachedFtpDir.download();
-        Assert.assertTrue("after: isDownloaded", cachedFtpDir.isDownloaded());
+        assertTrue("after: isDownloaded", cachedFtpDir.isDownloaded());
         final File localDir=localDirPath.getServerFile();
-        Assert.assertTrue("localDir.exists", localDir.exists());
-        Assert.assertEquals("localDir.name", "A", localDir.getName());
-        Assert.assertTrue("localDir.isDirectory", localDir.isDirectory());
+        assertTrue("localDir.exists", localDir.exists());
+        assertEquals("localDir.name", "A", localDir.getName());
+        assertTrue("localDir.isDirectory", localDir.isDirectory());
 
         final File[] localFiles=localDir.listFiles();
         Arrays.sort(localFiles);
         
-        Assert.assertEquals("expecting 4 files", 4, localFiles.length);
-        Assert.assertEquals("localFiles[0].name", "01.txt", localFiles[0].getName());
-        Assert.assertEquals("localFiles[1].name", "02.txt", localFiles[1].getName());
-        Assert.assertEquals("localFiles[2].name", "03.txt", localFiles[2].getName());
-        Assert.assertEquals("localFiles[3].name", "04.txt", localFiles[3].getName());
+        assertEquals("expecting 4 files", 4, localFiles.length);
+        assertEquals("localFiles[0].name", "01.txt", localFiles[0].getName());
+        assertEquals("localFiles[1].name", "02.txt", localFiles[1].getName());
+        assertEquals("localFiles[2].name", "03.txt", localFiles[2].getName());
+        assertEquals("localFiles[3].name", "04.txt", localFiles[3].getName());
     }
     
     @Test

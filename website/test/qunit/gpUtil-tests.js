@@ -74,6 +74,11 @@ function checkTimeoffset(d, hours, minutes, message) {
     QUnit.assert.equal(d.getMinutes()+d.getTimezoneOffset()%60, minutes, message+" check minutes");
 }
 
+QUnit.test("Timezone testing", function(assert) {
+    assert.equal( new Date().getTimezoneOffset(), "300", "timezone offset, in minutes" );
+    assert.equal( gpUtil.getTimezoneOffsetIso(), "-05:00", "timezone offset, ISO-8601 format" );
+});
+
 QUnit.test("gpUtil.formatDate", function(assert) {
     // ISO 8601 Date format examples
     // make sure tests will pass in different timezones
