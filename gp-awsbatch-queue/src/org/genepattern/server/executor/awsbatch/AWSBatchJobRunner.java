@@ -172,6 +172,7 @@ public class AWSBatchJobRunner implements JobRunner{
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
             try {
+                System.out.print(".");
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -182,20 +183,24 @@ public class AWSBatchJobRunner implements JobRunner{
                 DrmJobStatus.Builder b;
                 b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
                 b.jobState(batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
-                 
-                if (awsStatus.equalsIgnoreCase("SUCCEEDED")){
+                 System.out.println(" == " + batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
+                if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")){
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
                     // JSON instead of just the ID and then read it into a JSON obj from which we pull the status
                     // and sometimes the other details
-                   
+                    System.out.println("Done.");
+                    try {
                     b.startTime(new Date(awsJob.getLong("startedAt")));
                     b.submitTime(new Date(awsJob.getLong("createdAt")));
                     b.endTime(new Date(awsJob.getLong("stoppedAt")));
-              
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
                     
                     refreshWorkingDirFromS3(jobRecord);
-                } else if (awsStatus.equalsIgnoreCase("FAILED")) {
                     
+                } else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
+                    System.out.println("Failed.");
                     try {
                         b.startTime(new Date(awsJob.getLong("startedAt")));
                     } catch (Exception e){// its not always present depending non how it failed
@@ -252,7 +257,7 @@ public class AWSBatchJobRunner implements JobRunner{
             exec.execute(cl, cmdEnv);
       
             String output =  outputStream.toString().trim();
-            System.out.println(output);
+            System.out.println("JOB OVER SYNCH: " + jobRecord.getGpJobNo()+ "  --  " + output);
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -261,7 +266,7 @@ public class AWSBatchJobRunner implements JobRunner{
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
         File workDir = jobRecord.getWorkingDir();
         File gpMeta = new File(workDir, ".gp_metadata");
-        if (gpMeta.isDirectory() && gpMeta.exists()){
+        if (gpMeta.isDirectory()){
             File stdErr = new File(gpMeta, "stderr.txt");
             if (stdErr.exists()) copyFileContents(stdErr, jobRecord.getStderrFile());
             File stdOut = new File(gpMeta, "stdout.txt");
