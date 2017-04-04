@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -199,14 +201,28 @@ public class AWSBatchJobRunner implements JobRunner{
                     // and sometimes the other details
                     System.out.println("Done.");
                     try {
-                    b.startTime(new Date(awsJob.getLong("startedAt")));
-                    b.submitTime(new Date(awsJob.getLong("createdAt")));
-                    b.endTime(new Date(awsJob.getLong("stoppedAt")));
+                        b.queueId(awsJob.getString("jobQueue"));
+                        b.startTime(new Date(awsJob.getLong("startedAt")));
+                        b.submitTime(new Date(awsJob.getLong("createdAt")));
+                        b.endTime(new Date(awsJob.getLong("stoppedAt")));
                     } catch (Exception e){
                         e.printStackTrace();
                     }
                     
                     refreshWorkingDirFromS3(jobRecord);
+                    try {
+                        File metaDataDir = new File( jobRecord.getWorkingDir(), ".gp_metadata");
+                        File exitCodeFile = new File(metaDataDir, "exit_code.txt");
+                        byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
+                        String jsonText = new String(encoded);
+                        JSONObject json =new JSONObject(jsonText);  
+                       
+                        b.exitCode(json.getInt("exit_code"))  ;  
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                     
                 } else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
                     System.out.println("Failed.");
@@ -266,7 +282,7 @@ public class AWSBatchJobRunner implements JobRunner{
             exec.execute(cl, cmdEnv);
       
             String output =  outputStream.toString().trim();
-            System.out.println("JOB OVER SYNCH: " + jobRecord.getGpJobNo()+ "  --  " + output);
+           // System.out.println("JOB OVER SYNCH: " + jobRecord.getGpJobNo()+ "  --  " + output);
         } catch (Exception e){
             e.printStackTrace();
         }
