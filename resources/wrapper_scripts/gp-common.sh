@@ -9,9 +9,8 @@
 # Requirements:
 #   * Must work with Bash 3 for Mac OS X compatibility
 #     Tested with version 3.2.57(1)-release (x86_64-apple-darwin15)
-#   * For best results do not use symbolic links to this script
-#     or other executables. As a workaround set GP_SCRIPT_DIR before
-#     sourcing this script.
+#   * For best results avoid symbolic links to this script; 
+#     as a workaround set GP_SCRIPT_DIR
 # 
 # Includes:
 #   env-hashmap.sh - bash3 compatible alternative to an associative array
@@ -44,7 +43,14 @@
 #     '-c' 'env-custom-macos.sh'
 #     source ${GP_SCRIPT_DIR}/env-custom-macos.sh
 # 
-# See more details in the 'run-with-env.sh' comments.
+# Site Customization:
+# set 'site customization' in one of the following ways ...
+#   with -c arg
+#     run-with-env.sh -c env-custom ...
+#   with environment variable
+#     GP_ENV_CUSTOM=env-custom ; run-with-env.sh ...
+#   with -e arg
+#     run-with-env.sh -e GP_ENV_CUSTOM=env-custom ...
 ############################################################
 
 # include this script once and only once
@@ -70,6 +76,112 @@ declare -a __gp_e_args=();
 declare -a __gp_u_args=();
 # the module command line, stripped of configuration args such as '-c', '-e', and '-u'
 declare -a __gp_module_cmd=();
+
+############################################################
+# strict_mode
+#   set bash 'strict mode' flags
+############################################################
+strict_mode() {
+  # Exit on error. Append || true if you expect an error.
+  set -o errexit
+  # Exit on error inside any functions or subshells.
+  set -o errtrace
+  # Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR
+  set -o nounset
+  # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
+  set -o pipefail
+  # Turn on traces, useful while debugging but commented out by default
+  #set -o xtrace
+}
+
+############################################################
+# is_true
+#   return 0 if the variable referenced by var-name is true
+#   return 1 if it is not set or false
+# Usage:
+#   if is_true var-name; then
+#     ...
+#   fi
+# By def'n, true means the variable is set to one of ...
+#   0 | true | TRUE
+#
+# This uses an indirect reference to the named variable
+############################################################
+is_true() {
+  if [[ $# -eq 0 ]]; then
+    # debug echo "missing arg"
+    return 1;
+  fi
+
+  # variable name
+  local name="${1}";
+  if [[ -z "${!name+x}" ]]; then
+    return 1
+  fi
+  local val="${!name}";
+  if [[ "${val}" = 0 || "${val}" = "true" || "${val}" = "TRUE" ]]; then
+    return 0;
+  fi
+  return 1
+}
+
+############################################################
+# Function: is_valid_var
+#   Is the arg a valid Bash variable name
+# Output:
+#   return 1 for false
+#   return 0 for true
+# Usage:
+#   if is_valid_var "var_name"; then
+#      ...
+#   fi
+############################################################
+is_valid_var() {
+  if [[ $# -eq 0 ]]; then
+    # debug echo "missing arg"
+    return 1;
+  fi
+
+  # Invalid bash variable
+  [[ ! "$1" =~ ^[a-zA-Z_]+[a-zA-Z0-9_]*$ ]] && { 
+    # debug: echo "Invalid bash variable: $1" 1>&2 ; 
+    return 1 ; 
+  }
+  return 0;
+}
+
+############################################################
+# Function: has_arg, check for missing arg in getopts loop
+# Output:
+#   return 0, success, expected, when there is an arg
+#   return 1, failure, unexpected, when the arg is missing
+# Usage:
+#   has_arg [optind, default=2]
+# Example:
+#   if has_arg; then
+#     env_custom="${OPTARG:-}"
+#   fi
+#
+# This is useful for processing command line options which should
+# have an argument, but which may not, e.g.
+#     <run-with-env> -c -u java/1.8 java ..., missing -c arg
+#     <run-with-env> -a -u java/1.8 java ..., missing -a arg
+############################################################
+has_arg() {        
+  # only set if the current option has an argument, e.g.
+  #   -c env-custom-macos.sh  
+  #     [[ -z "${OPTARG+x}" ]] means next arg is not set
+  #     [[  $OPTARG = -*  ]] means next arg starts with '-'
+  if ! [[ -z "${OPTARG+x}" || $OPTARG = -* ]]; then
+    # success
+    return 0;
+  else
+    # failure
+    #   reset OPTIND to '2', can be overridden with $1 arg 
+    OPTIND=${1:-2};
+    return 1;
+  fi
+}
 
 ############################################################
 # parseArgs, parse command line args, initialize
@@ -111,7 +223,7 @@ function parseArgs() {
             c)
                 # optional '-c <env-custom>' flag
                 # debug: echo "    parsing '-c' '${OPTARG}'";
-                if hasArg; then
+                if has_arg; then
                     __gp_env_custom_arg="$OPTARG";
                     #echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
                 fi
@@ -151,39 +263,6 @@ function parseArgs() {
 
     # process '-u' flags, initialize module environments
     addModuleEnvs;
-}
-
-############################################################
-# Function: hasArg, check for missing arg in getopts loop
-# Output:
-#   return 0, success, expected, when there is an arg
-#   return 1, failure, unexpected, when the arg is missing
-# Usage:
-#   hasArg 
-# Example:
-#   if hasArg; then
-#     env_custom="${OPTARG:-}"
-#   fi
-#
-# This is useful for processing command line options which should
-# have an argument, but which may not, e.g.
-#     <run-with-env> -c -u java/1.8 java ..., missing -c arg
-#     <run-with-env> -a -u java/1.8 java ..., missing -a arg
-############################################################
-hasArg() {        
-  # only set if the current option has an argument, e.g.
-  #   -c env-custom-macos.sh  
-  #     [[ -z "${OPTARG+x}" ]] means next arg is not set
-  #     [[  $OPTARG = -*  ]] means next arg starts with '-'
-  if ! [[ -z "${OPTARG+x}" || $OPTARG = -* ]]; then
-    # success
-    return 0;
-  else
-    # failure
-    #   reset OPTIND to '2', can be overridden with $1 arg 
-    OPTIND=${1:-2};
-    return 1;
-  fi
 }
 
 ############################################################
@@ -433,6 +512,4 @@ function run_with_env() {
     # debug: echoCmdEnv
     "${__gp_module_cmd[@]}";
 }
-
-
 

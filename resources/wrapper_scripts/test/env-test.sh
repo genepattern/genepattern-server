@@ -15,23 +15,14 @@ oneTimeSetUp()  {
     readonly __gp_script_file="${GP_SCRIPT_DIR}/$(basename "${BASH_SOURCE[0]}")";
     readonly __gp_script_base="$(basename ${__gp_script_file} .sh)";
 
-    # Exit on error. Append || true if you expect an error.
-    set -o errexit
-    # Exit on error inside any functions or subshells.
-    set -o errtrace
-    # Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR
-    set -o nounset
-    # Catch the error in case mysqldump fails (but gzip succeeds) in `mysqldump |gzip`
-    set -o pipefail
-    # Turn on traces, useful while debugging but commented out by default
-    #set -o xtrace
-
     # source 'gp-common.sh'
     if [ -f "${__gp_common_script}" ]; then
         source "${__gp_common_script}";
     else
         fail "gp-common-script not found: ${__gp_common_script}";
     fi
+    strict_mode
+    # disable exit on error for unit testing
     set +o errexit
 }
 
@@ -101,7 +92,6 @@ test_gp_script_dir() {
   endSkipping;
   
   # temp, for R script rewrite
-  #local _r_home_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
   local _r_home_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
   echo "_r_home_dir: ${_r_home_dir}";
   assertEquals "parent_dir check" "${__parent_dir}" "${_r_home_dir}"
@@ -966,6 +956,11 @@ function appendPath() {
 #   echo "my_arr.length: ${#my_arr[@]}";
 ############################################################
 array_length() {
+  if [[ $# -eq 0 ]]; then
+    echo "0";
+    return
+  fi
+
   local array_name="${1}";
   local array_ref="${array_name}[@]"
   if [[ -z ${!array_name+x} ]]; then
@@ -1012,6 +1007,238 @@ test_array_length() {
     
     my_arr=( "APPLE" "BANANA" "ORANGE" "" "NOT" "WITH SPACE" );
     assertEquals "array_length, (6 items)" "6" "$(array_length my_arr)";
+}
+
+test_is_true() {
+  # 0 is true
+  local my_var=0;
+  if ! is_true "my_var"; then
+      fail "is_true 'my_var', 0 is true";
+  fi
+  # 'true' is true
+  my_var="true";
+  if ! is_true "my_var"; then
+      fail "is_true 'my_var', 'true' is true";
+  fi
+  # 'TRUE' is true
+  my_var="TRUE";
+  if ! is_true "my_var"; then
+      fail "is_true 'my_var', 'TRUE' is true";
+  fi
+  # non-zero is false
+  my_var=1;
+  if is_true "my_var"; then
+    fail "is_true 'my_var', my_var=1: expected 'false', non-zero is false";
+  fi
+  # 'false' is not true
+  my_var="false";
+  if is_true "my_var"; then
+      fail "is_true 'my_var', 'false' is not true";
+  fi
+  # 'FALSE' is not true
+  my_var="FALSE";
+  if is_true "my_var"; then
+      fail "is_true 'my_var', 'FALSE' is not true";
+  fi
+  # (empty string) is not true
+  my_var="";
+  if is_true "my_var"; then
+      fail "is_true 'my_var', (empty string) is not true";
+  fi
+  # any other string is not true
+  my_var="truthy";
+  if is_true "my_var"; then
+      fail "is_true 'my_var', any other string is not true";
+  fi
+  # no arg
+  if is_true; then
+      fail "is_true (no arg) is not true"
+  fi
+  # unset
+  unset my_var;
+  if is_true "my_var"; then
+      fail "is_true 'my_var', not set is not true";
+  fi
+}
+
+test_is_valid_var() {
+  if is_valid_var; then
+      fail "is_valid_var (no arg): expected 'false'"
+  fi
+  if is_valid_var ""; then
+      fail "is_valid_var (empty arg): expected 'false'"
+  fi
+  if is_valid_var "space in name"; then
+      fail "is_valid_var 'space in name': expected 'false'"
+  fi
+  if is_valid_var "9numberAtStart"; then
+      fail "is_valid_var '9numberAtStart': expected 'false'"
+  fi
+  if is_valid_var "arg;semi"; then
+      fail "is_valid_var 'arg;semi': expected 'false'"
+  fi
+  if is_valid_var "arg; \`ls /\`"; then
+      fail "is_valid_var 'arg;semi': expected 'false'"
+  fi
+  if ! is_valid_var "good"; then
+      fail "is_valid_var 'good': expected 'true'"
+  fi
+  if ! is_valid_var "__under_score"; then
+      fail "is_valid_var '__under_score': expected 'true'"
+  fi
+  if ! is_valid_var "number_at_end_01"; then
+      fail "is_valid_var 'number_at_end_01': expected 'true'"
+  fi
+}
+
+############################################################
+# Function: arr_create
+#   Create a new array, by indirect reference
+# Usage:
+#   arr_create array-name
+############################################################
+arr_create() {
+  if [[ "$#" -eq 0 ]] || ! is_valid_var "$1"; then
+    # debug: echo "Invalid bash variable" 1>&2 ; 
+    return 1 ;
+  fi
+  local -r array_name="$1"
+  # The following line can be replaced with 'declare -ag $array_name=\(\)'
+  # Note: For some reason when using 'declare -ag $array_name' without the parentheses will make 'declare -p' fail
+  eval $array_name=\(\)
+}
+
+############################################################
+# Function: arr_push
+#   Add item to end of array, by indirect reference
+# Usage:
+#   arr_push array-name value
+############################################################
+arr_push() { 
+  if [[ "$#" -eq 0 ]] || ! is_valid_var "$1"; then
+    # debug: echo "Invalid bash variable" 1>&2 ; 
+    return 1 ;
+  fi
+  local -r array_name="$1"
+  shift
+  if [[ "$#" -eq 0 ]]; then
+    # debug: echo "Missing arg"
+    return 1 ;
+  fi
+  local -r value="$1"
+
+  declare -p "${array_name}" > /dev/null 2>&1
+  if [[ $? -eq 1 ]]; then
+    # debug: echo "Bash variable [${1}] doesn't exist" 1>&2 ; 
+    return 1 ;
+  fi
+  eval $array_name[\$\(\(\${#${array_name}[@]}\)\)]=\$value
+}
+
+############################################################
+# Function: arr_get
+#   Get the nth value by indirect reference to the named array
+#   $array-name[$array-index]
+# Usage:
+#   arr_get array-name array-index
+############################################################
+arr_get() {
+  if [[ "$#" -eq 0 ]]; then
+    # debug: echo "arr_get: Missing arg, 'array-name' <= '\$1'" 1>&2 ;
+    echo ""
+    return
+  fi
+  if ! is_valid_var "$1"; then
+    # debug: echo "arr_get: Invalid bash variable, 'array-name' <= '\$1'" 1>&2 ; 
+    echo ""
+    return
+  fi
+  local -r array_name="${1}";
+  shift
+  if [[ "$#" -eq 0 ]]; then
+    # debug: echo "arr_get: Missing arg, 'array-index' <= '\$2'" 1>&2 ;
+    echo ""
+    return
+  fi
+  local -i idx="${1}"
+  local array_ref="${array_name}[@]"
+  if [[ -z ${!array_name+x} ]]; then
+    # debug: echo "arr_get: Array reference not defined: '!$array_name'" 1>&2 ;
+    echo ""
+    return
+  fi
+
+  declare -a arr_copy=( "${!array_ref}" )
+  local -i length="${#arr_copy[@]}"
+  if [[ $idx -lt 0 ]] || [[ $idx -ge $length ]]; then
+    # debug: echo "index out of range: ${array_name}[${idx}]" 1>&2 ;
+    echo ""
+    return
+  fi
+  echo "${arr_copy[$idx]}";
+}
+
+############################################################
+# Function: arr_get_unchecked
+#   Get the nth value by indirect reference to the named array
+#   $array-name[$array-index]
+# Usage:
+#   arr_get array-name array-index
+# Note: this version does not check array bounds
+############################################################
+arr_get_unchecked() {
+  if [[ "$#" -eq 0 ]] || ! is_valid_var "$1"; then
+    # debug: echo "Missing arg or invalid bash variable" 1>&2 ; 
+    return 1 ;
+  fi
+  local -r array_name="$1"
+  shift
+  if [[ "$#" -eq 0 ]]; then
+    # debug: echo "Missing arg"
+    return 1 ;
+  fi
+  local -i array_index="$1"
+  local array_ref="${array_name}[$array_index]"
+  echo "${!array_ref}"
+}
+
+test_arr_push() {
+  unset my_arr
+  my_arr_name="my_arr"
+  arr_create $my_arr_name
+  arr_push $my_arr_name "APPLE"
+  arr_push $my_arr_name "BANANA"
+  arr_push $my_arr_name "ORANGE"
+  arr_push $my_arr_name ""
+  arr_push $my_arr_name "NOT"
+  arr_push $my_arr_name "WITH SPACE"
+
+  # debug: declare -p $my_arr_name;
+
+  # direct reference, requires actual variable name, 'my_arr'
+  assertEquals "array_length, direct ref" "6" "$(array_length my_arr)";
+  assertEquals "$my_arr_name[0]" "APPLE" "${my_arr[0]}"
+  assertEquals "$my_arr_name[1]" "BANANA" "${my_arr[1]}"
+
+  # indirect reference, '!my_arr_name'
+  assertEquals "array_length, indirect ref" "6" "$(array_length $my_arr_name)";
+  #assertEquals "$my_arr_name[0]" "APPLE" "${!my_arr_name[0]}"
+  local array_ref="${my_arr_name}[1]"
+  assertEquals "$my_arr_name[1]" "BANANA" "${!array_ref}"
+
+  assertEquals "$my_arr_name[0]" "APPLE" "$(arr_get $my_arr_name 0)"
+  assertEquals "$my_arr_name[1]" "BANANA" "$(arr_get $my_arr_name 1)"
+  assertEquals "$my_arr_name[2]" "ORANGE" "$(arr_get $my_arr_name 2)"
+  assertEquals "$my_arr_name[3]" "" "$(arr_get $my_arr_name 3)"
+  assertEquals "$my_arr_name[4]" "NOT" "$(arr_get $my_arr_name 4)"
+  assertEquals "$my_arr_name[5]" "WITH SPACE" "$(arr_get $my_arr_name 5)"
+  
+  assertEquals "arr_get, missing array-name" "" "$(arr_get)"
+  assertEquals "arr_get, undefined array-name" "" "$(arr_get bogus_arr_name 0)"
+  assertEquals "arr_get, invalid array-name" "" "$(arr_get 'invalid array name' 0)"
+  assertEquals "arr_get, missing index" "" "$(arr_get $my_arr_name)"
+  assertEquals "arr_get, index out of bounds [6]" "" "$(arr_get $my_arr_name 6)"
+  assertEquals "arr_get, index out of bounds [-1]" "" "$(arr_get $my_arr_name '-1')"
 }
 
 # for debugging initialization of dir, file, and base variables
