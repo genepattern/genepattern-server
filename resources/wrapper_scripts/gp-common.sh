@@ -68,6 +68,7 @@ else
     
 fi
 
+declare __gp_dry_run="";
 declare __gp_env_custom_arg="";
 declare __gp_env_custom_script="";
 # placeholder for '-e' args
@@ -92,6 +93,60 @@ strict_mode() {
   set -o pipefail
   # Turn on traces, useful while debugging but commented out by default
   #set -o xtrace
+}
+
+############################################################
+# is_set
+#   return 0, true, if the variable is set
+#          1, false otherwise
+# Usage:
+#   is_set var-name
+############################################################
+is_set() {
+  if [[ $# -eq 0 ]]; then
+    return 1;
+  fi
+  local name="${1}";
+  if [[ -z "${!name+x}" ]]; then
+    return 1
+  fi
+  return 0;
+}
+
+# not_empty
+not_empty() {
+  local -r name="$1"
+  [[ ! -z "${!name+x}"  && -n "${!name}" ]]
+}
+
+############################################################
+# not_set
+############################################################
+function not_set() {
+  # [[ -z "${R_LIBS_SITE+x}" ]]
+  if [[ $# -eq 0 ]]; then
+    return 1;
+  fi
+  local name="${1}";
+  [[ -z "${!name+x}" ]]
+}
+
+############################################################
+# is_empty
+#   return 0, true, if the variable is set to an empty string
+#          1, false otherwise
+# If the variable is not set, then it is not empty
+############################################################
+is_empty() {
+  if [[ $# -eq 0 ]]; then
+    return 1;
+  fi
+  local name="${1}";
+  # must be 'set' to be empty
+  if [[ -z "${!name+x}" ]]; then
+    return 1
+  fi
+  [[ -z "${!name-}" ]]
 }
 
 ############################################################
@@ -145,6 +200,22 @@ is_valid_var() {
   # Invalid bash variable
   [[ ! "$1" =~ ^[a-zA-Z_]+[a-zA-Z0-9_]*$ ]] && { 
     # debug: echo "Invalid bash variable: $1" 1>&2 ; 
+    return 1 ; 
+  }
+  return 0;
+}
+
+############################################################
+# Function: is_valid_r_version
+############################################################
+is_valid_r_version() {
+  if [[ $# -eq 0 ]]; then
+    return 1;
+  fi
+
+  # must be a valid R version, of the form x.y.x
+  [[ ! "$1" =~ ^[0-9]+[0-9.]*$ ]] && { 
+    # debug: echo "Invalid R version: $1" 1>&2 ; 
     return 1 ; 
   }
   return 0;
@@ -263,6 +334,9 @@ function parseArgs() {
 
     # process '-u' flags, initialize module environments
     addModuleEnvs;
+    
+    # optionally set the __gp_dry_run variable
+    initDryRun;
 }
 
 ############################################################
@@ -429,6 +503,23 @@ function initModuleEnvs() {
 }
 
 ############################################################
+# initDryRun
+#   set __gp_dry_run variable based on GP_DRY_RUN flag
+# Usage:
+#   Set the GP_DRY_RUN flag as a command line arg
+#     ./run-with-env.sh ... -e GP_DRY_RUN=true
+# Use the $__gp_dry_run variable when executing commands,
+#   $__gp_dry_run my_cmd $my_args ...
+############################################################
+function initDryRun() {
+  if is_true "GP_DRY_RUN"; then
+    __gp_dry_run="echo"
+  else
+    __gp_dry_run=""
+  fi
+}
+
+############################################################
 # convertPath, Convert relative path to fully qualified
 # path, if necessary
 # Usage: 
@@ -510,6 +601,6 @@ function run_with_env() {
     parseArgs "${@}";
     initModuleEnvs;
     # debug: echoCmdEnv
-    "${__gp_module_cmd[@]}";
+    $__gp_dry_run "${__gp_module_cmd[@]}";
 }
 
