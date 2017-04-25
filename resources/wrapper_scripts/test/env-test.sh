@@ -1009,6 +1009,78 @@ test_array_length() {
     assertEquals "array_length, (6 items)" "6" "$(array_length my_arr)";
 }
 
+test_is_set() {
+  local my_var;
+  unset my_var;
+  is_set "my_var" \
+    && fail "is_set 'my_var' (not set): expected false"
+  
+  my_var="";
+  is_set "my_var" \
+     || fail "is_set 'my_var' (empty): expected true"
+  
+  my_var="non empty string"
+  is_set "my_var" \
+    || fail "is_set 'my_var' (non empty): expected true"
+
+  unset my_var;
+  ! is_set "my_var" \
+     || fail "! is_set (unset): expecting true"
+}
+
+# not-empty, false when unset
+test_not_empty() {
+  local my_var;
+  unset my_var;
+  not_empty "my_var" \
+    && fail "not_empty (unset): expecting false"
+  my_var="";
+  not_empty "my_var" \
+    && fail "not_empty (empty): expecting false"
+  my_var="not empty"
+  not_empty "my_var" \
+    || fail "not_empty (not empty): expecting true"
+}
+
+test_is_empty() {
+  local my_var;
+  unset my_var;
+  is_empty "my_var" \
+      && fail "is_empty (not set): expected false"
+  local my_var=;
+  is_empty "my_var" \
+     || fail "is_empty (my_var=): expected true"
+  my_var='';
+  is_empty "my_var" \
+     || fail "is_empty (my_var=''): expected true"
+  my_var="non empty value"
+  is_empty "my_var" \
+     && fail "is_empty (non empty value): expected false"
+}
+
+test_not_set() {
+  not_set "GP_TEST_VAR" || fail "Expecting false"
+  if not_set "GP_TEST_VAR"; then
+    echo "GP_TEST_VAR is not set"
+  fi
+}
+
+test_is_set_too() {
+#  # [[ ! -z "${GP_R_LIBS_SITE+x}" ]]
+#  function is_set() {
+#    local -r name="$1"
+#    [[ ! -z "${!name+x}"  && -n "${!name}" ]]
+#  }
+  export MY_ARG="MY_VALUE"
+  not_empty "MY_ARG" \
+    || fail "not_empty MY_ARG, expecting true"
+  not_empty "MY_ARG_2" \
+     && fail "not_empty MY_ARG_2, expecting false"
+  MY_ARG_3=""
+  not_empty "not_empty MY_ARG_3" \
+     && fail "MY_ARG_3 is set, expecting false"
+}
+
 test_is_true() {
   # 0 is true
   local my_var=0;
@@ -1090,6 +1162,18 @@ test_is_valid_var() {
       fail "is_valid_var 'number_at_end_01': expected 'true'"
   fi
 }
+
+test_is_valid_r_version() {
+  is_valid_r_version \
+    && fail "is_valid_r_version (no arg): expected 'false'"
+  is_valid_r_version "2.15.3" \
+    || fail "is_valid_r_version '2.15.3': expected 'true'"
+  is_valid_r_version "2.15" \
+    || fail "is_valid_r_version '2.15': expected 'true'"
+  is_valid_r_version "2" \
+    || fail "is_valid_r_version '2': expected 'true'"
+}
+
 
 ############################################################
 # Function: arr_create
