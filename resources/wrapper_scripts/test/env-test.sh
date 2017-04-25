@@ -204,12 +204,12 @@ test_echoEnv() {
 }
 
 ############################################################
-# test gp-common:parseArgs
+# test gp-common:parse_args
 ############################################################
 
-# test parseArgs() with '-c' <env-custom> arg
-test_parseArgs_c_flag() {
-  parseArgs '-c' 'env-custom-macos.sh' 'echo' 'Hello, World!';
+# test parse_args() with '-c' <env-custom> arg
+test_parse_args_c_flag() {
+  parse_args '-c' 'env-custom-macos.sh' 'echo' 'Hello, World!';
   assertEquals "__gp_env_custom_arg" \
     "env-custom-macos.sh" "${__gp_env_custom_arg}"
   assertEquals "__gp_env_custom_script" \
@@ -219,10 +219,10 @@ test_parseArgs_c_flag() {
     "${__gp_module_cmd[*]:0}"
 }
 
-# test parseArgs() with '-c', special-case
+# test parse_args() with '-c', special-case
 #   missing arg with other options
-test_parseArgs_c_flag_missing_arg() {
-  parseArgs '-c' '-u' 'java/1.8' 'java' '--version';
+test_parse_args_c_flag_missing_arg() {
+  parse_args '-c' '-u' 'java/1.8' 'java' '--version';
   assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
   assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
     "${__gp_env_custom_script}"
@@ -231,14 +231,14 @@ test_parseArgs_c_flag_missing_arg() {
     "${__gp_module_cmd[*]:0}";
 }
 
-# test parseArgs() with '-c', special-case
+# test parse_args() with '-c', special-case
 #   missing arg at end of options
-test_parseArgs_c_flag_missing_arg_at_end() {
+test_parse_args_c_flag_missing_arg_at_end() {
 
   # note: must add '--' between run-with-env args and module command, e.g.
-  #   this fails: parseArgs '-c' 'echo' 'Hello, World!'
-  #   this works: parseArgs '-c' '--' 'echo' 'Hello, World!'
-  parseArgs '-c' '--' 'echo' 'Hello, World!'
+  #   this fails: parse_args '-c' 'echo' 'Hello, World!'
+  #   this works: parse_args '-c' '--' 'echo' 'Hello, World!'
+  parse_args '-c' '--' 'echo' 'Hello, World!'
   assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
   assertEquals "env_custom" "${GP_SCRIPT_DIR}/env-custom.sh" \
     "${__gp_env_custom_script}"
@@ -246,10 +246,10 @@ test_parseArgs_c_flag_missing_arg_at_end() {
     "${__gp_module_cmd[*]:0}"
 }
 
-# test parseArgs, with '-e' GP_ENV_CUSTOM=<env-custom>
-test_parseArgs_e_flag_set_env_custom() {
+# test parse_args, with '-e' GP_ENV_CUSTOM=<env-custom>
+test_parse_args_e_flag_set_env_custom() {
   unset GP_ENV_CUSTOM;
-  parseArgs "-e" "GP_ENV_CUSTOM=env-custom-macos.sh" "--" "echo" "Hello, World!";
+  parse_args "-e" "GP_ENV_CUSTOM=env-custom-macos.sh" "--" "echo" "Hello, World!";
   assertEquals "GP_ENV_CUSTOM" "env-custom-macos.sh" \
     "${GP_ENV_CUSTOM:-}";
   assertEquals "__gp_env_custom_arg" "" \
@@ -260,10 +260,10 @@ test_parseArgs_e_flag_set_env_custom() {
     "${__gp_module_cmd[*]:0}"
 }
 
-# test parseArgs, with export GP_ENV_CUSTOM=<env-custom>
-test_parseArgs_GP_ENV_CUSTOM() {
+# test parse_args, with export GP_ENV_CUSTOM=<env-custom>
+test_parse_args_GP_ENV_CUSTOM() {
   export GP_ENV_CUSTOM="env-custom-macos.sh";
-  parseArgs "echo" "Hello, World!";
+  parse_args "echo" "Hello, World!";
   assertEquals "__gp_env_custom_arg" "" "${__gp_env_custom_arg}"
   assertEquals "__gp_env_custom_script" "${GP_SCRIPT_DIR}/env-custom-macos.sh" "${__gp_env_custom_script}"
   assertEquals "__gp_module_cmd" \
@@ -271,39 +271,39 @@ test_parseArgs_GP_ENV_CUSTOM() {
     "${__gp_module_cmd[*]:0}"
 }
 
-# test parseArgs, '-e' 'KEY=VAL'
-test_parseArgs_e_flag() {
+# test parse_args, '-e' 'KEY=VAL'
+test_parse_args_e_flag() {
     local -a args=('-e' 'MY_KEY=MY_VAL' '-e' 'MY_KEY2=MY_VAL2' 'echo' 'Hello, World!');
-    parseArgs "${args[@]}";
+    parse_args "${args[@]}";
 
     # expecting two -e args
     assertEquals "num '-e' args" "2" "${#__gp_e_args[@]}"
     assertEquals "__gp_e_args" "MY_KEY=MY_VAL MY_KEY2=MY_VAL2" "${__gp_e_args[*]:-}"
 }
 
-# test parseArgs, '-u' canonical-name
-test_parseArgs_u_flag() {
-    assertEquals "parseArgs -u Java" \
+# test parse_args, '-u' canonical-name
+test_parse_args_u_flag() {
+    assertEquals "parse_args -u Java" \
       "Java" \
-      "$(parseArgs "-u" "Java" && echo "${__gp_u_args[*]}")"
+      "$(parse_args "-u" "Java" && echo "${__gp_u_args[*]}")"
 
-    assertEquals "parseArgs -u java/1.8" \
+    assertEquals "parse_args -u java/1.8" \
       "java/1.8" \
-      "$(parseArgs "-u" 'java/1.8' && echo "${__gp_u_args[*]}")"
+      "$(parse_args "-u" 'java/1.8' && echo "${__gp_u_args[*]}")"
 
-    assertEquals "parseArgs -u java/1.8 -u gcc/4.9" \
+    assertEquals "parse_args -u java/1.8 -u gcc/4.9" \
       "java/1.8 gcc/4.9" \
-      "$(parseArgs "-u" 'java/1.8' '-u' 'gcc/4.9' && echo "${__gp_u_args[*]}")"
+      "$(parse_args "-u" 'java/1.8' '-u' 'gcc/4.9' && echo "${__gp_u_args[*]}")"
 
-    assertEquals "parseArgs -u 'Java 1.8'" \
+    assertEquals "parse_args -u 'Java 1.8'" \
       "Java 1.8" \
-      "$(parseArgs "-u" "Java 1.8" && echo "${__gp_u_args[*]}")"
+      "$(parse_args "-u" "Java 1.8" && echo "${__gp_u_args[*]}")"
 }
 
-# test parseArgs, example java command
-test_parseArgs_java_cmd() {
+# test parse_args, example java command
+test_parse_args_java_cmd() {
     local -a args=('-u' 'Java-1.8' 'java' '--version');
-    parseArgs "${args[@]}";
+    parse_args "${args[@]}";
 
     assertEquals "env_default" "${GP_SCRIPT_DIR}/env-default.sh" \
         "${__gp_env_default_script}"
@@ -321,9 +321,9 @@ test_parseArgs_java_cmd() {
         "${__gp_module_cmd[*]}"
 }
 
-# test parseArgs, sanity check with no args
-test_parseArgs_no_args() {
-    parseArgs
+# test parse_args, sanity check with no args
+test_parse_args_no_args() {
+    parse_args
     assertEquals "env_default" "${GP_SCRIPT_DIR}/env-default.sh" \
         "${__gp_env_default_script}"
     assertEquals "'-c' arg" "" "${__gp_env_custom_arg}"
@@ -800,7 +800,7 @@ function testJoinArray() {
 #
 # test parsing of "key=val" from a string
 #
-testBashParseArgs() {
+test_bash_split_key_value() {
     local input="MY_ARG=MY_VAL"
     IFS='=' read -r -a args <<< "$input"
     assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
@@ -1028,7 +1028,7 @@ test_is_set() {
      || fail "! is_set (unset): expecting true"
 }
 
-# not-empty, false when unset
+# not_empty, false when unset
 test_not_empty() {
   local my_var;
   unset my_var;
@@ -1063,22 +1063,6 @@ test_not_set() {
   if not_set "GP_TEST_VAR"; then
     echo "GP_TEST_VAR is not set"
   fi
-}
-
-test_is_set_too() {
-#  # [[ ! -z "${GP_R_LIBS_SITE+x}" ]]
-#  function is_set() {
-#    local -r name="$1"
-#    [[ ! -z "${!name+x}"  && -n "${!name}" ]]
-#  }
-  export MY_ARG="MY_VALUE"
-  not_empty "MY_ARG" \
-    || fail "not_empty MY_ARG, expecting true"
-  not_empty "MY_ARG_2" \
-     && fail "not_empty MY_ARG_2, expecting false"
-  MY_ARG_3=""
-  not_empty "not_empty MY_ARG_3" \
-     && fail "MY_ARG_3 is set, expecting false"
 }
 
 test_is_true() {

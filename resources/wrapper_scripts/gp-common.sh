@@ -30,7 +30,7 @@
 #   sourceEnvScripts  process -c' flag, source site-customization file(s)
 #   addModuleEnvs     process '-u' flags, initialize module environments
 #   initModuleEnvs    load module environments
-#   parseArgs         parse the wrapper command line args
+#   parse_args         parse the wrapper command line args
 #   run               all steps necessary to run the module command line
 #
 #   (helpers)
@@ -255,10 +255,10 @@ has_arg() {
 }
 
 ############################################################
-# parseArgs, parse command line args, initialize
+# parse_args, parse command line args, initialize
 #   environment variables and site customization scripts
 # Usage:
-#   parseArgs [-c env-custom] [-e key[=[val]]]* [-u module-name]* \
+#   parse_args [-c env-custom] [-e key[=[val]]]* [-u module-name]* \
 #     [--] module_cmd [module_arg]*
 # Input: 
 #   -c env-custom, optional, path to site customization script
@@ -270,11 +270,11 @@ has_arg() {
 #   module_args, optional, the list of module command line arguments
 #
 # Examples:
-#     parseArgs '-c' 'env-custom-macos.sh' ...
-#     parseArgs -e GP_ENV_CUSTOM=env-custom-macos.sh ...
-#     GP_ENV_CUSTOM=env-custom-macos.sh ; parseArgs ...
+#     parse_args '-c' 'env-custom-macos.sh' ...
+#     parse_args -e GP_ENV_CUSTOM=env-custom-macos.sh ...
+#     GP_ENV_CUSTOM=env-custom-macos.sh ; parse_args ...
 ############################################################
-function parseArgs() {
+function parse_args() {
     __gp_env_custom_arg="";
     __gp_env_custom_script="";
     __gp_e_args=(); 
@@ -551,7 +551,7 @@ function extractRootName() {
 ############################################################
 # for debugging, echo variables
 #   note, not for production, can be helpful for debugging
-# after parseArgs
+# after parse_args
 ############################################################
 function echoEnv() {
     echo "                GP_DEBUG: ${GP_DEBUG:- (not set)}";
@@ -598,7 +598,7 @@ function echoCmdEnv() {
 # See run-with-env.sh for more documentation
 ############################################################
 function run_with_env() {
-    parseArgs "${@}";
+    parse_args "${@}";
     initModuleEnvs;
     # debug: echoCmdEnv
     $__gp_dry_run "${__gp_module_cmd[@]}";

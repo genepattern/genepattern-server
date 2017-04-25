@@ -20,7 +20,7 @@
 # Function: run_rjava_with_env
 ############################################################
 function run_rjava_with_env() {
-  parseArgs "${@}"
+  parse_args "${@}"
   initModuleEnvs
   # debug: echoCmdEnv
   # debug: echo "which R: $(which R)";

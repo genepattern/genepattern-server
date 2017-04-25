@@ -2,8 +2,7 @@
 
 ############################################################
 # run-rscript-pkgs.sh
-#   Run Rscript command for a GenePattern Module
-#   Automatically install required packages
+#   Run an 'Rscript' module, installing R packages if necessary
 # Usage:
 #   ./run-rscript-pkgs.sh \
 #     [--dry-run] \
@@ -13,6 +12,10 @@
 #     -e GP_R_PACKAGE_INFO=gp-r-package-info \
 #     -- \
 #     rscript-args
+# References:
+#   gp-common::parse_args
+#   r-common::export_r_env
+#   install_pkgs
 ############################################################
 
 ############################################################
@@ -49,7 +52,7 @@ main() {
   # debug: echo "r_version=$r_version"
   # debug: echo "args: ${@}"
   
-  parseArgs "${@}"
+  parse_args "${@}"
   addEnv "r/${r_version}"
   initModuleEnvs
   export_r_env
