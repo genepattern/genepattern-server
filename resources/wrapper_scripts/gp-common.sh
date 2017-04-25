@@ -68,7 +68,7 @@ else
     
 fi
 
-declare __gp_dry_run="";
+declare DRY_RUN="";
 declare __gp_env_custom_arg="";
 declare __gp_env_custom_script="";
 # placeholder for '-e' args
@@ -335,7 +335,7 @@ parse_args() {
     # process '-u' flags, initialize module environments
     addModuleEnvs;
     
-    # optionally set the __gp_dry_run variable
+    # optionally set the DRY_RUN variable
     initDryRun;
 }
 
@@ -504,18 +504,18 @@ function initModuleEnvs() {
 
 ############################################################
 # initDryRun
-#   set __gp_dry_run variable based on GP_DRY_RUN flag
+#   set DRY_RUN variable based on GP_DRY_RUN flag
 # Usage:
 #   Set the GP_DRY_RUN flag as a command line arg
 #     ./run-with-env.sh ... -e GP_DRY_RUN=true
-# Use the $__gp_dry_run variable when executing commands,
-#   $__gp_dry_run my_cmd $my_args ...
+# Use the $DRY_RUN variable when executing commands,
+#   $DRY_RUN my_cmd $my_args ...
 ############################################################
 function initDryRun() {
   if is_true "GP_DRY_RUN"; then
-    __gp_dry_run="echo"
+    DRY_RUN="echo"
   else
-    __gp_dry_run=""
+    DRY_RUN=""
   fi
 }
 
@@ -601,6 +601,6 @@ function run_with_env() {
     parse_args "${@}";
     initModuleEnvs;
     # debug: echoCmdEnv
-    $__gp_dry_run "${__gp_module_cmd[@]}";
+    $DRY_RUN "${__gp_module_cmd[@]}";
 }
 

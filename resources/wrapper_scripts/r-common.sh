@@ -72,7 +72,7 @@ export_r_env() {
 install_pkgs() {
   # mkdirs
   if is_true "GP_MKDIRS"; then
-    $__gp_dry_run "mkdir" "-p" "${R_LIBS_SITE}"
+    $DRY_RUN "mkdir" "-p" "${R_LIBS_SITE}"
   fi
 
 #TODO implement optional redirect
@@ -80,7 +80,7 @@ install_pkgs() {
   local -r install_packages_out=".install.packages.out"
 
   # install packages
-  $__gp_dry_run "Rscript" "--no-save" "--quiet" "--slave" "--no-restore" \
+  $DRY_RUN "Rscript" "--no-save" "--quiet" "--slave" "--no-restore" \
     "${GP_SCRIPT_DIR}/R/installPackages.R" \
     "${GP_R_PACKAGE_INFO}" \
     ".install.packages.log" 

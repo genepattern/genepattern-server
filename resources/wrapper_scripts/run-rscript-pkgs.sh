@@ -15,7 +15,7 @@
 # References:
 #   gp-common::parse_args
 #   r-common::export_r_env
-#   install_pkgs
+#   r-common::install_pkgs
 ############################################################
 
 ############################################################
@@ -60,8 +60,7 @@ main() {
   [[ -z "${GP_MKDIRS+x}" ]] \
     && GP_MKDIRS="TRUE";
   
-  # debug: 
-  env | sort
+  # debug: env | sort
 
   if [[ -e "${GP_R_PACKAGE_INFO:-}" ]]; then
     # debug: echo "installing packages ..." 1>&2 ;
@@ -69,7 +68,7 @@ main() {
   fi
 
   # run the Rscript command
-  $__gp_dry_run Rscript "${__gp_module_cmd[@]}"
+  $DRY_RUN Rscript "${__gp_module_cmd[@]}"
 }
 
 main "$@"
