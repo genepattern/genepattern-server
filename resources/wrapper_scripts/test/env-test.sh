@@ -97,31 +97,31 @@ test_gp_script_dir() {
   assertEquals "parent_dir check" "${__parent_dir}" "${_r_home_dir}"
 }
 
-# test gp-common::exportEnv
-test_exportEnv() {
-    assertEquals "exportEnv sanity check (no arg)" "" \
-      "$(exportEnv)"
-    assertEquals "exportEnv sanity check (no left hand value)" "" \
-      "$(exportEnv '=MY_VAL')"
+# test gp-common::export_env
+test_export_env() {
+    assertEquals "export_env sanity check (no arg)" "" \
+      "$(export_env)"
+    assertEquals "export_env sanity check (no left hand value)" "" \
+      "$(export_env '=MY_VAL')"
         
     unset MY_KEY
     assertTrue "MY_KEY unset" "[ -z ${MY_KEY+x} ]"
     
     local input="MY_KEY=MY_VAL"
-    exportEnv "${input}"
-    assertTrue   "exportEnv '$input'; MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
-    assertEquals "exportEnv '$input'; \$MY_KEY" "MY_VAL" "$MY_KEY"
+    export_env "${input}"
+    assertTrue   "export_env '$input'; MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    assertEquals "export_env '$input'; \$MY_KEY" "MY_VAL" "$MY_KEY"
     
-    # exportEnv 'MY_KEY=' should unset the value
+    # export_env 'MY_KEY=' should unset the value
     input='MY_KEY='
-    exportEnv "${input}"
-    assertTrue "exportEnv 'MY_KEY='; should unset the value" "[ -z ${MY_KEY+x} ]"
+    export_env "${input}"
+    assertTrue "export_env 'MY_KEY='; should unset the value" "[ -z ${MY_KEY+x} ]"
     
-    # exportEnv 'MY_KEY' (no equals sign) should set an empty value
+    # export_env 'MY_KEY' (no equals sign) should set an empty value
     input="MY_KEY"
-    exportEnv "${input}"
-    assertTrue   "exportEnv '$input'; MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
-    assertEquals "exportEnv '$input'; \$MY_KEY (empty)" "" "$MY_KEY"
+    export_env "${input}"
+    assertTrue   "export_env '$input'; MY_KEY is set" "! [ -z ${MY_KEY+x} ]"
+    assertEquals "export_env '$input'; \$MY_KEY (empty)" "" "$MY_KEY"
 }
 
 # test gp-common::setEnvCustomScript()
@@ -429,7 +429,7 @@ test_run_rjava_env_custom_arg() {
 }
 
 # test <run-rjava> substitution with hello.R input
-# note: this is as full integration test which invokes R 
+# note: this is a full integration test which invokes R 
 #   via the java RunR wrapper command
 #   this test may fail on systems where R is not configured
 #   it is ok to skip this test if necessary 
@@ -862,7 +862,7 @@ testRunWithEnv_setenv_on_cmdLine() {
      assertEquals "no args" "MY_FLAG=" "$( './print-my-flag.sh' )" 
      
      local cmd="${__test_script_dir}/print-my-flag.sh"
-     assertEquals "exportEnv MY_FLAG=MY_CMD_LINE_VALUE" \
+     assertEquals "export_env MY_FLAG=MY_CMD_LINE_VALUE" \
          "MY_FLAG=MY_CMD_LINE_VALUE" \
          "$( '../run-with-env.sh' \
                  '-e' 'MY_UNUSED_FLAG'  \

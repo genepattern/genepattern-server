@@ -26,7 +26,7 @@
 #   __gp_module_cmd - the command to run
 #
 # Declared functions
-#   exportEnvs        process '-e' flags, set environment variables
+#   export_envs        process '-e' flags, set environment variables
 #   sourceEnvScripts  process -c' flag, source site-customization file(s)
 #   addModuleEnvs     process '-u' flags, initialize module environments
 #   initModuleEnvs    load module environments
@@ -35,7 +35,7 @@
 #
 #   (helpers)
 #   parseOpt
-#   exportEnv key=[value]
+#   export_env key=[value]
 #   (included in env-hashmap.sh)
 #   putValue canonical-name [local-name][,local-name]*
 #
@@ -122,7 +122,7 @@ not_empty() {
 ############################################################
 # not_set
 ############################################################
-function not_set() {
+not_set() {
   # [[ -z "${R_LIBS_SITE+x}" ]]
   if [[ $# -eq 0 ]]; then
     return 1;
@@ -274,7 +274,7 @@ has_arg() {
 #     parse_args -e GP_ENV_CUSTOM=env-custom-macos.sh ...
 #     GP_ENV_CUSTOM=env-custom-macos.sh ; parse_args ...
 ############################################################
-function parse_args() {
+parse_args() {
     __gp_env_custom_arg="";
     __gp_env_custom_script="";
     __gp_e_args=(); 
@@ -327,7 +327,7 @@ function parse_args() {
     __gp_module_cmd=( "$@" );
 
     # process '-e' flags, set environment variables
-    exportEnvs;
+    export_envs;
 
     # process '-c' flag, source site-customization file(s)
     sourceEnvScripts
@@ -340,12 +340,12 @@ function parse_args() {
 }
 
 ############################################################
-# exportEnv, export environment variable from command line
+# export_env, export environment variable from command line
 #   argument of the form '-e' 'key_value_pair'
 # split the arg into a key and value, then export. 
 #   'export key=value'
 # Usage:
-#   exportEnv key[=[value]]
+#   export_env key[=[value]]
 # Input:
 #   key_value_pair, required
 #
@@ -355,7 +355,7 @@ function parse_args() {
 #   '=MY_VAL' (no key), ignored
 #   ''        (no arg), ignored
 ############################################################
-function exportEnv() {
+function export_env() {
     if [[ -z "${1:-}" ]]; then
         # short-circuit, missing required arg
         return;
@@ -391,20 +391,20 @@ function exportEnv() {
 }
 
 ############################################################
-# Function: exportEnvs 
+# Function: export_envs 
 #   export all '-e' key=value command line args
 # Usage:
-#   exportEnvs
+#   export_envs
 # Must call this after processing command line args.
 ############################################################
-function exportEnvs() {
+function export_envs() {
     if [ "${#__gp_e_args[@]}" != 0 ]; then
         local e_arg;
         #echo "processing '-e' args ...";
         for e_arg in "${__gp_e_args[@]}"
         do
             #echo "    e_arg: ${e_arg}";
-            exportEnv "$e_arg";
+            export_env "$e_arg";
         done
     fi
 }
@@ -470,7 +470,7 @@ function sourceEnvScripts() {
 # calls 'addEnv' for each '-u module_env' command line arg 
 # process '-u' flags of the form
 #     '-u' module_env
-# must call this after 'exportEnvs'
+# must call this after 'export_envs'
 # and loading the site-customization file
 ############################################################
 function addModuleEnvs() {

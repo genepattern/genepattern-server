@@ -35,7 +35,7 @@ function run_rjava() {
     __gp_module_cmd=( "$@" );
 
     # process '-e' flags immediately
-    exportEnvs;
+    export_envs;
 
     # process '-c' flag next
     sourceEnvScripts;
