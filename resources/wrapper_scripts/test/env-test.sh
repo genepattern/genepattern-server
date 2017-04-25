@@ -771,7 +771,7 @@ test_run_rjava_env_custom_arg() {
     local expected=$'loading r-2.5-vanilla-gp ...\nloading java/1.8 ...'
     assertEquals "run R2.5" \
       "$expected" \
-      "$('../run-rjava.sh' '-c' './test/env-custom-shunit.sh' '2.5' '-version')"
+      "$('../run-rjava.sh' '-c' "${__test_script_dir}/env-custom-shunit.sh" '2.5' '-version')"
 }
 
 # test <run-rjava> substitution with hello.R input
@@ -813,11 +813,10 @@ test_run_with_env() {
 
 test_run_with_env_custom_env_arg() {
   export GP_DEBUG="true";
-  local env_custom="${__test_script_dir}/env-custom-shunit.sh";
   local expected=$'loading GCC-4.9 ...\nloading R-3.1 ...\nHello, World!';
   assertEquals "run-with-env -c env-custom-shunit.sh, with GP_DEBUG" \
     "$expected" \
-    "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
+    "$(../run-with-env.sh -c "${__test_script_dir}/env-custom-shunit.sh" -u R-3.1 echo 'Hello, World!')"
 }
 
 # set environment variable with '-e' option
