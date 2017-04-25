@@ -6,6 +6,7 @@
 
 
 # called once before running any test
+#   'source gp-common.sh'
 oneTimeSetUp()  {
     readonly __test_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     readonly __parent_dir="$(cd "${__test_script_dir}/.."  && pwd)"
@@ -40,8 +41,107 @@ tearDown() {
 }
 
 #
-# All tests are run after 'source gp-common.sh'
+# low level, bash scripting specific test cases
 #
+
+# bash '-z' variable set test
+#   [[ -z "${_my_var+x}" ]] is true when _my_var is not set
+# Hint: using short-circuit instead of if-then statements
+#   asserTrue:   <condition> || fail <message>
+#   assertFalse: <condition> && fail <message>
+test_bash_var_set() {
+    unset _my_var;
+    [[ -z "${_my_var+x}" ]] \
+         || fail '(unbound) _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
+
+    unset _my_var;
+    local _my_var;
+    [[ -z "${_my_var+x}" ]] \
+         && fail 'local _my_var; [[ -z "${_my_var+x}" ]] (expecting false)';
+
+    unset _my_var;
+    local _my_var="";
+    [[ -z "${_my_var+x}" ]] \
+         && fail 'local _my_var=""; [[ -z "${_my_var+x}" ]] (expecting false)';
+
+    unset _my_var;
+    local _my_var="_my_value";
+    [[ -z "${_my_var+x}" ]] \
+           && fail 'local _my_var="_my_value"; [[ -z "${_my_var+x}" ]] (expecting false)';
+        unset _my_var;
+}
+
+# basic '-e' file exists test
+test_bash_file_exists() {
+    assertTrue "fileExists('env-test.sh')" \
+      "[ -e 'env-test.sh' ]"
+
+    prefix="env-";
+    suffix="test.sh";
+    assertTrue "fileExists('$prefix$suffix')" \
+      "[ -e $prefix$suffix ]"
+}
+
+join() {
+    local IFS=$1;
+    shift;
+    echo "$*";
+}
+
+function test_bash_join_array() {
+    declare -a myArray=('arg1' 'arg2');
+    assertEquals "join, no delim" "arg1 arg2" "$(join ' ' ${myArray[@]})"
+    assertEquals "join, custom delim" "arg1,arg2" "$(join ',' ${myArray[@]})"
+}
+
+# Split comma-delimited string into args
+# use-case: R requires a particular GCC version
+# Example code:
+#   IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
+
+test_bash_split_args() {
+    putValue "R-2.15" "GCC-4.9, R-2.15" 
+    assertEquals "__indexOf('R-2.15')" "0" $(__indexOf 'R-2.15')
+    assertEquals "getValue('R-2.15')" "GCC-4.9, R-2.15" "$(getValue 'R-2.15')"
+
+    # split into values
+    value="$(getValue 'R-2.15')"
+    IFS=', ' read -a valueArray <<< "$value"
+    assertEquals "valueArray[0]" "GCC-4.9" "${valueArray[0]}"
+    assertEquals "valueArray[1]" "R-2.15" "${valueArray[1]}"
+}
+
+#
+# test parsing of "key=val" from a string
+#
+test_bash_split_key_value() {
+    local input="MY_ARG=MY_VAL"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "2" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}"
+    
+    input="MY_ARG"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, not hasEquals" "! [[ $input == *=* ]]"
+    assertEquals "$input, args.length", "1" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+
+    input="MY_ARG="
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "1" "${#args[@]}"
+    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
+    
+    input="=MY_VAL"
+    IFS='=' read -r -a args <<< "$input"
+    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
+    assertEquals "$input, args.length", "2" "${#args[@]}"
+    assertEquals "$input, args[0]" "" "${args[0]}"
+    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}" 
+}
+
 
 ############################################################
 # test gp-common functions
@@ -91,10 +191,9 @@ test_gp_script_dir() {
   fi
   endSkipping;
   
-  # temp, for R script rewrite
-  local _r_home_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
-  echo "_r_home_dir: ${_r_home_dir}";
-  assertEquals "parent_dir check" "${__parent_dir}" "${_r_home_dir}"
+  ## for R script rewrite
+  local __local_parent_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../ && pwd)"
+  assertEquals "parent_dir check" "${__parent_dir}" "${__local_parent_dir}"
 }
 
 # test gp-common::export_env
@@ -340,6 +439,251 @@ test_parse_args_no_args() {
         "${__gp_module_cmd[*]:-}"
 }
 
+#
+# double-check the syntax of the initEnv function in the env-custom-macos.sh script
+# These tests run on non-Mac systems; just validate that the bash syntax is correct
+# and that the PATH is set to the expected R Library location
+#
+# Note: The existing library does not remove an item from the PATH; make sure that the
+#     test cleans up after itself
+#
+test_env_custom_macos() {
+    source "../env-custom-macos.sh"
+    local PATH_ORIG="${PATH}"
+    
+    # test 1: R-2.0
+    initEnv R-2.0
+    assertEquals "R-2.0 PATH" "/Library/Frameworks/R.framework/Versions/2.0/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG}
+
+    # test 2: R-2.5
+    initEnv R-2.5
+    assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG} 
+    
+    # test 3: r/2.5 canonical name
+    putValue 'r/2.5' 'R-2.5'
+    initEnv 'r/2.5'
+    assertEquals "r/2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
+    export PATH=${PATH_ORIG} 
+}
+
+#
+# basic stress-testing of the env-hashmap.sh script
+#
+#
+test_num_args() {
+    assertEquals "__num_args" "0" "$(__num_args)"
+    assertEquals "__num_args" "4" "$(__num_args this is a test)"
+    declare -a my_arr=("this" "is" "a" "test");
+    assertEquals "__num_args my_arr" "4" "$(__num_args "${my_arr[@]}")"
+    my_arr=("this is" "a" "test");
+    assertEquals "__num_args with spaces" "3" "$(__num_args "${my_arr[@]}")"
+}
+
+test_env_hashmap_init() {
+    # initial
+    assertEquals "numKeys initial" \
+        "0" $(numKeys)
+    assertEquals "numEnvs initial" \
+        "0" $(numEnvs)
+    assertTrue   "numKeys -eq 0 initial" \
+        "[ 0 -eq $(numKeys) ]"
+    assertTrue   "[ numEnvs -eq 0 ] initial" \
+        "[ 0 -eq $(numEnvs) ]"
+    assertTrue   "isEmpty initial" \
+        "[ isEmpty ]"
+    assertTrue   "isEmptyEnv initial" \
+        "[ isEmptyEnv ]"
+
+    # putValue (1st)
+    putValue "key_01" "value_01"
+    assertEquals "numKeys, 1st" \
+        "1" $(numKeys)
+    assertTrue   "[ 1 -eq numKeys ], 1st" \
+        "[ 1 -eq $(numKeys) ]"
+
+    # putValue (2nd)
+    putValue "key_02" "value_02"
+    assertEquals "numKeys, 2nd" \
+        "2" "$(numKeys)"
+    assertTrue   "[ 2 -eq numKeys ], 2nd" \
+        "[ 2 -eq $(numKeys) ]"
+            
+}
+
+test_env_hashmap() {
+    putValue "A" "a"
+    putValue "B" "b"
+    putValue "C" "c"
+    
+    assertTrue "hasIndex('A')"  "[ $(__indexOf 'A') -gt -1 ]"
+    assertTrue "hasIndex('B')"  "[ $(__indexOf 'B') -gt -1 ]"
+    assertTrue "hasIndex('C')"  "[ $(__indexOf 'C') -gt -1 ]"
+    assertTrue "not hasIndex('D')"  "! [ $(__indexOf 'D') -gt -1 ]"
+    assertEquals "getValue('A')" "a" $(getValue 'A')
+    assertEquals "getValue('B')" "b" $(getValue 'B')
+    assertEquals "getValue('C')" "c" $(getValue 'C')
+
+    # sourcing env-hashmap.sh a second time should not clear the hash map 
+    source ../env-hashmap.sh
+    assertEquals "after source env-hashmap.sh a 2nd time, getValue('C')" "c" $(getValue 'C')
+
+    # clearValues does reset the map
+    clearValues
+    assertTrue "after clearValues, not hasIndex('C')"  "! [ $(__indexOf 'C') -gt -1 ]"
+    assertEquals "after clearValues, getValue('C')" "C" $(getValue 'C')
+}
+
+# when the key is not in the map, return the key
+test_putValue_no_arg() {
+    putValue 'my_key'
+    assertEquals "getValue('my_key')" "my_key" "$(getValue 'my_key')"
+}
+
+test_putValue_with_spaces() {
+    assertTrue "numKeys -eq 0, initial" "[ 0 -eq $(numKeys) ]"
+    assertTrue "isEmpty (initial)" "[ isEmpty ]"
+    
+    putValue "A" "a" 
+    putValue "B" "a space" 
+    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
+    assertEquals "getValue('B')" "a space" "$(getValue 'B')"
+}
+
+test_putValue_with_delims() {
+    putValue "A" "a" 
+    putValue "B" "val1, val2" 
+    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
+    assertEquals "getValue('B')" "val1, val2" "$(getValue 'B')"
+}
+
+test_putKey_with_spaces() {
+    putValue "A" "a"
+    putValue "B KEY" "b"
+    assertEquals "__indexOf('B KEY')" "1" $(__indexOf 'B KEY')
+    assertEquals "getValue('B KEY')" "b" "$(getValue 'B KEY')"
+}
+
+# when the key is not in the map, return the key
+test_getValue_not_set() {
+    local key="Java-1.7";
+    assertEquals "__indexOf($key)" "-1" $(__indexOf $key)
+    assertEquals "getValue($key)" "$key" $(getValue $key)
+}
+
+# when the key is one of the canonical keys and there is no customization, 
+#   return the value
+test_getValue_env_default() {
+    assertTrue "__indexOf('Java-1.7') before sourceEnvDefault" "[ "-1" -eq "$(__indexOf 'Java-1.7')" ]"
+    source ../env-default.sh
+    assertTrue "__indexOf('Java-1.7')" "[ "-1" -ne "$(__indexOf 'Java-1.7')" ]"
+    
+    assertEquals "'Java' set in env-default.sh" \
+      "Java-1.7" "$(getValue 'Java')"
+    assertEquals "'java' set in env-default.sh" \
+      "Java-1.7" "$(getValue 'java')"
+    assertEquals "'Java-1.7' set in env-default.sh" \
+      "Java-1.7" "$(getValue 'Java-1.7')"
+}
+
+# test-cases for getValue with site-customization script 
+#   see: env-custom-shunit.sh
+test_getValue_env_custom() {
+    source "../env-default.sh";
+    source "${__test_script_dir}/env-custom-shunit.sh"
+    
+    # 'my-env' not set in env-default or env-custom
+    assertEquals "'my-env' not set" \
+      "my-env" "$(getValue 'my-env')"
+    # custom 'Java'
+    assertEquals "custom Java version" \
+      "java/1.8" "$(getValue 'Java')"
+    # transitive dependencies ...
+    assertEquals "'java' transitive dependency" \
+      "java/1.8" "$(getValue 'java')"
+    assertEquals "'Java-1.8' transitive dependency" \
+      "java/1.8" "$(getValue 'Java-1.8')"
+    # custom 'matlab'
+    assertEquals "custom value for 'matlab-mcr/2014a'" \
+      ".matlab_2014a_mcr" "$(getValue 'matlab-mcr/2014a')"
+    # map one key to multiple values
+    assertEquals "map one key to multiple values, 'R-3.1' requires 'GCC-4.9'" \
+      "GCC-4.9, R-3.1" "$(getValue R-3.1)"
+    # map key with aliases
+    assertEquals "dependency with aliases, 'R-3.0' requires 'GCC-4.7.2'" \
+      "gcc/4.7.2, R/3.0.1" "$(getValue 'R-3.0')"
+}
+
+test_addEnv_env_custom() {
+  source "../env-default.sh";
+  source "${__test_script_dir}/env-custom-shunit.sh"
+  # local counter to make it easier to add test-cases, hint: ((idx++)
+  local -i idx=-1;
+  local my_env=;
+  
+  # 'my-env' not set
+  addEnv 'my-env'; ((idx++));
+  assertEquals "addEnv 'my-env'" \
+    "my-env" \
+    "${__gp_module_envs[$idx]}"
+ 
+  # custom Java
+  addEnv "Java"; ((idx++));
+  assertEquals "addEnv 'Java'" \
+    "java/1.8" \
+    "${__gp_module_envs[$idx]}"
+    
+  # transitive dependency
+  addEnv "Java-1.8"; ((idx++));
+  assertEquals "addEnv 'Java-1.8'" \
+    "java/1.8" \
+    "${__gp_module_envs[$idx]}"
+
+  # custom 'matlab'
+  addEnv "matlab-mcr/2014a"; ((idx++));
+  assertEquals "addEnv 'matlab-mcr/2014a'" \
+    ".matlab_2014a_mcr" \
+    "${__gp_module_envs[$idx]}"
+
+  # set dependency, R-3.1 depends on gcc
+  addEnv "R-3.1"; ((idx++));
+  assertEquals "addEnv 'R-3.1[0]'" \
+    "GCC-4.9" \
+    "${__gp_module_envs[$idx]}"
+  ((idx++));
+  assertEquals "addEnv 'R-3.1[1]'" \
+    "R-3.1" \
+    "${__gp_module_envs[$idx]}"
+
+  # set dependency with aliases, R-3.0 depends on gcc, with custom names
+  addEnv "R-3.0"; ((idx++));
+  assertEquals "addEnv 'R-3.0[0]'" \
+    "gcc/4.7.2" \
+    "${__gp_module_envs[$idx]}"
+  ((idx++));
+  assertEquals "addEnv 'R-3.0[1]'" \
+    "R/3.0.1" \
+    "${__gp_module_envs[$idx]}"
+
+  # expecting idx+1 entries
+  assertEquals "__gp_module_envs.size" "$((idx+1))" "${#__gp_module_envs[@]}"
+}
+
+# test-case, initEnv, export RGL_USE_NULL in site-customization script
+test_initEnv_set_RGL_USE_NULL() {
+    source "../env-default.sh";
+    source "${__test_script_dir}/env-custom-shunit.sh"
+    
+    assertTrue   "sanity check before test, RGL_USE_NULL must not be set" \
+      "[ -z ${RGL_USE_NULL+x} ]"
+    assertEquals "sanity check before test, RGL_USE_NULL" \
+      "(not set)" "$(echo ${RGL_USE_NULL:-(not set)})"
+    initEnv ".libmesa_from_matlab-2014b"
+    assertEquals "after initEnv '.libmesa_from_matlab-2014b', RGL_USE_NULL" \
+      "TRUE" "$(echo $RGL_USE_NULL)"
+}
+
 # test 'run-rscript' substitution
 #   run-rscript.sh -c <env-custom> -a <env-arch> -l <libdir> -p <patches> -v 2.15 --
 # Variations
@@ -414,18 +758,20 @@ Rscript --version";
 #   rjava_flags=-Xmx512m
 #   run_r_path=<webappDir>/WEB-INF/classes
 test_run_rjava() {
-    export GP_DEBUG="true";
-    local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
-    assertEquals "run R2.5" "$expected" "$('../run-rjava.sh' '2.5' '-version')"
+  export GP_DEBUG="true";
+  local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
+  assertEquals "run R2.5" \
+    "$expected" \
+    "$('../run-rjava.sh' '2.5' '-version')"
 }
 
 # test run-rjava.sh with '-c' arg
 test_run_rjava_env_custom_arg() {
     export GP_DEBUG="true";
-    local expected=$'loading custom/R/2.5 ...\nloading custom/java ...'
+    local expected=$'loading r-2.5-vanilla-gp ...\nloading java/1.8 ...'
     assertEquals "run R2.5" \
       "$expected" \
-      "$('../run-rjava.sh' '-c' './test/env-lookup-shunit2.sh' '2.5' '-version')"
+      "$('../run-rjava.sh' '-c' './test/env-custom-shunit.sh' '2.5' '-version')"
 }
 
 # test <run-rjava> substitution with hello.R input
@@ -452,455 +798,74 @@ test_run_rjava_hello() {
     "[[ \"${out}\" = *\"Hello, world!\" ]]"
 }
 
-#
-# double-check the syntax of the initEnv function in the env-custom-macos.sh script
-# These tests run on non-Mac systems; just validate that the bash syntax is correct
-# and that the PATH is set to the expected R Library location
-#
-# Note: The existing library does not remove an item from the PATH; make sure that the
-#     test cleans up after itself
-#
-test_env_custom_macos() {
-    source "../env-custom-macos.sh"
-    local PATH_ORIG="${PATH}"
-    
-    # test 1: R-2.0
-    initEnv R-2.0
-    assertEquals "R-2.0 PATH" "/Library/Frameworks/R.framework/Versions/2.0/Resources/bin:${PATH_ORIG}" "${PATH}";
-    export PATH=${PATH_ORIG}
+test_run_with_env() {
+  export GP_DEBUG="true"
+  local expected=$'loading Java-1.7 ...\nHello, World!'
+  assertEquals "run-with-env, with GP_DEBUG" \
+    "${expected}" \
+    "$(../run-with-env.sh -u Java echo 'Hello, World!')"
 
-    # test 2: R-2.5
-    initEnv R-2.5
-    assertEquals "R-2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
-    export PATH=${PATH_ORIG} 
-    
-    # test 3: r/2.5 canonical name
-    putValue 'r/2.5' 'R-2.5'
-    initEnv 'r/2.5'
-    assertEquals "r/2.5 PATH" "/Library/Frameworks/R.framework/Versions/2.5/Resources/bin:${PATH_ORIG}" "${PATH}";
-    export PATH=${PATH_ORIG} 
+  unset GP_DEBUG
+  assertEquals "run-with-env" \
+    "Hello, World!" \
+    "$(../run-with-env.sh -u Java echo 'Hello, World!')"    
 }
 
-#
-# basic '-z' condition test
-#
-#     [[ -z "${_my_var+x}" ]] is true when _my_var is not set
-#
-# Hint: using short-circuit instead of if-then statements
-# asserTrue ...
-#     <condition> || fail <message>
-# assertFalse 
-#     <condition> && fail <message>
-#
-test_var_set() {
-    unset _my_var;
-    [[ -z "${_my_var+x}" ]] \
-         || fail '(unbound) _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
-
-    unset _my_var;
-    local _my_var;
-    [[ -z "${_my_var+x}" ]] \
-         && fail 'local _my_var; [[ -z "${_my_var+x}" ]] (expecting false)';
-
-    unset _my_var;
-    local _my_var="";
-    [[ -z "${_my_var+x}" ]] \
-         && fail 'local _my_var=""; [[ -z "${_my_var+x}" ]] (expecting false)';
-
-    unset _my_var;
-    local _my_var="_my_value";
-    [[ -z "${_my_var+x}" ]] \
-           && fail 'local _my_var="_my_value"; [[ -z "${_my_var+x}" ]] (expecting false)';
-        unset _my_var;
+test_run_with_env_custom_env_arg() {
+  export GP_DEBUG="true";
+  local env_custom="${__test_script_dir}/env-custom-shunit.sh";
+  local expected=$'loading GCC-4.9 ...\nloading R-3.1 ...\nHello, World!';
+  assertEquals "run-with-env -c env-custom-shunit.sh, with GP_DEBUG" \
+    "$expected" \
+    "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
 }
 
-#
-# basic file exists test
-#
-test_file_exists() {
-    assertTrue "fileExists('env-test.sh')" "[ -e 'env-test.sh' ]"
-    
-    prefix="env-";
-    suffix="test.sh";
-    assertTrue "fileExists('$prefix$suffix')" "[ -e $prefix$suffix ]"
+# set environment variable with '-e' option
+#   <run-with-env> ... -e <env.key=env.value> ... 
+test_run_with_env_setenv_on_cmdLine() {
+  local cmd="${__test_script_dir}/print-my-flag.sh"  
+  assertEquals "print-my-flag.sh (no args)" \
+    "MY_FLAG=" \
+    "$( $cmd )"
+  assertEquals "run-with-env ... -e MY_FLAG=MY_CMD_LINE_VALUE ... print-my-flag.sh" \
+    "MY_FLAG=MY_CMD_LINE_VALUE" \
+    "$( '../run-with-env.sh' \
+          '-e' 'MY_UNUSED_FLAG'  \
+          '-e' '=BOGUS_VALUE' \
+          '-e' 'MY_UNSET_FLAG=' \
+          '-e' 'MY_EMPTY_FLAG' \
+          '-e' 'MY_FLAG=MY_CMD_LINE_VALUE' \
+          '-u' 'Java-1.7' \
+          $cmd )"
 }
 
-test_appendPath() {
-    MY_PATH="/opt/dir1";
-    MY_PATH=$(appendPath "${MY_PATH}" "/opt/dir2")
-    assertEquals "appendPath" "/opt/dir1:/opt/dir2" "${MY_PATH}"
-}
-
-test_appendPath_ignoreDuplicate() {
-    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
-    
-    assertEquals "appendPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(appendPath "${MY_PATH}" "/opt/dir1");
-    
-    assertEquals "appendPath, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(appendPath "${MY_PATH}" "/opt/dir2");
-    
-    assertEquals "appendPath, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(appendPath "${MY_PATH}" "/opt/dir3");
-        
-    # sanity check
-    assertEquals "sanity check, not a dupe" "/opt/dir1:/opt/dir2:/opt/dir3:/opt/dir4" \
-        $(appendPath "${MY_PATH}" "/opt/dir4"); 
-}
-
-test_appendPath_toEmpty() {
-    MY_ARG="/new/pathelement";
-    unset MY_PATH;
-    set +o nounset
-    MY_PATH=$(appendPath "${MY_PATH}" "${MY_ARG}")
-    set -o nounset
-    assertEquals "appendPath" "/new/pathelement" "${MY_PATH}"
-}
-
-test_prependPath() {
-    MY_PATH="/opt/dir1";
-    MY_PATH=$(prependPath "/opt/dir2" "${MY_PATH}")
-    assertEquals "prependPath" "/opt/dir2:/opt/dir1" "${MY_PATH}"
-}
-
-test_prependPath_ignoreDuplicate() {
-    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
-    
-    assertEquals "prependPath, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(prependPath "/opt/dir1" "${MY_PATH}");
-    
-    assertEquals "prependPath, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(prependPath "/opt/dir2" "${MY_PATH}");
-    
-    assertEquals "prependPath, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(prependPath "/opt/dir3" "${MY_PATH}");
-        
-    # sanity check
-    assertEquals "sanity check, not a dupe" "/opt/dir4:/opt/dir1:/opt/dir2:/opt/dir3" \
-        $(prependPath "/opt/dir4" "${MY_PATH}" ); 
-}
-
-test_prependPath_toEmpty() {
-    MY_ARG="/new/pathelement";
-    unset MY_PATH;
-    set +o nounset
-    MY_PATH=$(prependPath "${MY_ARG}" "${MY_PATH}")
-    set -o nounset
-    assertEquals "prependPath" "/new/pathelement" "${MY_PATH}"
-}
-
-#
-# basic stress-testing of the env-hashmap.sh script
-#
-#
-
-test_env_hashmap_init() {
-    # initial
-    assertEquals "numKeys initial" \
-        "0" $(numKeys)
-    assertEquals "numEnvs initial" \
-        "0" $(numEnvs)
-    assertTrue   "numKeys -eq 0 initial" \
-        "[ 0 -eq $(numKeys) ]"
-    assertTrue   "[ numEnvs -eq 0 ] initial" \
-        "[ 0 -eq $(numEnvs) ]"
-    assertTrue   "isEmpty initial" \
-        "[ isEmpty ]"
-    assertTrue   "isEmptyEnv initial" \
-        "[ isEmptyEnv ]"
-
-    # putValue (1st)
-    putValue "key_01" "value_01"
-    assertEquals "numKeys, 1st" \
-        "1" $(numKeys)
-    assertTrue   "[ 1 -eq numKeys ], 1st" \
-        "[ 1 -eq $(numKeys) ]"
-
-    # putValue (2nd)
-    putValue "key_02" "value_02"
-    assertEquals "numKeys, 2nd" \
-        "2" "$(numKeys)"
-    assertTrue   "[ 2 -eq numKeys ], 2nd" \
-        "[ 2 -eq $(numKeys) ]"
-            
-}
-
-test_env_hashmap() {
-    putValue "A" "a"
-    putValue "B" "b"
-    putValue "C" "c"
-    
-    assertTrue "hasIndex('A')"  "[ $(__indexOf 'A') -gt -1 ]"
-    assertTrue "hasIndex('B')"  "[ $(__indexOf 'B') -gt -1 ]"
-    assertTrue "hasIndex('C')"  "[ $(__indexOf 'C') -gt -1 ]"
-    assertTrue "not hasIndex('D')"  "! [ $(__indexOf 'D') -gt -1 ]"
-    assertEquals "getValue('A')" "a" $(getValue 'A')
-    assertEquals "getValue('B')" "b" $(getValue 'B')
-    assertEquals "getValue('C')" "c" $(getValue 'C')
-
-    # sourcing env-hashmap.sh a second time should not clear the hash map 
-    source ../env-hashmap.sh
-    assertEquals "after source env-hashmap.sh a 2nd time, getValue('C')" "c" $(getValue 'C')
-
-    # clearValues does reset the map
-    clearValues
-    assertTrue "after clearValues, not hasIndex('C')"  "! [ $(__indexOf 'C') -gt -1 ]"
-    assertEquals "after clearValues, getValue('C')" "C" $(getValue 'C')
-}
-
-
-test_putValue_NoKey() {
-    putValue 'Java-1.7'
-    assertEquals "getValue('Java-1.7')" "Java-1.7" "$(getValue 'Java-1.7')"
-}
-
-test_putValueWithSpaces() {
-    assertEquals "numKeys initial" "0" $(numKeys)
-    assertTrue "numKeys -eq 0, initial" "[ 0 -eq $(numKeys) ]"
-    assertTrue "isEmpty (initial)" "[ isEmpty ]"
-    
-    putValue "A" "a" 
-    putValue "B" "a space" 
-    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
-    assertEquals "getValue('B')" "a space" "$(getValue 'B')"
-}
-
-test_putValueWithDelims() {
-    putValue "A" "a" 
-    putValue "B" "val1, val2" 
-    assertEquals "__indexOf('B')" "1" $(__indexOf 'B')
-    assertEquals "getValue('B')" "val1, val2" "$(getValue 'B')"
-}
-
-test_putKeyWithSpaces() {
-    putValue "A" "a"
-    putValue "B KEY" "b"
-    assertEquals "__indexOf('B KEY')" "1" $(__indexOf 'B KEY')
-    assertEquals "getValue('B KEY')" "b" "$(getValue 'B KEY')"
-}
-
-test_getValueWithDelims() {
-    putValue "R-2.15" "R-2.15, GCC-4.9" 
-    assertEquals "__indexOf('R-2.15')" "0" $(__indexOf 'R-2.15')
-    assertEquals "getValue('R-2.15')" "R-2.15, GCC-4.9" "$(getValue 'R-2.15')"
-
-    # split into values
-    value="$(getValue 'R-2.15')"
-    IFS=', ' read -a valueArray <<< "$value"
-    assertEquals "valueArray[0]" "R-2.15" "${valueArray[0]}"
-    assertEquals "valueArray[1]" "GCC-4.9" "${valueArray[1]}"
-}
-
-testInitCustomValuesFromEnv() {
-    source "../env-default.sh";
-    source "${__test_script_dir}/env-lookup-shunit2.sh";
-
-    assertEquals "canonical value" "Java-1.7" "$(getValue 'Java-1.7')"
-    assertEquals "unset value" "my-dotkit" "$(getValue 'my-dotkit')"
-    assertEquals "custom value" ".matlab_2010b_mcr" "$(getValue Matlab-2010b-MCR)"
-    # special-case: map one key to multiple values
-    assertEquals "custom values" "R-3.1, GCC-4.9" "$(getValue R-3.1)"
-}
-
-# 1) when the key is not in the map, return the key
-testGetValue_NoEntry() {
-    local key="Java-1.7";
-    assertEquals "__indexOf($key)" "-1" $(__indexOf $key)
-    assertEquals "getValue($key)" "$key" $(getValue $key)
-}
-
-# 2) when the key is one of the canonical keys and there is no customization, return the default value
-testGetValue_CanonicalEntry() {
-    assertTrue "__indexOf('Java-1.7') before sourceEnvDefault" "[ "-1" -eq "$(__indexOf 'Java-1.7')" ]"
-    source ../env-default.sh
-    assertTrue "__indexOf('Java-1.7')" "[ "-1" -ne "$(__indexOf 'Java-1.7')" ]"
-}
-
-# 3) when the key is one of the canonical keys and there is a customization, return the custom value
-# 4) special-case: map one key to multiple values, 
-#    e.g. R-2.15 requires GCC for a particular (custom) installation
-#    Something like: IFS=', ' read -a array <<< "$string", oldIFS="$IFS", ..., IFS="$oldIFS"
-testGetValue_CustomEntry() {
-    source "../env-default.sh";
-    source "${__test_script_dir}/env-lookup-shunit2.sh"
-
-    assertEquals "custom value" ".matlab_2010b_mcr" "$(getValue Matlab-2010b-MCR)"
-    assertEquals "custom values" "R-3.1, GCC-4.9" "$(getValue R-3.1)"
-}
-
-testExportEnvForLibMesa() {
-    source "../env-default.sh";
-    source "${__test_script_dir}/env-lookup-shunit2.sh"
-
-    # this is a special-case for the Broad hosted servers
-    assertTrue   "RGL_USE_NULL should not be set" "[ -z ${RGL_USE_NULL+x} ]"
-    
-    assertEquals "before" "" "$(echo ${RGL_USE_NULL:-})"
-    initEnv '.libmesa_from_matlab-2014b'
-    assertEquals "after" "TRUE" "$(echo $RGL_USE_NULL)"    
-}
-
-testAddEnv() {
-    source "../env-default.sh";
-    source "${__test_script_dir}/env-lookup-shunit2.sh"
-
-    addEnv 'Java-1.7';
-    addEnv 'R-3.1';
-    
-    # expecting three entries
-    assertEquals "__gp_module_envs.size" "3" "${#__gp_module_envs[@]}"
-}
-
-#
-# Example site customization, alias for canonical environment name
-#
-testAddEnv_alias_mcr() {
-    source "env-custom-for-testing.sh"
-    assertEquals "alias 'Matlab-2013a-MCR' <- 'matlab/2013a'" 'matlab/2013a' "$(getValue 'Matlab-2013a-MCR')"
-    
-    addEnv 'Matlab-2013a-MCR'
-    assertEquals "addEnv 'Matlab-2013a-MCR', _runtime_envs[0]" "matlab/2013a" "${__gp_module_envs[0]}"
-}
-
-
-#
-# Example site customization for R-3.0
-#      add 'gcc' dependency, R-3.0 depends on gcc
-#
-testAddEnv_dependency_r_3_0_on_gcc() {
-    source "env-custom-for-testing.sh"
-    assertEquals "check values" 'gcc/4.7.2, R/3.0.1' "$(getValue 'R-3.0')"
-
-    addEnv 'R-3.0'
-    assertEquals "_runtime_envs[0]" "gcc/4.7.2" "${__gp_module_envs[0]}"
-    assertEquals "_runtime_envs[1]" "R/3.0.1" "${__gp_module_envs[1]}"
-}
-
-testAddEvn_set_default_java_version() {
-    source "env-custom-for-testing.sh"
-    addEnv 'Java'
-    assertEquals "_runtime_envs[0]" "java/1.8.1" "${__gp_module_envs[0]}"
-}
-
-#
-# low level, bash scripting specific test cases
-#
-join() {
-    local IFS=$1;
-    shift;
-    echo "$*";
-}
-
-function testJoinArray() {
-    declare -a myArray=('arg1' 'arg2');
-    assertEquals "join, no delim" "arg1 arg2" "$(join ' ' ${myArray[@]})"
-    assertEquals "join, custom delim" "arg1,arg2" "$(join ',' ${myArray[@]})"
-}
-
-#
-# test parsing of "key=val" from a string
-#
-test_bash_split_key_value() {
-    local input="MY_ARG=MY_VAL"
-    IFS='=' read -r -a args <<< "$input"
-    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
-    assertEquals "$input, args.length", "2" "${#args[@]}"
-    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
-    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}"
-    
-    input="MY_ARG"
-    IFS='=' read -r -a args <<< "$input"
-    assertTrue "$input, not hasEquals" "! [[ $input == *=* ]]"
-    assertEquals "$input, args.length", "1" "${#args[@]}"
-    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
-
-    input="MY_ARG="
-    IFS='=' read -r -a args <<< "$input"
-    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
-    assertEquals "$input, args.length", "1" "${#args[@]}"
-    assertEquals "$input, args[0]" "MY_ARG" "${args[0]}"
-    
-    input="=MY_VAL"
-    IFS='=' read -r -a args <<< "$input"
-    assertTrue "$input, hasEquals" "[[ $input == *=* ]]"
-    assertEquals "$input, args.length", "2" "${#args[@]}"
-    assertEquals "$input, args[0]" "" "${args[0]}"
-    assertEquals "$input, args[1]" "MY_VAL" "${args[1]}" 
-}
-
-testRunWithEnv() {
-    export GP_DEBUG="true"
-    local expected=$'loading Java-1.7 ...\nHello, World!'
-    TEST_OUT=$(../run-with-env.sh -u Java echo 'Hello, World!')
-    assertEquals "default initEnv, with debug output" "$expected" "$TEST_OUT"
-    
+# test-case: <run-with-env> with invalid command line option
+#   expecting the script to exit early rather than go into an infinite loop
+test_run_with_env_invalid_option() {
     unset GP_DEBUG
-    assertEquals "default initEnv, no debug output" \
-        "Hello, World!" \
-        "$(../run-with-env.sh -u Java echo 'Hello, World!')"    
+    assertEquals "invalid '-Xmx512m' command line arg" \
+      "../run-with-env.sh: illegal option -- X" \
+      "$((../run-with-env.sh -Xmx512m -u Java echo 'Hello, World!') 2>&1)"
 }
 
-testRunWithEnv_custom_env_arg() {
-    export GP_DEBUG="true";
-    local env_custom="${__test_script_dir}/env-lookup-shunit2.sh";
-    
-    local expected=$'loading R-3.1 ...\nloading GCC-4.9 ...\nHello, World!';
-    
-    source "${__test_script_dir}/../env-default.sh";
-    source "${env_custom}";
-    #source env-lookup-shunit2.sh
-    assertEquals "set GP_ENV_CUSTOM with '-c' arg" \
-        "$expected" \
-        "$(../run-with-env.sh -c ${env_custom} -u R-3.1 echo 'Hello, World!')"
+test_run_java_default() {
+  export GP_DEBUG="true";
+  assertEquals "run-java.sh --version" \
+    "loading Java-1.7 ..." \
+    "$('../run-java.sh' '--' '-version')"
 }
 
-#
-# test setenv as cmdline arg, e.g 
-# ../run-with-env.sh ... -e <env.key=env.value> ... 
-#
-testRunWithEnv_setenv_on_cmdLine() {
-     assertEquals "no args" "MY_FLAG=" "$( './print-my-flag.sh' )" 
-     
-     local cmd="${__test_script_dir}/print-my-flag.sh"
-     assertEquals "export_env MY_FLAG=MY_CMD_LINE_VALUE" \
-         "MY_FLAG=MY_CMD_LINE_VALUE" \
-         "$( '../run-with-env.sh' \
-                 '-e' 'MY_UNUSED_FLAG'  \
-                 '-e' '=BOGUS_VALUE' \
-                 '-e' 'MY_UNSET_FLAG=' \
-                 '-e' 'MY_EMPTY_FLAG' \
-                 '-e' 'MY_FLAG=MY_CMD_LINE_VALUE' \
-                 '-u' 'Java-1.7' \
-                 $cmd)"
+test_run_java_custom_env() {
+  export GP_DEBUG="true";
+  assertEquals "run-java.sh custom_env" \
+    "loading java/1.8 ..." \
+    "$('../run-java.sh' '-c' './test/env-custom-shunit.sh' '--' '-version')"
 }
 
-#
-# test run-with-env.sh with an invalid command line option,
-# make sure the script exits early rather than go into an infinite loop
-#
-testRunWithEnv_invalid_option() {
-    unset GP_DEBUG
-    TEST_OUT=$((../run-with-env.sh -Xmx512m -u Java echo 'Hello, World!') 2>&1)
-    assertEquals "invalid '-Xmx512m' command line arg" "../run-with-env.sh: illegal option -- X" "$TEST_OUT"
-}
-
-testRunJava() {
-    export GP_DEBUG="true";
-    local expected=$'loading Java-1.7 ...'
-    assertEquals "run java" "$expected" "$('../run-java.sh' '--' '-version')"
-}
-
-testRunJava_custom_env_arg() {
-    export GP_DEBUG="true";
-    local expected=$'loading custom/java ...'
-    assertEquals "run java" "$expected" "$('../run-java.sh' '-c' './test/env-lookup-shunit2.sh' '--' '-version')"
-}
-
-#
 # Prepend an element to the beginning of the path; 
-# Usage: path=$(prependPath "${element}" "${path}")
-#
-function prependPath() {
+# Usage: 
+#   path=$(prepend_path "${element}" "${path}")
+function prepend_path() {
     local element="${1}";
     local path="${2}";
     
@@ -919,11 +884,10 @@ function prependPath() {
     echo "$path"
 }
 
-#
 # Append an element to the end of the path; 
-# Usage: path=$(appendPath "${path}" "${element}")
-#
-function appendPath() {
+# Usage: 
+#   path=$(append_path "${path}" "${element}")
+function append_path() {
     local path="${1}";
     local element="${2}";
     
@@ -933,13 +897,77 @@ function appendPath() {
     # if path is not set ... just set it to element
     # Note:  [ -z "${path+x}" ] checks if the 'path' variable is declared
     if [ -z "$path" ]; then
-        #echo "2, path not set";
+        #debug: echo "2, path not set";
         path="$element";
     elif [[ ":$path:" != *":$element:"* ]]; then
         path="${path:+"$path:"}$element"
     fi
     # use echo to return a value
     echo "$path"
+}
+
+test_append_path() {
+    MY_PATH="/opt/dir1";
+    MY_PATH=$(append_path "${MY_PATH}" "/opt/dir2")
+    assertEquals "append_path" "/opt/dir1:/opt/dir2" "${MY_PATH}"
+}
+
+test_append_path_ignoreDuplicate() {
+    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
+    
+    assertEquals "append_path, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(append_path "${MY_PATH}" "/opt/dir1");
+    
+    assertEquals "append_path, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(append_path "${MY_PATH}" "/opt/dir2");
+    
+    assertEquals "append_path, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(append_path "${MY_PATH}" "/opt/dir3");
+        
+    # sanity check
+    assertEquals "sanity check, not a dupe" "/opt/dir1:/opt/dir2:/opt/dir3:/opt/dir4" \
+        $(append_path "${MY_PATH}" "/opt/dir4"); 
+}
+
+test_append_path_toEmpty() {
+    MY_ARG="/new/pathelement";
+    unset MY_PATH;
+    set +o nounset
+    MY_PATH=$(append_path "${MY_PATH}" "${MY_ARG}")
+    set -o nounset
+    assertEquals "append_path" "/new/pathelement" "${MY_PATH}"
+}
+
+test_prepend_path() {
+    MY_PATH="/opt/dir1";
+    MY_PATH=$(prepend_path "/opt/dir2" "${MY_PATH}")
+    assertEquals "prepend_path" "/opt/dir2:/opt/dir1" "${MY_PATH}"
+}
+
+test_prepend_path_ignoreDuplicate() {
+    MY_PATH="/opt/dir1:/opt/dir2:/opt/dir3";
+    
+    assertEquals "prepend_path, ignore dupe in front" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prepend_path "/opt/dir1" "${MY_PATH}");
+    
+    assertEquals "prepend_path, ignore dupe in middle" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prepend_path "/opt/dir2" "${MY_PATH}");
+    
+    assertEquals "prepend_path, ignore dupe at end" "/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prepend_path "/opt/dir3" "${MY_PATH}");
+        
+    # sanity check
+    assertEquals "sanity check, not a dupe" "/opt/dir4:/opt/dir1:/opt/dir2:/opt/dir3" \
+        $(prepend_path "/opt/dir4" "${MY_PATH}" ); 
+}
+
+test_prepend_path_toEmpty() {
+    MY_ARG="/new/pathelement";
+    unset MY_PATH;
+    set +o nounset
+    MY_PATH=$(prepend_path "${MY_ARG}" "${MY_PATH}")
+    set -o nounset
+    assertEquals "prepend_path" "/new/pathelement" "${MY_PATH}"
 }
 
 ############################################################
@@ -969,15 +997,6 @@ array_length() {
   fi
   declare -a arr_copy=( "${!array_ref}" )
   echo "${#arr_copy[@]}";
-}
-
-test_num_args() {
-    assertEquals "__num_args" "0" "$(__num_args)"
-    assertEquals "__num_args" "4" "$(__num_args this is a test)"
-    declare -a my_arr=("this" "is" "a" "test");
-    assertEquals "__num_args my_arr" "4" "$(__num_args "${my_arr[@]}")"
-    my_arr=("this is" "a" "test");
-    assertEquals "__num_args with spaces" "3" "$(__num_args "${my_arr[@]}")"
 }
 
 test_array_length() {
@@ -1157,7 +1176,6 @@ test_is_valid_r_version() {
   is_valid_r_version "2" \
     || fail "is_valid_r_version '2': expected 'true'"
 }
-
 
 ############################################################
 # Function: arr_create
