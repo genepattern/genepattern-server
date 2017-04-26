@@ -16,6 +16,9 @@ oneTimeSetUp()  {
     readonly __gp_script_file="${GP_SCRIPT_DIR}/$(basename "${BASH_SOURCE[0]}")";
     readonly __gp_script_base="$(basename ${__gp_script_file} .sh)";
 
+    # for run-rjava tests
+    run_r_path="../../../website/WEB-INF/classes/"
+    
     # source 'gp-common.sh'
     if [ -f "${__gp_common_script}" ]; then
         source "${__gp_common_script}";
@@ -25,6 +28,7 @@ oneTimeSetUp()  {
     strict_mode
     # disable exit on error for unit testing
     set +o errexit
+
 }
 
 # called before each test
@@ -780,21 +784,29 @@ test_run_rjava_env_custom_arg() {
 #   this test may fail on systems where R is not configured
 #   it is ok to skip this test if necessary 
 test_run_rjava_hello() {
-  unset GP_DEBUG;
-  local run_r_path="../../../website/WEB-INF/classes/"
-  local cmd;
-  local out;
+  #local run_r_path="../../../website/WEB-INF/classes/"
 
   # test-case: default site-customization    
-  local cmd="../run-rjava.sh 2.5 -Xmx512m -cp ${run_r_path} RunR hello.R hello"
-  local out="$($cmd)";
+  local out="$(../run-rjava.sh 2.5 -Xmx512m -cp ${run_r_path} RunR hello.R hello)";
   assertTrue "run-rjava, output ends with 'Hello, world!'" \
     "[[ \"${out}\" = *\"Hello, world!\" ]]"
   
   # test-case: -c env-custom-macos.sh
-  cmd="../run-rjava.sh -c env-custom-macos.sh 2.5 -Xmx512m -cp ${run_r_path} RunR hello.R hello"
-  out="$($cmd)";
+  out="$(../run-rjava.sh \
+    -c env-custom-macos.sh 2.5 \
+    -Xmx512m -cp ${run_r_path} RunR hello.R hello)";
   assertTrue "run-rjava with '-c', output ends with 'Hello, world!'" \
+    "[[ \"${out}\" = *\"Hello, world!\" ]]"
+}
+
+# test <run-rjava> alternative, see above
+test_run_rjava_with_env_hello() {
+  #local run_r_path="../../../website/WEB-INF/classes/"
+  out="$(../run-rjava-with-env.sh \
+    -c env-custom-macos.sh -u java/1.8 -u r/2.5 -- \
+    -Xmx128m -cp ${run_r_path} RunR hello.R hello)";
+  # debug: echo $out
+  assertTrue "run-rjava-with-env output ends with 'Hello, world!'" \
     "[[ \"${out}\" = *\"Hello, world!\" ]]"
 }
 
