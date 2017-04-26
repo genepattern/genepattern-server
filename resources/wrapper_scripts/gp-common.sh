@@ -27,7 +27,7 @@
 #
 # Declared functions
 #   export_envs        process '-e' flags, set environment variables
-#   sourceEnvScripts  process -c' flag, source site-customization file(s)
+#   source_env_scripts  process -c' flag, source site-customization file(s)
 #   addModuleEnvs     process '-u' flags, initialize module environments
 #   initModuleEnvs    load module environments
 #   parse_args         parse the wrapper command line args
@@ -356,7 +356,7 @@ parse_args() {
     export_envs;
 
     # process '-c' flag, source site-customization file(s)
-    sourceEnvScripts
+    source_env_scripts
 
     # process '-u' flags, initialize module environments
     addModuleEnvs;
@@ -463,13 +463,13 @@ function setEnvCustomScript() {
 }
 
 ############################################################
-# Function: sourceEnvScripts
+# Function: source_env_scripts
 #   Source the default and custom configuration scripts
 # References:
 #   __gp_env_default_script, default=<wrapper-scripts>/env-default.sh
 #   __gp_env_custom_script,  default=<wrapper-scripts>/env-custom.sh
 ############################################################
-function sourceEnvScripts() {
+function source_env_scripts() {
     # process '-c' flag next
     setEnvCustomScript "${__gp_env_custom_arg:-}";
     # load 'env-default.sh' script

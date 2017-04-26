@@ -38,7 +38,7 @@ function run_rjava() {
     export_envs;
 
     # process '-c' flag next
-    sourceEnvScripts;
+    source_env_scripts;
     
     # process '-u' flags after site-customization
     addModuleEnvs;
