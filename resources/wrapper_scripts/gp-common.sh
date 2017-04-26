@@ -34,7 +34,6 @@
 #   run                 all steps necessary to run the module command line
 #
 #   (helpers)
-#   parseOpt
 #   export_env key=[value]
 #   (included in env-hashmap.sh)
 #   putValue canonical-name [local-name][,local-name]*
@@ -43,8 +42,7 @@
 #     '-c' 'env-custom-macos.sh'
 #     source ${GP_SCRIPT_DIR}/env-custom-macos.sh
 # 
-# Site Customization:
-# set 'site customization' in one of the following ways ...
+# Set 'site customization' in one of the following ways ...
 #   with -c arg
 #     run-with-env.sh -c env-custom ...
 #   with environment variable
@@ -65,7 +63,6 @@ else
     fi
     readonly __gp_env_default_script="${GP_SCRIPT_DIR}/env-default.sh";
     source "${GP_SCRIPT_DIR}/env-hashmap.sh"
-    
 fi
 
 declare DRY_RUN="";
@@ -362,7 +359,7 @@ parse_args() {
     add_module_envs;
     
     # optionally set the DRY_RUN variable
-    initDryRun;
+    init_dry_run;
 }
 
 ############################################################
@@ -529,7 +526,7 @@ function init_module_envs() {
 }
 
 ############################################################
-# initDryRun
+# init_dry_run
 #   set DRY_RUN variable based on GP_DRY_RUN flag
 # Usage:
 #   Set the GP_DRY_RUN flag as a command line arg
@@ -537,7 +534,7 @@ function init_module_envs() {
 # Use the $DRY_RUN variable when executing commands,
 #   $DRY_RUN my_cmd $my_args ...
 ############################################################
-function initDryRun() {
+function init_dry_run() {
   if is_true "GP_DRY_RUN"; then
     DRY_RUN="echo"
   else
