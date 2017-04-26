@@ -46,7 +46,9 @@ main() {
   [[ -z "${GP_MKDIRS+x}" ]] \
     && GP_MKDIRS="TRUE";
   
-  # debug: env | sort
+  if is_debug; then
+    env | sort
+  fi
   if [[ -e "${GP_R_PACKAGE_INFO}" ]]; then
     install_pkgs
   fi

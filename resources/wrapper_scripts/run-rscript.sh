@@ -76,7 +76,6 @@ main() {
                 ;;
             # env-arch does not end with '/', can be empty
             a) 
-               # debug: echo "parse '-a' option, OPTARG=${OPTARG}"
                if has_arg; then
                  gp_env_arch="$(set_env_arch "${OPTARG}")";
                fi

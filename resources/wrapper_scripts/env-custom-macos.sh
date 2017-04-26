@@ -15,7 +15,7 @@ function initEnv() {
     if ! [[ -z ${GP_DEBUG+x} ]]; then
         # only when the GP_DEBUG flag is set
         echo "loading $1 ..."
-        echo R_LIBS_SITE=${R_LIBS_SITE}
+        echo "R_LIBS_SITE=${R_LIBS_SITE}"
     fi
     
     case "${1}" in

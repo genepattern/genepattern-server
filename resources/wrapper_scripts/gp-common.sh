@@ -96,6 +96,16 @@ strict_mode() {
 }
 
 ############################################################
+# log
+#   for debugging, print log message, by default 'echo'
+############################################################
+log() {
+  if is_true "GP_DEBUG"; then
+    echo "$@"
+  fi
+}
+
+############################################################
 # is_set
 #   return 0, true, if the variable is set
 #          1, false otherwise
@@ -178,6 +188,22 @@ is_true() {
     return 0;
   fi
   return 1
+}
+
+############################################################
+# is_debug
+#   convenience method to check if GP_DEBUG is set
+# Usage:
+#   if is_debug; then
+#     log "debugging ..."
+#   fi
+############################################################
+is_debug() {
+  if is_true "GP_DEBUG"; then
+    return 0
+  fi
+  return 1
+  # return is_true "GP_DEBUG"
 }
 
 ############################################################
@@ -296,7 +322,7 @@ parse_args() {
                 # debug: echo "    parsing '-c' '${OPTARG}'";
                 if has_arg; then
                     __gp_env_custom_arg="$OPTARG";
-                    #echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
+                    # debug: echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
                 fi
                 ;;
             e)
@@ -600,7 +626,6 @@ function echoCmdEnv() {
 function run_with_env() {
     parse_args "${@}";
     initModuleEnvs;
-    # debug: echoCmdEnv
     $DRY_RUN "${__gp_module_cmd[@]}";
 }
 
