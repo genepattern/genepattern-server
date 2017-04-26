@@ -40,7 +40,7 @@ main() {
   strict_mode
   source "${__dir}/r-common.sh"
   parse_args "${@}"
-  initModuleEnvs
+  init_module_envs
   export_r_env
   # by default, GP_MKDIRS=true
   [[ -z "${GP_MKDIRS+x}" ]] \

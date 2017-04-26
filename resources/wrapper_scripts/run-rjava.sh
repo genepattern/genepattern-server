@@ -41,12 +41,12 @@ function run_rjava() {
     source_env_scripts;
     
     # process '-u' flags after site-customization
-    addModuleEnvs;
+    add_module_envs;
 
     # customization for run-rjava.sh script
     addEnv "R-${r_version}"
     addEnv "Java"
-    initModuleEnvs;
+    init_module_envs;
 
     r=`which R`
     rhome=${r%/*/*}

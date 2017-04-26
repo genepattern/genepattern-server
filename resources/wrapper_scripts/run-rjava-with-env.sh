@@ -33,8 +33,8 @@
 function run_rjava_with_env() {
   log "parse_args..."
   parse_args "${@}"
-  log "initModuleEnvs"
-  initModuleEnvs
+  log "init_module_envs"
+  init_module_envs
   # customization for run-rjava.sh script
   r=`which R`
   rhome=${r%/*/*}

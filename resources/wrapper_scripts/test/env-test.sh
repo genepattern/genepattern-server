@@ -227,39 +227,39 @@ test_export_env() {
     assertEquals "export_env '$input'; \$MY_KEY (empty)" "" "$MY_KEY"
 }
 
-# test gp-common::setEnvCustomScript()
-test_setEnvCustomScript() {
+# test gp-common::set_env_custom_script()
+test_set_env_custom_script() {
     # test-case
     local readonly _fq_path="/opt/gp/my custom with spaces.sh";
     unset GP_ENV_CUSTOM;
-    setEnvCustomScript
+    set_env_custom_script
     assertEquals "default" \
         "${__parent_dir}/env-custom.sh" \
         "${__gp_env_custom_script}"
     # test-case
-    setEnvCustomScript ''
+    set_env_custom_script ''
     assertEquals "empty string" \
         "${__parent_dir}/env-custom.sh" \
         "${__gp_env_custom_script}"
     # test-case
-    setEnvCustomScript 'env-custom-macos.sh'
+    set_env_custom_script 'env-custom-macos.sh'
     assertEquals "custom -c arg, relative" \
         "${__parent_dir}/env-custom-macos.sh" \
         "${__gp_env_custom_script}"
     # test-case
-    setEnvCustomScript "${_fq_path}"
+    set_env_custom_script "${_fq_path}"
     assertEquals "custom -c arg, fully qualified" \
         "${_fq_path}" \
         "${__gp_env_custom_script}"
     # test-case
     GP_ENV_CUSTOM="env-custom-macos.sh";
-    setEnvCustomScript
+    set_env_custom_script
     assertEquals "export GP_ENV_CUSTOM, relative" \
         "${__parent_dir}/env-custom-macos.sh" \
         "${__gp_env_custom_script}";
     # test-case
     GP_ENV_CUSTOM="${_fq_path}";
-    setEnvCustomScript
+    set_env_custom_script
     assertEquals "export GP_ENV_CUSTOM, relative" \
         "${_fq_path}" \
         "${__gp_env_custom_script}";

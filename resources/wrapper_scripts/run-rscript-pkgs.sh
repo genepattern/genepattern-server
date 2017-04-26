@@ -54,7 +54,7 @@ main() {
   
   parse_args "${@}"
   addEnv "r/${r_version}"
-  initModuleEnvs
+  init_module_envs
   export_r_env
   # by default, GP_MKDIRS=true
   [[ -z "${GP_MKDIRS+x}" ]] \

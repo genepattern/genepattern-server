@@ -26,12 +26,12 @@
 #   __gp_module_cmd - the command to run
 #
 # Declared functions
-#   export_envs        process '-e' flags, set environment variables
+#   export_envs         process '-e' flags, set environment variables
 #   source_env_scripts  process -c' flag, source site-customization file(s)
-#   addModuleEnvs     process '-u' flags, initialize module environments
-#   initModuleEnvs    load module environments
-#   parse_args         parse the wrapper command line args
-#   run               all steps necessary to run the module command line
+#   add_module_envs     process '-u' flags, initialize module environments
+#   init_module_envs    load module environments
+#   parse_args          parse the wrapper command line args
+#   run                 all steps necessary to run the module command line
 #
 #   (helpers)
 #   parseOpt
@@ -359,7 +359,7 @@ parse_args() {
     source_env_scripts
 
     # process '-u' flags, initialize module environments
-    addModuleEnvs;
+    add_module_envs;
     
     # optionally set the DRY_RUN variable
     initDryRun;
@@ -436,13 +436,13 @@ function export_envs() {
 }
 
 ############################################################
-# Function: setEnvCustomScript
+# Function: set_env_custom_script
 #
 #   Sets the '__gp_env_script_dir' as a fully qualified path
 # to the site customization file
 #
 # Usage:
-#   setEnvCustomScript [filename]
+#   set_env_custom_script [filename]
 # Input: filename, optional, default='env-custom.sh'
 #    Customization:
 #    1) export GP_ENV_CUSTOM=<env-custom>; <run-with-env> ... 
@@ -457,7 +457,7 @@ function export_envs() {
 # customization script
 #
 ############################################################
-function setEnvCustomScript() {
+function set_env_custom_script() {
   __gp_env_custom_script="$(convertPath \
     "${GP_ENV_CUSTOM:-${1:-env-custom.sh}}")";
 }
@@ -471,7 +471,7 @@ function setEnvCustomScript() {
 ############################################################
 function source_env_scripts() {
     # process '-c' flag next
-    setEnvCustomScript "${__gp_env_custom_arg:-}";
+    set_env_custom_script "${__gp_env_custom_arg:-}";
     # load 'env-default.sh' script
     if [ -f "${__gp_env_default_script}" ]; then
         source "${__gp_env_default_script}";
@@ -484,10 +484,10 @@ function source_env_scripts() {
 }
 
 ############################################################
-# addModuleEnvs, add items to the __gp_module_envs array
+# add_module_envs, add items to the __gp_module_envs array
 # calls 'addEnv' for each requested environment
 # Usage:
-#   addModuleEnvs
+#   add_module_envs
 # Inputs: No args
 # References:
 #   __gp_u_args, the list of '-u' command line args
@@ -499,7 +499,7 @@ function source_env_scripts() {
 # must call this after 'export_envs'
 # and loading the site-customization file
 ############################################################
-function addModuleEnvs() {
+function add_module_envs() {
     if [ "${#__gp_u_args[@]}" != 0 ]; then
         local u_arg;
         #echo "processing '-u' args ...";
@@ -512,14 +512,14 @@ function addModuleEnvs() {
 }
 
 ############################################################
-# initModuleEnvs, initialize module runtime environments
+# init_module_envs, initialize module runtime environments
 # Usage:
-#   initModuleEnvs
+#   init_module_envs
 # Input args: No args
 # Input references: 
-#   __gp_module_envs is initialied in 'addModuleEnvs' 
+#   __gp_module_envs is initialied in 'add_module_envs' 
 ############################################################
-function initModuleEnvs() {
+function init_module_envs() {
     if [ "${#__gp_module_envs[@]}" != 0 ]; then
         for module in "${__gp_module_envs[@]}"
         do
@@ -625,7 +625,7 @@ function echoCmdEnv() {
 ############################################################
 function run_with_env() {
     parse_args "${@}";
-    initModuleEnvs;
+    init_module_envs;
     $DRY_RUN "${__gp_module_cmd[@]}";
 }
 

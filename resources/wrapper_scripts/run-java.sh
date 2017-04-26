@@ -15,7 +15,7 @@ function run_java() {
     source "${__dir}/gp-common.sh"
     parse_args "${@}";
     addEnv "Java";
-    initModuleEnvs;
+    init_module_envs;
     java "${__gp_module_cmd[@]}"
 }
 
