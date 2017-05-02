@@ -148,7 +148,7 @@ main() {
         # --no-save --quiet --slave --no-restore <gp.tools.dir>/R/install_packages/installPackages.R
         INSTALL_PACKAGES_CMD=( "${RSCRIPT_CMD[@]}" \
             "--no-save" "--quiet" "--slave" "--no-restore" \
-            "${_gp_script_dir}/R/installPackages.R" \
+            "${__gp_script_dir}/R/installPackages.R" \
             "${gp_libdir}r.package.info" \
             "${install_packages_log}"
         );
