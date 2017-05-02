@@ -13,9 +13,9 @@
 function run_java() {
     local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
     source "${__dir}/gp-common.sh"
-    parseArgs "${@}";
+    parse_args "${@}";
     addEnv "Java";
-    initModuleEnvs;
+    init_module_envs;
     java "${__gp_module_cmd[@]}"
 }
 

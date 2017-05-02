@@ -15,7 +15,7 @@ function initEnv() {
     if ! [[ -z ${GP_DEBUG+x} ]]; then
         # only when the GP_DEBUG flag is set
         echo "loading $1 ..."
-        echo R_LIBS_SITE=${R_LIBS_SITE}
+        echo "R_LIBS_SITE=${R_LIBS_SITE}"
     fi
     
     case "${1}" in
@@ -29,20 +29,20 @@ function initEnv() {
         setjdk 1.8
         ;;
 
-      R/3.3|R-3.3)
+      r/3.3|R/3.3|r-3.3|R-3.3)
         # set path for R-3.3
         R_HOME=/Library/Frameworks/R.framework/Versions/3.3/Resources
         GP_SET_R_PATH=true;
         ;;
 
-      R/3.2|R-3.2)
+      r/3.2|R/3.2|r-3.2|R-3.2)
         # set path for R-3.2
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.2/Resources
         GP_SET_R_PATH=true;
         ;;
 
-      R/3.1|R-3.1)
+      r/3.1|R/3.1|r-3.1|R-3.1)
         # set path for R-3.1
         # add Rscript to path 
         export R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
@@ -53,42 +53,37 @@ function initEnv() {
         #   this is only strictly necessary if you install a newer (than 3.1)
         #   version of R on your Mac.
         #
-        # use the include ./R/3.1/R_v3.1.3.patch file
+        # use the included ./R/3.1/R_v3.1.3.patch file
         # 
         #   cd /Library/Frameworks/R.framework/Versions/3.1/Resources/bin
         #   # first, backup the existing R file
         #   cp R R.orig
         #   # then, apply the patch
         #   patch < R_v3.1.3.patch
-        # these export statements have no effect ...
-        #   export R_HOME_DIR=/Library/Frameworks/R.framework/Versions/3.1/Resources
-        #   export R_SHARE_DIR="${R_HOME_DIR}/share"
-        #   export R_INCLUDE_DIR="${R_HOME_DIR}/include"
-        #   export R_DOC_DIR="${R_HOME_DIR}/doc"
         ;;
 
-      R/3.0|R-3.0)
+      r/3.0|R/3.0|r-3.0|R-3.0)
         # set path for R-3.0
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.0/Resources
         GP_SET_R_PATH=true;
         ;;
 
-      R/2.15|R-2.15)
+      r/2.15|R/2.15|r-2.15|R-2.15)
         # set path for R-2.15
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.15/Resources
         GP_SET_R_PATH=true;
         ;;
 
-      R/2.5|R-2.5)
+      r/2.5|R/2.5|r-2.5|R-2.5)
         # set path for R-2.5
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
         GP_SET_R_PATH=true;
         ;;
 
-      R/2.0|R-2.0)
+      r/2.0|R/2.0|r-2.0|R-2.0)
         # set path for R-2.0
         R_HOME=/Library/Frameworks/R.framework/Versions/2.0/Resources
         GP_SET_R_PATH=true;

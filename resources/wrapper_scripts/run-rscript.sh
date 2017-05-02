@@ -22,9 +22,9 @@
 
 
 ############################################################
-# Function: hasArg, check for missing arg in getopts loop
+# Function: has_arg, check for missing arg in getopts loop
 ############################################################
-hasArg() { 
+has_arg() { 
   if ! [[ -z "${OPTARG+x}" || $OPTARG = -* ]]; then
     # success
     return 0;
@@ -65,7 +65,7 @@ main() {
     OPTIND=1
     while getopts c:v:l:a:p:d:m:n opt "$@"; do
         case $opt in
-            c)  if hasArg; then
+            c)  if has_arg; then
                   env_custom="${OPTARG:-}"
                 fi 
                 ;;
@@ -76,8 +76,7 @@ main() {
                 ;;
             # env-arch does not end with '/', can be empty
             a) 
-               # debug: echo "parse '-a' option, OPTARG=${OPTARG}"
-               if hasArg; then
+               if has_arg; then
                  gp_env_arch="$(set_env_arch "${OPTARG}")";
                fi
                 ;;
