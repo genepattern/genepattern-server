@@ -572,35 +572,21 @@ function get_root_name() {
 }
 
 ############################################################
-# for debugging, echo variables
-#   note, not for production, can be helpful for debugging
-# after parse_args
+# for debugging, print environment variables initialized
+# by parse_args
 ############################################################
-function echoEnv() {
-    echo "                GP_DEBUG: ${GP_DEBUG:- (not set)}";
-    echo "           GP_SCRIPT_DIR: ${GP_SCRIPT_DIR:-}";
-    echo "           GP_ENV_CUSTOM: ${GP_ENV_CUSTOM:- (not set)}";
-    echo "     __gp_env_custom_arg: ${__gp_env_custom_arg:- (not set)}";
-        echo " __gp_env_default_script: ${__gp_env_default_script:- (not set)}";
-    echo "  __gp_env_custom_script: ${__gp_env_custom_script:- (not set)}";
-    echo "             __gp_e_args: ${__gp_e_args[@]:- (none)}";
-    echo "             __gp_u_args: ${__gp_u_args[@]:- (none)}";
-        echoEnvMap "            ";
-    echo "        __gp_module_envs: ${__gp_module_envs[@]:- (none)}"
-    echo "         __gp_module_cmd: ${__gp_module_cmd[@]:- (not set)}"
-}
-
-############################################################
-# for debugging, echo command and path
-############################################################
-function echoCmdEnv() {
-    echo cmd="${__gp_module_cmd[@]}"
-    local a=${__gp_module_cmd[0]:-""};
-    if ! [[ -z ${a:-} ]]; then
-      echo "which $a: $(which $a)";
-    fi
-    #echo "which Rscript: $(which Rscript)"
-    echo "PATH: ${PATH}"
+function echo_env() {
+  echo "                GP_DEBUG: ${GP_DEBUG:- (not set)}";
+  echo "           GP_SCRIPT_DIR: ${GP_SCRIPT_DIR:-}";
+  echo "           GP_ENV_CUSTOM: ${GP_ENV_CUSTOM:- (not set)}";
+  echo "     __gp_env_custom_arg: ${__gp_env_custom_arg:- (not set)}";
+  echo " __gp_env_default_script: ${__gp_env_default_script:- (not set)}";
+  echo "  __gp_env_custom_script: ${__gp_env_custom_script:- (not set)}";
+  echo "             __gp_e_args: ${__gp_e_args[@]:- (none)}";
+  echo "             __gp_u_args: ${__gp_u_args[@]:- (none)}";
+  echo_env_map "            ";
+  echo "        __gp_module_envs: ${__gp_module_envs[@]:- (none)}"
+  echo "         __gp_module_cmd: ${__gp_module_cmd[@]:- (not set)}"
 }
 
 ############################################################

@@ -17,7 +17,7 @@
 #   
 #   (helpers)
 #   __indexOf
-#   echoEnvMap
+#   echo_env_map
 ############################################################
 
 if [[ "${_env_hashmap_inited:-}" -eq 1 ]]; then
@@ -204,10 +204,10 @@ numEnvs() {
 __num_args() { echo $#; }
 
 ############################################################
-# Function: echoEnvMap, for debugging, 
+# Function: echo_env_map, for debugging, 
 #   print the __gp_env_map keys and vals
 ############################################################
-echoEnvMap() {
+echo_env_map() {
     local pad="${1:-    }";
     if [[ -z ${__gp_env_map_keys+x} ]]; then
         echo "${pad}__gp_env_map:  (no items)";

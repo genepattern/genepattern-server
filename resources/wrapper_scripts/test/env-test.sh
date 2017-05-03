@@ -299,11 +299,11 @@ test_get_root_name() {
   assertEquals "get_root_name('$module_name')" "" "$(get_root_name $module_name)"
 }
 
-# test gp-common::echoEnv
-test_echoEnv() {
-    putValue "java/1.8"
-    putValue "python/2.5"
-    echoEnv
+# test gp-common::echo_env
+test_echo_env() {
+  putValue "java/1.8"
+  putValue "python/2.5"
+  echo_env
 }
 
 ############################################################
