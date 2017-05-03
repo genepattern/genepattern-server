@@ -53,16 +53,16 @@
 
 # include this script once and only once
 if [[ "${__gp_inited:-}" -eq 1 ]]; then 
-    return;
+  return;
 else
-    readonly __gp_inited=1;
-    # set GP_SCRIPT_DIR, unless it's already been set
-    if [ -z "${GP_SCRIPT_DIR:-}" ]; then
-        # default, fully qualified path to bash_source dir
-        readonly GP_SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
-    fi
-    readonly __gp_env_default_script="${GP_SCRIPT_DIR}/env-default.sh";
-    source "${GP_SCRIPT_DIR}/env-hashmap.sh"
+  readonly __gp_inited=1;
+  # set GP_SCRIPT_DIR, unless it's already been set
+  if [ -z "${GP_SCRIPT_DIR:-}" ]; then
+    # default, fully qualified path to bash_source dir
+    readonly GP_SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
+  fi
+  readonly __gp_env_default_script="${GP_SCRIPT_DIR}/env-default.sh";
+  source "${GP_SCRIPT_DIR}/env-hashmap.sh"
 fi
 
 declare DRY_RUN="";
@@ -298,68 +298,68 @@ has_arg() {
 #     GP_ENV_CUSTOM=env-custom-macos.sh ; parse_args ...
 ############################################################
 parse_args() {
-    __gp_env_custom_arg="";
-    __gp_env_custom_script="";
-    __gp_e_args=(); 
-    __gp_u_args=();
-    __gp_module_cmd=();
+  __gp_env_custom_arg="";
+  __gp_env_custom_script="";
+  __gp_e_args=(); 
+  __gp_u_args=();
+  __gp_module_cmd=();
         
-    # optional run-with-env args, of the form ...
-    #     -u <env-name>
-    #     -e <env>=<value>
-    local _e_idx=0;
-    local _u_idx=0;
-    # reset OPTIND, for testing
-    OPTIND=1
-    while getopts c:u:e: opt "$@"; do
-        # debug: echo "opt=${opt}, OPTIND=${OPTIND}, OPTARG=${OPTARG}";
-        case "$opt" in
-            c)
-                # optional '-c <env-custom>' flag
-                # debug: echo "    parsing '-c' '${OPTARG}'";
-                if has_arg; then
-                    __gp_env_custom_arg="$OPTARG";
-                    # debug: echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
-                fi
-                ;;
-            e)
-                # debug: echo "    parsing '-e' '${OPTARG}'";
-                __gp_e_args[$_e_idx]="$OPTARG";
-                _e_idx=$((_e_idx+1));
-                ;; 
-            u)
-                # debug: echo "    parsing '-u' '${OPTARG}'";
-                __gp_u_args[$_u_idx]="$OPTARG";
-                _u_idx=$((_u_idx+1));
-                ;;
-            *)
-                # Unexpected option, exit with status of last command
-                exit $?
-                ;;
-        esac
-        # remove the option from the cmdline
-        shift $((OPTIND-1)); OPTIND=1
-    done
+  # optional run-with-env args, of the form ...
+  #     -u <env-name>
+  #     -e <env>=<value>
+  local _e_idx=0;
+  local _u_idx=0;
+  # reset OPTIND, for testing
+  OPTIND=1
+  while getopts c:u:e: opt "$@"; do
+    # debug: echo "opt=${opt}, OPTIND=${OPTIND}, OPTARG=${OPTARG}";
+    case "$opt" in
+      c)
+          # optional '-c <env-custom>' flag
+          # debug: echo "    parsing '-c' '${OPTARG}'";
+          if has_arg; then
+            __gp_env_custom_arg="$OPTARG";
+            # debug: echo "    parsing '-c' '${OPTARG}', setting __gp_env_custom_arg=${__gp_env_custom_arg}";
+          fi
+          ;;
+      e)
+        # debug: echo "    parsing '-e' '${OPTARG}'";
+        __gp_e_args[$_e_idx]="$OPTARG";
+        _e_idx=$((_e_idx+1));
+        ;; 
+      u)
+        # debug: echo "    parsing '-u' '${OPTARG}'";
+        __gp_u_args[$_u_idx]="$OPTARG";
+        _u_idx=$((_u_idx+1));
+        ;;
+      *)
+        # Unexpected option, exit with status of last command
+        exit $?
+        ;;
+    esac
+    # remove the option from the cmdline
+    shift $((OPTIND-1)); OPTIND=1
+  done
 
-    # remove options delimiter '--' 
-    if [[ "${1:-}" = "--" ]]; then
-        shift;
-    fi
+  # remove options delimiter '--' 
+  if [[ "${1:-}" = "--" ]]; then
+    shift;
+  fi
 
-    # the remaining args are the module command line
-    __gp_module_cmd=( "$@" );
+  # the remaining args are the module command line
+  __gp_module_cmd=( "$@" );
 
-    # process '-e' flags, set environment variables
-    export_envs;
+  # process '-e' flags, set environment variables
+  export_envs;
 
-    # process '-c' flag, source site-customization file(s)
-    source_env_scripts
+  # process '-c' flag, source site-customization file(s)
+  source_env_scripts
 
-    # process '-u' flags, initialize module environments
-    add_module_envs;
+  # process '-u' flags, initialize module environments
+  add_module_envs;
     
-    # optionally set the DRY_RUN variable
-    init_dry_run;
+  # optionally set the DRY_RUN variable
+  init_dry_run;
 }
 
 ############################################################
@@ -379,38 +379,38 @@ parse_args() {
 #   ''        (no arg), ignored
 ############################################################
 function export_env() {
-    if [[ -z "${1:-}" ]]; then
-        # short-circuit, missing required arg
-        return;
-    fi
+  if [[ -z "${1:-}" ]]; then
+    # short-circuit, missing required arg
+    return;
+  fi
 
-    IFS='=' read -r -a args <<< "$1"
-    local key="${args[0]}";
-    local val="";
-    if [[ ${#args[@]} > 1 ]]; then 
-        val="${args[1]}";
-    fi
+  IFS='=' read -r -a args <<< "$1"
+  local key="${args[0]}";
+  local val="";
+  if [[ ${#args[@]} > 1 ]]; then 
+    val="${args[1]}";
+  fi
 
-    if [ "${#key}" -eq 0 ]; then
-        # debug: echo "ignoring $1, key.length==0";
-        return;
-    fi
+  if [ "${#key}" -eq 0 ]; then
+    # debug: echo "ignoring $1, key.length==0";
+    return;
+  fi
     
-    if [ "${#val}" -eq 0 ]; then
-        # special-case: check for '=' sign, which means 'unset'
-        if [[ $1 == *=* ]]; then
-            # debug: echo "unset $key, val.length==0";
-            unset $key;
-            return;
-        else
-            # debug: echo "setting $key to empty value"
-            export "$key="
-            return;
-        fi
+  if [ "${#val}" -eq 0 ]; then
+    # special-case: check for '=' sign, which means 'unset'
+    if [[ $1 == *=* ]]; then
+      # debug: echo "unset $key, val.length==0";
+      unset $key;
+      return;
+    else
+      # debug: echo "setting $key to empty value"
+      export "$key="
+      return;
     fi
+  fi
     
-    # debug: echo "exporting ... $1"
-    export "$1"
+  # debug: echo "exporting ... $1"
+  export "$1"
 }
 
 ############################################################
@@ -421,15 +421,15 @@ function export_env() {
 # Must call this after processing command line args.
 ############################################################
 function export_envs() {
-    if [ "${#__gp_e_args[@]}" != 0 ]; then
-        local e_arg;
-        #echo "processing '-e' args ...";
-        for e_arg in "${__gp_e_args[@]}"
-        do
-            #echo "    e_arg: ${e_arg}";
-            export_env "$e_arg";
-        done
-    fi
+  if [ "${#__gp_e_args[@]}" != 0 ]; then
+    local e_arg;
+    #echo "processing '-e' args ...";
+    for e_arg in "${__gp_e_args[@]}"
+    do
+      #echo "    e_arg: ${e_arg}";
+      export_env "$e_arg";
+    done
+  fi
 }
 
 ############################################################
@@ -467,17 +467,16 @@ function set_env_custom_script() {
 #   __gp_env_custom_script,  default=<wrapper-scripts>/env-custom.sh
 ############################################################
 function source_env_scripts() {
-    # process '-c' flag next
-    set_env_custom_script "${__gp_env_custom_arg:-}";
-    # load 'env-default.sh' script
-    if [ -f "${__gp_env_default_script}" ]; then
-        source "${__gp_env_default_script}";
-    fi
-    # optionally load 'env-custom'
-    if [ -f "${__gp_env_custom_script}" ];
-    then 
-        source "${__gp_env_custom_script}";
-    fi
+  # process '-c' flag next
+  set_env_custom_script "${__gp_env_custom_arg:-}";
+  # load 'env-default.sh' script
+  if [ -f "${__gp_env_default_script}" ]; then
+    source "${__gp_env_default_script}";
+  fi
+  # optionally load 'env-custom'
+  if [ -f "${__gp_env_custom_script}" ]; then 
+    source "${__gp_env_custom_script}";
+  fi
 }
 
 ############################################################
@@ -497,15 +496,15 @@ function source_env_scripts() {
 # and loading the site-customization file
 ############################################################
 function add_module_envs() {
-    if [ "${#__gp_u_args[@]}" != 0 ]; then
-        local u_arg;
-        #echo "processing '-u' args ...";
-        for u_arg in "${__gp_u_args[@]}"
-        do
-            #echo "    u_arg: ${u_arg}";
-            addEnv "$u_arg";
-        done
-    fi
+  if [ "${#__gp_u_args[@]}" != 0 ]; then
+    local u_arg;
+    #echo "processing '-u' args ...";
+    for u_arg in "${__gp_u_args[@]}"
+    do
+      #echo "    u_arg: ${u_arg}";
+      addEnv "$u_arg";
+    done
+  fi
 }
 
 ############################################################
@@ -517,12 +516,12 @@ function add_module_envs() {
 #   __gp_module_envs is initialied in 'add_module_envs' 
 ############################################################
 function init_module_envs() {
-    if [ "${#__gp_module_envs[@]}" != 0 ]; then
-        for module in "${__gp_module_envs[@]}"
-        do
-            initEnv "${module}"
-        done
-    fi  
+  if [ "${#__gp_module_envs[@]}" != 0 ]; then
+    for module in "${__gp_module_envs[@]}"
+    do
+      initEnv "${module}"
+    done
+  fi  
 }
 
 ############################################################
@@ -549,12 +548,12 @@ function init_dry_run() {
 #   convert_path (<relativePath> | <fullyQualifiedPath>)
 ############################################################
 function convert_path() {
-    local arg1=${1:-};
-    if [[ "${arg1}" = /* ]]; then
-        echo "$arg1";
-    else
-        echo "${GP_SCRIPT_DIR}/$arg1"; 
-    fi
+  local arg1=${1:-};
+  if [[ "${arg1}" = /* ]]; then
+    echo "$arg1";
+  else
+    echo "${GP_SCRIPT_DIR}/$arg1"; 
+  fi
 }
 
 ############################################################
@@ -607,8 +606,7 @@ function echo_env() {
 # See run-with-env.sh for more documentation
 ############################################################
 function run_with_env() {
-    parse_args "${@}";
-    init_module_envs;
-    $DRY_RUN "${__gp_module_cmd[@]}";
+  parse_args "${@}";
+  init_module_envs;
+  $DRY_RUN "${__gp_module_cmd[@]}";
 }
-
