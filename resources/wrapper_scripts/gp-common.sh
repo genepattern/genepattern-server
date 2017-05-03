@@ -455,7 +455,7 @@ function export_envs() {
 #
 ############################################################
 function set_env_custom_script() {
-  __gp_env_custom_script="$(convertPath \
+  __gp_env_custom_script="$(convert_path \
     "${GP_ENV_CUSTOM:-${1:-env-custom.sh}}")";
 }
 
@@ -543,12 +543,12 @@ function init_dry_run() {
 }
 
 ############################################################
-# convertPath, Convert relative path to fully qualified
+# convert_path, Convert relative path to fully qualified
 # path, if necessary
 # Usage: 
-#   convertPath (<relativePath> | <fullyQualifiedPath>)
+#   convert_path (<relativePath> | <fullyQualifiedPath>)
 ############################################################
-function convertPath() {
+function convert_path() {
     local arg1=${1:-};
     if [[ "${arg1}" = /* ]]; then
         echo "$arg1";

@@ -266,18 +266,18 @@ test_set_env_custom_script() {
         unset GP_ENV_CUSTOM;
 }
 
-# test gp-common::convertPath()
-test_convertPath() {
+# test gp-common::convert_path()
+test_convert_path() {
     assertEquals "no arg" "${GP_SCRIPT_DIR}/" \
-        $(convertPath)
+        $(convert_path)
     assertEquals "relative path" "${GP_SCRIPT_DIR}/env-custom.sh" \
-        $(convertPath 'env-custom.sh')
+        $(convert_path 'env-custom.sh')
     assertEquals "fq path to dir" "/opt/genepattern" \
-        $(convertPath '/opt/genepattern')
+        $(convert_path '/opt/genepattern')
     assertEquals "fq path to dir, trailing slash" "/opt/genepattern/" \
-        $(convertPath '/opt/genepattern/')
+        $(convert_path '/opt/genepattern/')
     assertEquals "fq path to file" "/opt/genepattern/test.sh" \
-        $(convertPath '/opt/genepattern/test.sh') 
+        $(convert_path '/opt/genepattern/test.sh') 
 }
 
 # test gp-common::extractRootName()
