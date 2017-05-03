@@ -558,17 +558,17 @@ function convert_path() {
 }
 
 ############################################################
-# extractRootName, helper function, get the root name from 
+# get_root_name, helper function, get the root name from 
 # the full moduleName.
 # Usage: 
-#   extractRootName moduleName
+#   get_root_name module_name
 # Example:
-#    echo extractRootName "R/2.15.3"
-#    > "R"
+#   echo get_root_name "R/2.15.3"
+#   > "R"
 #
-function extractRootName() {
-    rootName="${1%%\/*}";
-    echo "$rootName";
+function get_root_name() {
+  local root_name="${1%%\/*}";
+  echo "$root_name";
 }
 
 ############################################################
