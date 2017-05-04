@@ -14,10 +14,9 @@
 function initEnv() {
     if ! [[ -z ${GP_DEBUG+x} ]]; then
         # only when the GP_DEBUG flag is set
-        echo "loading $1 ..."
-        echo "R_LIBS_SITE=${R_LIBS_SITE}"
+        echo "initEnv(): initializing '$1' environment ..."
     fi
-    
+
     case "${1}" in
       java/1.7|Java-1.7) 
         # set path for Java-1.7
@@ -94,7 +93,7 @@ function initEnv() {
     if ! [[ -z ${GP_SET_R_PATH+x} ]]; then
         if ! [[ -z ${GP_DEBUG+x} ]]; then
             # only when the GP_DEBUG flag is set
-            echo "adding '${R_HOME}/bin' to the PATH ..."
+            echo "initEnv():      adding '${R_HOME}/bin' to the PATH ..."
         fi
         export PATH=${R_HOME}/bin:${PATH}
     fi

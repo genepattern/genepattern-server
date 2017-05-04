@@ -266,44 +266,44 @@ test_set_env_custom_script() {
         unset GP_ENV_CUSTOM;
 }
 
-# test gp-common::convertPath()
-test_convertPath() {
+# test gp-common::convert_path()
+test_convert_path() {
     assertEquals "no arg" "${GP_SCRIPT_DIR}/" \
-        $(convertPath)
+        $(convert_path)
     assertEquals "relative path" "${GP_SCRIPT_DIR}/env-custom.sh" \
-        $(convertPath 'env-custom.sh')
+        $(convert_path 'env-custom.sh')
     assertEquals "fq path to dir" "/opt/genepattern" \
-        $(convertPath '/opt/genepattern')
+        $(convert_path '/opt/genepattern')
     assertEquals "fq path to dir, trailing slash" "/opt/genepattern/" \
-        $(convertPath '/opt/genepattern/')
+        $(convert_path '/opt/genepattern/')
     assertEquals "fq path to file" "/opt/genepattern/test.sh" \
-        $(convertPath '/opt/genepattern/test.sh') 
+        $(convert_path '/opt/genepattern/test.sh') 
 }
 
-# test gp-common::extractRootName()
-test_rootModuleName() {
-    # standard use-case
-    moduleName="R/2.15.3"
-    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+# test gp-common::get_root_name()
+test_get_root_name() {
+  # standard use-case
+  module_name="R/2.15.3"
+  assertEquals "get_root_name('$module_name')" "R" "$(get_root_name $module_name)"
     
-    # case 2: extra sub-package
-    moduleName="R/2.15/3"
-    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+  # case 2: extra sub-package
+  module_name="R/2.15/3"
+  assertEquals "get_root_name('$module_name')" "R" "$(get_root_name $module_name)"
     
-    # case 3: no sub-package
-    moduleName="R"
-    assertEquals "rootName('$moduleName')" "R" "$(extractRootName $moduleName)"
+  # case 3: no sub-package
+  module_name="R"
+  assertEquals "get_root_name('$module_name')" "R" "$(get_root_name $module_name)"
 
-    # case 4: empty string
-    moduleName=""
-    assertEquals "rootName('$moduleName')" "" "$(extractRootName $moduleName)"
+  # case 4: empty string
+  module_name=""
+  assertEquals "get_root_name('$module_name')" "" "$(get_root_name $module_name)"
 }
 
-# test gp-common::echoEnv
-test_echoEnv() {
-    putValue "java/1.8"
-    putValue "python/2.5"
-    echoEnv
+# test gp-common::echo_env
+test_echo_env() {
+  putValue "java/1.8"
+  putValue "python/2.5"
+  echo_env
 }
 
 ############################################################
