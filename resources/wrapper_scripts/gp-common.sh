@@ -29,8 +29,8 @@
 #   export_envs         process '-e' flags, set environment variables
 #   source_env_scripts  process -c' flag, source site-customization file(s)
 #   add_module_envs     process '-u' flags, initialize module environments
-#   init_module_envs    load module environments
-#   parse_args          parse the wrapper command line args
+#   init_module_envs    initialize module environments
+#   parse_args          parse command line args
 #   run                 all steps necessary to run the module command line
 #
 #   (helpers)
