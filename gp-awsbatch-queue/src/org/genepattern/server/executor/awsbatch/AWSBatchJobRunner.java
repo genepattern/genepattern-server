@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.webservice.ParameterInfo;
+import org.json.JSONObject;
 
 
 public class AWSBatchJobRunner implements JobRunner{
@@ -180,22 +183,65 @@ public class AWSBatchJobRunner implements JobRunner{
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
             try {
+                System.out.print(".");
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
+                JSONObject jobJSON = new JSONObject(awsStatus);
+                JSONObject awsJob =  ((JSONObject)jobJSON.getJSONArray("jobs").get(0));
+                String awsStatusCode = awsJob.getString("status");
                 
                 DrmJobStatus.Builder b;
                 b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
-                b.jobState(getOrDefault(batchToGPStatusMap, awsStatus, DrmJobState.UNDETERMINED));
-                System.out.println("-- get status called on job "+ jobRecord.getGpJobNo() + "  found " + awsStatus);
-                if (awsStatus.equalsIgnoreCase("SUCCEEDED")){
+                b.jobState(batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
+                if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")){
+
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
                     // JSON instead of just the ID and then read it into a JSON obj from which we pull the status
                     // and sometimes the other details
-                    b.endTime(new Date());
+                    System.out.println("Done.");
+                    try {
+                        b.queueId(awsJob.getString("jobQueue"));
+                        b.startTime(new Date(awsJob.getLong("startedAt")));
+                        b.submitTime(new Date(awsJob.getLong("createdAt")));
+                        b.endTime(new Date(awsJob.getLong("stoppedAt")));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                     refreshWorkingDirFromS3(jobRecord);
-                } else if (awsStatus.equalsIgnoreCase("FAILED")) {
-                    b.endTime(new Date());
+                    try {
+                        File metaDataDir = new File( jobRecord.getWorkingDir(), ".gp_metadata");
+                        File exitCodeFile = new File(metaDataDir, "exit_code.txt");
+                        byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
+                        String jsonText = new String(encoded);
+                        JSONObject json =new JSONObject(jsonText);  
+                       
+                        b.exitCode(json.getInt("exit_code"))  ;  
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
+                    
+                } else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
+                    System.out.println("Failed.");
+                    try {
+                        b.startTime(new Date(awsJob.getLong("startedAt")));
+                    } catch (Exception e){// its not always present depending non how it failed
+                    }
+                    try {
+                        b.submitTime(new Date(awsJob.getLong("createdAt")));
+                    } catch (Exception e){// its not always present depending non how it failed
+                    }
+                    try {
+                        b.endTime(new Date(awsJob.getLong("stoppedAt")));
+                    } catch (Exception e){
+                        // its not always present depending non how it failed}
+                        // but this one we ahve a decent idea about
+                        b.endTime(new Date());
+                    }
+                          
                     refreshWorkingDirFromS3(jobRecord);
                 }
                 
@@ -236,7 +282,7 @@ public class AWSBatchJobRunner implements JobRunner{
             exec.execute(cl, cmdEnv);
       
             String output =  outputStream.toString().trim();
-            System.out.println(output);
+           // System.out.println("JOB OVER SYNCH: " + jobRecord.getGpJobNo()+ "  --  " + output);
         } catch (Exception e){
             e.printStackTrace();
         }

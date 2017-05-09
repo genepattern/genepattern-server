@@ -35,18 +35,18 @@ function run_rjava() {
     __gp_module_cmd=( "$@" );
 
     # process '-e' flags immediately
-    exportEnvs;
+    export_envs;
 
     # process '-c' flag next
-    sourceEnvScripts;
+    source_env_scripts;
     
     # process '-u' flags after site-customization
-    addModuleEnvs;
+    add_module_envs;
 
     # customization for run-rjava.sh script
     addEnv "R-${r_version}"
     addEnv "Java"
-    initModuleEnvs;
+    init_module_envs;
 
     r=`which R`
     rhome=${r%/*/*}
