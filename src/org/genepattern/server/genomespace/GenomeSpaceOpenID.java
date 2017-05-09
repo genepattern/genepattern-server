@@ -206,7 +206,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         log.debug("Attaching GenomeSpace info to session");
         req.getSession().setAttribute(SESSION_TOKEN, token);
         req.getSession().setAttribute(SESSION_USERNAME, username);
-        GenomeSpaceManager.setLoggedIn(req.getSession(), true);
+        //GenomeSpaceManager.setLoggedIn(req.getSession(), true);
     }
     
     /**
