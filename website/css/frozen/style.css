@@ -1175,7 +1175,7 @@ strong.filtered-number {
     min-width: 45px;
 }
 
-#mainJsViewerPane {
+.mainJsViewerPane {
     min-height: 505px;
     width: 100%;
 }
