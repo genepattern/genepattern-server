@@ -1,6 +1,6 @@
 (function( $ ) {
     $.widget("ui.gpJavascript", {
-        mainPaneId: "mainJsViewerPane",
+        mainPaneId: "mainJsViewerPane_" + Math.floor(Math.random() * 100000000),
         options: {
             taskName: "",
             taskLsid: "",
@@ -124,7 +124,7 @@
                 });
 
                 var iframeWrapper = $("<div></div>")
-                    .attr("id", "iframe-wrapper")
+                    .attr("class", "iframe-wrapper")
                     .append(jsViewerFrame);
 
                 mainViewerPane.append(iframeWrapper);
