@@ -193,7 +193,7 @@ public class AWSBatchJobRunner implements JobRunner{
                 
                 DrmJobStatus.Builder b;
                 b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
-                b.jobState(batchToGPStatusMap.getOrDefault(awsStatusCode, DrmJobState.UNDETERMINED));
+                b.jobState(getOrDefault(batchToGPStatusMap, awsStatus, DrmJobState.UNDETERMINED));
                 if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")){
 
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
