@@ -5,9 +5,9 @@
 # Usage: initEnv <runtime-env-name>
 #
 function initEnv() {
-    if ! [ -z ${GP_DEBUG+x} ]; then
-        # only when the GP_DEBUG flag is set
-        echo "loading $1 ..."
+    if is_debug; then
+        # only when GP_DEBUG="true"
+        echo "initEnv(): initializing '$1' environment ..."
     fi
 }
 

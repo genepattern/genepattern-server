@@ -55,24 +55,123 @@ tearDown() {
 #   assertFalse: <condition> && fail <message>
 test_bash_var_set() {
     unset _my_var;
-    [[ -z "${_my_var+x}" ]] \
-         || fail '(unbound) _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
+    [[ -z "${_my_var:+x}" ]] \
+         || fail 'unset _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
 
     unset _my_var;
     local _my_var;
-    [[ -z "${_my_var+x}" ]] \
-         && fail 'local _my_var; [[ -z "${_my_var+x}" ]] (expecting false)';
+    [[ -z "${_my_var:+x}" ]] \
+          || fail 'local _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
 
     unset _my_var;
     local _my_var="";
-    [[ -z "${_my_var+x}" ]] \
-         && fail 'local _my_var=""; [[ -z "${_my_var+x}" ]] (expecting false)';
+    [[ -z "${_my_var:+x}" ]] \
+          || fail 'local _my_var=""; [[ -z "${_my_var+x}" ]] (expecting true)';
 
     unset _my_var;
-    local _my_var="_my_value";
-    [[ -z "${_my_var+x}" ]] \
-           && fail 'local _my_var="_my_value"; [[ -z "${_my_var+x}" ]] (expecting false)';
-        unset _my_var;
+    local _my_var="my_value";
+    [[ -z "${_my_var:+x}" ]] \
+           && fail 'local _my_var="my_value"; [[ -z "${_my_var+x}" ]] (expecting false)';
+    unset _my_var;
+}
+
+# basic '-z' string length test 
+# with parameter expansion and single brackets
+#   [ -z "${_my_var:x}" ], true if _my_var is not set OR length of _my_var is zero
+# Example:
+#   if [ -z "${_my_var:x}" ]; then
+#     echo "_my_var is not set"
+#   fi
+# Bash doc for '-z' test
+#   [ -z STRING ], true if length of "STRING" is zero 
+test_bash_is_set_single_bracket() {
+  # no arg, no quote                                                                                                                                 
+  if [ ! -z ]; then
+       fail 'sanity check: [ ! -z ]  (expecting false)'
+  fi
+  [ ! -z ] \
+    && fail 'sanity check: [ ! -z ]  (expecting false)'
+  [ -z ] \
+    || fail 'sanity check: [ -z ]    (expecting true)'
+  [ -z "" ] \
+    || fail 'sanity check: [ -z "" ] (expecting true)'
+
+  unset _my_var;
+  [ -z "${_my_var:+x}" ] \
+    || fail 'unset _my_var: [ -z ${_my_var:+x} ] (expecting true)'
+  local _my_var;
+  [ -z "${_my_var:+x}" ] \
+    || fail 'local _my_var: [ -z ${_my_var:+x} ] (expecting true)'
+
+  _my_var=
+  [ -z "${_my_var:+x}" ] \
+    || fail '_my_var=: [ -z ${_my_var:+x} ] (expecting true)'
+
+  _my_var=""
+  [ -z "${_my_var:+x}" ] \
+    || fail '_my_var="": [ -z ${_my_var:+x} ] (expecting true)'
+
+  _my_var="MY_VALUE"
+  [ -z "${_my_var:+x}" ] \
+    && fail '_my_var="MY_VALUE": [ -z ${_my_var:+x} ] (expecting false)'
+}
+
+# basic '-z' string length test
+#   [[ -z STRING ]], true if length of "STRING" is zero 
+# with parameter expansion and double brackets, aka the extended test command
+# Example:
+#   if [[ -z "${_my_var:x}" ]]; then
+#     echo "_my_var is not set"
+#   fi
+test_bash_is_set_double_bracket() {
+  # no arg, no quote                                                                                                                                 
+  if [[ ! -z "" ]]; then
+    fail 'sanity check: [[ ! -z "" ]] (expecting false)'
+  fi
+  [[ -z "" ]] \
+    || fail 'sanity check: [[ -z "" ]] (expecting true)'
+
+  unset _my_var;
+  [[ -z "${_my_var:+x}" ]] \
+    || fail 'unset _my_var: [[ -z ${_my_var:+x} ]] (expecting true)'
+  local _my_var;
+  [[ -z "${_my_var:+x}" ]] \
+    || fail 'local _my_var: [[ -z ${_my_var:+x} ]] (expecting true)'
+
+  _my_var=
+  [[ -z "${_my_var:+x}" ]] \
+    || fail '_my_var=: [[ -z ${_my_var:+x} ]] (expecting true)'
+
+  _my_var=""
+  [[ -z "${_my_var:+x}" ]] \
+    || fail '_my_var="": [[ -z ${_my_var:+x} ]] (expecting true)'
+
+  _my_var="MY_VALUE"
+  [[ -z "${_my_var:+x}" ]] \
+    && fail '_my_var="MY_VALUE": [[ -z ${_my_var:+x} ]] (expecting false)'
+}
+
+test_bash_var_local() {
+  unset _my_var;
+  local _my_var;
+  [ -z ${_my_var:+x} ] \
+    || fail 'local _my_var; [[ -z "${_my_var+x}" ]] (expecting true)';
+}
+
+test_bash_var_empty() {
+  unset _my_var;
+  local _my_var="";
+  echo "{_my_var+x}: ${_my_var:+x}"
+  [[ -z "${_my_var:+x}" ]] \
+     || fail 'local _my_var=""; [[ -z "${_my_var+x}" ]] (expecting true)';
+}
+
+test_bash_var() {
+  unset _my_var;
+  local _my_var="_my_value";
+  [[ -z "${_my_var:+x}" ]] \
+    && fail 'local _my_var="_my_value"; [[ -z "${_my_var+x}" ]] (expecting false)';
+  unset _my_var;
 }
 
 # basic '-e' file exists test
@@ -146,10 +245,96 @@ test_bash_split_key_value() {
     assertEquals "$input, args[1]" "MY_VAL" "${args[1]}" 
 }
 
+############################################################
+# test env-custom-macos.sh example
+############################################################
+#   use of GP_SET_R_PATH flag
+test_gp_set_r_path() {
+  local GP_SET_R_PATH;
+  if [[ "${GP_SET_R_PATH:-}" = "true" ]]; then
+    fail 'local GP_SET_R_PATH: (expecting false)'
+  fi
+
+  # the new way, with quotes
+  GP_SET_R_PATH="true"
+  if [[ "${GP_SET_R_PATH:-}" = "true" ]]; then
+    # ':' no-op
+    :
+  else
+    fail 'GP_SET_R_PATH="true": (expecting true)'
+  fi
+
+  # the old way, GP <= 3.9.10
+  GP_SET_R_PATH=true
+  if [[ "${GP_SET_R_PATH:-}" = "true" ]]; then
+    # ':' no-op
+    :
+  else
+    fail 'GP_SET_R_PATH=true: (expecting true)'
+  fi
+  # negation
+  if ! [[ "${GP_SET_R_PATH:-}" = "true" ]]; then
+    fail 'GP_SET_R_PATH=true: ! [[ "${GP_SET_R_PATH:-}" = "true" ]] (expecting false)'
+  fi    
+}
 
 ############################################################
 # test gp-common functions
 ############################################################
+# test cases for GP_DEBUG flag ...
+# In GP <= 3.9.10 some of the example wrapper scripts used this idiom ...
+#   if ! [[ -z ${GP_DEBUG+x} ]]; then
+#   fi
+test_is_debug() {
+  # ... not set
+  unset GP_DEBUG;
+  if is_debug; then
+    fail 'unset GP_DEBUG: is_debug (expecting false)'
+  fi
+
+  # ... .empty string
+  GP_DEBUG=
+  if is_debug; then
+    fail 'GP_DEBUG=: is_debug (expecting false)'
+  fi
+  GP_DEBUG=""
+  if is_debug; then
+    fail 'GP_DEBUG="": is_debug (expecting false)'
+  fi
+    
+  # ... true 
+  GP_DEBUG="true"
+  if ! is_debug; then
+    fail 'GP_DEBUG="true": is_debug (expecting true)'
+  fi
+
+  # ... TRUE
+  GP_DEBUG="TRUE"
+  if ! is_debug; then
+    fail 'GP_DEBUG="TRUE": is_debug (expecting true)'
+  fi
+
+  # ... 0, not recommended
+  GP_DEBUG="0"
+  if ! is_debug; then
+    fail 'GP_DEBUG="0": is_debug (expecting true)'
+  fi
+        
+  GP_DEBUG="false"
+  if is_debug; then
+    fail 'GP_DEBUG="false": is_debug (expecting false)'
+  fi
+  GP_DEBUG="FALSE"
+  if is_debug; then
+    fail 'GP_DEBUG="FALSE": is_debug (expecting false)'
+  fi
+  
+  GP_DEBUG="nonsense"
+  if is_debug; then
+    fail 'GP_DEBUG="nonsense": is_debug (expecting false)'
+  fi
+}
+
 
 ############################################################
 # for debugging, gp::sourceDir, 
@@ -763,7 +948,7 @@ Rscript --version";
 #   run_r_path=<webappDir>/WEB-INF/classes
 test_run_rjava() {
   export GP_DEBUG="true";
-  local expected=$'loading R-2.5 ...\nloading Java-1.7 ...'
+  local expected=$'initEnv(): initializing \'R-2.5\' environment ...\ninitEnv(): initializing \'Java-1.7\' environment ...'
   assertEquals "run R2.5" \
     "$expected" \
     "$('../run-rjava.sh' '2.5' '-version')"
@@ -772,7 +957,7 @@ test_run_rjava() {
 # test run-rjava.sh with '-c' arg
 test_run_rjava_env_custom_arg() {
     export GP_DEBUG="true";
-    local expected=$'loading r-2.5-vanilla-gp ...\nloading java/1.8 ...'
+    local expected=$'env-custom-shunit.sh:initEnv(): initializing \'r-2.5-vanilla-gp\' environment ...\nenv-custom-shunit.sh:initEnv(): initializing \'java/1.8\' environment ...'
     assertEquals "run R2.5" \
       "$expected" \
       "$('../run-rjava.sh' '-c' "${__test_script_dir}/env-custom-shunit.sh" '2.5' '-version')"
@@ -812,7 +997,7 @@ test_run_rjava_with_env_hello() {
 
 test_run_with_env() {
   export GP_DEBUG="true"
-  local expected=$'loading Java-1.7 ...\nHello, World!'
+  local expected=$'initEnv(): initializing \'Java-1.7\' environment ...\nHello, World!'
   assertEquals "run-with-env, with GP_DEBUG" \
     "${expected}" \
     "$(../run-with-env.sh -u Java echo 'Hello, World!')"
@@ -825,7 +1010,7 @@ test_run_with_env() {
 
 test_run_with_env_custom_env_arg() {
   export GP_DEBUG="true";
-  local expected=$'loading GCC-4.9 ...\nloading R-3.1 ...\nHello, World!';
+  local expected=$'env-custom-shunit.sh:initEnv(): initializing \'GCC-4.9\' environment ...\nenv-custom-shunit.sh:initEnv(): initializing \'R-3.1\' environment ...\nHello, World!';
   assertEquals "run-with-env -c env-custom-shunit.sh, with GP_DEBUG" \
     "$expected" \
     "$(../run-with-env.sh -c "${__test_script_dir}/env-custom-shunit.sh" -u R-3.1 echo 'Hello, World!')"
@@ -862,14 +1047,14 @@ test_run_with_env_invalid_option() {
 test_run_java_default() {
   export GP_DEBUG="true";
   assertEquals "run-java.sh --version" \
-    "loading Java-1.7 ..." \
+    "initEnv(): initializing 'Java-1.7' environment ..." \
     "$('../run-java.sh' '--' '-version')"
 }
 
 test_run_java_custom_env() {
   export GP_DEBUG="true";
   assertEquals "run-java.sh custom_env" \
-    "loading java/1.8 ..." \
+    "env-custom-shunit.sh:initEnv(): initializing 'java/1.8' environment ..." \
     "$('../run-java.sh' '-c' './test/env-custom-shunit.sh' '--' '-version')"
 }
 
@@ -1072,6 +1257,24 @@ test_not_empty() {
     || fail "not_empty (not empty): expecting true"
 }
 
+############################################################
+# is_empty
+#   return 0, true, if the variable is set to an empty string
+#          1, false otherwise
+# If the variable is not set, then it is not empty
+############################################################
+is_empty() {
+  if [[ $# -eq 0 ]]; then
+    return 1;
+  fi
+  local name="${1}";
+  # must be 'set' to be empty
+  if [[ -z "${!name+x}" ]]; then
+    return 1
+  fi
+  [[ -z "${!name-}" ]]
+}
+
 test_is_empty() {
   local my_var;
   unset my_var;
@@ -1090,9 +1293,6 @@ test_is_empty() {
 
 test_not_set() {
   not_set "GP_TEST_VAR" || fail "Expecting false"
-  if not_set "GP_TEST_VAR"; then
-    echo "GP_TEST_VAR is not set"
-  fi
 }
 
 test_is_true() {

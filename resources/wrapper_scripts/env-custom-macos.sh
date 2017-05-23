@@ -12,10 +12,12 @@
 # See env-default.sh for canonical runtime environment names
 #
 function initEnv() {
-    if ! [[ -z ${GP_DEBUG+x} ]]; then
-        # only when the GP_DEBUG flag is set
+    if is_debug; then
+        # only when GP_DEBUG="true"
         echo "initEnv(): initializing '$1' environment ..."
     fi
+    
+    local GP_SET_R_PATH;
 
     case "${1}" in
       java/1.7|Java-1.7) 
@@ -31,21 +33,21 @@ function initEnv() {
       r/3.3|R/3.3|r-3.3|R-3.3)
         # set path for R-3.3
         R_HOME=/Library/Frameworks/R.framework/Versions/3.3/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
 
       r/3.2|R/3.2|r-3.2|R-3.2)
         # set path for R-3.2
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.2/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
 
       r/3.1|R/3.1|r-3.1|R-3.1)
         # set path for R-3.1
         # add Rscript to path 
         export R_HOME=/Library/Frameworks/R.framework/Versions/3.1/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
 
         # note: you must edit your local R/3.1 installation 
         #   in order to work with multiple versions of R
@@ -65,34 +67,33 @@ function initEnv() {
         # set path for R-3.0
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/3.0/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
 
       r/2.15|R/2.15|r-2.15|R-2.15)
         # set path for R-2.15
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.15/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
 
       r/2.5|R/2.5|r-2.5|R-2.5)
         # set path for R-2.5
         # add Rscript to path
         R_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
 
       r/2.0|R/2.0|r-2.0|R-2.0)
         # set path for R-2.0
         R_HOME=/Library/Frameworks/R.framework/Versions/2.0/Resources
-        GP_SET_R_PATH=true;
+        GP_SET_R_PATH="true";
         ;;
     esac
 
     # add R_HOME/bin to the PATH
-    if ! [[ -z ${GP_SET_R_PATH+x} ]]; then
-        if ! [[ -z ${GP_DEBUG+x} ]]; then
-            # only when the GP_DEBUG flag is set
+    if [[ "${GP_SET_R_PATH:-}" = "true" ]]; then
+        if is_debug; then
             echo "initEnv():      adding '${R_HOME}/bin' to the PATH ..."
         fi
         export PATH=${R_HOME}/bin:${PATH}
