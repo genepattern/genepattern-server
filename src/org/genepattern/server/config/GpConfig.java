@@ -175,6 +175,12 @@ public class GpConfig {
      * Default location: <webappDir>/WEB-INF/tools 
      */
     public static final String PROP_GP_TOOLS_DIR="gp.tools.dir";
+    
+    /**
+     * Set 'wrapper-scripts' to a directory path to the built in wrapper scripts.
+     *   Default: wrapper-scripts=<resources>/wrapper_scripts
+     */
+    public static final String PROP_WRAPPER_SCRIPTS_DIR="wrapper-scripts";
 
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
@@ -288,7 +294,7 @@ public class GpConfig {
         GpContext gpContext=GpContext.getServerContext();
         this.webappDir=in.webappDir;
         if (this.webappDir != null) {
-            // init toos dir
+            // init tools dir
             final File toolsDir=new File(webappDir, "WEB-INF/tools").getAbsoluteFile();
             this.substitutionParams.put(PROP_GP_TOOLS_DIR, toolsDir.getAbsolutePath());
 
@@ -342,6 +348,13 @@ public class GpConfig {
         this.resourcesDir=in.resourcesDir;
         if (in.resourcesDir != null) {
             this.substitutionParams.put("resources", resourcesDir.getAbsolutePath());
+        }
+        // init 'wrapper-scripts'
+        if (in.resourcesDir == null) {
+            this.substitutionParams.put(PROP_WRAPPER_SCRIPTS_DIR, "<resources>/wrapper_scripts");
+        }
+        else {
+            this.substitutionParams.put(PROP_WRAPPER_SCRIPTS_DIR, new File(resourcesDir, "wrapper_scripts").getAbsolutePath());
         }
         if (in.gpWorkingDir==null) {
             // legacy server, assume startup in <GenePatternServer>/Tomcat folder.
@@ -1169,7 +1182,6 @@ public class GpConfig {
         if (userUploadPath == null) {
             File userDir = getUserDir(context);
             if (userDir != null) {
-                //TODO: this setting should be part of the UserUploadFile class
                 File f = new File(userDir, "uploads");
                 userUploadPath = f.getPath();
             }

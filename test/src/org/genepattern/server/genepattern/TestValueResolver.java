@@ -1,8 +1,9 @@
 package org.genepattern.server.genepattern;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.junitutil.Demo;
+import org.genepattern.junitutil.FileUtil;
 import org.genepattern.junitutil.ParameterInfoBuilder;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -29,7 +32,6 @@ public class TestValueResolver
     private static final String choiceSpec1 ="value1=value1;value2;value3=value3;value4;actual5=display5";
     private static final String choiceSpec2="choiceVal1=choiceVal1;choiceVal2;choiceVal3=choiceVal3;" +
             "choiceVal4;actualChoice5=displayChoice5";
-    
 
     private static final String singleValueParam = "single.param";
     private final String multiValueParam = "multivalue.param";
@@ -200,10 +202,11 @@ public class TestValueResolver
         assertEquals(expectedList, cmdList);
     }
 
-    @Test
-    /*
+    
+    /**
      * Test resolving a command line which contains a parameter with listmode=cmd and multiple values set
      */
+    @Test
     public void testResolveCmdLineListModeCmdWithMultiValues()
     {
         String singleValueParam = "single.param";
@@ -244,12 +247,11 @@ public class TestValueResolver
         final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
-        GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
-                .jobInput(jobInput)
-                .build();
+            .jobInput(jobInput)
+        .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
+        final List<String> actual=ValueResolver.resolveValue((GpConfig) null, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -260,10 +262,11 @@ public class TestValueResolver
         assertEquals(expected, actual);
     }
 
-    @Test
-    /*
+    
+    /**
      * Test resolving a command line which contains a parameter with listmode=cmd_opt and multiple values set
      */
+    @Test
     public void testResolveCmdLineListModeCmdOptWithMultiValues()
     {
         String singleValueParam = "single.param";
@@ -305,12 +308,11 @@ public class TestValueResolver
         final Map<String,String> setupProps=new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
-        GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
+        final List<String> actual=ValueResolver.resolveValue((GpConfig) null, jobContext, cmdLine, setupProps, paramInfoMap);
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
         expected.add("--input");
@@ -320,11 +322,11 @@ public class TestValueResolver
 
         assertEquals(expected, actual);
     }
-
-    @Test
-    /*
+    
+    /**
      * Test resolving a command line which contains a parameter with listmode=cmd and one value set
      */
+    @Test
     public void testResolveCmdLineListModeCmdOptWithSingleValue()
     {
         String singleValueParam = "single.param";
@@ -364,12 +366,11 @@ public class TestValueResolver
         final Map<String,String> setupProps = new HashMap<String,String>();
         setupProps.put(singleValueParam, singleValueParamValue);
 
-        GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
                 .jobInput(jobInput)
                 .build();
 
-        final List<String> actual=ValueResolver.resolveValue(gpConfig, jobContext, cmdLine, setupProps, paramInfoMap);
+        final List<String> actual=ValueResolver.resolveValue((GpConfig) null, jobContext, cmdLine, setupProps, paramInfoMap);
 
         List<String> expected = new ArrayList<String>();
         expected.add("echo");
@@ -396,12 +397,11 @@ public class TestValueResolver
         final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
 
-        final GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder().build();
         Map<String,String> dict=new HashMap<String,String>();
         dict.put("output.filename", "<input.file_basename>.cp.<input.file_extension>");
         final List<String> expected=Arrays.asList(new String[]{ "<input.file_basename>.cp.<input.file_extension>" });
-        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<output.filename>", dict, paramInfoMap);
+        final List<String> actual=ValueResolver.substituteValue((GpConfig) null, jobContext, "<output.filename>", dict, paramInfoMap);
         
         assertEquals("substitue(<output.filename>)", expected, actual);
     }
@@ -421,9 +421,7 @@ public class TestValueResolver
         JobInput jobInput=new JobInput();
         jobInput.addValue(pname, "A VALUE");
         jobInput.addValue(pname, "B VALUE");
-        
-        
-        final GpConfig gpConfig=new GpConfig.Builder().build();
+       
         final GpContext jobContext=new GpContext.Builder()
             .jobInput(jobInput)
         .build();
@@ -431,7 +429,7 @@ public class TestValueResolver
         final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
         
-        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        final List<String> actual=ValueResolver.substituteValue((GpConfig) null, jobContext, "<input.param>", dict, paramInfoMap);
         assertEquals("substitue(<input.param>)", 
                 Arrays.asList("--input-param=A VALUE", "--input-param=B VALUE"), 
                 actual);
@@ -452,9 +450,7 @@ public class TestValueResolver
         JobInput jobInput=new JobInput();
         jobInput.addValue(pname, "A VALUE");
         jobInput.addValue(pname, "B VALUE");
-        
-        
-        final GpConfig gpConfig=new GpConfig.Builder().build();
+
         final GpContext jobContext=new GpContext.Builder()
             .jobInput(jobInput)
         .build();
@@ -462,7 +458,7 @@ public class TestValueResolver
         final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
         
-        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        final List<String> actual=ValueResolver.substituteValue((GpConfig) null, jobContext, "<input.param>", dict, paramInfoMap);
         assertEquals("substitue(<input.param>)", 
                 Arrays.asList("-i", "A VALUE", "-i", "B VALUE"), 
                 actual);
@@ -487,14 +483,13 @@ public class TestValueResolver
         jobInput.addValue(pname, "A VALUE");
         jobInput.addValue(pname, "B VALUE");
 
-        final GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
             .jobInput(jobInput)
         .build();
         Map<String,String> dict=new HashMap<String,String>();
         final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
-        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        final List<String> actual=ValueResolver.substituteValue((GpConfig) null, jobContext, "<input.param>", dict, paramInfoMap);
         assertEquals("substitue(<input.param>)", 
                 Arrays.asList("-mA VALUE,B VALUE"), 
                 actual);
@@ -520,31 +515,25 @@ public class TestValueResolver
         jobInput.addValue(pname, "A VALUE");
         jobInput.addValue(pname, "B VALUE");
 
-        final GpConfig gpConfig=new GpConfig.Builder().build();
         final GpContext jobContext=new GpContext.Builder()
             .jobInput(jobInput)
         .build();
         Map<String,String> dict=new HashMap<String,String>();
         final ParameterInfo[] formalParams = new ParameterInfo[]{pinfo};
         paramInfoMap=ParameterInfoRecord.initParamInfoMap(formalParams);
-        final List<String> actual=ValueResolver.substituteValue(gpConfig, jobContext, "<input.param>", dict, paramInfoMap);
+        final List<String> actual=ValueResolver.substituteValue((GpConfig) null, jobContext, "<input.param>", dict, paramInfoMap);
         assertEquals("substitue(<input.param>)", 
                 Arrays.asList("--multi", "A VALUE,B VALUE"), 
                 actual);
-
     }
 
     /**
      * parameterized test substiteValue <env-arch>
      */
     protected void do_env_arch_test(final String arg, final String env_arch, final String expected) { 
-        final GpConfig.Builder b=new GpConfig.Builder();
-        if (env_arch != null) {
-            b.addProperty("env-arch", env_arch);
-        }
-        final GpConfig gpConfig=b.build();
- 
+        final GpConfig gpConfig=Demo.gpConfig();
         final GpContext jobContext=mock(GpContext.class);
+        when(gpConfig.getGPProperty(jobContext, "env-arch")).thenReturn(env_arch);
         final Map<String,String> dict=Collections.emptyMap();
         final Map<String,ParameterInfoRecord> parameterInfoMap = Collections.emptyMap();
         assertEquals("substitute('"+arg+"'), env-arch="+env_arch,
@@ -572,5 +561,51 @@ public class TestValueResolver
         do_env_arch_test("-e GP_ENV_ARCH=<env-arch>", null, "-e GP_ENV_ARCH=");
         do_env_arch_test("-e GP_ENV_ARCH=<env-arch>", "", "-e GP_ENV_ARCH=");
     }
+
+    /**
+     * test built-in <wrapper-script> substitution
+     */
+    @Test
+    public void substituteValue_wrapper_arg() {
+        final String expected_wrapper_dir=new File(FileUtil.resourcesDir, "wrapper_scripts").getAbsolutePath();
+        
+        // setup requires an fq path to the resourcesDir and webappDir
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .resourcesDir(FileUtil.getResourcesDir())
+            .webappDir(FileUtil.getWebappDir())
+        .build();
+        
+        final GpContext gpContext=Demo.serverContext;
+        final Map<String,String> dict=null;
+        final Map<String,ParameterInfoRecord> parameterInfoMap=null;
+
+        assertEquals("sanity-check: gpConfig.getValue(\"wrapper-scripts\")",
+            expected_wrapper_dir,
+            gpConfig.getValue(gpContext, "wrapper-scripts").toString());
+
+        assertEquals( "sanity-check: substituteSubToken(\"<wrapper-scripts>\")",
+            Arrays.asList(expected_wrapper_dir), 
+            ValueResolver.substituteSubToken(gpConfig, gpContext, 
+                new CmdLineSubToken("<wrapper-scripts>"), 
+                dict, parameterInfoMap));
+
+        assertEquals( "sanity-check: substituteSubToken(\"<resources>\")",
+            Arrays.asList(FileUtil.resourcesDir.toString()), 
+            ValueResolver.substituteSubToken(gpConfig, gpContext, 
+                new CmdLineSubToken("<resources>"), 
+                dict, parameterInfoMap));
+        
+        assertEquals( "substituteValue(\"<wrapper-scripts>\")",
+            Arrays.asList(expected_wrapper_dir), 
+            ValueResolver.substituteValue(
+                gpConfig, gpContext, 
+                "<wrapper-scripts>", 
+                dict, parameterInfoMap));
+
+        assertEquals( "resolveValue(\"<wrapper-scripts>\")",
+            Arrays.asList(new File(FileUtil.resourcesDir, "wrapper_scripts").getAbsolutePath()), 
+            ValueResolver.resolveValue(gpConfig, gpContext, "<wrapper-scripts>"));
+    }
+
 
 }
