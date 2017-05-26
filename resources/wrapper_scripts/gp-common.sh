@@ -139,24 +139,6 @@ not_set() {
 }
 
 ############################################################
-# is_empty
-#   return 0, true, if the variable is set to an empty string
-#          1, false otherwise
-# If the variable is not set, then it is not empty
-############################################################
-is_empty() {
-  if [[ $# -eq 0 ]]; then
-    return 1;
-  fi
-  local name="${1}";
-  # must be 'set' to be empty
-  if [[ -z "${!name+x}" ]]; then
-    return 1
-  fi
-  [[ -z "${!name-}" ]]
-}
-
-############################################################
 # is_true
 #   return 0 if the variable referenced by var-name is true
 #   return 1 if it is not set or false
@@ -168,6 +150,12 @@ is_empty() {
 #   0 | true | TRUE
 #
 # This uses an indirect reference to the named variable
+#
+# Example:
+#   export GP_DEBUG="true"
+#   if is_true "GP_DEBUG"; then
+#     echo "debugging ..."
+#   fi
 ############################################################
 is_true() {
   if [[ $# -eq 0 ]]; then
@@ -189,7 +177,7 @@ is_true() {
 
 ############################################################
 # is_debug
-#   convenience method to check if GP_DEBUG is set
+#   convenience method to check if GP_DEBUG is true
 # Usage:
 #   if is_debug; then
 #     log "debugging ..."
@@ -200,7 +188,6 @@ is_debug() {
     return 0
   fi
   return 1
-  # return is_true "GP_DEBUG"
 }
 
 ############################################################

@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.google.common.net.InetAddresses;
-
 /**
  * test-cases for UrlUtil#isLocalHost; 
  * 
@@ -49,27 +47,6 @@ import com.google.common.net.InetAddresses;
  */
 @RunWith(Parameterized.class)
 public class TestUrlUtil_isLocalHost {
-    
-    /**
-     * Utility method to get my hosts; a set of host names and addresses for the machine on which this
-     * process is running.
-     * 
-     * @return
-     * @throws UnknownHostException
-     */
-    protected static Set<String> getLocalHostnames() throws UnknownHostException {
-        final Set<String> hostnames=new LinkedHashSet<String>();
-        hostnames.add(InetAddress.getLoopbackAddress().getHostName());
-        hostnames.add(InetAddress.getLoopbackAddress().getHostAddress());
-        hostnames.add(InetAddress.getLocalHost().getHostName());
-        hostnames.add(InetAddress.getLocalHost().getHostAddress());
-        for(final InetAddress addr : getComputerAddresses()) {
-            final String uriStr=InetAddresses.toUriString(addr);
-            hostnames.add(uriStr);
-        }
-        return hostnames;
-    }
-    
     /**
      * Utility method to get my IP addresses, those of the machine on which this process is running. 
      * @return a list of InetAddress (IPv4 and IPv6)
@@ -79,14 +56,14 @@ public class TestUrlUtil_isLocalHost {
         try {
             final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
-                NetworkInterface iface = interfaces.nextElement();
+                final NetworkInterface iface = interfaces.nextElement();
                 // filters out 127.0.0.1 and inactive interfaces
                 if (iface.isLoopback() || !iface.isUp()) {
                     continue;
                 }
-                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                final Enumeration<InetAddress> addresses = iface.getInetAddresses();
                 while(addresses.hasMoreElements()) {
-                    InetAddress addr = addresses.nextElement();
+                    final InetAddress addr = addresses.nextElement();
                     rval.add(addr);
                 }
             }
@@ -109,7 +86,7 @@ public class TestUrlUtil_isLocalHost {
     @Parameters(name="hostname={0}")
     public static Collection<Object[]> data() throws UnknownHostException {
         final Set<String> hostnames=new LinkedHashSet<String>();
-        hostnames.addAll(getLocalHostnames());
+        hostnames.addAll(HostnameUtil.instance().localHostnames);
         // special-case: case-sensitive
         hostnames.add("LOCALHOST");
         // special-case: proxy host
@@ -190,25 +167,25 @@ public class TestUrlUtil_isLocalHost {
     @Test
     public void computerName() throws UnknownHostException {
         assertIsLocalHost(true, gpConfig, baseGpHref, inetUtil, "http://" + 
-                InetAddress.getLocalHost().getHostName() + ":8080/gp" + Demo.uploadPath());
+                HostnameUtil.instance().computerName + ":8080/gp" + Demo.uploadPath());
     }
 
     @Test
     public void computerName_proxyConfig() throws UnknownHostException {
         assertIsLocalHost(true, proxyConfig, baseGpHref, inetUtil, "http://" + 
-                InetAddress.getLocalHost().getHostName() + ":8080/gp" + Demo.uploadPath());
+                HostnameUtil.instance().computerAddress + ":8080/gp" + Demo.uploadPath());
     }
 
     @Test
     public void computerAddress() throws UnknownHostException {
         assertIsLocalHost(true, gpConfig, baseGpHref, inetUtil, "http://" + 
-                InetAddress.getLocalHost().getHostAddress() + ":8080/gp" + Demo.uploadPath());
+                HostnameUtil.instance().computerAddress + ":8080/gp" + Demo.uploadPath());
     }
 
     @Test
     public void computerAddress_proxyConfig() throws UnknownHostException {
         assertIsLocalHost(true, proxyConfig, baseGpHref, inetUtil, "http://" + 
-                InetAddress.getLocalHost().getHostAddress() + ":8080/gp" + Demo.uploadPath());
+                HostnameUtil.instance().computerAddress + ":8080/gp" + Demo.uploadPath());
     }
 
     @Test

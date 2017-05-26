@@ -113,7 +113,7 @@ public class ValueResolver {
         }
         // else assume it's a substitution
         String value="";
-        if (dict.containsKey(subToken.pname)) {
+        if (dict != null && dict.containsKey(subToken.pname)) {
             value = dict.get(subToken.pname);
         }
         else if (gpConfig != null) {
@@ -123,7 +123,7 @@ public class ValueResolver {
         // special-cases for parameter substitutions ...
         // a) handle prefix_when_specified
         // b) handle listMode=CMD or CMD_OPT
-        final ParameterInfoRecord record = parameterInfoMap.get(subToken.pname);
+        final ParameterInfoRecord record = parameterInfoMap == null ? null : parameterInfoMap.get(subToken.pname);
         final ParameterInfo pInfo = record == null ? null : record.getFormal();
         if (pInfo != null) {
             final ListMode listMode = ParamListHelper.initListMode(pInfo);

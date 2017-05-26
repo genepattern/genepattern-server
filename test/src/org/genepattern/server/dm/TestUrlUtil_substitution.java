@@ -3,11 +3,9 @@ package org.genepattern.server.dm;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Set;
 
 import org.genepattern.junitutil.Demo;
 import org.genepattern.server.config.GpConfig;
@@ -36,10 +34,9 @@ public class TestUrlUtil_substitution {
 
     @Test
     public void local_hostnames_all() throws UnknownHostException {
-        final Set<String> hostnames=TestUrlUtil_isLocalHost.getLocalHostnames();
-        for(final String baseHostname : hostnames) {
+        for(final String baseHostname : HostnameUtil.instance().localHostnames) {
             final String baseGpHref="http://"+baseHostname+"/gp";
-            for(final String requestHostname : hostnames) {
+            for(final String requestHostname : HostnameUtil.instance().localHostnames) {
                 assertReplaceGpUrl(baseGpHref, "http://"+requestHostname+":8080/gp" + Demo.uploadPath());
             }
         }
@@ -48,9 +45,8 @@ public class TestUrlUtil_substitution {
     //special-case: baseGpHref is null; 
     @Test
     public void local_hostnames_all_baseGpHrefNull() throws UnknownHostException {
-        final Set<String> hostnames=TestUrlUtil_isLocalHost.getLocalHostnames();
         final String baseGpHref=null;//"http://"+baseHostname+"/gp";
-        for(final String requestHostname : hostnames) {
+        for(final String requestHostname : HostnameUtil.instance().localHostnames) {
             assertReplaceGpUrl(baseGpHref, "http://"+requestHostname+":8080/gp" + Demo.uploadPath());
         }
     }
@@ -91,14 +87,14 @@ public class TestUrlUtil_substitution {
 
     @Test
     public void computerName() throws UnknownHostException { 
-        final InetAddress localAddr=InetAddress.getLocalHost();
-        final String hostname=localAddr.getHostName(); 
-        assertReplaceGpUrl(Demo.gpHref, "http://"+hostname+":8080/gp" + Demo.uploadPath());
+        final String computerName=HostnameUtil.getComputerName();
+        assertReplaceGpUrl(Demo.gpHref, "http://"+computerName+":8080/gp" + Demo.uploadPath());
     } 
 
     @Test
     public void computerAddress() throws UnknownHostException { 
-        assertReplaceGpUrl(Demo.gpHref, "http://"+InetAddress.getLocalHost().getHostAddress()+":8080/gp" + Demo.uploadPath());
+        final String computerAddress=HostnameUtil.getComputerAddress();
+        assertReplaceGpUrl(Demo.gpHref, "http://"+computerAddress+":8080/gp" + Demo.uploadPath());
     } 
 
 }

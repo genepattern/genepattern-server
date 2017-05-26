@@ -12,9 +12,10 @@ function initEnv() {
     fi
     
     # exact copy of env-default.sh
-    if ! [ -z ${GP_DEBUG+x} ]; then
-        # only when the GP_DEBUG flag is set
-        echo "loading $1 ..."
+    if is_debug; then
+        # only when GP_DEBUG="true"
+        # was: echo "loading $1 ..."
+        echo "env-custom-shunit.sh:initEnv(): initializing '$1' environment ..."
     fi
 }
 

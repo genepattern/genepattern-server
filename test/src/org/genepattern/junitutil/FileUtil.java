@@ -32,6 +32,25 @@ public class FileUtil {
         return new File(p, filename);
     }
 
+    public static final File resourcesDir=new File("resources").getAbsoluteFile();
+    /**
+     * Get the <resources> directory for unit testing, as a fully qualified File
+     * to the top-level './resources' directory for the project.
+     */
+    public static File getResourcesDir() {
+        return resourcesDir;
+    }
+
+    public static final File webappDir=new File("website").getAbsoluteFile();
+    /**
+     * Get the webappDir for unit testing, as a fully qualified File
+     * to the top-level './website' directory for the project.
+     * @return
+     */
+    public static File getWebappDir() {
+        return webappDir;
+    }
+
     private static File dataDir=new File("test/data");
     /**
      * Get the top-level directory for data files used by the unit tests. 
