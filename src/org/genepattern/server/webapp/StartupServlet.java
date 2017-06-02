@@ -466,7 +466,7 @@ public class StartupServlet extends HttpServlet {
  
     protected void announceReady() {
         AboutBean about = new AboutBean();
-        String message = "Ted's GenePattern server version " + about.getFull() + 
+        String message = "GenePattern server version " + about.getFull() + 
             " build " + about.getBuildTag() + 
             " built " + about.getDate() + " is ready.";
 
@@ -490,16 +490,21 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
         startupMessage.append("\tGenePatternURL: " + gpConfig.getGpUrl() + NL );
-        startupMessage.append("\tJava Version: " + GpConfig.getJavaProperty("java.version") + NL );
-        startupMessage.append("\twebappDir: " + this.webappDir + NL );
+        startupMessage.append("\t---------- Java system properties ----------" + NL );
+        startupMessage.append("\tjava.version: " + GpConfig.getJavaProperty("java.version") + NL );
         startupMessage.append("\tuser.dir: " + GpConfig.getJavaProperty("user.dir") + NL);
+        startupMessage.append("\tjava.io.tmpdir: " + GpConfig.getJavaProperty("java.io.tmpdir") + NL );
+        startupMessage.append("\t---------- Web application properties ----------" + NL );
+        startupMessage.append("\twebappDir: " + this.webappDir + NL );
+        startupMessage.append("\t---------- GenePattern configuration ----------" + NL );
         startupMessage.append("\tGENEPATTERN_HOME: "+ gpConfig.getGpHomeDir() + NL);
         startupMessage.append("\tresourcesDir: "+ gpConfig.getResourcesDir() + NL);
         startupMessage.append("\tresources: "+ gpConfig.getGPProperty(serverContext, "resources") + NL);
         startupMessage.append("\t" + GpConfig.PROP_TASKLIB_DIR+": "+ gpConfig.getRootTasklibDir(serverContext) + NL);
         startupMessage.append("\t" + GpConfig.PROP_PLUGIN_DIR+": "+ gpConfig.getRootPluginDir(serverContext) + NL);
+        // PROP_USER_ROOT_DIR
+        startupMessage.append("\t" + GpConfig.PROP_USER_ROOT_DIR+": "+ gpConfig.getGPProperty(serverContext, GpConfig.PROP_USER_ROOT_DIR) + NL);
         startupMessage.append("\tjobs: " + defaultRootJobDir + NL);
-        startupMessage.append("\tjava.io.tmpdir: " + GpConfig.getJavaProperty("java.io.tmpdir") + NL );
         startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
         startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
         startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);
