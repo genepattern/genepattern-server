@@ -132,20 +132,17 @@ public class EmailNotificationManager {
 		    continue;
 		}
 
-		// Get system properties
-		Properties props = System.getProperties();
-
 		boolean success = false;
 		StringBuffer sb = new StringBuffer();
 		for (Iterator<Entry<Integer, String>> eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
 		    // get the next MX server name, in priority order
-		    host = eHosts.next().getValue(); // eg.
-		    // "genome.wi.mit.edu";
+		    host = eHosts.next().getValue(); // eg "genome.wi.mit.edu";
 		    // Setup mail server
-		    props.put("mail.smtp.host", host);
+		    final Properties mailSessionProps=new Properties();
+		    mailSessionProps.put("mail.smtp.host", host);
 
 		    // Get session
-		    Session theSession = Session.getDefaultInstance(props, null);
+		    final Session theSession = Session.getInstance(mailSessionProps);
 
 		    // Define message
 		    MimeMessage message = new MimeMessage(theSession);

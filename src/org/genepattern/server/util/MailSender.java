@@ -44,7 +44,6 @@ public class MailSender {
     private final String to; // aka sendToAddress
     private final String subject;
     private final String message;
-
     private MailSender(Builder b) {
         this.smtpServer=b.smtpServer;
         this.from=b.from;
@@ -60,11 +59,15 @@ public class MailSender {
     public void sendMessage() throws Exception {
         final Properties p = new Properties();
         p.put("mail.host", smtpServer);
+        if (log.isDebugEnabled()) {
+            log.debug("initializing mailSession, mail.host='"+smtpServer+"' ...");
+        }
+        final Session mailSession = Session.getInstance(p);
 
-        final Session mailSession = Session.getDefaultInstance(p, null);
-        mailSession.setDebug(false);
+        if (log.isDebugEnabled()) {
+            mailSession.setDebug(true);
+        }
         final MimeMessage msg = new MimeMessage(mailSession);
-
         try {
             msg.setSubject(subject);
             msg.setText(message);
