@@ -1,4 +1,4 @@
-package org.genepattern.server.dm;
+package org.genepattern.junitutil;
 
 import static org.junit.Assert.fail;
 
@@ -46,7 +46,7 @@ public final class HostnameUtil {
         this.localHostnames=initLocalhostnames(this.computerName, this.computerAddress);
     }
 
-    protected static String getComputerName() {
+    public static String getComputerName() {
         try {
             return InetAddress.getLocalHost().getHostName();
         }
@@ -55,14 +55,13 @@ public final class HostnameUtil {
         }
     }
     
-    protected static String getComputerAddress() {
+    public static String getComputerAddress() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         }
         catch (Throwable t) {
             return "127.0.0.1";
         }
-        
     }
     
     /**
@@ -85,7 +84,6 @@ public final class HostnameUtil {
         }
         return ImmutableSet.copyOf(hostnames);
     }
-
 
     /**
      * Utility method to get my IP addresses, those of the machine on which this process is running. 

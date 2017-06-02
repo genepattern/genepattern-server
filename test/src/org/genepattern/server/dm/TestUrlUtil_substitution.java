@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.genepattern.junitutil.Demo;
+import org.genepattern.junitutil.HostnameUtil;
 import org.genepattern.server.config.GpConfig;
 import org.junit.Before;
 import org.junit.Test;

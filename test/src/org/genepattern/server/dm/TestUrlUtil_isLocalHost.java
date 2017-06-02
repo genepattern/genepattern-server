@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.genepattern.junitutil.Demo;
+import org.genepattern.junitutil.HostnameUtil;
 import org.genepattern.server.config.GpConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
