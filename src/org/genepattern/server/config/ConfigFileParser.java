@@ -152,7 +152,7 @@ public class ConfigFileParser {
     
     private static void parseModuleProperties(JobConfigObj configObj, Object modulePropertiesObj) {
         if (modulePropertiesObj == null) {
-            log.info("No 'module.properties' in configuration");
+            log.debug("No 'module.properties' in configuration");
             return;
         }
         if (!(modulePropertiesObj instanceof Map<?,?>)) {
