@@ -11,40 +11,31 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
 
 import javax.faces.event.ActionEvent;
 
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
+
 public class MySettingsBean {
-
     private String[] modes;
-
     private String currentMode;
 
-    /**
-     *
-     */
     public MySettingsBean() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        boolean passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final boolean passwordRequired = 
+            gpConfig.isPasswordRequired(GpContext.getServerContext());
         modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory" }
                 : new String[] { "Change Email", "History", "Visualizer Memory" };
         currentMode = modes[0]; // Default
     }
 
-    /**
-     * @return
-     */
     public String getCurrentMode() {
         return currentMode;
     }
 
-    /**
-     * @param currentMode
-     */
     public void setCurrentMode(String currentMode) {
         this.currentMode = currentMode;
     }
 
-    /**
-     * @param evt
-     */
     public void modeChanged(ActionEvent evt) {
         setCurrentMode(getRequest().getParameter("mode"));
     }

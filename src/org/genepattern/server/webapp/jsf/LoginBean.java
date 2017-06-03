@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -28,8 +31,11 @@ public class LoginBean {
     private String password;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
+    private final boolean isPasswordRequired;
 
     public LoginBean() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        this.isPasswordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
     }
 
     public String getPassword() {
@@ -53,7 +59,7 @@ public class LoginBean {
     }
 
     public boolean isPasswordRequired() {
-        return UserAccountManager.instance().isPasswordRequired();
+        return isPasswordRequired;
     }
 
     public boolean isUnknownUser() {

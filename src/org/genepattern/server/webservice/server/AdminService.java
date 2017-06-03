@@ -16,6 +16,7 @@ import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.util.AuthorizationManagerFactory;
@@ -40,21 +41,20 @@ public class AdminService implements IAdminService {
     private static Logger log = Logger.getLogger(AdminService.class);
     private static final String PROP_GENEPATTERN_VERSION="genepattern.version";
     private static final String PROP_LSID_AUTHORITY="lsid.authority";
-    private static final String PROP_REQUIRE_PASSWORD="require.password";
 
-    private static Map<String, String> serviceInfoMap;
-    static {
-        serviceInfoMap = new HashMap<String, String>();
-        GpContext serverContext = GpContext.getServerContext();
-        
-        serviceInfoMap.put(PROP_GENEPATTERN_VERSION, 
-                ServerConfigurationFactory.instance().getGenePatternVersion());
-        serviceInfoMap.put(PROP_LSID_AUTHORITY, 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, PROP_LSID_AUTHORITY));
-        serviceInfoMap.put(PROP_REQUIRE_PASSWORD, 
-                ServerConfigurationFactory.instance().getGPProperty(serverContext, PROP_REQUIRE_PASSWORD));
+    protected static Map<String,String> initServiceInfo() {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext serverContext = GpContext.getServerContext();
+        return initServiceInfo(gpConfig, serverContext);
     }
 
+    protected static Map<String,String> initServiceInfo(final GpConfig gpConfig, final GpContext serverContext) {
+        Map<String, String> serviceInfoMap = new HashMap<String, String>();
+        serviceInfoMap.put(PROP_GENEPATTERN_VERSION, gpConfig.getGenePatternVersion());
+        serviceInfoMap.put(PROP_LSID_AUTHORITY, gpConfig.getGPProperty(serverContext, PROP_LSID_AUTHORITY));
+        serviceInfoMap.put(GpConfig.PROP_REQUIRE_PASSWORD, gpConfig.getGPProperty(serverContext, GpConfig.PROP_REQUIRE_PASSWORD));
+        return serviceInfoMap;
+    }
 
     private AdminDAO adminDAO;
     private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
@@ -82,8 +82,7 @@ public class AdminService implements IAdminService {
     }
 
     public Map getServiceInfo() throws WebServiceException {
-
-        return serviceInfoMap;
+        return initServiceInfo();
     }
 
     public DataHandler getServerLog() throws WebServiceException {

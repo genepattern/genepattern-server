@@ -28,6 +28,23 @@ public class TestGpConfig {
     public TemporaryFolder temp= new TemporaryFolder();
     
     @Test
+    public void isPasswordRequired() {
+        GpConfig gpConfig=new GpConfig.Builder().build();
+        // by default, no
+        assertEquals("isPasswordRequired, default config",
+            false,
+            gpConfig.isPasswordRequired(gpContext));
+        
+        assertEquals("null arg", false, GpConfig.isPasswordRequired((String)null));
+        assertEquals("isPasswordRequired('FALSE')", false, GpConfig.isPasswordRequired("FALSE"));
+        assertEquals("isPasswordRequired('false')", false, GpConfig.isPasswordRequired("false"));
+        assertEquals("isPasswordRequired('n')", false, GpConfig.isPasswordRequired("n"));
+        assertEquals("isPasswordRequired('no')", false, GpConfig.isPasswordRequired("no"));
+        assertEquals("isPasswordRequired('NO')", false, GpConfig.isPasswordRequired("NO"));
+        assertEquals("isPasswordRequired('TRUE')", true, GpConfig.isPasswordRequired("TRUE"));
+    }
+
+    @Test
     public void getDbSchemaPrefix_HSQL() {
         assertEquals("analysis_hypersonic-", GpConfig.getDbSchemaPrefix("HSQL"));
     }

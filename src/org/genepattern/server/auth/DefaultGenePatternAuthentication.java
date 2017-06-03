@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -77,7 +80,9 @@ public class DefaultGenePatternAuthentication implements IAuthenticationPlugin {
      * @return
      */
     private boolean isChangePasswordRequired(String userId, HttpServletRequest request, HttpServletResponse response) {
-        if (!UserAccountManager.instance().isPasswordRequired()) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final boolean isPasswordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
+        if (!isPasswordRequired) {
             return false;
         }
         

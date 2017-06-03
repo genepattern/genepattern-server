@@ -18,8 +18,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genomespace.*;
 import org.genepattern.server.webapp.LoginManager;
 
@@ -32,8 +34,9 @@ import org.genepattern.server.webapp.LoginManager;
  * 
  */
 public class RegistrationBean {
+    private static final Logger log = Logger.getLogger(RegistrationBean.class);
 
-    private static Logger log = Logger.getLogger(RegistrationBean.class);
+    private final GpConfig gpConfig;
     private String username;
     private String password = "";
     private String passwordConfirm;
@@ -44,7 +47,6 @@ public class RegistrationBean {
     private boolean passwordRequired = true;
     private boolean joinMailingList = true;
     private boolean showTermsOfService = false;
-    //private String pathToTerms = "gp/pages/terms.txt";
     private String termsOfService =
         "GenePattern Terms of Service\n"+
         "============================\n"+
@@ -53,8 +55,8 @@ public class RegistrationBean {
         "We make no guarantees whatsoever.";
 
     public RegistrationBean() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        this.gpConfig=ServerConfigurationFactory.instance();
+        this.passwordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
 
         String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
         boolean createAccountAllowed = (
@@ -151,7 +153,9 @@ public class RegistrationBean {
 
     private void registerUserDefault(ActionEvent event) {
         try {
-            UserAccountManager.instance().createUser(username, password, email);
+            UserAccountManager.createUser(
+                    gpConfig, HibernateUtil.instance(), 
+                    username, password, email);
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
@@ -177,7 +181,7 @@ public class RegistrationBean {
      */
     public void registerUser(ActionEvent event) {
         GpContext context = UIBeanHelper.getUserContext();
-        boolean genepatternSSO = ServerConfigurationFactory.instance().getGPBooleanProperty(context, "ssoAuthentication", false);
+        boolean genepatternSSO = gpConfig.getGPBooleanProperty(context, "ssoAuthentication", false);
         if (genepatternSSO) {
             registerUserSSO(event);
         }
@@ -253,7 +257,9 @@ public class RegistrationBean {
     throws ValidatorException 
     {
         try {
-            UserAccountManager.instance().validateNewUsername(value.toString());
+            UserAccountManager.validateNewUsername(
+                gpConfig, HibernateUtil.instance(), 
+                value.toString());
         }
         catch (AuthenticationException e) {
             UIBeanHelper.setErrorMessage(e.getMessage());

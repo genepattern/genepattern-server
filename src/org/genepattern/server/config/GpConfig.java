@@ -182,6 +182,12 @@ public class GpConfig {
      */
     public static final String PROP_WRAPPER_SCRIPTS_DIR="wrapper-scripts";
 
+    /**
+     * Set 'require.password' as a server configuration parameter.
+     *   Default: require.password=false
+     */
+    public static final String PROP_REQUIRE_PASSWORD="require.password";
+    
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
             return pathStr;
@@ -790,6 +796,28 @@ public class GpConfig {
     public String getLsidAuthority(final GpContext gpContext) {
         final String DEFAULT_LSID_AUTHORITY="broad-cancer-genomics";
         return this.getGPProperty(gpContext, PROP_LSID_AUTHORITY, DEFAULT_LSID_AUTHORITY);
+    }
+
+    /**
+     * Are passwords required?
+     * @param gpContext
+     * @return
+     */
+    public boolean isPasswordRequired(final GpContext gpContext) {
+        final String prop = getGPProperty(gpContext, PROP_REQUIRE_PASSWORD, "false");
+        return isPasswordRequired(prop);
+    }
+    
+    protected static boolean isPasswordRequired(final String prop) {
+        if (prop==null) {
+            log.warn(""+PROP_REQUIRE_PASSWORD+" not set, returning default value");
+            return false; 
+        }
+        final boolean passwordRequired = 
+            prop.equalsIgnoreCase("true")
+         || prop.equalsIgnoreCase("y") 
+         || prop.equalsIgnoreCase("yes");
+        return passwordRequired;
     }
 
     public Value getValue(final GpContext context, final String key) {

@@ -53,7 +53,6 @@ public class UserAccountManager {
     private IGroupMembershipPlugin groupMembership = null;
 
     //these properties are used in the DefaultGenePatternAuthentication class, and in the LoginBean
-    private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
     private boolean showRegistrationLink = true;
     
@@ -78,14 +77,6 @@ public class UserAccountManager {
     
     public boolean isShowRegistrationLink() {
         return showRegistrationLink;
-    }
-
-    /**
-     * Flag indicating whether or not passwords are required for the default genepattern authentication scheme.
-     * @return
-     */
-    public boolean isPasswordRequired() {
-        return passwordRequired;
     }
 
     /**
@@ -296,7 +287,9 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "Missing required parmameter: username");
         }
 
-        if (passwordRequired && password == null) {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final boolean isPasswordRequired = gpConfig.isPasswordRequired(GpContext.getServerContext());
+        if (isPasswordRequired && password == null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS, "Missing required parmameter: password");
         }
         
@@ -310,7 +303,7 @@ public class UserAccountManager {
         if (user == null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "User '"+username+"' is not registered.");
         }
-        if (!passwordRequired) {
+        if (!isPasswordRequired) {
             return true;
         }
         byte[] encryptedPassword = null;
@@ -354,11 +347,7 @@ public class UserAccountManager {
     }
 
     private void p_refreshProperties() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        this.passwordRequired = 
-            prop.equals("true") || prop.equals("y") || prop.equals("yes");
-
-        prop = System.getProperty("create.account.allowed", "true").toLowerCase();
+        String prop = System.getProperty("create.account.allowed", "true").toLowerCase();
         this.createAccountAllowed = 
             prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
         
