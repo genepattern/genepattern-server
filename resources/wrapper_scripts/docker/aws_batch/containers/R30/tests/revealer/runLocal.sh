@@ -19,11 +19,7 @@ RLIB=$TEST_ROOT/rlib
 COMMAND_LINE="Rscript  $TASKLIB/REVEALER_library.v5C.R  --ds1=$INPUT_FILE_DIRECTORIES/CTNBB1_transcriptional_reporter.gct  --target.name=BETA-CATENIN-REPORTER  --target.match=positive  --ds2=$INPUT_FILE_DIRECTORIES/CCLE_MUT_CNA_AMP_DEL_0.70_2fold.MC.gct  --seed.names=CTNNB1.MC_MUT  --max.n.iter=2  --n.markers=30  --locs.table.file=$INPUT_FILE_DIRECTORIES/hgnc_complete_set.Feb_20_2014.v2.txt  --count.thres.low=3  --count.thres.high=50  --pdf.output.file=BCAT_vs_MUT_CNA.pdf"
 
 
-# "/usr/local/bin/runLocal.sh Rscript $TASKLIB/REVEALER_library.v5C.R --ds1=$INPUT_FILE_DIRECTORIES/CTNBB1_transcriptional_reporter.gct --target.name=BETA-CATENIN-REPORTER --target.match=positive --ds2=$INPUT_FILE_DIRECTORIES/CCLE_MUT_CNA_AMP_DEL_0.70_2fold.MC.gct --sed.names=CTNNB1.MC_MUT --max.n.iter=2 --n.markers=30 --locs.table.file=$INPUT_FILE_DIRECTORIES/hgnc_complete_set.Feb_20_2014.v2.txt  --count.thres.low=3 --count.thres.high=50 --pdf.output.file=BCAT_vs_MUT_CNA.pdf"
 
-
-# docker run -v $TASKLIB:$TASKLIB -v $INPUT_FILE_DIRECTORIES:$INPUT_FILE_DIRECTORIES -v $WORKING_DIR:$WORKING_DIR -v $RLIB:/build/rlib -e R_LIBS=/build/rlib liefeld/r30_cli Rscript /build/source/installPackages.R $TASKLIB/r.package.info; $COMMAND_LINE
-
-docker run -v $TASKLIB:$TASKLIB -v $INPUT_FILE_DIRECTORIES:$INPUT_FILE_DIRECTORIES -v $WORKING_DIR:$WORKING_DIR -v $RLIB:/build/rlib -w $WORKING_DIR -e LIBDIR=$TASKLIB -e R_LIBS=/build/rlib -e TASKLIB=$TASKLIB  liefeld/r30_cli $COMMAND_LINE
+docker run -v $TASKLIB:$TASKLIB -v $INPUT_FILE_DIRECTORIES:$INPUT_FILE_DIRECTORIES -v $WORKING_DIR:$WORKING_DIR -v $RLIB:/build/rlib -w $WORKING_DIR -e LIBDIR=$TASKLIB -e R_LIBS=/build/rlib -e TASKLIB=$TASKLIB  liefeld/r30_cli runLocal.sh $COMMAND_LINE
 
 

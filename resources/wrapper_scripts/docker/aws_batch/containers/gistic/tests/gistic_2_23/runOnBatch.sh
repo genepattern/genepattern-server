@@ -6,18 +6,14 @@
 #
 # current arg is just job #
 #
-
-TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R30/tests/revealer
+TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/gistic/tests/gistic_2_23
 TASKLIB=$TEST_ROOT/src
 INPUT_FILE_DIRECTORIES=$TEST_ROOT/data
-S3_ROOT=s3://moduleiotest
-WORKING_DIR=$TEST_ROOT/job_1111
-RLIB=$TEST_ROOT/rlib
-
-
-JOB_DEFINITION_NAME="R30_Generic"
-JOB_ID=gp_job_REVEALER_R30_$1
+JOB_DEFINITION_NAME="Gistic_2_0_23"
+JOB_ID=gp_job_gistic_2023_$1
 JOB_QUEUE=TedTest
+S3_ROOT=s3://moduleiotest
+WORKING_DIR=$TEST_ROOT/job_12345
 
 
 #
@@ -28,13 +24,13 @@ aws s3 sync $TASKLIB $S3_ROOT$TASKLIB --profile genepattern
 
 #       --container-overrides memory=2000 \
 
-COMMAND_LINE="Rscript  $TASKLIB/REVEALER_library.v5C.R  --ds1=$INPUT_FILE_DIRECTORIES/CTNBB1_transcriptional_reporter.gct  --target.name=BETA-CATENIN-REPORTER  --target.match=positive  --ds2=$INPUT_FILE_DIRECTORIES/CCLE_MUT_CNA_AMP_DEL_0.70_2fold.MC.gct  --seed.names=CTNNB1.MC_MUT  --max.n.iter=2  --n.markers=30  --locs.table.file=$INPUT_FILE_DIRECTORIES/hgnc_complete_set.Feb_20_2014.v2.txt  --count.thres.low=3  --count.thres.high=50  --pdf.output.file=BCAT_vs_MUT_CNA.pdf"
+COMMAND_LINE="$TASKLIB/gp_gistic2_from_seg -b . -seg $INPUT_FILE_DIRECTORIES/segmentationfile.txt -mk $INPUT_FILE_DIRECTORIES/markersfile.txt -cnv $INPUT_FILE_DIRECTORIES/cnvfile.txt -refgene $INPUT_FILE_DIRECTORIES/Human_Hg19.mat -td 0.1 -js 4 -qvt 0.25 -rx 1 -cap 1.5 -conf 0.90 -genegistic 1 -broad 0 -brien 0.50 -maxseg 2500 -ampeel 0 -scent median -gcm extreme -arb 1 -peak_type robust -fname segmentationfile -genepattern 1 -twosides 0 -saveseg 0 -savedata 0 -smalldisk 0 -smallmem 1 -savegene 1 -v 0 "
 
 
 aws batch submit-job \
       --job-name $JOB_ID \
       --job-queue $JOB_QUEUE \
-      --container-overrides 'memory=3600' \
+      --container-overrides memory=4600 \
       --job-definition $JOB_DEFINITION_NAME \
       --parameters taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORIES,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1="$COMMAND_LINE"  \
       --profile genepattern

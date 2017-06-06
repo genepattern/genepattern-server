@@ -3,7 +3,7 @@ FROM r-base:3.1.3
 COPY runS3OnBatchInstallPackages.sh /usr/local/bin/runS3OnBatch.sh
 RUN mkdir /build
 COPY installPackages.R  /build/source/installPackages.R
-
+COPY sources.list /etc/apt/sources.list
 
 RUN apt-get update && apt-get upgrade --yes && \
     apt-get install build-essential --yes && \
@@ -11,6 +11,7 @@ RUN apt-get update && apt-get upgrade --yes && \
     apt-get install default-jre --yes && \
     wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py 
+
 RUN pip install awscli 
 
 RUN apt-get update && \

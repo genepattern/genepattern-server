@@ -41,6 +41,8 @@ mkdir .gp_metadata
 ##################################################
 # MODIFICATION FOR R PACKAGE INSTALLATION
 ##################################################
+
+: ${R_LIBS=/genepattern-server/Rlibraries/R30/rlibs}
 if [ -f "$TASKLIB/r.package.info" ]
 then
 	echo "$TASKLIB/r.package.info found."
@@ -48,6 +50,9 @@ then
 else
 	echo "$TASKLIB/r.package.info not found."
 fi
+
+aws s3 sync $S3_ROOT$R_LIBS $R_LIBS
+
 
 
 # run the module
@@ -58,3 +63,4 @@ echo "{ \"exit_code\": $? }">$EXITCODE_FILENAME
 # send the generated files back
 aws s3 sync . $S3_ROOT$WORKING_DIR 
 aws s3 sync $TASKLIB $S3_ROOT$TASKLIB
+aws s3 sync $R_LIBS $S3_ROOT$R_LIBS

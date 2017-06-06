@@ -1,10 +1,11 @@
 #!/bin/bash
 
 
+# this setup wrecks the aws cli so its done in run.sh instead
 # setup for the MCRInstaller
-export LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/bin/glnxa64:/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/sys/os/glnxa64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/bin/glnxa64:/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/sys/os/glnxa64:$LD_LIBRARY_PATH
 
-export XAPPLRESDIR=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/X11/app-defaults
+#export XAPPLRESDIR=/usr/local/MATLAB/MATLAB_Compiler_Runtime/v83/X11/app-defaults
 
 # strip off spaces if present
 TASKLIB="$(echo -e "${1}" | tr -d '[:space:]')"
@@ -33,7 +34,7 @@ echo input files location  is -$INPUT_FILES_DIR-
 mkdir -p $TASKLIB
 aws s3 sync $S3_ROOT$TASKLIB $TASKLIB
 ls $TASKLIB
-
+chmod a+x $TASKLIB/*
  
 # copy the inputs
 mkdir -p $INPUT_FILES_DIR
@@ -52,7 +53,7 @@ shift
 
 # run the module
 echo $@
-$@ >$STDOUT_FILENAME 2>$STDERR_FILENAME
+runMatlab.sh $@ >$STDOUT_FILENAME 2>$STDERR_FILENAME
 
 # send the generated files back
 aws s3 sync . $S3_ROOT$WORKING_DIR 
