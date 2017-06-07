@@ -86,7 +86,6 @@ public class AWSBatchJobRunner implements JobRunner{
         batchToGPStatusMap.put("RUNNING", DrmJobState.RUNNING);
         batchToGPStatusMap.put("FAILED", DrmJobState.FAILED);
         batchToGPStatusMap.put("SUCCEEDED", DrmJobState.DONE);
-        
     }
 
     protected DrmJobStatus initStatus(DrmJobSubmission gpJob) {
@@ -116,7 +115,6 @@ public class AWSBatchJobRunner implements JobRunner{
 
     @Override
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
-        //gpJob.getCommandLine();
         try { 
             logCommandLine(gpJob);
             DrmJobStatus jobStatus = runJobNoWait(gpJob);
