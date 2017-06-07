@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-.  ~/.bash_profile
-. /Users/liefeld/.genepattern/resources/wrapper_scripts/docker/aws_batch/scripts/gpAwsBatchConf.sh
-
+# initialize aws-cli environment
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
+source "${script_dir}/init-aws-cli-env.sh"
+source "${script_dir}/gpAwsBatchConf.sh"
 
 #
 # parameters to this come from the JobRunner implementation

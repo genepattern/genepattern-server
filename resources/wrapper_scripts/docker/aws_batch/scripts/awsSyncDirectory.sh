@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-.  ~/.bash_profile
+# initialize aws-cli environment
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
+source "${script_dir}/init-aws-cli-env.sh"
 
 S3_ROOT=s3://moduleiotest
 
