@@ -1,0 +1,2 @@
+r_package_name=getopt, requested_version=1.20.0, version_actual=1.20.0, new_install=TRUE, install_succeeded=TRUE
+r_package_name=optparse, requested_version=1.0.2, version_actual=1.0.2, new_install=TRUE, install_succeeded=TRUE

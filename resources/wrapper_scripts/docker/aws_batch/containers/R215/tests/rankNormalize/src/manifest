@@ -1,0 +1,65 @@
+#RankNormalize
+#Wed Jun 07 17:22:56 EDT 2017
+LSID=urn\:lsid\:broad.mit.edu\:cancer.software.genepattern.module.analysis\:00315\:1.9
+author=Pablo Tamayo, David Eby, Broad Institute
+commandLine=<R2.15_Rscript> --no-save --quiet --slave --no-restore <libdir>run_rank_normalize.R <libdir> --input.file\=<input.file> --output.file.name\=<output.file.name> <scale.to.value> <threshold> <ceiling> <shift>
+description=Normalize the rows in a data set by rank
+fileFormat=gct,res
+language=R2.15.3
+license=
+minGenePatternVersion=
+name=RankNormalize
+os=any
+p1_MODE=IN
+p1_TYPE=FILE
+p1_default_value=
+p1_description=The dataset to be normalized
+p1_fileFormat=gct;res
+p1_name=input.file
+p1_optional=
+p1_prefix_when_specified=
+p1_type=java.io.File
+p1_value=
+p2_default_value=<input.file_basename>.NORM.<input.file_extension>
+p2_description=The name to be given to the output file.
+p2_name=output.file.name
+p2_optional=
+p2_prefix_when_specified=
+p2_type=java.lang.String
+p2_value=
+p3_default_value=
+p3_description=Result values will be scaled to this value by multiplication after normalization.  Leave this blank to scale to the number of rows in the data set.
+p3_name=scale.to.value
+p3_optional=on
+p3_prefix_when_specified=--scale.to.value\=
+p3_type=java.lang.Float
+p3_value=
+p4_default_value=
+p4_description=Minimum threshold for values in the data set.  Any data set value below this will be increased to the threshold value before normalization.  If more than one of these parameters is specified, the order of precedence is threshold, then ceiling, then shift.
+p4_name=threshold
+p4_optional=on
+p4_prefix_when_specified=--threshold\=
+p4_type=java.lang.Float
+p4_value=
+p5_default_value=
+p5_description=Maximum ceiling for values in the data set.  Any data set value above this will be decreased to the ceiling value before normalization.  If more than one of these parameters is specified, the order of precedence is threshold, then ceiling, then shift.
+p5_name=ceiling
+p5_optional=on
+p5_prefix_when_specified=--ceiling\=
+p5_type=java.lang.Float
+p5_value=
+p6_default_value=
+p6_description=Shift all values in the data set.  The shift value will be added to all data set values before normalization.  If more than one of these parameters is specified, the order of precedence is threshold, then ceiling, then shift.
+p6_name=shift
+p6_optional=on
+p6_prefix_when_specified=--shift\=
+p6_type=java.lang.Float
+p6_value=
+privacy=public
+publicationDate=10/27/2015 08\:56 
+quality=preproduction
+requiredPatchLSIDs=
+requiredPatchURLs=
+taskDoc=doc.html
+taskType=Statistical Methods
+version=Updated to make use of the R package installer and add HTML documentation.
