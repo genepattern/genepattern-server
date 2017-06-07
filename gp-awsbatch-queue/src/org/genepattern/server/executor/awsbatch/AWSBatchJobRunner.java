@@ -15,8 +15,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 
@@ -54,13 +52,12 @@ public class AWSBatchJobRunner implements JobRunner{
 
     private String defaultLogFile=null;
     
-    private static  HashMap<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
+    private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
     
     private static String checkStatusScript;
     private static String submitJobScript;
     private static String synchWorkingDirScript;
     private static String cancelJobScript;
-    
     
     public void setCommandProperties(CommandProperties properties) {
         log.debug("setCommandProperties");
@@ -75,10 +72,6 @@ public class AWSBatchJobRunner implements JobRunner{
         if ((submitJobScript == null) | (checkStatusScript == null) | (synchWorkingDirScript == null) | (cancelJobScript == null)) {
             throw new RuntimeException("Need the yaml config file to specify submitJobScript, checkStatusScript, synchWorkingDirScript, cancelJobScript in the AWSBatchJobRunner configuration.properties");
         } 
-        
-        
-        
-        
         defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
 
@@ -86,8 +79,8 @@ public class AWSBatchJobRunner implements JobRunner{
         log.debug("started JobRunner, classname="+this.getClass());
         
         //AWS Batch Status: SUBMITTED PENDING RUNNABLE STARTING RUNNING FAILED SUCCEEDED       
-        batchToGPStatusMap.put("SUBMITTED", DrmJobState.GP_PROCESSING);
-        batchToGPStatusMap.put("PENDING", DrmJobState.GP_PROCESSING);
+        batchToGPStatusMap.put("SUBMITTED", DrmJobState.QUEUED);
+        batchToGPStatusMap.put("PENDING", DrmJobState.QUEUED);
         batchToGPStatusMap.put("RUNNABLE", DrmJobState.QUEUED);
         batchToGPStatusMap.put("STARTING", DrmJobState.RUNNING);
         batchToGPStatusMap.put("RUNNING", DrmJobState.RUNNING);
@@ -96,40 +89,22 @@ public class AWSBatchJobRunner implements JobRunner{
         
     }
 
-    protected ConcurrentMap<Integer,String> gpToAwsMap=new ConcurrentHashMap<Integer, String>();
-    
- 
     protected DrmJobStatus initStatus(DrmJobSubmission gpJob) {
         DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
             .submitTime(new Date())
         .build();
         return status;
     }
-    
-   
-    
-    
-   
-    
-    
-    
-    
-    protected DrmJobStatus updateStatus_cancel(int gpJobNo, boolean isPending) {
-        
-        DrmJobStatus status;
-        DrmJobStatus.Builder b;
-    
-        b = new DrmJobStatus.Builder().extJobId(""+gpJobNo);
-        b.jobState(DrmJobState.UNDETERMINED);
-        String awsId = this.gpToAwsMap.get(gpJobNo) ;
-        b.extJobId(awsId);
-        b.jobState( DrmJobState.CANCELLED );
-         
-        b.exitCode(-1); // hard-code exitCode for user-cancelled task
-        b.endTime(new Date());
-        b.jobStatusMessage("Job cancelled by user");
-       
-        return b.build();
+
+    protected DrmJobStatus updateStatus_cancel(final String awsId) {
+        return new DrmJobStatus.Builder()
+            .extJobId(awsId)
+            .jobState(DrmJobState.UNDETERMINED)
+            .jobState( DrmJobState.CANCELLED ) 
+            .exitCode(-1) // hard-code exitCode for user-cancelled task
+            .endTime(new Date())
+            .jobStatusMessage("Job cancelled by user")
+        .build();
     }
 
     boolean shuttingDown=false;
@@ -141,49 +116,37 @@ public class AWSBatchJobRunner implements JobRunner{
 
     @Override
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
-        
-      
-        gpJob.getCommandLine();
-        
-        try {
-       
+        //gpJob.getCommandLine();
+        try { 
             logCommandLine(gpJob);
-            initStatus(gpJob);
-            DrmJobStatus jobStatus =  runJobNoWait(gpJob);
-         }
+            DrmJobStatus jobStatus = runJobNoWait(gpJob);
+            return jobStatus.getDrmJobId();
+        }
         catch (Throwable t) {
             throw new CommandExecutorException("Error starting job: "+gpJob.getGpJobNo(), t);
         }
-        return ""+gpJob.getGpJobNo();
     }
-    
-    
 
     @Override
-    public DrmJobStatus getStatus(DrmJobRecord jobRecord) {
-        DrmJobStatus jobStatus = null;
-        
-        String awsId = this.gpToAwsMap.get(jobRecord.getGpJobNo());
-        if (awsId == null){
-            if (!(jobRecord.getExtJobId().equalsIgnoreCase(""+jobRecord.getGpJobNo())))
-                awsId = jobRecord.getExtJobId();
+    public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
+        final String awsId=jobRecord.getExtJobId();
+        if (awsId == null) {
+            // special-case: job was terminated in a previous GP instance
+            return new DrmJobStatus.Builder()
+                .extJobId(jobRecord.getExtJobId())
+                .jobState(DrmJobState.UNDETERMINED)
+                .jobStatusMessage("No record for job, assuming it was terminated at shutdown of GP server")
+            .build();
         }
-        
-        
-        if (awsId != null){
+        else {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            //
-            // ask AWS for status and update since this is async
-            // we'll always just get the old value for now
-            //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine(this.checkStatusScript);
+            CommandLine cl= new CommandLine(AWSBatchJobRunner.checkStatusScript);
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
             try {
-                System.out.print(".");
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -191,22 +154,24 @@ public class AWSBatchJobRunner implements JobRunner{
                 JSONObject awsJob =  ((JSONObject)jobJSON.getJSONArray("jobs").get(0));
                 String awsStatusCode = awsJob.getString("status");
                 
-                DrmJobStatus.Builder b;
-                b = new DrmJobStatus.Builder().extJobId(this.gpToAwsMap.get(""+jobRecord.getGpJobNo()));
-                b.jobState(getOrDefault(batchToGPStatusMap, awsStatus, DrmJobState.UNDETERMINED));
-                if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")){
-
+                DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
+                DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
+                b.jobState(jobState);
+                if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")) {
                     // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
                     // JSON instead of just the ID and then read it into a JSON obj from which we pull the status
                     // and sometimes the other details
-                    System.out.println("Done.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Done");
+                    }
                     try {
                         b.queueId(awsJob.getString("jobQueue"));
                         b.startTime(new Date(awsJob.getLong("startedAt")));
                         b.submitTime(new Date(awsJob.getLong("createdAt")));
                         b.endTime(new Date(awsJob.getLong("stoppedAt")));
-                    } catch (Exception e){
-                        e.printStackTrace();
+                    } 
+                    catch (Throwable t) {
+                        log.error(t);
                     }
                     
                     refreshWorkingDirFromS3(jobRecord);
@@ -215,54 +180,47 @@ public class AWSBatchJobRunner implements JobRunner{
                         File exitCodeFile = new File(metaDataDir, "exit_code.txt");
                         byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
                         String jsonText = new String(encoded);
-                        JSONObject json =new JSONObject(jsonText);  
-                       
-                        b.exitCode(json.getInt("exit_code"))  ;  
-                        
-                    } catch (Exception e){
-                        e.printStackTrace();
+                        JSONObject json = new JSONObject(jsonText);  
+                        b.exitCode(json.getInt("exit_code"));
+                    } 
+                    catch (Exception e) {
+                        log.error(e);
                     }
-                    
-                    
-                } else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
-                    System.out.println("Failed.");
+                } 
+                else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed.");
+                    }
                     try {
                         b.startTime(new Date(awsJob.getLong("startedAt")));
-                    } catch (Exception e){// its not always present depending non how it failed
+                    } 
+                    catch (Exception e) {
+                        // its not always present depending non how it failed
                     }
                     try {
                         b.submitTime(new Date(awsJob.getLong("createdAt")));
-                    } catch (Exception e){// its not always present depending non how it failed
+                    } 
+                    catch (Exception e) {
+                        // its not always present depending non how it failed
                     }
                     try {
                         b.endTime(new Date(awsJob.getLong("stoppedAt")));
-                    } catch (Exception e){
+                    } 
+                    catch (Exception e){
                         // its not always present depending non how it failed}
-                        // but this one we ahve a decent idea about
+                        // but this one we have a decent idea about
                         b.endTime(new Date());
-                    }
-                          
+                    } 
                     refreshWorkingDirFromS3(jobRecord);
                 }
-                
-                
-                jobStatus = b.build();
-                 
-                
-            } catch (Exception e){
-                e.printStackTrace();
+                return b.build();
+            } 
+            catch (Throwable t) {
+                log.error(t);
             }
-            return jobStatus;
+            // status unknown
+            return null;
         }
-        
-        
-       
-        // special-case: job was terminated in a previous GP instance
-        return new DrmJobStatus.Builder()
-                .extJobId(jobRecord.getExtJobId())
-                .jobState(DrmJobState.UNDETERMINED)
-                .jobStatusMessage("No record for job, assuming it was terminated at shutdown of GP server")
-            .build();
     }
 
     private void refreshWorkingDirFromS3(DrmJobRecord jobRecord){
@@ -274,19 +232,21 @@ public class AWSBatchJobRunner implements JobRunner{
         //
         DefaultExecutor exec=new DefaultExecutor();
         exec.setStreamHandler( new PumpStreamHandler(outputStream));
-        CommandLine cl= new CommandLine(this.synchWorkingDirScript);
+        CommandLine cl= new CommandLine(AWSBatchJobRunner.synchWorkingDirScript);
         // tasklib
         cl.addArgument(jobRecord.getWorkingDir().getAbsolutePath());
         final Map<String,String> cmdEnv=null;
         try {
             exec.execute(cl, cmdEnv);
-      
-            String output =  outputStream.toString().trim();
-           // System.out.println("JOB OVER SYNCH: " + jobRecord.getGpJobNo()+ "  --  " + output);
-        } catch (Exception e){
-            e.printStackTrace();
+            if (log.isDebugEnabled()) {
+                String output = outputStream.toString().trim();
+                log.debug("sync command output: "+output);
+            }            
+        } 
+        catch (Exception e) {
+            log.error(e);
         }
-        
+
         // Now we have synch'd set the jobs stderr and stdout to the ones we got back from AWS
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
         File workDir = jobRecord.getWorkingDir();
@@ -297,13 +257,12 @@ public class AWSBatchJobRunner implements JobRunner{
             File stdOut = new File(gpMeta, "stdout.txt");
             if (stdOut.exists()) copyFileContents(stdOut, jobRecord.getStdoutFile());
             
-        } else {
-            
+        } 
+        else {    
             throw new RuntimeException("Did not get the .gp_metadata directory.  Something seriously went wrong with the AWS batch run");
-        }        
+        }  
     }
-    
-    
+
     protected void copyFileContents(File source, File destination){
         FileReader fr = null;
         FileWriter fw = null;
@@ -315,67 +274,56 @@ public class AWSBatchJobRunner implements JobRunner{
                 fw.write(c);
                 c = fr.read();
             }
-        } catch(IOException e) {
+        } 
+        catch(IOException e) {
             e.printStackTrace();
-        } finally {
+        } 
+        finally {
             try {
                 if (fr != null) {
                     fr.close();
                 }
-            } catch(IOException e) {
+            } 
+            catch(IOException e) {
             }
             try {
                 if (fw != null) {
                     fw.close();
                 }
-            } catch(IOException e) {
+            } 
+            catch(IOException e) {
             }
         }
     }
-    
-    
-    
+
     @Override
     public boolean cancelJob(DrmJobRecord jobRecord) throws Exception {
         log.debug("cancelJob, gpJobNo="+jobRecord.getGpJobNo());
-        boolean isPending=false;
-        
-        
-        String awsId = this.gpToAwsMap.get(jobRecord.getGpJobNo());
-        if (awsId == null){
-            if (!(jobRecord.getExtJobId().equalsIgnoreCase(""+jobRecord.getGpJobNo())))
-                awsId = jobRecord.getExtJobId();
-        }
+        final String awsId=jobRecord.getExtJobId();
+
         if (awsId != null){
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            //
-            // ask AWS for status and update since this is async
-            // we'll always just get the old value for now
-            //
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine(this.cancelJobScript);
+            CommandLine cl= new CommandLine(AWSBatchJobRunner.cancelJobScript);
             // tasklib
             cl.addArgument(awsId);
-            final Map<String,String> cmdEnv=null;
             try {
-                exec.execute(cl, cmdEnv);
-          
-                String output =  outputStream.toString().trim();
-                System.out.println(output);
-            } catch (Exception e){
-                e.printStackTrace();
+                exec.execute(cl);
+                if (log.isDebugEnabled()) { 
+                    String output =  outputStream.toString().trim();
+                    log.debug("output: "+output);
+                }
+            } 
+            catch (Exception e){
+                log.error(e);
             }
-        
         }
-        updateStatus_cancel(jobRecord.getGpJobNo(), isPending);
+        updateStatus_cancel(jobRecord.getExtJobId());
         return true;
     }
     
-    
-    
     protected static ArrayList<File> getInputFiles(final DrmJobSubmission gpJob,  HashMap<String,String> urlToFileMap){
-        
         ArrayList<File> inputFiles = new ArrayList<File>();
         File gpServer = new File(gpJob.getWorkingDir().getParentFile().getParent());
         
@@ -479,10 +427,8 @@ public class AWSBatchJobRunner implements JobRunner{
         HashMap<String,String> urlToFileMap = new HashMap<String,String>();
         ArrayList<File> inputFiles =  getInputFiles(gpJob,urlToFileMap);
         try {
-            
-            inputDir = new  File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
+            inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
             inputDir.mkdir();
-           
             for (File inputFile : inputFiles) {
                 DefaultExecutor exec=new DefaultExecutor();
                 exec.setWorkingDirectory(inputDir);
@@ -494,42 +440,33 @@ public class AWSBatchJobRunner implements JobRunner{
                 File linkedFile = new File(inputDir,inputFile.getName() );
                 
                 urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
-                Map env = null;
-                exec.execute(link, env);
+                exec.execute(link);
             }
             
-        } catch (Exception e){
+        } 
+        catch (Exception e) {
+            log.error("Error creating symlink for input file", e);
             e.printStackTrace();
             throw new IllegalArgumentException("could not collect input files: "); 
         }
         
         // job name to have in AWS batch displays
         cl.addArgument(inputDir.getAbsolutePath() );
-       
-        
-        // input files
-        //cl.addArgument("/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/Java17_oracle_jdk/tests/selectfeaturescolumns/data/all_aml_train.gct");
-
 
         for (int i = 0; i < gpCommand.size(); ++i) {
             String commandPart = gpCommand.get(i);
             
-            boolean wroteIt = false;
             // TODO this will fail for URLS but is meant as proof of concept
             for (File inputFile : inputFiles) {
                 String filename = inputFile.getName();
                 if (commandPart.endsWith(filename)){
                     commandPart = urlToFileMap.get(filename);
                 }
-            }
-            
+            } 
             cl.addArgument(commandPart, handleQuoting);
         }
-
         return cl;
     }
-    
-  
 
     protected static Executor initExecutorForJob(final DrmJobSubmission gpJob, ByteArrayOutputStream outputStream) throws ExecutionException, IOException {
        // File outfile = gpJob.getRelativeFile(gpJob.getStdoutFile());
@@ -568,15 +505,12 @@ public class AWSBatchJobRunner implements JobRunner{
         final Map<String,String> cmdEnv=null;
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
-        gpToAwsMap.put( gpJob.getGpJobNo(), awsJobId);
         
-        DrmJobStatus status = new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
-                .submitTime(new Date())
-            .build();
-        return status;
+        return new DrmJobStatus.Builder(""+gpJob.getGpJobNo(), DrmJobState.QUEUED)
+            .extJobId(awsJobId)
+            .submitTime(new Date())
+        .build();
     }
-    
-
     
     /**
      * When 'job.logFile' is set, write the command line into a log file in the working directory for the job.
@@ -665,13 +599,5 @@ public class AWSBatchJobRunner implements JobRunner{
             }
         }
     }
-    
-    
-   
-    protected static void log(String s){
-        System.out.println(s);
-    }
-    
-   
 
 }
