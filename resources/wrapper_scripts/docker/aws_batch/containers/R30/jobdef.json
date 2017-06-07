@@ -17,7 +17,12 @@
             {
                 "name": "STDOUT_FILENAME",
                 "value": "stdout.txt"
-            }
+            },
+	    {
+                "name": "R_LIB",
+                "value": "/genepattern-server/Rlibraries/R30/rlibs"
+
+	    }
         ],
         "image": "liefeld/r30_cli",
         "memory": 200,
