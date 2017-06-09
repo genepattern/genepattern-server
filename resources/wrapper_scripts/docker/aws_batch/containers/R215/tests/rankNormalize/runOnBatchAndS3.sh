@@ -8,7 +8,6 @@
 #
 
 TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R215/tests/rankNormalize
-
 TASKLIB=$TEST_ROOT/src
 INPUT_FILE_DIRECTORIES=$TEST_ROOT/data
 S3_ROOT=s3://moduleiotest
@@ -16,8 +15,12 @@ WORKING_DIR=$TEST_ROOT/job_1111
 RLIB=$TEST_ROOT/rlib
 
 
+# run_rank_normalize.R, /xchip/gpprod/servers/genepattern/taskLib/RankNormalize.1.9.17547/, --input.file=/xchip/gpprod/servers/genepattern/users/ted/uploads/tmp/run6841.file/1/all_aml_train.gct, --output.file.name=all_aml_train.NORM.gct
+ 
+COMMAND_LINE="Rscript $TASKLIB/run_rank_normalize.R $TASKLIB --input.file=$INPUT_FILE_DIRECTORIES/all_aml_train.gct --output.file.name=all_aml_train.NORM.gct"
+
 JOB_DEFINITION_NAME="R215_Generic"
-JOB_ID=gp_job_RANK_NORMALIZE_R215_$1
+JOB_ID=gp_job_REVEALER_R215_$1
 JOB_QUEUE=TedTest
 
 
@@ -28,9 +31,6 @@ aws s3 sync $INPUT_FILE_DIRECTORIES $S3_ROOT$INPUT_FILE_DIRECTORIES --profile ge
 aws s3 sync $TASKLIB $S3_ROOT$TASKLIB --profile genepattern
 
 #       --container-overrides memory=2000 \
-
-COMMAND_LINE="Rscript $TASKLIB/run_rank_normalize.R $TASKLIB --input.file=$INPUT_FILE_DIRECTORIES/all_aml_train.gct --output.file.name=all_aml_train.NORM.gct"
-
 
 aws batch submit-job \
       --job-name $JOB_ID \
