@@ -24,14 +24,14 @@
 
             }
         ],
-        "image": "liefeld/r251_cli",
+        "image": "liefeld/r27",
         "memory": 2000,
         "mountPoints": [],
         "ulimits": [],
         "vcpus": 2,
         "volumes": []
     },
-    "jobDefinitionName": "R251_Generic",
+    "jobDefinitionName": "R27_Generic",
     "parameters": {
         "exe1": "-u",
         "inputFileDirectory": "job_22345",

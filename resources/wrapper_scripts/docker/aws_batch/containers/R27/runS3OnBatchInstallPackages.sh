@@ -52,9 +52,10 @@ fi
 export RHOME=/packages/R-2.7.2/
 export RFLAGS='--no-save --quiet --slave --no-restore'
 
+
 # run the module
 echo $5
-java -cp /build -DR_HOME=$RHOME -Dr_flags=$RFLAGS RunR $5 >$STDOUT_FILENAME 2>$STDERR_FILENAME
+java -cp /build -DR_HOME=$RHOME -Dr_flags="$RFLAGS" RunR $5 >$STDOUT_FILENAME 2>$STDERR_FILENAME
 echo "{ \"exit_code\": $? }">$EXITCODE_FILENAME
 
 # send the generated files back
