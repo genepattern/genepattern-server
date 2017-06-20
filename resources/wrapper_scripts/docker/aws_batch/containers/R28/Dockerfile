@@ -1,7 +1,6 @@
 FROM r-base:3.1.3
 
 COPY runS3OnBatchInstallPackages.sh /usr/local/bin/runS3OnBatch.sh
-COPY runLocalInstallPackages.sh /usr/local/bin/runLocal.sh
 
 RUN mkdir /build
 
@@ -48,6 +47,7 @@ RUN  mkdir packages && \
 RUN  cd /build && \
     javac RunR.java
 
+COPY runLocalInstallPackages.sh /usr/local/bin/runLocal.sh
  
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 
