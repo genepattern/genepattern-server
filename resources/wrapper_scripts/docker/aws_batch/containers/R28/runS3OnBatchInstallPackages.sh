@@ -32,11 +32,9 @@ mkdir -p $INPUT_FILES_DIR
 aws s3 sync $S3_ROOT$INPUT_FILES_DIR $INPUT_FILES_DIR
 ls $INPUT_FILES_DIR
 
-# switch to the working directory
-mkdir -p $WORKING_DIR
-cd $WORKING_DIR 
-# used for stderr, stdout and exitcode files
-mkdir .gp_metadata
+# switch to the working directory and sync it up
+aws s3 sync $S3_ROOT$WORKING_DIR $WORKING_DIR
+chmod a+x $WORKING_DIR/.gp_metadata/*
 
 ##################################################
 # MODIFICATION FOR R PACKAGE INSTALLATION
@@ -49,13 +47,10 @@ else
 	echo "$TASKLIB/r.package.info not found."
 fi
 
-export RHOME=/packages/R-2.8.1/
-export RFLAGS='--no-save --quiet --slave --no-restore'
-
 
 # run the module
-echo $5
-java -cp /build -DR_HOME=$RHOME -Dr_flags="$RFLAGS" RunR $5 >$STDOUT_FILENAME 2>$STDERR_FILENAME
+echo "Running $5"
+$5 >$STDOUT_FILENAME 2>$STDERR_FILENAME
 echo "{ \"exit_code\": $? }">$EXITCODE_FILENAME
 
 # send the generated files back
