@@ -28,18 +28,13 @@ echo input files location  is -$INPUT_FILES_DIR-
 if [ -f "$TASKLIB/r.package.info" ]
 then
 	echo "$TASKLIB/r.package.info found."
-	Rscript /build/source/installPackages.R $TASKLIB/r.package.info
+        Rscript /build/source/installPackages.R $TASKLIB/r.package.info
 else
 	echo "$TASKLIB/r.package.info not found."
 fi
 
-# run the module
-export RHOME=/packages/R-2.7.2/
-export RFLAGS='--no-save --quiet --slave --no-restore'
-
-
 cd $WORKING_DIR
-mkdir -p .gp_metadata
+#mkdir -p .gp_metadata
 
 # run the module
 shift
@@ -47,7 +42,16 @@ shift
 shift
 shift
 
+echo "========== DEBUG inside container ================="
+echo $@
+echo "====== END DEBUG ================="
 
-java -cp /build -DR_HOME=$RHOME -Dr_flags="$RFLAGS" RunR $@ >$STDOUT_FILENAME 2>$STDERR_FILENAME
-echo "{ \"exit_code\": $? }">$EXITCODE_FILENAME
+#for x in "${@}" ; do
+#    # try to figure out if quoting was required for the $x
+#    echo "==$x=="
+#done
+
+"$@"  >$STDOUT_FILENAME 2>$STDERR_FILENAME
+
+
 
