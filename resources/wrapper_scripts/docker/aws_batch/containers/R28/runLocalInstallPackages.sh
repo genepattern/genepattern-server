@@ -42,9 +42,10 @@ shift
 shift
 shift
 
-#echo "========== DEBUG inside container ================="
-#echo $@
-#echo "====== END DEBUG ================="
+echo "========== DEBUG inside container ================="
+echo $@
+echo "====== END DEBUG ================="
+
 #for x in "${@}" ; do
 #    # try to figure out if quoting was required for the $x
 #    echo "==$x=="
