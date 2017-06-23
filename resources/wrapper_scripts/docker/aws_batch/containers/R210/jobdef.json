@@ -15,8 +15,8 @@
                 "value": "./.gp_metadata/stdout.txt"
             },
             {
-                "name": "STDOUT_FILENAME",
-                "value": "./.gp_metadata/stdout.txt"
+                "name": "STDERR_FILENAME",
+                "value": "./.gp_metadata/stderr.txt"
             },
             {
                 "name": "EXITCODE_FILENAME",
@@ -24,14 +24,14 @@
 
             }
         ],
-        "image": "liefeld/r27",
+        "image": "liefeld/r210",
         "memory": 2000,
         "mountPoints": [],
         "ulimits": [],
         "vcpus": 2,
         "volumes": []
     },
-    "jobDefinitionName": "R27_Generic",
+    "jobDefinitionName": "R210_Generic",
     "parameters": {
         "exe1": "-u",
         "inputFileDirectory": "job_22345",
