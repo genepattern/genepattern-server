@@ -22,7 +22,7 @@ import org.genepattern.webservice.ParameterInfo;
 
 
 
-
+/** @deprecated the JobRunner API is implemented in the AWSBatchJobRunner class */
 public class AWSBatchExecutor extends JobExecutor implements CommandExecutor2 {
     private static final Logger log = Logger.getLogger(AWSBatchExecutor.class);
     
