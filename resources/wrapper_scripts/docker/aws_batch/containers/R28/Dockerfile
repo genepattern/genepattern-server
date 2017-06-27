@@ -1,8 +1,5 @@
 FROM r-base:3.1.3
 
-COPY runS3OnBatchInstallPackages.sh /usr/local/bin/runS3OnBatch.sh
-COPY runLocalInstallPackages.sh /usr/local/bin/runLocal.sh
-
 RUN mkdir /build
 
 COPY Dockerfile /build/Dockerfile
@@ -22,7 +19,6 @@ RUN pip install awscli
 
 RUN apt-get update && \
     apt-get install curl --yes && \
-    chmod ugo+x /usr/local/bin/runS3OnBatch.sh && \
     apt-get install libfreetype6=2.5.2-3+deb8u2 --yes --force-yes && \
     apt-get install libfreetype6-dev --yes  --force-yes && \
     apt-get install libfontconfig1-dev --yes  --force-yes && \
@@ -48,6 +44,13 @@ RUN  mkdir packages && \
 RUN  cd /build && \
     javac RunR.java
 
+COPY runLocalInstallPackages.sh /usr/local/bin/runLocal.sh
+COPY runS3OnBatchInstallPackages.sh /usr/local/bin/runS3OnBatch.sh
+
+RUN  cd /build && \
+    javac RunR.java && \
+    chmod ugo+x /usr/local/bin/runS3OnBatch.sh 
+    
  
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 

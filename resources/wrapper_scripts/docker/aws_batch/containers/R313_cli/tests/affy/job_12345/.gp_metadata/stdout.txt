@@ -29,7 +29,7 @@ loaded via a namespace (and not attached):
 [4] splines_3.1.3       
 $options
 $options$input.file
-[1] "/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/R313_cli/tests/affy/data/inputFileList.txt"
+[1] "/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R313_cli/tests/affy/data/inputFileList.txt"
 
 $options$normalize
 [1] "yes"
@@ -51,5 +51,26 @@ $options$help
 
 
 $args
-[1] "/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/R313_cli/tests/affy/src"
+[1] "/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R313_cli/tests/affy/src"
 
+[1] "Processing files of array type HuEx-1_0-st-v2"
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/10_5N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/11_6T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/1_1T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/12_6N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/13_7T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/14_7N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/15_8T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/16_8N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/17_9T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/18_9N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/19_10T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/20_10N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/2_1N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/3_2T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/4_2N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/5_3T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/6_3N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/7_4T.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/8_4N.CEL
+Reading in : cel_files/in1/HuEx-1_0-st-v2.colon-cancer-data-set/9_5T.CEL

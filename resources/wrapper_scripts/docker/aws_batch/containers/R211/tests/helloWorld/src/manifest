@@ -1,0 +1,19 @@
+#helloWorld_R2.5_Rjava
+#Fri Jun 09 15:28:03 EDT 2017
+JVMLevel=
+LSID=urn\:lsid\:8080.gpbroad.broadinstitute.org\:genepatternmodules\:533\:2
+author=Peter Carr;Broad Institute
+categories=Test
+commandLine=<R2.5>  <libdir>hello.R hello 
+cpuType=any
+description=For debugging the R 2.5 wrapper scripts
+fileFormat=
+language=R
+name=helloWorld_R2.5_Rjava
+os=any
+privacy=public
+quality=development
+taskDoc=
+taskType=Test
+userid=pcarr@broadinstitute.org
+version=Created on gpbroad server, as a clone of helloWorld_R2.0_Rjava
