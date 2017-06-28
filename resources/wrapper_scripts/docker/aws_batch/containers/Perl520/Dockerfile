@@ -1,6 +1,8 @@
 FROM perl:5.20
 
 COPY runS3OnBatch.sh /usr/local/bin/runS3OnBatch.sh
+COPY runLocal.sh /usr/local/bin/runLocal.sh
+
 RUN  mkdir /build
 COPY Dockerfile /build/Dockerfile
 COPY jobdef.json /build/jobdef.json

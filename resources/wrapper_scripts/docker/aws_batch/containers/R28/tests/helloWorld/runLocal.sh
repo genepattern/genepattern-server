@@ -5,10 +5,10 @@
 # /Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R28/tests/survival_curve
 
 
-TASKLIB=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R28/tests/helloWorld/src
-INPUT_FILE_DIRECTORIES=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R28/tests/helloWorld/data
+TASKLIB=$PWD/src
+INPUT_FILE_DIRECTORIES=$PWD/data
 S3_ROOT=s3://moduleiotest
-WORKING_DIR=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R28/tests/helloWorld/job_1112
+WORKING_DIR=$PWD/job_1112
 
 RHOME=/packages/R-2.8.1/
 #RFLAGS='--no-save --quiet --slave --no-restore'
