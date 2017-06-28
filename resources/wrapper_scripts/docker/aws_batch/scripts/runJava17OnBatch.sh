@@ -32,8 +32,8 @@ echo $COMMAND_LINE > lastCmd.txt
 #
 # Copy the input files to S3 using the same path
 #
-aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY --profile genepattern
-aws s3 sync $TASKLIB $S3_ROOT$TASKLIB --profile genepattern
+aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY $AWS_PROFILE_ARG
+aws s3 sync $TASKLIB $S3_ROOT$TASKLIB $AWS_PROFILE_ARG
 
 #       --container-overrides memory=2000 \
 
@@ -43,7 +43,7 @@ aws batch submit-job \
       --job-queue $JOB_QUEUE \
       --job-definition $JOB_DEFINITION_NAME \
       --parameters taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1="$COMMAND_LINE"  \
-      --profile genepattern | python -c "import sys, json; print( json.load(sys.stdin)['jobId'])"
+      $AWS_PROFILE_ARG | python -c "import sys, json; print( json.load(sys.stdin)['jobId'])"
 
 # may want to pipe the submit output through this to extract the job ID for checking status
 # | python -c "import sys, json; print json.load(sys.stdin)['jobId']"
@@ -54,11 +54,11 @@ aws batch submit-job \
 # wait for job completion TBD
 #
 #check status 
-# aws batch describe-jobs --jobs 07f93b66-f6c0-47e5-8481-4a04722b7c91 --profile genepattern
+# aws batch describe-jobs --jobs 07f93b66-f6c0-47e5-8481-4a04722b7c91 $AWS_PROFILE_ARG
 #
 
 #
 # Copy the output of the job back to our local working dir from S3
 #
-#aws s3 sync $S3_ROOT$WORKING_DIR $WORKING_DIR --profile genepattern
+#aws s3 sync $S3_ROOT$WORKING_DIR $WORKING_DIR $AWS_PROFILE_ARG
 

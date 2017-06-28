@@ -6,4 +6,4 @@ source "${script_dir}/init-aws-cli-env.sh"
 
 S3_ROOT=s3://moduleiotest
 
-aws s3 sync  $S3_ROOT$1 $1 --profile genepattern
+aws s3 sync  $S3_ROOT$1 $1 $AWS_PROFILE_ARG
