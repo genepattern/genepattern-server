@@ -12,6 +12,15 @@
 # Configuration
 #   run-rjava=<wrapper-scripts>/run-rjava.sh -c <env-custom>
 #   R2.15_Rjava=<run-rjava> 2.15 <rjava_flags> -cp <run_r_path> RunR
+#
+# For debugging ...
+# Example shell session in dotkit enabled environment:
+#   use Java-1.7
+#   use R-2.5
+#   java -DR_HOME=<R2.15_HOME> -Dr_flags='--no-save --quiet --slave --no-restore' \
+#     -cp <webappDir>/WEB-INF/classes 
+#     RunR \
+#     <libdir>hello.R hello
 ############################################################
 
 function run_rjava() {
