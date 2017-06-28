@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TEST_ROOT=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R313_cli/tests/affy
+TEST_ROOT=$PWD
 TASKLIB=$TEST_ROOT/src
 INPUT_FILE_DIRECTORIES=$TEST_ROOT/data
 S3_ROOT=s3://moduleiotest

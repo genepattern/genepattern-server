@@ -1,10 +1,10 @@
 #!/bin/sh
 
-TASKLIB=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R30/tests/revealer/src
-INPUT_FILE_DIRECTORIES=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R30/tests/revealer/data
+TASKLIB=$PWD/src
+INPUT_FILE_DIRECTORIES=$PWD/data
 S3_ROOT=s3://moduleiotest
-WORKING_DIR=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R30/tests/revealer/job_1111
-RLIB=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R30/tests/revealer/rlib
+WORKING_DIR=$PWD/job_1111
+RLIB=$PWD/rlib
 
 RHOME=/packages/R-3.0.3/
 

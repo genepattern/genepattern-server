@@ -1,9 +1,9 @@
 #!/bin/sh
 
-TASKLIB=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R27/tests/helloWorld/src
-INPUT_FILE_DIRECTORIES=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R27/tests/helloWorld/data
+TASKLIB=$PWD/src
+INPUT_FILE_DIRECTORIES=$PWD/data
 S3_ROOT=s3://moduleiotest
-WORKING_DIR=/Users/liefeld/GenePattern/gp_dev/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/R27/tests/helloWorld/job_1111
+WORKING_DIR=$PWD/job_1111
 
 RHOME=/packages/R-2.7.2/
 
