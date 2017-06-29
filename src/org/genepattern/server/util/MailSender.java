@@ -40,6 +40,7 @@ public class MailSender {
     public static final String DEFAULT_SMTP_FROM_EMAIL="no-reply@genepattern.org";
     
     private final String smtpServer;
+    private final String mailSmtpLocalhost;
     private final String from; // aka replyTo
     private final String to; // aka sendToAddress
     private final String subject;
@@ -47,6 +48,7 @@ public class MailSender {
 
     private MailSender(Builder b) {
         this.smtpServer=b.smtpServer;
+        this.mailSmtpLocalhost=b.mailSmtpLocalhost;
         this.from=b.from;
         this.to=b.to;
         this.subject=b.subject;
@@ -60,17 +62,37 @@ public class MailSender {
     public void sendMessage() throws Exception {
         final Properties p = new Properties();
         p.put("mail.host", smtpServer);
-
+        if (mailSmtpLocalhost != null) {
+            p.put("mail.smtp.localhost", mailSmtpLocalhost);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("sending message ...");
+            log.debug("    mail.host="+smtpServer);
+            log.debug("    mail.smtp.localhost="+mailSmtpLocalhost);
+            log.debug("from: "+from);
+            log.debug("to: "+to);
+        }
+        
         final Session mailSession = Session.getDefaultInstance(p, null);
-        mailSession.setDebug(false);
+        if (log.isDebugEnabled()) {
+            mailSession.setDebug(true);
+        }
+        else {
+            mailSession.setDebug(false);
+        }
         final MimeMessage msg = new MimeMessage(mailSession);
-
         try {
+            final InternetAddress fromAddr=new InternetAddress(from);
+            final InternetAddress toAddr=new InternetAddress(to);
+            if (log.isDebugEnabled()) {
+                log.debug("fromAddr: "+fromAddr.toString());
+                log.debug("toAddr: "+toAddr.toString());
+            }
             msg.setSubject(subject);
             msg.setText(message);
-            msg.setFrom(new InternetAddress(from));
+            msg.setFrom(fromAddr);
             msg.setSentDate(new Date());
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            msg.addRecipient(Message.RecipientType.TO, toAddr);
             Transport.send(msg);
         } 
         catch (MessagingException e) {
@@ -81,6 +103,7 @@ public class MailSender {
     
     public static final class Builder {
         private String smtpServer;
+        private String mailSmtpLocalhost;
         private String from; // aka replyTo
         private String to;   // aka sendToAddress, aka recipient
         private String subject;
@@ -98,6 +121,7 @@ public class MailSender {
         public Builder(final GpConfig gpConfig, final GpContext gpContext) {
             this.smtpServer = gpConfig.getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
             this.from = gpConfig.getGPProperty(gpContext, PROP_SMTP_FROM_EMAIL, DEFAULT_SMTP_FROM_EMAIL);
+            this.mailSmtpLocalhost = gpConfig.getGPProperty(gpContext, "mail.smtp.localhost");
         }
         
         public Builder smtpServer(final String smtpServer) {
