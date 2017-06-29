@@ -39,6 +39,12 @@ public class MailSender {
     /** The default smtp.from.email=no-reply@genepattern.org */
     public static final String DEFAULT_SMTP_FROM_EMAIL="no-reply@genepattern.org";
     
+    /**
+     * Set the 'mail.smtp.localhost' property to the fully qualified hostname for the server.
+     * This is only needed as a workaround for the 'Helo command rejected: need fully-qualified hostname' error. 
+     */
+    public static final String PROP_MAIL_SMTP_LOCALHOST="mail.smtp.localhost";
+    
     private final String smtpServer;
     private final String mailSmtpLocalhost;
     private final String from; // aka replyTo
@@ -62,7 +68,7 @@ public class MailSender {
         final Properties p = new Properties();
         p.put("mail.host", smtpServer);
         if (mailSmtpLocalhost != null) {
-            p.put("mail.smtp.localhost", mailSmtpLocalhost);
+            p.put(PROP_MAIL_SMTP_LOCALHOST, mailSmtpLocalhost);
         }
         if (log.isDebugEnabled()) {
             log.debug("initializing mailSession ...");
@@ -117,7 +123,7 @@ public class MailSender {
         public Builder(final GpConfig gpConfig, final GpContext gpContext) {
             this.smtpServer = gpConfig.getGPProperty(gpContext, PROP_SMTP_SERVER, DEFAULT_SMTP_SERVER);
             this.from = gpConfig.getGPProperty(gpContext, PROP_SMTP_FROM_EMAIL, DEFAULT_SMTP_FROM_EMAIL);
-            this.mailSmtpLocalhost = gpConfig.getGPProperty(gpContext, "mail.smtp.localhost");
+            this.mailSmtpLocalhost = gpConfig.getGPProperty(gpContext, PROP_MAIL_SMTP_LOCALHOST);
         }
         
         public Builder smtpServer(final String smtpServer) {
