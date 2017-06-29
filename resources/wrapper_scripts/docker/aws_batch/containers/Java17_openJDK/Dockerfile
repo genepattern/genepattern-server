@@ -14,6 +14,8 @@ RUN apt-get update && apt-get upgrade --yes && \
 RUN pip install awscli 
     
 RUN chmod ugo+x /usr/local/bin/runS3OnBatch.sh
+COPY runLocal.sh /usr/local/bin/runLocal.sh
+
  
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 
