@@ -15,20 +15,12 @@ RUN apt-get update && apt-get upgrade --yes && \
     python get-pip.py 
 RUN pip install awscli 
 
-#RUN echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-#  echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections && \ 
-#  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-#  add-apt-repository -y ppa:webupd8team/java && \
-#  apt-get update && \
-#  apt-get install -y oracle-java7-installer && \
-#  rm -rf /var/lib/apt/lists/* && \
-#  rm -rf /var/cache/oracle-jdk7-installer
-
 COPY jdk-7u80-linux-x64.tar.gz /build/jdk-7u80-linux-x64.tar.gz
 
-RUN mkdir /build/java &&\
-   mv /build/jdk-7u80-linux-x64.tar.gz /build/java/jdk-7u80-linux-x64.tar.gz && \
+RUN cd /build && \
+   mkdir /build/java &&\
    cd /build/java && \
+   wget https://s3.amazonaws.com/genepattern-largefile-cache/genepattern-server/resources/wrapper_scripts/docker/aws_batch/containers/Java17_oracle_jdk/jdk-7u80-linux-x64.tar.gz && \
    tar zxvf jdk-7u80-linux-x64.tar.gz
 
 
