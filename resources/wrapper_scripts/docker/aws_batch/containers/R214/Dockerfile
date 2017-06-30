@@ -1,11 +1,12 @@
 FROM r-base:3.1.3
 
 RUN mkdir /build
-
+RUN mkdir -p /patches/rlib/2.14/site-library
 COPY Dockerfile /build/Dockerfile
 COPY jobdef.json /build/jobdef.json
 COPY RunR.java /build/RunR.java 
 COPY installPackages.R /build/source/installPackages.R
+
 COPY Cairo_1.5-9.tar.gz /build/Cairo_1.5-9.tar.gz
 COPY sources.list /etc/apt/sources.list
 
@@ -41,6 +42,7 @@ RUN  mkdir packages && \
     apt-get install libxml2-dev --yes && \
     apt-get install libcurl4-gnutls-dev --yes && \
     R CMD INSTALL /build/Cairo_1.5-9.tar.gz
+    
 
 
 COPY runS3OnBatchInstallPackages.sh /usr/local/bin/runS3OnBatch.sh
@@ -50,5 +52,10 @@ RUN  cd /build && \
     javac RunR.java && \
     chmod ugo+x /usr/local/bin/runS3OnBatch.sh 
      
+    COPY r214.site.libraries.zip /patches/rlib/
+    RUN cd /patches/rlib/ && \
+    	unzip r214.site.libraries.zip
+    
+
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 
