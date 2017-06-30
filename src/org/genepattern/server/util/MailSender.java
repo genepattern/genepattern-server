@@ -40,8 +40,9 @@ public class MailSender {
     public static final String DEFAULT_SMTP_FROM_EMAIL="no-reply@genepattern.org";
     
     /**
-     * Set the 'mail.smtp.localhost' property to the fully qualified hostname for the server.
-     * This is only needed as a workaround for the 'Helo command rejected: need fully-qualified hostname' error. 
+     * Set the 'mail.smtp.localhost' property as a workaround for the 
+     * 'Helo command rejected: need fully-qualified hostname' error.
+     *  Default: <null>
      */
     public static final String PROP_MAIL_SMTP_LOCALHOST="mail.smtp.localhost";
     

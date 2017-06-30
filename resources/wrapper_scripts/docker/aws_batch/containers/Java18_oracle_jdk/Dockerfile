@@ -26,9 +26,8 @@ RUN \
 # Define commonly used JAVA_HOME variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
-
-    
 RUN chmod ugo+x /usr/local/bin/runS3OnBatch.sh
+COPY runLocal.sh /usr/local/bin/runLocal.sh
  
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 
