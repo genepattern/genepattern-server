@@ -116,6 +116,8 @@ default.properties:
     contact.us.email: "gp-help@broadinstitute.org"
     # the from email address for messages sent to end users, such as from the 'forgot password' link  
     smtp.from.email: "no-reply@genepattern.org"
+    # (optional), workaround for 'Helo command rejected: need fully-qualified hostname'
+    #mail.smtp.localhost: "fully-qualified hostname"
 
     # Change the skin GenePattern uses
     display.skin: frozen

@@ -23,27 +23,34 @@ echo input files location  is -$INPUT_FILES_DIR-
 
 # copy the source over from tasklib
 mkdir -p $TASKLIB
-aws s3 sync $S3_ROOT$TASKLIB $TASKLIB
+echo "AWS SYNC $S3_ROOT$TASKLIB $TASKLIB"
+aws s3 sync $S3_ROOT$TASKLIB $TASKLIB --quiet
 ls $TASKLIB
 
  
 # copy the inputs
 mkdir -p $INPUT_FILES_DIR
-aws s3 sync $S3_ROOT$INPUT_FILES_DIR $INPUT_FILES_DIR
+echo "PERFORMING aws s3 sync $S3_ROOT$INPUT_FILES_DIR $INPUT_FILES_DIR"
+aws s3 sync $S3_ROOT$INPUT_FILES_DIR $INPUT_FILES_DIR --quiet
 ls $INPUT_FILES_DIR
 
-# switch to the working directory
-mkdir -p $WORKING_DIR
-cd $WORKING_DIR 
-# used for stderr, stdout and exitcode files
-mkdir .gp_metadata
+# switch to the working directory and sync it up
+echo "PERFORMING aws s3 sync $S3_ROOT$WORKING_DIR $WORKING_DIR "
+aws s3 sync $S3_ROOT$WORKING_DIR $WORKING_DIR --quiet
+aws s3 sync $S3_ROOT$WORKING_DIR/.gp_metadata $WORKING_DIR/.gp_metadata --quiet
+chmod a+rwx $WORKING_DIR/.gp_metadata/*
+echo "POST SYNC WORKING_DIR/.gp_metadata contents are"
 
+cd $WORKING_DIR
 
 # run the module
-echo $5
+echo "PERFORMING $5"
 $5 >$STDOUT_FILENAME 2>$STDERR_FILENAME
 echo "{ \"exit_code\": $? }">$EXITCODE_FILENAME
 
 # send the generated files back
-aws s3 sync . $S3_ROOT$WORKING_DIR 
-aws s3 sync $TASKLIB $S3_ROOT$TASKLIB
+echo "PERFORMING aws s3 sync $WORKING_DIR $S3_ROOT$WORKING_DIR"
+aws s3 sync $WORKING_DIR $S3_ROOT$WORKING_DIR --quiet
+echo "PERFORMING aws s3 sync $TASKLIB $S3_ROOT$TASKLIB"
+aws s3 sync $TASKLIB $S3_ROOT$TASKLIB --quiet
+

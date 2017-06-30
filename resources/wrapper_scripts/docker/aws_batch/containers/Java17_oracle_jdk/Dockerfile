@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:14.04
 
 COPY runS3OnBatch.sh /usr/local/bin/runS3OnBatch.sh
 
@@ -15,20 +15,32 @@ RUN apt-get update && apt-get upgrade --yes && \
     python get-pip.py 
 RUN pip install awscli 
 
-RUN \
-  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java7-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk7-installer
+#RUN echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+#  echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections && \ 
+#  echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+#  add-apt-repository -y ppa:webupd8team/java && \
+#  apt-get update && \
+#  apt-get install -y oracle-java7-installer && \
+#  rm -rf /var/lib/apt/lists/* && \
+#  rm -rf /var/cache/oracle-jdk7-installer
+
+COPY jdk-7u80-linux-x64.tar.gz /build/jdk-7u80-linux-x64.tar.gz
+
+RUN mkdir /build/java &&\
+   mv /build/jdk-7u80-linux-x64.tar.gz /build/java/jdk-7u80-linux-x64.tar.gz && \
+   cd /build/java && \
+   tar zxvf jdk-7u80-linux-x64.tar.gz
+
+
 
 # Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-7-oracle
-
+ENV JAVA_HOME /build/java/jdk1.7.0_80
+ENV PATH $JAVA_HOME/bin:$PATH
 
     
 RUN chmod ugo+x /usr/local/bin/runS3OnBatch.sh
+COPY runLocal.sh /usr/local/bin/runLocal.sh
+
  
 CMD ["/usr/local/bin/runS3OnBatch.sh" ]
 

@@ -25,16 +25,18 @@ WORKDIR /home/gistic
 COPY runMatlab.sh /usr/local/bin/runMatlab.sh
 COPY runS3OnBatch.sh /usr/local/bin/runS3OnBatch.sh
 RUN mkdir /home/gistic/MCRInstaller
-COPY MCRInstaller.zip.2014a /home/gistic/MCRInstaller/MCRInstaller.zip
+#COPY MCRInstaller.zip.2014a /home/gistic/MCRInstaller/MCRInstaller.zip
 # COPY environment /etc/environment
+RUN cd /home/gistic/MCRInstaller && \
+   wget https://www.mathworks.com/supportfiles/downloads/R2014a/deployment_files/R2014a/installers/glnxa64/MCR_R2014a_glnxa64_installer.zip && \
+   unzip MCR_R2014a_glnxa64_installer.zip
+
 COPY matlab.conf /etc/ld.so.conf.d/matlab.conf
 
 RUN  chmod a+x /usr/local/bin/runMatlab.sh && \
 	cd MCRInstaller && \
-	unzip MCRInstaller.zip && \
      	/home/gistic/MCRInstaller/install -mode silent -agreeToLicense yes 
 
-# RUN cat /etc/environment >> /root/.bashrc
 
 
 CMD ["/bin/bash", "runMatlab.sh"]
