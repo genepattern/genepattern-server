@@ -339,7 +339,7 @@ public class AWSBatchJobRunner implements JobRunner{
     
     protected static Set<File> getInputFiles(final DrmJobSubmission gpJob) {
         if (log.isDebugEnabled()) {
-            log.debug("listing input files for gpJobNo="+gpJob.getGpJobNo()+" ..."+gpJob.getGpJobNo());
+            log.debug("listing input files for gpJobNo="+gpJob.getGpJobNo()+" ...");
         }
         // linked hash set preserves insertion order
         final Set<File> inputFiles = new LinkedHashSet<File>();
@@ -520,6 +520,7 @@ public class AWSBatchJobRunner implements JobRunner{
 
         final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
         final Set<File> inputFiles = getInputFiles(gpJob);
+        final Map<String,String> urlToFileMap = new HashMap<String,String>();
         try {
             //inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
             inputDir.mkdir();
@@ -530,6 +531,8 @@ public class AWSBatchJobRunner implements JobRunner{
                 link.addArgument("-s");
                 link.addArgument(inputFile.getAbsolutePath());
                 link.addArgument(inputFile.getName());
+                File linkedFile = new File(inputDir,inputFile.getName() );
+                urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
                 exec.execute(link);
             }
             
@@ -540,10 +543,17 @@ public class AWSBatchJobRunner implements JobRunner{
             throw new IllegalArgumentException("could not collect input files: "); 
         }
         
-        cl.addArgument(inputDir.getAbsolutePath());
         final boolean handleQuoting = false;
-        for(final String arg : gpCommand) {
-            cl.addArgument(arg, handleQuoting);
+        cl.addArgument(inputDir.getAbsolutePath() );       
+        for (int i = 0; i < gpCommand.size(); ++i) {       
+            String commandPart = gpCommand.get(i);        
+            for (File inputFile : inputFiles) {       
+                String filename = inputFile.getName();        
+                if (commandPart.endsWith(filename)){      
+                    commandPart = urlToFileMap.get(filename);     
+                }
+            }         
+            cl.addArgument(commandPart, handleQuoting);       
         }
         return cl;
     }
