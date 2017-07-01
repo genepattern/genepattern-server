@@ -4,6 +4,9 @@
 package org.genepattern.server.config;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobPermissions;
@@ -192,6 +195,8 @@ public class GpContext {
     private JobInput jobInput = null;
     private boolean isAdmin=false;
     private JobPermissions jobPermissions=null;
+    
+    private List<String> localFilePaths=null;
 
     /**
      * @deprecated
@@ -320,6 +325,20 @@ public class GpContext {
         }
         return null;
     } 
+
+    public void addLocalFilePath(final String localFilePath) {
+        if (localFilePaths==null) {
+            localFilePaths=new ArrayList<String>();
+        }
+        localFilePaths.add(localFilePath);
+    }
+
+    public List<String> getLocalFilePaths() {
+        if (localFilePaths==null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(localFilePaths);
+    }
     
     // Builder pattern
     public static final class Builder {

@@ -1168,6 +1168,12 @@ public class GenePatternAnalysisTask {
             } // end for each parameter
         } // end if parameters not null
 
+        // add local file paths to the jobContext ...
+        final List<String> inputFiles=listInputFiles(paramsCopy, paramInfoMap);
+        for(final String inputFile : inputFiles) {
+            jobContext.addLocalFilePath(inputFile);
+        }
+
         // build the command line, replacing <variableName> with the same name from the properties
         // (ParameterInfo[], System properties, environment variables, and built-ins merged)
         // build props again, now that downloaded files are set
@@ -1393,6 +1399,40 @@ public class GenePatternAnalysisTask {
         }
 
         runCommand(mgr, gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
+    }
+
+    protected List<String> listInputFiles(ParameterInfo[] paramsCopy, final Map<String, ParameterInfoRecord> paramInfoMap) {
+        final List<String> inputFilePaths=new ArrayList<String>();
+        if (log.isDebugEnabled()) {
+            log.debug("listing paramsCopy ...");
+        }
+        for(final ParameterInfo copy : paramsCopy) {
+            log.debug("    "+copy.getName()+"="+copy.getValue());
+            log.debug("      copy.isInputFile: "+copy.isInputFile());
+            log.debug("      copy._isUrlMode: "+copy._isUrlMode());
+
+            final ParameterInfoRecord record=paramInfoMap.get(copy.getName());
+            final ParameterInfo formal;
+            final ParameterInfo actual;
+            if (record!=null) {
+                formal=record.getFormal();
+                actual=record.getActual();
+            }
+            else {
+                formal=null;
+                actual=null;
+            }
+            if (actual != null) {
+                log.debug("      actual.value="+actual.getValue());
+            }
+            if (formal != null) {
+                log.debug("      formal.isInputFile="+formal.isInputFile());
+            }
+            if (formal != null && formal.isInputFile()) {
+                inputFilePaths.add(copy.getValue());
+            }
+        }
+        return inputFilePaths;
     }
 
     protected void setPinfoValueForDirectoryInputParam(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo pinfo, final ParameterInfoRecord pinfoRecord) throws JobDispatchException {
