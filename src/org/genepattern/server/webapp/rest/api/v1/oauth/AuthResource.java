@@ -358,10 +358,12 @@ public class AuthResource {
     @Consumes("application/json")
     @Produces("application/json")
     public Response register(@Context HttpServletRequest request) throws OAuthSystemException {
-        String username = request.getParameter(OAuth.OAUTH_USERNAME);
-        String password = request.getParameter(OAuth.OAUTH_PASSWORD);
-        String clientID = request.getParameter(OAuth.OAUTH_CLIENT_ID);
-        String email = request.getParameter(AuthResource.OAUTH_EMAIL);
+        JSONHttpServletRequestWrapper request2 = new JSONHttpServletRequestWrapper(request);
+
+        String username = request2.getParameter(OAuth.OAUTH_USERNAME);
+        String password = request2.getParameter(OAuth.OAUTH_PASSWORD);
+        String clientID = request2.getParameter(OAuth.OAUTH_CLIENT_ID);
+        String email = request2.getParameter(AuthResource.OAUTH_EMAIL);
 
         // Verify parameters
         boolean validationError = false;
