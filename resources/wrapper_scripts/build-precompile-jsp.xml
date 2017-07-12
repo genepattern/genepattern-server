@@ -1,0 +1,110 @@
+<!--
+  Web Application Compilation Script copied from Tomcat 5.5 documentation
+  See:
+    https://tomcat.apache.org/tomcat-5.5-doc/jasper-howto.html#Introduction
+
+  To precomile (circa 11-July-2017) ...
+    module unload java
+    module load java/1.8.0_74 
+
+    export ANT_HOME=/N/u/gpserver/Karst/ant/apache-ant-1.9.9
+    export TOMCAT_HOME=/N/u/gpserver/Karst/opt/genepattern/gp/Tomcat
+    export WEBAPP_PATH=/N/u/gpserver/Karst/opt/genepattern/gp/Tomcat/webapps/gp
+
+    $ANT_HOME/bin/ant -f build-precompile-jsp.xml -Dtomcat.home=${TOMCAT_HOME} -Dwebapp.path=${WEBAPP_PATH}
+
+  Note: I had to comment out '${tomcat.home}/shared' entries from the javac classpath
+-->
+<project name="Webapp Precompilation" default="all" basedir="."> 
+
+  <!--
+    Prompt for 'tomcat.home' and 'webapp.path' locations before precompiling the jsp pages
+  -->
+  <target name="prompt-for-input">
+    <input message="Enter 'tomcat.home': "
+      addproperty="tomcat.home" 
+      defaultvalue="/N/u/gpserver/Karst/opt/genepattern/gp/Tomcat" />
+    <input message="Enter 'webapp.path': " 
+      addproperty="webapp.path" 
+      defaultvalue="/N/u/gpserver/Karst/opt/genepattern/gp/Tomcat/webapps/gp" />
+    <input message="Compile jsp files for web application (y/n)?"
+      validargs="n,y"
+      addproperty="do.compile"
+    />
+    <condition property="do.abort">
+      <equals arg1="n" arg2="${do.compile}"/>
+    </condition>
+    <fail if="do.abort">Build aborted by user.</fail>
+  </target>
+
+  <target name="jspc"> 
+
+    <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
+      <classpath id="jspc.classpath"> 
+        <pathelement location="${java.home}/../lib/tools.jar"/> 
+        <fileset dir="${tomcat.home}/bin"> 
+          <include name="*.jar"/> 
+        </fileset> 
+        <fileset dir="${tomcat.home}/server/lib"> 
+          <include name="*.jar"/> 
+        </fileset> 
+        <fileset dir="${tomcat.home}/common/lib"> 
+          <include name="*.jar"/> 
+        </fileset> 
+      </classpath> 
+    </taskdef> 
+
+    <jasper2 
+             validateXml="false" 
+             uriroot="${webapp.path}" 
+             webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" 
+             outputDir="${webapp.path}/WEB-INF/src" /> 
+
+  </target> 
+
+  <target name="compile">
+
+    <mkdir dir="${webapp.path}/WEB-INF/classes"/>
+    <mkdir dir="${webapp.path}/WEB-INF/lib"/>
+
+    <javac destdir="${webapp.path}/WEB-INF/classes"
+           optimize="off"
+           debug="on" failonerror="false"
+           srcdir="${webapp.path}/WEB-INF/src" 
+	      excludes="**/*.smap">
+      <classpath>
+        <pathelement location="${webapp.path}/WEB-INF/classes"/>
+        <fileset dir="${webapp.path}/WEB-INF/lib">
+          <include name="*.jar"/>
+        </fileset>
+        <pathelement location="${tomcat.home}/common/classes"/>
+        <fileset dir="${tomcat.home}/common/lib">
+          <include name="*.jar"/>
+        </fileset>
+<!--
+        <pathelement location="${tomcat.home}/shared/classes"/>
+        <fileset dir="${tomcat.home}/shared/lib">
+          <include name="*.jar"/>
+        </fileset>
+-->
+        <fileset dir="${tomcat.home}/bin"> 
+          <include name="*.jar"/> 
+        </fileset> 
+      </classpath>
+      <include name="**" />
+      <exclude name="tags/**" />
+    </javac>
+
+  </target>
+
+  <target name="all" depends="prompt-for-input,jspc,compile">
+  </target>
+
+  <target name="cleanup">
+    <delete>
+        <fileset dir="${webapp.path}/WEB-INF/src"/>
+        <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp"/>
+	</delete>
+  </target>
+
+</project>
