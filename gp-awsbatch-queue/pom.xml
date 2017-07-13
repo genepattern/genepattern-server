@@ -1,0 +1,101 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>genepattern.org</groupId>
+  <artifactId>gp-awsbatch-queue</artifactId>
+  <packaging>jar</packaging>
+  <version>0.0.2</version>
+  <name>gp-awsbatch-queue</name>
+  <url>http://maven.apache.org</url>
+
+  <!-- dummy scm required for buildnumber-maven-plugin --> 
+  <scm>
+    <connection>scm:svn:http://127.0.0.1/dummy</connection>
+    <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
+    <tag>HEAD</tag>
+    <url>http://127.0.0.1/dummy</url>
+  </scm>
+
+ <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.3</version>
+        <executions>
+          <execution>
+            <id>buildnumber</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <format>{0,number}</format>
+          <items>
+            <item>buildNumber</item>
+          </items>                    
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+          <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>   
+        </configuration>
+      </plugin> 
+    </plugins>
+    <!-- finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName -->
+    <finalName>${project.artifactId}-${project.version}-b.${buildNumber}</finalName>
+  </build>
+    
+  <properties>
+    <maven.build.timestamp.format>yyyy-MM-dd-HHmmss</maven.build.timestamp.format>
+  </properties>
+
+  <dependencies>
+    <!-- 
+      gp-full.jar
+      See:
+        http://maven.apache.org/plugins/maven-deploy-plugin/
+      
+      This dependency must be manually added to a local maven repository. 
+      Here are the steps I took on my dev machine.
+      
+      1) (optional) one-time setup, set localRepository in ~/.m2/settings.xml
+         <settings>
+           <localRepository>/Broad/dev/maven-repo</localRepository>
+         </settings>
+         
+      2) add gp-full-<snapshot>.jar to local mvn repository
+         For example, to add 'gp-full-3.9.11-snapshot-05.jar'
+
+         # create snapshot build
+         cd ../
+         ant clean common
+         cp -p build/gp-full.jar build/gp-full-3.9.11-snapshot-05.jar
+         # add to local repository
+         mvn deploy:deploy-file \
+           -Durl=file:///Broad/dev/maven-repo/ \
+           -DgroupId=org.genepattern -DartifactId=gp-full -Dpackaging=jar \
+           -Dversion=3.9.11-snapshot-05 \
+           -Dfile=build/gp-full-3.9.11-snapshot-05.jar 
+    -->
+    <dependency>
+      <groupId>org.genepattern</groupId>
+      <artifactId>gp-full</artifactId>
+      <version>3.9.11-snapshot-05</version>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-exec -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+  </dependencies>
+</project>
