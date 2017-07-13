@@ -505,8 +505,10 @@ public class AWSBatchJobRunner implements JobRunner{
 
         final File wrapperScript = new File(awsBatchScript);
         if (log.isDebugEnabled()) {
-            log.debug("    job "+gpJob.getGpJobNo()+": aws_batch_script='"+awsBatchScript+"'");
-            log.debug("        fqPath='"+wrapperScript.getAbsolutePath()+"'");
+            log.debug("job "+gpJob.getGpJobNo());
+            log.debug("    submitJobScript='"+submitJobScript+"'");
+            log.debug("    aws_batch_script='"+awsBatchScript+"'");
+            log.debug("    wrapperScript='"+wrapperScript.getAbsolutePath()+"'");
         }
         final CommandLine cl = new CommandLine(wrapperScript.getAbsolutePath());
 
@@ -528,15 +530,16 @@ public class AWSBatchJobRunner implements JobRunner{
         try {
             inputDir.mkdir();
             for (File inputFile : inputFiles) {
-                DefaultExecutor exec=new DefaultExecutor();
+                final boolean handleQuoting = false;
+                final DefaultExecutor exec=new DefaultExecutor();
                 exec.setWorkingDirectory(inputDir);
-                CommandLine link = new CommandLine("ln");
-                link.addArgument("-s");
-                link.addArgument(inputFile.getAbsolutePath());
-                link.addArgument(inputFile.getName());
-                File linkedFile = new File(inputDir,inputFile.getName() );
+                final CommandLine link_cmd = new CommandLine("ln");
+                link_cmd.addArgument("-s", handleQuoting);
+                link_cmd.addArgument(inputFile.getAbsolutePath(), handleQuoting);
+                link_cmd.addArgument(inputFile.getName(), handleQuoting);
+                final File linkedFile = new File(inputDir,inputFile.getName());
                 urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
-                exec.execute(link);
+                exec.execute(link_cmd);
             } 
         } 
         catch (Exception e) {
