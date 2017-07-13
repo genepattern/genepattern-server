@@ -15,8 +15,6 @@ RUN apt-get update && apt-get upgrade --yes && \
     python get-pip.py 
 RUN pip install awscli 
 
-COPY jdk-7u80-linux-x64.tar.gz /build/jdk-7u80-linux-x64.tar.gz
-
 RUN cd /build && \
    mkdir /build/java &&\
    cd /build/java && \
