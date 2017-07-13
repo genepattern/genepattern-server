@@ -1,12 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>genepattern.org</groupId>
-  <artifactId>gp-awsbatch-queue</artifactId>
+  <groupId>org.genepattern.jobrunner</groupId>
+  <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.2</version>
-  <name>gp-awsbatch-queue</name>
-  <url>http://maven.apache.org</url>
+  <version>0.1</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -17,6 +15,8 @@
   </scm>
 
  <build>
+    <finalName>${project.artifactId}-${project.version}.${buildNumber}-snapshot</finalName>
+
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -42,8 +42,7 @@
         </configuration>
       </plugin> 
     </plugins>
-    <!-- finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName -->
-    <finalName>${project.artifactId}-${project.version}-b.${buildNumber}</finalName>
+
   </build>
     
   <properties>
