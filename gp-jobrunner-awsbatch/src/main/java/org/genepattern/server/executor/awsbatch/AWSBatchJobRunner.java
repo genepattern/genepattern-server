@@ -504,6 +504,10 @@ public class AWSBatchJobRunner implements JobRunner{
         }
 
         final File wrapperScript = new File(awsBatchScript);
+        if (log.isDebugEnabled()) {
+            log.debug("    job "+gpJob.getGpJobNo()+": aws_batch_script='"+awsBatchScript+"'");
+            log.debug("        fqPath='"+wrapperScript.getAbsolutePath()+"'");
+        }
         final CommandLine cl = new CommandLine(wrapperScript.getAbsolutePath());
 
         // tasklib
@@ -522,7 +526,6 @@ public class AWSBatchJobRunner implements JobRunner{
         final Set<File> inputFiles = getInputFiles(gpJob);
         final Map<String,String> urlToFileMap = new HashMap<String,String>();
         try {
-            //inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
             inputDir.mkdir();
             for (File inputFile : inputFiles) {
                 DefaultExecutor exec=new DefaultExecutor();
@@ -534,26 +537,24 @@ public class AWSBatchJobRunner implements JobRunner{
                 File linkedFile = new File(inputDir,inputFile.getName() );
                 urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
                 exec.execute(link);
-            }
-            
+            } 
         } 
         catch (Exception e) {
             log.error("Error creating symlink for input file", e);
-            e.printStackTrace();
             throw new IllegalArgumentException("could not collect input files: "); 
-        }
-        
+        } 
+
         final boolean handleQuoting = false;
-        cl.addArgument(inputDir.getAbsolutePath() );       
-        for (int i = 0; i < gpCommand.size(); ++i) {       
-            String commandPart = gpCommand.get(i);        
-            for (File inputFile : inputFiles) {       
-                String filename = inputFile.getName();        
-                if (commandPart.endsWith(filename)){      
-                    commandPart = urlToFileMap.get(filename);     
+        cl.addArgument(inputDir.getAbsolutePath() ); 
+        for (int i = 0; i < gpCommand.size(); ++i) { 
+            String commandPart = gpCommand.get(i); 
+            for (File inputFile : inputFiles) { 
+                String filename = inputFile.getName(); 
+                if (commandPart.endsWith(filename)) { 
+                    commandPart = urlToFileMap.get(filename); 
                 }
-            }         
-            cl.addArgument(commandPart, handleQuoting);       
+            } 
+            cl.addArgument(commandPart, handleQuoting); 
         }
         return cl;
     }
