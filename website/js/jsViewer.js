@@ -118,6 +118,7 @@
             setTimeout(function(){
                 var jsViewerFrame = $("<iframe width='100%' height='100%' frameborder='0' scrolling='auto'>GenePattern Javascript Visualization</iframe>");
                 jsViewerFrame.attr("src", self.options.url);
+                jsViewerFrame.addClass("js-viewer");
                 jsViewerFrame.on("load", function(){
                     //remove the blocking UI
                     mainViewerPane.unblock();

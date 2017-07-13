@@ -1,0 +1,164 @@
+<!--
+  Web Application Compilation Script based on a copy from the Tomcat 5.5 documentation
+  See:
+    https://tomcat.apache.org/tomcat-5.5-doc/jasper-howto.html#Introduction
+
+  To precompile ...
+    * make sure java is on the path; tested with java/1.8
+      java -version
+    * make sure ant >= 1.9 is on the path; tested with ant/1.9.9
+      ant -version
+    * set 'tomcat.home' to the location of the tomcat-5.5 installation
+      default: ./Tomcat
+    * set 'webapp.path' to the location of the gp web application
+      default: ./Tomcat/webapps/gp
+
+    $ANT_HOME/bin/ant -f build-precompile-jsp.xml -Dtomcat.home=${TOMCAT_HOME} -Dwebapp.path=${WEBAPP_PATH}
+-->
+<project name="precomile-jsp" default="all" basedir="."> 
+  <dirname property="precompile-jsp.basedir" file="${ant.file.precompile-jsp}" />
+
+  <!--
+    Prompt for 'tomcat.home' and 'webapp.path' paths
+  -->
+  <target name="init-tomcat.home">
+    <dirname property="tomcat.home.default" file="${precompile-jsp.basedir}/../../installer-2014/gpdist/Tomcat/common" />
+    <input message="Enter 'tomcat.home': "
+      addproperty="tomcat.home" 
+      defaultvalue="${tomcat.home.default}" />
+    <fail unless="tomcat.home" message="'tomcat.home' not set" />
+  </target>
+
+  <target name="init-webapp.path">
+    <dirname property="webapp.path.default" file="${precompile-jsp.basedir}/../../website/WEB-INF" />
+    <input message="Enter 'webapp.path': " 
+      addproperty="webapp.path" 
+      defaultvalue="${webapp.path.default}" />
+      
+    <fail unless="webapp.path" message="'webapp.path' not set" />
+  </target>
+
+  <!--
+    double check before replacing the precompiled jsp files
+  -->
+  <target name="confirm-modify">
+    <input message="Delete or replace the existing precompiled jsp pages?"
+      validargs="y,n"
+      defaultvalue="n"
+      addproperty="do.compile"
+    />
+    <condition property="do.abort">
+      <equals arg1="n" arg2="${do.compile}"/>
+    </condition>
+    <fail if="do.abort">Build aborted by user.</fail>
+  </target>
+
+  <!--
+    double check before replacing the precompiled jsp files
+  -->
+  <!--
+  <target name="confirm-compile">
+      <input message="Compile jsp files for web application?"
+        validargs="y,n"
+        defaultvalue="n"
+        addproperty="do.compile"
+      />
+      <condition property="do.abort">
+        <equals arg1="n" arg2="${do.compile}"/>
+      </condition>
+      <fail if="do.abort">Build aborted by user.</fail>
+  </target>
+  -->
+
+  <target name="jspc" depends="init-tomcat.home, init-webapp.path, confirm-modify"
+    description="generate _jsp.java files from .jsp files"
+  >
+    <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
+      <classpath id="jspc.classpath"> 
+        <pathelement location="${java.home}/../lib/tools.jar"/> 
+        <fileset dir="${tomcat.home}/bin"> 
+          <include name="*.jar"/> 
+        </fileset> 
+        <fileset dir="${tomcat.home}/server/lib"> 
+          <include name="*.jar"/> 
+        </fileset> 
+        <fileset dir="${tomcat.home}/common/lib"> 
+          <include name="*.jar"/> 
+        </fileset> 
+      </classpath> 
+    </taskdef> 
+
+    <jasper2 
+      validateXml="false" 
+      uriroot="${webapp.path}" 
+      webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" 
+      outputDir="${webapp.path}/WEB-INF/src" 
+    />
+  </target> 
+
+  <target name="compile-jspc" depends="init-tomcat.home, init-webapp.path, confirm-modify"
+    description="generate _jsp.class files from _jsp.java files"
+  >
+    <mkdir dir="${webapp.path}/WEB-INF/classes"/>
+    <mkdir dir="${webapp.path}/WEB-INF/lib"/>
+
+    <javac
+      includeantruntime="false"
+      destdir="${webapp.path}/WEB-INF/classes"
+      optimize="off"
+      debug="on" 
+      failonerror="false"
+      srcdir="${webapp.path}/WEB-INF/src" 
+	  excludes="**/*.smap"
+    >
+      <classpath>
+        <pathelement location="${webapp.path}/WEB-INF/classes"/>
+        <fileset dir="${webapp.path}/WEB-INF/lib">
+          <include name="*.jar"/>
+        </fileset>
+        <pathelement location="${tomcat.home}/common/classes"/>
+        <fileset dir="${tomcat.home}/common/lib">
+          <include name="*.jar"/>
+        </fileset>
+        <!-- 
+          '${tomcat.home}/shared' does not exist in the default GP server installation 
+          <pathelement location="${tomcat.home}/shared/classes"/>
+          <fileset dir="${tomcat.home}/shared/lib">
+            <include name="*.jar"/>
+          </fileset>
+        -->
+        <fileset dir="${tomcat.home}/bin"> 
+          <include name="*.jar"/> 
+        </fileset> 
+      </classpath>
+      <include name="**" />
+      <exclude name="tags/**" />
+    </javac>
+  </target>
+
+  <target name="all" depends="init-tomcat.home, init-webapp.path, clean-jspc, jspc, compile-jspc" 
+    description="precompile jsp pages for web application"
+  />
+
+  <target name="clean-jspc" depends="init-webapp.path, confirm-modify" 
+    description="delete precompiled _jsp.java and _jsp.class files"
+  >
+    <!-- double check before deleting the precompiled jsp files -->
+    <!--
+    <input message="Delete compiled jsp files from webapp.path?"
+      addproperty="do.clean" 
+      validargs="y,n" defaultvalue="n"
+    />
+    <condition property="do.abort">
+      <equals arg1="n" arg2="${do.clean}"/>
+    </condition>
+    <fail if="do.abort">Build aborted by user.</fail>
+    -->
+
+    <delete quiet="true" failonerror="false">
+      <fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp" includes="**/*.class" />
+      <fileset dir="${webapp.path}/WEB-INF/src/org/apache/jsp" includes="**/*.java" />
+    </delete> 
+  </target>
+
+</project>
