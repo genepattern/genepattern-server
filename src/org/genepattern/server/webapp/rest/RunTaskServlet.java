@@ -292,7 +292,7 @@ public class RunTaskServlet extends HttpServlet
                         privateTasksObj.put(entry);
                     }
                     moduleObject.put("private_tasks", privateTasksObj);
-               }
+                }
             }
 
             //get module source and quality info
@@ -391,7 +391,7 @@ public class RunTaskServlet extends HttpServlet
                     for (JobSubmission js : model.getTasks()) {
                         try {
                             TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true);
+                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false);
                             TasksResource.applyJobSubmission(childObject, js);
                             children.put(childObject);
                         }
@@ -431,17 +431,17 @@ public class RunTaskServlet extends HttpServlet
             if(message.contains("You do not have the required permissions"))
             {
                 throw new WebApplicationException(
-                Response.status(Response.Status.FORBIDDEN)
-                    .entity(message)
-                    .build()
+                        Response.status(Response.Status.FORBIDDEN)
+                                .entity(message)
+                                .build()
                 );
             }
             else
             {
                 throw new WebApplicationException(
-                Response.status(Response.Status.BAD_REQUEST)
-                    .entity(message)
-                    .build()
+                        Response.status(Response.Status.BAD_REQUEST)
+                                .entity(message)
+                                .build()
                 );
             }
         }
@@ -452,11 +452,11 @@ public class RunTaskServlet extends HttpServlet
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
     public Response uploadFile(
-        @FormDataParam("ifile") InputStream uploadedInputStream,
-        @FormDataParam("ifile") FormDataContentDisposition fileDetail,
-        @FormDataParam("paramName") final String paramName,
-        @FormDataParam("index") final int index,
-        @Context HttpServletRequest request)
+            @FormDataParam("ifile") InputStream uploadedInputStream,
+            @FormDataParam("ifile") FormDataContentDisposition fileDetail,
+            @FormDataParam("paramName") final String paramName,
+            @FormDataParam("index") final int index,
+            @Context HttpServletRequest request)
     {
         try
         {
@@ -497,16 +497,16 @@ public class RunTaskServlet extends HttpServlet
             log.error(message,e);
 
             throw new WebApplicationException(
-                Response.status(Response.Status.BAD_REQUEST)
-                    .entity(message)
-                    .build()
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(message)
+                            .build()
             );
         }
     }
 
     /**
      * consolidated /addJob and /launchJsViewer initialization of the taskContext
-     * 
+     *
      * @param request
      * @param jobSubmitInfo
      * @return GpContext initialized with the current user and the TaskInfo for the job to be submitted.
@@ -526,7 +526,7 @@ public class RunTaskServlet extends HttpServlet
                     request.getSession().getAttribute("userid") +
                     ", lsid="+jobSubmitInfo.getLsid();
             log.debug(errorMessage, t);
-            throw new WebApplicationException( 
+            throw new WebApplicationException(
                     Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
         }
         if (taskContext.getTaskInfo()==null) {
@@ -534,7 +534,7 @@ public class RunTaskServlet extends HttpServlet
             log.debug(errorMessage);
             throw new WebApplicationException(
                     Response.status(Response.Status.NOT_FOUND).entity(errorMessage).build());
-        } 
+        }
 
         if (checkDiskQuota(taskContext)) {
             throw new WebApplicationException(
@@ -542,15 +542,15 @@ public class RunTaskServlet extends HttpServlet
         }
         return taskContext;
     }
-    
-    
+
+
     @POST
     @Path("/addJob")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addJob(
-        JobSubmitInfo jobSubmitInfo,
-        @Context HttpServletRequest request)
+            JobSubmitInfo jobSubmitInfo,
+            @Context HttpServletRequest request)
     {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
         final GpContext taskContext=initTaskContext(request, jobSubmitInfo);
@@ -844,8 +844,8 @@ public class RunTaskServlet extends HttpServlet
     private Response handleError(final String errorMessage) throws WebApplicationException {
         throw new WebApplicationException(
                 Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(errorMessage)
-                .build()
+                        .entity(errorMessage)
+                        .build()
         );
     }
 
@@ -867,28 +867,28 @@ public class RunTaskServlet extends HttpServlet
      *
      * To test from curl,
      * <pre>
-       curl -u <username:password> <GenePatternURL>/rest/RunTask/viewCode?
-           lsid=<lsid>,
-           reloadJob=<reloadJobId>,
-           language=[ 'Java' | 'R' | 'MATLAB' ], if not set, default to 'Java',
-           <pname>=<pvalue>
+     curl -u <username:password> <GenePatternURL>/rest/RunTask/viewCode?
+     lsid=<lsid>,
+     reloadJob=<reloadJobId>,
+     language=[ 'Java' | 'R' | 'MATLAB' ], if not set, default to 'Java',
+     <pname>=<pvalue>
      * </pre>
      *
      * Example 1: get Java code for ComparativeMarkerSelection (v.9)
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9"
+     curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9"
      * </pre>
      * Example 2: by taskName
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=ComparativeMarkerSelection"
+     curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=ComparativeMarkerSelection"
      * </pre>
      * Example 3: initialize the input.filename
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
+     curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct"
      * </pre>
      * Example 4: from a reloaded job
      * <pre>
-       curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&reloadJob=9948"
+     curl -u test:**** "http://127.0.0.1:8080/gp/rest/RunTask/viewCode?language=Java&reloadJob=9948"
      * </pre>
      *
      * Note: I had to wrap the uri in double-quotes to deal with the '&' character.
@@ -896,8 +896,8 @@ public class RunTaskServlet extends HttpServlet
      * Note: If you prefer to use use cookie-based authentication. This command logs in and
      * saves the session cookie to the file 'cookies.txt'
      * <pre>
-       curl -c cookies.txt "<GenePatternURL>/login?username=<username>&password=<password>"
-       </pre>
+     curl -c cookies.txt "<GenePatternURL>/login?username=<username>&password=<password>"
+     </pre>
      *
      * Use the '-b cookies.txt' on subsequent calls.
      *
@@ -966,7 +966,7 @@ public class RunTaskServlet extends HttpServlet
 
     // save uploaded file to new location
     private void writeToFile(InputStream uploadedInputStream,
-        String uploadedFileLocation) {
+                             String uploadedFileLocation) {
 
         try {
             OutputStream out = new FileOutputStream(new File(

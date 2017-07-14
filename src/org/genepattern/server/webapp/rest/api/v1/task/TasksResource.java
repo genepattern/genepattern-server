@@ -41,15 +41,16 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaManager;
-import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.*;
+import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfoParser;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
+import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -67,60 +68,60 @@ import com.google.common.collect.Multimap;
 
 /**
  * RESTful implementation of the /task resource.
- * 
+ *
  * Example usage, via curl command line.
-   <p>To get the task_info for a given task name:
-   <pre>
-   curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/ComparativeMarkerSelection
-   </pre>
-   <p>Or by task lsid:
-   <pre>
-   curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9
-   </pre>
-   
-   This returns a JSON representation of the task, for example,
-   <pre>
-{
-"href":"http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
-"name":"TestJavaWrapper",
-"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
-"params":[
-  {"text": {
-     "attributes": {
-       "default_value":"",
-       "optional":"on",
-       "prefix_when_specified":"--text=",
-       "type":"java.lang.String",
-       "fileFormat":""}}},
-       
-   ...
-   
-  {"file":{
-    "attributes":{
-      "default_value":"",
-      "optional":"on",
-      "prefix_when_specified":"--file=",
-      "MODE":"IN",
-      "type":"java.io.File",
-      "TYPE":"FILE",
-      "fileFormat":""}}}
-]
-}
+ <p>To get the task_info for a given task name:
+ <pre>
+ curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/ComparativeMarkerSelection
+ </pre>
+ <p>Or by task lsid:
+ <pre>
+ curl -u test:test http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:9
+ </pre>
 
-   </pre>
+ This returns a JSON representation of the task, for example,
+ <pre>
+ {
+ "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
+ "name":"TestJavaWrapper",
+ "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.test.analysis:00007:0.1",
+ "params":[
+ {"text": {
+ "attributes": {
+ "default_value":"",
+ "optional":"on",
+ "prefix_when_specified":"--text=",
+ "type":"java.lang.String",
+ "fileFormat":""}}},
+
+ ...
+
+ {"file":{
+ "attributes":{
+ "default_value":"",
+ "optional":"on",
+ "prefix_when_specified":"--file=",
+ "MODE":"IN",
+ "type":"java.io.File",
+ "TYPE":"FILE",
+ "fileFormat":""}}}
+ ]
+ }
+
+ </pre>
  *
  * The value of the lower-case 'type' attribute should be used when testing for the type of input parameter.
  * Here are some example values:
-   <pre>
-"type":"java.io.File"
-"type":"java.lang.String"
-"type":"java.lang.Integer"
-"type":"java.lang.Float"
-"type":"DIRECTORY"
-"type":"PASSWORD"
-   </pre>
- *   
- * 
+ <pre>
+ "type":"java.io.File"
+ "type":"java.lang.String"
+ "type":"java.lang.Integer"
+ "type":"java.lang.Float"
+ "type":"DIRECTORY"
+ "type":"PASSWORD"
+ </pre>
+ *
+ *
  * @author pcarr
  *
  */
@@ -170,7 +171,7 @@ public class TasksResource {
      * @throws JSONException
      */
     public static JSONObject getPendingEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo)
-    throws JSONException
+            throws JSONException
     {
         final boolean includePending=true;
         final boolean includeAll=false;
@@ -185,7 +186,7 @@ public class TasksResource {
     }
 
     public static JSONObject getEulaForModuleJson(final HttpServletRequest request, final GpContext userContext, final TaskInfo taskInfo, final boolean includePending, final boolean includeAll)
-    throws JSONException
+            throws JSONException
     {
         userContext.setTaskInfo(taskInfo);
         final List<EulaInfo> pendingEulas;
@@ -214,7 +215,7 @@ public class TasksResource {
             final List<EulaInfo> pendingEulas,
             final List<EulaInfo> allEulas
     )
-    throws JSONException {
+            throws JSONException {
         final JSONObject eulaObj=new JSONObject();
         eulaObj.put("currentTaskName", taskInfo.getName());
         eulaObj.put("currentLsid", taskInfo.getLsid());
@@ -487,14 +488,14 @@ public class TasksResource {
      * For the modules and pipelines panel, create a json representation for a task.
      * <pre>
      * {
-        "lsid": "the full lsid of the module should be here",
-        "name": "TheModuleNameGoesHere",
-        "description": "The description of the module should go here",
-        "version": "14.1.2",
-        "documentation": "http://www.google.com",
-        "categories": ["yyy", "zzz", "www"],
-        "tags": ["xxx", "xxx"]
-      }
+     "lsid": "the full lsid of the module should be here",
+     "name": "TheModuleNameGoesHere",
+     "description": "The description of the module should go here",
+     "version": "14.1.2",
+     "documentation": "http://www.google.com",
+     "categories": ["yyy", "zzz", "www"],
+     "tags": ["xxx", "xxx"]
+     }
      * </pre>
      * @param taskInfo
      * @return
@@ -571,8 +572,9 @@ public class TasksResource {
             @DefaultValue("true") @QueryParam("includeProperties") boolean includeProperties,
             @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             @DefaultValue("true") @QueryParam("includeEula") boolean includeEula,
-            @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles
-            ) {
+            @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles,
+            @DefaultValue("true") @QueryParam("includeParamGroups") boolean includeParamGroups
+    ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
         TaskInfo taskInfo = null;
@@ -590,7 +592,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles);
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -625,12 +627,12 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula) throws Exception
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups) throws Exception
     {
-        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false);
+        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups);
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups) throws Exception {
         GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         JSONObject jsonObj=new JSONObject();
         String href=getTaskInfoPath(request, taskInfo);
@@ -680,7 +682,7 @@ public class TasksResource {
                 for (JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula);
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups);
                         applyJobSubmission(childObject, js);
                         children.put(childObject);
                     }
@@ -698,6 +700,25 @@ public class TasksResource {
         if (includeEula) {
             JSONObject eulaInfo = getEulaForModuleJson(request, taskContext, taskInfo, true, false);
             jsonObj.put("eulaInfo", eulaInfo);
+        }
+
+        if (includeParamGroups) {
+            //add parameter grouping info (i.e advanced parameters
+            //check if there are any user defined groups
+            final LoadModuleHelper loadModuleHelper = new LoadModuleHelper(taskContext);
+            final LibdirStrategy libdirStrategy = new LibdirLegacy();
+            final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+            JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
+            jsonObj.put("paramGroups", paramGroupsJson);
+//            final JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(gpConfig, taskContext);
+//            if (jobConfigParams != null) {
+//                final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
+//                paramGroupsJson.put(jobConfigGroupJson);
+//                for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+//                    JSONObject jsonObj= RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+//                    parametersArray.put(jsonObj);
+//                }
+//            }
         }
 
         if(includeSupportFiles)
@@ -786,20 +807,20 @@ public class TasksResource {
      *
      * Example response for a dynamic drop-down,
      * <pre>
-       200 OK
-       {
-         "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json",
-         "status":{"flag":"OK", "message": "A user message"},
-         "choiceDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
-         "choiceAllowCustomValue":"true",
-         "selectedValue": "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
-         "choices": [
-           {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
-           {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR9.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR9.gtf"},
-           ...
-           {"value": "", label: "" }
-           ]
-       }
+     200 OK
+     {
+     "href":"http://127.0.0.1:8080/gp/rest/v1/tasks/DemoRNASeQC/annotation.gtf/choiceInfo.json",
+     "status":{"flag":"OK", "message": "A user message"},
+     "choiceDir":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf",
+     "choiceAllowCustomValue":"true",
+     "selectedValue": "ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf",
+     "choices": [
+     {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR10.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR10.gtf"},
+     {"value":"ftp://ftp.broadinstitute.org/pub/genepattern/rna_seq/referenceAnnotation/gtf/Arabidopsis_thaliana_Ensembl_TAIR9.gtf","label":"Arabidopsis_thaliana_Ensembl_TAIR9.gtf"},
+     ...
+     {"value": "", label: "" }
+     ]
+     }
      * </pre>
      *
      * For a static drop-down, the 'choiceDir' will not be set.
@@ -868,8 +889,8 @@ public class TasksResource {
 
             //return the JSON representation of the job
             return Response.ok()
-                .entity(choiceInfoStr)
-                .build();
+                    .entity(choiceInfoStr)
+                    .build();
         }
         catch (Throwable t) {
             log.error("Unexpected server error in GET "+choiceInfo.getChoiceDir(), t);
@@ -888,33 +909,33 @@ public class TasksResource {
      * <tr><td>pending</td><td>When present, include pendingEulas in the response.</td></tr>
      * </table>
      * Template query:
-           curl -u <user>:<password> <GenePatternURL>rest/v1/tasks/<lsid>/eulaInfo.json
+     curl -u <user>:<password> <GenePatternURL>rest/v1/tasks/<lsid>/eulaInfo.json
      * Example queries:
      * <pre>
-       curl -u test:test "http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2/eulaInfo.json?pending"
+     curl -u test:test "http://127.0.0.1:8080/gp/rest/v1/tasks/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2/eulaInfo.json?pending"
      * </pre>
      *
      *
      * Example JSON representation,
      * <pre>
-{
-    "currentTaskName":"demoLicensedModule",
-    "currentLsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
-    "currentLsidVersion":"0.2",
-    "pendingEulas":[    <----- there can be a list of 0 or more pending eulas, for example, a pipeline may require multiple licensees
-        { "moduleName": "demoLicensedModule",
-          "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
-          "moduleLsidVersion", "0.2",
-          "content": "the full content of the license agreement, (may not be present, if there was an error).",
-          "contentError": "error message, (will only be present if there was an error initializing the content)"
-        }
-    ],
-    # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
-    "acceptType":"GET",
-    "acceptUrl":"http://127.0.0.1:8080/gp/eula",
-    "acceptData": {
-        "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
-}
+     {
+     "currentTaskName":"demoLicensedModule",
+     "currentLsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+     "currentLsidVersion":"0.2",
+     "pendingEulas":[    <----- there can be a list of 0 or more pending eulas, for example, a pipeline may require multiple licensees
+     { "moduleName": "demoLicensedModule",
+     "moduleLsid": "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2",
+     "moduleLsidVersion", "0.2",
+     "content": "the full content of the license agreement, (may not be present, if there was an error).",
+     "contentError": "error message, (will only be present if there was an error initializing the content)"
+     }
+     ],
+     # the acceptData, acceptUrl, and acceptType objects give you enough information to construct an ajax call to accept the license
+     "acceptType":"GET",
+     "acceptUrl":"http://127.0.0.1:8080/gp/eula",
+     "acceptData": {
+     "lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00311:0.2"}
+     }
 
      * </pre>
 
@@ -961,8 +982,8 @@ public class TasksResource {
 
             //return the JSON representation
             return Response.ok()
-                .entity(eulaInfoStr)
-                .build();
+                    .entity(eulaInfoStr)
+                    .build();
         }
         catch (Throwable t) {
             return Response.serverError().entity("Error serializing JSON response: "+t.getLocalizedMessage()).build();
@@ -1010,7 +1031,7 @@ public class TasksResource {
     }
 
     private TaskInfo getTaskInfo(final String taskLSID, final String username)
-    throws WebServiceException
+            throws WebServiceException
     {
         return new LocalAdminClient(username).getTask(taskLSID);
     }

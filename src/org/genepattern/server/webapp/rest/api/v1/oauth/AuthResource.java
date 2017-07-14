@@ -17,9 +17,17 @@ import org.apache.oltu.oauth2.common.message.OAuthResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.oltu.oauth2.common.message.types.ResponseType;
 import org.apache.oltu.oauth2.common.utils.OAuthUtils;
+import org.apache.oltu.oauth2.ext.dynamicreg.server.request.JSONHttpServletRequestWrapper;
+import org.apache.oltu.oauth2.ext.dynamicreg.server.request.OAuthServerRegistrationRequest;
+import org.apache.oltu.oauth2.ext.dynamicreg.server.response.OAuthServerRegistrationResponse;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.OAuthManager;
+import org.genepattern.server.webapp.jsf.RegistrationBean;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +41,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -46,6 +55,7 @@ public class AuthResource {
 
     final static public long TOKEN_EXPIRY_TIME = 86400l; // Default is 1 day
     final static public long CODE_EXPIRY_TIME = 300l; // Default is 5 minutes
+    final static public String OAUTH_EMAIL = "email";
 
     /**
      * This endpoint is for an OAuth Client (ex: GenePattern Notebook) to request
@@ -111,8 +121,8 @@ public class AuthResource {
             String user = OAuthManager.userFromScope(scopes);
 
             log.info("OAuth2 auth attempted | " +
-                "TYPE: " + responseType + " | " +
-                "CLIENT: " + clientID
+                    "TYPE: " + responseType + " | " +
+                    "CLIENT: " + clientID
             );
 
             // Handle CODE requests
@@ -226,7 +236,6 @@ public class AuthResource {
     @Produces("application/json")
     public Response requestToken(@Context HttpServletRequest request) throws OAuthSystemException {
         // Declare required variables
-        OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
         String grantType = null;
         String authCode = null;
         String username = null;
@@ -311,22 +320,27 @@ public class AuthResource {
                     "CLIENT: " + clientID
             );
 
-            // Generate the access token
-            String token = oauthIssuerImpl.accessToken();
-
-            // Register the access token with GenePattern
-            OAuthManager.instance().createTokenSession(username, token, clientID, OAuthManager.calcExpiry(TOKEN_EXPIRY_TIME));
-
-            // Build and return the token response
-            OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
-                    .setExpiresIn(String.valueOf(TOKEN_EXPIRY_TIME)).buildJSONMessage();
-            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
+            return tokenResponse(username, clientID);
         }
         catch (OAuthProblemException e) {
             // Build and return the error message
             OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(e).buildJSONMessage();
             return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
         }
+    }
+
+    private Response tokenResponse(String username, String clientID) throws OAuthSystemException {
+        // Generate the access token
+        OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
+        String token = oauthIssuerImpl.accessToken();
+
+        // Register the access token with GenePattern
+        OAuthManager.instance().createTokenSession(username, token, clientID, OAuthManager.calcExpiry(TOKEN_EXPIRY_TIME));
+
+        // Build and return the token response
+        OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
+                .setExpiresIn(String.valueOf(TOKEN_EXPIRY_TIME)).buildJSONMessage();
+        return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
     }
 
     /**
@@ -344,35 +358,58 @@ public class AuthResource {
     @Consumes("application/json")
     @Produces("application/json")
     public Response register(@Context HttpServletRequest request) throws OAuthSystemException {
-//        OAuthServerRegistrationRequest oauthRequest = null;
-//        try {
-//            oauthRequest = new OAuthServerRegistrationRequest(new JSONHttpServletRequestWrapper(request));
-//            oauthRequest.discover();
-//            oauthRequest.getClientName();
-//            oauthRequest.getClientUrl();
-//            oauthRequest.getClientDescription();
-//            oauthRequest.getRedirectURI();
-//
-//            OAuthResponse response = OAuthServerRegistrationResponse
-//                    .status(HttpServletResponse.SC_OK)
-//                    .setClientId(ServerContent.CLIENT_ID)
-//                    .setClientSecret(ServerContent.CLIENT_SECRET)
-//                    .setIssuedAt(ServerContent.ISSUED_AT)
-//                    .setExpiresIn(ServerContent.EXPIRES_IN)
-//                    .buildJSONMessage();
-//            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
-//
-//        } catch (OAuthProblemException e) {
-//            OAuthResponse response = OAuthServerRegistrationResponse
-//                    .errorResponse(HttpServletResponse.SC_BAD_REQUEST)
-//                    .error(e)
-//                    .buildJSONMessage();
-//            return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
-//        }
+        JSONHttpServletRequestWrapper request2 = new JSONHttpServletRequestWrapper(request);
 
-        log.info("OAuth2 register attempted, returning not implemented error");
+        String username = request2.getParameter(OAuth.OAUTH_USERNAME);
+        String password = request2.getParameter(OAuth.OAUTH_PASSWORD);
+        String clientID = request2.getParameter(OAuth.OAUTH_CLIENT_ID);
+        String email = request2.getParameter(AuthResource.OAUTH_EMAIL);
 
-        OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(OAuthProblemException.error("register is not implemented")).buildJSONMessage();
-        return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
+        // Verify parameters
+        boolean validationError = false;
+        String errorMessage = null;
+        if (username == null || "".equals(username)) {
+            errorMessage = "missing or invalid username";
+            validationError = true;
+        }
+        else if (password == null || "".equals(password)) {
+            errorMessage = "missing or invalid password";
+            validationError = true;
+        }
+        else if (email == null || "".equals(email)) {
+            errorMessage = "missing or invalid email";
+            validationError = true;
+        }
+        else if (clientID == null || "".equals(clientID)) {
+            errorMessage = "missing or invalid client ID";
+            validationError = true;
+        }
+
+        // Return error response
+        if (validationError) {
+            OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(OAuthProblemException.error(errorMessage)).buildJSONMessage();
+            return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
+        }
+
+        try {
+            // Register the new user
+            registerUserHelper(request, username, password, email);
+        }
+        catch (AuthenticationException e) {
+            // Return registration error response
+            log.info("OAuth2 register attempted, error encountered when registering the new user");
+            OAuthResponse res = OAuthASResponse.errorResponse(HttpServletResponse.SC_BAD_REQUEST).error(OAuthProblemException.error(e.getMessage())).buildJSONMessage();
+            return Response.status(res.getResponseStatus()).entity(res.getBody()).build();
+        }
+
+        // Log the new user in and return the token
+        return tokenResponse(username, clientID);
+    }
+
+    private void registerUserHelper(HttpServletRequest request, String username, String password, String email) throws AuthenticationException {
+        GpConfig gpConfig = ServerConfigurationFactory.instance();
+
+        UserAccountManager.createUser(gpConfig, HibernateUtil.instance(), username, password, email);
+        LoginManager.instance().addUserIdToSession(request, username);
     }
 }
