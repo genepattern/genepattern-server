@@ -24,6 +24,9 @@ WORKDIR /home/gistic
 
 COPY runMatlab.sh /usr/local/bin/runMatlab.sh
 COPY runS3OnBatch.sh /usr/local/bin/runS3OnBatch.sh
+COPY runLocal.sh /usr/local/bin/runLocal.sh
+COPY run-with-env.sh /usr/local/bin/run-with-env.sh
+
 RUN mkdir /home/gistic/MCRInstaller
 #COPY MCRInstaller.zip.2014a /home/gistic/MCRInstaller/MCRInstaller.zip
 # COPY environment /etc/environment

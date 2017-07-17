@@ -127,7 +127,7 @@
             <fileset dir="${tomcat.home}/common/lib">
                 <include name="*.jar" />
             </fileset>
-            <fileset dir="build" includes="gp-full.jar" />
+            <fileset dir="build" includes="${full-jarname}" />
             <fileset dir="lib" includes="*.jar" />
         </path>
 

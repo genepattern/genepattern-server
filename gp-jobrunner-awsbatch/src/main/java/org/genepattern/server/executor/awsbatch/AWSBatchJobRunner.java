@@ -10,13 +10,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
-
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -33,12 +33,10 @@ import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.job.input.ParamValue;
-import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONObject;
 
 
-public class AWSBatchJobRunner implements JobRunner{
+public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
     /** generic implementation of getOrDefault, for use in Java 1.7 */
@@ -115,9 +113,18 @@ public class AWSBatchJobRunner implements JobRunner{
 
     @Override
     public String startJob(DrmJobSubmission gpJob) throws CommandExecutorException {
-        try { 
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("startJob, gp_job_id="+gpJob.getGpJobNo());
+            }
             logCommandLine(gpJob);
-            DrmJobStatus jobStatus = runJobNoWait(gpJob);
+            DrmJobStatus jobStatus = submitAwsBatchJob(gpJob);
+            if (jobStatus==null) {
+                throw new CommandExecutorException("Error starting job: submitAwsBatchJob returned null jobStatus");
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("submitted aws batch job, gp_job_id='"+gpJob.getGpJobNo()+"', aws_job_id="+jobStatus.getDrmJobId());
+            }
             return jobStatus.getDrmJobId();
         }
         catch (Throwable t) {
@@ -321,79 +328,53 @@ public class AWSBatchJobRunner implements JobRunner{
         return true;
     }
     
-    protected static ArrayList<File> getInputFiles(final DrmJobSubmission gpJob,  HashMap<String,String> urlToFileMap){
-        ArrayList<File> inputFiles = new ArrayList<File>();
-        File gpServer = new File(gpJob.getWorkingDir().getParentFile().getParent());
-        
-        String gpBaseHref = gpJob.getJobContext().getJobInput().getBaseGpHref();
-        ParameterInfo[] params = gpJob.getJobContext().getTaskInfo().getParameterInfoArray();
-        try {
-        for (int i=0; i < params.length; i++){
-            if (params[i].getName().toLowerCase().endsWith(".filename")){
-                List<ParamValue> vals = gpJob.getJobContext().getJobInput().getParamValues(params[i].getName());
-                if (vals != null){
-                    for (ParamValue val: vals){
-                        String value = val.getValue();
-                       
-                        if (value.startsWith(gpBaseHref)) {
-                           
-                            String path = value.substring(gpBaseHref.length());
-                            File fileMaybe = new File(gpServer, path.replace("/tmp/", "/uploads/tmp/"));
-                            if (fileMaybe.exists()){
-                                urlToFileMap.put(value, fileMaybe.getAbsolutePath());
-                                inputFiles.add(fileMaybe);
-                            }
-                         } else {
-                            try {
-                                File f = new File(value);
-                                if (f.exists()) inputFiles.add(f);
-                            } catch(Exception e){
-                                // swallow and ignore
-                            }
-                            
-                        }
-                    }
-                }
+    protected static Set<File> getInputFiles(final DrmJobSubmission gpJob) {
+        if (log.isDebugEnabled()) {
+            log.debug("listing input files for gpJobNo="+gpJob.getGpJobNo()+" ...");
+        }
+        // linked hash set preserves insertion order
+        final Set<File> inputFiles = new LinkedHashSet<File>();
+        for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
+            log.debug("    localFilePath="+localFilePath);
+            final File file=new File(localFilePath);
+            if (file.exists()) {
+                inputFiles.add(file);
+            }
+            else {
+                log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
             }
         }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        
         return inputFiles;
     }
 
-
-    protected static CommandLine initCommand( DrmJobSubmission gpJob) {
+    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
         }
-        List<String> gpCommand = gpJob.getCommandLine();
+        final List<String> gpCommand = gpJob.getCommandLine();
         if (gpCommand == null) {
             throw new IllegalArgumentException("gpJob.commandLine==null");
         }
         if (gpCommand.size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
-        boolean handleQuoting = false;
 
-        CommandLine cl;
-
-        /**
+        /*
          * First pass the arguments needed by the AWS launch script, then follow
          * with the normal GenePattern command line
          */
-        String awsBatchScript = null; // default
-        Value value = gpJob.getValue("aws_batch_script");
+        final Value value = gpJob.getValue("aws_batch_script");
+        final String awsBatchScript;
         if (value != null) {
             awsBatchScript = value.getValue();
         }
         else {
+            // default
             awsBatchScript = submitJobScript;
         }
-        String awsBatchJobDefinition = null; // default
-
-        Value jobDefValue = gpJob.getValue("aws_batch_job_definition_name");
+        
+        final String awsBatchJobDefinition; // default
+        final Value jobDefValue = gpJob.getValue("aws_batch_job_definition_name");
         if (jobDefValue != null) {
             awsBatchJobDefinition = jobDefValue.getValue();
         }
@@ -401,9 +382,39 @@ public class AWSBatchJobRunner implements JobRunner{
             throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
         }
 
-        File wrapperScript = new File(awsBatchScript);
+        final File wrapperScript = new File(awsBatchScript);
+        if (log.isDebugEnabled()) {
+            log.debug("job "+gpJob.getGpJobNo());
+            log.debug("    submitJobScript='"+submitJobScript+"'");
+            log.debug("    aws_batch_script='"+awsBatchScript+"'");
+            log.debug("    wrapperScript='"+wrapperScript.getAbsolutePath()+"'");
+        }
+        
+        final boolean handleQuoting = false;
+        
+        final Set<File> inputFiles = getInputFiles(gpJob);
+        final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
+        final Map<String,String> urlToFileMap = new HashMap<String,String>();
+        try {
+            inputDir.mkdir();
+            for (final File inputFile : inputFiles) {
+                final DefaultExecutor exec=new DefaultExecutor();
+                exec.setWorkingDirectory(inputDir);
+                final CommandLine link_cmd = new CommandLine("ln");
+                link_cmd.addArgument("-s", handleQuoting);
+                link_cmd.addArgument(inputFile.getAbsolutePath(), handleQuoting);
+                link_cmd.addArgument(inputFile.getName(), handleQuoting);
+                final File linkedFile = new File(inputDir,inputFile.getName());
+                urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
+                exec.execute(link_cmd);
+            } 
+        } 
+        catch (Exception e) {
+            log.error("Error creating symlink for input file", e);
+            throw new IllegalArgumentException("could not collect input files: "); 
+        } 
 
-        cl = new CommandLine(wrapperScript.getAbsolutePath());
+        final CommandLine cl = new CommandLine(wrapperScript.getAbsolutePath());
 
         // tasklib
         cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath());
@@ -415,53 +426,18 @@ public class AWSBatchJobRunner implements JobRunner{
         cl.addArgument(awsBatchJobDefinition);
 
         // job name to have in AWS batch displays
-        cl.addArgument("GP_Job_" + gpJob.getGpJobNo() );
+        cl.addArgument("GP_Job_" + gpJob.getGpJobNo());
 
-        // TODO: Get the list of input files - peter is developing the code for
-        // this. Here is the temporary hack to
-        // make one module (SelectFeaturesColumns) work just to test out more of
-        // the process from end to end
-        File inputDir;
-        HashMap<String,String> urlToFileMap = new HashMap<String,String>();
-        ArrayList<File> inputFiles =  getInputFiles(gpJob,urlToFileMap);
-        try {
-            inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
-            inputDir.mkdir();
-            for (File inputFile : inputFiles) {
-                DefaultExecutor exec=new DefaultExecutor();
-                exec.setWorkingDirectory(inputDir);
-                CommandLine link = new CommandLine("ln");
-                link.addArgument("-s");
-                link.addArgument(inputFile.getAbsolutePath());
-                link.addArgument(inputFile.getName());
-                
-                File linkedFile = new File(inputDir,inputFile.getName() );
-                
-                urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
-                exec.execute(link);
-            }
-            
-        } 
-        catch (Exception e) {
-            log.error("Error creating symlink for input file", e);
-            e.printStackTrace();
-            throw new IllegalArgumentException("could not collect input files: "); 
-        }
-        
-        // job name to have in AWS batch displays
-        cl.addArgument(inputDir.getAbsolutePath() );
-
-        for (int i = 0; i < gpCommand.size(); ++i) {
-            String commandPart = gpCommand.get(i);
-            
-            // TODO this will fail for URLS but is meant as proof of concept
-            for (File inputFile : inputFiles) {
-                String filename = inputFile.getName();
-                if (commandPart.endsWith(filename)){
-                    commandPart = urlToFileMap.get(filename);
+        cl.addArgument(inputDir.getAbsolutePath() ); 
+        for (int i = 0; i < gpCommand.size(); ++i) { 
+            String commandPart = gpCommand.get(i); 
+            for (File inputFile : inputFiles) { 
+                String filename = inputFile.getName(); 
+                if (commandPart.endsWith(filename)) { 
+                    commandPart = urlToFileMap.get(filename); 
                 }
             } 
-            cl.addArgument(commandPart, handleQuoting);
+            cl.addArgument(commandPart, handleQuoting); 
         }
         return cl;
     }
@@ -494,12 +470,17 @@ public class AWSBatchJobRunner implements JobRunner{
         return exec;
     }
 
-    protected DrmJobStatus runJobNoWait(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Executor exec=initExecutorForJob(gpJob, outputStream);
-        CommandLine cl = initCommand(gpJob);
-        logCommandLine( gpJob ) ;
-        
+    protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+        CommandLine cl = initAwsBatchScript(gpJob);
+        if (log.isDebugEnabled()) {
+            log.debug("aws_batch_script='"+cl.getExecutable()+"'");
+            for(final String arg : cl.getArguments()) {
+                log.debug("     '"+arg+"'");
+            }
+        }
+
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final Executor exec=initExecutorForJob(gpJob, outputStream);
         final Map<String,String> cmdEnv=null;
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
@@ -535,15 +516,7 @@ public class AWSBatchJobRunner implements JobRunner{
         else {
             commandLogFile=jobLogFile;
         }
-        
-        logCommandLine(commandLogFile, job);
-    }
-    
-    protected void logCommandLine(final File logFile, final DrmJobSubmission job) { 
-        logCommandLine(logFile, job.getCommandLine());
-    }
-
-    protected void logCommandLine(final File logFile, final List<String> args) { 
+        final List<String> args=job.getCommandLine();
         log.debug("saving command line to log file ...");
         String commandLineStr = "";
         boolean first = true;
@@ -557,15 +530,15 @@ public class AWSBatchJobRunner implements JobRunner{
             }
         }
 
-        if (logFile.exists()) {
-            log.error("log file already exists: "+logFile.getAbsolutePath());
+        if (commandLogFile.exists()) {
+            log.error("log file already exists: "+commandLogFile.getAbsolutePath());
             return;
         }
 
         final boolean append=true;
         BufferedWriter bw = null;
         try {
-            FileWriter fw = new FileWriter(logFile, append);
+            FileWriter fw = new FileWriter(commandLogFile, append);
             bw = new BufferedWriter(fw);
             bw.write("job command line: ");
             bw.write(commandLineStr);
@@ -579,11 +552,11 @@ public class AWSBatchJobRunner implements JobRunner{
             bw.close();
         }
         catch (IOException e) {
-            log.error("error writing log file: "+logFile.getAbsolutePath(), e);
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), e);
             return;
         }
         catch (Throwable t) {
-            log.error("error writing log file: "+logFile.getAbsolutePath(), t);
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), t);
             log.error(t);
         }
         finally {

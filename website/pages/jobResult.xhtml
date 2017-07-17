@@ -231,63 +231,100 @@
                     d.close();
                 }
 
+                function locationWithoutHash() {
+                    return location.protocol+'//'+location.hostname+(location.port?":"+location.port:"")+location.pathname+(location.search?location.search:"");
+                }
+
                 function openJavascript(jobId, taskName, taskLsid, launchUrl)
                 {
-                    $("table.group").css("display", "none");
-                    $("#systemAlertMessage").hide();
+                    var currentVisualizer = window.location.hash;
 
-                    if(getURLParameter("openVisualizers") == "true")
-                    {
-                        var jsId = "javascript_" + jobId;
+                    var jsId = "javascript_" + jobId;
 
-                        var div = $("#" + jsId);
-                        if (div.length == 0) {
-                            div = $("<div/>").addClass("jsViewerDiv").attr("id", "javascript_" + jobId);
+                    var div = $("#" + jsId);
+                    if (div.length == 0) {
+                        div = $("<div/>").addClass("jsViewerDiv").attr("id", "javascript_" + jobId);
 
-                            if(!isPipeline)
-                            {
-                                $("#jobResults").empty();
-                                $("#jobResults").append(div);
+                        if (!isPipeline) {
+                            $("#jobResults").empty();
+                            $("#jobResults").append(div);
 
-                                //$("#main-pane").css("left", "0");
-                                //$("#main-pane").css("overflow", "hidden");
-                            }
-                            else
-                            {
-                                $("#main-pane").append(div);
-                                //$("#main-pane").css("padding", "0px !important");
-                            }
+                            //$("#main-pane").css("left", "0");
+                            //$("#main-pane").css("overflow", "hidden");
                         }
-
-                        div.gpJavascript({
-                            taskName: taskName,
-                            taskLsid: taskLsid,
-                            jobId: jobId,
-                            url: launchUrl,  //The URL to the main javascript html file
-                            onCreateActionBar: function(element)
-                            {
-                                if (jobId !== undefined && jobId !== null && jobId.length > 0)
-                                {
-                                    var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
-                                    element.append(moreOptionsMenu);
-
-                                    moreOptionsMenu.click(function () {
-                                        //open the slide out menu for the  job
-                                        $("a[data-jobid='" + jobId + "']").click();
-                                    });
-                                }
-                            }
-                        });
-
-                        mainLayout.close('west');
-
-                        //f this is a pipeline with a visualizer
-                        if(isPipeline && hasJavascript)
-                        {
-                            $("#jobResultsTab").append("<li><a href='#" + jsId + "'>" + jobId + "</a></li>");
-                            $("#main-pane").tabs("refresh");
+                        else {
+                            $("#main-pane").append(div);
+                            //$("#main-pane").css("padding", "0px !important");
                         }
                     }
+
+                    if (!document._jsViewerOpened && (currentVisualizer === "" || currentVisualizer === "#" + jobId)) {
+                        document._jsViewerOpened = true;
+
+                        $("table.group").css("display", "none");
+                        $("#systemAlertMessage").hide();
+
+                        if (getURLParameter("openVisualizers") == "true") {
+
+//                            div.gpJavascript({
+//                                taskName: taskName,
+//                                taskLsid: taskLsid,
+//                                jobId: jobId,
+//                                url: launchUrl,  //The URL to the main javascript html file
+//                                onCreateActionBar: function (element) {
+//                                    if (jobId !== undefined && jobId !== null && jobId.length > 0) {
+//                                        var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
+//                                        element.append(moreOptionsMenu);
+//
+//                                        moreOptionsMenu.click(function () {
+//                                            //open the slide out menu for the  job
+//                                            $("a[data-jobid='" + jobId + "']").click();
+//                                        });
+//                                    }
+//                                }
+//                            });
+
+                            mainLayout.close('west');
+                        }
+                    }
+
+                    // if this is a pipeline with a visualizer
+                    if(isPipeline && hasJavascript)
+                    {
+                        $("#jobResultsTab").append(
+                                $("<li></li>").append(
+                                    $("<a href='#" + jsId + "' onclick=\"JavaScript:reloadJSVisualizerTab(" + jobId + ", '" + taskName + "', '" + taskLsid + "', '" + launchUrl + "')\">" + jobId + "</a>")
+                                )
+                        );
+                        $("#main-pane").tabs("refresh");
+                    }
+                }
+
+                function reloadJSVisualizerTab(jobId, taskName, taskLsid, launchUrl) {
+                    var jsId = "javascript_" + jobId;
+                    var div = $("#" + jsId);
+
+                    console.log('CALLED');
+                    // Reload this page
+                    // $(".jsViewerDiv").empty();
+
+                    div.gpJavascript({
+                        taskName: taskName,
+                        taskLsid: taskLsid,
+                        jobId: jobId,
+                        url: launchUrl,  //The URL to the main javascript html file
+                        onCreateActionBar: function (element) {
+                            if (jobId !== undefined && jobId !== null && jobId.length > 0) {
+                                var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
+                                element.append(moreOptionsMenu);
+
+                                moreOptionsMenu.click(function () {
+                                    //open the slide out menu for the  job
+                                    $("a[data-jobid='" + jobId + "']").click();
+                                });
+                            }
+                        }
+                    });
                 }
 
                 function attachMenus() {

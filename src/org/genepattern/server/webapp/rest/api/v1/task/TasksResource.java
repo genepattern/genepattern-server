@@ -41,15 +41,16 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.tasklib.TasklibPath;
-import org.genepattern.server.eula.EulaInfo;
-import org.genepattern.server.eula.EulaManager;
-import org.genepattern.server.eula.InitException;
+import org.genepattern.server.eula.*;
+import org.genepattern.server.job.input.LoadModuleHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfoParser;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
+import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -571,7 +572,8 @@ public class TasksResource {
             @DefaultValue("true") @QueryParam("includeProperties") boolean includeProperties,
             @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             @DefaultValue("true") @QueryParam("includeEula") boolean includeEula,
-            @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles
+            @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles,
+            @DefaultValue("true") @QueryParam("includeParamGroups") boolean includeParamGroups
             ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
@@ -590,7 +592,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles);
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -625,12 +627,12 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula) throws Exception
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups) throws Exception
     {
-        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false);
+        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups);
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups) throws Exception {
         GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         JSONObject jsonObj=new JSONObject();
         String href=getTaskInfoPath(request, taskInfo);
@@ -680,7 +682,7 @@ public class TasksResource {
                 for (JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula);
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups);
                         applyJobSubmission(childObject, js);
                         children.put(childObject);
                     }
@@ -698,6 +700,25 @@ public class TasksResource {
         if (includeEula) {
             JSONObject eulaInfo = getEulaForModuleJson(request, taskContext, taskInfo, true, false);
             jsonObj.put("eulaInfo", eulaInfo);
+        }
+
+        if (includeParamGroups) {
+            //add parameter grouping info (i.e advanced parameters
+            //check if there are any user defined groups
+            final LoadModuleHelper loadModuleHelper = new LoadModuleHelper(taskContext);
+            final LibdirStrategy libdirStrategy = new LibdirLegacy();
+            final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
+            JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
+            jsonObj.put("paramGroups", paramGroupsJson);
+//            final JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(gpConfig, taskContext);
+//            if (jobConfigParams != null) {
+//                final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
+//                paramGroupsJson.put(jobConfigGroupJson);
+//                for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+//                    JSONObject jsonObj= RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+//                    parametersArray.put(jsonObj);
+//                }
+//            }
         }
 
         if(includeSupportFiles)
