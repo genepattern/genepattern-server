@@ -30,6 +30,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -38,6 +39,11 @@ import org.json.JSONObject;
 
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
+    
+    public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
+    public static final String DEFAULT_AWS_BATCH_SCRIPT_DIR="docker/aws_batch/scripts";
+    public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
+    public static final String DEFAULT_AWS_BATCH_SCRIPT="runOnBatch.sh";
 
     /** generic implementation of getOrDefault, for use in Java 1.7 */
     public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
@@ -48,12 +54,26 @@ public class AWSBatchJobRunner implements JobRunner {
         return defaultValue;
     }
 
+    /** 
+     * getOrDefault for org.genepattern.server.config.Value class, convenience method to be ported to 
+     * gp-core-library in v3.9.11 
+     */
+    protected static Value getOrDefault(final DrmJobSubmission gpJob, final String key, final String default_value) {
+        final Value value = gpJob.getValue(key);
+        if (value != null) {
+            return value;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Property not set in config, using hard-coded default value, "+key+"='"+default_value+"'");
+        }
+        return new Value(default_value);
+    } 
+
     private String defaultLogFile=null;
     
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
     
     private static String checkStatusScript;
-    private static String submitJobScript;
     private static String synchWorkingDirScript;
     private static String cancelJobScript;
     
@@ -63,12 +83,11 @@ public class AWSBatchJobRunner implements JobRunner {
             log.debug("commandProperties==null");
             return;
         } 
-        submitJobScript =  properties.getProperty("submitJobScript");
         checkStatusScript = properties.getProperty("checkStatusScript");
         synchWorkingDirScript = properties.getProperty("synchWorkingDirScript");
         cancelJobScript = properties.getProperty("cancelJobScript");
-        if ((submitJobScript == null) | (checkStatusScript == null) | (synchWorkingDirScript == null) | (cancelJobScript == null)) {
-            throw new RuntimeException("Need the yaml config file to specify submitJobScript, checkStatusScript, synchWorkingDirScript, cancelJobScript in the AWSBatchJobRunner configuration.properties");
+        if ((checkStatusScript == null) | (synchWorkingDirScript == null) | (cancelJobScript == null)) {
+            throw new RuntimeException("Need the yaml config file to specify checkStatusScript, synchWorkingDirScript, cancelJobScript in the AWSBatchJobRunner configuration.properties");
         } 
         defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
@@ -347,6 +366,30 @@ public class AWSBatchJobRunner implements JobRunner {
         return inputFiles;
     }
 
+    protected static File getAwsBatchScript(final DrmJobSubmission gpJob) {
+        final Value awsBatchScript = getOrDefault(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
+        File file = new File(awsBatchScript.getValue());
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'aws-batch-script' is a relative path
+        final Value awsBatchScriptDir = getOrDefault(gpJob, PROP_AWS_BATCH_SCRIPT_DIR, DEFAULT_AWS_BATCH_SCRIPT_DIR);
+        file = new File(awsBatchScriptDir.getValue(), awsBatchScript.getValue());
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'aws-batch-script-dir' is a relative path
+        final File wrapperScripts=gpJob.getGpConfig().getGPFileProperty(gpJob.getJobContext(), GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
+        file = new File(wrapperScripts, file.getPath());
+        return file;
+    }
+
+    /**
+     * First pass the arguments needed by the AWS launch script, then follow
+     * with the normal GenePattern command line
+     */
     protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
@@ -358,19 +401,12 @@ public class AWSBatchJobRunner implements JobRunner {
         if (gpCommand.size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
-
-        /*
-         * First pass the arguments needed by the AWS launch script, then follow
-         * with the normal GenePattern command line
-         */
-        final Value value = gpJob.getValue("aws_batch_script");
-        final String awsBatchScript;
-        if (value != null) {
-            awsBatchScript = value.getValue();
-        }
-        else {
-            // default
-            awsBatchScript = submitJobScript;
+        
+        final File awsBatchScript=getAwsBatchScript(gpJob);
+        if (log.isDebugEnabled()) {
+            log.debug("job "+gpJob.getGpJobNo());
+            log.debug("           aws-batch-script='"+awsBatchScript+"'");
+            log.debug("    aws-batch-script.fqPath='"+awsBatchScript.getAbsolutePath()+"'");
         }
         
         final String awsBatchJobDefinition; // default
@@ -380,14 +416,6 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         else {
             throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
-        }
-
-        final File wrapperScript = new File(awsBatchScript);
-        if (log.isDebugEnabled()) {
-            log.debug("job "+gpJob.getGpJobNo());
-            log.debug("    submitJobScript='"+submitJobScript+"'");
-            log.debug("    aws_batch_script='"+awsBatchScript+"'");
-            log.debug("    wrapperScript='"+wrapperScript.getAbsolutePath()+"'");
         }
         
         final boolean handleQuoting = false;
@@ -414,7 +442,7 @@ public class AWSBatchJobRunner implements JobRunner {
             throw new IllegalArgumentException("could not collect input files: "); 
         } 
 
-        final CommandLine cl = new CommandLine(wrapperScript.getAbsolutePath());
+        final CommandLine cl = new CommandLine(awsBatchScript.getAbsolutePath());
 
         // tasklib
         cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath());
@@ -473,7 +501,7 @@ public class AWSBatchJobRunner implements JobRunner {
     protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         CommandLine cl = initAwsBatchScript(gpJob);
         if (log.isDebugEnabled()) {
-            log.debug("aws_batch_script='"+cl.getExecutable()+"'");
+            log.debug("aws-batch-script-cmd='"+cl.getExecutable()+"'");
             for(final String arg : cl.getArguments()) {
                 log.debug("     '"+arg+"'");
             }
