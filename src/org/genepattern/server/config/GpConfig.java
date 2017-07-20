@@ -1289,7 +1289,7 @@ $GENEPATTERN_HOME$/tasklib
             return new File(val.getValue());
         }
         catch (Throwable t) {
-            log.error("Error parsing memory value for property, "+key+"="+val, t);
+            log.error("Error parsing file value for property, "+key+"="+val, t);
             return defaultValue;
         }
     }
