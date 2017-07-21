@@ -36,6 +36,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.json.JSONObject;
 
+import com.google.common.base.Strings;
 
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
@@ -44,6 +45,7 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final String DEFAULT_AWS_BATCH_SCRIPT_DIR="docker/aws_batch/scripts";
     public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
     public static final String DEFAULT_AWS_BATCH_SCRIPT="runOnBatch.sh";
+    public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
     /** generic implementation of getOrDefault, for use in Java 1.7 */
     public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
@@ -354,16 +356,28 @@ public class AWSBatchJobRunner implements JobRunner {
         // linked hash set preserves insertion order
         final Set<File> inputFiles = new LinkedHashSet<File>();
         for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
-            log.debug("    localFilePath="+localFilePath);
-            final File file=new File(localFilePath);
-            if (file.exists()) {
+            final File file=getInputFile(gpJob, localFilePath);
+            if (file != null) {
                 inputFiles.add(file);
-            }
-            else {
-                log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
             }
         }
         return inputFiles;
+    }
+
+    // called-by getInputFiles
+    protected static File getInputFile(final DrmJobSubmission gpJob, final String localFilePath) {
+        log.debug("    localFilePath="+localFilePath);
+        if (Strings.isNullOrEmpty(localFilePath)) {
+            return null;
+        }
+        final File file=new File(localFilePath);
+        if (file.exists()) {
+            return file;
+        }
+        else {
+            log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
+            return null;
+        }
     }
 
     protected static File getAwsBatchScript(final DrmJobSubmission gpJob) {
@@ -410,12 +424,12 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         
         final String awsBatchJobDefinition; // default
-        final Value jobDefValue = gpJob.getValue("aws_batch_job_definition_name");
+        final Value jobDefValue = gpJob.getValue(PROP_AWS_BATCH_JOB_DEF);
         if (jobDefValue != null) {
             awsBatchJobDefinition = jobDefValue.getValue();
         }
         else {
-            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
+            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a "+PROP_AWS_BATCH_JOB_DEF+" defined in the custom.yaml");
         }
         
         final boolean handleQuoting = false;
