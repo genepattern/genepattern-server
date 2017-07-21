@@ -67,8 +67,6 @@ public class AWSBatchJobRunner implements JobRunner {
         return defaultValue;
     }
 
-    private String defaultLogFile=null;
-    
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
     
     public void setCommandProperties(CommandProperties properties) {
@@ -77,7 +75,6 @@ public class AWSBatchJobRunner implements JobRunner {
             log.debug("commandProperties==null");
             return;
         } 
-        defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
 
     public void start() {
@@ -576,20 +573,13 @@ public class AWSBatchJobRunner implements JobRunner {
      * @author pcarr
      */
     protected void logCommandLine(final DrmJobSubmission job) {
-        final File jobLogFile=job.getLogFile(); 
-        final File commandLogFile;
-        if (jobLogFile==null && defaultLogFile==null) {
-            // a null 'job.logFile' means "don't write the log file"
+        // a null 'job.logFile' means "don't write the log file"
+        if (job==null || job.getLogFile()==null) {
             return;
         }
-        else if (jobLogFile==null) {
-            commandLogFile=new File(job.getWorkingDir(), defaultLogFile);
-        }
-        else if (!jobLogFile.isAbsolute()) {
-            commandLogFile=new File(job.getWorkingDir(), jobLogFile.getPath());
-        }
-        else {
-            commandLogFile=jobLogFile;
+        File commandLogFile=job.getLogFile();
+        if (!commandLogFile.isAbsolute()) {
+            commandLogFile=new File(job.getWorkingDir(), commandLogFile.getPath());
         }
         final List<String> args=job.getCommandLine();
         log.debug("saving command line to log file ...");
