@@ -50,6 +50,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
     private ConsumerManager manager;
     private static final String SESSION_TOKEN = "gs-token";
     private static final String SESSION_USERNAME = "gs-username";
+    private static final String GS_LOGGED_IN = "gs.loggedIn";
     
     public static final String EXTENSION_URI = "http://identity.genomespace.org/openid/";
     public static final String TOKEN_ALIAS = "gs-token";
@@ -206,7 +207,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         log.debug("Attaching GenomeSpace info to session");
         req.getSession().setAttribute(SESSION_TOKEN, token);
         req.getSession().setAttribute(SESSION_USERNAME, username);
-        //GenomeSpaceManager.setLoggedIn(req.getSession(), true);
+        req.getSession().setAttribute(GS_LOGGED_IN, true);
     }
     
     /**
