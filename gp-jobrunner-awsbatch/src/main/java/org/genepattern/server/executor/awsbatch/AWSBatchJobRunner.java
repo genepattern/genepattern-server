@@ -30,14 +30,33 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 import org.json.JSONObject;
 
+import com.google.common.base.Strings;
 
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
+    
+    public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
+
+    public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
+    public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("docker/aws_batch/scripts");
+    public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
+    public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch.sh");
+    public static final String PROP_STATUS_SCRIPT="aws-batch-check-status-script";
+    public static final Value DEFAULT_STATUS_SCRIPT=new Value("awsCheckStatus.sh");
+    public static final String PROP_SYNCH_SCRIPT="aws-batch-synch-script";
+    public static final Value DEFAULT_SYNCH_SCRIPT=new Value("awsSyncDirectory.sh");
+    public static final String PROP_CANCEL_SCRIPT="aws-batch-cancel-job-script";
+    public static final Value DEFAULT_CANCEL_SCRIPT=new Value("awsCancelJob.sh");
 
     /** generic implementation of getOrDefault, for use in Java 1.7 */
     public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
@@ -48,14 +67,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return defaultValue;
     }
 
-    private String defaultLogFile=null;
-    
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
-    
-    private static String checkStatusScript;
-    private static String submitJobScript;
-    private static String synchWorkingDirScript;
-    private static String cancelJobScript;
     
     public void setCommandProperties(CommandProperties properties) {
         log.debug("setCommandProperties");
@@ -63,14 +75,6 @@ public class AWSBatchJobRunner implements JobRunner {
             log.debug("commandProperties==null");
             return;
         } 
-        submitJobScript =  properties.getProperty("submitJobScript");
-        checkStatusScript = properties.getProperty("checkStatusScript");
-        synchWorkingDirScript = properties.getProperty("synchWorkingDirScript");
-        cancelJobScript = properties.getProperty("cancelJobScript");
-        if ((submitJobScript == null) | (checkStatusScript == null) | (synchWorkingDirScript == null) | (cancelJobScript == null)) {
-            throw new RuntimeException("Need the yaml config file to specify submitJobScript, checkStatusScript, synchWorkingDirScript, cancelJobScript in the AWSBatchJobRunner configuration.properties");
-        } 
-        defaultLogFile=properties.getProperty(JobRunner.PROP_LOGFILE);
     }
 
     public void start() {
@@ -132,6 +136,11 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
+    protected String getCheckStatusScript(final DrmJobRecord jobRecord) {
+        final File checkStatusScript=getScriptFile(jobRecord, PROP_STATUS_SCRIPT, DEFAULT_STATUS_SCRIPT);
+        return ""+checkStatusScript;
+    }
+    
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
         final String awsId=jobRecord.getExtJobId();
@@ -147,7 +156,8 @@ public class AWSBatchJobRunner implements JobRunner {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine(AWSBatchJobRunner.checkStatusScript);
+            final String checkStatusScript=getCheckStatusScript(jobRecord);
+            CommandLine cl= new CommandLine(checkStatusScript);
             // tasklib
             cl.addArgument(awsId);
             final Map<String,String> cmdEnv=null;
@@ -228,6 +238,11 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
+    protected String getSynchWorkingDirScript(final DrmJobRecord jobRecord) {
+        final File synchDirScript=getScriptFile(jobRecord, PROP_SYNCH_SCRIPT, DEFAULT_SYNCH_SCRIPT);
+        return ""+synchDirScript;
+    }
+    
     private void refreshWorkingDirFromS3(DrmJobRecord jobRecord){
         // call out to a script to refresh the directory path to pull files from S3
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -236,8 +251,9 @@ public class AWSBatchJobRunner implements JobRunner {
         // we'll always just get the old value for now
         //
         DefaultExecutor exec=new DefaultExecutor();
-        exec.setStreamHandler( new PumpStreamHandler(outputStream));
-        CommandLine cl= new CommandLine(AWSBatchJobRunner.synchWorkingDirScript);
+        exec.setStreamHandler(new PumpStreamHandler(outputStream));
+        final String synchWorkingDirScript=getSynchWorkingDirScript(jobRecord);
+        CommandLine cl= new CommandLine(synchWorkingDirScript);
         // tasklib
         cl.addArgument(jobRecord.getWorkingDir().getAbsolutePath());
         final Map<String,String> cmdEnv=null;
@@ -301,6 +317,11 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
+    protected String getCancelJobScript(final DrmJobRecord jobRecord) {
+        final File cancelScript=getScriptFile(jobRecord, PROP_CANCEL_SCRIPT, DEFAULT_CANCEL_SCRIPT);
+        return ""+cancelScript;
+    }
+
     @Override
     public boolean cancelJob(DrmJobRecord jobRecord) throws Exception {
         log.debug("cancelJob, gpJobNo="+jobRecord.getGpJobNo());
@@ -310,7 +331,8 @@ public class AWSBatchJobRunner implements JobRunner {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             DefaultExecutor exec=new DefaultExecutor();
             exec.setStreamHandler( new PumpStreamHandler(outputStream));
-            CommandLine cl= new CommandLine(AWSBatchJobRunner.cancelJobScript);
+            final String cancelJobScript=getCancelJobScript(jobRecord);
+            CommandLine cl= new CommandLine(cancelJobScript);
             // tasklib
             cl.addArgument(awsId);
             try {
@@ -335,18 +357,83 @@ public class AWSBatchJobRunner implements JobRunner {
         // linked hash set preserves insertion order
         final Set<File> inputFiles = new LinkedHashSet<File>();
         for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
-            log.debug("    localFilePath="+localFilePath);
-            final File file=new File(localFilePath);
-            if (file.exists()) {
+            final File file=getInputFile(gpJob, localFilePath);
+            if (file != null) {
                 inputFiles.add(file);
-            }
-            else {
-                log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
             }
         }
         return inputFiles;
     }
 
+    // called-by getInputFiles
+    protected static File getInputFile(final DrmJobSubmission gpJob, final String localFilePath) {
+        log.debug("    localFilePath="+localFilePath);
+        if (Strings.isNullOrEmpty(localFilePath)) {
+            return null;
+        }
+        final File file=new File(localFilePath);
+        if (file.exists()) {
+            return file;
+        }
+        else {
+            log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
+            return null;
+        }
+    }
+
+    protected static File getScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
+        final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
+        File file = new File(filename.getValue());
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'script-file' is a relative path
+        final Value dirname = gpConfig.getValue(jobContext, PROP_AWS_BATCH_SCRIPT_DIR, DEFAULT_AWS_BATCH_SCRIPT_DIR);
+        file = new File(dirname.getValue(), filename.getValue());
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'aws-batch-script-dir' is a relative path
+        final File wrapperScripts=gpConfig.getGPFileProperty(jobContext, GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
+        file = new File(wrapperScripts, file.getPath());
+        return file;
+    }
+
+    protected static File getScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
+        if (gpJob != null) {
+            return getScriptFile(gpJob.getGpConfig(), gpJob.getJobContext(), key, defaultValue);
+        }
+        return getScriptFile(ServerConfigurationFactory.instance(), (GpContext) null, key, defaultValue);
+    }
+
+    protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
+        JobInfo jobInfo = null;
+        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
+            try {
+                jobInfo = new AnalysisDAO().getJobInfo(jobRecord.getGpJobNo());
+            }
+            catch (Throwable t) {
+                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
+            }
+        }
+        final GpContext jobContext=new GpContext.Builder()
+            .jobNumber(jobRecord.getGpJobNo())
+            .jobInfo(jobInfo)
+        .build();
+        return jobContext;
+    }
+    
+    protected static File getScriptFile(final DrmJobRecord jobRecord, final String key, final Value defaultValue) {
+        final GpContext jobContext=initJobContext(jobRecord);
+        return getScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
+    }
+
+    /**
+     * First pass the arguments needed by the AWS launch script, then follow
+     * with the normal GenePattern command line
+     */
     protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
@@ -358,36 +445,21 @@ public class AWSBatchJobRunner implements JobRunner {
         if (gpCommand.size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
-
-        /*
-         * First pass the arguments needed by the AWS launch script, then follow
-         * with the normal GenePattern command line
-         */
-        final Value value = gpJob.getValue("aws_batch_script");
-        final String awsBatchScript;
-        if (value != null) {
-            awsBatchScript = value.getValue();
-        }
-        else {
-            // default
-            awsBatchScript = submitJobScript;
+        
+        final File awsBatchScript=getScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
+        if (log.isDebugEnabled()) {
+            log.debug("job "+gpJob.getGpJobNo());
+            log.debug("           aws-batch-script='"+awsBatchScript+"'");
+            log.debug("    aws-batch-script.fqPath='"+awsBatchScript.getAbsolutePath()+"'");
         }
         
         final String awsBatchJobDefinition; // default
-        final Value jobDefValue = gpJob.getValue("aws_batch_job_definition_name");
+        final Value jobDefValue = gpJob.getValue(PROP_AWS_BATCH_JOB_DEF);
         if (jobDefValue != null) {
             awsBatchJobDefinition = jobDefValue.getValue();
         }
         else {
-            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a aws_batch_job_definition_name defined in the custom.yaml");
-        }
-
-        final File wrapperScript = new File(awsBatchScript);
-        if (log.isDebugEnabled()) {
-            log.debug("job "+gpJob.getGpJobNo());
-            log.debug("    submitJobScript='"+submitJobScript+"'");
-            log.debug("    aws_batch_script='"+awsBatchScript+"'");
-            log.debug("    wrapperScript='"+wrapperScript.getAbsolutePath()+"'");
+            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a "+PROP_AWS_BATCH_JOB_DEF+" defined in the custom.yaml");
         }
         
         final boolean handleQuoting = false;
@@ -414,7 +486,7 @@ public class AWSBatchJobRunner implements JobRunner {
             throw new IllegalArgumentException("could not collect input files: "); 
         } 
 
-        final CommandLine cl = new CommandLine(wrapperScript.getAbsolutePath());
+        final CommandLine cl = new CommandLine(awsBatchScript.getAbsolutePath());
 
         // tasklib
         cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath());
@@ -473,7 +545,7 @@ public class AWSBatchJobRunner implements JobRunner {
     protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
         CommandLine cl = initAwsBatchScript(gpJob);
         if (log.isDebugEnabled()) {
-            log.debug("aws_batch_script='"+cl.getExecutable()+"'");
+            log.debug("aws-batch-script-cmd='"+cl.getExecutable()+"'");
             for(final String arg : cl.getArguments()) {
                 log.debug("     '"+arg+"'");
             }
@@ -501,20 +573,13 @@ public class AWSBatchJobRunner implements JobRunner {
      * @author pcarr
      */
     protected void logCommandLine(final DrmJobSubmission job) {
-        final File jobLogFile=job.getLogFile(); 
-        final File commandLogFile;
-        if (jobLogFile==null && defaultLogFile==null) {
-            // a null 'job.logFile' means "don't write the log file"
+        // a null 'job.logFile' means "don't write the log file"
+        if (job==null || job.getLogFile()==null) {
             return;
         }
-        else if (jobLogFile==null) {
-            commandLogFile=new File(job.getWorkingDir(), defaultLogFile);
-        }
-        else if (!jobLogFile.isAbsolute()) {
-            commandLogFile=new File(job.getWorkingDir(), jobLogFile.getPath());
-        }
-        else {
-            commandLogFile=jobLogFile;
+        File commandLogFile=job.getLogFile();
+        if (!commandLogFile.isAbsolute()) {
+            commandLogFile=new File(job.getWorkingDir(), commandLogFile.getPath());
         }
         final List<String> args=job.getCommandLine();
         log.debug("saving command line to log file ...");

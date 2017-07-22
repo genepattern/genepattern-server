@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.1.4-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -15,7 +15,9 @@
   </scm>
 
  <build>
-    <finalName>${project.artifactId}-${project.version}.${buildNumber}-snapshot</finalName>
+    <!-- finalName>${project.artifactId}-${project.version}.${buildNumber}-snapshot</finalName -->
+    <!-- finalName>${project.artifactId}-${project.version}</finalName -->
+    <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 
     <plugins>
       <plugin>
@@ -81,6 +83,13 @@
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
       <version>3.9.11-snapshot-05</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>15.0</version>
     </dependency>
 
     <dependency>
