@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +40,6 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.json.JSONObject;
-
-import com.google.common.base.Strings;
 
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
@@ -355,37 +352,6 @@ public class AWSBatchJobRunner implements JobRunner {
         return true;
     }
     
-    protected static Set<File> getInputFiles(final DrmJobSubmission gpJob) {
-        if (log.isDebugEnabled()) {
-            log.debug("listing input files for gpJobNo="+gpJob.getGpJobNo()+" ...");
-        }
-        // linked hash set preserves insertion order
-        final Set<File> inputFiles = new LinkedHashSet<File>();
-        for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
-            final File file=getInputFile(gpJob, localFilePath);
-            if (file != null) {
-                inputFiles.add(file);
-            }
-        }
-        return inputFiles;
-    }
-
-    // called-by getInputFiles
-    protected static File getInputFile(final DrmJobSubmission gpJob, final String localFilePath) {
-        log.debug("    localFilePath="+localFilePath);
-        if (Strings.isNullOrEmpty(localFilePath)) {
-            return null;
-        }
-        final File file=new File(localFilePath);
-        if (file.exists()) {
-            return file;
-        }
-        else {
-            log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
-            return null;
-        }
-    }
-
     protected static File getScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
         final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
         File file = new File(filename.getValue());
@@ -481,7 +447,7 @@ public class AWSBatchJobRunner implements JobRunner {
         cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
 
         // sync input files
-        final Set<File> inputFiles = getInputFiles(gpJob);
+        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
         final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
         final Map<String,String> inputFileMap = new HashMap<String,String>();
         inputDir.mkdir();
