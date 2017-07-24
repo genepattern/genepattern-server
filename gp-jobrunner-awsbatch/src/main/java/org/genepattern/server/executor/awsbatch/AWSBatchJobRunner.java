@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -20,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -68,6 +70,9 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
+
+    // commons exec, always set handleQuoting to false when adding command line args
+    private static final boolean handleQuoting = false;
     
     public void setCommandProperties(CommandProperties properties) {
         log.debug("setCommandProperties");
@@ -434,15 +439,14 @@ public class AWSBatchJobRunner implements JobRunner {
      * First pass the arguments needed by the AWS launch script, then follow
      * with the normal GenePattern command line
      */
-    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) {
+    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) throws CommandExecutorException {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
         }
-        final List<String> gpCommand = gpJob.getCommandLine();
-        if (gpCommand == null) {
+        if (gpJob.getCommandLine() == null) {
             throw new IllegalArgumentException("gpJob.commandLine==null");
         }
-        if (gpCommand.size() == 0) {
+        if (gpJob.getCommandLine().size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
         
@@ -462,56 +466,97 @@ public class AWSBatchJobRunner implements JobRunner {
             throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a "+PROP_AWS_BATCH_JOB_DEF+" defined in the custom.yaml");
         }
         
-        final boolean handleQuoting = false;
-        
-        final Set<File> inputFiles = getInputFiles(gpJob);
-        final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
-        final Map<String,String> urlToFileMap = new HashMap<String,String>();
-        try {
-            inputDir.mkdir();
-            for (final File inputFile : inputFiles) {
-                final DefaultExecutor exec=new DefaultExecutor();
-                exec.setWorkingDirectory(inputDir);
-                final CommandLine link_cmd = new CommandLine("ln");
-                link_cmd.addArgument("-s", handleQuoting);
-                link_cmd.addArgument(inputFile.getAbsolutePath(), handleQuoting);
-                link_cmd.addArgument(inputFile.getName(), handleQuoting);
-                final File linkedFile = new File(inputDir,inputFile.getName());
-                urlToFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
-                exec.execute(link_cmd);
-            } 
-        } 
-        catch (Exception e) {
-            log.error("Error creating symlink for input file", e);
-            throw new IllegalArgumentException("could not collect input files: "); 
-        } 
-
         final CommandLine cl = new CommandLine(awsBatchScript.getAbsolutePath());
 
         // tasklib
-        cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath());
+        cl.addArgument(gpJob.getTaskLibDir().getAbsolutePath(), handleQuoting);
 
         // workdir
-        cl.addArgument(gpJob.getWorkingDir().getAbsolutePath());
+        cl.addArgument(gpJob.getWorkingDir().getAbsolutePath(), handleQuoting);
 
         // aws batch job definition name
-        cl.addArgument(awsBatchJobDefinition);
+        cl.addArgument(awsBatchJobDefinition, handleQuoting);
 
         // job name to have in AWS batch displays
-        cl.addArgument("GP_Job_" + gpJob.getGpJobNo());
+        cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
 
-        cl.addArgument(inputDir.getAbsolutePath() ); 
-        for (int i = 0; i < gpCommand.size(); ++i) { 
-            String commandPart = gpCommand.get(i); 
-            for (File inputFile : inputFiles) { 
-                String filename = inputFile.getName(); 
-                if (commandPart.endsWith(filename)) { 
-                    commandPart = urlToFileMap.get(filename); 
-                }
-            } 
-            cl.addArgument(commandPart, handleQuoting); 
+        // sync input files
+        final Set<File> inputFiles = getInputFiles(gpJob);
+        final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
+        final Map<String,String> inputFileMap = new HashMap<String,String>();
+        inputDir.mkdir();
+        for (final File inputFile : inputFiles) {
+            final File linkedFile = new File(inputDir, inputFile.getName());
+            makeSymLink(inputDir, inputFile, inputFile.getName());
+            inputFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
+        } 
+
+        // substitute input file paths 
+        final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
+
+        cl.addArgument(inputDir.getAbsolutePath(), handleQuoting); 
+        for(final String arg : cmdLine) {
+            cl.addArgument(arg, handleQuoting);
         }
         return cl;
+    }
+
+    /**
+     * Make a symbolic link to the target file in the given directory.
+     *   ln -s <targetFile> <targetFile.name>
+     * @param workingDir
+     * @param targetFile
+     * @throws ExecuteException
+     * @throws IOException
+     */
+    protected static void makeSymLink(final File workingDir, final File target) throws CommandExecutorException {
+        makeSymLink(workingDir, target, target.getName());
+    }
+
+    protected static void makeSymLink(final File workingDir, final File target, final String link_name) 
+    throws CommandExecutorException
+    {
+        final DefaultExecutor exec=new DefaultExecutor();
+        exec.setWorkingDirectory(workingDir);
+        final CommandLine link_cmd = new CommandLine("ln");
+        link_cmd.addArgument("-s", handleQuoting);
+        link_cmd.addArgument(target.getAbsolutePath(), handleQuoting);
+        link_cmd.addArgument(target.getName(), handleQuoting);
+        
+        try {
+            exec.execute(link_cmd);
+        }
+        catch (Throwable t) {
+            throw new CommandExecutorException("Error creating symlink to local input file='"+target+"' in directory='"+workingDir+"'", t);
+        }
+    }
+    
+    protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
+        final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
+        for (int i = 0; i < cmdLineIn.size(); ++i) { 
+            String arg = substituteCmdLineArg(cmdLineIn.get(i), inputFileMap, inputFiles);
+            cmdLineOut.add(arg);
+        } 
+        return cmdLineOut;
+    }
+
+    /**
+     * Substitute gp server local file path with docker container file path for the given command line arg
+     * 
+     * @param arg, the command line arg
+     * @param urlToFileMap, a lookup table mapping a filename to a fully qualified container file path
+     * @param inputFiles, the list of all gp server local file paths to module input file
+     * 
+     * @return the command line arg to use in the container
+     */
+    protected static String substituteCmdLineArg(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
+        for (final File inputFile : inputFiles) { 
+            final String filename = inputFile.getName(); 
+            if (arg.endsWith(filename)) { 
+                arg = inputFileMap.get(filename); 
+            }
+        }
+        return arg;
     }
 
     protected static Executor initExecutorForJob(final DrmJobSubmission gpJob, ByteArrayOutputStream outputStream) throws ExecutionException, IOException {
@@ -542,7 +587,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return exec;
     }
 
-    protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws ExecutionException, IOException {
+    protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws CommandExecutorException, ExecutionException, IOException {
         CommandLine cl = initAwsBatchScript(gpJob);
         if (log.isDebugEnabled()) {
             log.debug("aws-batch-script-cmd='"+cl.getExecutable()+"'");
