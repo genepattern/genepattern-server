@@ -434,7 +434,7 @@ public class AWSBatchJobRunner implements JobRunner {
         inputDir.mkdir();
         for (final File inputFile : inputFiles) {
             final File linkedFile = new File(inputDir, inputFile.getName());
-            makeSymLink(inputDir, inputFile, inputFile.getName());
+            AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
             inputFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
         } 
 
@@ -446,29 +446,6 @@ public class AWSBatchJobRunner implements JobRunner {
             cl.addArgument(arg, handleQuoting);
         }
         return cl;
-    }
-
-    /**
-     * Make symbolic link to the targ file in the given directory.
-     *     ln -s <targetFile> <targetFile.name>
-     * @param linkDir
-     * @param target
-     * @param linkName
-     * @throws CommandExecutorException
-     */
-    protected static void makeSymLink(final File linkDir, final File target, final String linkName) throws CommandExecutorException {
-        try {
-            Files.createSymbolicLink(
-                // link
-                linkDir.toPath().resolve(linkName), 
-                // target
-                target.toPath());
-        }
-        catch (Throwable t) {
-            final String message="Error creating symlink to local input file='"+target+"' in directory='"+linkDir+"'";
-            log.error(message, t);
-            throw new CommandExecutorException(message, t);
-        }
     }
 
     protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {

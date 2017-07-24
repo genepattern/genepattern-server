@@ -1,6 +1,7 @@
 package org.genepattern.server.executor.awsbatch;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -8,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 
@@ -21,6 +23,29 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
+
+    /**
+     * Make symbolic link to the target file in the given directory.
+     *     ln -s <targetFile> <targetFile.name>
+     * @param linkDir
+     * @param target
+     * @param linkName
+     * @throws CommandExecutorException
+     */
+    protected static void makeSymLink(final File linkDir, final File target, final String linkName) throws CommandExecutorException {
+        try {
+            Files.createSymbolicLink(
+                // link
+                linkDir.toPath().resolve(linkName), 
+                // target
+                target.toPath());
+        }
+        catch (Throwable t) {
+            final String message="Error creating symlink to local input file='"+target+"' in directory='"+linkDir+"'";
+            log.error(message, t);
+            throw new CommandExecutorException(message, t);
+        }
+    }
 
     protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
         JobInfo jobInfo = null;
