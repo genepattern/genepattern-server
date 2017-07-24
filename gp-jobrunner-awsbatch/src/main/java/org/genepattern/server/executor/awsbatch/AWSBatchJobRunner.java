@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -450,35 +449,28 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     /**
-     * Make a symbolic link to the target file in the given directory.
-     *   ln -s <targetFile> <targetFile.name>
-     * @param workingDir
-     * @param targetFile
-     * @throws ExecuteException
-     * @throws IOException
+     * Make symbolic link to the targ file in the given directory.
+     *     ln -s <targetFile> <targetFile.name>
+     * @param linkDir
+     * @param target
+     * @param linkName
+     * @throws CommandExecutorException
      */
-    protected static void makeSymLink(final File workingDir, final File target) throws CommandExecutorException {
-        makeSymLink(workingDir, target, target.getName());
-    }
-
-    protected static void makeSymLink(final File workingDir, final File target, final String link_name) 
-    throws CommandExecutorException
-    {
-        final DefaultExecutor exec=new DefaultExecutor();
-        exec.setWorkingDirectory(workingDir);
-        final CommandLine link_cmd = new CommandLine("ln");
-        link_cmd.addArgument("-s", handleQuoting);
-        link_cmd.addArgument(target.getAbsolutePath(), handleQuoting);
-        link_cmd.addArgument(target.getName(), handleQuoting);
-        
+    protected static void makeSymLink(final File linkDir, final File target, final String linkName) throws CommandExecutorException {
         try {
-            exec.execute(link_cmd);
+            Files.createSymbolicLink(
+                // link
+                linkDir.toPath().resolve(linkName), 
+                // target
+                target.toPath());
         }
         catch (Throwable t) {
-            throw new CommandExecutorException("Error creating symlink to local input file='"+target+"' in directory='"+workingDir+"'", t);
+            final String message="Error creating symlink to local input file='"+target+"' in directory='"+linkDir+"'";
+            log.error(message, t);
+            throw new CommandExecutorException(message, t);
         }
     }
-    
+
     protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
         final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
         for (int i = 0; i < cmdLineIn.size(); ++i) { 
