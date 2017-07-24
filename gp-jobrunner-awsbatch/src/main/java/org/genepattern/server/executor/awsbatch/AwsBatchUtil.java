@@ -5,7 +5,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 
 import com.google.common.base.Strings;
 
@@ -17,6 +21,23 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
+
+    protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
+        JobInfo jobInfo = null;
+        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
+            try {
+                jobInfo = new AnalysisDAO().getJobInfo(jobRecord.getGpJobNo());
+            }
+            catch (Throwable t) {
+                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
+            }
+        }
+        final GpContext jobContext=new GpContext.Builder()
+            .jobNumber(jobRecord.getGpJobNo())
+            .jobInfo(jobInfo)
+        .build();
+        return jobContext;
+    }
 
     protected static Set<File> getInputFiles(final DrmJobSubmission gpJob) {
         if (log.isDebugEnabled()) {
