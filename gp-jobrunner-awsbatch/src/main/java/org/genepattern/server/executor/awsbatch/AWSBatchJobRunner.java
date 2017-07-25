@@ -428,10 +428,29 @@ public class AWSBatchJobRunner implements JobRunner {
         cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
 
         // sync input files
-        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final File inputDir = new File(gpJob.getWorkingDir() , ".inputs_for_" + gpJob.getGpJobNo() );
-        final Map<String,String> inputFileMap = new HashMap<String,String>();
+        final List<String> cmdLine=syncInputFilesAndSubstituteCmdLineArgs(gpJob);
+        for(final String arg : cmdLine) {
+            cl.addArgument(arg, handleQuoting);
+        }
+        return cl;
+    }
+    
+    /**
+     * Handle job input files (and possibly edit command line args) before AWS Batch submission.
+     * This particular implementation ...
+     *   -- creates sym linkes in the {job_dir}/.inputs_for_{job_id} directory
+     *   -- replaces command line args with the updated file paths
+     * @param gpJob
+     * @param inputDir
+     * @return
+     * @throws CommandExecutorException
+     */
+    protected static List<String> syncInputFilesAndSubstituteCmdLineArgs(final DrmJobSubmission gpJob) throws CommandExecutorException {
+        // sync input files
+        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
         inputDir.mkdir();
+        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
+        final Map<String,String> inputFileMap = new HashMap<String,String>();
         for (final File inputFile : inputFiles) {
             final File linkedFile = new File(inputDir, inputFile.getName());
             AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
@@ -440,12 +459,9 @@ public class AWSBatchJobRunner implements JobRunner {
 
         // substitute input file paths 
         final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
-
-        cl.addArgument(inputDir.getAbsolutePath(), handleQuoting); 
-        for(final String arg : cmdLine) {
-            cl.addArgument(arg, handleQuoting);
-        }
-        return cl;
+        
+        cmdLine.add(0, inputDir.getAbsolutePath());
+        return cmdLine;
     }
 
     protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
