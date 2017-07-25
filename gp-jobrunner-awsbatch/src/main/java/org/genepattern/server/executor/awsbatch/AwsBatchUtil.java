@@ -4,6 +4,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
@@ -23,6 +25,27 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
+
+    /** helper method because String#replaceAll expects a regex */
+    protected static String replaceAll_quoted(final String str, final String literal, final String replacement) {
+        if (Strings.isNullOrEmpty(str)) {
+            return str;
+        }
+        return str.replaceAll(
+            Pattern.quote(literal),
+            Matcher.quoteReplacement(replacement)
+        );
+    }
+
+    /** helper method because String#replaceFirst expects a regex */
+    protected static String replaceFirst_quoted(final String str, final String literal, final String replacement) {
+        if (Strings.isNullOrEmpty(str)) {
+            return str;
+        }
+        return str.replaceFirst(
+                Pattern.quote(literal),
+                Matcher.quoteReplacement(replacement));
+    }
 
     /**
      * Make symbolic link to the target file in the given directory.

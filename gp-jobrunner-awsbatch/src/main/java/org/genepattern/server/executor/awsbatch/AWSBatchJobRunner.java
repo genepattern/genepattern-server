@@ -38,6 +38,8 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.json.JSONObject;
 
+import com.google.common.base.Strings;
+
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
     
@@ -428,7 +430,7 @@ public class AWSBatchJobRunner implements JobRunner {
         cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
 
         // sync input files
-        final List<String> cmdLine=syncInputFilesAndSubstituteCmdLineArgs(gpJob);
+        final List<String> cmdLine=syncInputFiles_02(gpJob);
         for(final String arg : cmdLine) {
             cl.addArgument(arg, handleQuoting);
         }
@@ -445,7 +447,58 @@ public class AWSBatchJobRunner implements JobRunner {
      * @return
      * @throws CommandExecutorException
      */
-    protected static List<String> syncInputFilesAndSubstituteCmdLineArgs(final DrmJobSubmission gpJob) throws CommandExecutorException {
+    protected static List<String> syncInputFiles_02(final DrmJobSubmission gpJob) throws CommandExecutorException {
+        // sync input files
+        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
+        inputDir.mkdir();
+        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
+        final Map<String,String> inputFileMap = new HashMap<String,String>();
+        for (final File inputFile : inputFiles) {
+            final File linkedFile = new File(inputDir, inputFile.getName());
+            AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
+            inputFileMap.put(inputFile.getAbsolutePath(), linkedFile.getAbsolutePath());
+        }
+
+        // substitute input file paths 
+        final List<String> cmdLine=substituteInputFilePaths_02(gpJob.getCommandLine(), inputFileMap, inputFiles);
+        
+        cmdLine.add(0, inputDir.getAbsolutePath());
+        return cmdLine;
+    }
+
+    protected static List<String> substituteInputFilePaths_02(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
+        final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
+        for (int i = 0; i < cmdLineIn.size(); ++i) { 
+            String arg = substituteCmdLineArg_02(cmdLineIn.get(i), inputFileMap, inputFiles);
+            cmdLineOut.add(arg);
+        } 
+        return cmdLineOut;
+    }
+
+    /**
+     * Substitute gp server local file path with docker container file path for the given command line arg
+     * 
+     * @param arg, the command line arg
+     * @param inputFileMap, a lookup table mapping the original fq file to the linked fq file
+     * @param inputFiles, the list of all gp server local file paths to module input file
+     * 
+     * @return the command line arg to use in the container
+     */
+    protected static String substituteCmdLineArg_02(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
+        for (final File inputFile : inputFiles) { 
+            final String inputFilepath = inputFile.getPath();
+            final String linkedFilepath = inputFileMap.get(inputFilepath);
+            if (Strings.isNullOrEmpty(linkedFilepath)) {
+                log.error("Missing linkedFilepath in map, inputFilepath="+inputFilepath);
+            }
+            else {
+                arg=AwsBatchUtil.replaceAll_quoted(arg, inputFilepath, linkedFilepath);
+            }
+        }
+        return arg;
+    }
+
+    protected static List<String> syncInputFiles_01(final DrmJobSubmission gpJob) throws CommandExecutorException {
         // sync input files
         final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
         inputDir.mkdir();
@@ -458,31 +511,22 @@ public class AWSBatchJobRunner implements JobRunner {
         } 
 
         // substitute input file paths 
-        final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
+        final List<String> cmdLine=substituteInputFilePaths_01(gpJob.getCommandLine(), inputFileMap, inputFiles);
         
         cmdLine.add(0, inputDir.getAbsolutePath());
         return cmdLine;
     }
 
-    protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
+    protected static List<String> substituteInputFilePaths_01(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
         final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
         for (int i = 0; i < cmdLineIn.size(); ++i) { 
-            String arg = substituteCmdLineArg(cmdLineIn.get(i), inputFileMap, inputFiles);
+            String arg = substituteCmdLineArg_01(cmdLineIn.get(i), inputFileMap, inputFiles);
             cmdLineOut.add(arg);
         } 
         return cmdLineOut;
     }
 
-    /**
-     * Substitute gp server local file path with docker container file path for the given command line arg
-     * 
-     * @param arg, the command line arg
-     * @param urlToFileMap, a lookup table mapping a filename to a fully qualified container file path
-     * @param inputFiles, the list of all gp server local file paths to module input file
-     * 
-     * @return the command line arg to use in the container
-     */
-    protected static String substituteCmdLineArg(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
+    protected static String substituteCmdLineArg_01(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
         for (final File inputFile : inputFiles) { 
             final String filename = inputFile.getName(); 
             if (arg.endsWith(filename)) { 
