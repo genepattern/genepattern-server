@@ -121,6 +121,7 @@ public class AWSBatchJobRunner implements JobRunner {
         try {
             if (log.isDebugEnabled()) {
                 log.debug("startJob, gp_job_id="+gpJob.getGpJobNo());
+                AwsBatchUtil.logInputFiles(log, gpJob);
             }
             logCommandLine(gpJob);
             DrmJobStatus jobStatus = submitAwsBatchJob(gpJob);
@@ -429,8 +430,15 @@ public class AWSBatchJobRunner implements JobRunner {
         // job name to have in AWS batch displays
         cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
 
-        // sync input files
-        final List<String> cmdLine=syncInputFiles_02(gpJob);
+        // Handle job input files, if necessary edit command line args, before AWS Batch submission.
+        //   -- make symbolic links in the .inputs_for_{job_id} directory
+        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
+        inputDir.mkdir();
+        cl.addArgument(inputDir.getAbsolutePath(), handleQuoting); 
+        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
+        final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
+        //   -- substitute input file paths, replace original with linked file paths
+        final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
         for(final String arg : cmdLine) {
             cl.addArgument(arg, handleQuoting);
         }
@@ -438,38 +446,26 @@ public class AWSBatchJobRunner implements JobRunner {
     }
     
     /**
-     * Handle job input files (and possibly edit command line args) before AWS Batch submission.
-     * This particular implementation ...
-     *   -- creates sym linkes in the {job_dir}/.inputs_for_{job_id} directory
-     *   -- replaces command line args with the updated file paths
-     * @param gpJob
-     * @param inputDir
+     * Make symlinks 
+     * @param inputDir - the local input directory to be sync'ed into aws s3
+     * @param inputFiles - the list of job input files in the GP server local file system
      * @return
      * @throws CommandExecutorException
      */
-    protected static List<String> syncInputFiles_02(final DrmJobSubmission gpJob) throws CommandExecutorException {
-        // sync input files
-        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
-        inputDir.mkdir();
-        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
+    protected static Map<String, String> makeSymLinks(final File inputDir, final Set<File> inputFiles) throws CommandExecutorException {
         final Map<String,String> inputFileMap = new HashMap<String,String>();
         for (final File inputFile : inputFiles) {
             final File linkedFile = new File(inputDir, inputFile.getName());
             AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
             inputFileMap.put(inputFile.getAbsolutePath(), linkedFile.getAbsolutePath());
         }
-
-        // substitute input file paths 
-        final List<String> cmdLine=substituteInputFilePaths_02(gpJob.getCommandLine(), inputFileMap, inputFiles);
-        
-        cmdLine.add(0, inputDir.getAbsolutePath());
-        return cmdLine;
+        return inputFileMap;
     }
-
-    protected static List<String> substituteInputFilePaths_02(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
+    
+    protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
         final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
         for (int i = 0; i < cmdLineIn.size(); ++i) { 
-            String arg = substituteCmdLineArg_02(cmdLineIn.get(i), inputFileMap, inputFiles);
+            final String arg = substituteCmdLineArg(cmdLineIn.get(i), inputFileMap, inputFiles);
             cmdLineOut.add(arg);
         } 
         return cmdLineOut;
@@ -484,7 +480,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * 
      * @return the command line arg to use in the container
      */
-    protected static String substituteCmdLineArg_02(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
+    protected static String substituteCmdLineArg(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
         for (final File inputFile : inputFiles) { 
             final String inputFilepath = inputFile.getPath();
             final String linkedFilepath = inputFileMap.get(inputFilepath);
@@ -493,44 +489,6 @@ public class AWSBatchJobRunner implements JobRunner {
             }
             else {
                 arg=AwsBatchUtil.replaceAll_quoted(arg, inputFilepath, linkedFilepath);
-            }
-        }
-        return arg;
-    }
-
-    protected static List<String> syncInputFiles_01(final DrmJobSubmission gpJob) throws CommandExecutorException {
-        // sync input files
-        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
-        inputDir.mkdir();
-        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final Map<String,String> inputFileMap = new HashMap<String,String>();
-        for (final File inputFile : inputFiles) {
-            final File linkedFile = new File(inputDir, inputFile.getName());
-            AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
-            inputFileMap.put(inputFile.getName(), linkedFile.getAbsolutePath());
-        } 
-
-        // substitute input file paths 
-        final List<String> cmdLine=substituteInputFilePaths_01(gpJob.getCommandLine(), inputFileMap, inputFiles);
-        
-        cmdLine.add(0, inputDir.getAbsolutePath());
-        return cmdLine;
-    }
-
-    protected static List<String> substituteInputFilePaths_01(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
-        final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
-        for (int i = 0; i < cmdLineIn.size(); ++i) { 
-            String arg = substituteCmdLineArg_01(cmdLineIn.get(i), inputFileMap, inputFiles);
-            cmdLineOut.add(arg);
-        } 
-        return cmdLineOut;
-    }
-
-    protected static String substituteCmdLineArg_01(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
-        for (final File inputFile : inputFiles) { 
-            final String filename = inputFile.getName(); 
-            if (arg.endsWith(filename)) { 
-                arg = inputFileMap.get(filename); 
             }
         }
         return arg;

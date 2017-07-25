@@ -3,7 +3,9 @@ package org.genepattern.server.executor.awsbatch;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,8 +14,14 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.job.input.JobInput;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 import com.google.common.base.Strings;
 
@@ -89,7 +97,7 @@ public class AwsBatchUtil {
 
     protected static Set<File> getInputFiles(final DrmJobSubmission gpJob) {
         if (log.isDebugEnabled()) {
-            log.debug("listing input files for gpJobNo="+gpJob.getGpJobNo()+" ...");
+            log.debug("gpJobNo="+gpJob.getGpJobNo()+", listing local file paths ...");
         }
         // linked hash set preserves insertion order
         final Set<File> inputFiles = new LinkedHashSet<File>();
@@ -115,6 +123,35 @@ public class AwsBatchUtil {
         else {
             log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
             return null;
+        }
+    }
+
+    protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
+        if (paramInfoMap.containsKey(pname)) {
+            return paramInfoMap.get(pname).getFormal();
+        }
+        return null;
+    }
+
+    protected static void logInputFiles(final Logger log, final DrmJobSubmission gpJob) {
+        if (log.isDebugEnabled()) {
+            log.debug("listing input file values ...");
+            final Map<String,ParameterInfoRecord> paramInfoMap =
+                    ParameterInfoRecord.initParamInfoMap(gpJob.getJobContext().getTaskInfo());
+
+            // walk through all of the input values
+            final JobInput jobInput=gpJob.getJobContext().getJobInput();
+            for(final Entry<ParamId, Param> entry : jobInput.getParams().entrySet()) {
+                final String pname = entry.getKey().getFqName();
+                final Param param = entry.getValue();
+                final ParameterInfo formalParam = getFormalParam(paramInfoMap, pname);
+                if (formalParam != null && formalParam.isInputFile()) {
+                    int i=0;
+                    for(final ParamValue paramValue : param.getValues()) {
+                        log.debug("    "+pname+"["+(i++)+"]: "+paramValue.getValue());
+                    }
+                }
+            }
         }
     }
 
