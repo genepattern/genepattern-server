@@ -64,6 +64,10 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         return defaultValue;
     }
+    
+    public static final String getOrDefault(final DrmJobSubmission gpJob, final String key, final String defaultValue) {
+        return gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), key, defaultValue);
+    }
 
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
 
@@ -384,6 +388,11 @@ public class AWSBatchJobRunner implements JobRunner {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         return getScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
     }
+    
+    protected static String getAwsJobName(final DrmJobSubmission gpJob) {
+        final String prefix=getOrDefault(gpJob, "aws-job-name-prefix", "GP_Job_");
+        return prefix + gpJob.getGpJobNo();
+    }
 
     /**
      * First pass the arguments needed by the AWS launch script, then follow
@@ -428,7 +437,8 @@ public class AWSBatchJobRunner implements JobRunner {
         cl.addArgument(awsBatchJobDefinition, handleQuoting);
 
         // job name to have in AWS batch displays
-        cl.addArgument("GP_Job_" + gpJob.getGpJobNo(), handleQuoting);
+        final String awsJobName=getAwsJobName(gpJob);
+        cl.addArgument(awsJobName, handleQuoting);
 
         // Handle job input files, if necessary edit command line args, before AWS Batch submission.
         //   -- make symbolic links in the .inputs_for_{job_id} directory
