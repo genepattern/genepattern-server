@@ -3,10 +3,8 @@ package org.genepattern.server.executor.awsbatch;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -18,6 +16,7 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
@@ -38,20 +37,13 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
-
-//    public static final Value getOrDefault(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
-//        return gpConfig.getValue(jobContext, key, defaultValue);
-//    }
-
-    protected static File getWrapperScriptsDir(final GpConfig gpConfig, final GpContext jobContext) {
-        return gpConfig.getGPFileProperty(jobContext, GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
+    
+    public static final Value getValue(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
+        return gpConfig.getValue(jobContext, key, defaultValue);
     }
 
-    /**
-     * Get the local path to the '<wrapper-scripts>' directory
-     */
-    protected static File getWrapperScriptsDir(final DrmJobSubmission gpJob) {
-        return getWrapperScriptsDir(gpJob.getGpConfig(), gpJob.getJobContext());
+    public static final String getProperty(final DrmJobSubmission gpJob, final String key, final String defaultValue) {
+        return gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), key, defaultValue);
     }
 
 
@@ -133,6 +125,8 @@ public class AwsBatchUtil {
         // special-case, include <run-with-env> support files
         final Set<File> additionalSupportFiles=getWrapperScripts(gpJob);
         inputFiles.addAll(additionalSupportFiles);
+        // special-case, include selected <aws-batch-scripts>
+        inputFiles.addAll(getAwsBatchWrapperScripts(gpJob));
         return Collections.unmodifiableSet(inputFiles);
     }
 
@@ -144,37 +138,80 @@ public class AwsBatchUtil {
         // linked hash set preserves insertion order
         final Set<File> jobInputFiles = new LinkedHashSet<File>();
         for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
-            final File file=initJobInputFile(gpJob, localFilePath);
-            if (file != null && file.exists()) {
-                jobInputFiles.add(file);
+            if (Strings.isNullOrEmpty(localFilePath)) {
+                // skip empty path
+            }
+            else {
+                final File file=new File(localFilePath);
+                if (file != null && file.exists()) {
+                    jobInputFiles.add(file);
+                }
+                else {
+                    log.error("gpJobNo="+gpJob.getGpJobNo()+", file doesn't exist for localFilePath='"+localFilePath+"'");
+                }
             }
         }
         return Collections.unmodifiableSet(jobInputFiles);
     }
-    
-    // called-by getJobInputFiles
-    protected static File initJobInputFile(final DrmJobSubmission gpJob, final String localFilePath) {
-        log.debug("    localFilePath="+localFilePath);
-        if (Strings.isNullOrEmpty(localFilePath)) {
-            return null;
-        }
-        final File file=new File(localFilePath);
-        if (file.exists()) {
-            return file;
-        }
-        else {
-            log.error("file doesn't exist, for gpJobNo="+gpJob.getGpJobNo()+", localFilePath="+localFilePath);
-            return null;
-        }
+
+    /**
+     * Get the File referenced by the configuration property, e.g.
+     *   <wrapper-scripts>
+     * Usage:
+     *   File wrapperScripts=getDir(gpJob, "wrapper-scripts");
+     * @return null if the property is not set
+     */
+    protected static File getGPFileProperty(final DrmJobSubmission gpJob, final String KEY) {
+        return gpJob.getGpConfig().getGPFileProperty(gpJob.getJobContext(), KEY);
     }
 
-    protected static Set<File> getWrapperScripts(final DrmJobSubmission gpJob) {
+    /**
+     * Get the set of files relative to a configured file path, e.g. <wrapper-scripts>
+     * Usage:
+     *   getFileSet(gpJob, "wrapper-scripts", "env-custom.sh", "env-default.sh")
+     * @param gpJob
+     * @param KEY
+     * @param includePaths
+     * @return
+     */
+    protected static Set<File> getFileSet(final DrmJobSubmission gpJob, final String KEY, String... includePaths) {
+        final File parentDir=getGPFileProperty(gpJob, KEY);
+        if (parentDir==null) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", skipping <"+KEY+"> files, property not set");
+            }
+            return Collections.emptySet();
+        } 
+        final Path parentPath=parentDir.toPath();
         if (log.isDebugEnabled()) {
-            log.debug("gpJobNo="+gpJob.getGpJobNo()+", including <run-with-env> files ...");
+            log.debug("gpJobNo="+gpJob.getGpJobNo()+", including <"+KEY+"> files ...");
         }
-        final Set<File> wrapperScriptFiles = new LinkedHashSet<File>();
-        final Path wrapperScripts=getWrapperScriptsDir(gpJob).toPath();
-        final List<String> supportFiles=Arrays.asList(
+        final Set<File> fileSet = new LinkedHashSet<File>();
+        for(final String path : includePaths) {
+            if (Strings.isNullOrEmpty(path)) {
+                // skip empty path
+            }
+            else {
+                final File file=parentPath.resolve(path).toFile();
+                if (file != null && file.exists()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("    <"+KEY+">/"+path);
+                    }
+                    fileSet.add(file);
+                }
+            }
+        }
+        return fileSet;
+    }
+
+    /**
+     * get the '<wrapper-scripts>' files to be copied into the container, e.g.
+     *   <wrapper-scripts>/run-with-env.sh 
+     * these are required for <run-with-env> modules, e.g.
+     *   commandLine=<run-with-env> -u java/1.8 java ...
+     */
+    protected static Set<File> getWrapperScripts(final DrmJobSubmission gpJob) {
+        return getFileSet(gpJob, GpConfig.PROP_WRAPPER_SCRIPTS_DIR, 
             "run-with-env.sh",
             "env-hashmap.sh",
             "env-lookup.sh",
@@ -183,22 +220,17 @@ public class AwsBatchUtil {
             "env-custom.sh",
             gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), "env-custom", "env-custom.sh")
         );
-        for(final String path : supportFiles) {
-            if (Strings.isNullOrEmpty(path)) {
-                // skip empty path
-            }
-            else {
-                final File file=wrapperScripts.resolve(path).toFile();
-                if (file != null && file.exists()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("    <wrapper-script>/"+path);
-                    }
-                    wrapperScriptFiles.add(file);
-                }
-            }
-        }
-        return Collections.unmodifiableSet(wrapperScriptFiles); 
     }
+    
+    /**
+     * get the '<aws-batch-script-dir>' files to be copied into the container
+     */
+    protected static Set<File> getAwsBatchWrapperScripts(final DrmJobSubmission gpJob) {
+        return getFileSet(gpJob, "aws-batch-script-dir", 
+            "runS3OnBatch.sh",
+            "run-in-container.sh"
+        );
+    } 
 
     protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
         if (paramInfoMap.containsKey(pname)) {

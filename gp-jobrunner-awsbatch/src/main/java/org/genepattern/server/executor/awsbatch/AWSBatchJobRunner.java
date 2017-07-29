@@ -65,10 +65,6 @@ public class AWSBatchJobRunner implements JobRunner {
         return defaultValue;
     }
     
-    public static final String getOrDefault(final DrmJobSubmission gpJob, final String key, final String defaultValue) {
-        return gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), key, defaultValue);
-    }
-
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
 
     // commons exec, always set handleQuoting to false when adding command line args
@@ -390,7 +386,7 @@ public class AWSBatchJobRunner implements JobRunner {
     }
     
     protected static String getAwsJobName(final DrmJobSubmission gpJob) {
-        final String prefix=getOrDefault(gpJob, "aws-job-name-prefix", "GP_Job_");
+        final String prefix=AwsBatchUtil.getProperty(gpJob, "aws-job-name-prefix", "GP_Job_");
         return prefix + gpJob.getGpJobNo();
     }
 
