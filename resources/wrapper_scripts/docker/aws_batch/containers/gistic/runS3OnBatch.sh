@@ -42,7 +42,8 @@ aws s3 sync $S3_ROOT$INPUT_FILES_DIR $INPUT_FILES_DIR
 ls $INPUT_FILES_DIR
 
 # switch to the working directory
-mkdir -p $WORKING_DIR
+mkdir -p $WORKING_DIR/.gp_metadata
+aws s3 sync $S3_ROOT$WORKING_DIR/.gp_metadata $WORKING_DIR/.gp_metadata
 cd $WORKING_DIR 
 
 #shift args to pass the remainder to the executable module code

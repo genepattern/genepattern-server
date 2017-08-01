@@ -30,10 +30,11 @@ RUN apt-get update && \
 
 RUN  mkdir packages && \
     cd packages && \
+    apt-get install tcl8.5-dev tk8.5-dev --yes && \
     curl -O http://cran.r-project.org/src/base/R-2/R-2.11.1.tar.gz && \
     tar xvf R-2.11.1.tar.gz && \
     cd R-2.11.1 && \
-    ./configure --with-x=no && \
+    ./configure --with-x=no --with-tcl-config=/usr/lib/x86_64-linux-gnu/tcl8.5/tclConfig.sh --with-tk-config=/usr/lib/x86_64-linux-gnu/tk8.5/tkConfig.sh && \
     make && \
     make check && \
     make install && \
