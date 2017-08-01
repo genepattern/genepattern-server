@@ -1,0 +1,33 @@
+# This is an example package descriptor file for the RTutorial module.
+# It is more verbose than strictly necessary so that it can illustrate
+# all aspects of the r.package.info format.  See README_PACKAGES.md
+# for further information.
+# You can use a '#' character to indicate a comment line.
+# Blank lines are also ignored.
+
+# The following header line is required, though it can be preceded by
+# comments and blank lines.
+package,requested_version,archive_name,src_URL,Mac_URL,Windows_URL
+# The following declare two CRAN packages "pinned" to particular versions.
+# Order is important: the 'optparse' package requires the 'getopt' package.
+getopt,1.20.0,CRAN
+optparse,1.3.2,CRAN
+RColorBrewer,1.1-2,CRAN
+cluster,2.0.3,CRAN
+nlme,3.1-126,CRAN
+lattice,0.20-31,CRAN
+ape,3.3,CRAN
+
+# The next two are Bioconductor packages.  There's no need to use the BIOC
+# tag as the installer will auto-detect this.  There's also no need to 
+# declare a version as package versions are fixed and final within a given
+# Bioconductor release.
+#Biobase
+#BiocGenerics
+
+
+# You can also specify URL-hosted packages.  This is useful for packages
+# that aren't hosted in any official repository.  Note that the following
+# example does not represent a real package and so it's disabled by the
+# use of a comment character.
+#tutorialExample,0.1a,CUSTOM,ftp://gpftp.broadinstitute.org/module_support_files/RTutorialModule/tutorialExample_0.1a.tar.gz,ftp://gpftp.broadinstitute.org/RTutorialModule/tutorialExample_0.1a.tgz,ftp://gpftp.broadinstitute.org/RTutorialModule/tutorialExample_0.1a.zip
