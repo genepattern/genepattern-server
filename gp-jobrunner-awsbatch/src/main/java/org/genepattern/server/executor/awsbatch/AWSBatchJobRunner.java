@@ -139,7 +139,7 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected String getCheckStatusScript(final DrmJobRecord jobRecord) {
-        final File checkStatusScript=getScriptFile(jobRecord, PROP_STATUS_SCRIPT, DEFAULT_STATUS_SCRIPT);
+        final File checkStatusScript=getAwsBatchScriptFile(jobRecord, PROP_STATUS_SCRIPT, DEFAULT_STATUS_SCRIPT);
         return ""+checkStatusScript;
     }
     
@@ -241,7 +241,7 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected String getSynchWorkingDirScript(final DrmJobRecord jobRecord) {
-        final File synchDirScript=getScriptFile(jobRecord, PROP_SYNCH_SCRIPT, DEFAULT_SYNCH_SCRIPT);
+        final File synchDirScript=getAwsBatchScriptFile(jobRecord, PROP_SYNCH_SCRIPT, DEFAULT_SYNCH_SCRIPT);
         return ""+synchDirScript;
     }
     
@@ -320,7 +320,7 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected String getCancelJobScript(final DrmJobRecord jobRecord) {
-        final File cancelScript=getScriptFile(jobRecord, PROP_CANCEL_SCRIPT, DEFAULT_CANCEL_SCRIPT);
+        final File cancelScript=getAwsBatchScriptFile(jobRecord, PROP_CANCEL_SCRIPT, DEFAULT_CANCEL_SCRIPT);
         return ""+cancelScript;
     }
 
@@ -352,7 +352,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return true;
     }
     
-    protected static File getScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
+    protected static File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
         final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
         File file = new File(filename.getValue());
         if (file.isAbsolute()) {
@@ -372,17 +372,17 @@ public class AWSBatchJobRunner implements JobRunner {
         return file;
     }
 
-    protected static File getScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
+    protected static File getAwsBatchScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
         if (gpJob != null) {
-            return getScriptFile(gpJob.getGpConfig(), gpJob.getJobContext(), key, defaultValue);
+            return getAwsBatchScriptFile(gpJob.getGpConfig(), gpJob.getJobContext(), key, defaultValue);
         }
-        return getScriptFile(ServerConfigurationFactory.instance(), (GpContext) null, key, defaultValue);
+        return getAwsBatchScriptFile(ServerConfigurationFactory.instance(), (GpContext) null, key, defaultValue);
     }
 
 
-    protected static File getScriptFile(final DrmJobRecord jobRecord, final String key, final Value defaultValue) {
+    protected static File getAwsBatchScriptFile(final DrmJobRecord jobRecord, final String key, final Value defaultValue) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
-        return getScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
+        return getAwsBatchScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
     }
     
     protected static String getAwsJobName(final DrmJobSubmission gpJob) {
@@ -405,7 +405,7 @@ public class AWSBatchJobRunner implements JobRunner {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
         
-        final File awsBatchScript=getScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
+        final File awsBatchScript=getAwsBatchScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
         if (log.isDebugEnabled()) {
             log.debug("job "+gpJob.getGpJobNo());
             log.debug("           aws-batch-script='"+awsBatchScript+"'");
