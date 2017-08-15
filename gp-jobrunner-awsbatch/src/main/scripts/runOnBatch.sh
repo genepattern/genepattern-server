@@ -22,10 +22,11 @@ shift
 shift
 
 # ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
-# Make the input file directory since we need to put the script to execute in it
-mkdir -p $WORKING_DIR/.gp_metadata
+# create 'exec.sh' script in the GP_METADATA_DIR
+: ${GP_METADATA_DIR=$WORKING_DIR/.gp_metadata}
+mkdir -p "${GP_METADATA_DIR}"
 
-EXEC_SHELL=$WORKING_DIR/.gp_metadata/exec.sh
+EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
@@ -39,7 +40,6 @@ echo "" >> $EXEC_SHELL
 
 chmod u+x $EXEC_SHELL
 
-#REMOTE_COMMAND="runS3OnBatch.sh $TASKLIB $INPUT_FILE_DIRECTORY $S3_ROOT $WORKING_DIR $EXEC_SHELL"
 REMOTE_COMMAND=$EXEC_SHELL
 
 
@@ -59,5 +59,6 @@ aws batch submit-job \
     --job-queue $JOB_QUEUE \
     --job-definition $JOB_DEFINITION_NAME \
     --parameters taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1="$REMOTE_COMMAND"  \
+    --container-overrides environment=[\{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}\}] \
     $AWS_PROFILE_ARG \
 | python -c "import sys, json; print( json.load(sys.stdin)['jobId'])"
