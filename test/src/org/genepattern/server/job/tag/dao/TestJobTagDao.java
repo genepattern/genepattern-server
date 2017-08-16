@@ -3,8 +3,13 @@
  *******************************************************************************/
 package org.genepattern.server.job.tag.dao;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.AnalysisJobUtil;
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.junitutil.Demo;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -35,10 +41,9 @@ public class TestJobTagDao
 {
     @ClassRule
     public static TemporaryFolder temp = new TemporaryFolder();
+
     private static HibernateSessionManager mgr;
     private static GpConfig gpConfig;
-    private static String user;
-    private static String admin;
     
     private int gpJobNo;
     private JobInfo jobInfo;
@@ -46,14 +51,14 @@ public class TestJobTagDao
     
     @BeforeClass
     public static void beforeClass() throws IOException, DbException, ExecutionException {
-        String userDir=temp.newFolder("users").getAbsolutePath();
+        final String userDir=new File(temp.newFolder(), "users").getAbsolutePath();
         gpConfig=new GpConfig.Builder()
             .webappDir(new File("website"))
             .addProperty(GpConfig.PROP_USER_ROOT_DIR, userDir)
         .build();
         mgr=DbUtil.getTestDbSession();
-        user=DbUtil.addUserToDb(gpConfig, mgr, "test");
-        admin=DbUtil.addUserToDb(gpConfig, mgr, "admin");
+        DbUtil.addUserToDb(gpConfig, mgr, Demo.testUserId);
+        DbUtil.addUserToDb(gpConfig, mgr, Demo.adminUserId);
     }
 
     @Before
@@ -84,13 +89,13 @@ public class TestJobTagDao
         Date date = new Date();
 
         Tag tag = new Tag();
-        tag.setUserId(user);
+        tag.setUserId(Demo.testUserId);
         tag.setTag(tagText1);
         tag.setDateAdded(date);
         tag.setPublicTag(false);
 
         JobTag jobTag = new JobTag();
-        jobTag.setUserId(user);
+        jobTag.setUserId(Demo.testUserId);
         jobTag.setTagObj(tag);
 
         AnalysisJob analysisJob = new AnalysisJob();
@@ -105,13 +110,13 @@ public class TestJobTagDao
         Date date2 = new Date();
 
         Tag tag2 = new Tag();
-        tag2.setUserId(admin);
+        tag2.setUserId(Demo.adminUserId);
         tag2.setTag(tagText2);
         tag2.setDateAdded(date2);
         tag2.setPublicTag(false);
 
         JobTag jobTag2 = new JobTag();
-        jobTag2.setUserId(admin);
+        jobTag2.setUserId(Demo.adminUserId);
         jobTag2.setTagObj(tag2);
 
         AnalysisJob analysisJob2 = new AnalysisJob();
@@ -137,13 +142,13 @@ public class TestJobTagDao
         Date date = new Date();
 
         Tag tag = new Tag();
-        tag.setUserId(user);
+        tag.setUserId(Demo.testUserId);
         tag.setTag(tagText);
         tag.setDateAdded(date);
         tag.setPublicTag(false);
 
         JobTag jobTag = new JobTag();
-        jobTag.setUserId(user);
+        jobTag.setUserId(Demo.testUserId);
         jobTag.setTagObj(tag);
 
         AnalysisJob analysisJob = new AnalysisJob();
