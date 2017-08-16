@@ -217,16 +217,15 @@ public class AWSBatchJobRunner implements JobRunner {
                     b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
                     b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
                     b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
+                    final File metadataDir=getMetadataDir(jobRecord);
                     try {
-                        refreshWorkingDirFromS3(jobRecord);
+                        refreshWorkingDirFromS3(jobRecord, metadataDir);
                     } 
                     catch (Throwable t) {
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
                     try {
-                        final File workDir = jobRecord.getWorkingDir();
-                        final File gpMeta = new File(workDir, ".gp_metadata");
-                        final int exitCode=getExitCodeFromMetadataDir(gpMeta);
+                        final int exitCode=getExitCodeFromMetadataDir(metadataDir);
                         b.exitCode(exitCode);
                     } 
                     catch (Throwable t) {
@@ -247,8 +246,21 @@ public class AWSBatchJobRunner implements JobRunner {
         final File synchDirScript=getAwsBatchScriptFile(jobRecord, PROP_SYNCH_SCRIPT, DEFAULT_SYNCH_SCRIPT);
         return ""+synchDirScript;
     }
+
+    protected static File getMetadataDir(final DrmJobSubmission gpJob) {
+        return getMetadataDir(gpJob.getWorkingDir());
+    }
+
+    protected static File getMetadataDir(final DrmJobRecord jobRecord) {
+        return getMetadataDir(jobRecord.getWorkingDir());
+    }
     
-    private void refreshWorkingDirFromS3(DrmJobRecord jobRecord){
+    protected static File getMetadataDir(final File jobWorkingDir) {
+        // default: job.workingDir/.gp_metadata
+        return new File(jobWorkingDir, ".gp_metadata");
+    }
+
+    private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir) {
         // call out to a script to refresh the directory path to pull files from S3
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         //
@@ -275,12 +287,10 @@ public class AWSBatchJobRunner implements JobRunner {
 
         // Now we have synch'd set the jobs stderr and stdout to the ones we got back from AWS
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
-        File workDir = jobRecord.getWorkingDir();
-        File gpMeta = new File(workDir, ".gp_metadata");
-        if (gpMeta.isDirectory()){
-            File stdErr = new File(gpMeta, "stderr.txt");
+        if (metadataDir.isDirectory()){
+            File stdErr = new File(metadataDir, "stderr.txt");
             if (stdErr.exists()) copyFileContents(stdErr, jobRecord.getStderrFile());
-            File stdOut = new File(gpMeta, "stdout.txt");
+            File stdOut = new File(metadataDir, "stdout.txt");
             if (stdOut.exists()) copyFileContents(stdOut, jobRecord.getStdoutFile());
             
         } 
