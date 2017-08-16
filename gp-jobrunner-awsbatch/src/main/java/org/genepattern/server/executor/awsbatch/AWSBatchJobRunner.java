@@ -352,16 +352,25 @@ public class AWSBatchJobRunner implements JobRunner {
         return true;
     }
     
-    protected static File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
-        final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
-        File file = new File(filename.getValue());
+    /**
+     * Resolve the path to the named aws batch script. Paths are resolved
+     * relative to the 'aws-batch-script-dir'. 
+     * Default: ('aws-batch-script-dir' not set)
+     *   <wrapper-scripts>/aws_batch/{scriptName}
+     * Custom ('aws-batch-script-dir' is a fully qualified path)
+     *   <aws-batch-script-dir>/{scriptName}
+     * Custom ('aws-batch-script-dir' is a relative path)
+     *   <wrapper-scripts>/<aws-batch-script-dir>/{scriptName}
+     */
+    protected static File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String scriptName) {
+        File file = new File(scriptName);
         if (file.isAbsolute()) {
             return file;
         }
         
-        // special-case: when 'script-file' is a relative path
+        // special-case: when 'scriptName' is a relative path
         final Value dirname = gpConfig.getValue(jobContext, PROP_AWS_BATCH_SCRIPT_DIR, DEFAULT_AWS_BATCH_SCRIPT_DIR);
-        file = new File(dirname.getValue(), filename.getValue());
+        file = new File(dirname.getValue(), scriptName);
         if (file.isAbsolute()) {
             return file;
         }
@@ -372,6 +381,11 @@ public class AWSBatchJobRunner implements JobRunner {
         return file;
     }
 
+    protected static File getAwsBatchScriptFile(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
+        final Value filename = gpConfig.getValue(jobContext, key, defaultValue);
+        return getAwsBatchScriptFile(gpConfig, jobContext, filename.getValue());
+    }
+    
     protected static File getAwsBatchScriptFile(final DrmJobSubmission gpJob, final String key, final Value defaultValue) {
         if (gpJob != null) {
             return getAwsBatchScriptFile(gpJob.getGpConfig(), gpJob.getJobContext(), key, defaultValue);
