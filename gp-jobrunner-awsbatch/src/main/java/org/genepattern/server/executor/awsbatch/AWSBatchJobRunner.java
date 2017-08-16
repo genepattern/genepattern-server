@@ -36,6 +36,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.common.base.Strings;
@@ -143,6 +144,36 @@ public class AWSBatchJobRunner implements JobRunner {
         return ""+checkStatusScript;
     }
     
+    protected static Date getOrDefaultDate(final JSONObject awsJob, final String prop, final Date default_value) {
+        try {
+            if (awsJob.has(prop)) {
+                return new Date(awsJob.getLong(prop));
+            }
+        }
+        catch (JSONException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error getting Date from JSON object, name='"+prop+"'", e);
+            }
+        }
+        catch (Throwable t) {
+            // its not always present depending non how it failed
+            log.error("Unexpected error getting Date from JSON object, name='"+prop+"'", t);
+        }  
+        return default_value;
+    }
+    
+    protected int getExitCodeFromMetadataDir(final File metadataDir) throws IOException, JSONException {
+        File exitCodeFile = new File(metadataDir, "exit_code.txt");
+        return parseExitCodeFromFile(exitCodeFile);
+    }
+
+    protected int parseExitCodeFromFile(final File exitCodeFile) throws IOException, JSONException {
+        byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
+        String jsonText = new String(encoded);
+        JSONObject json = new JSONObject(jsonText);
+        return json.getInt("exit_code");
+    }
+
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
         final String awsId=jobRecord.getExtJobId();
@@ -174,61 +205,33 @@ public class AWSBatchJobRunner implements JobRunner {
                 DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
                 b.jobState(jobState);
-                if (awsStatusCode.equalsIgnoreCase("SUCCEEDED")) {
-                    // TODO get the CPU time etc from AWS.  Will need to change the check status to return the full
-                    // JSON instead of just the ID and then read it into a JSON obj from which we pull the status
-                    // and sometimes the other details
+                if (awsJob.has("jobQueue")) {
+                    b.queueId(awsJob.getString("jobQueue"));
+                }
+                
+                if (jobState.is(DrmJobState.TERMINATED)) {
+                    // job cleanup, TERMINATED covers SUCCEEDED and FAILED
                     if (log.isDebugEnabled()) {
-                        log.debug("Done");
+                        log.debug("job finished with awsStatusCode="+awsStatusCode+", drmJobState="+jobState);
                     }
+                    b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
+                    b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
+                    b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
                     try {
-                        b.queueId(awsJob.getString("jobQueue"));
-                        b.startTime(new Date(awsJob.getLong("startedAt")));
-                        b.submitTime(new Date(awsJob.getLong("createdAt")));
-                        b.endTime(new Date(awsJob.getLong("stoppedAt")));
+                        refreshWorkingDirFromS3(jobRecord);
                     } 
                     catch (Throwable t) {
-                        log.error(t);
-                    }
-                    
-                    refreshWorkingDirFromS3(jobRecord);
-                    try {
-                        File metaDataDir = new File( jobRecord.getWorkingDir(), ".gp_metadata");
-                        File exitCodeFile = new File(metaDataDir, "exit_code.txt");
-                        byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
-                        String jsonText = new String(encoded);
-                        JSONObject json = new JSONObject(jsonText);  
-                        b.exitCode(json.getInt("exit_code"));
-                    } 
-                    catch (Exception e) {
-                        log.error(e);
-                    }
-                } 
-                else if (awsStatusCode.equalsIgnoreCase("FAILED")) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Failed.");
+                        log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
                     try {
-                        b.startTime(new Date(awsJob.getLong("startedAt")));
+                        final File workDir = jobRecord.getWorkingDir();
+                        final File gpMeta = new File(workDir, ".gp_metadata");
+                        final int exitCode=getExitCodeFromMetadataDir(gpMeta);
+                        b.exitCode(exitCode);
                     } 
-                    catch (Exception e) {
-                        // its not always present depending non how it failed
+                    catch (Throwable t) {
+                        log.error("Error getting exitCode for job="+jobRecord.getGpJobNo(), t);
                     }
-                    try {
-                        b.submitTime(new Date(awsJob.getLong("createdAt")));
-                    } 
-                    catch (Exception e) {
-                        // its not always present depending non how it failed
-                    }
-                    try {
-                        b.endTime(new Date(awsJob.getLong("stoppedAt")));
-                    } 
-                    catch (Exception e){
-                        // its not always present depending non how it failed}
-                        // but this one we have a decent idea about
-                        b.endTime(new Date());
-                    } 
-                    refreshWorkingDirFromS3(jobRecord);
                 }
                 return b.build();
             } 
