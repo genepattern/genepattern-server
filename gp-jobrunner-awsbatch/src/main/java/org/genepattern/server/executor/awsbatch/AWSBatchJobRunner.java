@@ -260,7 +260,22 @@ public class AWSBatchJobRunner implements JobRunner {
         return new File(jobWorkingDir, ".gp_metadata");
     }
 
-    private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir) {
+    /**
+     * Pull data files from aws s3 into the local file system.
+     * Template:
+     *   ./<aws-batch-script-dir>/awsSyncDirectory.sh filepath
+     *   aws s3 sync ${S3_ROOT}${1} ${1} ${AWS_PROFILE_ARG}
+     * Example:
+     *   # hard-coded in script
+     *   S3_ROOT=s3://moduleiotest
+     *   # 1st arg
+     *   filepath=/jobResults/1
+     *   # set in init-aws-cli-env.sh script
+     *   AWS_PROFILE_ARG=--profile genepattern
+     * Command:
+     *   aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1 --profile genepattern
+     */
+    protected void awsSyncDirectory(final DrmJobRecord jobRecord, final File filepath) {
         // call out to a script to refresh the directory path to pull files from S3
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         //
@@ -272,7 +287,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final String synchWorkingDirScript=getSynchWorkingDirScript(jobRecord);
         CommandLine cl= new CommandLine(synchWorkingDirScript);
         // tasklib
-        cl.addArgument(jobRecord.getWorkingDir().getAbsolutePath());
+        cl.addArgument(filepath.getAbsolutePath());
         final Map<String,String> cmdEnv=null;
         try {
             exec.execute(cl, cmdEnv);
@@ -284,6 +299,13 @@ public class AWSBatchJobRunner implements JobRunner {
         catch (Exception e) {
             log.error(e);
         }
+    }
+
+    private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir) {
+        // pull the job.metaDir from s3
+        awsSyncDirectory(jobRecord, metadataDir);
+        // pull the job.workingDir from s3
+        awsSyncDirectory(jobRecord, jobRecord.getWorkingDir());
 
         // Now we have synch'd set the jobs stderr and stdout to the ones we got back from AWS
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
@@ -566,7 +588,9 @@ public class AWSBatchJobRunner implements JobRunner {
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Executor exec=initExecutorForJob(gpJob, outputStream);
-        final Map<String,String> cmdEnv=null;
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        final File metadataDir=getMetadataDir(gpJob);
+        cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
         
