@@ -30,6 +30,7 @@ EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
+echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
 for arg in "$@"
 do
@@ -49,6 +50,7 @@ REMOTE_COMMAND=$EXEC_SHELL
 aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY $AWS_PROFILE_ARG >> .s3_uploads.stdout 2>&1
 aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              $AWS_PROFILE_ARG >> .s3_uploads.stdout 2>&1
 aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          $AWS_PROFILE_ARG >> .s3_uploads.stdout 2>&1
+aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      $AWS_PROFILE_ARG >> .s3_uploads.stdout 2>&1
 
 #       --container-overrides memory=2000 \
 

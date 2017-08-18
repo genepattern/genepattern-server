@@ -254,10 +254,17 @@ public class AWSBatchJobRunner implements JobRunner {
     protected static File getMetadataDir(final DrmJobRecord jobRecord) {
         return getMetadataDir(jobRecord.getWorkingDir());
     }
-    
+
     protected static File getMetadataDir(final File jobWorkingDir) {
-        // default: job.workingDir/.gp_metadata
-        return new File(jobWorkingDir, ".gp_metadata");
+        //// original: job.workingDir/.gp_metadata
+        //final File metadir=new File(jobWorkingDir, ".gp_metadata");
+        ////return metadir;
+
+        // default: <jobs>/<jobId>.meta
+        final File metadir_default=new File(
+                jobWorkingDir.getParentFile(),
+                jobWorkingDir.getName() + ".meta");
+        return metadir_default;
     }
 
     /**
@@ -317,8 +324,8 @@ public class AWSBatchJobRunner implements JobRunner {
             
         } 
         else {    
-            throw new RuntimeException("Did not get the .gp_metadata directory.  Something seriously went wrong with the AWS batch run");
-        }  
+            throw new RuntimeException("Did not get the job.metadata directory. Something seriously went wrong with the AWS batch run");
+        }
     }
 
     protected void copyFileContents(File source, File destination){
