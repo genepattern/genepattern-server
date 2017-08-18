@@ -227,8 +227,7 @@ public class AwsBatchUtil {
      */
     protected static Set<File> getAwsBatchWrapperScripts(final DrmJobSubmission gpJob) {
         return getFileSet(gpJob, "aws-batch-script-dir", 
-            "runS3OnBatch.sh",
-            "run-in-container.sh"
+            "runS3OnBatch.sh"
         );
     } 
 
