@@ -43,7 +43,10 @@ import com.google.common.base.Strings;
 
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
-    
+
+    public static final String PROP_AWS_PROFILE="aws-profile";
+    public static final String DEFAULT_AWS_PROFILE="genepattern";
+
     public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
@@ -271,15 +274,15 @@ public class AWSBatchJobRunner implements JobRunner {
      * Pull data files from aws s3 into the local file system.
      * Template:
      *   ./<aws-batch-script-dir>/awsSyncDirectory.sh filepath
-     *   aws s3 sync ${S3_ROOT}${1} ${1} ${AWS_PROFILE_ARG}
+     *   aws s3 sync ${S3_ROOT}${1} ${1}
      * Example:
      *   # hard-coded in script
      *   S3_ROOT=s3://moduleiotest
      *   # 1st arg
      *   filepath=/jobResults/1
-     *   # set in init-aws-cli-env.sh script
-     *   AWS_PROFILE_ARG=--profile genepattern
+     *   # optionally set AWS_PROFILE in init-aws-cli-env.sh script
      * Command:
+     *   AWS_PROFILE=genepattern; aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1
      *   aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1 --profile genepattern
      */
     protected void awsSyncDirectory(final DrmJobRecord jobRecord, final File filepath) {
@@ -598,6 +601,10 @@ public class AWSBatchJobRunner implements JobRunner {
         final Map<String,String> cmdEnv=new HashMap<String,String>();
         final File metadataDir=getMetadataDir(gpJob);
         cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        final String aws_profile=AwsBatchUtil.getProperty(gpJob, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);        
+        if (aws_profile != null) {
+            cmdEnv.put("AWS_PROFILE", aws_profile);
+        }
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
         

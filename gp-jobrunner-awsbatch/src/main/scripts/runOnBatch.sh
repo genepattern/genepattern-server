@@ -49,10 +49,10 @@ CMD_LOG=${GP_METADATA_DIR}/aws_cmd.log
 #
 # Copy the input files to S3 using the same path
 #
-aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY $AWS_PROFILE_ARG >> ${S3_LOG} 2>&1
-aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              $AWS_PROFILE_ARG >> ${S3_LOG} 2>&1
-aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          $AWS_PROFILE_ARG >> ${S3_LOG} 2>&1
-aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      $AWS_PROFILE_ARG >> ${S3_LOG} 2>&1
+aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY >> ${S3_LOG} 2>&1
+aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              >> ${S3_LOG} 2>&1
+aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          >> ${S3_LOG} 2>&1
+aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      >> ${S3_LOG} 2>&1
 
 #       --container-overrides memory=2000 \
 
@@ -68,9 +68,9 @@ __args=( \
 # for debugging ...
 echo   "aws batch submit-job" >> ${CMD_LOG}
 printf "    '%s'\n" "${__args[@]}" >> ${CMD_LOG}
-echo   "    $AWS_PROFILE_ARG" >> ${CMD_LOG}
+echo   "AWS_PROFILE=${AWS_PROFILE:- (not set)}" >> ${CMD_LOG}
 echo >> ${CMD_LOG}
 
 # run 'aws batch submit-job' command ...
-aws batch submit-job "${__args[@]}" $AWS_PROFILE_ARG | \
-  python -c "import sys, json; print( json.load(sys.stdin)['jobId'])"
+aws batch submit-job "${__args[@]}" | \
+      python -c "import sys, json; print( json.load(sys.stdin)['jobId'])"
