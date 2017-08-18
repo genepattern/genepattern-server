@@ -41,6 +41,47 @@ import org.json.JSONObject;
 
 import com.google.common.base.Strings;
 
+/**
+ * Implementation of the JobRunner API for AWS Batch integration.
+ * Overview:
+ *   Each job is run in a docker container.
+ *   Support files and data files are copied into the container before running the command.
+ *   Output files are copied from the container into the GP Server head node after the command
+ *     exits. 
+ *   AWS S3 is used as an intermediary data store.
+ * 
+ * Example config_custom.yaml configuration:
+<pre>
+    default.properties:
+        executor: AWSBatch
+    ...
+    executors:
+        AWSBatch:
+            classname: org.genepattern.server.executor.drm.JobExecutor
+            configuration.properties:
+                jobRunnerClassname: org.genepattern.server.executor.awsbatch.AWSBatchJobRunner
+                jobRunnerName: AWSBatchJobRunner
+            default.properties:
+                # optional AWS Profile, 
+                #   see: http://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
+                aws-profile: "genepattern"
+                aws-s3-root: "s3://moduleiotest"
+                aws-batch-job-queue: "GenePatternAWS"
+
+                # location for aws_batch scripts
+                #   'aws-batch-script-dir' path is relative to '<wrapper-scripts>'
+                #   'aws-batch-script' path is relative to 'aws-batch-script-dir'
+                aws-batch-script-dir: "aws_batch"
+                aws-batch-script: "runOnBatch.sh" 
+</pre>
+ *
+ * See:
+ *   https://aws.amazon.com/batch/
+ *   https://aws.amazon.com/s3/
+ * 
+ * @author pcarr
+ *
+ */
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
