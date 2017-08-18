@@ -28,3 +28,4 @@ source activate awscli
 
 # set AWS_PROFILE if not already set
 : ${AWS_PROFILE=genepattern}
+: ${S3_ROOT=s3://moduleiotest}

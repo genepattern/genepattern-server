@@ -46,6 +46,9 @@ public class AWSBatchJobRunner implements JobRunner {
 
     public static final String PROP_AWS_PROFILE="aws-profile";
     public static final String DEFAULT_AWS_PROFILE="genepattern";
+    
+    // 's3-root' aka S3_PREFIX
+    public static final String PROP_AWS_S3_ROOT="aws-s3-root";
 
     public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
@@ -196,8 +199,10 @@ public class AWSBatchJobRunner implements JobRunner {
             CommandLine cl= new CommandLine(checkStatusScript);
             // tasklib
             cl.addArgument(awsId);
-            final Map<String,String> cmdEnv=null;
             try {
+                final File metadataDir=getMetadataDir(jobRecord);
+                final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+                final Map<String,String> cmdEnv=initAwsCmdEnv(ServerConfigurationFactory.instance(), jobContext, metadataDir);
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -220,9 +225,8 @@ public class AWSBatchJobRunner implements JobRunner {
                     b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
                     b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
                     b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
-                    final File metadataDir=getMetadataDir(jobRecord);
                     try {
-                        refreshWorkingDirFromS3(jobRecord, metadataDir);
+                        refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
                     } 
                     catch (Throwable t) {
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
@@ -270,6 +274,33 @@ public class AWSBatchJobRunner implements JobRunner {
         return metadir_default;
     }
 
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
+        final File metadataDir=getMetadataDir(gpJob);
+        return initAwsCmdEnv(gpJob.getGpConfig(), gpJob.getJobContext(), metadataDir);
+    }
+
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord) {
+        final File metadataDir=getMetadataDir(jobRecord);
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+        return initAwsCmdEnv(ServerConfigurationFactory.instance(), jobContext, metadataDir);
+    }
+    
+    protected final Map<String,String> initAwsCmdEnv(final GpConfig gpConfig, final GpContext jobContext, final File metadataDir) {
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);
+        if (aws_profile != null) {
+            cmdEnv.put("AWS_PROFILE", aws_profile);
+        }
+        final String s3_root=gpConfig.getGPProperty(jobContext, PROP_AWS_S3_ROOT);
+        if (s3_root != null) {
+            cmdEnv.put("S3_ROOT", s3_root);
+        }
+        return cmdEnv; 
+    }
+
     /**
      * Pull data files from aws s3 into the local file system.
      * Template:
@@ -285,7 +316,7 @@ public class AWSBatchJobRunner implements JobRunner {
      *   AWS_PROFILE=genepattern; aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1
      *   aws s3 sync s3://moduleiotest/jobResults/1 /jobResults/1 --profile genepattern
      */
-    protected void awsSyncDirectory(final DrmJobRecord jobRecord, final File filepath) {
+    protected void awsSyncDirectory(final DrmJobRecord jobRecord, final File filepath, final Map<String,String> cmdEnv) {
         // call out to a script to refresh the directory path to pull files from S3
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         //
@@ -298,7 +329,6 @@ public class AWSBatchJobRunner implements JobRunner {
         CommandLine cl= new CommandLine(synchWorkingDirScript);
         // tasklib
         cl.addArgument(filepath.getAbsolutePath());
-        final Map<String,String> cmdEnv=null;
         try {
             exec.execute(cl, cmdEnv);
             if (log.isDebugEnabled()) {
@@ -311,11 +341,11 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
-    private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir) {
+    private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir, final Map<String, String> cmdEnv) {
         // pull the job.metaDir from s3
-        awsSyncDirectory(jobRecord, metadataDir);
+        awsSyncDirectory(jobRecord, metadataDir, cmdEnv);
         // pull the job.workingDir from s3
-        awsSyncDirectory(jobRecord, jobRecord.getWorkingDir());
+        awsSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
 
         // Now we have synch'd set the jobs stderr and stdout to the ones we got back from AWS
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
@@ -383,7 +413,8 @@ public class AWSBatchJobRunner implements JobRunner {
             // tasklib
             cl.addArgument(awsId);
             try {
-                exec.execute(cl);
+                final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord);
+                exec.execute(cl, cmdEnv);
                 if (log.isDebugEnabled()) { 
                     String output =  outputStream.toString().trim();
                     log.debug("output: "+output);
@@ -597,14 +628,8 @@ public class AWSBatchJobRunner implements JobRunner {
         }
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final Executor exec=initExecutorForJob(gpJob, outputStream);
-        final Map<String,String> cmdEnv=new HashMap<String,String>();
-        final File metadataDir=getMetadataDir(gpJob);
-        cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
-        final String aws_profile=AwsBatchUtil.getProperty(gpJob, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);        
-        if (aws_profile != null) {
-            cmdEnv.put("AWS_PROFILE", aws_profile);
-        }
+        final Executor exec=initExecutorForJob(gpJob, outputStream); 
+        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
         

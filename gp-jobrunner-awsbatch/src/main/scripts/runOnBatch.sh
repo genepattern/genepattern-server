@@ -21,6 +21,8 @@ shift
 shift
 shift
 
+: ${S3_ROOT?not set}
+
 # ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
 # create 'exec.sh' script in the GP_METADATA_DIR
 : ${GP_METADATA_DIR=$WORKING_DIR/.gp_metadata}
@@ -66,9 +68,10 @@ __args=( \
 );
 
 # for debugging ...
-echo   "aws batch submit-job" >> ${CMD_LOG}
-printf "    '%s'\n" "${__args[@]}" >> ${CMD_LOG}
 echo   "AWS_PROFILE=${AWS_PROFILE:- (not set)}" >> ${CMD_LOG}
+echo   "    S3_ROOT=${S3_ROOT:- (not set)}" >> ${CMD_LOG}
+echo   "aws batch submit-job" >> ${CMD_LOG}
+printf "  '%s'\n" "${__args[@]}" >> ${CMD_LOG}
 echo >> ${CMD_LOG}
 
 # run 'aws batch submit-job' command ...
