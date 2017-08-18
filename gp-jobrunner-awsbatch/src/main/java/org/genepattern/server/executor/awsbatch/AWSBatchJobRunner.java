@@ -49,6 +49,9 @@ public class AWSBatchJobRunner implements JobRunner {
     
     // 's3-root' aka S3_PREFIX
     public static final String PROP_AWS_S3_ROOT="aws-s3-root";
+    
+    // 'aws-batch-job-queue'
+    public static final String PROP_AWS_BATCH_JOB_QUEUE="aws-batch-job-queue";
 
     public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
@@ -297,6 +300,10 @@ public class AWSBatchJobRunner implements JobRunner {
         final String s3_root=gpConfig.getGPProperty(jobContext, PROP_AWS_S3_ROOT);
         if (s3_root != null) {
             cmdEnv.put("S3_ROOT", s3_root);
+        }
+        final String job_queue=gpConfig.getGPProperty(jobContext, PROP_AWS_BATCH_JOB_QUEUE);
+        if (job_queue != null) {
+            cmdEnv.put("JOB_QUEUE", job_queue);
         }
         return cmdEnv; 
     }

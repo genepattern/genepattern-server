@@ -28,4 +28,7 @@ source activate awscli
 
 # set AWS_PROFILE if not already set
 : ${AWS_PROFILE=genepattern}
+# set S3_ROOT if not already set
 : ${S3_ROOT=s3://moduleiotest}
+# set JOB_QUEUE if not already set
+: ${JOB_QUEUE=TedTest}

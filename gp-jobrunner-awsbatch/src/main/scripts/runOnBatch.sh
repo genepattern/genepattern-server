@@ -3,7 +3,6 @@
 # initialize aws-cli environment
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
 source "${script_dir}/init-aws-cli-env.sh"
-source "${script_dir}/gpAwsBatchConf.sh"
 
 #
 # positional parameters from the JobRunner implementation
@@ -22,6 +21,7 @@ shift
 shift
 
 : ${S3_ROOT?not set}
+: ${JOB_QUEUE?not set}
 
 # ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
 # create 'exec.sh' script in the GP_METADATA_DIR
@@ -70,6 +70,7 @@ __args=( \
 # for debugging ...
 echo   "AWS_PROFILE=${AWS_PROFILE:- (not set)}" >> ${CMD_LOG}
 echo   "    S3_ROOT=${S3_ROOT:- (not set)}" >> ${CMD_LOG}
+echo   "  JOB_QUEUE=${JOB_QUEUE:- (not set)}" >> ${CMD_LOG}
 echo   "aws batch submit-job" >> ${CMD_LOG}
 printf "  '%s'\n" "${__args[@]}" >> ${CMD_LOG}
 echo >> ${CMD_LOG}
