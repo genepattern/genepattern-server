@@ -245,8 +245,7 @@ public class AWSBatchJobRunner implements JobRunner {
             cl.addArgument(awsId);
             try {
                 final File metadataDir=getMetadataDir(jobRecord);
-                final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
-                final Map<String,String> cmdEnv=initAwsCmdEnv(ServerConfigurationFactory.instance(), jobContext, metadataDir);
+                final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord, metadataDir);
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
@@ -318,22 +317,14 @@ public class AWSBatchJobRunner implements JobRunner {
         return metadir_default;
     }
 
-    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
-        final File metadataDir=getMetadataDir(gpJob);
-        return initAwsCmdEnv(gpJob.getGpConfig(), gpJob.getJobContext(), metadataDir);
-    }
-
-    protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord) {
-        final File metadataDir=getMetadataDir(jobRecord);
-        final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
-        return initAwsCmdEnv(ServerConfigurationFactory.instance(), jobContext, metadataDir);
-    }
-    
-    protected final Map<String,String> initAwsCmdEnv(final GpConfig gpConfig, final GpContext jobContext, final File metadataDir) {
-        final Map<String,String> cmdEnv=new HashMap<String,String>();
-        if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
-        }
+    /**
+     * Set optional aws cli environment variables 
+     * @param cmdEnv
+     * @param gpConfig
+     * @param jobContext
+     * @return
+     */
+    protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext) {
         final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);
         if (aws_profile != null) {
             cmdEnv.put("AWS_PROFILE", aws_profile);
@@ -347,6 +338,32 @@ public class AWSBatchJobRunner implements JobRunner {
             cmdEnv.put("JOB_QUEUE", job_queue);
         }
         return cmdEnv; 
+    }
+
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        initAwsCliEnv(cmdEnv, gpJob.getGpConfig(), gpJob.getJobContext());
+        final File metadataDir=getMetadataDir(gpJob);
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        return cmdEnv;
+    }
+
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord) {
+        final File metadataDir=getMetadataDir(jobRecord);
+        return initAwsCmdEnv(jobRecord, metadataDir);
+    }
+
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord, final File metadataDir) {
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+        initAwsCliEnv(cmdEnv, gpConfig, jobContext);
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        return cmdEnv;
     }
 
     /**
@@ -532,7 +549,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * First pass the arguments needed by the AWS launch script, then follow
      * with the normal GenePattern command line
      */
-    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob) throws CommandExecutorException {
+    protected static CommandLine initAwsBatchScript(final DrmJobSubmission gpJob, final File inputDir, final Set<File> inputFiles, final Map<String, String> inputFileMap) throws CommandExecutorException {
         if (gpJob == null) {
             throw new IllegalArgumentException("gpJob==null");
         }
@@ -574,14 +591,9 @@ public class AWSBatchJobRunner implements JobRunner {
         final String awsJobName=getAwsJobName(gpJob);
         cl.addArgument(awsJobName, handleQuoting);
 
-        // Handle job input files, if necessary edit command line args, before AWS Batch submission.
-        //   -- make symbolic links in the .inputs_for_{job_id} directory
-        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
-        inputDir.mkdir();
+        // handle input files
         cl.addArgument(inputDir.getAbsolutePath(), handleQuoting); 
-        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
-        //   -- substitute input file paths, replace original with linked file paths
+        // substitute input file paths, replace original with linked file paths
         final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
         for(final String arg : cmdLine) {
             cl.addArgument(arg, handleQuoting);
@@ -638,6 +650,21 @@ public class AWSBatchJobRunner implements JobRunner {
         return arg;
     }
 
+    protected static String getLinkedStdinFile(final DrmJobSubmission gpJob, final Map<String, String> inputFileMap) {
+        final File stdinLocal=gpJob.getRelativeFile(gpJob.getStdinFile());
+        if (stdinLocal == null) {
+            return null;
+        }
+        final String localFilepath = stdinLocal.getPath();
+        final String linkedFilepath = inputFileMap.get(localFilepath);
+        if (!Strings.isNullOrEmpty(linkedFilepath)) {
+            return linkedFilepath;
+        }
+        else {
+            return localFilepath;
+        }
+    }
+
     protected static Executor initExecutorForJob(final DrmJobSubmission gpJob, ByteArrayOutputStream outputStream) throws ExecutionException, IOException {
        // File outfile = gpJob.getRelativeFile(gpJob.getStdoutFile());
         File errfile = gpJob.getRelativeFile(gpJob.getStderrFile());
@@ -667,7 +694,14 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected DrmJobStatus submitAwsBatchJob(final DrmJobSubmission gpJob) throws CommandExecutorException, ExecutionException, IOException {
-        CommandLine cl = initAwsBatchScript(gpJob);
+        // Handle job input files before AWS Batch submission
+        //   -- make symbolic links in the .inputs_for_{job_id} directory
+        final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
+        inputDir.mkdir();
+        final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
+        final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
+
+        final CommandLine cl = initAwsBatchScript(gpJob, inputDir, inputFiles, inputFileMap);
         if (log.isDebugEnabled()) {
             log.debug("aws-batch-script-cmd='"+cl.getExecutable()+"'");
             for(final String arg : cl.getArguments()) {
@@ -678,6 +712,11 @@ public class AWSBatchJobRunner implements JobRunner {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Executor exec=initExecutorForJob(gpJob, outputStream); 
         final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
+        // set GP_STDIN_FILE
+        final String linkedStdIn=getLinkedStdinFile(gpJob, inputFileMap);
+        if (!Strings.isNullOrEmpty(linkedStdIn)) {
+            cmdEnv.put("GP_STDIN_FILE", linkedStdIn);
+        }
         exec.execute(cl, cmdEnv);
         String awsJobId =  outputStream.toString();
         

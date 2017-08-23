@@ -39,6 +39,13 @@ do
   printf %q "${arg}" >> $EXEC_SHELL
   printf " " >> $EXEC_SHELL
 done
+
+# optionally, redirect stdin from a file
+if [[ -s $GP_STDIN_FILE ]]; then
+  printf %s " < " >> $EXEC_SHELL
+  printf %q "${GP_STDIN_FILE}" >> $EXEC_SHELL
+fi
+
 echo "" >> $EXEC_SHELL
 
 chmod u+x $EXEC_SHELL
