@@ -1,0 +1,151 @@
+useDynLib(ape, .registration = TRUE)
+
+exportPattern("^[^\\.]")
+export(.compressTipLabel, .uncompressTipLabel, .PlotPhyloEnv)
+
+importFrom(graphics, arrows, identify, image.default, lines, plot,
+           plot.default, segments)
+importFrom(lattice, xyplot, panel.lines, panel.points)
+importFrom(nlme, corMatrix, Dim, getCovariate, getGroups,
+           getGroupsFormula, gls, Initialize)
+importFrom(stats, as.hclust, biplot, coef, cophenetic, drop1, hclust,
+           mahalanobis, reorder)
+importFrom(utils, setTxtProgressBar, txtProgressBar)
+
+## Methods for the classes defined in ape, including for the generics
+## defined in ape (see also below). Some methods are exported above.
+
+S3method(AIC, ace)
+S3method(anova, ace)
+S3method(deviance, ace)
+S3method(logLik, ace)
+S3method(print, ace)
+
+S3method(print, binaryPGLMM)
+
+S3method(as.prop.part, bitsplits)
+S3method(is.compatible, bitsplits)
+S3method(print, bitsplits)
+S3method(sort, bitsplits)
+
+S3method(drop1, compar.gee)
+S3method(predict, compar.gee)
+S3method(print, compar.gee)
+
+S3method(print, corphylo)
+
+S3method("[", DNAbin)
+S3method(as.character, DNAbin)
+S3method(as.list, DNAbin)
+S3method(as.matrix, DNAbin)
+S3method(c, DNAbin)
+S3method(cbind, DNAbin)
+S3method(image, DNAbin)
+S3method(labels, DNAbin)
+S3method(makeLabel, DNAbin)
+S3method(print, DNAbin)
+S3method(rbind, DNAbin)
+
+S3method(as.phylo, evonet)
+S3method(plot, evonet)
+S3method(print, evonet)
+
+S3method("[", multiPhylo)
+S3method("[<-", multiPhylo)
+S3method("[[", multiPhylo)
+S3method("[[<-", multiPhylo)
+S3method("$", multiPhylo)
+S3method("$<-", multiPhylo)
+S3method(c, multiPhylo)
+S3method(makeLabel, multiPhylo)
+S3method(plot, multiPhylo)
+S3method(print, multiPhylo)
+S3method(str, multiPhylo)
+S3method(unique, multiPhylo)
+
+S3method("+", phylo)
+S3method(all.equal, phylo)
+S3method(as.hclust, phylo)
+S3method(as.matching, phylo)
+S3method(coalescent.intervals, phylo)
+S3method(c, phylo)
+S3method(cophenetic, phylo)
+S3method(identify, phylo)
+S3method(makeLabel, phylo)
+S3method(plot, phylo)
+S3method(print, phylo)
+S3method(reorder, phylo)
+S3method(skyline, phylo)
+S3method(summary, phylo)
+S3method(vcv, phylo)
+
+S3method(plot, phymltest)
+S3method(print, phymltest)
+S3method(summary, phymltest)
+
+S3method(lines, popsize)
+S3method(plot, popsize)
+
+S3method(as.bitsplits, prop.part)
+S3method(plot, prop.part)
+S3method(print, prop.part)
+S3method(summary, prop.part)
+
+S3method(lines, skyline)
+S3method(plot, skyline)
+
+## Methods for PGLS:
+
+## methods of coef() from stats:
+S3method(coef, corBlomberg)
+S3method(coef, corBrownian)
+S3method(coef, corGrafen)
+S3method(coef, corMartins)
+S3method(coef, corPagel)
+
+## methods to work with nlme:
+S3method(corMatrix, corBlomberg)
+S3method(corMatrix, corBrownian)
+S3method(corMatrix, corGrafen)
+S3method(corMatrix, corMartins)
+S3method(corMatrix, corPagel)
+S3method(Initialize, corPhyl)
+
+## Miscellaneous classes for which there is only one method:
+
+S3method(biplot, pcoa)
+
+S3method(plot, correlogram)
+S3method(plot, correlogramList)
+S3method(plot, mst)
+S3method(plot, varcomp)
+
+S3method(print, birthdeath)
+S3method(print, bitsplits)
+S3method(print, chronos)
+S3method(print, lmorigin)
+S3method(print, parafit)
+
+## Other methods of the generics defined in ape:
+
+S3method(as.DNAbin, alignment)
+S3method(as.DNAbin, character)
+S3method(as.DNAbin, DNAMultipleAlignment)
+S3method(as.DNAbin, DNAString)
+S3method(as.DNAbin, DNAStringSet)
+S3method(as.DNAbin, list)
+S3method(as.DNAbin, PairwiseAlignmentsSingleSubject)
+
+S3method(as.phylo, formula)
+S3method(as.phylo, hclust)
+S3method(as.phylo, matching)
+S3method(as.phylo, phylog)
+
+S3method(coalescent.intervals, default)
+
+S3method(makeLabel, character)
+
+S3method(skyline, coalescentIntervals)
+S3method(skyline, collapsedIntervals)
+
+S3method(vcv, corPhyl)

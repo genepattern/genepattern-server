@@ -26,6 +26,9 @@ export PATH="${PATH}:${MINICONDA2_HOME}/bin"
 # -u  aws-cli/1.11.87
 source activate awscli
 
-#export AWS_PROFILE_ARG=""
-#export AWS_PROFILE_ARG="--region us-east-1"
-export AWS_PROFILE_ARG="--profile genepattern"
+# set AWS_PROFILE if not already set
+: ${AWS_PROFILE=genepattern}
+# set S3_ROOT if not already set
+: ${S3_ROOT=s3://moduleiotest}
+# set JOB_QUEUE if not already set
+: ${JOB_QUEUE=TedTest}

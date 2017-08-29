@@ -1,0 +1,13 @@
+citHeader("To cite ape in a publication use:")
+
+citEntry(entry="Article",
+	title = "A{PE}: analyses of phylogenetics and evolution in {R} language",
+        author = personList(as.person("E. Paradis"),as.person("J. Claude"), as.person("K. Strimmer")),
+	journal = "Bioinformatics",
+  	year = "2004",
+	volume = "20",
+	pages = "289-290",
+
+        textVersion = "Paradis E., Claude J. & Strimmer K. 2004. APE: analyses of phylogenetics and evolution in R language. Bioinformatics 20: 289-290.")
+
+citFooter("As ape is evolving quickly, you may want to cite also its version number (found with 'library(help = ape)').")
