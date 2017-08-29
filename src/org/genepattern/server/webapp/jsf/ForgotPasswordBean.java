@@ -33,15 +33,37 @@ public class ForgotPasswordBean {
         this.username = username;
     }
 
+    private void setMessageIfJSF(String type, String message) {
+        boolean isFacesRequest = UIBeanHelper.getFacesContext() != null;
+
+        if (isFacesRequest && "error".equals(type)) {
+            UIBeanHelper.setErrorMessage(message);
+        }
+        else if (isFacesRequest && "info".equals(type)) {
+            UIBeanHelper.setInfoMessage(message);
+        }
+        else if (isFacesRequest) {
+            UIBeanHelper.setErrorMessage(message);
+        }
+    }
+
+    private void setErrorIfJSF(String message) {
+        setMessageIfJSF("error", message);
+    }
+
+    private void setInfoIfJSF(String message) {
+        setMessageIfJSF("info", message);
+    }
+
     private String resetPasswordSSO() {
         HttpServletRequest request = UIBeanHelper.getRequest();
         try {
             GenomeSpaceLoginManager.resetPassword(request);
-            UIBeanHelper.setInfoMessage("A temporary password was sent to your registered email.");
+            setInfoIfJSF("A temporary password was sent to your registered email.");
             return "success";
         }
         catch (GenomeSpaceException e) {
-            UIBeanHelper.setErrorMessage(e.getMessage());
+            setErrorIfJSF(e.getMessage());
             return "failure";
         }
     }
@@ -49,12 +71,12 @@ public class ForgotPasswordBean {
     private String resetPasswordDefault() {
         final User user = new UserDAO(HibernateUtil.instance()).findById(username);
         if (user == null) {
-            UIBeanHelper.setErrorMessage("User not registered: " + username);
+            setErrorIfJSF("User not registered: " + username);
             return "failure";
         }
         final String email = user.getEmail();
         if (email == null || email.length() == 0) {
-            UIBeanHelper.setErrorMessage("No email address for username: " + username);
+            setErrorIfJSF("No email address for username: " + username);
             return "failure";
         }
 
@@ -66,7 +88,7 @@ public class ForgotPasswordBean {
         }
         catch (NoSuchAlgorithmException e) {
             log.error(e);
-            UIBeanHelper.setErrorMessage("Server configuration error: Unable to encrypt password. "
+            setErrorIfJSF("Server configuration error: Unable to encrypt password. "
                     + "\nContact the GenePattern server administrator for help.");
             return "failure";
         }
@@ -74,12 +96,12 @@ public class ForgotPasswordBean {
         try {
             sendResetPasswordMessage(email, newPassword);
             user.setPassword(encryptedPassword);
-            UIBeanHelper.setInfoMessage("Your new password has been sent to " + email + ".");
+            setInfoIfJSF("Your new password has been sent to " + email + ".");
             return "success";
         }
         catch (Exception e) {
             log.error(e);
-            UIBeanHelper.setErrorMessage("Unable to send email to '"+email+"': " + e.getLocalizedMessage() + ". " +
+            setErrorIfJSF("Unable to send email to '"+email+"': " + e.getLocalizedMessage() + ". " +
                     "Contact the GenePattern server administrator for help.");
             return "failure";
         }

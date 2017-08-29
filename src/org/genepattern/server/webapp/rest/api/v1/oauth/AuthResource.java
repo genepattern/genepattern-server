@@ -27,16 +27,14 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.OAuthManager;
+import org.genepattern.server.webapp.jsf.ForgotPasswordBean;
 import org.genepattern.server.webapp.jsf.RegistrationBean;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -341,6 +339,49 @@ public class AuthResource {
         OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
                 .setExpiresIn(String.valueOf(TOKEN_EXPIRY_TIME)).buildJSONMessage();
         return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
+    }
+
+    @PUT
+    @Path("/forgot-password")
+    @Produces("application/json")
+    public Response forgotPassword(@Context HttpServletRequest request, String body) throws OAuthSystemException {
+        String usernameOrEmail = null;
+        String message = null;
+
+        // Parse the request body as JSON
+        try {
+            JSONObject json = new JSONObject(body);
+            usernameOrEmail = json.getString("usernameOrEmail");
+            if (usernameOrEmail == null) throw new JSONException("null value for usernameOrEmail");
+        }
+        catch (JSONException e) {
+            JSONObject messageJson = new JSONObject();
+            try {
+                messageJson.put("message", "Unable to pase the request body as JSON or missing the usernameOrEmail parameter.");
+            }
+            catch (JSONException e1) {} // "message" key is never null, so this will never happen
+
+            return Response.serverError().entity(messageJson.toString()).build();
+        }
+
+        // Instantiate the ForgotPasswordBean to email a new password
+        ForgotPasswordBean bean = new ForgotPasswordBean();
+        bean.setUsername(usernameOrEmail);
+        String status = bean.resetPassword();
+
+        // Parse the status and set a message for the user
+        if ("success".equals(status)) message = "A new password has been emailed to you.";
+        else message = "Unable to locate user. Password not reset.";
+
+        // Create the JSON object to return
+        JSONObject object = new JSONObject();
+        try {
+            object.put("message", message);
+        }
+        catch (JSONException e) {
+            log.error("Error producing JSON object for AuthResource.forgotPassword()");
+        }
+        return Response.ok().entity(object.toString()).build();
     }
 
     /**
