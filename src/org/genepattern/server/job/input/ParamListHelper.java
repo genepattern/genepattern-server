@@ -728,7 +728,7 @@ public class ParamListHelper {
             parameterInfoRecord.getActual().setValue(toFileHref);
             saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
         }
-        else if (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
+        else if (numValues > 0 && (ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode))))
         {
             // set the display value ...
             String valuesString="[" + Joiner.on(", ").join(actualValues.getValues()) + "]";
