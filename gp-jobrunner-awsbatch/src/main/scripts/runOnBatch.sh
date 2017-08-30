@@ -66,12 +66,17 @@ aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      >> ${S3_LOG} 2>&
 #       --container-overrides memory=2000 \
 
 # initialize 'aws batch submit-job' args ...
+__env_arg="environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}, \
+  {name=STDOUT_FILENAME,value=${GP_METADATA_DIR}/stdout.txt}, \
+  {name=STDERR_FILENAME,value=${GP_METADATA_DIR}/stderr.txt} \
+]";
+
 __args=( \
   "--job-name" "$JOB_ID" \
   "--job-queue" "$JOB_QUEUE" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
   "--parameters" "taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1=$REMOTE_COMMAND"  \
-  "--container-overrides" "environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}]" \
+  "--container-overrides" "${__env_arg:-}" \
 );
 
 # for debugging ...
