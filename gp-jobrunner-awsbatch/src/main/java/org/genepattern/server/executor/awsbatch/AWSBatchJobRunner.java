@@ -3,7 +3,6 @@ package org.genepattern.server.executor.awsbatch;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -666,21 +665,10 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected static Executor initExecutorForJob(final DrmJobSubmission gpJob, ByteArrayOutputStream outputStream) throws ExecutionException, IOException {
-       // File outfile = gpJob.getRelativeFile(gpJob.getStdoutFile());
         File errfile = gpJob.getRelativeFile(gpJob.getStderrFile());
-        File infile = gpJob.getRelativeFile(gpJob.getStdinFile());
-        final PumpStreamHandler pumpStreamHandler;
-        if (infile != null) {
-            pumpStreamHandler = new PumpStreamHandler( 
-                    outputStream,
-                new FileOutputStream(errfile),
-                new FileInputStream(infile));
-        }
-        else {
-            pumpStreamHandler = new PumpStreamHandler( 
+        final PumpStreamHandler pumpStreamHandler = new PumpStreamHandler( 
                     outputStream,
                 new FileOutputStream(errfile));
-        }
         
         final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
         final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
