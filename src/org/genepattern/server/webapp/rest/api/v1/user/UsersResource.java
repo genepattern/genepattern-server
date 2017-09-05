@@ -11,7 +11,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.JSONArray;
+import org.json.JSONArray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -97,7 +97,7 @@ public class UsersResource {
         JSONArray usersJSONArray = new JSONArray();
 
         try {
-            for (User u : users) usersJSONArray.add(new UserJSON(u));
+            for (User u : users) usersJSONArray.put(new UserJSON(u));
             returnJSON.put("users", usersJSONArray);
         }
         catch (JSONException e) {
