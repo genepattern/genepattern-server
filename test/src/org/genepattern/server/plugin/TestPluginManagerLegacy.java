@@ -29,9 +29,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 public class TestPluginManagerLegacy {
     final static String ANT="urn:lsid:broadinstitute.org:plugin:Ant_1.8:1";
@@ -42,9 +40,6 @@ public class TestPluginManagerLegacy {
     final static String TopHat_2_0_11="urn:lsid:broadinstitute.org:plugin:TopHat_2.0.11:4";
     
     private HibernateSessionManager mgr;
-
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
     public void setUp() {
@@ -85,8 +80,8 @@ public class TestPluginManagerLegacy {
 
     @Test
     public void getPatchDirectory() throws Exception {
-        final GpConfig gpConfig = mock(GpConfig.class);
-        final File rootPluginDir = new File(tmp.newFolder(), "patches");
+        final GpConfig gpConfig = Demo.gpConfig();
+        final File rootPluginDir = FileUtil.getPatchesDir();
         when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(rootPluginDir);
         final PluginManagerLegacy pluginMgr=new PluginManagerLegacy(mgr, gpConfig, Demo.serverContext, null);
         assertEquals(new File(rootPluginDir, "broadinstitute.org.plugin.Ant_1.8.1"), 
@@ -106,9 +101,8 @@ public class TestPluginManagerLegacy {
         final String pluginCmdLineFromManifest="<ant> -f installAnt.xml -Dresources=<resources> -Dplugin.dir=<patches> -Dant-1.8_HOME=<ant-1.8_HOME>";
 
         // setup ...
-        final File tmpDir=tmp.newFolder();
-        final File resourcesDir=new File(tmpDir, "resources");
-        final File pluginDir=new File(tmpDir, "patches");
+        final File resourcesDir=FileUtil.getResourcesDir();
+        final File pluginDir=FileUtil.getPatchesDir();
         final String java_val="java";
         final String ant_val="<java> -Dant.home=<ant-1.8_HOME> -cp <ant-1.8_HOME>/lib/ant-launcher.jar org.apache.tools.ant.launch.Launcher";
         final String ant_1_8_home=new File("website/WEB-INF/tools/ant/apache-ant-1.8.4").getAbsolutePath();
@@ -138,9 +132,8 @@ public class TestPluginManagerLegacy {
         final String cmdLine="echo patches=<patches>";
         
         // setup ...
-        final File tmpDir=tmp.newFolder();
-        final File pluginDir=new File(tmpDir, "patches");
-        final GpConfig gpConfig = mock(GpConfig.class);
+        final GpConfig gpConfig = Demo.gpConfig();
+        final File pluginDir=FileUtil.getPatchesDir();
         when(gpConfig.getRootPluginDir(Demo.serverContext)).thenReturn(pluginDir);
         // ... end setup
         
@@ -156,9 +149,8 @@ public class TestPluginManagerLegacy {
         final String cmdLine="echo resources=<resources>";
         
         // setup ...
-        final File tmpDir=tmp.newFolder();
-        final File resourcesDir=new File(tmpDir, "resources");
-        final GpConfig gpConfig = mock(GpConfig.class);
+        final File resourcesDir=FileUtil.getResourcesDir();
+        final GpConfig gpConfig = Demo.gpConfig();
         when(gpConfig.getResourcesDir()).thenReturn(resourcesDir);
         // ... end setup
         
