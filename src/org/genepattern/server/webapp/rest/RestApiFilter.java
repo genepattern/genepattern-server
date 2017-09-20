@@ -56,6 +56,12 @@ public class RestApiFilter implements Filter {
             return;
         }
 
+        // Don't attempt basic auth on status query
+        if (pathInfo.startsWith("/v1/config/system-message")) {
+            chain.doFilter(req, resp);
+            return;
+        }
+
         // Check supported forms of authentication
         String gpUserId = null;
         try {
