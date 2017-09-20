@@ -6,7 +6,9 @@ package org.genepattern.server.user;
 
 // Generated Sep 21, 2006 12:36:06 PM by Hibernate Tools 3.1.0.beta5
 
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -56,6 +58,19 @@ public class UserDAO extends BaseDAO {
             return (User) results.get(0);
         }
         return null;
+    }
+
+    public List<User> getNewUsers(Date startDate, Date endDate) {
+        SimpleDateFormat queryFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startStr = queryFormat.format(startDate);
+        String endStr = queryFormat.format(endDate);
+
+        String query = "from org.genepattern.server.user.User where registrationDate >= '" + startStr + "' and registrationDate <= '" + endStr + "' order by registrationDate";
+        log.error(query);
+
+        @SuppressWarnings("unchecked")
+        List<User> users = this.mgr.getSession().createQuery(query).list();
+        return users;
     }
     
     public List<User> getAllUsers() {
