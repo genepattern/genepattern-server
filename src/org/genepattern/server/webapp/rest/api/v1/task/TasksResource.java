@@ -745,6 +745,7 @@ public class TasksResource {
         }
         jsonObj.put("documentation", getDocLink(request, taskInfo));
         jsonObj.put("lsid", taskInfo.getLsid());
+
         JSONArray paramsJson=new JSONArray();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
             final JSONObject attributesJson = new JSONObject();
@@ -758,8 +759,17 @@ public class TasksResource {
             attrObj.put("attributes", attributesJson);
             attrObj.put("description", pinfo.getDescription());
 
+            // Handle static choice parameters
             if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
                 ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
+                attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
+            }
+
+            // Handle dynamic choice parameters
+            if (pinfo.getAttributes().containsKey("choiceDir")) {
+                ParameterInfoRecord pinfoRecord = new ParameterInfoRecord(pinfo);
+                ChoiceInfoParser parser = ChoiceInfo.getChoiceInfoParser(taskContext);
+                ChoiceInfo choices = parser.initChoiceInfo(pinfoRecord.getFormal());
                 attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
             }
 
