@@ -15,7 +15,7 @@ create table JOB_INPUT_ATTRIBUTE (
     name varchar(255),
     val varchar(255),
     primary key (id));
-create index IDX_JIA_ID on JOB_INPUT_attribute (input_id);
+create index IDX_JIA_ID on JOB_INPUT_ATTRIBUTE (input_id);
 
 create table JOB_RESULT (
     id bigint not null auto_increment,

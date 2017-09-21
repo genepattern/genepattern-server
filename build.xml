@@ -621,55 +621,7 @@
         <property file="${build.properties.file}" />
     </target>
 
-    <!-- **************** ANTHILL TARGETS *************-->
-    <target name="loadModules" depends="">
-        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile" />
-        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir" />
-    </target>
-
-    <target name="checkForOldInstall" depends="init">
-        <available property="oldInstallpresent" value="true" file="${defaultInstallDir}" />
-        <available file="${defaultInstallDir}/StopGenePatternServer" property="stopServerPresent" />
-        <available file="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern" property="uninstallerPresent" />
-    </target>
-
-    <target name="startServer" depends="init">
-        <exec executable="${defaultInstallDir}/StartGenePatternServer" failifexecutionfails="false" failonerror="false" />
-    </target>
-
-    <target name="stopServer" depends="checkForOldInstall" if="stopServerPresent">
-        <exec executable="${defaultInstallDir}/StopGenePatternServer" failifexecutionfails="false" failonerror="false" />
-    </target>
-
-    <target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stopServer">
-        <exec failifexecutionfails="false" dir="${defaultInstallDir}/UninstallerData" executable="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern">
-            <arg line="-i SILENT" />
-        </exec>
-    </target>
-
-    <target name="installLocal" depends="init, uninstall">
-        <!-- install the new one -->
-        <copy overwrite="true"
-              file="./installer-2014/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin"
-              todir="./" />
-
-        <chmod file="./GPserver.bin" perm="a+rwx" />
-
-        <exec dir="./" executable="./GPserver.bin">
-            <arg line="-f gp3.2.dev_node256.properties" />
-        </exec>
-    </target>
-
     <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, installers, createWar, copyWar" />
-
-    <target name="publishBuild">
-        <!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
-        <antcall target="installLocal" />
-
-        <!-- To complete the install -->
-        <!-- 1. force a server registration -->
-        <!-- 2. load the modules since the installer doesn't - once we can start the server -->
-    </target>
 
     <property name="webapp.path" value="website" />
     <target name="jspc" depends="init" description="generate .java files from .jsp files">

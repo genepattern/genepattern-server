@@ -26,18 +26,18 @@ create table PATCH_INFO (
     user_id varchar(255) default null,
     url varchar(255) default null,
     patch_dir varchar(255) default null,
-    status_date timestamp not null,
+    status_date timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
     primary key (id),
     unique (lsid)
 );
 
 -- initialize with default values, previously set in genepattern.properties file
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1');
-insert into patch_info (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00002:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00004:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00006:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00007:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00008:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1');
+insert into PATCH_INFO (lsid) values ('urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1');
 
 commit;

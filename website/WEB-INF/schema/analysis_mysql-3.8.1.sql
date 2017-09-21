@@ -14,8 +14,7 @@ create table JOB_INPUT_VALUE (
 -- small change to make it easier to remove eula records
 -- 
 alter table EULA_REMOTE_QUEUE
-    add constraint erq_fk
-    FOREIGN KEY (eula_record_id) references eula_record(id)
+    add constraint ERQ_FK
+    FOREIGN KEY (eula_record_id) references EULA_RECORD(id)
     on delete cascade;
-
 commit;

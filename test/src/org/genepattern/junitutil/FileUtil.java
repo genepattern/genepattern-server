@@ -51,6 +51,15 @@ public class FileUtil {
         return webappDir;
     }
 
+    public static final File patchesDir=new File("test/data/patches").getAbsoluteFile();
+    /**
+     * Get the patchesDir for unit testing, as a fully qualified File
+     * to the top-level './test/data/patches' directory for the project.
+     */
+    public static File getPatchesDir() {
+        return patchesDir;
+    }
+
     private static File dataDir=new File("test/data");
     /**
      * Get the top-level directory for data files used by the unit tests. 

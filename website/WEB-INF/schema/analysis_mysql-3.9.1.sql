@@ -15,7 +15,7 @@ create table TAG (
     user_id varchar(255) not null,
     public_tag bit default 0 not null,
     primary key (tag_id));
-create index idx_tag on tag(tag);
+create index idx_tag on TAG(tag);
 
 create table JOB_TAG (
     id integer not null auto_increment,
