@@ -32,7 +32,7 @@
         <ui:define name="body">
 
             <!--  login page if not logged in -->
-            <h:outputText rendered="#{not genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceBean.openID}">
+            <h:outputText rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceBean.openID}">
                 <h2>Associate Your GenomeSpace Account With a GenePattern Account</h2>
 
                 <h3>Welcome #{genomeSpaceBean.username}</h3>
