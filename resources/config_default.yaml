@@ -64,6 +64,12 @@ default.properties:
     genomeSpaceEnabled: true
     genomeSpaceUrl: https://identity.genomespace.org/identityServer/xrd.jsp
     genomeSpaceEnvironment: prod
+    
+    # The following property can be set to override the "Contact Us" links
+    # To make this link open in a new tab use: 
+    contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help');"
+    # A straight URL or path will replace the current page
+    # contact.link: /gp/pages/contactUs.jsf
 
     #
     # GPARC integration
