@@ -55,6 +55,7 @@ public class TestPluginManagerLegacy {
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00009:1,"+
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:00012:1,"+
             "urn:lsid:broadinstitute.org:plugin:Ant_1.8:1,"+
+            "urn:lsid:broadinstitute.org:plugin:Ant_1.8,"+
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2,"+
             "urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_1:0.1,"+
             "urn:lsid:broadinstitute.org:plugin:GenePattern_3_9_3:1";
