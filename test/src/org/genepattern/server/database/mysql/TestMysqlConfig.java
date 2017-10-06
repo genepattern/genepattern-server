@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
  *******************************************************************************/
-package org.genepattern.server.database;
+package org.genepattern.server.database.mysql;
 
 import static org.junit.Assert.*;
 
@@ -17,6 +17,8 @@ import java.util.Properties;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
