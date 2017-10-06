@@ -15,8 +15,10 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -29,12 +31,15 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  * 
  */
 public class Purger extends TimerTask {
-    private static Logger log = Logger.getLogger(Purger.class);
+    private static final Logger log = Logger.getLogger(Purger.class);
+
+    private final GpConfig gpConfig;
 
     /** number of days back to preserve completed jobs */
     private int purgeInterval = -1;
 
     public Purger(int purgeInterval) {
+        this.gpConfig=ServerConfigurationFactory.instance();
         this.purgeInterval = purgeInterval;
     }
 
@@ -42,24 +47,25 @@ public class Purger extends TimerTask {
     public void run() {
         log.debug("running Purger ...");
         if (purgeInterval != -1) {
+            final HibernateSessionManager mgr=HibernateUtil.instance();
             try {
                 GregorianCalendar purgeDate = new GregorianCalendar();
                 purgeDate.add(GregorianCalendar.DATE, -purgeInterval);
                 log.info("Purger: purging jobs completed before " + purgeDate.getTime());
 
                 log.debug("purging job results ...");
-                HibernateUtil.beginTransaction();
-                AnalysisDAO ds = new AnalysisDAO();
+                mgr.beginTransaction();
+                AnalysisDAO ds = new AnalysisDAO(mgr);
                 List<Integer> jobIds = ds.getAnalysisJobIds(purgeDate.getTime());
                 for(Integer jobId : jobIds) {
                     // delete the job from the database and recursively delete the job directory
                     ds.deleteJob(jobId);
                 }
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
                 log.debug("done purging job results.");
 
                 log.debug("purging batch jobs ...");
-                purgeBatchJobs(purgeDate);
+                purgeBatchJobs(mgr, purgeDate);
                 log.debug("done purging batch jobs.");
 
                 log.debug("purging web upload files ...");
@@ -71,11 +77,11 @@ public class Purger extends TimerTask {
                 // Other code purging uploads directory is also called; this is called in addition
                 //purgeDirectUploads(dateCutoff);
                 log.debug("purging user upload files ...");
-                purgeUserUploads(dateCutoff);
+                purgeUserUploads(mgr, dateCutoff);
                 log.debug("done purging user upload files.");
 
                 log.debug("purging soap attachments ...");
-                File soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(GpContext.getServerContext());
+                File soapAttachmentDir = gpConfig.getSoapAttDir(GpContext.getServerContext());
                 log.debug("    soapAttachmentDir="+soapAttachmentDir);
                 File[] userDirs = soapAttachmentDir.listFiles();
                 if (userDirs != null) {
@@ -90,11 +96,11 @@ public class Purger extends TimerTask {
                 log.debug("done purging soap attachments.");
             } 
             catch (Exception e) {
-                HibernateUtil.rollbackTransaction();
+                mgr.rollbackTransaction();
                 log.error("Error while purging jobs", e);
             } 
             finally {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         log.debug("Done running purger!");
@@ -105,7 +111,7 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      */
     private void purgeWebUploads(long dateCutoff) {
-        File webUploadDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
+        File webUploadDir = gpConfig.getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 
@@ -139,16 +145,16 @@ public class Purger extends TimerTask {
      * 
      * @param dateCutoff
      */
-    private void purgeUserUploads(long dateCutoff) {
+    private void purgeUserUploads(final HibernateSessionManager mgr, final long dateCutoff) {
         log.debug("getting user ids from db ...");
         List<String> userIds = new ArrayList<String>();
-        HibernateUtil.beginTransaction();
-        UserDAO userDao = new UserDAO();
+        mgr.beginTransaction();
+        UserDAO userDao = new UserDAO(mgr);
         List<User> users = userDao.getAllUsers();
         for(User user : users) {
             userIds.add( user.getUserId() );
         }
-        HibernateUtil.closeCurrentSession();
+        mgr.closeCurrentSession();
         log.debug("done getting user ids from db.");
         log.debug("purging data for each user ...");
         
@@ -172,16 +178,16 @@ public class Purger extends TimerTask {
         }
     }
 
-    private void purgeBatchJobs(GregorianCalendar purgeDate){
-    	  HibernateUtil.beginTransaction();
-          BatchJobDAO batchJobDAO = new BatchJobDAO();
+    private void purgeBatchJobs(final HibernateSessionManager mgr, final GregorianCalendar purgeDate){
+    	  mgr.beginTransaction();
+          BatchJobDAO batchJobDAO = new BatchJobDAO(mgr);
           List<BatchJob> possiblyEmpty = batchJobDAO.getOlderThanDate(purgeDate.getTime());
           for (BatchJob batchJob: possiblyEmpty){
           	if (batchJob.getBatchJobs().size() == 0){
-          		HibernateUtil.getSession().delete(batchJob);
+          		mgr.getSession().delete(batchJob);
           	}
           }
-          HibernateUtil.commitTransaction();
+          mgr.commitTransaction();
     }
 
     public static void main(String args[]) {
