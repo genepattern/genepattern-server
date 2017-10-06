@@ -11,6 +11,11 @@ insert into patch_info (lsid) select
         'urn:lsid:broadinstitute.org:plugin:Ant_1.8:1' );
 
 insert into patch_info (lsid) select 
+        'urn:lsid:broadinstitute.org:plugin:Ant_1.8' as lsid from dual
+    where not exists ( select lsid from patch_info where lsid = 
+        'urn:lsid:broadinstitute.org:plugin:Ant_1.8' );
+
+insert into patch_info (lsid) select 
         'urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2' as lsid from dual
     where not exists ( select lsid from patch_info where lsid = 
         'urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2' );
