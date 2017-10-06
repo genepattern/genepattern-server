@@ -508,6 +508,9 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\t" + GpConfig.PROP_GP_TMPDIR+": "+ gpConfig.getTempDir(serverContext).getAbsolutePath() + NL);
         startupMessage.append("\t" + GpConfig.PROP_SOAP_ATT_DIR+": "+ gpConfig.getSoapAttDir(serverContext) + NL);
         startupMessage.append("\tconfig.file: " + gpConfig.getConfigFilepath() + NL);
+        startupMessage.append("\tcatalina.home: " + GpConfig.getJavaProperty("catalina.home") + NL );
+        startupMessage.append("\tcatalina.base: " + GpConfig.getJavaProperty("catalina.base") + NL );
+
         startupMessage.append(stars);
 
         getLog().info(startupMessage);
