@@ -19,6 +19,7 @@ import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -44,17 +45,21 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  */
 public class Purger02 extends TimerTask {
     private static final Logger log = Logger.getLogger(Purger02.class);
+    
+    private final GpConfig gpConfig;
 
     public Purger02() {
+        gpConfig=ServerConfigurationFactory.instance();
     }
 
     @Override
     public void run() {
         log.debug("running Purger ...");
         final Date now=new Date();
+        final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpContext serverContext=GpContext.getServerContext();
-        final int purgeJobsAfter=ServerConfigurationFactory.instance().getGPIntegerProperty(serverContext, Purger.PROP_PURGE_JOBS_AFTER, Purger.PURGE_JOBS_AFTER_DEFAULT);
-        final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
+        final int purgeJobsAfter=gpConfig.getGPIntegerProperty(serverContext, Purger.PROP_PURGE_JOBS_AFTER, Purger.PURGE_JOBS_AFTER_DEFAULT);
+        final String purgeTime=gpConfig.getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
         final Date serverCutoff=JobPurgerUtil.getCutoff(now, purgeJobsAfter, purgeTime);
         try {
             if (serverCutoff != null) {
@@ -66,12 +71,12 @@ public class Purger02 extends TimerTask {
 
             // Other code purging uploads directory is also called; this is called in addition
             log.debug("purging user upload files and jobs ...");
-            purgeUserUploadsAndJobs(now);
+            purgeUserUploadsAndJobs(mgr, now);
             log.debug("done purging user upload files.");
 
             if (serverCutoff != null) {
                 log.debug("purging soap attachments ...");
-                final File soapAttachmentDir = ServerConfigurationFactory.instance().getSoapAttDir(GpContext.getServerContext());
+                final File soapAttachmentDir = gpConfig.getSoapAttDir(GpContext.getServerContext());
                 log.debug("    soapAttachmentDir="+soapAttachmentDir);
                 final File[] userDirs = soapAttachmentDir.listFiles();
                 if (userDirs != null) {
@@ -87,11 +92,11 @@ public class Purger02 extends TimerTask {
             }
         } 
         catch (Exception e) {
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
             log.error("Error while purging jobs", e);
         } 
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         log.debug("Done running purger!");
     }
@@ -103,7 +108,7 @@ public class Purger02 extends TimerTask {
      * @param dateCutoff
      */
     private void purgeLegacyWebUploadsFromTmpdir(final long dateCutoff) {
-        File webUploadDir = ServerConfigurationFactory.instance().getTempDir(GpContext.getServerContext());
+        File webUploadDir = gpConfig.getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 
@@ -139,12 +144,12 @@ public class Purger02 extends TimerTask {
      * 
      * @param dateCutoff
      */
-    private void purgeUserUploadsAndJobs(final Date now) {
+    private void purgeUserUploadsAndJobs(final HibernateSessionManager mgr, final Date now) {
         final List<String> userIds = new ArrayList<String>();
 
         log.debug("getting userIds from db ...");
         try {
-            UserDAO userDao = new UserDAO();
+            UserDAO userDao = new UserDAO(mgr);
             final List<User> users = userDao.getAllUsers();
             for(final User user : users) {
                 userIds.add( user.getUserId() );
@@ -155,20 +160,19 @@ public class Purger02 extends TimerTask {
             log.error("error getting userIds from db",t);
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         log.debug("purging data for each user ...");
         
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         for(final String userId : userIds) {
-            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             final GpContext userContext = GpContext.getContextForUser(userId);
             final Date cutoffDate=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
             if (cutoffDate != null) {
                 try {
-                    purgeJobsForUser(userContext, cutoffDate);
+                    purgeJobsForUser(mgr, userContext, cutoffDate);
                     purgeUserUploadsForUser(exec, userContext, cutoffDate);
-                    purgeBatchJobsForUser(userContext, cutoffDate);
+                    purgeBatchJobsForUser(mgr, userContext, cutoffDate);
                 }
                 catch (Throwable t) {
                     log.error("Unexpected error purging resources for userId="+userId, t);
@@ -179,19 +183,19 @@ public class Purger02 extends TimerTask {
         log.debug("done purging data for each user.");
     }
     
-    private void purgeJobsForUser(final GpContext userContext, final Date cutoffDate) {
+    private void purgeJobsForUser(final HibernateSessionManager mgr, final GpContext userContext, final Date cutoffDate) {
         log.debug("purging jobs for user="+userContext.getUserId()+" ...");
-        final List<Integer> jobIds=getJobIdsForUser(userContext.getUserId(), cutoffDate);
+        final List<Integer> jobIds=getJobIdsForUser(mgr, userContext.getUserId(), cutoffDate);
         for(Integer jobId : jobIds) {
-            deleteJob(jobId);
+            deleteJob(mgr, jobId);
          }
         log.debug("done purging job results.");
     }
 
-    private List<Integer> getJobIdsForUser(final String userId, final Date cutoffDate) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+    private List<Integer> getJobIdsForUser(final HibernateSessionManager mgr, final String userId, final Date cutoffDate) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             List<Integer> jobIds = ds.getAnalysisJobIdsForUser(userId, cutoffDate);
             return jobIds;
         }
@@ -200,20 +204,20 @@ public class Purger02 extends TimerTask {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         return Collections.emptyList();
     }
 
-    private boolean deleteJob(final Integer jobId) {
+    private boolean deleteJob(final HibernateSessionManager mgr, final Integer jobId) {
         // delete the job from the database and recursively delete the job directory
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            AnalysisDAO ds = new AnalysisDAO();
+            AnalysisDAO ds = new AnalysisDAO(mgr);
             ds.deleteJob(jobId);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
             return true;
         }
@@ -222,7 +226,7 @@ public class Purger02 extends TimerTask {
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         return false;        
@@ -244,7 +248,7 @@ public class Purger02 extends TimerTask {
         }
     }
     
-    private void purgeBatchJobsForUser(final GpContext userContext, final Date cutoffDate) {
+    private void purgeBatchJobsForUser(final HibernateSessionManager mgr, final GpContext userContext, final Date cutoffDate) {
         if (userContext==null) {
             log.error("userContext==null");
             return;
@@ -261,25 +265,25 @@ public class Purger02 extends TimerTask {
             return;
         }
         
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            final BatchJobDAO batchJobDAO = new BatchJobDAO();
+            mgr.beginTransaction();
+            final BatchJobDAO batchJobDAO = new BatchJobDAO(mgr);
             final List<BatchJob> batchJobsToPurge = batchJobDAO.getOlderThanDateForUser(userContext.getUserId(), cutoffDate);
             if (log.isDebugEnabled()) {
                 log.debug("batchJobsToPurge.size="+batchJobsToPurge.size());
             }
             for(final BatchJob batchJob : batchJobsToPurge) {
-                deleteBatchJob(batchJob);
-                HibernateUtil.getSession().flush();
+                deleteBatchJob(mgr, batchJob);
+                mgr.getSession().flush();
             }
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
         log.debug("done purging batch jobs for userId="+userContext.getUserId());
@@ -289,7 +293,7 @@ public class Purger02 extends TimerTask {
      * delete the batch job entry from the DB if it no longer contains any jobs.
      * @param batchJob
      */
-    private void deleteBatchJob(final BatchJob batchJob) {
+    private void deleteBatchJob(final HibernateSessionManager mgr, final BatchJob batchJob) {
         if (batchJob==null) {
             log.error("batchJob==null");
             return;
@@ -305,21 +309,21 @@ public class Purger02 extends TimerTask {
             }
             return;
         }
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            HibernateUtil.beginTransaction();
-            HibernateUtil.getSession().delete(batchJob);
+            mgr.beginTransaction();
+            mgr.getSession().delete(batchJob);
             if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
+                mgr.commitTransaction();
             }
         }
         catch (Throwable t) {
             log.error("Error deleting batch job", t);
-            HibernateUtil.rollbackTransaction();
+            mgr.rollbackTransaction();
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
