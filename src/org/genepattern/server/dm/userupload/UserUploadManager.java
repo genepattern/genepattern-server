@@ -9,12 +9,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -22,27 +19,18 @@ import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
 public class UserUploadManager {
-    private static Logger log = Logger.getLogger(UserUploadManager.class);
+    private static final Logger log = Logger.getLogger(UserUploadManager.class);
 
     /**
      * Server configuration setting (config.yaml file), when this is true, it means, hide the tmp directory
      * and it's contents from the listing of files in the Uploads tab.
      * Default is: true 
      */
-    final static public String PROP_UPLOAD_HIDE_TMP="upload.hide.tmp";
+    public static final String PROP_UPLOAD_HIDE_TMP="upload.hide.tmp";
 
-    /**
-     * Get the root upload directory for the given user.
-     * @param userContext, requires a valid userId
-     * @return
-     * @throws Exception
-     */
-    static public GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
-        return GpFileObjFactory.getUserUploadDir(userContext);
-    }
-    
-    static public GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpContext userContext, final File relativePath, final boolean initMetaData) throws Exception {
-        final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+    public static final GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final File relativePath, final boolean initMetaData)
+    throws Exception {
+        final GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, relativePath);
         return getUploadFileObj(mgr, userContext, uploadFilePath, initMetaData);
     }
      
@@ -55,7 +43,8 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath, final boolean initMetaData) throws Exception {
+    public static final GpFilePath getUploadFileObj(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath, final boolean initMetaData)
+    throws Exception {
         //if there is a record in the DB ... 
         boolean isInTransaction = false;
         try {
@@ -91,7 +80,8 @@ public class UserUploadManager {
         }
     }
 
-    static public boolean isUploadInDB(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath) throws Exception {
+    public static final boolean isUploadInDB(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath uploadFilePath) 
+    throws Exception {
         // if there is a record in the DB ...
         boolean isInTransaction = false;
         try {
@@ -125,10 +115,9 @@ public class UserUploadManager {
 
     /**
      * Create an instance of a GpFilePath object from a UserUpload record.
-     * 
      */
-    static public GpFilePath getUploadFileObj(GpContext userContext, File relativePath, UserUpload fromDb) throws Exception {
-        GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+    public static final GpFilePath getUploadFileObj(final GpConfig gpConfig, final GpContext userContext, final File relativePath, final UserUpload fromDb) throws Exception {
+        GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, relativePath);
         initMetadata(uploadFilePath, fromDb);
         return uploadFilePath;
     }
@@ -139,7 +128,7 @@ public class UserUploadManager {
      * @param uploadFilePath
      * @param fromDb
      */
-    static private void initMetadata(GpFilePath uploadFilePath, UserUpload fromDb) {
+    private static void initMetadata(final GpFilePath uploadFilePath, final UserUpload fromDb) {
         if (fromDb == null) {
             log.error("Unexpected null arg");
             return;
@@ -164,7 +153,7 @@ public class UserUploadManager {
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
      * @throws Exception if a duplicate entry for the file is found in the database
      */
-    static public UserUpload createUploadFile(HibernateSessionManager mgr, GpContext userContext, GpFilePath gpFileObj, int numParts) throws Exception {
+    public static final UserUpload createUploadFile(HibernateSessionManager mgr, GpContext userContext, GpFilePath gpFileObj, int numParts) throws Exception {
         return createUploadFile(mgr, userContext, gpFileObj, numParts, false);
     }
     
@@ -181,7 +170,7 @@ public class UserUploadManager {
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
      */
-    public static UserUpload createUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFileObj, final int numParts, final boolean modDuplicate) throws Exception {
+    public static final UserUpload createUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFileObj, final int numParts, final boolean modDuplicate) throws Exception {
         final boolean inTransaction = mgr.isInTransaction(); 
         log.debug("inTransaction="+inTransaction);
         try {
@@ -228,7 +217,8 @@ public class UserUploadManager {
      * @param totalParts
      * @throws Exception, if a part is received out of order.
      */
-    static public void updateUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFilePath, final int partNum, final int totalParts) throws Exception {
+    public static final void updateUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFilePath, final int partNum, final int totalParts)
+    throws Exception {
         boolean inTransaction = mgr.isInTransaction();
         try {
             UserUploadDao dao = new UserUploadDao(mgr);
@@ -236,11 +226,7 @@ public class UserUploadManager {
             if (uu.getNumParts() != totalParts) {
                 throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
             }
-//            if (uu.getNumPartsRecd() != (partNum - 1)) {
-//                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
-//            }
             uu.setNumPartsRecd(partNum);
-            
             uu.init(gpFilePath.getServerFile());
             dao.saveOrUpdate(uu);
             if (!inTransaction) {
@@ -265,7 +251,7 @@ public class UserUploadManager {
      * @return the number of records which were deleted, usually 0 or 1.
      * @throws Exception
      */
-    static public int deleteUploadFile(final HibernateSessionManager mgr, final GpFilePath gpFilePath) throws Exception {
+    public static final int deleteUploadFile(final HibernateSessionManager mgr, final GpFilePath gpFilePath) throws Exception {
         boolean inTransaction = mgr.isInTransaction();
         try {
             UserUploadDao dao = new UserUploadDao(mgr);
@@ -289,21 +275,13 @@ public class UserUploadManager {
     /**
      * Get the entire tree of user upload files, rooted at the upload directory for the given user.
      * The root element is the user's upload directory, which typically is not displayed.
-     * 
-     * @param userContext
-     * @return
      */
-    static public GpDirectoryNode getFileTree(final GpContext userContext) throws Exception { 
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return getFileTree(gpConfig, userContext);
-    }
-    static public GpDirectoryNode getFileTree(final GpConfig gpConfig, final GpContext userContext) throws Exception { 
-        final HibernateSessionManager mgr=HibernateUtil.instance();
-        final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
+    public static final GpDirectoryNode getFileTree(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext) throws Exception { 
+        final GpFilePath userDir = GpFileObjFactory.getUserUploadDir(gpConfig, userContext);
         final GpDirectoryNode root = new GpDirectoryNode(userDir);
 
         //get the list from the DB
-        final List<UserUpload> all = getAllFiles(mgr, userContext);
+        final List<UserUpload> all = getAllFiles(mgr, gpConfig, userContext);
         
         //initialize the list of GpFilePath objects
         final SortedMap<String,GpDirectoryNode> allDirs = new TreeMap<String,GpDirectoryNode>();
@@ -351,7 +329,7 @@ public class UserUploadManager {
     }
 
 //    //just for debugging
-//    static private void walk(List<String> allPaths, GpDirectory dir) {
+//    private static void walk(List<String> allPaths, GpDirectory dir) {
 //        String relPath = dir.getValue().getRelativePath();
 //        log.debug(relPath);
 //        allPaths.add(relPath);
@@ -367,7 +345,7 @@ public class UserUploadManager {
 //        }
 //    }
 
-    static private String getParentPath(final GpFilePath file) {
+    private static String getParentPath(final GpFilePath file) {
         if (file == null) {
             log.error("Unexpected null arg");
             return null;
@@ -387,37 +365,13 @@ public class UserUploadManager {
      * @param userContext
      * @return
      */
-    static private List<UserUpload> getAllFiles(final HibernateSessionManager mgr, final GpContext userContext) {
+    protected static List<UserUpload> getAllFiles(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext) {
         final String userId=userContext.getUserId();
-        final boolean hideTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
+        final boolean hideTmp=gpConfig.getGPBooleanProperty(userContext, PROP_UPLOAD_HIDE_TMP, true);
         final boolean includeTempFiles=!hideTmp;
         UserUploadDao dao = new UserUploadDao(mgr);
         return dao.selectAllUserUpload(userId, includeTempFiles);
     }
     
-    /**
-     * Converts an absolute file path to a path relative to the user's upload directory. 
-     * Throws an exception if the absolute path not in that directory.
-     * @param context
-     * @param absolute The absolute path
-     * @return
-     * @throws Exception Thrown is the path provided is not in the user's upload dir
-     */
-    static public String absoluteToRelativePath(GpContext context, String absolute) throws Exception {
-        File userUploadDir = ServerConfigurationFactory.instance().getUserUploadDir(context);
-        File absoluteFile = new File(absolute);
-        
-        // Handle special case of trying to get a relative path to the root upload directory
-        if (userUploadDir.getCanonicalPath().equals(absoluteFile.getCanonicalPath())) {
-            return "";
-        }
-        
-        String relativePath = FileUtil.getRelativePath(userUploadDir, absoluteFile);
-        if (relativePath == null) {
-            throw new Exception("Absolute path provided is not in the user's upload directory");
-        }
-        
-        return relativePath;
-    }
 }
 

@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.UploadDirectoryZipWriter;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -310,10 +311,11 @@ public class DataResource {
             // Handle space characters
             path = URLDecoder.decode(path, "UTF-8");
 
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext=Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
                 final File uploadFilePath=extractUsersPath(userContext, path);
-                final GpFilePath fileToRename = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+                final GpFilePath fileToRename = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, uploadFilePath);
 
                 // Check whether file with new name already exists
                 File oldFile = fileToRename.getServerFile();
@@ -322,7 +324,7 @@ public class DataResource {
                     return Response.status(500).entity("Could not rename " + fileToRename.getName() + ". File already exists.").build();
                 }
 
-                boolean renamed = DataManager.renameUserUpload(HibernateUtil.instance(), userContext.getUserId(), fileToRename, name);
+                boolean renamed = DataManager.renameUserUpload(HibernateUtil.instance(), gpConfig, userContext.getUserId(), fileToRename, name);
 
                 if (renamed) {
                     return Response.ok().entity("Renamed " + fileToRename.getName() + " to " + name).build();
@@ -519,7 +521,7 @@ public class DataResource {
             }
 
             // Create the directory
-            boolean success = DataManager.createSubdirectory(HibernateUtil.instance(), userContext, relativePath);
+            boolean success = DataManager.createSubdirectory(HibernateUtil.instance(), ServerConfigurationFactory.instance(), userContext, relativePath);
 
             if (success) {
                 return Response.ok().entity("Created " + relativePath.getName()).build();

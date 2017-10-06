@@ -6,6 +6,7 @@ package org.genepattern.server.process;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimerTask;
@@ -69,13 +70,13 @@ public class Purger extends TimerTask {
                 log.debug("done purging batch jobs.");
 
                 log.debug("purging web upload files ...");
-                long dateCutoff = purgeDate.getTime().getTime();
+                //long dateCutoff = purgeDate.getTime().getTime();
+                final Date dateCutoff = purgeDate.getTime();
                 // remove input files uploaded using web form
                 purgeWebUploads(dateCutoff);
                 log.debug("done purging web upload files.");
 
                 // Other code purging uploads directory is also called; this is called in addition
-                //purgeDirectUploads(dateCutoff);
                 log.debug("purging user upload files ...");
                 purgeUserUploads(mgr, dateCutoff);
                 log.debug("done purging user upload files.");
@@ -110,19 +111,19 @@ public class Purger extends TimerTask {
      * Purge files from the system web upload directory.
      * @param dateCutoff
      */
-    private void purgeWebUploads(long dateCutoff) {
+    private void purgeWebUploads(final Date dateCutoff) {
         File webUploadDir = gpConfig.getTempDir(GpContext.getServerContext());
         purge(webUploadDir, dateCutoff);
     }
 
-    private void purge(File dir, long dateCutoff) {
+    private void purge(File dir, final Date dateCutoff) {
         if (dir != null) {
             log.debug("purging files from directory: "+dir.getPath());
         }
         File[] files = dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                if (files[i].lastModified() < dateCutoff) {
+                if (files[i].lastModified() < dateCutoff.getTime()) {
                     if (files[i].isDirectory()) {
                         Delete del = new Delete();
                         del.setDir(files[i]);
@@ -141,11 +142,9 @@ public class Purger extends TimerTask {
     /**
      * Purge files in the user upload directory for each user.
      * 
-     * Note: added by pcarr as a replacement for purgeDirectUploads
-     * 
      * @param dateCutoff
      */
-    private void purgeUserUploads(final HibernateSessionManager mgr, final long dateCutoff) {
+    private void purgeUserUploads(final HibernateSessionManager mgr, final Date dateCutoff) {
         log.debug("getting user ids from db ...");
         List<String> userIds = new ArrayList<String>();
         mgr.beginTransaction();
@@ -160,17 +159,18 @@ public class Purger extends TimerTask {
         
         ExecutorService exec = Executors.newSingleThreadExecutor();
         for(String userId : userIds) {
+            @SuppressWarnings("deprecation")
             GpContext userContext = GpContext.getContextForUser(userId);
-            purgeUserUploadsForUser(exec, userContext, dateCutoff);
+            purgeUserUploadsForUser(exec, mgr, userContext, dateCutoff);
         }
         exec.shutdown();
         log.debug("done purging data for each user.");
     }
     
-    private void purgeUserUploadsForUser(ExecutorService exec, GpContext userContext, long dateCutoff) {
+    private void purgeUserUploadsForUser(ExecutorService exec, final HibernateSessionManager mgr, GpContext userContext, final Date dateCutoff) {
         log.debug("purgeUserUploadsForUser(userId='"+userContext.getUserId()+"') ...");
         try {
-            final UserUploadPurger uup = new UserUploadPurger(exec, userContext, dateCutoff);
+            final UserUploadPurger uup = new UserUploadPurger(exec, mgr, gpConfig, userContext, dateCutoff);
             uup.purge();
         }
         catch (Throwable t) {

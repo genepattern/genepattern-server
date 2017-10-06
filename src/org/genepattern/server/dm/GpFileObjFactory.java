@@ -35,13 +35,7 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      * 
-     * @deprecated pass in a valid GpConfig.
      */
-    public static GpFilePath getUserUploadDir(GpContext userContext) throws Exception {
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
-        return getUserUploadDir(gpConfig, userContext);
-    }
-
     public static GpFilePath getUserUploadDir(GpConfig gpConfig, GpContext userContext) throws Exception {
         if (gpConfig == null) {
             log.error("gpConfig==null, using ServerConfigurationFactory.instance");
@@ -85,7 +79,7 @@ public class GpFileObjFactory {
      * 
      * @deprecated pass in a valid GpConfig.
      */
-    static public GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
+    public static GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         return getUserUploadFile(gpConfig, userContext, uploadFile);
     }
@@ -99,7 +93,7 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) throws Exception {
+    public static GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) throws Exception {
         if (gpConfig == null) {
             log.error("gpConfig==null, using ServerConfigurationFactory.instance");
             gpConfig=ServerConfigurationFactory.instance();

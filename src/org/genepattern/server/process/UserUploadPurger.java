@@ -16,9 +16,9 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
@@ -48,41 +48,38 @@ import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 public class UserUploadPurger {
     private static Logger log = Logger.getLogger(UserUploadPurger.class);
     
-    final static public String PROP_PURGE_ALL="upload.purge.all";
-    final static public String PROP_PURGE_TMP="upload.purge.tmp";
-    final static public String PROP_PURGE_PARTIAL="upload.purge.partial";
+    public static final String PROP_PURGE_ALL="upload.purge.all";
+    public static final String PROP_PURGE_TMP="upload.purge.tmp";
+    public static final String PROP_PURGE_PARTIAL="upload.purge.partial";
 
-    final private ExecutorService exec;
-    final private GpContext userContext;
-    final private Date cutoffDate;
-    final private boolean purgeAll;
-    final private boolean purgeTmp;
-    final private boolean purgePartial;
+    private final ExecutorService exec;
+    private final HibernateSessionManager mgr;
+    private final GpConfig gpConfig;
+    private final GpContext userContext;
+    private final Date cutoffDate;
+    private final boolean purgeAll;
+    private final boolean purgeTmp;
+    private final boolean purgePartial;
 
-    /**
-     * @deprecated - for GP <= 3.7.2, pass in a global dateCutoff as a long
-     * @param exec
-     * @param userContext
-     * @param dateCutoff
-     */
-    public UserUploadPurger(final ExecutorService exec, final GpContext userContext, final long dateCutoff) {
-        this(exec, userContext, new Date(dateCutoff));
-    }
-    
-    public UserUploadPurger(final ExecutorService exec, final GpContext userContext, final Date cutoffDate) {
+    public UserUploadPurger(final ExecutorService exec, final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final Date cutoffDate) {
+        this.mgr=mgr;
+        this.gpConfig=gpConfig;
         if (userContext == null) {
             throw new IllegalArgumentException("userContext == null");
         }
         if (userContext.getUserId() == null) {
             throw new IllegalArgumentException("userContext.userId == null");
         }
+        if (userContext.getUserId().trim() == "") {
+            throw new IllegalArgumentException("userContext.userId is empty");
+        }
 
         this.userContext = userContext;
         this.cutoffDate = cutoffDate;
 
-        this.purgeAll=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
-        this.purgeTmp=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
-        this.purgePartial=ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
+        this.purgeAll=gpConfig.getGPBooleanProperty(userContext, PROP_PURGE_ALL, false);
+        this.purgeTmp=gpConfig.getGPBooleanProperty(userContext, PROP_PURGE_TMP, true);
+        this.purgePartial=gpConfig.getGPBooleanProperty(userContext, PROP_PURGE_PARTIAL, true);
         
         if (exec==null) {
             log.debug("creating new singleThreadExecutor");
@@ -134,14 +131,14 @@ public class UserUploadPurger {
     private void purgePartialUploadsFromDb(Date maxModDate) {
         List<UserUpload> userUploads;
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             userUploads = dao.selectStalledPartialUploadsForUser(userContext.getUserId(), maxModDate);
         }
         catch (Throwable t) {
             userUploads=Collections.emptyList();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         for(final UserUpload userUpload : userUploads) {
             try {
@@ -188,7 +185,7 @@ public class UserUploadPurger {
         try {
             final String userId=userContext.getUserId();
             log.debug("purging tmp files for user: "+userId+", cutoffDate="+cutoffDate);
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             tmpFiles = dao.selectTmpUserUploadsToPurge(userId, cutoffDate);
         }
         catch (Throwable t) {
@@ -196,7 +193,7 @@ public class UserUploadPurger {
             tmpFiles=Collections.emptyList();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         purgeFiles(tmpFiles);
     }
@@ -223,7 +220,7 @@ public class UserUploadPurger {
         
         List<UserUpload> selectedFiles;
         try {
-            UserUploadDao dao = new UserUploadDao();
+            UserUploadDao dao = new UserUploadDao(mgr);
             final boolean includeTempFiles=false;
             selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, cutoffDate);
         }
@@ -232,7 +229,7 @@ public class UserUploadPurger {
             selectedFiles=Collections.emptyList();
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            mgr.closeCurrentSession();
         }
         purgeFiles(selectedFiles);
     }
@@ -244,7 +241,7 @@ public class UserUploadPurger {
      * @return
      */
     private GpFilePath initGpFilePath(UserUpload userUploadRecord) throws Exception {
-        GpFilePath gpFilePath = UserUploadManager.getUploadFileObj(userContext, new File(userUploadRecord.getPath()), userUploadRecord);
+        GpFilePath gpFilePath = UserUploadManager.getUploadFileObj(gpConfig, userContext, new File(userUploadRecord.getPath()), userUploadRecord);
         return gpFilePath;
     }
 
@@ -263,9 +260,9 @@ public class UserUploadPurger {
         //on the first pass, delete all files, don't delete any directories
         int numFilesToPurge=0;
         int numDirsToPurge=0;
-        for(UserUpload userUpload : filesToDelete) {
+        for(final UserUpload userUpload : filesToDelete) {
             try {
-                GpFilePath gpFilePath = initGpFilePath(userUpload);
+                final GpFilePath gpFilePath = initGpFilePath(userUpload);
                 if (gpFilePath.isFile()) {
                     ++numFilesToPurge;
                     purgeUserUploadFile(gpFilePath); 
@@ -309,7 +306,7 @@ public class UserUploadPurger {
         //on the third pass, remove records from the DB for files which no longer exist
         for(final GpFilePath missingFile : missingFiles) {
             try {
-                boolean success=DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), missingFile);
+                boolean success=DataManager.deleteUserUploadFile(mgr, userContext.getUserId(), missingFile);
                 if (!success) {
                     log.error("Did not deleteUserUploadFile: "+missingFile.getServerFile().getPath());
                 }
@@ -325,19 +322,20 @@ public class UserUploadPurger {
      * @param gpFilePath
      */
     public void purgeUserUploadFile(final GpFilePath gpFilePath) {
+        @SuppressWarnings("unused")
         Future<Boolean> task = exec.submit(new Callable<Boolean> () {
             public Boolean call() throws Exception {
                 log.debug("deleting relativeUri='"+gpFilePath.getRelativeUri()+"' ...");
                 boolean deleted = false;
                 try {
-                    HibernateUtil.beginTransaction();
-                    deleted = DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), gpFilePath);
-                    HibernateUtil.commitTransaction();
+                    mgr.beginTransaction();
+                    deleted = DataManager.deleteUserUploadFile(mgr, userContext.getUserId(), gpFilePath);
+                    mgr.commitTransaction();
                     return deleted;
                 }
                 catch (Throwable t) {
                     log.error("Error deleting relativeUri='"+ gpFilePath.getRelativeUri()+"': "+t.getLocalizedMessage(), t);
-                    HibernateUtil.rollbackTransaction();
+                    mgr.rollbackTransaction();
                     return false;
                 }
                 finally {

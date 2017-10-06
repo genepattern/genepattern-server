@@ -166,12 +166,13 @@ public class Purger02 extends TimerTask {
         
         final ExecutorService exec = Executors.newSingleThreadExecutor();
         for(final String userId : userIds) {
+            @SuppressWarnings("deprecation")
             final GpContext userContext = GpContext.getContextForUser(userId);
             final Date cutoffDate=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
             if (cutoffDate != null) {
                 try {
                     purgeJobsForUser(mgr, userContext, cutoffDate);
-                    purgeUserUploadsForUser(exec, userContext, cutoffDate);
+                    purgeUserUploadsForUser(exec, mgr, userContext, cutoffDate);
                     purgeBatchJobsForUser(mgr, userContext, cutoffDate);
                 }
                 catch (Throwable t) {
@@ -233,14 +234,14 @@ public class Purger02 extends TimerTask {
     }
     
     
-    private void purgeUserUploadsForUser(final ExecutorService exec, final GpContext userContext, final Date cutoffDate) {
+    private void purgeUserUploadsForUser(final ExecutorService exec, final HibernateSessionManager mgr, final GpContext userContext, final Date cutoffDate) {
         if (cutoffDate==null) {
             log.debug("skipping userId="+userContext.getUserId());
             return;
         }
         log.debug("purging user uploads for userId='"+userContext.getUserId()+"' ...");
         try {
-            final UserUploadPurger uup = new UserUploadPurger(exec, userContext, cutoffDate);
+            final UserUploadPurger uup = new UserUploadPurger(exec, mgr, gpConfig, userContext, cutoffDate);
             uup.purge();
         }
         catch (Throwable t) {

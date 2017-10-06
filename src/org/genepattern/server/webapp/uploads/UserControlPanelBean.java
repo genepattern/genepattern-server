@@ -9,7 +9,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFilePath;
@@ -81,7 +84,10 @@ public class UserControlPanelBean {
     public List<GpFilePath> getFiles(String user) {
         List<GpFilePath> uploadedFiles;
         try {
-            GpDirectoryNode root = UserUploadManager.getFileTree(GpContext.getContextForUser(user));
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext userContext=GpContext.getContextForUser(user);
+            GpDirectoryNode root = UserUploadManager.getFileTree(mgr, gpConfig, userContext);
             uploadedFiles = root.getAllFilePaths();
         }
         catch (Exception e) {
