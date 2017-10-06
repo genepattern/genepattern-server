@@ -175,7 +175,7 @@ public class SchemaUpdater {
      * Query the database for the current schema version recorded in the database.
      * @return
      */
-    protected static String getDbSchemaVersion(final HibernateSessionManager sessionMgr) throws DbException {
+    public static String getDbSchemaVersion(final HibernateSessionManager sessionMgr) throws DbException {
         String dbSchemaVersion="";
         final boolean isInTransaction=sessionMgr.isInTransaction();
         try {
@@ -207,14 +207,14 @@ public class SchemaUpdater {
         return dbSchemaVersion;
     }
 
-    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) 
+    public static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaPrefix, final File schemaFile) 
     throws DbException
     {
         final String schemaVersion=DbSchemaFilter.initSchemaVersionFromFilename(schemaPrefix, schemaFile);
         updateDbSchemaVersion(sessionMgr, schemaVersion);
     }
 
-    protected static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaVersion) 
+    public static void updateDbSchemaVersion(final HibernateSessionManager sessionMgr, final String schemaVersion) 
     throws DbException
     {
         PropsTable.saveProp(sessionMgr, PROP_SCHEMA_VERSION, schemaVersion);
@@ -250,7 +250,7 @@ public class SchemaUpdater {
         return false;
     }
 
-    protected static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
+    public static boolean tableExists(final HibernateSessionManager sessionMgr, String tableName) {
         final boolean isInTransaction=sessionMgr.isInTransaction();
         try {
             sessionMgr.beginTransaction();
