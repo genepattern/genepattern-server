@@ -49,7 +49,7 @@ public class RedirectToFQHostFilter implements Filter {
     }
     protected synchronized void initFromConfig(final GpConfig gpConfig, final GpContext gpContext) {
         this.redirectToFqHostName=gpConfig.getGPBooleanProperty(gpContext, "redirect.to.fq.host");
-        this.fqHostName=gpConfig.getGPProperty(gpContext, "fqHostName");
+        this.fqHostName=gpConfig.getGPProperty(gpContext, "fqHostName", "");
         fqHostName = fqHostName.trim();
         if ("".equals(fqHostName)) {
             try {
