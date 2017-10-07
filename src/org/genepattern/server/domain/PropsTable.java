@@ -31,11 +31,6 @@ import org.hibernate.Query;
 public class PropsTable {
     private static final Logger log = Logger.getLogger(PropsTable.class);
 
-    /** @deprecated */
-    public static String selectValue(final String key) throws DbException {
-        return selectValue(org.genepattern.server.database.HibernateUtil.instance(), key);
-    }
-    
     /**
      * Get the value for the given key in the PROPS table.
      * 
@@ -52,11 +47,6 @@ public class PropsTable {
         return row.getValue();
     }
     
-    /** @deprecated */
-    public static List<String> selectKeys(final String matchingKey) {
-        return selectKeys(org.genepattern.server.database.HibernateUtil.instance(), matchingKey);
-    }
-
     /**
      * Get the list of keys from the PROPS table which match the given matchingKey.
      * To get more than one result pass in a '%' wildcard character, e.g.
