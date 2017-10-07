@@ -163,11 +163,7 @@ public class StartupServlet extends HttpServlet {
      * @return
      */
     protected File initGpHomeDir(ServletConfig config) {
-        String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
-        return initGpHomeDir(gpHome, config);
-    }
-
-    protected File initGpHomeDir(final String gpHomeProp, final ServletConfig config) {
+        final String gpHomeProp=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
         String gpHome=gpHomeProp;
         
         if (Strings.isNullOrEmpty(gpHome)) {
@@ -175,6 +171,9 @@ public class StartupServlet extends HttpServlet {
         }
         if (Strings.isNullOrEmpty(gpHome)) {
             gpHome = config.getInitParameter("gp.home");
+        }
+        if (Strings.isNullOrEmpty(gpHome)) {
+            gpHome = System.getenv("GENEPATTERN_HOME");
         }
         
         if (Strings.isNullOrEmpty(gpHome)) {

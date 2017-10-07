@@ -17,16 +17,31 @@ import javax.servlet.ServletException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 /**
  * jUnit tests for the StartupServlet.
+ * 
+ * Some of these tests use the System Rules package 
+ *   see: http://stefanbirkner.github.io/system-rules/
+ * These rules may result in unexpected behaviors when run in parallel within the same JVM.
+ * 
  * @author pcarr
  *
  */
 public class TestStartupServlet {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
+
+    // this rule undoes changes of all system properties when the test finishes (whether it passes or fails).
+    @Rule
+    public final RestoreSystemProperties restore_sys_props = new RestoreSystemProperties();
+
+    // this rule sets environment variables and reverts changes after the test
+    @Rule
+    public final EnvironmentVariables env = new EnvironmentVariables();
 
     private StartupServlet startupServlet;
     private ServletContext servletContext;
@@ -103,23 +118,39 @@ public class TestStartupServlet {
 
     @Test
     public void initGpHomeDir_fromSystemProp() {
-        File gpHomeDir=startupServlet.initGpHomeDir(expectedGpHomeDir.getAbsolutePath(), servletConfig);
+        System.setProperty("GENEPATTERN_HOME", expectedGpHomeDir.getAbsolutePath());
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
         assertEquals(expectedGpHomeDir.getAbsolutePath(), gpHomeDir.getAbsolutePath());
     }
 
     @Test
     public void initGpHomeDir_fromSystemProp_emptyString() {
-        String gpHomeProp="";
-        File gpHomeDir=startupServlet.initGpHomeDir(gpHomeProp, servletConfig);
+        System.setProperty("GENEPATTERN_HOME", "");
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
         assertNull("by default GENEPATTERN_HOME is not set", gpHomeDir);
     }
     
     @Test
     public void initGpHomeDir_fromSystemProp_relativePath() {
-        String gpHomeProp="gp_home";
-        File gpHomeDir=startupServlet.initGpHomeDir(gpHomeProp, servletConfig);
-        File expected=new File(System.getProperty("user.dir"), gpHomeProp);
+        System.setProperty("GENEPATTERN_HOME", "gp_home");
+        File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
+        File expected=new File(System.getProperty("user.dir"), "gp_home");
         assertEquals(expected, gpHomeDir);
+    }
+
+    @Test
+    public void initGpHomeDir_fromEnvironment() {
+        env.set("GENEPATTERN_HOME", expectedGpHomeDir.getAbsolutePath());
+        assertEquals("sanity check", 
+            expectedGpHomeDir.getAbsolutePath(), 
+            System.getenv("GENEPATTERN_HOME")
+        );
+        
+        final File gpHomeDir=startupServlet.initGpHomeDir(servletConfig);
+        assertEquals("initGpHomeDir from GENEPATTERN_HOME", 
+            expectedGpHomeDir.getAbsolutePath(), 
+            gpHomeDir.getAbsolutePath()
+        );
     }
     
     @Test
