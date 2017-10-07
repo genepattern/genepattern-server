@@ -7,20 +7,20 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.genepattern.junitutil.DbUtil;
+import org.genepattern.server.DbException;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.junit.Test;
 
 public class TestPropsTable {
-    
     /**
      * CRUD tests for the 'PROPS' table.
-     * @throws Exception
      */
-    @Test
-    public void createUpdateDeleteProp() throws Exception {
-        HibernateSessionManager mgr=DbUtil.getTestDbSession();
+    public static void test_PROPS_table(final HibernateSessionManager mgr) 
+    throws DbException 
+    {
         
         List<PropsTable> allProps=PropsTable.selectAllProps(mgr);
         assertNotNull("selectAllProps != null", allProps);
@@ -49,6 +49,17 @@ public class TestPropsTable {
         // must remove to delete the row
         PropsTable.removeProp(mgr, key);
         assertEquals("after removing ", null, PropsTable.selectRow(mgr, key));
+    }
+    
+    /**
+     * CRUD tests for the 'PROPS' table.
+     * @throws ExecutionException 
+     * @throws DbException
+     */
+    @Test
+    public void createUpdateDeleteProp() throws DbException, ExecutionException {
+        HibernateSessionManager mgr=DbUtil.getTestDbSession();
+        test_PROPS_table(mgr);
     }
 
 }

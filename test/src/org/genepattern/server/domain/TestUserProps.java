@@ -19,12 +19,48 @@ import org.junit.Test;
 public class TestUserProps {
     private HibernateSessionManager mgr;
 
-    protected void createUser(final HibernateSessionManager mgr, final String userId) {
+    /**
+     * CRUD tests for the 'GP_USER_PROP' table. 
+     * Parameterized for testing with different database types.
+     * 
+     * @param mgr, an active database session
+     * @param userId
+     * @param key
+     * @param value
+     */
+    public static void test_GP_USER_PROP_table(final HibernateSessionManager mgr, final String userId, final String key, final String value) 
+    {
+        // first create a user
+        createUser(mgr, userId);
+
+        mgr.beginTransaction();
+        try {
+            User user = (User) mgr.getSession().get(User.class.getName(), userId);
+            if (user == null) {
+                fail("User not found: "+userId);
+            }
+            Set<UserProp> userProps = user.getProps();
+            assertEquals("before add", 0, userProps.size());
+        }
+        finally {
+            mgr.closeCurrentSession();
+        }
+
+        assertEquals("before", null, getUserProperty(mgr, userId, key));
+        setUserProperty(mgr, userId, key, value);
+        assertEquals("after", value, getUserProperty(mgr, userId, key));
+        setUserProperty(mgr, userId, key, "");
+        assertEquals("after set to empty string", "", getUserProperty(mgr, userId, key));
+        setUserProperty(mgr, userId, key, null);
+        assertEquals("after set to null", null, getUserProperty(mgr, userId, key));
+    }
+
+    protected static void createUser(final HibernateSessionManager mgr, final String userId) {
         final boolean isInTransaction=mgr.isInTransaction();
         mgr.beginTransaction();
         try {
             User user=new User();
-            user.setUserId("test_user");
+            user.setUserId(userId);
             mgr.getSession().saveOrUpdate(user);
             if (!isInTransaction) {
                 mgr.commitTransaction();
@@ -37,7 +73,7 @@ public class TestUserProps {
         }
     }
     
-    protected String getUserProperty(final HibernateSessionManager mgr, final String userId, final String key) {
+    protected static String getUserProperty(final HibernateSessionManager mgr, final String userId, final String key) {
         final boolean isInTransaction=mgr.isInTransaction();
         mgr.beginTransaction();
         try {
@@ -50,7 +86,7 @@ public class TestUserProps {
         }
     } 
     
-    protected void setUserProperty(final HibernateSessionManager mgr, final String userId, final String key, final String value) {
+    protected static void setUserProperty(final HibernateSessionManager mgr, final String userId, final String key, final String value) {
         final boolean isInTransaction=mgr.isInTransaction();
         mgr.beginTransaction();
         try {
@@ -77,34 +113,8 @@ public class TestUserProps {
      */
     @Test
     public void createUpdateDeleteGpUserProp() throws Exception {
-        final String userId="test_user";
-        final String key="theKey";
-        final String value="theValue";
-        
-        // first create a user
-        createUser(mgr, userId);
-
-        mgr.beginTransaction();
-        try {
-            User user = (User) mgr.getSession().get(User.class.getName(), userId);
-            if (user == null) {
-                fail("User not found: "+userId);
-            }
-            Set<UserProp> userProps = user.getProps();
-            assertEquals("before add", 0, userProps.size());
-        }
-        finally {
-            mgr.closeCurrentSession();
-        }
-        
-        
-        assertEquals("before", null, getUserProperty(mgr, userId, key));
-        setUserProperty(mgr, userId, key, value);
-        assertEquals("after", value, getUserProperty(mgr, userId, key));
-        setUserProperty(mgr, userId, key, "");
-        assertEquals("after set to empty string", "", getUserProperty(mgr, userId, key));
-        setUserProperty(mgr, userId, key, null);
-        assertEquals("after set to null", null, getUserProperty(mgr, userId, key));
+        test_GP_USER_PROP_table(mgr, "test_user", "theKey", "theValue");
     }
+
 
 }
