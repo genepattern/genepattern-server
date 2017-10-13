@@ -9,7 +9,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
- * Display information about this GenePattern Server by reading System properties loaded from the build.properties file.
+ * Display information about this GenePattern Server.
  * 
  * @author pcarr
  */
@@ -93,8 +93,11 @@ public class AboutBean {
     }
 
     public String getContactUs() {
+        final String PROP_CONTACT_LINK="contact.link";
+        //final String DEFAULT_CONTACT_LINK="/gp/pages/contactUs.jsf";
+        final String DEFAULT_CONTACT_LINK="JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help');";
         GpContext context = UIBeanHelper.getUserContext();
-        String link = gpConfig.getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
+        String link = gpConfig.getGPProperty(context, PROP_CONTACT_LINK, DEFAULT_CONTACT_LINK);
         return link;
     }
     
