@@ -154,7 +154,7 @@ public class GpConfig {
     
     /**
      * Configure the 'Contact Us' link. Example config_custom.yaml entry:
-     *   contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help');"
+     *   contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');"
      *   # (legacy) contactUs.jsf page
      *   # contact.link: "/gp/pages/contactUs.jsf"
      */
@@ -163,7 +163,7 @@ public class GpConfig {
     /**
      * The default 'contact.link' baked into the GP server opens the GenePattern Help forum in a new window.
      */
-    public static final String DEFAULT_CONTACT_LINK="JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help');";
+    public static final String DEFAULT_CONTACT_LINK="JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');";
 
     /**
      * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
