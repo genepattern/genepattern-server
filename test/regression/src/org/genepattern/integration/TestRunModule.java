@@ -23,24 +23,25 @@ import junit.framework.TestSuite;
  *
  */
 public class TestRunModule extends TestCase {
+    public static final String DATA_DIR=System.getProperty("data.dir", "resources/data");
 	
 	public static final String PREPROCESS_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020";
 	public static final String CONVERT_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002";
 	public static final String SVM_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025";
 
-	public static final String SMALL_GCT = "resources/data/small.gct";
+	public static final String SMALL_GCT = DATA_DIR+"/small.gct";
 	public static final String SMALL_PREPROCESS_RESULT_GCT = "small.preprocessed.gct";	
 	public static final String SMALL_CONVERT_RESULT_GCT = "small.cvt.gct";
 	
-	public static final String ALL_AML_RES_URL = "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res";
+	public static final String ALL_AML_RES_URL = "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.res";
 	public static final String ALL_AML_RES_PREPROCESS_RESULT = "all_aml_train.preprocessed.res";
 	public static final String ALL_AML_RES_CONVERT_RESULT = "all_aml_train.cvt.res";	
 	public static final String ALL_AML_RES_CONVERT_RERUN_RESULT = "all_aml_train.cvt.cvt.res";	
 	
-	public static final String TRAIN_DATA_FILENAME = "resources/data/all_aml_train.gct";
-	public static final String TRAIN_CLS_FILENAME = "resources/data/all_aml_train.cls";
-	public static final String TEST_DATA_FILENAME = "resources/data/all_aml_test.gct";
-	public static final String TEST_CLS_FILENAME = "resources/data/all_aml_test.cls";
+	public static final String TRAIN_DATA_FILENAME = DATA_DIR+"/all_aml_train.gct";
+	public static final String TRAIN_CLS_FILENAME = DATA_DIR+"/all_aml_train.cls";
+	public static final String TEST_DATA_FILENAME = DATA_DIR+"/all_aml_test.gct";
+	public static final String TEST_CLS_FILENAME = DATA_DIR+"/all_aml_test.cls";
 	public static final String SVM_ODF_RESULT = "all_aml_test.pred.odf";
 	
 	
@@ -178,7 +179,8 @@ public class TestRunModule extends TestCase {
 	}
 
     public void testComparativeMarkerSelectionExternalUrl() {
-        final String lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:7";
+        //final String lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:7";
+        final String lsid = "ComparativeMarkerSelection";
         Parameter[] params = new Parameter[2];
         params[0] = new Parameter("input.file", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct");
         params[1] = new Parameter("cls.file", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls");
