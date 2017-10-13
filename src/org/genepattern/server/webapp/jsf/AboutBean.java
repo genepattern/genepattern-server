@@ -26,22 +26,24 @@ public class AboutBean {
     private String versionLabel = "";
     private String versionRevision = "";
     private String versionBuildDate = "";
+    
+    private final String contactUs;
 
     public AboutBean() {
-        this(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+        this(ServerConfigurationFactory.instance(), UIBeanHelper.getUserContext());
     }
 
-    public AboutBean(GpConfig gpConfig, GpContext serverContext) {
+    public AboutBean(GpConfig gpConfig, GpContext userContext) {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
         }
-        if (serverContext==null) {
-            log.warn("serverContext==null");
-            serverContext=GpContext.getServerContext();
+        if (userContext==null) {
+            log.warn("userContext==null");
+            userContext=UIBeanHelper.getUserContext();
         }
         
         this.gpConfig=gpConfig;
-        this.serverContext=serverContext;
+        this.serverContext=userContext;
         
         this.genepatternVersion = gpConfig.getGenePatternVersion();
         this.versionLabel =  gpConfig.getBuildProperty(GpConfig.PROP_VERSION_LABEL, "");
@@ -50,6 +52,8 @@ public class AboutBean {
         
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();
+        
+        this.contactUs = gpConfig.getGPProperty(userContext, GpConfig.PROP_CONTACT_LINK, GpConfig.DEFAULT_CONTACT_LINK);
     }
     
     public String getFull() {
@@ -93,12 +97,7 @@ public class AboutBean {
     }
 
     public String getContactUs() {
-        final String PROP_CONTACT_LINK="contact.link";
-        //final String DEFAULT_CONTACT_LINK="/gp/pages/contactUs.jsf";
-        final String DEFAULT_CONTACT_LINK="JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help');";
-        GpContext context = UIBeanHelper.getUserContext();
-        String link = gpConfig.getGPProperty(context, PROP_CONTACT_LINK, DEFAULT_CONTACT_LINK);
-        return link;
+        return contactUs;
     }
     
     /**
