@@ -16,9 +16,6 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 public class AboutBean { 
     private static final Logger log = Logger.getLogger(AboutBean.class);
 
-    private final GpConfig gpConfig;
-    private final GpContext serverContext;
-    
     private String full;
     
     //mapped from build.properties file
@@ -28,6 +25,8 @@ public class AboutBean {
     private String versionBuildDate = "";
     
     private final String contactUs;
+    private final boolean gaEnabled;
+    private final String gaTrackingId;
 
     public AboutBean() {
         this(ServerConfigurationFactory.instance(), UIBeanHelper.getUserContext());
@@ -42,9 +41,6 @@ public class AboutBean {
             userContext=UIBeanHelper.getUserContext();
         }
         
-        this.gpConfig=gpConfig;
-        this.serverContext=userContext;
-        
         this.genepatternVersion = gpConfig.getGenePatternVersion();
         this.versionLabel =  gpConfig.getBuildProperty(GpConfig.PROP_VERSION_LABEL, "");
         this.versionRevision = gpConfig.getBuildProperty(GpConfig.PROP_VERSION_REVISION_ID, "");
@@ -54,6 +50,8 @@ public class AboutBean {
         this.full = full.trim();
         
         this.contactUs = gpConfig.getGPProperty(userContext, GpConfig.PROP_CONTACT_LINK, GpConfig.DEFAULT_CONTACT_LINK);
+        this.gaEnabled = gpConfig.getGPBooleanProperty(userContext, GpConfig.PROP_GA_ENABLED, false);
+        this.gaTrackingId = gpConfig.getGPProperty(userContext, GpConfig.PROP_GA_TRACKING_ID, "");
     }
     
     public String getFull() {
@@ -114,12 +112,11 @@ public class AboutBean {
      * @return
      */
     public boolean isGoogleAnalyticsEnabled() {
-        boolean rval=gpConfig.getGPBooleanProperty(serverContext, GpConfig.PROP_GA_ENABLED, false);
-        return rval;
+        return gaEnabled;
     }
 
     public String getGoogleAnalyticsTrackingId() {
-        return gpConfig.getGPProperty(serverContext, GpConfig.PROP_GA_TRACKING_ID, "");
+        return gaTrackingId;
     }
 
 }
