@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -87,6 +88,9 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final String PROP_AWS_PROFILE="aws-profile";
     public static final String DEFAULT_AWS_PROFILE="genepattern";
     
+    public static final String PROP_AWS_CLI="aws-cli";
+    public static final Value DEFAULT_AWS_CLI=new Value("aws-cli.sh");
+    
     // 's3-root' aka S3_PREFIX
     public static final String PROP_AWS_S3_ROOT="aws-s3-root";
     
@@ -118,7 +122,7 @@ public class AWSBatchJobRunner implements JobRunner {
     private static  Map<String, DrmJobState> batchToGPStatusMap = new HashMap<String, DrmJobState>();
 
     // commons exec, always set handleQuoting to false when adding command line args
-    private static final boolean handleQuoting = false;
+    protected static final boolean handleQuoting = false;
     
     public void setCommandProperties(CommandProperties properties) {
         log.debug("setCommandProperties");
@@ -600,6 +604,70 @@ public class AWSBatchJobRunner implements JobRunner {
         return cl;
     }
     
+    protected static void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root) {
+        final AwsS3Cmd s3Cmd=new AwsS3Cmd.Builder()
+            .awsCmd(awsCmd)
+            .awsCliEnv(cmdEnv)
+            .s3_bucket(s3_root)
+        .build();
+        for(final File inputFile : inputFiles) {
+            s3Cmd.copyFileToS3(inputFile);
+        }
+        
+        // create 'aws-sync-from-s3.sh' script in the metadataDir
+        final String script_name="aws-sync-from-s3.sh";
+        final File script_dir=s3Cmd.getMetadataDir();
+        if (!script_dir.exists()) {
+            if (log.isDebugEnabled()) {
+                log.debug("mkdirs script_dir="+script_dir);
+            }
+            boolean success=script_dir.mkdirs();
+            if (!success) {
+                log.error("failed to mkdirs for script_dir="+script_dir);
+            }
+        }
+
+        final File script=new File(script_dir, script_name);
+        try {
+            boolean success=script.createNewFile();
+            if (!success) {
+                log.error("createNewFile failed, script="+script);
+                return;
+            }
+        }
+        catch (IOException e) {
+            log.error("Error in createNewFile, script="+script, e);
+            return;
+        }
+        
+        try (final BufferedWriter bw = new BufferedWriter(new FileWriter(script))) {
+            bw.write("#!/usr/bin/env bash"); bw.newLine();
+            for(final File inputFile : inputFiles) {
+                // Template
+                //   aws s3 sync {s3_bucket}{localDir} {localDir} --exclude "*" --include "{filename}"  
+                // Example
+                //   aws s3 sync s3://gpbeta/temp /temp --exclude "*" --include "test.txt"
+                final List<String> args=s3Cmd.getCopyFileFromS3Args(inputFile);
+                bw.write("aws \\"); bw.newLine();
+                for(int i=0; i<args.size(); ++i) {
+                    bw.write("    \""+args.get(i)+"\" ");
+                    bw.write(" \\");
+                    bw.newLine();
+                }
+                bw.write(" >> "+script_dir+"/s3_downloads.log");
+                bw.newLine();
+                bw.newLine();
+            }
+        }
+        catch (IOException e) {
+            log.error("Error writing to script="+script, e);
+        }
+        boolean success=script.setExecutable(true);
+        if (!success) {
+            log.error("failed to set exec flag for script="+script);
+        }
+    }
+
     /**
      * Make symlinks 
      * @param inputDir - the local input directory to be sync'ed into aws s3
@@ -616,7 +684,7 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         return inputFileMap;
     }
-    
+
     protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
         final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
         for (int i = 0; i < cmdLineIn.size(); ++i) { 
@@ -686,8 +754,16 @@ public class AWSBatchJobRunner implements JobRunner {
         //   -- make symbolic links in the .inputs_for_{job_id} directory
         final File inputDir = new File(gpJob.getWorkingDir(), ".inputs_for_" + gpJob.getGpJobNo());
         inputDir.mkdir();
+        
+        // this is a test
+        final File awsCli=getAwsBatchScriptFile(gpJob, PROP_AWS_CLI, DEFAULT_AWS_CLI);
+        final String s3_root=gpJob.getProperty(PROP_AWS_S3_ROOT);
         final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
+        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
+        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root);
+
+        //final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
+        final Map<String,String> inputFileMap=Collections.emptyMap();
 
         final CommandLine cl = initAwsBatchScript(gpJob, inputDir, inputFiles, inputFileMap);
         if (log.isDebugEnabled()) {
@@ -699,7 +775,6 @@ public class AWSBatchJobRunner implements JobRunner {
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final Executor exec=initExecutorForJob(gpJob, outputStream); 
-        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
         // set GP_STDIN_FILE
         final String linkedStdIn=getLinkedStdinFile(gpJob, inputFileMap);
         if (!Strings.isNullOrEmpty(linkedStdIn)) {
