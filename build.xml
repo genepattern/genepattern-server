@@ -320,7 +320,9 @@
         </zip>
     </target>
 
-    <target depends="init,compile,compile-jspc" name="common">
+    <target name="common" depends="init,compile,compile-jspc"
+        description="Create the gp-full.jar file in the build directory"
+    >
         <!-- Makes gp-common.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" includes="org/**/*.class" jarfile="${genepattern.build}/${common-jarname}" />
 
