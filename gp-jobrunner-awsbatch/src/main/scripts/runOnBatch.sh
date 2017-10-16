@@ -22,7 +22,6 @@ shift
 
 : ${S3_ROOT?not set}
 : ${JOB_QUEUE?not set}
-#: ${GP_JOB_MEMORY?not set}
 
 # ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
 # create 'exec.sh' script in the GP_METADATA_DIR
@@ -34,7 +33,7 @@ EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 
-# new stuff, dynamic aws s3 sync into the container
+# copy data files from s3 into the container
 echo "# sync from s3 into the container" >> $EXEC_SHELL
 echo "cd ${GP_METADATA_DIR}" >> $EXEC_SHELL
 echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL

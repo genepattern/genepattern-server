@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -16,11 +17,16 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -254,6 +260,26 @@ public class AwsBatchUtil {
                     int i=0;
                     for(final ParamValue paramValue : param.getValues()) {
                         log.debug("    "+pname+"["+(i++)+"]: "+paramValue.getValue());
+                    }
+                    // walk through all of the file list values
+                    final HibernateSessionManager mgr = HibernateUtil.instance();
+                    final GpConfig gpConfig=ServerConfigurationFactory.instance();
+                    final GpContext taskContext=gpJob.getJobContext();
+                    final ParameterInfoRecord parameterInfoRecord=paramInfoMap.get(pname);
+                    //final Param inputParam;
+                    final boolean initDefault=false;
+                    final ParamListHelper plh=new ParamListHelper(mgr, gpConfig, taskContext, parameterInfoRecord, jobInput, param, initDefault);
+                    if (plh.isCreateFilelist()) {
+                        try {
+                            final List<GpFilePath> values=ParamListHelper.getListOfValues(mgr, gpConfig, gpJob.getJobContext(), jobInput, formalParam, param, false);
+                            int j=0;
+                            for(final GpFilePath value : values) {
+                                log.debug("    "+pname+"["+(j++)+"]: "+value.getServerFile());
+                            }
+                        }
+                        catch (Exception e) {
+                            log.error(e);
+                        }
                     }
                 }
             }
