@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="GenePatternRegressionTest" default="finish">
+<project name="GenePatternRegressionTest" default="finish"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+>
     
     <property name="src" location="src"/>
     <property name="lib" location="lib2"/>
@@ -12,15 +15,62 @@
     <property name="genePatternUrl" value="http://127.0.0.1"/>
     <property name="username" value="jntest"/>
     <property name="password" value="jntest"/>
-    <!-- optionally set junit jvm arg when testing an HTTPS server,
-        -Djavax.net.ssl.trustStore=${keystore} 
-    --> 
-    <property name="keystore" value="" />
-    <property name="keystore.password" value="" />
+
     <path id="project.class.path">
         <fileset dir="lib2" includes="gp-full.jar,gp-modules.jar"/>
     </path>
-    
+
+    <!--                                                                                                                                                               
+      Optional 'javax.net.ssl.trustStore' configuration for testing an HTTPS server.
+    -->
+    <target name="show-keystore-flags" depends="keystore-usage, check-keystore-flags"
+        description="for debugging 'ant -Dkeystore=' and 'ant -Dkeystore.password=' flags"
+    />
+
+    <target name="keystore-usage">
+        <echo>
+Optional 'javax.net.ssl.trustStore' configuration.
+Usage:
+  ant -Dkeystore=(/path/to/keystore.jks) -Dkeystore.password=(password) ... 
+
+The 'keystore' and 'keystore.password' properties are passed as jvm args to junit.
+  -Djavax.net.ssl.trustStore=${keystore}
+  -Djavax.net.ssl.trustStorePassword=${keystore.password}
+        </echo>
+    </target>
+
+    <!--
+      Validate 'keystore' and 'keystore.password' flags.
+        Fail the job if the keystore file does not exist.
+    -->
+    <target name="check-keystore-flags">
+        <echo>
+Checking 'keystore' and 'keystore.password' flags ...
+        </echo>
+        <!-- keystore -->
+        <echo if:set="keystore" unless:blank="${keystore}" 
+        >  keystore=${keystore}</echo>
+        <echo unless:set="keystore" 
+        >  keystore is not set</echo>
+        <fail if:blank="${keystore}" 
+        >  ERROR: keystore is blank</fail>
+        <fail if:set="keystore" message="keystore='${keystore}', File does not exist.">
+            <condition>
+                <not><available file="${keystore}"/></not>
+            </condition>
+        </fail>
+
+        <!-- keystore.password -->
+        <echo if:set="keystore.password" unless:blank="${keystore.password}" 
+        >  keystore.password is set, keystore.password='${keystore.password}'
+            jvmarg: -Dkeystore.password=${keystore.password}
+        </echo>
+        <echo unless:set="keystore.password" 
+        >  keystore.password is not set</echo>
+        <echo if:blank="${keystore.password}" 
+        >  WARN: keystore.password is blank</echo>
+    </target>
+
     <target name="clean">
         <delete dir="${build}" />
         <delete dir="${dist}" />
@@ -43,7 +93,7 @@
         </javac>
     </target>
 
-    <target name="junit" depends="compile"
+    <target name="junit" depends="compile, check-keystore-flags"
             description="runs junit tests">
         <mkdir dir="${junit.dir}" />
         <mkdir dir="${report.dir}" />
@@ -59,19 +109,17 @@
             <jvmarg value="-DgenePatternUrl=${genePatternUrl}" />
             <jvmarg value="-Dusername=${username}" />
             <jvmarg value="-Dpassword=${password}" />
-            <jvmarg value="-Djavax.net.ssl.trustStore=${keystore}" />
-            <jvmarg value="-Djavax.net.ssl.trustStorePassword=${keystore.password}" />
-            
+            <jvmarg if:set="keystore" unless:blank="${keystore}" 
+                value="-Djavax.net.ssl.trustStore=${keystore}" />
+            <jvmarg if:set="keystore.password" unless:blank="${keystore.password}" 
+                value="-Djavax.net.ssl.trustStorePassword=${keystore.password}" />
+
             <!-- debugging from Java 1.7 -->
             <!-- See: https://blogs.oracle.com/java-platform-group/entry/diagnosing_tls_ssl_and_https -->
             <!-- 
             <jvmarg value="-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2" />
             <jvmarg value="-Djavax.net.debug=all" />
-            <sysproperty key="javax.net.ssl.trustStore" value="${keystore}" />
-            <sysproperty key="javax.net.ssl.trustStorePasword" value="${keystore.password}" />
-            <env key="javax.net.ssl.trustStore" value="${keystore}" />
-            <env key="javax.net.ssl.trustStorePasword" value="${keystore.password}" />
-            -->
+            --> 
         </junit>
     </target>
     
@@ -97,7 +145,9 @@
         </junitreport>
     </target>
     
-    <target name="finish" description="works around a weird timing problem in Hudson accepting test reports, make the very last target" depends="junit">
+    <target name="finish" depends="junit"
+        description="works around a weird timing problem in Hudson accepting test reports, make the very last target" 
+    >
         <sleep seconds="2" />
         <touch file="test_all.xml"/>
     </target>
