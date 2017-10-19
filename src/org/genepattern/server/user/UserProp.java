@@ -11,7 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="gp_user_prop")
+@Table(name="GP_USER_PROP")
 public class UserProp {
     /**
      * @param jobNumber
@@ -32,21 +32,21 @@ public class UserProp {
      * 
      * @es_generated
      */
-    @Column(name="key")
+    @Column(name="`KEY`")
     private String key;
     /**
      * auto generated
      * 
      * @es_generated
      */
-    @Column
+    @Column(name="VALUE")
     private String value;
     /**
      * auto generated
      * 
      * @es_generated
      */
-    @Column(name="gp_user_id")
+    @Column(name="GP_USER_ID")
     private String gpUserId;
 
     /**

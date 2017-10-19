@@ -32,6 +32,13 @@ EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
+
+# copy data files from s3 into the container
+echo "# sync from s3 into the container" >> $EXEC_SHELL
+echo "cd ${GP_METADATA_DIR}" >> $EXEC_SHELL
+echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
+
+echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
 for arg in "$@"

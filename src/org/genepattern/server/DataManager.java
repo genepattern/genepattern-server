@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -101,12 +102,12 @@ public class DataManager {
      * 
      * @return true if the directory was successfully created
      */
-    public static boolean createSubdirectory(final HibernateSessionManager mgr, final GpContext userContext, final File relativePath) {
+    public static boolean createSubdirectory(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final File relativePath) {
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
             boolean initMetaData = false;
-            subdirRef = UserUploadManager.getUploadFileObj(mgr, userContext, relativePath, initMetaData);
+            subdirRef = UserUploadManager.getUploadFileObj(mgr, gpConfig, userContext, relativePath, initMetaData);
         }
         catch (Throwable t) {
             log.error(t.getLocalizedMessage());
@@ -262,7 +263,7 @@ public class DataManager {
      * @param name
      * @return
      */
-    public static boolean renameUserUpload(final HibernateSessionManager mgr, final String user, final GpFilePath filePath, final String name) {
+    public static boolean renameUserUpload(final HibernateSessionManager mgr, final GpConfig gpConfig, final String user, final GpFilePath filePath, final String name) {
         File oldFile = filePath.getServerFile();
         File newFileAbsolute = new File(oldFile.getParentFile(), name);
         File newFileRelative = new File(filePath.getRelativeFile().getParent(), name);
@@ -288,7 +289,7 @@ public class DataManager {
             if (!directory) {
                 @SuppressWarnings("deprecation")
                 GpContext context = GpContext.getContextForUser(user);
-                GpFilePath newPath = GpFileObjFactory.getUserUploadFile(context, newFileRelative);
+                GpFilePath newPath = GpFileObjFactory.getUserUploadFile(gpConfig, context, newFileRelative);
                 newPath.initMetadata();
 
                 // Begin a new transaction

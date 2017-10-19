@@ -1169,7 +1169,7 @@ public class GenePatternAnalysisTask {
         } // end if parameters not null
 
         // add local file paths to the jobContext ...
-        final List<String> inputFiles=listInputFiles(paramsCopy, paramInfoMap);
+        final List<String> inputFiles=listInputFiles(mgr, gpConfig, jobContext, paramsCopy, paramInfoMap);
         for(final String inputFile : inputFiles) {
             jobContext.addLocalFilePath(inputFile);
         }
@@ -1401,7 +1401,7 @@ public class GenePatternAnalysisTask {
         runCommand(mgr, gpConfig, jobContext, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, stdinFile);
     }
 
-    protected List<String> listInputFiles(ParameterInfo[] paramsCopy, final Map<String, ParameterInfoRecord> paramInfoMap) {
+    protected List<String> listInputFiles(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParameterInfo[] paramsCopy, final Map<String, ParameterInfoRecord> paramInfoMap) {
         final List<String> inputFilePaths=new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("listing paramsCopy ...");
@@ -1430,6 +1430,32 @@ public class GenePatternAnalysisTask {
             }
             if (formal != null && formal.isInputFile()) {
                 inputFilePaths.add(copy.getValue());
+
+                //check for file list files
+                final Param actualValues=jobContext.getJobInput().getParam(formal.getName());
+                final boolean hasFilelist=ParamListHelper.isCreateFilelist(formal, actualValues);
+                if (hasFilelist) {
+                    int i=0;
+                    for(final ParamValue actualValue : actualValues.getValues()) {
+                        log.debug("        actual.value["+(i++)+"]="+actualValue.getValue());
+                    }
+                    try {
+                        final List<GpFilePath> gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobContext.getJobInput(), formal, actualValues, false);
+                        if (gpFilePaths != null) {
+                            int j=0;
+                            for(final GpFilePath gpFilePath : gpFilePaths) {
+                                File localPath=gpFilePath.getServerFile();
+                                log.debug("        localPath["+(j++)+"]"+localPath);
+                                if (localPath!=null) {
+                                    inputFilePaths.add(localPath.getPath());
+                                }
+                            }
+                        }
+                    }
+                    catch (Throwable t) {
+                        log.error("Error getting gpFilePaths, job="+jobContext.getJobNumber()+", pname="+formal.getName(), t);
+                    }
+                }                
             }
         }
         return inputFilePaths;

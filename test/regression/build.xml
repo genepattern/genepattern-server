@@ -1,54 +1,154 @@
-<project name="GenePatternRegressionTest" default="finish">
-	<property name="src" location="src"/>
-	<property name="lib" location="lib2"/>
-	<property name="build" location="build"/>
-	<property name="dist" location="dist"/>
-	<property name="genePatternUrl" value="http://genepatterntest.broad.mit.edu"/>
-	<property name="username" value="jntest"/>
-	<property name="password" value="jntest"/>
-	<path id="project.class.path">
-		<fileset dir="lib2" includes="gp-full.jar,gp-modules.jar"/>
-	</path>
-	
-	<target name="clean">
-		<delete dir="${build}"/>
-		<delete dir="${dist}"/>
-	</target>
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="GenePatternRegressionTest" default="finish"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+>
+    
+    <property name="src" location="src"/>
+    <property name="lib" location="lib2"/>
+    <property name="build" location="build" />
+    <property name="junit.dir" location="${build}/junit" />
+    <!-- property name="report.dir" location="${junit.dir}/reports" / -->
+    <property name="report.dir" location="${basedir}" />
+    <property name="data.dir" location="resources/data" />
+    <property name="dist" location="dist"/>
+    <property name="genePatternUrl" value="http://127.0.0.1"/>
+    <property name="username" value="jntest"/>
+    <property name="password" value="jntest"/>
 
-	<target name="compile" depends="clean" 
-	        description="compiles the source code">
-		<mkdir dir="${build}"/>
-		<copy todir="${build}">
-		  <fileset dir="${src}">
-		    <filename name="log4j.properties"/>
-		  </fileset>
-		</copy>
-		<javac srcdir="${src}" destdir="${build}" debug="on">
-		  <classpath> 
-		    <fileset dir="lib2">
-		      <include name="**/*.jar"/>
-		    </fileset>
-		  </classpath>
-		</javac>
-	</target>
+    <path id="project.class.path">
+        <fileset dir="lib2" includes="gp-full.jar,gp-modules.jar"/>
+    </path>
 
-	<target name="junit" depends="compile"
-	        description="runs junit tests">
-		<junit fork="yes">
-		  <test name="org.genepattern.integration.TestAll" outfile="test_all"/>
-		  <classpath>
-		    <fileset dir="lib2" includes="**/*.jar"/>
-		    <dirset dir="build"/>
-		  </classpath>
-		  <formatter type="xml"/>
-		  <jvmarg value="-DgenePatternUrl=${genePatternUrl}"/>
-		  <jvmarg value="-Dusername=${username}"/>
-		  <jvmarg value="-Dpassword=${password}"/>
-		</junit>
-	</target>
+    <!--                                                                                                                                                               
+      Optional 'javax.net.ssl.trustStore' configuration for testing an HTTPS server.
+    -->
+    <target name="show-keystore-flags" depends="keystore-usage, check-keystore-flags"
+        description="for debugging 'ant -Dkeystore=' and 'ant -Dkeystore.password=' flags"
+    />
 
-        <target name="finish" description="works around a wierd timing problem in Hudson accepting test reports, make the very last target" depends="junit">
-	  <sleep seconds="2" />
-	  <touch file="test_all.xml"/>
-	</target>
+    <target name="keystore-usage">
+        <echo>
+Optional 'javax.net.ssl.trustStore' configuration.
+Usage:
+  ant -Dkeystore=(/path/to/keystore.jks) -Dkeystore.password=(password) ... 
+
+The 'keystore' and 'keystore.password' properties are passed as jvm args to junit.
+  -Djavax.net.ssl.trustStore=${keystore}
+  -Djavax.net.ssl.trustStorePassword=${keystore.password}
+        </echo>
+    </target>
+
+    <!--
+      Validate 'keystore' and 'keystore.password' flags.
+        Fail the job if the keystore file does not exist.
+    -->
+    <target name="check-keystore-flags">
+        <echo>
+Checking 'keystore' and 'keystore.password' flags ...
+        </echo>
+        <!-- keystore -->
+        <echo if:set="keystore" unless:blank="${keystore}" 
+        >  keystore=${keystore}</echo>
+        <echo unless:set="keystore" 
+        >  keystore is not set</echo>
+        <fail if:blank="${keystore}" 
+        >  ERROR: keystore is blank</fail>
+        <fail if:set="keystore" message="keystore='${keystore}', File does not exist.">
+            <condition>
+                <not><available file="${keystore}"/></not>
+            </condition>
+        </fail>
+
+        <!-- keystore.password -->
+        <echo if:set="keystore.password" unless:blank="${keystore.password}" 
+        >  keystore.password is set, keystore.password='${keystore.password}'
+            jvmarg: -Dkeystore.password=${keystore.password}
+        </echo>
+        <echo unless:set="keystore.password" 
+        >  keystore.password is not set</echo>
+        <echo if:blank="${keystore.password}" 
+        >  WARN: keystore.password is blank</echo>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build}" />
+        <delete dir="${dist}" />
+    </target>
+
+    <target name="compile" depends="clean" 
+            description="compiles the source code">
+        <mkdir dir="${build}" />
+        <copy todir="${build}">
+          <fileset dir="${src}">
+            <filename name="log4j.properties"/>
+          </fileset>
+        </copy>
+        <javac srcdir="${src}" destdir="${build}" debug="on" includeAntRuntime="false">
+          <classpath> 
+            <fileset dir="lib2">
+              <include name="**/*.jar"/>
+            </fileset>
+          </classpath>
+        </javac>
+    </target>
+
+    <target name="junit" depends="compile, check-keystore-flags"
+            description="runs junit tests">
+        <mkdir dir="${junit.dir}" />
+        <mkdir dir="${report.dir}" />
+        <junit fork="yes" dir="${junit.dir}">
+            <test name="org.genepattern.integration.TestAll" todir="${report.dir}" outfile="test_all"/>
+            <classpath>
+                <fileset dir="lib2" includes="**/*.jar"/>
+                <dirset dir="${build}"/>
+              </classpath>
+            <formatter type="xml"/>
+        
+            <jvmarg value="-Ddata.dir=${data.dir}" />
+            <jvmarg value="-DgenePatternUrl=${genePatternUrl}" />
+            <jvmarg value="-Dusername=${username}" />
+            <jvmarg value="-Dpassword=${password}" />
+            <jvmarg if:set="keystore" unless:blank="${keystore}" 
+                value="-Djavax.net.ssl.trustStore=${keystore}" />
+            <jvmarg if:set="keystore.password" unless:blank="${keystore.password}" 
+                value="-Djavax.net.ssl.trustStorePassword=${keystore.password}" />
+
+            <!-- debugging from Java 1.7 -->
+            <!-- See: https://blogs.oracle.com/java-platform-group/entry/diagnosing_tls_ssl_and_https -->
+            <!-- 
+            <jvmarg value="-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2" />
+            <jvmarg value="-Djavax.net.debug=all" />
+            --> 
+        </junit>
+    </target>
+    
+    <target name="junit-report" depends="junit" 
+        description="create the html report, runs junit first">
+        <junitreport todir="${report.dir}">
+            <fileset dir="${report.dir}">
+                <!-- include name="TEST-*.xml" / -->
+                <include name="test_all.xml" />
+            </fileset>
+            <report todir="${report.dir}" />
+        </junitreport>
+    </target>
+
+    <target name="make-junit-report"
+        description="create the html report from the xml generated by the 'junit' ant target">
+        <junitreport todir="${report.dir}">
+            <fileset dir="${report.dir}">
+                <!-- include name="TEST-*.xml" / -->
+                <include name="test_all.xml" />
+            </fileset>
+            <report todir="${report.dir}" />
+        </junitreport>
+    </target>
+    
+    <target name="finish" depends="junit"
+        description="works around a weird timing problem in Hudson accepting test reports, make the very last target" 
+    >
+        <sleep seconds="2" />
+        <touch file="test_all.xml"/>
+    </target>
 </project>

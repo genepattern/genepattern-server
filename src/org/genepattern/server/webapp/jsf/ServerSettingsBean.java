@@ -91,6 +91,7 @@ public class ServerSettingsBean implements Serializable {
             } 
             catch (IOException ioe) {
                 log.error(ioe);
+                settings = new Properties();
             }
         }
         if (customProperties == null) {
@@ -102,6 +103,7 @@ public class ServerSettingsBean implements Serializable {
             } 
             catch (IOException ioe) {
                 log.debug(ioe);
+                defaultSettings=new Properties();
             }
         }
     }

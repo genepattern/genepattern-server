@@ -9,6 +9,12 @@ insert into patch_info (lsid) select
 commit;
 
 insert into patch_info (lsid) select 
+        'urn:lsid:broadinstitute.org:plugin:Ant_1.8' as lsid
+    where not exists ( select lsid from patch_info where lsid = 
+        'urn:lsid:broadinstitute.org:plugin:Ant_1.8' );
+commit;
+
+insert into patch_info (lsid) select 
         'urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2' as lsid
     where not exists ( select lsid from patch_info where lsid = 
         'urn:lsid:broad.mit.edu:cancer.software.genepattern.server.patch:GenePattern_3_4_2:2' );

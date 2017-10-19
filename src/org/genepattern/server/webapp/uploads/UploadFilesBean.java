@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -78,14 +79,19 @@ public class UploadFilesBean {
     
     public UploadFilesBean() {
         mgr=org.genepattern.server.database.HibernateUtil.instance();
-        initUserUploadTree();
+        gpConfig=ServerConfigurationFactory.instance();
+        currentUser = UIBeanHelper.getUserId();
+        userContext = GpContext.getContextForUser(currentUser);
+        initUserUploadTree(mgr, gpConfig, userContext);
     }
 
     private final HibernateSessionManager mgr;
+    private final GpConfig gpConfig;
+    private final String currentUser;
+    private final GpContext userContext;
     private List<FileInfoWrapper> files;
     private List<DirectoryInfoWrapper> directories;
     private DirectoryInfoWrapper rootDir;
-    private String currentUser;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
@@ -129,9 +135,9 @@ public class UploadFilesBean {
     };
 
     public String getCurrentUser() {
-        if (currentUser == null) {
-            currentUser = UIBeanHelper.getUserId();
-        }
+        //if (currentUser == null) {
+        //    currentUser = UIBeanHelper.getUserId();
+        //}
         return currentUser;
     }
     
@@ -155,16 +161,16 @@ public class UploadFilesBean {
     }
     
     public List<FileInfoWrapper> getFiles() {
-        if (files == null) {
-            initUserUploadTree(); 
-        }
+//        if (files == null) {
+//            initUserUploadTree(); 
+//        }
         return files;
     }
 
     public List<DirectoryInfoWrapper> getDirectories() {
-        if (directories == null) {
-            initUserUploadTree(); 
-        }
+//        if (directories == null) {
+//            initUserUploadTree(); 
+//        }
         return directories;
     }
     
@@ -235,7 +241,7 @@ public class UploadFilesBean {
      * @throws IOException 
      */
     public TreeNode<FileInfoWrapper> getUploadFilesTree() throws Exception {
-        initUserUploadTree();
+        //initUserUploadTree();
         return getDirectoryNode(rootDir);
     }
     
@@ -266,19 +272,15 @@ public class UploadFilesBean {
         UIBeanHelper.getSession().setAttribute("uploadPath", filePath);
     }
     
-    @SuppressWarnings("deprecation")
     public File getUserUploadDir() {
-        return ServerConfigurationFactory.instance().getUserUploadDir(GpContext.getContextForUser(UIBeanHelper.getUserId()));
+        return gpConfig.getUserUploadDir(userContext);
     }
     
-    private void initUserUploadTree() {
-        currentUser = UIBeanHelper.getUserId();
+    private void initUserUploadTree(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext) {
         files = new ArrayList<FileInfoWrapper>();
         directories = new ArrayList<DirectoryInfoWrapper>();
         try {
-            @SuppressWarnings("deprecation")
-            GpContext userContext = GpContext.getContextForUser(currentUser);
-            GpDirectoryNode userUploadRoot = UserUploadManager.getFileTree(userContext);
+            GpDirectoryNode userUploadRoot = UserUploadManager.getFileTree(mgr, gpConfig, userContext);
             rootDir = initFilesFromDir(userUploadRoot);
             initModuleMenuItems();
         }
@@ -287,17 +289,17 @@ public class UploadFilesBean {
         }
     }
 
-    private DirectoryInfoWrapper initFilesFromDir(GpDirectoryNode dir) {
-        DirectoryInfoWrapper dirWrapper = new DirectoryInfoWrapper(dir);
+    private DirectoryInfoWrapper initFilesFromDir(final GpDirectoryNode dir) {
+        final DirectoryInfoWrapper dirWrapper = new DirectoryInfoWrapper(dir);
         directories.add(dirWrapper);
-        for(Node<GpFilePath> child : dir.getChildren()) {
+        for(final Node<GpFilePath> child : dir.getChildren()) {
             if (child instanceof GpDirectoryNode) {
-                DirectoryInfoWrapper childDir = initFilesFromDir( (GpDirectoryNode) child );
+                final DirectoryInfoWrapper childDir = initFilesFromDir( (GpDirectoryNode) child );
                 dirWrapper.addChildDir(childDir);
             }
             else {
-                GpFilePath file = child.getValue();
-                FileInfoWrapper childFile = new FileInfoWrapper(file);
+                final GpFilePath file = child.getValue();
+                final FileInfoWrapper childFile = new FileInfoWrapper(file);
                 files.add(childFile);
                 dirWrapper.addChildFile(childFile);
             }
@@ -375,8 +377,6 @@ public class UploadFilesBean {
         }
         parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
         
-        @SuppressWarnings("deprecation")
-        GpContext userContext = GpContext.getContextForUser(UIBeanHelper.getUserId());
         final File relativePath=DataManager.initSubdirectory(parentPath, subdirName);
         //special-case: don't allow creation of top-level tmp directory
         boolean isTmpDir=DataManager.isTmpDir(userContext, relativePath);
@@ -385,7 +385,7 @@ public class UploadFilesBean {
             return;
         }
         
-        boolean success = DataManager.createSubdirectory(mgr, userContext, relativePath);
+        boolean success = DataManager.createSubdirectory(mgr, gpConfig, userContext, relativePath);
         if (success) {
             UIBeanHelper.setInfoMessage("Subdirectory " + subdirName + " successfully created");
             files = null;
@@ -418,15 +418,11 @@ public class UploadFilesBean {
     }
     
     public int getPartitionLength() {
-        @SuppressWarnings("deprecation")
-        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfigurationFactory.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
+        return gpConfig.getGPIntegerProperty(userContext, "upload.partition.size", 10000000);
     }
     
     public long getMaxUploadSize() {
-        @SuppressWarnings("deprecation")
-        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfigurationFactory.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
+        return gpConfig.getGPLongProperty(userContext, "upload.max.size", 20000000000L);
     }
     
     public String getUploadWindowName() {
@@ -435,10 +431,7 @@ public class UploadFilesBean {
     }
     
     public boolean getUploadEnabled() {
-        String userId = UIBeanHelper.getUserId();
-        @SuppressWarnings("deprecation")
-        GpContext userContext = GpContext.getContextForUser(userId);
-        return ServerConfigurationFactory.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
+        return gpConfig.getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
     
     /**

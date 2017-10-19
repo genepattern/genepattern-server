@@ -4,7 +4,9 @@
 package org.genepattern.server.genomespace;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.ExternalFile;
@@ -521,10 +523,11 @@ public class GenomeSpaceManager {
         // Update Database
         try {
             final HibernateSessionManager mgr=HibernateUtil.instance();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             @SuppressWarnings("deprecation")
             GpContext context = GpContext.getContextForUser(gpUser);
             File relativeFile = new File(directory.getRelativeFile(), name);
-            GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(mgr, context, relativeFile, true);
+            GpFilePath asUploadFile = UserUploadManager.getUploadFileObj(mgr, gpConfig, context, relativeFile, true);
             UserUploadManager.createUploadFile(mgr, context, asUploadFile, 1, true);
             UserUploadManager.updateUploadFile(mgr, context, asUploadFile, 1, 1);
         }

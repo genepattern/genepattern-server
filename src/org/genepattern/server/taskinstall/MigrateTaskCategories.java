@@ -41,7 +41,7 @@ public class MigrateTaskCategories {
     public boolean isComplete() {
         String val="";
         try {
-            val=PropsTable.selectValue(PROP_DB_CHECK);
+            val=PropsTable.selectValue(HibernateUtil.instance(), PROP_DB_CHECK);
         }
         catch (DbException e) {
             val="";

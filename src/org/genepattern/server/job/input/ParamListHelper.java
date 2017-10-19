@@ -547,15 +547,28 @@ public class ParamListHelper {
      *     LEGACY, no
      *     LIST, yes
      *     LIST_INCLUDE_EMPTY, yes
+     * 
+     * @param formalParam, initialized from the manifest file
+     * @param actualValues, the values for a particular run of the module
      * @return
      */
-    public boolean isCreateFilelist() {
-        if (this.allowedNumValues == null || !this.allowedNumValues.acceptsList()) {
+    public static boolean isCreateFilelist(final ParameterInfo formalParam, final Param actualValues) {
+        final NumValues numValues=ParamListHelper.initNumValues(formalParam);
+        final ListMode listMode=ParamListHelper.initListMode(formalParam);
+        return isCreateFilelist(numValues, listMode, actualValues);
+    }
+
+    protected static boolean isCreateFilelist(final NumValues numValues, final ListMode listMode, final Param actualValues) {
+        if (numValues == null || !numValues.acceptsList()) {
             return false;
         }
 
-        if(ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode)))
-        {
+        if(ListMode.CMD.equals(listMode) || (ListMode.CMD_OPT.equals(listMode))) {
+            return false;
+        }
+        
+        if (actualValues==null) {
+            log.warn("actualValues==null");
             return false;
         }
 
@@ -580,6 +593,13 @@ public class ParamListHelper {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Do we need to create a filelist file for this parameter?
+     */
+    public boolean isCreateFilelist() {
+        return ParamListHelper.isCreateFilelist(this.allowedNumValues, this.listMode, this.actualValues);
     }
 
     /**

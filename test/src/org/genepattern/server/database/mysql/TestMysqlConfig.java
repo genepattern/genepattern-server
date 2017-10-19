@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
  *******************************************************************************/
-package org.genepattern.server.database;
+package org.genepattern.server.database.mysql;
 
 import static org.junit.Assert.*;
 
@@ -17,6 +17,8 @@ import java.util.Properties;
 import org.genepattern.junitutil.ConfigUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.domain.PropsTable;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -36,14 +38,21 @@ import org.junit.runners.MethodSorters;
 @Ignore 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestMysqlConfig {
-    // the name of the test database aka schema; don't use a real database
-    // this db gets dropped before running the tests
+
+    private static final String dbHost="127.0.0.1";
+    
+    /**
+     * The name of the test database aka schema; 
+     * WARNING!
+     * don't use a real database this db gets dropped before running the tests
+     */
     private static final String dbName="gp_test_db";
+
     // MySQL config
     // To change the root password from MySQL circa v5.7
     //     mysql> use mysql;
     //     mysql> update user set authentication_string = PASSWORD('<root_password>') where User = '<root_user>';
-    private static final String root_jdbcUrl="jdbc:mysql://127.0.0.1:3306/";
+    private static final String root_jdbcUrl="jdbc:mysql://"+dbHost+":3306/";
     private static final String root_user="root";
     private static final String root_password="1111";
     
@@ -53,7 +62,7 @@ public class TestMysqlConfig {
     @BeforeClass
     public static void beforeClass() throws FileNotFoundException, IOException, SQLException {
         createTestDb(dbName);
-        testDbConnection(dbName);
+        testDbConnection(dbHost, dbName);
         
         File workingDir=new File(System.getProperty("user.dir"));
         File webappDir=new File(workingDir, "website");
@@ -81,7 +90,8 @@ public class TestMysqlConfig {
             final String createStmt="CREATE DATABASE IF NOT EXISTS " + dbName;
             rval=stmt.executeUpdate(createStmt);
             assertEquals("executeUpdate('"+createStmt+"'", 1, rval);
-            rval=stmt.executeUpdate("GRANT all on "+dbName+".* to '"+dbName+"'@'localhost' identified by '"+dbName+"'");
+            //rval=stmt.executeUpdate("GRANT all on "+dbName+".* to '"+dbName+"'@'localhost' identified by '"+dbName+"'");
+            rval=stmt.executeUpdate("GRANT all on "+dbName+".* to '"+dbName+"' identified by '"+dbName+"'");
             rval=stmt.executeUpdate("flush privileges");
         }
         catch (SQLException e) {
@@ -97,10 +107,10 @@ public class TestMysqlConfig {
         }
     }
     
-    protected static void testDbConnection(final String dbName) throws SQLException {
+    protected static void testDbConnection(final String dbHost, final String dbName) throws SQLException {
         Connection conn=null;
         try {
-            final String jdbcUrl="jdbc:mysql://127.0.0.1:3306/"+dbName;
+            final String jdbcUrl="jdbc:mysql://"+dbHost+":3306/"+dbName;
             conn = DriverManager.getConnection(jdbcUrl, dbName, dbName);
         }
         catch (Throwable t) {
@@ -111,8 +121,8 @@ public class TestMysqlConfig {
                 conn.close();
             }
         }
-    }    
-    
+    }
+
     /**
      * Create an new MySQL session based on the dbName.
      * 

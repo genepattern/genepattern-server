@@ -153,6 +153,19 @@ public class GpConfig {
     public static final String PROP_TASKLIB_DIR="tasklib";
     
     /**
+     * Configure the 'Contact Us' link. Example config_custom.yaml entry:
+     *   contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');"
+     *   # (legacy) contactUs.jsf page
+     *   # contact.link: "/gp/pages/contactUs.jsf"
+     */
+    public static final String PROP_CONTACT_LINK="contact.link";
+
+    /**
+     * The default 'contact.link' baked into the GP server opens the GenePattern Help forum in a new window.
+     */
+    public static final String DEFAULT_CONTACT_LINK="JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');";
+
+    /**
      * Set the 'googleAnalytics.enabled' flag to true to enable Google Analytics for the GP server.
      * When 'true' the ./pages/gpTracking.xhtml file is loaded into the header page for the GP server.
      * You must also set the 'googleAnalytics.trackingId' property in the config yaml file.

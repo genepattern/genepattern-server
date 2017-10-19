@@ -9,16 +9,13 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 
 /**
- * Display information about this GenePattern Server by reading System properties loaded from the build.properties file.
+ * Display information about this GenePattern Server.
  * 
  * @author pcarr
  */
 public class AboutBean { 
     private static final Logger log = Logger.getLogger(AboutBean.class);
 
-    private final GpConfig gpConfig;
-    private final GpContext serverContext;
-    
     private String full;
     
     //mapped from build.properties file
@@ -26,22 +23,23 @@ public class AboutBean {
     private String versionLabel = "";
     private String versionRevision = "";
     private String versionBuildDate = "";
+    
+    private final String contactUs;
+    private final boolean gaEnabled;
+    private final String gaTrackingId;
 
     public AboutBean() {
-        this(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+        this(ServerConfigurationFactory.instance(), UIBeanHelper.getUserContext());
     }
 
-    public AboutBean(GpConfig gpConfig, GpContext serverContext) {
+    public AboutBean(GpConfig gpConfig, GpContext userContext) {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
         }
-        if (serverContext==null) {
-            log.warn("serverContext==null");
-            serverContext=GpContext.getServerContext();
+        if (userContext==null) {
+            log.warn("userContext==null");
+            userContext=UIBeanHelper.getUserContext();
         }
-        
-        this.gpConfig=gpConfig;
-        this.serverContext=serverContext;
         
         this.genepatternVersion = gpConfig.getGenePatternVersion();
         this.versionLabel =  gpConfig.getBuildProperty(GpConfig.PROP_VERSION_LABEL, "");
@@ -50,6 +48,10 @@ public class AboutBean {
         
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();
+        
+        this.contactUs = gpConfig.getGPProperty(userContext, GpConfig.PROP_CONTACT_LINK, GpConfig.DEFAULT_CONTACT_LINK);
+        this.gaEnabled = gpConfig.getGPBooleanProperty(userContext, GpConfig.PROP_GA_ENABLED, false);
+        this.gaTrackingId = gpConfig.getGPProperty(userContext, GpConfig.PROP_GA_TRACKING_ID, "");
     }
     
     public String getFull() {
@@ -93,9 +95,7 @@ public class AboutBean {
     }
 
     public String getContactUs() {
-        GpContext context = UIBeanHelper.getUserContext();
-        String link = gpConfig.getGPProperty(context, "contact.link", "/gp/pages/contactUs.jsf");
-        return link;
+        return contactUs;
     }
     
     /**
@@ -112,12 +112,11 @@ public class AboutBean {
      * @return
      */
     public boolean isGoogleAnalyticsEnabled() {
-        boolean rval=gpConfig.getGPBooleanProperty(serverContext, GpConfig.PROP_GA_ENABLED, false);
-        return rval;
+        return gaEnabled;
     }
 
     public String getGoogleAnalyticsTrackingId() {
-        return gpConfig.getGPProperty(serverContext, GpConfig.PROP_GA_TRACKING_ID, "");
+        return gaTrackingId;
     }
 
 }

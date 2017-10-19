@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.4-snapshot</version>
+  <version>0.1.5-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -20,6 +20,22 @@
     <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 
     <plugins>
+      <!-- 
+        added to set javac compiler flags 
+        see:
+          https://maven.apache.org/plugins/maven-compiler-plugin/index.html 
+          https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
@@ -82,7 +98,7 @@
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-snapshot-05</version>
+      <version>3.9.11-snapshot-06</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->

@@ -64,6 +64,14 @@ default.properties:
     genomeSpaceEnabled: true
     genomeSpaceUrl: https://identity.genomespace.org/identityServer/xrd.jsp
     genomeSpaceEnvironment: prod
+    
+    #
+    # configure the Contact Us link
+    #
+    # open the GenePattern Help forum in a new window
+    contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');"
+    # previous default (<=3.9.10) open the page included in the app
+    # contact.link: "/gp/pages/contactUs.jsf"
 
     #
     # GPARC integration
