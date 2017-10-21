@@ -3,6 +3,7 @@ package org.genepattern.server.executor.awsbatch;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,6 +91,23 @@ public class AwsS3Cmd {
         return new File(localPath);
     }
     
+    public void syncToS3(final File localFile) {
+        if (localFile==null) {
+            log.error("ignoring null arg");
+            return;
+        }
+        if (localFile.isFile()) {
+            copyFileToS3(localFile);
+        }
+        else if (localFile.isDirectory()) {
+            copyDirToS3(localFile);
+        }
+        else {
+            log.error("localFile must be a file or a directory, localFile="+localFile);
+            return;
+        }
+    }
+    
     /**
      * Copy the local file to the s3 bucket. 
      * Template:
@@ -99,7 +117,7 @@ public class AwsS3Cmd {
      *   
      * @param localFile
      */
-    public void copyFileToS3(final File localFile) {
+    private void copyFileToS3(final File localFile) {
         // aws s3 sync fq-local-path s3uri
         if (!localFile.isFile()) {
             log.error("Expecting a file not a directory, inputFile="+localFile);
@@ -109,7 +127,6 @@ public class AwsS3Cmd {
             log.error("Expecting a fully qualified file, inputFile="+localFile);
             return;
         }
-        // TODO: handle special characters
         List<String> args=Arrays.asList( "s3", "sync",
                 // from local path
                 localFile.getParent(), 
@@ -125,22 +142,66 @@ public class AwsS3Cmd {
         runCmd(cmdEnv, awsCmd, args);
     }
     
-    // TODO: handle special characters
-    public List<String> getCopyFileFromS3Args(final File localFile) {
-        List<String> args=Arrays.asList( "s3", "sync", 
-            // from s3Uri
-            s3_bucket+""+localFile.getParent(),
-            // to container local path
-            localFile.getParent(),
-            "--exclude", "*", "--include", localFile.getName()
+    private void copyDirToS3(final File localDir) {
+        if (!localDir.isDirectory()) {
+            log.error("Expecting a directory, localDir="+localDir);
+            return;
+        }
+        if (!localDir.isAbsolute()) {
+            log.error("Expecting a fully qualified path, localDir="+localDir);
+            return;
+        }
+        List<String> args=Arrays.asList("s3", "sync",
+            //// for debugging ...
+            // "--dryrun",
+            //// optional delete mode
+            ////   --delete (boolean) Files that exist in the destination but not in the source are deleted during sync.
+            "--delete", 
+            // from local path
+            localDir.getPath(), 
+            // to s3Uri
+            s3_bucket+""+localDir.getPath(),
+            // hard-coded default-excludes 
+            "--exclude", "*~", 
+            "--exclude", ".DS_Store",
+            "--exclude", ".git*"
         );
+        if (!Strings.isNullOrEmpty(profile)) {
+            args.add("--profile");
+            args.add(profile);
+        }
+
+        runCmd(cmdEnv, awsCmd, args); 
+    }
+    
+    protected List<String> getSyncFromS3Args(final File localFile) {
+        List<String> args=new ArrayList<String>();
+        args.add("s3");
+        args.add("sync");
+        if (localFile.isFile()) {
+            // from s3Uri
+            args.add(s3_bucket+""+localFile.getParent());
+            // to container local path
+            args.add(localFile.getParent());
+            // filter all but the file
+            args.add("--exclude");
+            args.add("*");
+            args.add("--include");
+            args.add(localFile.getName());
+        }
+        else if (localFile.isDirectory()) {
+            // from s3Uri
+            args.add(s3_bucket+""+localFile.getPath());
+            // to container local path
+            args.add(localFile.getPath());
+        }
         if (!Strings.isNullOrEmpty(profile)) {
             args.add("--profile");
             args.add(profile);
         }
         return args;
     }
-    
+
     public File getMetadataDir() {
         return metadataDir;
     }

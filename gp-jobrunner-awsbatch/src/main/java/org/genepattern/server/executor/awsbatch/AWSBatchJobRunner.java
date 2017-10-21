@@ -86,7 +86,8 @@ public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
     public static final String PROP_AWS_PROFILE="aws-profile";
-    public static final String DEFAULT_AWS_PROFILE="genepattern";
+    // TODO: delete me
+    public static final String _DEFAULT_AWS_PROFILE="genepattern";
     
     public static final String PROP_AWS_CLI="aws-cli";
     public static final Value DEFAULT_AWS_CLI=new Value("aws-cli.sh");
@@ -328,7 +329,8 @@ public class AWSBatchJobRunner implements JobRunner {
      * @return
      */
     protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext) {
-        final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);
+        //final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);
+        final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE);
         if (aws_profile != null) {
             cmdEnv.put("AWS_PROFILE", aws_profile);
         }
@@ -597,7 +599,9 @@ public class AWSBatchJobRunner implements JobRunner {
         // handle input files
         cl.addArgument(inputDir.getAbsolutePath(), handleQuoting); 
         // substitute input file paths, replace original with linked file paths
-        final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
+        //final List<String> cmdLine=substituteInputFilePaths(gpJob.getCommandLine(), inputFileMap, inputFiles);
+        
+        final List<String> cmdLine=gpJob.getCommandLine();
         for(final String arg : cmdLine) {
             cl.addArgument(arg, handleQuoting);
         }
@@ -611,7 +615,7 @@ public class AWSBatchJobRunner implements JobRunner {
             .s3_bucket(s3_root)
         .build();
         for(final File inputFile : inputFiles) {
-            s3Cmd.copyFileToS3(inputFile);
+            s3Cmd.syncToS3(inputFile);
         }
         
         // create 'aws-sync-from-s3.sh' script in the metadataDir
@@ -647,7 +651,7 @@ public class AWSBatchJobRunner implements JobRunner {
                 //   aws s3 sync {s3_bucket}{localDir} {localDir} --exclude "*" --include "{filename}"  
                 // Example
                 //   aws s3 sync s3://gpbeta/temp /temp --exclude "*" --include "test.txt"
-                final List<String> args=s3Cmd.getCopyFileFromS3Args(inputFile);
+                final List<String> args=s3Cmd.getSyncFromS3Args(inputFile);
                 bw.write("aws \\"); bw.newLine();
                 for(int i=0; i<args.size(); ++i) {
                     bw.write("    \""+args.get(i)+"\" ");
@@ -668,27 +672,10 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
-    /**
-     * Make symlinks 
-     * @param inputDir - the local input directory to be sync'ed into aws s3
-     * @param inputFiles - the list of job input files in the GP server local file system
-     * @return
-     * @throws CommandExecutorException
-     */
-    protected static Map<String, String> makeSymLinks(final File inputDir, final Set<File> inputFiles) throws CommandExecutorException {
-        final Map<String,String> inputFileMap = new HashMap<String,String>();
-        for (final File inputFile : inputFiles) {
-            final File linkedFile = new File(inputDir, inputFile.getName());
-            AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
-            inputFileMap.put(inputFile.getAbsolutePath(), linkedFile.getAbsolutePath());
-        }
-        return inputFileMap;
-    }
-
-    protected static List<String> substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
+    private static List<String> _substituteInputFilePaths(final List<String> cmdLineIn, final Map<String,String> inputFileMap, final Set<File> inputFiles) {
         final List<String> cmdLineOut=new ArrayList<String>(cmdLineIn.size());
         for (int i = 0; i < cmdLineIn.size(); ++i) { 
-            final String arg = substituteCmdLineArg(cmdLineIn.get(i), inputFileMap, inputFiles);
+            final String arg = _substituteCmdLineArg(cmdLineIn.get(i), inputFileMap, inputFiles);
             cmdLineOut.add(arg);
         } 
         return cmdLineOut;
@@ -703,7 +690,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * 
      * @return the command line arg to use in the container
      */
-    protected static String substituteCmdLineArg(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
+    private static String _substituteCmdLineArg(String arg, final Map<String, String> inputFileMap, final Set<File> inputFiles) {
         for (final File inputFile : inputFiles) { 
             final String inputFilepath = inputFile.getPath();
             final String linkedFilepath = inputFileMap.get(inputFilepath);
