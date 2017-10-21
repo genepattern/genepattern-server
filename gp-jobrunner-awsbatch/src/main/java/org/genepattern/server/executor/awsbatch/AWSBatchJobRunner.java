@@ -661,6 +661,11 @@ public class AWSBatchJobRunner implements JobRunner {
                 bw.write(" >> "+script_dir+"/s3_downloads.log");
                 bw.newLine();
                 bw.newLine();
+                
+                if (inputFile.isFile() && inputFile.canExecute()) {
+                    bw.write("chmod u+x \""+inputFile.getPath()+"\"");
+                    bw.newLine();
+                }
             }
         }
         catch (IOException e) {

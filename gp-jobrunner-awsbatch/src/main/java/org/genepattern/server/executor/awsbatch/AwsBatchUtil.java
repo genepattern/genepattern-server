@@ -156,6 +156,31 @@ public class AwsBatchUtil {
             }
             inputFiles.add(wrapperScripts);
         }
+        
+        // special-case, sync required patches
+        // TODO: implement getPatchInfoForJob, instead of manual edit of config file
+        final Value requiredPatches=gpJob.getValue("required-patches");
+        if (requiredPatches!=null && requiredPatches.getNumValues() > 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", adding required-patches ...");
+            }
+            for(final String requiredPatch : requiredPatches.getValues()) {
+                // assume relative paths are relative to the <patches> directory
+                final File requiredFile = getPatchFile(gpJob.getGpConfig(), gpJob.getJobContext(), requiredPatch);
+                if (requiredFile==null) {
+                    log.error("gpJobNo="+gpJob.getGpJobNo()+", patchFile is null, requiredPatch="+requiredPatch);
+                }
+                else if (!requiredFile.canRead()) {
+                    log.error("gpJobNo="+gpJob.getGpJobNo()+", can't read file, requiredPatch="+requiredPatch);
+                }
+                else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("     "+requiredFile);
+                    }
+                    inputFiles.add(requiredFile);                    
+                }
+            }
+        }
 
 //        // special-case, include <run-with-env> support files
 //        final Set<File> additionalSupportFiles=getWrapperScripts(gpJob);
@@ -277,6 +302,26 @@ public class AwsBatchUtil {
             "runS3OnBatch.sh"
         );
     } 
+
+    /**
+     * Resolve the path to the named patch directory or file. Paths are resolved
+     * relative to the 'patches' directory.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param path
+     * @return
+     */
+    protected static File getPatchFile(final GpConfig gpConfig, final GpContext jobContext, final String path) {
+        File file = new File(path);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'path' is a relative path, make it relative to the patches directory
+        File parent = gpConfig.getRootPluginDir(jobContext);
+        return new File(parent, path);
+    }
 
     protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
         if (paramInfoMap.containsKey(pname)) {
