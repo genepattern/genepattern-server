@@ -5,3 +5,4 @@
 /.settings/com.cenqua.clover.core.prefs
 /bin
 .gp_metadata/
+/build/
