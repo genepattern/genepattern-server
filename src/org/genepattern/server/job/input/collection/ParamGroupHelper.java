@@ -103,9 +103,10 @@ public class ParamGroupHelper {
         try {
             this.gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, formalParam, param, downloadExternalFiles);
         }
-        catch (Exception e) {
-            log.error(e);
-            throw new IllegalArgumentException("Error initializing gpFilePaths for param");
+        catch (Throwable t) {
+            String msg="Error initializing gpFilePaths for param='"+formalParam.getName()+"': "+t.getMessage();
+            log.error(msg, t);
+            throw new IllegalArgumentException(t);
         }
         if (in.toFile != null) {
             this.toFile=in.toFile;
@@ -123,7 +124,7 @@ public class ParamGroupHelper {
     
     private GpFilePath initToFile() throws Exception {
         //now, create a new group file, add it into the user uploads directory for the given job
-        JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+        JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
         final int index=-1;
         final String pname=param.getParamId().getFqName();
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filenameSuffix);

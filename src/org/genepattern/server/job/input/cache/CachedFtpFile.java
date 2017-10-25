@@ -183,7 +183,7 @@ abstract public class CachedFtpFile implements CachedFile {
 
         // Add it to the database
         try {
-            JobInputFileUtil.__addUploadFileToDb(mgr, realPath);
+            JobInputFileUtil.__addUploadFileToDb(mgr, gpConfig, realPath);
         }
         catch (Throwable t) {
             //ignore this, because we don't rely on the DB entry for managing cached data files

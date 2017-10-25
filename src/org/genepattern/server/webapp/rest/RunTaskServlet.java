@@ -466,9 +466,10 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             GpContext jobContext=GpContext.getContextForUser(username);
 
-            JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
             final String fileName=fileDetail.getFileName();
             log.debug("fileName="+fileName);
             GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileName);

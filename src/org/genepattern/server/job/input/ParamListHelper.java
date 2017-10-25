@@ -5,6 +5,7 @@ package org.genepattern.server.job.input;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -17,17 +18,20 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
@@ -743,7 +747,7 @@ public class ParamListHelper {
         {
             final boolean downloadExternalFiles = !passByReference;
             final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
-            final GpFilePath toFile=createFilelist(mgr, listOfValues, passByReference);
+            final GpFilePath toFile=createFilelist(mgr, gpConfig, listOfValues, passByReference);
             final String toFileHref=UrlUtil.getHref(baseGpHref, toFile);
             parameterInfoRecord.getActual().setValue(toFileHref);
             saveListOfValuesToClob(downloadExternalFiles, listOfValues); 
@@ -884,9 +888,9 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    private GpFilePath createFilelist(final HibernateSessionManager mgr, final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
+    private GpFilePath createFilelist(final HibernateSessionManager mgr, final GpConfig gpConfig, final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
         //now, create a new filelist file, add it into the user uploads directory for the given job
-        JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+        JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
         final int index=-1;
         final String pname=parameterInfoRecord.getFormal().getName();
         final String filename=".list.txt";
@@ -913,9 +917,15 @@ public class ParamListHelper {
      * @param actualValues, the actual job input values
      * @param downloadExternalUrl, when true download files and wait.
      * @return
+     * @throws JobDispatchException 
+     * @throws DbException 
+     * @throws IOException 
+     * @throws GenomeSpaceException 
      * @throws Exception
      */
-    public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) throws Exception {
+    public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) 
+    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
+    {
         final List<Record> tmpList=new ArrayList<Record>();
         for(ParamValue pval : actualValues.getValues()) {
             final Record rec=initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, pval);
@@ -936,10 +946,12 @@ public class ParamListHelper {
         return values;
     }
 
-    protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final Record rec) throws Exception, JobDispatchException {
+    protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final Record rec) 
+    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
+    {
         // Handle GenomeSpace URLs
         if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
-            fileListGenomeSpaceToUploads(mgr, jobContext, rec.gpFilePath, rec.url);
+            fileListGenomeSpaceToUploads(mgr, gpConfig, jobContext, rec.gpFilePath, rec.url);
         }
 
         // Handle external URLs
@@ -949,7 +961,7 @@ public class ParamListHelper {
                 rec.gpFilePath=cached;
             }
             else {
-                forFileListCopyExternalUrlToUserUploads(mgr, jobContext, rec.gpFilePath, rec.url);
+                forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.gpFilePath, rec.url);
             }
         }
     }
@@ -958,7 +970,9 @@ public class ParamListHelper {
         return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, baseGpHref, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    protected static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) throws Exception {
+    protected static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
+    throws GpFilePathException 
+    {
         final String value=pval.getValue();
         URL externalUrl=JobInputHelper.initExternalUrl(gpConfig, baseGpHref, value);
         final boolean isPassByReference=isPassByReference(formalParam);
@@ -1051,7 +1065,7 @@ public class ParamListHelper {
         if (gpPath != null) {
             return new Record(Record.Type.SERVER_PATH, gpPath, null); 
         }
-        throw new Exception("Error initializing gpFilePath for value="+value);
+        throw new GpFilePathException("Error initializing gpFilePath for value="+value);
     }
 
     public static class Record {
@@ -1094,13 +1108,15 @@ public class ParamListHelper {
      * @throws Exception
      * 
      */
-    protected static void forFileListCopyExternalUrlToUserUploads(final HibernateSessionManager mgr, final GpContext jobContext, final GpFilePath gpPath, final URL url) throws Exception {
+    protected static void forFileListCopyExternalUrlToUserUploads(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final GpFilePath gpPath, final URL url) 
+    throws GenomeSpaceException, GpFilePathException, IOException, DbException 
+    {
         // for GP-5153
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
             if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
                 final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
                 log.debug(message+", url="+url);
-                throw new Exception(message);
+                throw new GenomeSpaceException(message);
             }
         }
         final File parentDir=gpPath.getServerFile().getParentFile();
@@ -1109,7 +1125,7 @@ public class ParamListHelper {
             if (!success) {
                 String message="Error creating upload directory for external url: dir="+parentDir.getPath()+", url="+url.toExternalForm();
                 log.error(message);
-                throw new Exception(message);
+                throw new GpFilePathException(message);
             }
         }
         final File dataFile=gpPath.getServerFile();
@@ -1122,7 +1138,7 @@ public class ParamListHelper {
             org.apache.commons.io.FileUtils.copyURLToFile(url, dataFile);
 
             //add a record of the file to the DB, so that a link will appear in the Uploads tab
-            JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
+            JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(gpConfig, jobContext);
             jobInputFileUtil.updateUploadsDb(mgr, gpPath);
         }
     }
@@ -1133,9 +1149,14 @@ public class ParamListHelper {
      * @param jobContext
      * @param gpPath
      * @param url
+     * @throws GenomeSpaceException 
+     * @throws IOException 
+     * @throws DbException 
      * @throws Exception
      */
-    protected static void fileListGenomeSpaceToUploads(final HibernateSessionManager mgr, final GpContext jobContext, final GpFilePath gpPath, URL url) throws Exception {
+    protected static void fileListGenomeSpaceToUploads(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final GpFilePath gpPath, URL url) 
+    throws GpFilePathException, GenomeSpaceException, IOException, DbException 
+    {
         if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
             // Make sure the user is logged into GenomeSpace
             GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
@@ -1146,7 +1167,7 @@ public class ParamListHelper {
                 if (!success) {
                     String message = "Error creating upload directory for GenomeSpace url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
                     log.error(message);
-                    throw new Exception(message);
+                    throw new GpFilePathException(message);
                 }
             }
             final File dataFile = gpPath.getServerFile();
@@ -1161,13 +1182,13 @@ public class ParamListHelper {
                 IOUtils.copy(is, os);
 
                 //add a record of the file to the DB, so that a link will appear in the Uploads tab
-                JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(jobContext);
+                JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(gpConfig, jobContext);
                 jobInputFileUtil.updateUploadsDb(mgr, gpPath);
             }
         }
         else {
             log.warn("GenomeSpace file added when GenomeSpace is not enabled: " + url.toString());
-            throw new Exception("GenomeSpace not enabled. Need to enable GenomeSpace to download GenomeSpace files:" + url.toString());
+            throw new GenomeSpaceException("GenomeSpace not enabled. Need to enable GenomeSpace to download GenomeSpace files:" + url.toString());
         }
     }
 

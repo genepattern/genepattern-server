@@ -449,7 +449,7 @@ public class UploadResource {
             if(success)
             {
                 //update the user uploads database
-                JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
+                JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
                 fileUtil.updateUploadsDb(HibernateUtil.instance(), file);
             }
             else

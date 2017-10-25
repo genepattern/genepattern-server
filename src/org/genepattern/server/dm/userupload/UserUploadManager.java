@@ -9,12 +9,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpDirectoryNode;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
@@ -170,7 +172,9 @@ public class UserUploadManager {
      * @param modDuplicate, whether an existing duplicate entry is updated or if an error is thrown
      * @throws Exception if a duplicate entry for the file is found in the database and modDuplicate is false
      */
-    public static final UserUpload createUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFileObj, final int numParts, final boolean modDuplicate) throws Exception {
+    public static final UserUpload createUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFileObj, final int numParts, final boolean modDuplicate) 
+    throws GpFilePathException, DbException 
+    {
         final boolean inTransaction = mgr.isInTransaction(); 
         log.debug("inTransaction="+inTransaction);
         try {
@@ -180,7 +184,7 @@ public class UserUploadManager {
             UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFileObj);
             if (uu != null && !modDuplicate) {
                 log.error("Duplicate entry found in the database for relativePath=" + gpFileObj.getRelativePath());
-                throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
+                throw new GpFilePathException("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
             }
             try {
                 uu = UserUpload.initFromGpFileObj(userContext.getUserId(), uu, gpFileObj);
@@ -195,7 +199,7 @@ public class UserUploadManager {
             catch (Throwable t) {
                 log.error("Error in createUploadFile() for relativePath="+gpFileObj.getRelativePath(), t);
                 mgr.rollbackTransaction();
-                throw new Exception("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
+                throw new DbException("Runtime exception creating upload file: " + gpFileObj.getRelativePath());
             }
         }
         finally {
@@ -218,7 +222,8 @@ public class UserUploadManager {
      * @throws Exception, if a part is received out of order.
      */
     public static final void updateUploadFile(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFilePath, final int partNum, final int totalParts)
-    throws Exception {
+    throws DbException 
+    {
         boolean inTransaction = mgr.isInTransaction();
         try {
             UserUploadDao dao = new UserUploadDao(mgr);
@@ -235,7 +240,7 @@ public class UserUploadManager {
         }
         catch (Throwable t) {
             mgr.rollbackTransaction();
-            throw new Exception("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
+            throw new DbException("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
         }
         finally {
             if (!inTransaction) {

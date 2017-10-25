@@ -26,6 +26,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.JobStatus;
@@ -736,7 +737,8 @@ public class Analysis extends GenericWebService {
         
         final File uploadedFile = new File(dataHandler.getName());
         try {
-            GpFilePath toPath=DataResource.moveSoapAttachmentToUserUploads(userContext, uploadedFile, parameter.getValue());
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            GpFilePath toPath=DataResource.moveSoapAttachmentToUserUploads(gpConfig, userContext, uploadedFile, parameter.getValue());
             parameter.setValue(""+toPath.getUrl());
             // { MODE=URL_IN, type=java.io.File }
             if (parameter.getAttributes() != null) {
