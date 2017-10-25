@@ -4,7 +4,7 @@
 # init-aws-cli-env.sh
 #   Initialize the aws-cli environment 
 #
-# The default assumes an aws profile named 'genepattern'
+# By default there will be no profile
 #
 # Note: this script is hard-coded to work on Peter Carr's Mac OS X dev laptop
 # To configure for your server, edit this script.  If you already

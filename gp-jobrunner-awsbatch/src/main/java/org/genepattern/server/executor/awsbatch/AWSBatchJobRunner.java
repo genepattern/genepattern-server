@@ -665,6 +665,7 @@ public class AWSBatchJobRunner implements JobRunner {
                 if (inputFile.isFile() && inputFile.canExecute()) {
                     bw.write("chmod u+x \""+inputFile.getPath()+"\"");
                     bw.newLine();
+                    bw.newLine();
                 }
             }
         }

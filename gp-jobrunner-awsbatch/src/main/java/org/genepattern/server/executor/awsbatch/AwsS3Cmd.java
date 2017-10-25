@@ -156,7 +156,7 @@ public class AwsS3Cmd {
             // "--dryrun",
             //// optional delete mode
             ////   --delete (boolean) Files that exist in the destination but not in the source are deleted during sync.
-            "--delete", 
+            // "--delete", 
             // from local path
             localDir.getPath(), 
             // to s3Uri
