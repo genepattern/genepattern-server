@@ -664,18 +664,17 @@ public class ParamListHelper {
             return null;            
         }
         
-        GpFilePath directory=null;
-        final Record inputRecord=initFromValue(paramValueIn);
+        //GpFilePath directory=null;
+        final ParamListValue inputRecord=initFromValue(paramValueIn);
         //special-case: external urls are not allowed
-        if (inputRecord.type==Record.Type.EXTERNAL_URL) {
+        if (inputRecord.type==ParamListValue.Type.EXTERNAL_URL) {
             throw new GpFilePathException("External url not allowed for DIRECTORY: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         //special-case: it's not a directory
-        if (!inputRecord.gpFilePath.isDirectory()) {
+        if (!inputRecord.getGpFilePath().isDirectory()) {
             throw new GpFilePathException("Value is not a directory: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
-        directory=inputRecord.gpFilePath;
-        return directory;
+        return inputRecord.getGpFilePath();
     }
     
     /**
@@ -699,9 +698,8 @@ public class ParamListHelper {
             return null;            
         } 
         GpFilePath file=null;
-        final Record inputRecord=initFromValue(paramValueIn);
-        file=inputRecord.gpFilePath;
-        return file;
+        final ParamListValue inputRecord=initFromValue(paramValueIn);
+        return inputRecord.getGpFilePath();
     }
 
     public boolean isPassByReference() {
@@ -765,9 +763,9 @@ public class ParamListHelper {
             final ParamValue paramValueIn=actualValues.getValues().get(0);
             //special-case for FILE type with server file paths, check file access permissions and if necessary convert value to URL form
             if (parameterInfoRecord.getFormal().isInputFile()) {
-                final Record inputRecord=initFromValue(paramValueIn);
-                if (inputRecord.type==Record.Type.SERVER_PATH || inputRecord.type==Record.Type.SERVER_URL) {
-                    final GpFilePath file=inputRecord.gpFilePath;
+                final ParamListValue inputRecord=initFromValue(paramValueIn);
+                if (inputRecord.type==ParamListValue.Type.SERVER_PATH || inputRecord.type==ParamListValue.Type.SERVER_URL) {
+                    final GpFilePath file=inputRecord.getGpFilePath();
                     boolean canRead=file.canRead(jobContext.isAdmin(), jobContext);
                     if (!canRead) {
                         String pname=parameterInfoRecord.getFormal().getName();
@@ -938,51 +936,51 @@ public class ParamListHelper {
     public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) 
     throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
     {
-        final List<Record> tmpList=new ArrayList<Record>();
+        final List<ParamListValue> tmpList=new ArrayList<ParamListValue>();
         for(ParamValue pval : actualValues.getValues()) {
-            final Record rec=initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, pval);
+            final ParamListValue rec=initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, pval);
             tmpList.add(rec);
         }
         
         // If necessary, download data from external sites
         if (downloadExternalUrl) {
-            for(final Record rec : tmpList) {
+            for(final ParamListValue rec : tmpList) {
                 downloadFromRecord(mgr, gpConfig, jobContext, rec);
             }
         } 
 
         final List<GpFilePath> values=new ArrayList<GpFilePath>();
-        for(final Record rec : tmpList) {
-            values.add( rec.gpFilePath );
+        for(final ParamListValue rec : tmpList) {
+            values.add( rec.getGpFilePath() );
         }
         return values;
     }
 
-    protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final Record rec) 
+    protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParamListValue rec) 
     throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
     {
         // Handle GenomeSpace URLs
-        if (rec.type.equals(Record.Type.GENOMESPACE_URL)) {
-            fileListGenomeSpaceToUploads(mgr, gpConfig, jobContext, rec.gpFilePath, rec.url);
+        if (rec.type.equals(ParamListValue.Type.GENOMESPACE_URL)) {
+            fileListGenomeSpaceToUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
         }
 
         // Handle external URLs
-        if (rec.type.equals(Record.Type.EXTERNAL_URL)) {
+        if (rec.type.equals(ParamListValue.Type.EXTERNAL_URL)) {
             if (rec.isCached) {
-                GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
-                rec.gpFilePath=cached;
+                final GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
+                rec.setGpFilePath(cached);
             }
             else {
-                forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.gpFilePath, rec.url);
+                forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
             }
         }
     }
 
-    protected Record initFromValue(final ParamValue pval) throws GpFilePathException {
+    protected ParamListValue initFromValue(final ParamValue pval) throws GpFilePathException {
         return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, baseGpHref, this.parameterInfoRecord.getFormal(), pval);
     }
 
-    protected static Record initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
+    protected static ParamListValue initFromValue(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String baseGpHref, final ParameterInfo formalParam, final ParamValue pval) 
     throws GpFilePathException 
     {
         final String value=pval.getValue();
@@ -994,7 +992,7 @@ public class ParamListHelper {
             if (isPassByReference) {
                 // special-case: pass-by-reference
                 GpFilePath gpPath = new ExternalFile(externalUrl);
-                Record record=new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
+                ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUrl);
                 record.isCached=isCached;
                 record.isPassByReference=isPassByReference;
                 return record;
@@ -1002,7 +1000,7 @@ public class ParamListHelper {
             else if (isCached) {
                 // special-case: 'cache.externalUrlDirs'
                 CachedFile cachedFile=FileCache.initCachedFileObj(mgr, gpConfig, jobContext, value);
-                Record record=new Record(Record.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
+                ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
                 record.isCached=isCached;
                 record.isPassByReference=isPassByReference;
                 return record;
@@ -1010,12 +1008,12 @@ public class ParamListHelper {
             else if (GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
                 // special-case: GenomeSpace input
                 GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new Record(Record.Type.GENOMESPACE_URL, gpPath, externalUrl);
+                return new ParamListValue(ParamListValue.Type.GENOMESPACE_URL, gpPath, externalUrl);
             }
             else {
                 // by default, external url inputs for file lists are cached on a per-user basis, in the user's tmp directory
                 GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new Record(Record.Type.EXTERNAL_URL, gpPath, externalUrl);
+                return new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUrl);
             }
         }        
         LSID lsid=null;
@@ -1029,7 +1027,7 @@ public class ParamListHelper {
         
         try {
             final GpFilePath gpPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, value, lsid);
-            return new Record(Record.Type.SERVER_URL, gpPath, null);
+            return new ParamListValue(ParamListValue.Type.SERVER_URL, gpPath, null);
         }
         catch (Exception e) {
             log.debug("getRequestedGpFileObj("+value+") threw an exception: "+e.getLocalizedMessage(), e);
@@ -1075,41 +1073,11 @@ public class ParamListHelper {
             }
         }
         if (gpPath != null) {
-            return new Record(Record.Type.SERVER_PATH, gpPath, null); 
+            return new ParamListValue(ParamListValue.Type.SERVER_PATH, gpPath, null); 
         }
         throw new GpFilePathException("Error initializing gpFilePath for value="+value);
     }
 
-    public static class Record {
-        public enum Type {
-            SERVER_PATH,
-            EXTERNAL_URL,
-            SERVER_URL,
-            GENOMESPACE_URL
-        }
-        Type type;
-        GpFilePath gpFilePath;
-        URL url; //can be null
-        boolean isCached; // for external_url, when true it means download to global cache rather than per-user cache
-        boolean isPassByReference; // pass by reference values are not downloaded to the local file system; gpFilePath.serverPath is null
-        
-        public Record(final Type type, final GpFilePath gpFilePath, final URL url) {
-            this.type=type;
-            this.gpFilePath=gpFilePath;
-            this.url=url;
-        }
-        
-        public Type getType() {
-            return type;
-        }
-        public GpFilePath getGpFilePath() {
-            return gpFilePath;
-        }
-        public URL getUrl() {
-            return url;
-        }
-    }
-    
     /**
      * Copy data from an external URL into a file in the GP user's uploads directory.
      * This method blocks until the data file has been transferred.
