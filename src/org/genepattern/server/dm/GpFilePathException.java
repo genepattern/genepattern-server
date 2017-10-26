@@ -10,5 +10,7 @@ public class GpFilePathException extends Exception {
     public GpFilePathException(String message, Throwable t) {
         super(message, t);
     }
-
+    public GpFilePathException(Throwable t) {
+        super(t);
+    }
 }

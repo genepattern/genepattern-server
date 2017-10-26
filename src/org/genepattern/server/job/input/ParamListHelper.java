@@ -650,9 +650,9 @@ public class ParamListHelper {
      * @param paramValueIn
      * @return
      */
-    public GpFilePath initDirectoryInputValue(final ParamValue paramValueIn) throws Exception {
+    public GpFilePath initDirectoryInputValue(final ParamValue paramValueIn) throws GpFilePathException {
         if (!isDirectoryInputParam()) {
-            throw new Exception("Input parameter is not DIRECTORY type: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new GpFilePathException("Input parameter is not DIRECTORY type: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         } 
         if (paramValueIn==null) {
             log.error("paramValueIn==null"+parameterInfoRecord.getFormal().getName());
@@ -668,11 +668,11 @@ public class ParamListHelper {
         final Record inputRecord=initFromValue(paramValueIn);
         //special-case: external urls are not allowed
         if (inputRecord.type==Record.Type.EXTERNAL_URL) {
-            throw new Exception("External url not allowed for DIRECTORY: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new GpFilePathException("External url not allowed for DIRECTORY: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         //special-case: it's not a directory
         if (!inputRecord.gpFilePath.isDirectory()) {
-            throw new Exception("Value is not a directory: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
+            throw new GpFilePathException("Value is not a directory: "+parameterInfoRecord.getFormal().getName()+"="+paramValueIn.getValue());
         }
         directory=inputRecord.gpFilePath;
         return directory;
@@ -716,7 +716,7 @@ public class ParamListHelper {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void updatePinfoValue() throws Exception {
+    public void updatePinfoValue() throws ParamListException, GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException { //throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
         final boolean createGroupFile=isCreateGroupFile();
@@ -778,7 +778,7 @@ public class ParamListHelper {
                         else if (value.length()==0) {
                             value="<empty string>";
                         }
-                        throw new Exception("For the input parameter, "+pname+", You are not permitted to access the file: "+value);
+                        throw new GpFilePathException("For the input parameter, "+pname+", You are not permitted to access the file: "+value);
                     } 
                     final String toFileHref=UrlUtil.getHref(baseGpHref, file);
                     parameterInfoRecord.getActual().setValue(toFileHref);
@@ -793,7 +793,7 @@ public class ParamListHelper {
                 if (directory != null) {                    
                     boolean canRead=directory.canRead(jobContext.isAdmin(), jobContext);
                     if (!canRead) {
-                        throw new Exception("You are not permitted to access the directory: "+paramValueIn.getValue());
+                        throw new GpFilePathException("You are not permitted to access the directory: "+paramValueIn.getValue());
                     }
                     final String directoryHref=UrlUtil.getHref(baseGpHref, directory);
                     parameterInfoRecord.getActual().setValue(directoryHref);
@@ -844,10 +844,13 @@ public class ParamListHelper {
      * Save the list of values to the parameter info CLOB
      * @param downloadExternalFiles
      * @param listOfValues
+     * @throws MalformedURLException 
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    protected void saveListOfValuesToClob(final boolean downloadExternalFiles, final List<GpFilePath> listOfValues) throws Exception {
+    protected void saveListOfValuesToClob(final boolean downloadExternalFiles, final List<GpFilePath> listOfValues) 
+    throws MalformedURLException 
+    {
         int idx=0;
         for(GpFilePath inputValue : listOfValues) {
             final String key="values_"+idx;
@@ -888,7 +891,9 @@ public class ParamListHelper {
     //-----------------------------------------------------
     //helper methods for creating parameter list files ...
     //-----------------------------------------------------
-    private GpFilePath createFilelist(final HibernateSessionManager mgr, final GpConfig gpConfig, final List<GpFilePath> listOfValues, boolean urlMode) throws Exception {
+    private GpFilePath createFilelist(final HibernateSessionManager mgr, final GpConfig gpConfig, final List<GpFilePath> listOfValues, boolean urlMode) 
+    throws GpFilePathException, ParamListException, DbException  
+    {
         //now, create a new filelist file, add it into the user uploads directory for the given job
         JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
         final int index=-1;
@@ -897,13 +902,20 @@ public class ParamListHelper {
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filename);
 
         //write the file list
-        ParamListWriter writer=new ParamListWriter.Default(gpConfig);
-        writer.writeParamList(gpFilePath, listOfValues, urlMode);
+        try {
+            final ParamListWriter writer=new ParamListWriter();
+            writer.writeParamList(gpFilePath, listOfValues, urlMode);
+        }
+        catch (Throwable t) {
+            throw new ParamListException("Error saving parameter list to file="+filename, t);
+        }
         fileUtil.updateUploadsDb(mgr, gpFilePath);
         return gpFilePath;
     }
     
-    protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) throws Exception {
+    protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) 
+    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
+    {
         return ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
     }
 
@@ -966,7 +978,7 @@ public class ParamListHelper {
         }
     }
 
-    protected Record initFromValue(final ParamValue pval) throws Exception {
+    protected Record initFromValue(final ParamValue pval) throws GpFilePathException {
         return ParamListHelper.initFromValue(mgr, gpConfig, jobContext, baseGpHref, this.parameterInfoRecord.getFormal(), pval);
     }
 

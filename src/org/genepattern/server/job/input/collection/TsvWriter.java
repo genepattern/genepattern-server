@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  * @author pcarr
  *
  */
-public class TsvWriter implements TableWriter {
+public class TsvWriter { 
     private static final Logger log = Logger.getLogger(TsvWriter.class);
     
     /**
@@ -40,14 +40,12 @@ public class TsvWriter implements TableWriter {
     
     private Writer writer;
 
-    @Override
     public void init(final File toFile) throws IOException {
         final CharsetEncoder enc=Charset.forName("UTF-8").newEncoder();
         writer = new BufferedWriter
                 (new OutputStreamWriter(new FileOutputStream(toFile),enc));
     }
 
-    @Override
     public void writeComment(final String comment) throws IOException {
         if (writer==null) {
             log.error("");
@@ -58,7 +56,6 @@ public class TsvWriter implements TableWriter {
         writer.write(NL);
     }
 
-    @Override
     public void writeRow(final String[] values) throws IOException {
         boolean first=true;
         for(final String value : values) {
@@ -73,14 +70,12 @@ public class TsvWriter implements TableWriter {
         writer.write(NL);
     }
 
-    @Override
     public void finish() throws IOException {
         if (writer != null) {
             writer.close();
         }
     }
 
-    @Override
     public String getExtension() {
         return EXT;
     }

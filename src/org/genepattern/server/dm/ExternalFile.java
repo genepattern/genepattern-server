@@ -55,12 +55,12 @@ public class ExternalFile extends GpFilePath {
     }
     
     @Override
-    public URL getUrl() throws Exception {
+    public URL getUrl() { 
         return url;
     }
     
     @Override
-    public URL getUrl(final GpConfig gpConfig) throws Exception {
+    public URL getUrl(final GpConfig gpConfig) { 
         return url;
     }
 

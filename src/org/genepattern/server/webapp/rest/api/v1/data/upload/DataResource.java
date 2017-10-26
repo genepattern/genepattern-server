@@ -34,6 +34,7 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
@@ -647,7 +648,7 @@ public class DataResource {
     // Helper methods for adding user upload files to GenePattern
     ////////////////////////////////////////////////////////////////
     GpFilePath writeUserUploadFile(final GpConfig gpConfig, final GpContext userContext, final InputStream in, final String path, final long maxNumBytes) 
-    throws Exception
+    throws GpFilePathException 
     {
         JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
         

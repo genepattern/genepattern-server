@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.collection;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamListException;
 import org.genepattern.server.job.input.ParamValue;
 
 /**
@@ -27,7 +29,8 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
     private static final Logger log = Logger.getLogger(ParamGroupWriter.class);
 
     private final File toFile;
-    private final TableWriter writer;
+    private final TsvWriter tsvWriter;
+
     /**
      * The columnSpec defines the number of columns to included in the generated file.
      * For example, a filelist file would be,
@@ -56,12 +59,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         }
         this.includeHeader=in.includeHeader;
         this.toFile=in.toFile;
-        if (in.writer==null) {
-            this.writer=new TsvWriter();
-        }
-        else {
-            this.writer=in.writer;
-        }
+        this.tsvWriter=new TsvWriter();
         if (in.baseGpHref==null) {
             log.error("baseGpHref not set; getting default value from GpConfig");
             this.baseGpHref=UrlUtil.getBaseGpHref(ServerConfigurationFactory.instance());
@@ -72,7 +70,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
     }
     
     @Override
-    public void writeParamGroup(final GroupInfo groupInfo, final Param inputParam, final List<GpFilePath> files) throws Exception {
+    public void writeParamGroup(final GroupInfo groupInfo, final Param inputParam, final List<GpFilePath> files) throws ParamListException {
         if (inputParam==null) {
             throw new IllegalArgumentException("inputParam==null");
         }
@@ -80,12 +78,12 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             throw new IllegalArgumentException("files==null");
         }
         if (inputParam.getNumValues() != files.size()) {
-            throw new IllegalArgumentException(
+            throw new ParamListException(
                     "numValues in inputParam must match num files, numValues="+inputParam.getNumValues()+
                     ", "+files.size());
         }
         try {
-            writer.init(toFile);
+            tsvWriter.init(toFile);
             if (includeHeader) {
                 writeHeader(groupInfo);
             }
@@ -98,17 +96,19 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
             }
         }
         catch (Throwable t) {
-            if (t instanceof Exception) {
-                throw  (Exception) t;
-            }
-            throw new Exception("Unexpected error writing group file to "+toFile, t);
+            throw new ParamListException("Error writing group file='"+toFile+"'", t);
         }
         finally {
-            writer.finish();
+            try {
+                tsvWriter.finish();
+            }
+            catch (Throwable t) {
+                throw new ParamListException("Error closing group file='"+toFile+"'", t);
+            }
         }
     }
 
-    private void writeHeader(final GroupInfo groupInfo) throws Exception {
+    private void writeHeader(final GroupInfo groupInfo) throws IOException {
         //special-case for custom label for group and file columns
         if (groupInfo != null) {
             groupInfo.getGroupColumnLabel();
@@ -119,7 +119,7 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         for(Column col : columns) {
             header[i++]=getHeaderValue(groupInfo, col);
         }
-        writer.writeRow(header);
+        tsvWriter.writeRow(header);
     }
     
     private String getHeaderValue(final GroupInfo groupInfo, final Column col) {
@@ -135,26 +135,20 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         return col.name();
     }
 
-    private void writeRow(final int rowIdx, final GroupId groupId, final GpFilePath gpFilePath) throws Exception {
+    private void writeRow(final int rowIdx, final GroupId groupId, final GpFilePath gpFilePath) throws IOException {
         final String[] row=new String[columns.length];
         int i=0;
         for(final Column col : columns) {
             final String value = getRowValue(rowIdx, col, groupId, gpFilePath);
             row[i++]=value;
         }
-        writer.writeRow(row);
+        tsvWriter.writeRow(row);
     } 
 
     protected String getRowValue(final Integer rowIdx, final Column column, final GroupId groupId, final GpFilePath gpFilePath) {
         switch (column) {
         case VALUE: return gpFilePath.getServerFile().getAbsolutePath();
-        case GROUP: 
-            try {
-                return groupId.getGroupId();
-            }
-            catch (Throwable t) {
-                return "";
-            }
+        case GROUP: return groupId.getGroupId();
         case URL:
             try {
                 if (gpFilePath.isLocal()) {
@@ -177,7 +171,6 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         private File toFile=null;
         private List<Column> columns=null;
         private boolean includeHeader=false;
-        private TableWriter writer=null;
 
         public Builder(final File toFile) {
             this.toFile=toFile;
@@ -195,10 +188,6 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
         }
         public Builder includeHeader(final boolean includeHeader) {
             this.includeHeader=includeHeader;
-            return this;
-        }
-        public Builder tableWriter(final TableWriter writer) {
-            this.writer=writer;
             return this;
         }
         

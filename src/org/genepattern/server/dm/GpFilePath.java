@@ -4,6 +4,7 @@
 package org.genepattern.server.dm;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -111,7 +112,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * 
      * @deprecated should pass in GpConfig
      */
-    public URL getUrl() throws Exception {
+    public URL getUrl() throws MalformedURLException {
         return getUrl(ServerConfigurationFactory.instance());
     }
     
@@ -124,7 +125,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @deprecated use relative paths when possible;
      *     for a fully-qualified URL callback, use the incoming HttpServletRequest when possible. 
      */
-    public URL getUrl(final GpConfig gpConfig) throws Exception {
+    public URL getUrl(final GpConfig gpConfig) throws MalformedURLException {
         return UrlUtil.getUrl(UrlUtil.getBaseGpHref(gpConfig), this);
     }
     
