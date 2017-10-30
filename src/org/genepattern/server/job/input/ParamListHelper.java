@@ -664,7 +664,6 @@ public class ParamListHelper {
             return null;            
         }
         
-        //GpFilePath directory=null;
         final ParamListValue inputRecord=initFromValue(paramValueIn);
         //special-case: external urls are not allowed
         if (inputRecord.type==ParamListValue.Type.EXTERNAL_URL) {
@@ -697,7 +696,6 @@ public class ParamListHelper {
             log.debug("value not set for FILE: "+parameterInfoRecord.getFormal().getName());
             return null;            
         } 
-        GpFilePath file=null;
         final ParamListValue inputRecord=initFromValue(paramValueIn);
         return inputRecord.getGpFilePath();
     }
