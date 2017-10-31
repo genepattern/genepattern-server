@@ -742,7 +742,15 @@ public class ParamListHelper {
         else if (createFilelist)
         {
             final boolean downloadExternalFiles = !passByReference;
-            final List<GpFilePath> listOfValues=getListOfValues(downloadExternalFiles);
+            final List<GpFilePath> listOfValues=ParamListHelper.getListOfValues(
+                    mgr, 
+                    gpConfig, 
+                    jobContext, 
+                    jobInput, 
+                    this.parameterInfoRecord.getFormal(), 
+                    actualValues, 
+                    downloadExternalFiles
+            );
             final GpFilePath toFile=createFilelist(mgr, gpConfig, listOfValues, passByReference);
             final String toFileHref=UrlUtil.getHref(baseGpHref, toFile);
             parameterInfoRecord.getActual().setValue(toFileHref);
@@ -909,12 +917,6 @@ public class ParamListHelper {
         return gpFilePath;
     }
     
-    protected List<GpFilePath> getListOfValues(final boolean downloadExternalUrl) 
-    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
-    {
-        return ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, this.parameterInfoRecord.getFormal(), actualValues, downloadExternalUrl);
-    }
-
     /**
      * Create a list of GpFilePath mapped, in the same order as the actualValues, optionally downloading external URLs to the 
      * server file system.
@@ -1006,12 +1008,14 @@ public class ParamListHelper {
             else if (GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
                 // special-case: GenomeSpace input
                 GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new ParamListValue(ParamListValue.Type.GENOMESPACE_URL, gpPath, externalUrl);
+                ParamListValue record=new ParamListValue(ParamListValue.Type.GENOMESPACE_URL, gpPath, externalUrl);
+                return record;
             }
             else {
                 // by default, external url inputs for file lists are cached on a per-user basis, in the user's tmp directory
                 GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                return new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUrl);
+                ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, gpPath, externalUrl);
+                return record;
             }
         }        
         LSID lsid=null;
