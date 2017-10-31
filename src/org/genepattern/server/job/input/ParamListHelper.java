@@ -921,6 +921,14 @@ public class ParamListHelper {
                 final GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
                 rec.setGpFilePath(cached);
             }
+            // for GP-5153
+            else if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
+                if (GenomeSpaceFileHelper.isGenomeSpaceFile(rec.url)) {
+                    final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
+                    log.debug(message+", url="+rec.url);
+                    throw new GenomeSpaceException(message);
+                }
+            } 
             else {
                 forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
             }
@@ -1044,14 +1052,6 @@ public class ParamListHelper {
     protected static void forFileListCopyExternalUrlToUserUploads(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final GpFilePath gpPath, final URL url) 
     throws GenomeSpaceException, GpFilePathException, IOException, DbException 
     {
-        // for GP-5153
-        if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-            if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
-                final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
-                log.debug(message+", url="+url);
-                throw new GenomeSpaceException(message);
-            }
-        }
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
             boolean success=parentDir.mkdirs();
