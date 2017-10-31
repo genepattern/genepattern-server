@@ -3,7 +3,6 @@ package org.genepattern.server.job.input;
 import static org.junit.Assert.*;
 
 import org.genepattern.junitutil.ParameterInfoBuilder;
-import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.webservice.ParameterInfo;
 import org.junit.Test;

@@ -17,7 +17,7 @@ import org.genepattern.junitutil.ParameterInfoBuilder;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.ParamListHelper.ListMode;
+import org.genepattern.server.job.input.ListMode;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;

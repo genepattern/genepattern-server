@@ -6,8 +6,8 @@ package org.genepattern.server.dm.jobinput;
 import java.util.HashMap;
 
 import org.genepattern.server.job.input.GroupInfo;
+import org.genepattern.server.job.input.ListMode;
 import org.genepattern.server.job.input.NumValues;
-import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.webservice.ParameterInfo;
 
 /**

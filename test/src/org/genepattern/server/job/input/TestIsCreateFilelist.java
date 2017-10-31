@@ -107,7 +107,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testNoValuesLegacyMode() throws Exception {
-        doTest(false, 0, ParamListHelper.ListMode.LEGACY);
+        doTest(false, 0, ListMode.LEGACY);
     }
     /**
      *  accepts a file list, actual num values is 0, mode is LIST
@@ -115,7 +115,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testNoValuesListMode() throws Exception {
-        doTest(false, 0, ParamListHelper.ListMode.LIST);
+        doTest(false, 0, ListMode.LIST);
     }
     /**
      *  accepts a file list, actual num values is 0, mode is LIST_INCLUDE_EMPTY
@@ -123,7 +123,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testNoValuesListIncludeEmptyMode() throws Exception {
-        doTest(true, 0, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+        doTest(true, 0, ListMode.LIST_INCLUDE_EMPTY);
     }
     /**
      *  accepts a file list, actual num values is 1, mode is LEGACY
@@ -131,7 +131,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testOneValueLegacyMode() throws Exception {
-        doTest(false, 1, ParamListHelper.ListMode.LEGACY);
+        doTest(false, 1, ListMode.LEGACY);
     }
     /**
      *  accepts a file list, actual num values is 1, mode is LIST
@@ -139,7 +139,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testOneValuesListMode() throws Exception {
-        doTest(true, 1, ParamListHelper.ListMode.LIST);
+        doTest(true, 1, ListMode.LIST);
     }
     /**
      *  accepts a file list, actual num values is 1, mode is LIST_INCLUDE_EMPTY
@@ -147,7 +147,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testOneValueListIncludeEmptyMode() throws Exception {
-        doTest(true, 1, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+        doTest(true, 1, ListMode.LIST_INCLUDE_EMPTY);
     }
     /**
      *  accepts a file list, multi input values, mode is LEGACY
@@ -155,7 +155,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testMultiValuesLegacyMode() throws Exception {
-        doTest(true, 2, ParamListHelper.ListMode.LEGACY);
+        doTest(true, 2, ListMode.LEGACY);
     }
     /**
      *  accepts a file list, multi input values, mode is LIST
@@ -163,7 +163,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testMultiValuesListMode() throws Exception {
-        doTest(true, 3, ParamListHelper.ListMode.LIST);
+        doTest(true, 3, ListMode.LIST);
     }
     /**
      *  accepts a file list, multi input values, mode is LIST_INCLUDE_EMPTY
@@ -171,7 +171,7 @@ public class TestIsCreateFilelist {
      */
     @Test
     public void testMultiValuesListIncludeEmptyMode() throws Exception {
-        doTest(true, 4, ParamListHelper.ListMode.LIST_INCLUDE_EMPTY);
+        doTest(true, 4, ListMode.LIST_INCLUDE_EMPTY);
     }
 
     /**
@@ -251,7 +251,7 @@ public class TestIsCreateFilelist {
                 (String)plh.parameterInfoRecord.getActual().getAttributes().get("values_6"));
     }
 
-    private void doTest(final boolean expectedCreateFilelist, final int actualNumValues, final ParamListHelper.ListMode mode) throws Exception {
+    private void doTest(final boolean expectedCreateFilelist, final int actualNumValues, final ListMode mode) throws Exception {
         final ParameterInfo formalParam=ParameterInfoUtil.initFilelistParam("input.files", "Demo filelist parameter", "0+", mode);
         final ParameterInfoRecord record=new ParameterInfoRecord(formalParam);
         final JobInput jobInput = new JobInput();
