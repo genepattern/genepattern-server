@@ -146,9 +146,22 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
     } 
 
     protected String getRowValue(final Integer rowIdx, final Column column, final GroupId groupId, final GpFilePath gpFilePath) {
+        Throwable ex=null;
         switch (column) {
-        case VALUE: return gpFilePath.getServerFile().getAbsolutePath();
-        case GROUP: return groupId.getGroupId();
+        case VALUE: 
+            try {
+                return gpFilePath.getServerFile().getAbsolutePath();
+            }
+            catch (Throwable t) {
+                ex=t;
+            }
+        case GROUP: 
+            try {
+                return groupId.getGroupId();
+            }
+            catch (Throwable t) {
+                ex=t;
+            }
         case URL:
             try {
                 if (gpFilePath.isLocal()) {
@@ -158,11 +171,11 @@ public class DefaultParamGroupWriter implements ParamGroupWriter {
                     return gpFilePath.getUrl().toExternalForm();
                 }
             }
-            catch (Exception e) {
-                log.error(e);
+            catch (Throwable t) {
+                ex=t;
             }
         }
-        log.error("did not initialize value from column="+column+", rowIdx="+rowIdx+", groupId="+groupId);
+        log.error("did not initialize value from column="+column+", rowIdx="+rowIdx+", groupId="+groupId, ex);
         return "";
     }
     
