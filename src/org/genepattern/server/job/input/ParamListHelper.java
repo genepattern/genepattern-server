@@ -684,6 +684,7 @@ public class ParamListHelper {
                 .jobInput(jobInput)
                 .parameterInfoRecord(parameterInfoRecord)
                 .groupInfo(groupInfo)
+                .downloadExternalFiles(!passByReference)
                 .build();
             final GpFilePath toFile=pgh.createFilelist();
             final String toFileHref=UrlUtil.getHref(baseGpHref, toFile);
