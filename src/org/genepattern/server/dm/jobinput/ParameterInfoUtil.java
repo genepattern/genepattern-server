@@ -5,6 +5,7 @@ package org.genepattern.server.dm.jobinput;
 
 import java.util.HashMap;
 
+import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.ParamListHelper.ListMode;
 import org.genepattern.webservice.ParameterInfo;
@@ -110,6 +111,13 @@ p1_value=
         }
         return pinfo;
     }
+
+    @SuppressWarnings("unchecked")
+    public static void setGroupInfo(final ParameterInfo pinfo) {
+        pinfo.getAttributes().put(GroupInfo.PROP_NUM_GROUPS, "1+");
+        pinfo.getAttributes().put(GroupInfo.PROP_GROUP_COLUMN_LABEL, "");
+        pinfo.getAttributes().put(GroupInfo.PROP_FILE_COLUMN_LABEL, "");
+    }
     
     @SuppressWarnings("unchecked")
     public static void setOptional(ParameterInfo pinfo, final boolean optional) {
@@ -119,6 +127,16 @@ p1_value=
         else {
             pinfo.getAttributes().put("optional", "");
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static void setPassByReference(final ParameterInfo pinfo, final boolean passByReference) {
+        if (passByReference) {
+            pinfo.getAttributes().put("url", "on");
+        }
+        else {
+            pinfo.getAttributes().put("url", "");
+        } 
     }
 
 }
