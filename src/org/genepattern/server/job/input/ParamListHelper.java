@@ -922,12 +922,10 @@ public class ParamListHelper {
                 rec.setGpFilePath(cached);
             }
             // for GP-6767
-            else if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                if (GenomeSpaceFileHelper.isGenomeSpaceFile(rec.url)) {
-                    final String message="GenomeSpace files not allowed in file groups with pass-by-reference; We are working on a fix (GP-6767).";
-                    log.debug(message+", url="+rec.url);
-                    throw new GenomeSpaceException(message);
-                }
+            else if (GenomeSpaceFileHelper.isGenomeSpaceFile(rec.url)) {
+                final String message="GenomeSpace file not allowed in file group with pass-by-reference; We are working on a fix (GP-6767).";
+                log.debug(message+", url="+rec.url);
+                throw new GenomeSpaceException(message);
             } 
             else {
                 forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
