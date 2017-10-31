@@ -921,10 +921,10 @@ public class ParamListHelper {
                 final GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
                 rec.setGpFilePath(cached);
             }
-            // for GP-5153
+            // for GP-6767
             else if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
                 if (GenomeSpaceFileHelper.isGenomeSpaceFile(rec.url)) {
-                    final String message="File list not supported with GenomeSpace files; We are working on a fix (GP-5153).";
+                    final String message="GenomeSpace files not allowed in file groups with pass-by-reference; We are working on a fix (GP-6767).";
                     log.debug(message+", url="+rec.url);
                     throw new GenomeSpaceException(message);
                 }
