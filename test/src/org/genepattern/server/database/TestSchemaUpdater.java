@@ -252,4 +252,31 @@ public class TestSchemaUpdater {
         boolean upToDate=SchemaUpdater.isUpToDate(schemaFiles);
         assertEquals("schemaFiles.size>0, dbSchemaVersion > maxSchemaVersion", true, upToDate);
     }
+    
+    @Test
+    public void escapeSemicolon_create_trigger_example() throws Exception {
+        final String triggerStmtEsc=
+                "CREATE TRIGGER testref BEFORE INSERT ON test1\n"+
+                        "  FOR EACH ROW\n"+
+                        "  BEGIN\n"+
+                        "    INSERT INTO test2 SET a2 = NEW.a1\\;\n"+
+                        "    DELETE FROM test3 WHERE a3 = NEW.a1\\;\n"+
+                        "    UPDATE test4 SET b4 = b4 + 1 WHERE a4 = NEW.a1\\;\n"+
+                        "  END;";
+        final String triggerStmt=
+                "CREATE TRIGGER testref BEFORE INSERT ON test1\n"+
+                        "  FOR EACH ROW\n"+
+                        "  BEGIN\n"+
+                        "    INSERT INTO test2 SET a2 = NEW.a1;\n"+
+                        "    DELETE FROM test3 WHERE a3 = NEW.a1;\n"+
+                        "    UPDATE test4 SET b4 = b4 + 1 WHERE a4 = NEW.a1;\n"+
+                        "  END";
+                
+        final String all=triggerStmtEsc;
+        
+        List<String >sqlStatements=SchemaUpdater.extractSqlStatements(all);
+        assertEquals("sqlStatements.size", 1, sqlStatements.size());
+        assertEquals("sqlStatements[0]", triggerStmt, sqlStatements.get(0));
+    }
+    
 }
