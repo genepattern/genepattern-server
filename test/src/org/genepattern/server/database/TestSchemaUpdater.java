@@ -278,5 +278,13 @@ public class TestSchemaUpdater {
         assertEquals("sqlStatements.size", 1, sqlStatements.size());
         assertEquals("sqlStatements[0]", triggerStmt, sqlStatements.get(0));
     }
-    
+
+    @Test
+    public void escapeSemicolon_mysql_3_9_11() throws DbException {
+        final File schemaFile=new File("website/WEB-INF/schema/analysis_mysql-3.9.11.sql");
+        assertTrue("schemaFile.exists: "+schemaFile, schemaFile.exists());
+        List<String> sqlStatements=SchemaUpdater.extractSqlStatements(schemaFile);
+        assertEquals("sqlStatements.size", 4, sqlStatements.size());
+    }
+
 }
