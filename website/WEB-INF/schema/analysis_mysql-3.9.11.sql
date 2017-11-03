@@ -28,7 +28,7 @@ create table ANALYSIS_JOB_ARCHIVE (
     TASK_NAME varchar(511),
     PARENT integer,
     DELETED bit not null,
-    PARAMETER_INFO TEXT
+    PARAMETER_INFO mediumtext
 );
 
 create table JOB_RUNNER_JOB_ARCHIVE (
