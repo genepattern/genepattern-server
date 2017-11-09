@@ -342,6 +342,11 @@ public class AWSBatchJobRunner implements JobRunner {
         else {
             cmdEnv.put("JOB_QUEUE", job_queue);
         }
+        // vcpus=integer,
+        final Integer cpuCount=gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
+        if (cpuCount != null) {
+            cmdEnv.put("GP_JOB_CPU_COUNT", ""+cpuCount);
+        }
         if (metadataDir != null) {
             cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
         }

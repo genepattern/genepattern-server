@@ -70,14 +70,24 @@ aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              >> ${S3_LOG} 2>&
 aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          >> ${S3_LOG} 2>&1
 aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      >> ${S3_LOG} 2>&1
 
-# optionally set custom memory
-# Example aws batch submit-job arg
+# memory override, e.g.
 #   --container-overrides memory=2000
 mem_arg="";
 printf -v mem '%d\n' "${GP_JOB_MEMORY_MB:-x}" 2>/dev/null
 status=$?
 if [[ $status -eq 0 ]]; then
   mem_arg="memory=${GP_JOB_MEMORY_MB},";
+else
+  : # noop, not set, or not valid
+fi
+
+# vcpus override, e.g. 
+#   --container-overrides vcpus=integer
+vcpus_arg="";
+printf -v mem '%d\n' "${GP_JOB_CPU_COUNT:-x}" 2>/dev/null
+status=$?
+if [[ $status -eq 0 ]]; then
+  vcpus_arg="vcpus=${GP_JOB_CPU_COUNT},";
 else
   : # noop, not set, or not valid
 fi
@@ -93,7 +103,7 @@ __args=( \
   "--job-queue" "$JOB_QUEUE" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
   "--parameters" "taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1=$REMOTE_COMMAND"  \
-  "--container-overrides" "${mem_arg}${__env_arg:-}" \
+  "--container-overrides" "${vcpus_arg}${mem_arg}${__env_arg:-}" \
 );
 
 # for debugging ...
