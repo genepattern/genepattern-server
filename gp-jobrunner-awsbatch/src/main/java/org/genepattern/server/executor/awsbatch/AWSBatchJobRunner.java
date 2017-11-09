@@ -30,6 +30,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -328,8 +329,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * @param jobContext
      * @return
      */
-    protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext) {
-        //final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE, DEFAULT_AWS_PROFILE);
+    protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext, final File metadataDir, final Memory jobMemory) {
         final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE);
         if (aws_profile != null) {
             cmdEnv.put("AWS_PROFILE", aws_profile);
@@ -342,16 +342,20 @@ public class AWSBatchJobRunner implements JobRunner {
         if (job_queue != null) {
             cmdEnv.put("JOB_QUEUE", job_queue);
         }
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        if (jobMemory != null) {
+            final String mib=""+AwsBatchUtil.numMiB(jobMemory);
+            cmdEnv.put("GP_JOB_MEMORY_MB", mib);
+        }
         return cmdEnv; 
     }
 
     protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
         final Map<String,String> cmdEnv=new HashMap<String,String>();
-        initAwsCliEnv(cmdEnv, gpJob.getGpConfig(), gpJob.getJobContext());
         final File metadataDir=getMetadataDir(gpJob);
-        if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
-        }
+        initAwsCliEnv(cmdEnv, gpJob.getGpConfig(), gpJob.getJobContext(), metadataDir, gpJob.getMemory());
         return cmdEnv;
     }
 
@@ -364,10 +368,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final Map<String,String> cmdEnv=new HashMap<String,String>();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
-        initAwsCliEnv(cmdEnv, gpConfig, jobContext);
-        if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
-        }
+        initAwsCliEnv(cmdEnv, gpConfig, jobContext, metadataDir, (Memory)null);
         return cmdEnv;
     }
 

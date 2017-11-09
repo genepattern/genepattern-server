@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -44,7 +45,22 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
-    
+
+    /**
+     * Round up to the nearest mebibyte (MiB).
+     * Example usage:
+     *   String mib=""+numMiB(m);
+     * 
+     * @param m
+     * @return
+     */
+    public static long numMiB(final Memory m) {
+        long mib = (long) Math.ceil(
+            (double) m.getNumBytes() / (double) Memory.Unit.m.getMultiplier()
+        );
+        return mib;
+    }
+
     public static final Value getValue(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
         return gpConfig.getValue(jobContext, key, defaultValue);
     }
