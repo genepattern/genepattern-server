@@ -4,6 +4,39 @@
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
 source "${script_dir}/init-aws-cli-env.sh"
 
+# Is $1 an integer
+function is_int() {
+  if [ $# -eq 0 ]; then return 1; fi 
+  local arg;
+  printf -v arg '%d\n' "${1:-x}" 2>/dev/null;
+}
+
+# Is $1 an integer, optionally in the given range
+# Usage:
+#   in_range arg [min] [max] 
+# Return true if arg is an integer >= min and <= max
+#
+function in_range() { 
+  # arg1 must be an integer
+  [ $# -ge 1 ] && is_int "${1}" || return 1;
+  local arg=$1;
+
+  # optional min range, arg2
+  #   note: '-z string', true if the length of string is zero.
+  if ! [ -z ${2:+x} ]; then
+    # warn: invalid arg, $2 is not an integer
+    if ! is_int $2; then return 1; fi
+    if (( $arg < $2 )); then return 1; fi
+  fi
+
+  # optional max range, arg3
+  if ! [ -z ${3:+x} ]; then
+    # warn: invalid arg, $3 is not an integer
+    if ! is_int $3; then return 1; fi
+    if (( $arg > $3 )); then return 1; fi
+  fi
+}
+
 #
 # positional parameters from the JobRunner implementation
 #
@@ -70,29 +103,33 @@ aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              >> ${S3_LOG} 2>&
 aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          >> ${S3_LOG} 2>&1
 aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      >> ${S3_LOG} 2>&1
 
+#
+# initialize 'aws batch submit-job' args ...
+#
+
 # memory override, e.g.
 #   --container-overrides memory=2000
+# min, 400 MiB
+# max, 1 TiB, or 1024 GiB, or 1024x1024 MiB or 953674 MiB
+echo "calculating --container-overrides for memory ..." >> ${CMD_LOG} 2>&1
+echo "    GP_JOB_MEMORY_MB=${GP_JOB_MEMORY_MB:-x}" >> ${CMD_LOG} 2>&1
 mem_arg="";
-printf -v mem '%d\n' "${GP_JOB_MEMORY_MB:-x}" 2>/dev/null
-status=$?
-if [[ $status -eq 0 ]]; then
+if in_range "${GP_JOB_MEMORY_MB:-x}" "400" "1000000"; then
   mem_arg="memory=${GP_JOB_MEMORY_MB},";
-else
-  : # noop, not set, or not valid
 fi
 
 # vcpus override, e.g. 
 #   --container-overrides vcpus=integer
+# min, 1 vcpu
+# max, 256 vcpu
+echo "calculating --container-overrides for vcpus ..." >> ${CMD_LOG} 2>&1
+echo "    GP_JOB_CPU_COUNT=${GP_JOB_CPU_COUNT:-x}" >> ${CMD_LOG} 2>&1
 vcpus_arg="";
-printf -v mem '%d\n' "${GP_JOB_CPU_COUNT:-x}" 2>/dev/null
-status=$?
-if [[ $status -eq 0 ]]; then
+if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
   vcpus_arg="vcpus=${GP_JOB_CPU_COUNT},";
-else
-  : # noop, not set, or not valid
 fi
 
-# initialize 'aws batch submit-job' args ...
+# environment override
 __env_arg="environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}, \
   {name=STDOUT_FILENAME,value=${GP_METADATA_DIR}/stdout.txt}, \
   {name=STDERR_FILENAME,value=${GP_METADATA_DIR}/stderr.txt} \
