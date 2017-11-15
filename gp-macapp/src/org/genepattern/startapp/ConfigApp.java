@@ -49,7 +49,7 @@ public class ConfigApp {
      *
      * @param args
      */
-    public static void main(String[] args) {
+    public static void createAndShowGUI(final String[] args) {
         JFrame frame = new JFrame("GenePattern Configuration");
         frame.setContentPane(new ConfigApp().genepatternConfigPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,6 +65,18 @@ public class ConfigApp {
             workingString = args[0];
         }
         workingDir = new File(workingString);
+    }
+    
+    /**
+     * Start the GenePattern Configuration app
+     * @param args
+     */
+    public static void main(final String[] args) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                createAndShowGUI(args);
+            }
+        });
     }
 
     /**
