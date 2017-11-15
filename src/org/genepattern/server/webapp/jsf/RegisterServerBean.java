@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.PropsTable;
@@ -130,12 +131,16 @@ public class RegisterServerBean {
 			"Yugoslavia", "Zaire", "Zambia", "Zimbabwe" };  
 	    
     public RegisterServerBean() {
-        this(org.genepattern.server.database.HibernateUtil.instance());
+        this(
+                org.genepattern.server.database.HibernateUtil.instance(),
+                ServerConfigurationFactory.instance(),
+                GpContext.getServerContext()
+        );
     }
-    
-    public RegisterServerBean(final HibernateSessionManager mgr) {
+
+    public RegisterServerBean(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext) {
         this.mgr=mgr;
-        this.email = System.getProperty("webmaster","");
+        this.email = gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
     }
 
     private String handleException(Exception e) {

@@ -201,6 +201,19 @@ public class GpConfig {
      */
     public static final String PROP_REQUIRE_PASSWORD="require.password";
     
+    /**
+     * Set the 'webmaster' as a server configuration parameter. 
+     * 
+     * Circa GP <= 3.9.11, the webmaster property is set when you install GenePattern.
+     * The <webmaster> substitution is used by ... 
+     *   1. the user email address saved to the registration database from the RegisterServerBean
+     *   2. the email address of the admin user created when you install GenePattern
+     *   3. the default username/password for anonymous FTP requests.  
+     * 
+     * @deprecated
+     */
+    public static final String PROP_WEBMASTER="webmaster";
+    
     public static String normalizePath(String pathStr) {
         if (pathStr==null) {
             return pathStr;

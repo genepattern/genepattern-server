@@ -33,7 +33,7 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
         if (gpConfig==null) {
             gpConfig=ServerConfigurationFactory.instance();
         }
-        String webmaster=gpConfig.getGPProperty(gpContext, "webmaster", "gp-help@broadinstitute.org");
+        String webmaster=gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
         
         FtpDirListerEdtFtpJ dirLister = new FtpDirListerEdtFtpJ();
         dirLister.ftpUsername=gpConfig.getGPProperty(gpContext, PROP_FTP_USERNAME, "anonymous");

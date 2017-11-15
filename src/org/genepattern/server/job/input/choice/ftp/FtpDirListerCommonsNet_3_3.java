@@ -52,7 +52,7 @@ public class FtpDirListerCommonsNet_3_3 implements FtpDirLister {
         int socketTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_SOCKET_TIMEOUT, 30000);
         int dataTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_DATA_TIMEOUT, 30000);
         
-        String webmaster=gpConfig.getGPProperty(gpContext, "webmaster", "gp-help@broadinstitute.org");
+        String webmaster=gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
         String username=gpConfig.getGPProperty(gpContext, PROP_FTP_USERNAME, "anonymous");
         String password=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, webmaster);
         return new Builder()
