@@ -3,6 +3,8 @@
         <wb-resource deploy-path="/" source-path="/website"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/gp-jobrunner-awsbatch/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/gp-macapp/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/gp-macapp/test"/>
   <property name="java-output-path" value="build/classes"/>
   <property name="context-root" value="gp"/>
 </wb-module>
