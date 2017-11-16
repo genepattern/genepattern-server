@@ -32,7 +32,11 @@ import com.jgoodies.forms.layout.FormLayout;
  *
  * @author Thorin Tabor
  */
-public class ConfigApp {
+public class ConfigApp implements ActionListener {
+    private static final String DEFAULT_WORKING_DIR="gp-macapp/resources/GenePattern.app/Contents/Resources";
+
+    private final File workingDir;
+    
     private JButton saveAndLaunchGenePatternButton;
     private JRadioButton yesRadioButton;
     private JRadioButton noRadioButton;
@@ -40,32 +44,8 @@ public class ConfigApp {
     private JTextField daysPurgeField;
     private JTextField timePurgeField;
     private JPanel genepatternConfigPanel;
-
-    private static JFrame _instance;
-    private static File workingDir;
-
-    /**
-     * Display the config form
-     *
-     * @param args
-     */
-    public static void createAndShowGUI(final String[] args) {
-        JFrame frame = new JFrame("GenePattern Configuration");
-        frame.setContentPane(new ConfigApp().genepatternConfigPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-
-        // Set the singleton
-        ConfigApp._instance = frame;
-
-        // Set the working directory
-        String workingString = "gp-macapp/resources/GenePattern.app/Contents/Resources";
-        if (args.length >= 1) {
-            workingString = args[0];
-        }
-        workingDir = new File(workingString);
-    }
+    
+    private final JFrame frame;
     
     /**
      * Start the GenePattern Configuration app
@@ -74,7 +54,15 @@ public class ConfigApp {
     public static void main(final String[] args) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                createAndShowGUI(args);
+                // display the GenePattern Configuration form
+                final ConfigApp configApp;
+                if (args.length==0) {
+                    configApp=new ConfigApp();
+                }
+                else {
+                    configApp=new ConfigApp(args[0]);
+                }
+                configApp.frame.setVisible(true);
             }
         });
     }
@@ -83,63 +71,55 @@ public class ConfigApp {
      * Attach listeners to the form
      */
     public ConfigApp() {
-        saveAndLaunchGenePatternButton.addActionListener(new ActionListener() {
-
-            /**
-             * When the save & launch GenePattern button is pressed
-             *
-             * @param e
-             */
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Validate form
-                String email = emailField.getText();
-                if (!ConfigApp.isValidEmailAddress(email)) {
-                    JOptionPane.showMessageDialog(null, "Email address is not valid!");
-                    return;
-                }
-
-                String daysPurge = daysPurgeField.getText();
-                if (!ConfigApp.isValidDaysPurge(daysPurge)) {
-                    JOptionPane.showMessageDialog(null, "Days purge is not valid!");
-                    return;
-                }
-
-                String timePurge = timePurgeField.getText();
-                if (!ConfigApp.isValidTimePurge(timePurge)) {
-                    JOptionPane.showMessageDialog(null, "Time purge is not valid!");
-                    return;
-                }
-
-                // If everything checks out, call properties writer
-                writeConfig();
-
-                // Create the setup flag
-                File resources = new File(workingDir.getParent(), "Resources");
-                File readyFlag = new File(resources, "ready");
-                try {
-                    readyFlag.createNewFile();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                // Show the dialog
-                JFrame frame = ConfigApp.instance();
-                JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");
-
-                // Close
-                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-            }
-        });
+        this(DEFAULT_WORKING_DIR);
+    }
+    public ConfigApp(final String workingDirStr) {
+        this.workingDir=new File(workingDirStr);
+        this.frame = new JFrame("GenePattern Configuration");
+        this.frame.setContentPane(this.genepatternConfigPanel);
+        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.frame.pack();
+        saveAndLaunchGenePatternButton.addActionListener(this);
     }
 
-    /**
-     * Get the JFrame instance
-     *
-     * @return
-     */
-    public static JFrame instance() {
-        return _instance;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Validate form
+        String email = emailField.getText();
+        if (!ConfigApp.isValidEmailAddress(email)) {
+            JOptionPane.showMessageDialog(null, "Email address is not valid!");
+            return;
+        }
+
+        String daysPurge = daysPurgeField.getText();
+        if (!ConfigApp.isValidDaysPurge(daysPurge)) {
+            JOptionPane.showMessageDialog(null, "Days purge is not valid!");
+            return;
+        }
+
+        String timePurge = timePurgeField.getText();
+        if (!ConfigApp.isValidTimePurge(timePurge)) {
+            JOptionPane.showMessageDialog(null, "Time purge is not valid!");
+            return;
+        }
+
+        // If everything checks out, call properties writer
+        writeConfig();
+
+        // Create the setup flag
+        File resources = new File(workingDir.getParent(), "Resources");
+        File readyFlag = new File(resources, "ready");
+        try {
+            readyFlag.createNewFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        // Show the dialog
+        JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");
+
+        // Close
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
     /**
