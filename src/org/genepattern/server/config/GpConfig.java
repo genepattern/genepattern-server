@@ -207,8 +207,7 @@ public class GpConfig {
      * Circa GP <= 3.9.11, the webmaster property is set when you install GenePattern.
      * The <webmaster> substitution is used by ... 
      *   1. the user email address saved to the registration database from the RegisterServerBean
-     *   2. the email address of the admin user created when you install GenePattern
-     *   3. the default username/password for anonymous FTP requests.  
+     *   2. the username of the account created when you install GenePattern
      * 
      * @deprecated
      */

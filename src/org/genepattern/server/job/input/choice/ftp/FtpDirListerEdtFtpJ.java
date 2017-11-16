@@ -33,14 +33,11 @@ public class FtpDirListerEdtFtpJ implements FtpDirLister {
         if (gpConfig==null) {
             gpConfig=ServerConfigurationFactory.instance();
         }
-        String webmaster=gpConfig.getGPProperty(gpContext, GpConfig.PROP_WEBMASTER, "gp-help@broadinstitute.org");
-        
         FtpDirListerEdtFtpJ dirLister = new FtpDirListerEdtFtpJ();
         dirLister.ftpUsername=gpConfig.getGPProperty(gpContext, PROP_FTP_USERNAME, "anonymous");
-        dirLister.ftpPassword=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, webmaster);
+        dirLister.ftpPassword=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, "anonymous@example.com");
         dirLister.passive=passiveMode;
         dirLister.defaultTimeout_ms=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_SOCKET_TIMEOUT, 60000);
-        
         return dirLister;
     }
     
