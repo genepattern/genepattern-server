@@ -32,12 +32,15 @@ default.properties:
     job.dispatch.timeout: 300000
     # the number of milliseconds to wait before canceling a job termination request (default to 30 seconds)
     job.termination.timeout: 30000
-    # policy for flagging a job as an error, by default, a non-empty stderr stream causes a job to be flagged as an error
-    # optionally, a non-zero exitValue of the job can cause a job to be flagged as an error
-    job.error_status.stderr: true
-    job.error_status.exit_value: false
     # filter job results based on the given comma separated list of glob patterns
     job.FilenameFilter: [ ".nfs*", ".rte.out", ".lsf*", ".sge.out" ]
+    
+    # Error handling 
+    #  by default, non-zero exit code is an ERROR
+    job.error_status.exit_value: true
+    #  by default, ignore stderr output
+    job.error_status.stderr: false
+
     # when set to true, delete empty stdout files from the job results directory
     job.deleteEmptyStdout: false
     job.deleteEmptyStdout.default: true

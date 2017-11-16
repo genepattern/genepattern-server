@@ -19,6 +19,12 @@ default.properties:
     # default setting hides all files which begin with a '.' character
     job.FilenameFilter: [ ".*" ]
     
+    # Error handling 
+    #  by default, non-zero exit code is an ERROR
+    job.error_status.exit_value: true
+    #  by default, ignore stderr output
+    job.error_status.stderr: false
+    
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 

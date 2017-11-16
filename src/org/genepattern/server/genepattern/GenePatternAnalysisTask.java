@@ -1764,9 +1764,9 @@ public class GenePatternAnalysisTask {
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
         boolean checkExitValue = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, 
-                JobRunner.PROP_ERROR_STATUS_EXIT_VALUE, false);
+                JobRunner.PROP_ERROR_STATUS_EXIT_VALUE, true);
         boolean checkStderr = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, 
-                JobRunner.PROP_ERROR_STATUS_STDERR, true);
+                JobRunner.PROP_ERROR_STATUS_STDERR, false);
 
         log.debug("for job#"+jobId+" checkExitValue="+checkExitValue+", checkStderr="+checkStderr);
 
