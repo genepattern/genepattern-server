@@ -3,6 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gp-jobrunner-awsbatch/src/main/java"/>
 	<classpathentry kind="src" path="test/src"/>
+	<classpathentry kind="src" path="gp-macapp/src"/>
+	<classpathentry kind="src" path="gp-macapp/test"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-antlr-1.6.5.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ant-junit-1.6.5.jar"/>
