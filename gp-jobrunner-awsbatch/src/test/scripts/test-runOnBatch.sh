@@ -77,13 +77,28 @@ function in_range() {
   fi
 }
 
+# Helper method to validate job.memory before 
+#   submitting an aws batch job 
+# Usage:
+#   is_valid_mem_flag mem [min, default=400] [max, default=2000000000]
+# Example:
+#   # units are in MiB
+#   : ${GP_JOB_MEMORY_MB=:4000}
+#   mem_flag="";
+#   if is_valid_mem_flag $GP_JOB_MEMORY_MB; then
+#     mem_flag="memory=${GP_JOB_MEMORY_MB}";
+#   fi
+
+
+# Helper method to set memory args for an aws batch job.
+#   Units are in MiB.
 # Usage:
 #   mem_flag [custom-job-memory-mb, default=$GP_JOB_MEMORY_MB]
-# Examples
-#   # no arg, use GP_JOB_MEMORY_MB environment variable
-#   mem_flag
-#   # optionally pass in the memory as an arg (MiB)
-#   mem_flag "4000"
+# Example: with no arg, use GP_JOB_MEMORY_MB environment variable
+#   : ${GP_JOB_MEMORY_MB=:4000}
+#   local arg="$(mem_flag)"
+# Example: set the memory as an arg (MiB)
+#   local arg=$(mem_flag 4000)
 function mem_flag() {
   local mem="${1:-${GP_JOB_MEMORY_MB-(not set)}}"
   local name="GP_MEMORY_MB";

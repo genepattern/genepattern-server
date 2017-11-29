@@ -48,6 +48,68 @@ tearDown() {
 # low level, bash scripting specific test cases
 #
 
+#
+# bash, printf status test
+#
+test_printf_status() {
+  #
+  # test case, initialize from unset variable
+  #
+  unset GP_JOB_MEMORY_MB;
+  local status;
+  printf -v mem '%d\n' "${GP_JOB_MEMORY_MB:-x}" 2>/dev/null
+  # zero means OK
+  status=$?
+  
+  #
+  # different ways to check for a non-zero exitCode 
+  # from a function
+  #
+  if (( $status == 0 )); then
+    fail "printf on unset var should fail";
+  fi
+  if [[ $status -eq 0 ]]; then
+    fail "printf on unset var should fail";
+  fi
+  if (( $status != 0 )); then
+    : # noop
+  else
+    fail "printf on unset var should fail";
+  fi
+  if [[ $status -ne 0 ]]; then
+    : # noop
+  else
+    fail "printf on unset var should fail";
+  fi
+        
+  printf -v mem '%d\n' "4000" 2>/dev/null
+  # zero means OK
+  status=$?
+  if (( $status == 0 )); then
+    : #noop, expected
+  else
+    fail "mem='4000', printf should succeed, condition: (( \$status == 0 ))";
+  fi
+  if [[ $status -eq 0 ]]; then
+    : #noop
+  else
+    fail "mem='4000', printf should succeed, condition: [[ \$status -eq 0 ]]";
+  fi
+  if [ $status -eq 0 ]; then
+    : #noop
+  else
+    fail "mem='4000', printf should succeed, condition: [ \$status -eq 0 ]";
+  fi
+    
+  if (( $status != 0 )); then
+    fail "mem='4000', printf should succeed";
+  fi
+  if [[ $status -ne 0 ]]; then
+    fail "mem='4000', printf should succeed";
+  fi
+  
+}
+
 # bash '-z' variable set test
 #   [[ -z "${_my_var+x}" ]] is true when _my_var is not set
 # Hint: using short-circuit instead of if-then statements

@@ -1,7 +1,9 @@
 SHUNIT2 unit tests for the wrapper scripts
 -------------------------------------------
 @see: https://github.com/kward/shunit2
-@see also: http://www.mikewright.me/blog/2013/10/31/shunit2-bash-testing/
+@see: http://ssb.stsci.edu/testing/shunit2/shunit2.html
+@see also: http://www.mikewright.me/shunit2-bash-testing.html
+      formerly, http://www.mikewright.me/blog/2013/10/31/shunit2-bash-testing/
     I followed the instructions in this blog to get started.
 
 To set up the tests:
