@@ -77,13 +77,52 @@ function in_range() {
   fi
 }
 
+# Usage:
+#   mem_flag [custom-job-memory-mb, default=$GP_JOB_MEMORY_MB]
+# Examples
+#   # no arg, use GP_JOB_MEMORY_MB environment variable
+#   mem_flag
+#   # optionally pass in the memory as an arg (MiB)
+#   mem_flag "4000"
 function mem_flag() {
+  local mem="${1:-${GP_JOB_MEMORY_MB-(not set)}}"
+  local name="GP_MEMORY_MB";
+  if [ "$#" -eq 1 ]; then
+    name="\$1";
+  fi
+  cmd_log "calculating --container-overrides for memory ...";
+  cmd_log "    $name='${mem}'";
+  local min_mem="400";
+  local max_mem="1000000";
+  if in_range "${mem:-x}" "${min_mem}" "${max_mem}"; then
+    echo "memory=${mem},";
+  fi
+  echo "";
+}
+
+# simpler implementation, ignores args and uses the GP_JOB_MEMORY environment variable
+function mem_flag_env() {
   cmd_log "calculating --container-overrides for memory ...";
   cmd_log "    GP_JOB_MEMORY_MB='${GP_JOB_MEMORY_MB-(not set)}'";
   local min_mem="400";
   local max_mem="1000000";
   if in_range "${GP_JOB_MEMORY_MB:-x}" "${min_mem}" "${max_mem}"; then
     echo "memory=${GP_JOB_MEMORY_MB},";
+  fi
+  echo "";
+}
+
+# example of indirect reference, pass in the name of the environment variable as an arg
+# Usage:
+#   mem_flag_by_ref [varname]
+function mem_flag_by_ref() {
+  local name=${1:-GP_JOB_MEMORY_MB};
+  cmd_log "calculating --container-overrides for memory ...";
+  cmd_log "    $name='${!name-(not set)}'";
+  local min_mem="400";
+  local max_mem="1000000";
+  if in_range "${!name:-x}" "${min_mem}" "${max_mem}"; then
+    echo "memory=${!name},";
   fi
   echo "";
 }
@@ -199,6 +238,9 @@ test_mem_flag() {
   export GP_JOB_MEMORY_MB="2000";
   assertEquals "custom memory" \
     "memory=2000," "$(mem_flag)"
+    
+  assertEquals "custom memory with arg" \
+    "memory=4000," "$(mem_flag 4000)"
 }
 
 test_vcpus_flag() {
@@ -217,9 +259,8 @@ test_vcpus_flag() {
     "vcpus=6," "$(vcpus_flag)"
 
   export GP_JOB_CPU_COUNT="512";
-  assertEquals "custom cpuCount=512, exceeds max" \
-    "vcpus=256," "$(vcpus_flag)"
-
+  assertEquals "ignore custom cpuCount=512, exceeds max" \
+    "" "$(vcpus_flag)"
 }
 
 # run the tests
