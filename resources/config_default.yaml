@@ -25,6 +25,23 @@ default.properties:
     #  by default, ignore stderr output
     job.error_status.stderr: false
     
+    ##############################################################
+    # cache.externalUrlDirs
+    #   local cache of external data files
+    # URLs matching these prefixes are cached locally, 
+    # in the uploads directory for the '.cache' user account. 
+    #   <gp.home>/users/.cache/uploads/cache
+    #
+    # Examples:
+    # # accept all
+    # cache.externalUrlDirs: [ "*" ]
+    # # accept none
+    # cache.externalUrlDirs: [ "!*" ]
+    # # cache data files from ftp server
+    # cache.externalUrlDirs: [ 
+    #     "ftp://gpftp.broadinstitute.org/",
+    #     "ftp://ftp.broadinstitute.org/" ] 
+    
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 
