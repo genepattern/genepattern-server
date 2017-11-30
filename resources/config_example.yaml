@@ -42,6 +42,22 @@ default.properties:
     job.error_status.stderr: false
 
     ##############################################################
+    # allow.input.file.paths
+    #   set to true to allow user access to arbitrary server file paths
+    allow.input.file.paths: "false"
+
+    ##############################################################
+    # server.browse.file.system.root
+    #   root directory for browsing server file paths, when allow.input.file.paths is true. 
+    # Examples:
+    # ## a single path
+    # server.browse.file.system.root: "/opt/genepattern/shared_data"
+    # ## a list of paths
+    # server.browse.file.system.root: [ "/opt/genepattern/shared_data",  "/srv/custom_data" ]
+    # ## default, the root of the file system
+    # server.browse.file.system.root: "/"
+
+    ##############################################################
     # cache.externalUrlDirs
     #   Cache external data files into a local directory
     # Input file URLs matching these prefixes are downloaded
@@ -79,18 +95,6 @@ default.properties:
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
     allow.new.job: true
-    
-    # flag for enabling server files
-    # Set this to true to allow users to access data files which are on the server file path
-    allow.input.file.paths: false
-    # when allow.input.file.paths is true, define the paths on the server file system
-    # which can be used as input files
-    # If you don't set this, then all files are allowed
-    #
-    # Can be a single path
-    #server.browse.file.system.root: "/Users/SharedData"
-    # Can be a list of paths
-    #server.browse.file.system.root: [ "/Users/SharedData",  "/Custom/Path" ]
     
     #set the disk quota
     #quota: 20 GB

@@ -12,8 +12,6 @@
 default.properties:
     executor: LocalJobRunner
     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
-    # flag to allow users to input arbitrary network file paths as value to input file input parameters
-    #allow.input.file.paths: false
     
     # filter job results based on the given comma separated list of glob patterns
     # default setting hides all files which begin with a '.' character
@@ -25,6 +23,27 @@ default.properties:
     #  by default, ignore stderr output
     job.error_status.stderr: false
     
+    # flag to allow users to input arbitrary network file paths as value to input file input parameters
+    #allow.input.file.paths: false
+    # Allow users to input arbitrary network file paths as value to input file input parameters
+    allow.input.file.paths: "false"
+    
+    ##############################################################
+    # allow.input.file.paths
+    #   set to true to allow user access to arbitrary server file paths
+    allow.input.file.paths: "false"
+
+    ##############################################################
+    # server.browse.file.system.root
+    #   root directory for browsing server file paths, when allow.input.file.paths is true. 
+    # Examples:
+    # ## a single path
+    # server.browse.file.system.root: "/opt/genepattern/shared_data"
+    # ## a list of paths
+    # server.browse.file.system.root: [ "/opt/genepattern/shared_data",  "/srv/custom_data" ]
+    # ## default, the root of the file system
+    # server.browse.file.system.root: "/"
+
     ##############################################################
     # cache.externalUrlDirs
     #   Cache external data files into a local directory
