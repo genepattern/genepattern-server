@@ -27,20 +27,33 @@ default.properties:
     
     ##############################################################
     # cache.externalUrlDirs
-    #   local cache of external data files
-    # URLs matching these prefixes are cached locally, 
-    # in the uploads directory for the '.cache' user account. 
+    #   Cache external data files into a local directory
+    # Input file URLs matching these prefixes are downloaded
+    # and cached into the uploads directory for the '.cache' user account. 
+    #
     #   <gp.home>/users/.cache/uploads/cache
     #
-    # Examples:
-    # # accept all
+    # Examples
+    # ## accept all
     # cache.externalUrlDirs: [ "*" ]
-    # # accept none
+    # ## accept none
     # cache.externalUrlDirs: [ "!*" ]
-    # # cache data files from ftp server
+    # ## cache data files from ftp server
     # cache.externalUrlDirs: [ 
     #     "ftp://gpftp.broadinstitute.org/",
     #     "ftp://ftp.broadinstitute.org/" ] 
+
+    ##############################################################
+    # local.choiceDirs
+    #   local file path for dynamic drop-down FTP files
+    #
+    # Example:
+    # # direct access to broad ftp server files
+    # local.choiceDirs: {
+    #     "ftp://ftp.broadinstitute.org/pub/genepattern/": "/srv/ftp/pub/genepattern/",
+    #     "ftp://gpftp.broadinstitute.org/": "/srv/ftp/gpftp/pub/",
+    # }
+    #
     
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
