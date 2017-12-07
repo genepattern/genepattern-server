@@ -99,7 +99,7 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
-    public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("docker/aws_batch/scripts");
+    public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("aws_batch");
     public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
     public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch.sh");
     public static final String PROP_STATUS_SCRIPT="aws-batch-check-status-script";
