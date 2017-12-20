@@ -23,6 +23,17 @@ import org.genepattern.server.config.ServerConfigurationFactory;
  */
 public class MailSender {
     private static final Logger log = Logger.getLogger(MailSender.class);
+    
+    /** @deprecated pass in a valid GpConfig and GpContext */
+    public static String getFromAddress() {
+        return getFromAddress(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+    }
+
+    public static String getFromAddress(final GpConfig gpConfig, final GpContext gpContext) {
+        final String from = gpConfig.getGPProperty(
+            gpContext, PROP_SMTP_FROM_EMAIL, DEFAULT_SMTP_FROM_EMAIL);
+        return from;
+    }
 
     /**
      * Set the 'smtp.server' property to change the mail.host that the javax.mail.Transport class uses to 
