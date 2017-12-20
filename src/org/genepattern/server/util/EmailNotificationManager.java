@@ -66,115 +66,115 @@ public class EmailNotificationManager {
     }
 
     public void sendJobCompletionEmail(String email, String user, String jobId) {
-	String status = "status unknown";
-	String moduleName = "";
-	try {
-	    HibernateUtil.beginTransaction();
-	    JobInfo jobInfo = (new AnalysisDAO()).getJobInfo(Integer.parseInt(jobId));
-	    HibernateUtil.commitTransaction();
-	    status = jobInfo.getStatus();
-	    moduleName = jobInfo.getTaskName();
-	} catch (Exception e) {
-	    // swallow it and send the link without status
-	    status = "Finished";
-	}
+        String status = "status unknown";
+        String moduleName = "";
+        try {
+            HibernateUtil.beginTransaction();
+            JobInfo jobInfo = (new AnalysisDAO()).getJobInfo(Integer.parseInt(jobId));
+            HibernateUtil.commitTransaction();
+            status = jobInfo.getStatus();
+            moduleName = jobInfo.getTaskName();
+        } catch (Exception e) {
+            // swallow it and send the link without status
+            status = "Finished";
+        }
 
-	String addresses = email;
-	final String from=MailSender.getFromAddress();
-	String subject = "Job " + jobId + " - " + moduleName + " - " + status;
-	StringBuffer msg = new StringBuffer();
-	msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
-	msg.append("<a href=\"" + UIBeanHelper.getServer() + "/jobResults/" + jobId + "\">GenePattern Job Results Page</a>");
-	emailToAddresses(addresses, from, subject, msg.toString());
+        String addresses = email;
+        final String from=MailSender.getFromAddress();
+        String subject = "Job " + jobId + " - " + moduleName + " - " + status;
+        StringBuffer msg = new StringBuffer();
+        msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
+        msg.append("<a href=\"" + UIBeanHelper.getServer() + "/jobResults/" + jobId + "\">GenePattern Job Results Page</a>");
+        emailToAddresses(addresses, from, subject, msg.toString());
 
     }
 
     public HashMap<String, String> emailToAddresses(String addresses, String from, String subject, String msg) {
-	DNSClient dnsClient = new DNSClient();
+        final DNSClient dnsClient = new DNSClient();
+        final StringTokenizer stTo = new StringTokenizer(addresses, ",; ");
+        String to = null;
+        String host = null;
+        HashMap<String, String> failures = new HashMap<String, String>();
+        while (stTo.hasMoreTokens()) {
+            try {
+                to = stTo.nextToken();
+                int at = to.indexOf("@");
+                if (at == -1) {
+                    failures.put(to, "Missing '@' in recipient " + to);
+                    continue;
+                }
+                final String domain = to.substring(at + 1);
+                final String mailServer = ServerConfigurationFactory.instance().getGPProperty( GpContext.getServerContext(), 
+                        MailSender.PROP_SMTP_SERVER, MailSender.DEFAULT_SMTP_SERVER);
+                final TreeMap<Integer, String> tmHosts;
+                if (mailServer == null) {
+                    tmHosts = dnsClient.findMXServers(domain);
+                } 
+                else {
+                    tmHosts = new TreeMap<Integer,String>();
+                    tmHosts.put(new Integer(1), mailServer);
+                }
+                if (tmHosts == null || tmHosts.size() == 0) {
+                    failures.put(to, "No MX servers for recipient " + to + ".  Bad domain name?");
+                    continue;
+                }
 
-	StringTokenizer stTo = new StringTokenizer(addresses, ",; ");
-	String to = null;
-	String host = null;
-	HashMap<String, String> failures = new HashMap<String, String>();
-	while (stTo.hasMoreTokens()) {
+                boolean success = false;
+                StringBuffer sb = new StringBuffer();
+                for (Iterator<Entry<Integer, String>> eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
+                    // get the next MX server name, in priority order
+                    host = eHosts.next().getValue(); // eg "genome.wi.mit.edu";
+                    // Setup mail server
+                    final Properties mailSessionProps=new Properties();
+                    mailSessionProps.put("mail.smtp.host", host);
 
-	    try {
-		to = stTo.nextToken();
-		int at = to.indexOf("@");
-		if (at == -1) {
-		    failures.put(to, "Missing '@' in recipient " + to);
-		    continue;
-		}
-		String domain = to.substring(at + 1);
-		final String mailServer = ServerConfigurationFactory.instance().getGPProperty( GpContext.getServerContext(), 
-		        MailSender.PROP_SMTP_SERVER, MailSender.DEFAULT_SMTP_SERVER);
-		TreeMap<Integer, String> tmHosts = null;
-		if (mailServer == null) {
-		    tmHosts = dnsClient.findMXServers(domain);
-		} 
-		else {
-		    tmHosts = new TreeMap<Integer,String>();
-		    tmHosts.put(new Integer(1), mailServer);
-		}
-		if (tmHosts == null || tmHosts.size() == 0) {
-		    failures.put(to, "No MX servers for recipient " + to + ".  Bad domain name?");
-		    continue;
-		}
+                    // Get session
+                    final Session theSession = Session.getInstance(mailSessionProps);
 
-		boolean success = false;
-		StringBuffer sb = new StringBuffer();
-		for (Iterator<Entry<Integer, String>> eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
-		    // get the next MX server name, in priority order
-		    host = eHosts.next().getValue(); // eg "genome.wi.mit.edu";
-		    // Setup mail server
-		    final Properties mailSessionProps=new Properties();
-		    mailSessionProps.put("mail.smtp.host", host);
+                    // Define message
+                    MimeMessage message = new MimeMessage(theSession);
+                    message.setFrom(new InternetAddress(from));
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+                    message.setSubject(subject);
+                    message.setSentDate(new Date());
+                    message.addHeader("X-Sent-By", "GenePattern ");
+                    message.setContent(msg, "text/html");
 
-		    // Get session
-		    final Session theSession = Session.getInstance(mailSessionProps);
-
-		    // Define message
-		    MimeMessage message = new MimeMessage(theSession);
-		    message.setFrom(new InternetAddress(from));
-		    message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-		    message.setSubject(subject);
-		    message.setSentDate(new Date());
-		    message.addHeader("X-Sent-By", "GenePattern ");
-		    message.setContent(msg, "text/html");
-
-		    // Send message
-		    try {
-			Transport.send(message);
-
-			success = true;
-			break;
-		    } catch (SendFailedException sfe) {
-			// underlying errors are defined in RFC821
-			Exception underlyingException = sfe.getNextException();
-			if (underlyingException == null)
-			    underlyingException = sfe;
-			String ueMessage = underlyingException.getMessage();
-			String intro = "javax.mail.SendFailedException: ";
-			int i = ueMessage.indexOf(intro);
-			if (i != -1)
-			    ueMessage = ueMessage.substring(i + intro.length());
-			sb.append("" + ueMessage + " while attempting to send to " + to + " via " + host);
-		    } catch (Exception e) {
-			sb.append("" + e + " while attempting to send to " + to + " via " + host);
-		    }
-		}
-		if (!success) {
-		    failures.put(to, "Unable to send message to " + to + "\n" + sb.toString());
-		}
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
-	}// end while more addresses
-	if (failures.size() > 0)
-	    return failures;
-	return null;
-
-    }// end emailAddresses
+                    // Send message
+                    try {
+                        Transport.send(message);
+                        success = true;
+                        break;
+                    } 
+                    catch (SendFailedException sfe) {
+                        // underlying errors are defined in RFC821
+                        Exception underlyingException = sfe.getNextException();
+                        if (underlyingException == null)
+                            underlyingException = sfe;
+                        String ueMessage = underlyingException.getMessage();
+                        String intro = "javax.mail.SendFailedException: ";
+                        int i = ueMessage.indexOf(intro);
+                        if (i != -1)
+                            ueMessage = ueMessage.substring(i + intro.length());
+                        sb.append("" + ueMessage + " while attempting to send to " + to + " via " + host);
+                    } 
+                    catch (Exception e) {
+                        sb.append("" + e + " while attempting to send to " + to + " via " + host);
+                    }
+                }
+                if (!success) {
+                    failures.put(to, "Unable to send message to " + to + "\n" + sb.toString());
+                }
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (failures.size() > 0) {
+            return failures;
+        }
+        return null;
+    }
 
 }
 
