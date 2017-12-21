@@ -6,29 +6,25 @@ package org.genepattern.server.util;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import javax.mail.Message;
-import javax.mail.SendFailedException;
+import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.genepattern.server.config.GpContext;
-import org.genepattern.server.config.ServerConfigurationFactory;
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.webapp.DNSClient;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 
+import com.google.common.base.Strings;
+
 public class EmailNotificationManager {
+    private static final Logger log = Logger.getLogger(EmailNotificationManager.class);
 
     private static EmailNotificationManager instance = null;
 
@@ -89,91 +85,98 @@ public class EmailNotificationManager {
 
     }
 
-    public HashMap<String, String> emailToAddresses(String addresses, String from, String subject, String msg) {
-        final DNSClient dnsClient = new DNSClient();
+    protected List<String> splitAddresses(final String addresses) {
+        final List<String> rval=new ArrayList<String>();
         final StringTokenizer stTo = new StringTokenizer(addresses, ",; ");
-        String to = null;
-        String host = null;
-        HashMap<String, String> failures = new HashMap<String, String>();
         while (stTo.hasMoreTokens()) {
+            String to = stTo.nextToken();
+            rval.add(to);
+        }
+        return rval;
+    }
+
+    public void emailToAddresses(final String addresses, String from, String subject, String msg) {
+        final List<String> addressList=splitAddresses(addresses);
+        emailToAddresses(addressList, from, subject, msg);
+    }
+
+    public void emailToAddresses(final List<String> addresses, String from, String subject, String msg) {
+        for(final String to : addresses) {
             try {
-                to = stTo.nextToken();
-                int at = to.indexOf("@");
-                if (at == -1) {
-                    failures.put(to, "Missing '@' in recipient " + to);
-                    continue;
-                }
-                final String domain = to.substring(at + 1);
-                final String mailServer = ServerConfigurationFactory.instance().getGPProperty( GpContext.getServerContext(), 
-                        MailSender.PROP_SMTP_SERVER, MailSender.DEFAULT_SMTP_SERVER);
-                final TreeMap<Integer, String> tmHosts;
-                if (mailServer == null) {
-                    tmHosts = dnsClient.findMXServers(domain);
-                } 
-                else {
-                    tmHosts = new TreeMap<Integer,String>();
-                    tmHosts.put(new Integer(1), mailServer);
-                }
-                if (tmHosts == null || tmHosts.size() == 0) {
-                    failures.put(to, "No MX servers for recipient " + to + ".  Bad domain name?");
-                    continue;
-                }
-
-                boolean success = false;
-                StringBuffer sb = new StringBuffer();
-                for (Iterator<Entry<Integer, String>> eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
-                    // get the next MX server name, in priority order
-                    host = eHosts.next().getValue(); // eg "genome.wi.mit.edu";
-                    // Setup mail server
-                    final Properties mailSessionProps=new Properties();
-                    mailSessionProps.put("mail.smtp.host", host);
-
-                    // Get session
-                    final Session theSession = Session.getInstance(mailSessionProps);
-
-                    // Define message
-                    MimeMessage message = new MimeMessage(theSession);
-                    message.setFrom(new InternetAddress(from));
-                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-                    message.setSubject(subject);
-                    message.setSentDate(new Date());
-                    message.addHeader("X-Sent-By", "GenePattern ");
-                    message.setContent(msg, "text/html");
-
-                    // Send message
-                    try {
-                        Transport.send(message);
-                        success = true;
-                        break;
-                    } 
-                    catch (SendFailedException sfe) {
-                        // underlying errors are defined in RFC821
-                        Exception underlyingException = sfe.getNextException();
-                        if (underlyingException == null)
-                            underlyingException = sfe;
-                        String ueMessage = underlyingException.getMessage();
-                        String intro = "javax.mail.SendFailedException: ";
-                        int i = ueMessage.indexOf(intro);
-                        if (i != -1)
-                            ueMessage = ueMessage.substring(i + intro.length());
-                        sb.append("" + ueMessage + " while attempting to send to " + to + " via " + host);
-                    } 
-                    catch (Exception e) {
-                        sb.append("" + e + " while attempting to send to " + to + " via " + host);
-                    }
-                }
-                if (!success) {
-                    failures.put(to, "Unable to send message to " + to + "\n" + sb.toString());
-                }
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
+                sendMessage(to, from, subject, msg);
+            }
+            catch (MessagingException e) {
+                log.trace("error ignored, it's logged in sendMessage", e);
             }
         }
-        if (failures.size() > 0) {
-            return failures;
+    }
+
+    public void sendMessage(final String to, String from, String subject, String msg) 
+    throws MessagingException
+    {
+        if (Strings.isNullOrEmpty(to)) {
+            log.error("'recipient' not set");
+            return;
         }
-        return null;
+        else if (to.indexOf("@") == -1) {
+            log.error("Missing '@' in recipient " + to);
+            return;
+        }
+        
+        final MailSender m = new MailSender.Builder()
+            .build();
+        // Get session
+        final Session theSession = m.initMailSession();
+        
+        //final HashMap<String, String> failures = new HashMap<String, String>();
+        //final String smtpServer = ServerConfigurationFactory.instance().getGPProperty(
+        //    GpContext.getServerContext(), MailSender.PROP_SMTP_SERVER, MailSender.DEFAULT_SMTP_SERVER
+        //);
+        //final Properties p=new Properties();
+        //p.put("mail.host", smtpServer);
+        // Get session
+        //final Session theSession = Session.getInstance(p);
+
+        // Define message
+        final MimeMessage message = new MimeMessage(theSession);
+        message.setSubject(subject);
+        message.setFrom(new InternetAddress(from));
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+        message.setSentDate(new Date());
+        message.addHeader("X-Sent-By", "GenePattern ");
+        message.setContent(msg, "text/html");
+        
+        m.sendMessage(message);
+
+//        boolean success = false;
+        //StringBuffer sb = new StringBuffer();
+
+        // Send message
+        //try {
+        //    Transport.send(message);
+            //success = true;
+            //break;
+        //} 
+//        catch (SendFailedException sfe) {
+//            // underlying errors are defined in RFC821
+//            Exception underlyingException = sfe.getNextException();
+//            if (underlyingException == null) {
+//                underlyingException = sfe;
+//            }
+//            String ueMessage = underlyingException.getMessage();
+//            String intro = "javax.mail.SendFailedException: ";
+//            int i = ueMessage.indexOf(intro);
+//            if (i != -1) {
+//                ueMessage = ueMessage.substring(i + intro.length());
+//            }
+//            sb.append("" + ueMessage + " while attempting to send to " + to + " via " + smtpServer);
+//        } 
+//        catch (Exception e) {
+//            sb.append("" + e + " while attempting to send to " + to + " via " + smtpServer);
+//        }
+//        if (!success) {
+//            failures.put(to, "Unable to send message to " + to + "\n" + sb.toString());
+//        }
     }
 
 }

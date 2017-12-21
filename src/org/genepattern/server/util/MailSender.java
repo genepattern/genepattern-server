@@ -3,6 +3,7 @@ package org.genepattern.server.util;
 import java.util.Date;
 import java.util.Properties;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -143,6 +144,7 @@ public class MailSender {
     private final String to; // aka sendToAddress
     private final String subject;
     private final String message;
+
     private MailSender(Builder b) {
         this.sessionProperties=b.sessionProperties;
         this.smtpAuthUsername=b.smtpAuthUsername;
@@ -153,11 +155,7 @@ public class MailSender {
         this.message=b.message;
     }
     
-    /**
-     * Send the message
-     * @throws Exception if there was a problem sending the message
-     */
-    public void sendMessage() throws Exception {
+    public Session initMailSession() {
         if (log.isDebugEnabled()) {
             log.debug("initializing mailSession ...");
             log.debug("              mail.host="+sessionProperties.getProperty("mail.host"));
@@ -171,28 +169,50 @@ public class MailSender {
         if (log.isDebugEnabled()) {
             mailSession.setDebug(true);
         }
-
+        return mailSession;
+    }
+    
+    /**
+     * Send the message
+     * @throws Exception if there was a problem sending the message
+     */
+    public void sendMessage() throws Exception {
+        final Session mailSession = initMailSession();
         final MimeMessage msg = new MimeMessage(mailSession);
+        final InternetAddress fromAddr=new InternetAddress(from);
+        final InternetAddress toAddr=new InternetAddress(to);
+        if (log.isDebugEnabled()) {
+            log.debug("fromAddr: "+fromAddr.toString());
+            log.debug("toAddr: "+toAddr.toString());
+        }
+        msg.setSubject(subject);
+        msg.setFrom(fromAddr);
+        msg.addRecipient(Message.RecipientType.TO, toAddr);
+        msg.setSentDate(new Date());
+        msg.setText(message);
+        sendMessage(msg);
+    }
+    
+    public void sendMessage(final Message msg) throws MessagingException {
         try {
-            final InternetAddress fromAddr=new InternetAddress(from);
-            final InternetAddress toAddr=new InternetAddress(to);
-            if (log.isDebugEnabled()) {
-                log.debug("fromAddr: "+fromAddr.toString());
-                log.debug("toAddr: "+toAddr.toString());
-            }
-            msg.setSubject(subject);
-            msg.setFrom(fromAddr);
-            msg.addRecipient(Message.RecipientType.TO, toAddr);
-            msg.setSentDate(new Date());
-            msg.setText(message);
             Transport.send(msg, smtpAuthUsername, smtpAuthPassword);
-        } 
+        }
+        catch (MessagingException e) {
+            log.error(e);
+            throw e;
+        }
+    } 
+    
+    public void sendMessage(final Message msg, final Address[] addresses) throws MessagingException {
+        try {
+            Transport.send(msg, addresses, smtpAuthUsername, smtpAuthPassword);
+        }
         catch (MessagingException e) {
             log.error(e);
             throw e;
         }
     }
-    
+
     public static final class Builder {
         private Properties sessionProperties=new Properties();
         private String smtpAuthUsername=null;

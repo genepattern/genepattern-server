@@ -147,6 +147,8 @@ default.properties:
     #ftpDownloader.type: COMMONS_NET_3_3
     #ftpDownloader.type: EDT_FTP_J_SIMPLE
     
+    # the mail server for sending messages from the GenePattern server      
+    smtp.server: smtp.broadinstitute.org
     # the email recipient of help requests sent via the 'contact us' link
     contact.us.email: "gp-help@broadinstitute.org"
     # the from email address for messages sent to end users, such as from the 'forgot password' link  
@@ -154,26 +156,26 @@ default.properties:
     # (optional), workaround for 'Helo command rejected: need fully-qualified hostname'
     #mail.smtp.localhost: "fully-qualified hostname"
 
-    # Example smtp server configuration for sending email from the GenePattern server
-    smtp.server: "example.com"
-    smtp.from.email: "sender@example.com"
-    # optional username/password credentials
-    smtp.auth.username: "username-api-key"
-    smtp.auth.password: "password-secret-key"
-    # additional JavaMail properties
-    "javax.mail.Session.properties": {
-        # (optional) workaround for 'Helo command rejected: need fully-qualified hostname'
-        "mail.smtp.localhost": "example.com",
-        # "mail.host": "example.com",
-        # optionally set 'mail.smtp.host' here, takes precedence over
-        #   'mail.host' and 'smtp.server'
-        "mail.smtp.host":  "example.com",
-        # 
-        "mail.smtp.port":  "587",
-        "mail.smtp.auth": "true",
-        "mail.smtp.starttls.enable": "true",
-        "mail.debug.auth": "true",
-    }
+    # Example config with auth to smtp server
+    #smtp.server: "example.com"
+    #smtp.from.email: "sender@example.com"
+    ## optional username/password credentials
+    #smtp.auth.username: "username-api-key"
+    #smtp.auth.password: "password-secret-key"
+    ## additional JavaMail properties
+    #"javax.mail.Session.properties": {
+    #    # (optional) workaround for 'Helo command rejected: need fully-qualified hostname'
+    #    "mail.smtp.localhost": "example.com",
+    #    # "mail.host": "example.com",
+    #    # optionally set 'mail.smtp.host' here, takes precedence over
+    #    #   'mail.host' and 'smtp.server'
+    #    "mail.smtp.host":  "example.com",
+    #    # 
+    #    "mail.smtp.port":  "587",
+    #    "mail.smtp.auth": "true",
+    #    "mail.smtp.starttls.enable": "true",
+    #    "mail.debug.auth": "true",
+    #}
 
     # Change the skin GenePattern uses
     display.skin: frozen
