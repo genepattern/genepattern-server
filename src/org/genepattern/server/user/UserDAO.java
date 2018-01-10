@@ -65,7 +65,7 @@ public class UserDAO extends BaseDAO {
         String startStr = queryFormat.format(startDate);
         String endStr = queryFormat.format(endDate);
 
-        String query = "from org.genepattern.server.user.User where registrationDate >= '" + startStr + "' and registrationDate <= '" + endStr + "' order by registrationDate";
+        String query = "from org.genepattern.server.user.User where registrationDate >= to_timestamp('" + startStr + "', 'YYYY-MM-DD HH24:MI:SS') and registrationDate <= to_timestamp('" + endStr + "', 'YYYY-MM-DD HH24:MI:SS') order by registrationDate";
         log.error(query);
 
         @SuppressWarnings("unchecked")
