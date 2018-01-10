@@ -245,13 +245,13 @@ public class MailSender {
                 sessionProperties.setProperty(PROP_MAIL_SMTP_LOCALHOST, mailSmtpLocalhost);
             }
             
-            final Value propsFromConfig=gpConfig.getValue(gpContext, "javax.mail.Session.properties");
+            final Value propsFromConfig=gpConfig.getValue(gpContext, PROP_MAIL_SESSION_PROPERTIES);
             if (propsFromConfig != null && propsFromConfig.isMap()) {
                 try {
                     sessionProperties.putAll(propsFromConfig.getMap());
                 }
                 catch (Throwable t) {
-                    log.error("error parsing 'javax.mail.Session.properties' from config_yaml file: "+t.getMessage(), t);
+                    log.error("error parsing '"+PROP_MAIL_SESSION_PROPERTIES+"' from config_yaml file: "+t.getMessage(), t);
                 }
             }
         }
