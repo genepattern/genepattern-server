@@ -9,6 +9,7 @@ import org.genomespace.atm.model.FileParameter;
 import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.*;
 import org.genomespace.client.exceptions.AuthorizationException;
+import org.genomespace.client.exceptions.GSClientException;
 import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
@@ -30,26 +31,29 @@ public class GenomeSpaceClient {
 	/**
 	 * Returns an InputStream used to download a GenomeSpace file to the local GenePattern install
 	 */
-    public InputStream getInputStream(String gpUserId, URL url) throws GenomeSpaceException {
-        InputStream inputStream = null;
-        String token = GenomeSpaceDatabaseManager.getGSToken(gpUserId);
-        
-        if (token == null) {
-            throw new GenomeSpaceException("Unable to get the GenomeSpace session token needed to access GenomeSpace files");
+    public InputStream getInputStream(final String gpUserId, final URL url) 
+    throws GenomeSpaceException 
+    {
+        try {
+            final String token = GenomeSpaceDatabaseManager.getGSToken(gpUserId);
+            GsSession.setGSToolName("GenePattern");
+            final GsSession session = new GsSession(token);
+            final DataManagerClient dmc = session.getDataManagerClient();
+            return dmc.getInputStream(url);
         }
-        else {
-            GsSession session;
-            try {
-                GsSession.setGSToolName("GenePattern");
-                session = new GsSession(token);
-            }
-            catch (InternalServerException e) {
-                throw new GenomeSpaceException("Unable to initialize GenomeSpace session", e);
-            }
-            DataManagerClient dmc = session.getDataManagerClient();
-            inputStream = dmc.getInputStream(url);
+        catch (GSClientException e) {
+            throw new GenomeSpaceException("Error getting GenomeSpace input file, GSClientException: "+e.getLocalizedMessage()+
+                ", gpUserId='"+gpUserId+"' "+url, e);
+
         }
-        return inputStream;
+        catch (Exception e) {
+            throw new GenomeSpaceException("Error getting GenomeSpace input file: "+e.getLocalizedMessage()+
+                ", gpUserId='"+gpUserId+"' "+url, e);
+        }
+        catch (Throwable t) {
+            throw new GenomeSpaceException("Error getting GenomeSpace input file: "+t.getLocalizedMessage()+
+                ", gpUserId='"+gpUserId+"' "+url);
+        }
     }
     
     /**
