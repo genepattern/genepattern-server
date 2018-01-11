@@ -23,22 +23,26 @@ public class GenomeSpaceDatabaseManager {
      * @param gpUsername
      * @return
      */
-    public static String getGSToken(String gpUsername) {
-        GsAccount account = null;
-        
-        boolean inTransaction = HibernateUtil.isInTransaction();
+    public static String getGSToken(final String gpUsername) {
+        final boolean inTransaction = HibernateUtil.isInTransaction();
         try {
-            account = new GsAccountDAO().getByGPUserId(gpUsername);
+            final GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+            if (account != null) {
+                return account.getToken();
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("no GS token for user, GP_USERID='"+gpUsername+"'");
+            }
+            return null;
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
-            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+            log.error("Error selecting GS token from database, GP_USERID='"+gpUsername+"'", t);
+            return null;
         }
         finally {
             if (!inTransaction) HibernateUtil.closeCurrentSession();
         }
-        
-        return account.getToken();
     }
     
     /**
