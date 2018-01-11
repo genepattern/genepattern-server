@@ -80,4 +80,25 @@ public class TestGenomeSpaceFile {
                 gpFilePath.getRelativeUri().toString());
     }
     
+    @Test
+    public void isPublicGenomeSpaceFile_null_arg() {
+        assertEquals("null input", false,
+                GenomeSpaceFileHelper.isPublicGenomeSpaceFile((URL)null));
+    }
+
+    @Test
+    public void isPublicGenomeSpaceFile_public() throws MalformedURLException {
+        assertEquals("public file", true,
+            GenomeSpaceFileHelper.isPublicGenomeSpaceFile(
+                new URL("https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/all_aml_train.gct")
+        ));
+    }
+
+    @Test
+    public void isPublicGenomeSpaceFile_private() throws MalformedURLException {
+        assertEquals("private file", false, 
+            GenomeSpaceFileHelper.isPublicGenomeSpaceFile(
+                new URL("https://dm.genomespace.org/datamanager/v1.0/file/Home/test_user/all_aml_test.gct")));
+    }
+    
 }

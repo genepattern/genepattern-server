@@ -31,6 +31,27 @@ public class GenomeSpaceFileHelper {
     }
 
     /**
+     * Determines whether a given URL is a public GenomeSpace URL.
+     * Use this pattern:
+         <pre>*.genomespace.org/datamanager/file/Home/Public/*</pre>
+     */
+    public static boolean isPublicGenomeSpaceFile(final URL url) {
+        if (url==null) {
+            log.error("Unexpected input, url==null");
+            return false;
+        }
+        final String host=url.getHost();
+        if (host == null || ! host.endsWith("genomespace.org")) {
+            return false;
+        }
+        final String path=url.getPath();
+        if (path.startsWith("/datamanager/file/Home/Public/")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Creates a GpFilePath object for the given string URL.
      * Since no GenomeSpace metadata is provided for the file the metadata will be null.
      * @param url

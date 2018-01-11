@@ -1086,8 +1086,15 @@ public class GenePatternAnalysisTask {
                                             name = getGSDownloadFileName(url.openConnection(), url);
                                         }
                                         catch (GenomeSpaceException e) {
-                                            vProblems.add("Error connecting to GenomeSpace: "+e.getLocalizedMessage());
-                                            log.error("Error connecting to GenomeSpace", e);
+                                            vProblems.add(e.getLocalizedMessage());
+                                            log.error(e);
+                                            downloadUrl = false;
+                                        }
+                                        catch (Throwable t) {
+                                            final String message="Error getting GenomeSpace input file: "+t.getLocalizedMessage()+
+                                                ", gpUserId='"+jobInfo.getUserId()+"' "+url;
+                                            vProblems.add(message);
+                                            log.error(message, t);
                                             downloadUrl = false;
                                         }
                                     } 
