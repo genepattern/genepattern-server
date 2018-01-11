@@ -1,0 +1,57 @@
+package org.genepattern.server.config;
+
+import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
+
+import java.net.MalformedURLException;
+import java.util.Properties;
+
+import org.genepattern.server.genepattern.GenePatternAnalysisTask.JOB_TYPE;
+import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.util.LSID;
+
+/**
+ * Helper class for loading, querying, and updating the 'commandPrefix.properties' file.
+ * 
+ * @author pcarr
+ */
+public class GpCommandPrefixProperties {
+    public static String getDefaultCommandPrefix() {
+        return System.getProperty(COMMAND_PREFIX, null);
+    }
+    
+    /**
+     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 
+     * 1. task version specific entry in task prefix mapping 
+     * 2. task versionless entry in task prefix mapping 
+     * 3. default command prefix only applies to non-visualizers
+     * 
+     * @param taskInfoAttributes
+     * @return null if no command prefix is specified.
+     * @throws MalformedURLException
+     */
+    public static String getCommandPrefix(JOB_TYPE jobType, String lsidStr) throws MalformedURLException {
+        PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
+        Properties tpm = pm.getTaskPrefixMapping();
+        Properties prefixes = pm.getCommandPrefixes();
+
+        String commandPrefixName = tpm.getProperty(lsidStr);
+        String commandPrefix = null;
+
+        if (commandPrefixName == null) {
+            LSID lsid = new LSID(lsidStr);
+            lsidStr = lsid.toStringNoVersion();
+            commandPrefixName = tpm.getProperty(lsidStr);
+        }
+        if (commandPrefixName != null) {
+            commandPrefix = prefixes.getProperty(commandPrefixName);
+        }
+
+        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER) && !(jobType == JOB_TYPE.JAVASCRIPT)) {
+            // check for default prefix, unless it's a visualizer
+            commandPrefix = prefixes.getProperty("default", null);
+        }
+
+        return commandPrefix;
+    }
+
+}
