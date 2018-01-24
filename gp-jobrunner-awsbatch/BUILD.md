@@ -1,13 +1,11 @@
-#
-# Notes/Example commands for pushing updates to the gp-dev-ami server
-#
+### Building the awsbatch jobrunner jar file
 
-To create create a new release
+#### To create create a new release
 ```
     mvn package
 ```
 
-To deploy the latest build snapshot to the server
+### To deploy the latest build snapshot to the server
 for example, buildNumber=5
 ```
     scp target/gp-awsbatch-0.1.4-snapshot.5.jar gp-beta-ami:/opt/gpbeta/installer
