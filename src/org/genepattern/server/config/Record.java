@@ -22,8 +22,8 @@ public class Record {
      *     when propFile is null, return null
      *     when propFile does not exist, return an empty record
      * 
-     * @param propFile, the properties file to load
-     * @return
+     * @param propFile the properties file to load
+     * @return a new record from the properties file
      */
     public static final Record createFromPropertiesFile(final File propFile) {
         if (propFile==null) {

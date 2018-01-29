@@ -112,9 +112,9 @@ public class DrmJobSubmission {
     /**
      * initialize the amount of memory to request from the Queue, taking into account config settings:
      *     job.memory, job.javaXmx, job.javaXmxPad
-     * @param gpConfig
-     * @param jobContext
-     * @return
+     * @param gpConfig the server configuration instance
+     * @param jobContext the job context
+     * @return the amount of memory to request for the job
      */
     protected static Memory initQueueMemory(GpConfig gpConfig, GpContext jobContext) {
         // by default, use the job.memory from the config

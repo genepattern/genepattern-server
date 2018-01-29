@@ -372,8 +372,6 @@ public class LocalCommonsExecJobRunner implements JobRunner {
            # the name of the log file, relative to the working directory for the job
            job.logfile: .rte.out
      * </pre>
-     * 
-     * @author pcarr
      */
     protected void logCommandLine(final DrmJobSubmission job) {
         final File jobLogFile=job.getLogFile(); 

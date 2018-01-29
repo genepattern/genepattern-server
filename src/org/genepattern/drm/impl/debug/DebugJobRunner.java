@@ -111,7 +111,6 @@ public class DebugJobRunner implements JobRunner {
      * You don't need to set each value, we use reasonable defaults if they are not yet set (e.g. endTime()) 
      * or not known (e.g. maxThreads()). 
      * 
-     * @return
      */
     protected DrmJobStatus demoGetStatus() {
         return new DrmJobStatus.Builder()

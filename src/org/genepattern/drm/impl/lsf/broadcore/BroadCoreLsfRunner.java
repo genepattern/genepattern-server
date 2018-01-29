@@ -201,8 +201,6 @@ public class BroadCoreLsfRunner implements JobRunner {
        job.memory: 8gb
        lsf.max.memory: 8
      * </pre>
-     * 
-     * @return
      */
     protected static List<String> getMemFlags(final DrmJobSubmission gpJob) {
         final Memory drmMemory=gpJob.getMemory();

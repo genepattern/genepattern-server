@@ -40,9 +40,6 @@ public class GpServerProperties {
      * Helper method for initializing a new Properties instance from a config file.
      * Errors are reported to the log file.
      * You should verify that you can read the file before calling this method.
-     * 
-     * @param propFile
-     * @return
      */
     public static Properties loadProps(final File propFile) {
         final Properties props=new Properties();
@@ -56,8 +53,8 @@ public class GpServerProperties {
     /**
      * Helper method for loading the properties from the File into the given Properties instance.
      * 
-     * @param props, must be non-null
-     * @param propFile, the properties file
+     * @param props must be non-null
+     * @param propFile the properties file
      * 
      * @return null on failure, or the current time that the file was loaded.
      */
@@ -106,10 +103,10 @@ public class GpServerProperties {
     /**
      * Helper method for saving the given properties instance to the given file.
      * 
-     * @param props
-     * @param propFile
-     * @param comment
-     * @throws FileNotFoundException
+     * @param props a properties instance
+     * @param propFile a properties file to write to
+     * @param comment an option comment
+     * @throws FileNotFoundException 
      * @throws IOException
      */
     public static void writeProperties(final Properties props, final File propFile, final String comment)
@@ -154,8 +151,8 @@ public class GpServerProperties {
      * You must reload the configuration to guarantee that the updates are available to the
      * GP runtime.
      * 
-     * @param customPropsFile, the path to the GP server custom.properties file
-     * @param pluginCustomProps, the custom properties to set from the plugin directory
+     * @param customPropsFile the path to the GP server custom.properties file
+     * @param pluginCustomProps the custom properties to set from the plugin directory
      */
     public static void updateCustomProperties(final File customPropsFile, final Properties pluginCustomProps) throws FileNotFoundException, IOException {
         String comment=null;
@@ -284,8 +281,6 @@ public class GpServerProperties {
     
     /**
      * Helper method to find out if a given property is set in the genepattern.properties file.
-     * @param key
-     * @return
      */
     public boolean isSetInGpProperties(final String key) {
         return isSetIn("genepattern.properties", key);

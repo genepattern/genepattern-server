@@ -290,7 +290,9 @@
     <target name="javadoc-jobrunner" depends="compile" unless="skipdoc"
         description="Builds the javadoc for the JobRunner API">
 
-        <javadoc destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
+        <javadoc
+            additionalparam="-Xdoclint:none"
+            destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
             sourcepath="src"
             defaultexcludes="yes"
             author="true"

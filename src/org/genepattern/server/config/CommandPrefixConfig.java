@@ -34,12 +34,11 @@ public class CommandPrefixConfig {
      * 2. task versionless entry in task prefix mapping 
      * 3. default command prefix only applies to non-visualizers
      * 
-     * @param taskInfoAttributes
      * @return null if no command prefix is specified.
-     * @throws MalformedURLException
+     * @throws MalformedURLException if lisdStir is not valid
      */
     protected static String getCommandPrefix(final GpConfig gpConfig, final boolean isCommandLineJob, final String lsidStr) 
-            throws MalformedURLException
+    throws MalformedURLException
     {
         final LSID lsid=new LSID(lsidStr);
         final Map<String,String> taskPrefixMapping = gpConfig.getTaskPrefixMappingProps().getProps();
@@ -101,9 +100,9 @@ public class CommandPrefixConfig {
      * 2. task versionless entry in task prefix mapping 
      * 3. default command prefix only applies to non-visualizers
      * 
-     * @param taskInfoAttributes
      * @return null if no command prefix is specified.
-     * @throws MalformedURLException
+     * @throws IllegalArgumentException if lsid is null
+     * @throws MalformedURLException if lsid is not valid
      */
     public String getCommandPrefix(final GpContext jobContext) 
     throws MalformedURLException

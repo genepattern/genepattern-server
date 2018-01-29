@@ -104,9 +104,6 @@ public class LsfStatusChecker {
      * </pre>
      * 
      * Note: the extJobId is always appended at the end of the command line.
-     * 
-     * @param jobRecord
-     * @return
      */
     protected List<String> initStatusCmd(final DrmJobRecord jobRecord) throws CmdException {
         final List<String> cmd=new ArrayList<String>();
@@ -160,7 +157,7 @@ public class LsfStatusChecker {
      * @param cmd for debugging, the lsf status command, e.g. 'bjobs' '-w' '<ext_job_id>'
      * @param out the output from the command, as a list of lines
      * @param lsfLogFile
-     * @return
+     * @return the job status
      * @throws CmdException
      * @throws InterruptedException
      */

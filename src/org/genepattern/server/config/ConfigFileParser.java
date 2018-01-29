@@ -70,8 +70,6 @@ public class ConfigFileParser {
     
     /**
      * Parse the config file, creating a new JobConfigObj.
-     * @param configFile
-     * @return
      */
     protected static JobConfigObj parse(final File configurationFile) throws ConfigurationException {
         Reader reader = null;

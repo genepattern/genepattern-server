@@ -148,8 +148,6 @@ public class Memory {
      * Bytes must be specified as an integer, for other units, fractional (double) values
      * are allowed. Rounding occurs in the getNumBytes method.
      * 
-     * @param str
-     * @throws NumberFormatException, IllegalArgumentException
      */
     public static Memory fromString(final String in) throws NumberFormatException, IllegalArgumentException {
         if (in==null) {
@@ -245,7 +243,7 @@ public class Memory {
     }
 
     /**
-     * @deprecated, Use Memory.fromSizeInBytes instead.
+     * @deprecated Use Memory.fromSizeInBytes instead.
      */
     public Memory(Long numBytes) {
         this.value = numBytes;

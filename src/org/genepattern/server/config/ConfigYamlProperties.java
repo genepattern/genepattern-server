@@ -287,9 +287,7 @@ public class ConfigYamlProperties {
     }
 
     /**
-     * @deprecated, use getValue(context,key) instead.
-     * @param jobInfo
-     * @return
+     * @deprecated use getValue(context,key) instead.
      */
     public CommandProperties getCommandProperties(final JobInfo jobInfo) {
         CommandProperties cmdProperties = new CommandProperties();
@@ -368,11 +366,8 @@ public class ConfigYamlProperties {
     }
 
     /**
-     * @deprecated, does not allow setting the executorId in the 'executor.props' entry,
+     * @deprecated does not allow setting the executorId in the 'executor.props' entry,
      *     does not allow setting the executorId from the job input form.
-     *     
-     * @param jobInfo
-     * @return
      */
     public String getCommandExecutorId(JobInfo jobInfo) {
         final String key = "executor";

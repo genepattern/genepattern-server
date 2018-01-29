@@ -141,7 +141,6 @@ public interface JobRunner {
 
     /**
      * Get the status of the job.
-     * @param drmJobId
      */
     DrmJobStatus getStatus(DrmJobRecord drmJobRecord);
 

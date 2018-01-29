@@ -178,7 +178,7 @@ public class GpConfig {
 
     /**
      * Set the 'googleAnalytics.trackingId' for the server.
-     * @see PROP_GA_ENABLED
+     * @see GpConfig#PROP_GA_ENABLED
      */
     public static final String PROP_GA_TRACKING_ID="googleAnalytics.trackingId";
     
@@ -439,7 +439,8 @@ public class GpConfig {
     /**
      * Get the file from the WEB-INF/build.properties file.
      * Circa GP <= 3.9.3, it was in resources directory.
-     * @return
+     * 
+     * @return the build.properties file
      */
     protected File getBuildPropertiesFile(final File webappDir) {
         File propFile=new File(webappDir, "WEB-INF/build.properties");
@@ -477,8 +478,6 @@ public class GpConfig {
      * 
      * If neither file is present, log an error and return null.
      * 
-     * @param gpConfig
-     * @return 
      */
     protected Properties initDbProperties(final GpContext gpContext, final File resourcesDir) {
         Properties hibProps=null;
@@ -516,8 +515,6 @@ public class GpConfig {
     
     /**
      * Generate hard-coded database properties.
-     * @param gpContext
-     * @return
      */
     public Properties getDbPropertiesDefault(GpContext gpContext) {
         log.warn("Using hard-coded database properties");
@@ -598,9 +595,6 @@ public class GpConfig {
      * If GP_HOME is set, assume the path is relative to GP_HOME,
      * else  assume the path is relative to GP_WORKING_DIR.
      * 
-     * @param gpContext
-     * @param pathOrRelativePath
-     * @return
      */
     protected File initAbsolutePath(final String pathOrRelativePath) { 
         final File rootDir;
@@ -625,11 +619,10 @@ public class GpConfig {
      * When GENEPATTERN_HOME is defined, default paths are in the GENEPATTERN_HOME directory.
      * When not defined, default paths are one level up from the GENEPATTERN_WORKING_DIRECTORY.
      * 
-     * @param serverContext, a valid server context
-     * @param propName, the name of the property (optionally loaded from the config file)
-     * @param defaultDirName, the default file system name for the data directory.
+     * @param serverContext a valid server context
+     * @param propName the name of the property (optionally loaded from the config file)
+     * @param defaultDirName the default file system name for the data directory.
      * 
-     * @return
      */
     protected File initRootDir(final GpContext serverContext, final String propName, String defaultDirName, final boolean mkdirs) {
         String dirProp=getGPProperty(serverContext, propName);
@@ -694,7 +687,6 @@ public class GpConfig {
 
     /**
      * Get the public facing URL for this GenePattern Server.
-     * @return
      */
     public URL getGenePatternURL() {
         return genePatternURL;
@@ -702,7 +694,6 @@ public class GpConfig {
 
     /**
      * Get the String representation of the <GenePatternURL>, including the trailing slash.
-     * @return
      */
     public String getGpUrl() {
         return gpUrl;
@@ -710,7 +701,6 @@ public class GpConfig {
     
     /**
      * Get the servlet context.
-     * @return
      */
     public String getGpPath() {
         return gpServletContext;
@@ -777,7 +767,6 @@ public class GpConfig {
     /**
      * Get the database configuration properties loaded from the <resources>/database_default.properties and
      * optionally from the <resources>/database_custom.properties files.
-     * @return
      */
     public Properties getDbProperties() {
         return dbProperties;
@@ -785,7 +774,6 @@ public class GpConfig {
 
     /**
      * Get the database vendor which can be one of 'HSQL', 'ORACLE', or 'MYSQL'.
-     * @return
      */
     public String getDbVendor() {
         return dbVendor;
@@ -795,8 +783,6 @@ public class GpConfig {
      * Get the database schema prefix, a prefix pattern (e.g. 'analysis_hypersonic', 'analysis_oracle') 
      * which is used to get a listing of the DDL scripts for automatic initialization of the database after
      * installing or updating the genepattern server.
-     * 
-     * @return
      */
     public String getDbSchemaPrefix() {
         return getDbSchemaPrefix(this.dbVendor);
@@ -814,7 +800,6 @@ public class GpConfig {
     /**
      * Get the 'lsid.authority'.
      * 
-     * @param gpContext
      * @return String
      * @see #PROP_LSID_AUTHORITY
      */
@@ -825,8 +810,6 @@ public class GpConfig {
 
     /**
      * Are passwords required?
-     * @param gpContext
-     * @return
      */
     public boolean isPasswordRequired(final GpContext gpContext) {
         final String prop = getGPProperty(gpContext, PROP_REQUIRE_PASSWORD, "false");
@@ -885,8 +868,6 @@ public class GpConfig {
 
     /**
      * Get java system property.
-     * @param key
-     * @return
      */
     public static String getJavaProperty(final String key) {
         return System.getProperty(key);
@@ -894,9 +875,9 @@ public class GpConfig {
     
     /**
      * Get java system property.
-     * @param key
-     * @param def
-     * @return
+     * @param key the name of a system property
+     * @param def a default value
+     * @return the string value of the system property, or the default value if there is no property with that key
      */
     public static String getJavaProperty(final String key, final String def) {
         return System.getProperty(key, def);
@@ -904,8 +885,6 @@ public class GpConfig {
 
     /**
      * Get the value from the 'build.properties' file.
-     * @param key
-     * @return
      */
     public String getBuildProperty(final String key) {
         return getBuildProperty(key, null);
@@ -913,9 +892,6 @@ public class GpConfig {
 
     /**
      * Get the value from the 'build.properties' file, or the default value.
-     * @param key
-     * @param defaultValue
-     * @return
      */
     public String getBuildProperty(final String key, final String defaultValue) {
         if (this.buildProperties==null) {
@@ -929,10 +905,7 @@ public class GpConfig {
     } 
 
     /**
-     * @deprecated, use getValue instead, which supports lists.
-     * @param context
-     * @param key
-     * @return
+     * @deprecated use getValue instead, which supports lists.
      */
     public String getGPProperty(final GpContext context, final String key) {
         final Value value = getValue(context, key);
@@ -961,8 +934,6 @@ public class GpConfig {
      * The current implementation uses Boolean.parseBoolean,
      * which returns true iff the property is set and equalsIgnoreCase 'true'.
      *
-     * @param key
-     * @return
      */
     public boolean getGPBooleanProperty(final GpContext context, final String key) {
         String prop = getGPProperty(context, key);
@@ -984,9 +955,6 @@ public class GpConfig {
      * When a non integer value is set in the config file, return null.
      * Errors are logged, but exceptions are not thrown.
      *
-     * @param context
-     * @param key
-     * @return
      */
     public Integer getGPIntegerProperty(final GpContext context, final String key) {
         return getGPIntegerProperty(context, key, null);
@@ -997,9 +965,6 @@ public class GpConfig {
      *
      * When a non integer value is set in the config file, the default value is returned.
      * Errors are logged, but exceptions are not thrown.
-     *
-     * @param key
-     * @param defaultValue
      *
      * @return the int value for the property, or the default value, can return null.
      */
@@ -1076,8 +1041,6 @@ public class GpConfig {
      * 
      * The default value is the empty string when neither property is set.
      *
-     * @param gpContext
-     * @return
      */
     public String getQueueId(final GpContext gpContext) {
         return getQueueId(gpContext, "");
@@ -1098,8 +1061,6 @@ public class GpConfig {
     /**
      * Get the optional command line prefix for a job.
      * 
-     * @param jobContext
-     * @return
      * @throws IllegalArgumentException
      */
     public String getCommandPrefix(final GpContext jobContext) 
@@ -1125,8 +1086,6 @@ public class GpConfig {
     /**
      * Get the GENEPATTERN_HOME directory, should be a fully qualified File, can be null when not set.
      * Servers updated from <= 3.9.1 don't set GENEPATTERN_HOME.
-     * 
-     * @return
      */
     public File getGpHomeDir() {
         return this.gpHomeDir;
@@ -1144,8 +1103,6 @@ public class GpConfig {
     
     /**
      * Get the 'users' folder for the server. This is a global server property.
-     * 
-     * @return
      */
     protected File getRootUserDir() {
         return rootUserDir;
@@ -1159,9 +1116,6 @@ public class GpConfig {
      * Note: If an admin sets a custom 'gp.user.dir' for an existing user, they must manually migrate pre-existing files.
      *     (1) Move existing files into the correct 'gp.user.dir'
      *     (2) Resync Files from the Adminstration -> Server Settings -> Uploaded Files page
-     *
-     * @param context
-     * @return
      */
     public File getUserDir(final GpContext context) {
         if (context == null) {
@@ -1214,8 +1168,6 @@ public class GpConfig {
      * The default location can be overridden with the 'user.upload.dir' property.
      * If there is no 'user.upload.dir' or 'gp.user.dir' set, then 'java.io.tempdir' is returned.
      *
-     * @param context
-     * @return
      * @throws IllegalArgumentException if a directory is not found for the userId.
      */
     public File getUserUploadDir(final GpContext context) throws IllegalArgumentException {
@@ -1269,8 +1221,8 @@ $USER_INSTALL_DIR$/patches
      * <pre>
 $GENEPATTERN_HOME$/patches
      * </pre>
-     * @param serverContext
-     * @return
+     * @param serverContext the server context
+     * @return the globally configured 'patches' directory
      */
     public File getRootPluginDir(GpContext serverContext) {
         return gpPluginDir;
@@ -1291,8 +1243,8 @@ $GENEPATTERN_HOME$/tasklib
     tasklib: /fully/qualified/path/to/tasklib
      * </pre>
      * 
-     * @param serverContext
-     * @return
+     * @param serverContext the server context
+     * @return the globally configured 'taskLib' directory
      */
     public File getRootTasklibDir(GpContext serverContext) {
         return initRootDir(serverContext, PROP_TASKLIB_DIR, "taskLib", true);
@@ -1385,8 +1337,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     /**
-     * @deprecated
-     * @return
+     * @deprecated deprecated
      */
     public JobConfigObj getJobConfiguration() {
         if (yamlProperties==null) {
@@ -1407,9 +1358,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     /**
-     * @deprecated, should just call getValue(GpContext jobContext, "executor")
-     * @param jobInfo
-     * @return
+     * @deprecated should just call getValue(GpContext jobContext, "executor")
      */
     public String getCommandExecutorId(final JobInfo jobInfo) {
         if (yamlProperties == null) {
@@ -1419,9 +1368,7 @@ $GENEPATTERN_HOME$/tasklib
     }
 
     /**
-     * @deprecated, should make direct calls to getValue with a jobContext instead.
-     * @param jobInfo
-     * @return
+     * @deprecated should make direct calls to getValue with a jobContext instead.
      */
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
         if (yamlProperties == null) {

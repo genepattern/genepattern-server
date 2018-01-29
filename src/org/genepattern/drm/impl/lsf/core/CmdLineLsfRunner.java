@@ -228,9 +228,6 @@ public class CmdLineLsfRunner implements JobRunner {
     /**
      * Get the LSF project from the config, support legacy 'lsf.project' config param or the more general 'job.project' config param.
      * When both are set the 'job.project' value is used and a warning is added to the log file. 
-     * 
-     * @param gpJob
-     * @return
      */
     protected String getProject(final DrmJobSubmission gpJob) {
         String project=gpJob.getProperty(JobRunner.PROP_PROJECT);
@@ -255,8 +252,6 @@ public class CmdLineLsfRunner implements JobRunner {
        job.memory: 8gb
        lsf.max.memory: 8
      * </pre>
-     * 
-     * @return
      */
     protected static List<String> getMemFlags(final DrmJobSubmission gpJob) {
         return getMemFlags(gpJob, Memory.Unit.gb);
