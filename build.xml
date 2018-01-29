@@ -292,8 +292,7 @@
 
         <javadoc
             additionalparam="-Xdoclint:none"
-            destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
-            sourcepath="src"
+            destdir="build/javadoc/jobrunner" 
             defaultexcludes="yes"
             author="true"
             version="true"
@@ -301,6 +300,17 @@
             windowtitle="JobRunner API"
             classpathref="library.classpath"
         >
+            <!-- jobrunner api -->
+            <packageset dir="src" defaultexcludes="yes">
+                <include name="org/genepattern/drm/**" />
+                <include name="org/genepattern/server/config/**" />
+                <exclude name="com/dummy/test/doc-files/**"/>
+            </packageset>
+            <!-- awsbatch integration -->
+            <packageset dir="gp-jobrunner-awsbatch/src/main/java" defaultexcludes="yes">
+                <include name="org/genepattern/server/executor/awsbatch/**"/>
+                <exclude name="com/dummy/test/doc-files/**"/>
+            </packageset>
             <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
             <bottom><![CDATA[<i>Copyright (c) 2003-2018 Regents of the University of California and Broad Institute</i>]]></bottom>
           </javadoc>
