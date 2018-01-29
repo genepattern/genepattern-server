@@ -132,10 +132,9 @@ public class LsfStatusChecker {
     /**
      * Runs the 'bjobs -W' command for the given jobRecord and lsfLogFile path.
      * 
-     * @param jobRecord, the GenePattern job
-     * @param lsfLogFile, the path to the '.lsf.out' log file
+     * @param jobRecord the GenePattern job
+     * @param lsfLogFile the path to the '.lsf.out' log file
      * 
-     * @return
      * @throws CmdException
      * @throws InterruptedException
      */
@@ -158,8 +157,8 @@ public class LsfStatusChecker {
     /**
      * Extract the DrmJobStatus record by parsing the output from the bjobs command.
      *  
-     * @param cmd, for debugging, the lsf status command, e.g. 'bjobs' '-w' '<ext_job_id>'
-     * @param out, the output from the command, as a list of lines
+     * @param cmd for debugging, the lsf status command, e.g. 'bjobs' '-w' '<ext_job_id>'
+     * @param out the output from the command, as a list of lines
      * @param lsfLogFile
      * @return
      * @throws CmdException

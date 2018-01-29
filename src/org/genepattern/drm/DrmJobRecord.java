@@ -24,7 +24,6 @@ public class DrmJobRecord {
 
     /**
      * Get the GenePattern job number.
-     * @return
      */
     public Integer getGpJobNo() {
         return gpJobNo;
@@ -40,7 +39,6 @@ public class DrmJobRecord {
     /**
      * Get the external job id, used to identify the job by the queuing system.
      * For example the LSF job number.
-     * @return
      */
     public String getExtJobId() {
         return extJobId;
@@ -48,7 +46,6 @@ public class DrmJobRecord {
 
     /**
      * Get the working directory for the job, can be null if not set.
-     * @return
      */
     public File getWorkingDir() {
         return workingDir;
@@ -57,7 +54,6 @@ public class DrmJobRecord {
     /**
      * Get the optional stdin stream for the job, can be null of not set.
      * If it's a relative path, it's relative to the workingDir for the job.
-     * @return
      */
     public File getStdinFile() {
         return stdinFile;
@@ -68,7 +64,6 @@ public class DrmJobRecord {
      * a) the job has not yet completed, or
      * b) the job has no stdout.
      * If it's a relative path, it's relative to the workingDir for the job.
-     * @return
      */
     public File getStdoutFile() {
         return stdoutFile;
@@ -80,7 +75,6 @@ public class DrmJobRecord {
      * b) the job has not stderr.
      * If it's a relative path, it's relative to the workingDir for the job.
      * 
-     * @return
      */
     public File getStderrFile() {
         return stderrFile;
@@ -90,7 +84,6 @@ public class DrmJobRecord {
      * Get the optional log file for the job.
      * Can be null of there is no log file.
      * If it's a relative path, it's relative to the workingDir for the job.
-     * @return
      */
     public File getLogFile() {
         return logFile;

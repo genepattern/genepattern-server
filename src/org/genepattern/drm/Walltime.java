@@ -74,7 +74,6 @@ public class Walltime {
      * <pre>
            ""+this.getTimeUnit().toMinutes(this.getDuration());
      * </pre>
-     * @return
      */
     public String formatMinutes() {
         return ""+timeUnit.toMinutes(duration);
@@ -110,7 +109,6 @@ public class Walltime {
     /**
      * Parse a string in 'days-hh:mm:ss' format, where hours are on a 24 hour scale.
      * @param val
-     * @return
      */
     public static Walltime fromString(final String in) throws Exception {
         if (in==null) {

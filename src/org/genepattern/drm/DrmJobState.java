@@ -71,7 +71,6 @@ public enum DrmJobState {
      * So that UNDETERMINED.is(STARTED) == false ...
      * 
      * @param other
-     * @return
      */
     public boolean is(DrmJobState other) {
         if (other==null) {

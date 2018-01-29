@@ -112,7 +112,6 @@ public class Memory {
         
         /**
          * Get the number of bytes represented by this unit.
-         * @return
          */
         public long getMultiplier() {
             return multiplier;
@@ -150,7 +149,6 @@ public class Memory {
      * are allowed. Rounding occurs in the getNumBytes method.
      * 
      * @param str
-     * @return
      * @throws NumberFormatException, IllegalArgumentException
      */
     public static Memory fromString(final String in) throws NumberFormatException, IllegalArgumentException {
@@ -196,7 +194,6 @@ public class Memory {
      * For example, long numBytes=2969658452L will be formatted as '2.8 GB'.
      * For small numbers, rounds up to the nearest 1.0 KB.
      * 
-     * @return
      */
     public static final String formatNumBytes(long size) {
         if (size >= Unit.pb.getMultiplier()) {
@@ -224,7 +221,6 @@ public class Memory {
      * Get the max value of the two args.
      * @param arg0
      * @param arg1
-     * @return
      */
     public static final Memory max(final Memory arg0, final Memory arg1) {
         if (arg0==null) { return arg1; }
@@ -260,8 +256,8 @@ public class Memory {
     
     /**
      * Create a new Memory instance.
-     * @param numBytes, the amount of memory in bytes
-     * @param displayValue, a formatted display value for the UI
+     * @param numBytes the amount of memory in bytes
+     * @param displayValue a formatted display value for the UI
      */
     protected Memory(final long numBytes, final String displayValue) {
         if (numBytes < 0) {
@@ -275,9 +271,9 @@ public class Memory {
 
     /**
      * Create a new Memory instance.
-     * @param value, the amount of memory
-     * @param unit, in the given units
-     * @param displayValue, a formatted display value for the UI
+     * @param value the amount of memory
+     * @param unit in the given units
+     * @param displayValue a formatted display value for the UI
      */
     public Memory(final double value, final Unit unit, final String displayValue) {
         if (value < 0) {
@@ -312,7 +308,6 @@ public class Memory {
     /**
      * Get this memory value in the given units.
      * @param unit
-     * @return
      */
     public double numUnits(Unit unit) {
         double numUnits=(double) getNumBytes() / (double) unit.getMultiplier();
@@ -323,7 +318,6 @@ public class Memory {
      * Human readable representation by scaling the raw number of bytes up to a reasonable approximation.
      * This calls #formatNumBytes.
      * For example, long numBytes=2969658452L will be formatted as '2832 mb'.
-     * @return
      */
     public String format() {
         return formatNumBytes(numBytes);
@@ -355,7 +349,6 @@ public class Memory {
      * Output a valid Java '-Xmx' value, must be an integer value in k, m or g units.
      * This returns a String containing an integer and a single character scale, it is up to the calling method to append the '-Xmx' flag.
      * For example, '512m'.
-     * @return
      */
     public String toXmx() { 
         if (unit==Unit.b) {

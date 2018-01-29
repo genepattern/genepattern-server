@@ -50,7 +50,6 @@ public class CpuTime {
     
     /**
      * Get (default) human readable display value for this instance.
-     * @return
      */
     public String getDisplayValue() {
         return PeriodFormat.getDefault().print(new Duration(asMillis()).toPeriod());
