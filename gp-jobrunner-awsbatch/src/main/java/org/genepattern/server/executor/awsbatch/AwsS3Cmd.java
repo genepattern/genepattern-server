@@ -19,14 +19,42 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Strings;
 
 /**
- * Utility class for copying local files into S3.
- * Example command,
- *   aws s3 sync `pwd` s3://gpbeta`pwd` --exclude "*" --include "test.txt" --profile genepattern
- *   
- * See:
- *   http://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
+ * Utility class for copying local files and directories into S3.
+ * Files are uploaded with the 'aws s3 sync' command based on this template:
  * 
- * @author pcarr
+ * <pre>
+ *   aws s3 sync <LocalPath> <S3Prefix><LocalPath>
+ *       [--exclude exclude-pattern]*
+ *       [--include include-pattern]*
+ *       [aws-profile] 
+ * </pre>
+ * 
+ * See the <a 
+ *   href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html"
+ * >aws s3 reference</a> for more details about the <a 
+ *   href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html#path-argument-type"
+ * >path-argument-type</a>.
+ * 
+ * <h3>Example Jupyter Notebook</h3>
+ * For more details open the <b>awscli_examples.ipynb</b> notebook which is saved in this project.
+ * <ul>
+ *   <li>./gp-jobrunner-awsbatch/awscli_examples.ipynb
+ * </ul>
+ * I use this notebook to test, develop, and document aws cli commands. If you have a
+ * jupyter notebook app running locally, open this from your notebook dashboard.
+ * You can also view a static (read only) html rendering in GitHub.
+ * <ul>
+ * <li><a href="https://github.com/genepattern/genepattern-server/blob/develop/gp-jobrunner-awsbatch/awscli_examples.ipynb"
+ *      >gp-jobrunner-awsbatch/awscli_examples.ipynb (latest published version)</a> 
+ * </ul>
+ * 
+ * <h3>Links</h3>
+ * <ul>
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html">aws cli user guide</a>, for an overview
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html">aws s3 reference</a>
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html">aws s3 sync command reference</a>
+ *   <li><a href="http://jupyter.org">jupyter.org</a>, to learn about the Jupyter Notebook
+ * </ul>
  */
 public class AwsS3Cmd {
     private static final Logger log = Logger.getLogger(AwsS3Cmd.class);

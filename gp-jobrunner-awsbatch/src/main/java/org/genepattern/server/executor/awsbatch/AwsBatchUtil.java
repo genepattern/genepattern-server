@@ -49,10 +49,12 @@ public class AwsBatchUtil {
     /**
      * Round up to the nearest mebibyte (MiB).
      * Example usage:
+     * <pre>
      *   String mib=""+numMiB(m);
+     * </pre>
      * 
-     * @param m
-     * @return
+     * @param m the memory instance
+     * @return the amount of memory in mebibytes
      */
     public static long numMiB(final Memory m) {
         long mib = (long) Math.ceil(
@@ -248,7 +250,7 @@ public class AwsBatchUtil {
      * @param gpJob
      * @param KEY
      * @param includePaths
-     * @return
+     * @return a set of files
      */
     protected static Set<File> getFileSet(final DrmJobSubmission gpJob, final String KEY, String... includePaths) {
         final File parentDir=getGPFileProperty(gpJob, KEY);
@@ -325,8 +327,8 @@ public class AwsBatchUtil {
      * 
      * @param gpConfig
      * @param jobContext
-     * @param path
-     * @return
+     * @param path 
+     * @return the path relative to the patches directory
      */
     protected static File getPatchFile(final GpConfig gpConfig, final GpContext jobContext, final String path) {
         File file = new File(path);
