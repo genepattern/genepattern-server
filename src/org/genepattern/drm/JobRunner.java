@@ -121,6 +121,25 @@ public interface JobRunner {
      * </pre>
      */
     public static final String PROP_ERROR_STATUS_EXIT_VALUE="job.error_status.exit_value";
+
+    /**
+     * Set the 'job.docker.image' to run the module in a particular container. E.g.
+     * <pre>
+           job.docker.image: genepattern/docker-java17
+     * </pre>
+     * <p>
+     * This corresponds to the IMAGE[:TAG|@DIGEST] option of the docker run command.
+     * <p>
+     * This property was added to support the AWS Batch integration, but is intended to be
+     * used more general for docker enabled GenePattern instances.
+     * <p>
+     * Links:
+     * <ul>
+     *   <li>https://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties
+     *   <li>https://docs.docker.com/engine/reference/run/
+     * </ul>
+     */
+    public static final String PROP_DOCKER_IMAGE="job.docker.image";
     
     /** 
      * Service shutdown, clean up resources. 
