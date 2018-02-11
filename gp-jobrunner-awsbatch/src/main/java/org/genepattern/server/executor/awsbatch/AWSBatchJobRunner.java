@@ -76,19 +76,17 @@ import com.google.common.base.Strings;
                 aws-batch-script: "runOnBatch.sh" 
 </pre>
  *
- * See:
- *   https://aws.amazon.com/batch/
- *   https://aws.amazon.com/s3/
+ * Links:
+ * <ul>
+ *   <li><a href="https://aws.amazon.com/batch/">aws.amazon.com/batch</a>
+ *   <li><a href="https://aws.amazon.com/s3/">aws.amazon.com/s3</a>
+ * </ul>
  * 
- * @author pcarr
- *
  */
 public class AWSBatchJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AWSBatchJobRunner.class);
 
     public static final String PROP_AWS_PROFILE="aws-profile";
-    // TODO: delete me
-    public static final String _DEFAULT_AWS_PROFILE="genepattern";
     
     public static final String PROP_AWS_CLI="aws-cli";
     public static final Value DEFAULT_AWS_CLI=new Value("aws-cli.sh");
@@ -96,7 +94,34 @@ public class AWSBatchJobRunner implements JobRunner {
     // 's3-root' aka S3_PREFIX
     public static final String PROP_AWS_S3_ROOT="aws-s3-root";
 
-    public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
+    /**
+     * Set the 'job.awsbatch.job-definition-name' property to link a particular
+     * version of a module to a particular version of an aws batch job definition.
+     * 
+     * Example 1, AWSBatch default job definition
+     * <pre>
+     * executors:
+     *     AWSBatch:
+     *         ...
+     *         default.properties:
+     *             job.awsbatch.job-definition-name: "Java17_Oracle_Generic"
+     * </pre>
+     * 
+     * Example 2, as part of an executor.properties definition
+     * <pre>
+     * executor.properties: {
+     *     ...
+     *     "java/1.7": {
+     *         job.awsbatch.job-definition-name: "Java17_Oracle_Generic",
+     *     }
+     *     ...
+     * }
+     * </pre>
+     * 
+     */
+    public static final String PROP_JOB_AWSBATCH_JOB_DEF="job.awsbatch.job-definition-name";
+    
+    //public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
 
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
     public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("aws_batch");
@@ -324,7 +349,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * @param cmdEnv
      * @param gpConfig
      * @param jobContext
-     * @return
+     * @return the environment variables to set before running the aws command
      */
     protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext, final File metadataDir, final Memory jobMemory) {
         final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE);
@@ -579,12 +604,12 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         
         final String awsBatchJobDefinition; // default
-        final Value jobDefValue = gpJob.getValue(PROP_AWS_BATCH_JOB_DEF);
+        final Value jobDefValue = gpJob.getValue(PROP_JOB_AWSBATCH_JOB_DEF);
         if (jobDefValue != null) {
             awsBatchJobDefinition = jobDefValue.getValue();
         }
         else {
-            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a "+PROP_AWS_BATCH_JOB_DEF+" defined in the custom.yaml");
+            throw new IllegalArgumentException("module: " + gpJob.getJobInfo().getTaskName() + " needs a "+PROP_JOB_AWSBATCH_JOB_DEF+" defined in the custom.yaml");
         }
         
         final CommandLine cl = new CommandLine(awsBatchScript.getAbsolutePath());
@@ -696,9 +721,9 @@ public class AWSBatchJobRunner implements JobRunner {
     /**
      * Substitute gp server local file path with docker container file path for the given command line arg
      * 
-     * @param arg, the command line arg
-     * @param inputFileMap, a lookup table mapping the original fq file to the linked fq file
-     * @param inputFiles, the list of all gp server local file paths to module input file
+     * @param arg the command line arg
+     * @param inputFileMap a lookup table mapping the original fq file to the linked fq file
+     * @param inputFiles the list of all gp server local file paths to module input file
      * 
      * @return the command line arg to use in the container
      */
@@ -794,8 +819,6 @@ public class AWSBatchJobRunner implements JobRunner {
            # the name of the log file, relative to the working directory for the job
            job.logfile: .rte.out
      * </pre>
-     * 
-     * @author pcarr
      */
     protected void logCommandLine(final DrmJobSubmission job) {
         // a null 'job.logFile' means "don't write the log file"
