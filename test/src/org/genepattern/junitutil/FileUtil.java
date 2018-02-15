@@ -3,7 +3,13 @@
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 
@@ -51,5 +57,33 @@ public class FileUtil {
     public static File getDataFile(final String relativePath) {
         return new File(dataDir, relativePath);
     }
+    
+    /**
+     * Read all lines from the given input file.
+     * 
+     * @param file
+     * @return a list of lines
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static List<String> readLines(final File file) throws FileNotFoundException, IOException {
+        final List<String> lines=new ArrayList<String>();
+        BufferedReader b=null;
+        try {
+            b = new BufferedReader(new FileReader(file));
+            String line="";
+            while ((line = b.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        finally {
+            if (b!=null) {
+                b.close();
+            }
+        }
+        return lines;
+    }
+
+
 
 }
