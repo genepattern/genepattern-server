@@ -1,0 +1,28 @@
+#
+# basic config file for junit tests
+#
+
+default.properties:
+    executor: LocalJobRunner
+
+executors:
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties: {
+        }
+        # by executor 
+        default.properties: {
+        }
+
+# by module
+module.properties: {
+}
+
+# by group
+group.properties: {
+}
+        
+# by user id
+user.properties: {
+}
+
