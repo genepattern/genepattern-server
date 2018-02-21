@@ -333,5 +333,9 @@ public class RegistrationBean {
     public String getTermsOfService() {
         return this.termsOfService;
     }
+    
+    public boolean isRecaptchaEnabled() {
+        return this.recaptchaEnabled;
+    }
 
 }
