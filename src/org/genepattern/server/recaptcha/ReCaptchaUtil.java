@@ -1,4 +1,4 @@
-package org.genepattern.server;
+package org.genepattern.server.recaptcha;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,21 +16,24 @@ import org.genepattern.server.config.GpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * reCAPTCHA integration to add an "I'm not a robot" challenge
+ * on the user registration page. 
+ * 
+ * @see "https://www.google.com/recaptcha"
+ * @see "https://www.google.com/recaptcha/admin"
+ */
 public class ReCaptchaUtil {
     private static final Logger log = Logger.getLogger(ReCaptchaUtil.class);
     
-    public static class Ex extends java.lang.Exception {
-        public Ex(final String message) {
-            super(message);
-        }
-        
-        public Ex(final Throwable t) {
-            super(t);
-        }
-        
-        public Ex(final String message, final Throwable t) {
-            super(message, t);
-        }
+    /**
+     * Utility method to copy an InputStream into an in-memory String.
+     */
+    public static String copyToString(final InputStream in) throws IOException {
+        StringWriter writer = new StringWriter();
+        final String encoding="UTF-8";
+        IOUtils.copy(in, writer, encoding);
+        return writer.toString();
     }
 
     public static ReCaptchaUtil init(final GpConfig gpConfig) {
@@ -44,11 +47,8 @@ public class ReCaptchaUtil {
     public static final String PROP_TYPE="recaptcha.type";
     public static final String PROP_SITE_KEY="recaptcha.site-key";
     public static final String PROP_SECRET_KEY="recaptcha.secret-key";
-    
-    public static final String PROP_VERIFY_URL="recaptcha.verify.url";
-    public static final String PROP_PNAME_SECRET="recaptcha.verify.secret-key-pname";
-    public static final String PROP_PNAME_RESPONSE="recaptcha.verify.response-pname";
-    
+    public static final String PROP_VERIFY_URL="recaptcha.verify-url";
+    public static final String DEFAULT_VERIFY_URL="https://www.google.com/recaptcha/api/siteverify";
     public static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";
     
     private final String verifyUrl;
@@ -56,23 +56,13 @@ public class ReCaptchaUtil {
     
     private ReCaptchaUtil(final GpConfig gpConfig, final GpContext serverContext) {
         this.secretKey=gpConfig.getGPProperty(serverContext, PROP_SECRET_KEY, "");
-        this.verifyUrl=gpConfig.getGPProperty(serverContext, PROP_VERIFY_URL, "https://www.google.com/recaptcha/api/siteverify");
-    }
-
-    /**
-     * Utility method to copy an InputStream into an in-memory String.
-     */
-    public static String copyToString(final InputStream in) throws IOException {
-        StringWriter writer = new StringWriter();
-        final String encoding="UTF-8";
-        IOUtils.copy(in, writer, encoding);
-        return writer.toString();
+        this.verifyUrl=gpConfig.getGPProperty(serverContext, PROP_VERIFY_URL, DEFAULT_VERIFY_URL);
     }
 
     /**
      * Perform server side verification of the reCAPTCHA.
      * <pre>
-       HTTP POST <recaptcha.verify.url>
+       HTTP POST <recaptcha.verify-url>
            secret=<recaptcha.secret-key>
            response=<g-recaptcha-response>
      * </pre>
@@ -80,7 +70,7 @@ public class ReCaptchaUtil {
      * @param recaptchaResponseToken The value of 'g-recaptcha-response'.
      * @return true if the reCaptcha was successfully verified
      */
-    public boolean verifyReCaptcha(final String recaptchaResponseToken) throws Ex {
+    public boolean verifyReCaptcha(final String recaptchaResponseToken) throws ReCaptchaException {
         try {
             URL url = new URL(verifyUrl);
             StringBuilder postData = new StringBuilder();
@@ -95,27 +85,27 @@ public class ReCaptchaUtil {
                 return true;
             }
             if (response.has("error-codes")) {
-                throw new Ex("reCAPTCHA not verified: "+response.get("error-codes"));
+                throw new ReCaptchaException("reCAPTCHA not verified: "+response.get("error-codes"));
             }
             else {
-                throw new Ex("reCAPTCHA not verified: no 'error-codes' in response");
+                throw new ReCaptchaException("reCAPTCHA not verified: no 'error-codes' in response");
             }
         }
-        catch (Ex e) {
+        catch (ReCaptchaException e) {
             throw e;
         }
         catch (IOException e) {
-            throw new Ex("reCAPTCHA not verified: "+e.getLocalizedMessage(), e);
+            throw new ReCaptchaException("reCAPTCHA not verified: "+e.getLocalizedMessage(), e);
         }
         catch (JSONException e) {
-            throw new Ex("reCAPTCHA not verified: "+e.getLocalizedMessage(), e);
+            throw new ReCaptchaException("reCAPTCHA not verified: "+e.getLocalizedMessage(), e);
         }
         catch (Throwable t) {
-            throw new Ex("reCAPTCHA not verified: "+t.getLocalizedMessage(), t);
+            throw new ReCaptchaException("reCAPTCHA not verified: "+t.getLocalizedMessage(), t);
         }
     }
-    
-    protected static JSONObject postAndParseJSON(URL url, String postData) throws IOException, JSONException {
+
+    protected static JSONObject postAndParseJSON(final URL url, final String postData) throws IOException, JSONException {
         final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setDoOutput(true);
         urlConnection.setRequestMethod("POST");
