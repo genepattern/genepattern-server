@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.ReCaptchaUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpConfig;
@@ -24,6 +26,8 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genomespace.*;
 import org.genepattern.server.webapp.LoginManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Backing bean for creating a new user.
@@ -45,6 +49,8 @@ public class RegistrationBean {
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
     private boolean passwordRequired = true;
+    private boolean recaptchaEnabled = false;
+    private String recaptchaSiteKey = "";
     private boolean joinMailingList = true;
     private boolean showTermsOfService = false;
     private String termsOfService =
@@ -53,10 +59,14 @@ public class RegistrationBean {
         "\n"+
         "The hosted GenePattern server is provided free of charge.\n"+
         "We make no guarantees whatsoever.";
+    
 
     public RegistrationBean() {
         this.gpConfig=ServerConfigurationFactory.instance();
-        this.passwordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
+        final GpContext serverContext=GpContext.getServerContext();
+        this.passwordRequired=gpConfig.isPasswordRequired(serverContext);
+        this.recaptchaEnabled=gpConfig.getGPBooleanProperty(serverContext, ReCaptchaUtil.PROP_ENABLED, false);
+        this.recaptchaSiteKey=gpConfig.getGPProperty(serverContext, ReCaptchaUtil.PROP_SITE_KEY, "");
 
         String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
         boolean createAccountAllowed = (
@@ -116,6 +126,15 @@ public class RegistrationBean {
     public void setJoinMailingList(boolean joinMailingList) {
         this.joinMailingList = joinMailingList;
     }
+    
+    /**
+     * 
+     * <div class="g-recaptcha" data-sitekey="6LefkkcUAAAAAP3FxMP8iTWb0ZiTpDJ0xJff_8JZ"></div>
+     * @param event
+     */
+    public String getRecaptchaSiteKey() {
+        return this.recaptchaSiteKey;
+    }
 
     private void registerUserSSO(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
@@ -151,8 +170,34 @@ public class RegistrationBean {
         }
     }
 
+    protected void validateReCaptcha(final HttpServletRequest request) {
+        if (recaptchaEnabled) {
+            final ReCaptchaUtil r = ReCaptchaUtil.init(gpConfig);
+            final String recaptchaResponse=request.getParameter(ReCaptchaUtil.G_RECAPTCHA_RESPONSE);
+            try {
+                //boolean success=
+                        r.verifyReCaptcha(recaptchaResponse);
+            }
+            catch (ReCaptchaUtil.Ex e) {
+                final String message=e.getLocalizedMessage();
+                UIBeanHelper.setErrorMessage(message);
+                FacesMessage facesMessage = new FacesMessage(message);
+                //((UIInput) component).setValid(false);
+                throw new ValidatorException(facesMessage);
+            }
+            //if (!success) {
+            //    final String message="reCAPTCHA not verified";
+            //    UIBeanHelper.setErrorMessage(message);
+            //    FacesMessage facesMessage = new FacesMessage(message);
+            //    //((UIInput) component).setValid(false);
+            //    throw new ValidatorException(facesMessage);
+            //}
+        }
+    }
+
     private void registerUserDefault(ActionEvent event) {
         try {
+            validateReCaptcha(UIBeanHelper.getRequest());
             UserAccountManager.createUser(
                     gpConfig, HibernateUtil.instance(), 
                     username, password, email);

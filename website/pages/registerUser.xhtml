@@ -10,6 +10,17 @@
       xmlns:t="http://myfaces.apache.org/tomahawk">
 
 <ui:composition template="/templates/common.xhtml">
+
+    <ui:define name="headText">
+      <!-- reCAPTCHA library -->
+      <script src="https://www.google.com/recaptcha/api.js"></script>
+      <script>
+        function onSubmit(token) {
+          document.getElementById("registrationForm").submit();
+        }
+      </script>
+    </ui:define>
+
     <ui:define name="validationInit">
         <script type="text/javascript" language="javascript">
             /* <![CDATA[ */
@@ -89,6 +100,7 @@
                     <h:outputText value="." />
                 </h:panelGroup>
                 <h:outputText value="" />
+                <div class="g-recaptcha" data-sitekey="#{registrationBean.recaptchaSiteKey}"></div>
                 <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create my account." class="little" actionListener="#{registrationBean.registerUser}" />
                 <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create My Account" class="little" actionListener="#{registrationBean.registerUser}" />
 
