@@ -3,7 +3,6 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -17,17 +16,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.ReCaptchaUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genomespace.*;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
+import org.genepattern.server.recaptcha.ReCaptchaException;
+import org.genepattern.server.recaptcha.ReCaptchaUtil;
 import org.genepattern.server.webapp.LoginManager;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Backing bean for creating a new user.
@@ -172,26 +171,25 @@ public class RegistrationBean {
 
     protected void validateReCaptcha(final HttpServletRequest request) {
         if (recaptchaEnabled) {
+            boolean success=false;
+            String errorMessage=null;
             final ReCaptchaUtil r = ReCaptchaUtil.init(gpConfig);
             final String recaptchaResponse=request.getParameter(ReCaptchaUtil.G_RECAPTCHA_RESPONSE);
             try {
-                //boolean success=
-                        r.verifyReCaptcha(recaptchaResponse);
+                success=r.verifyReCaptcha(recaptchaResponse);
             }
-            catch (ReCaptchaUtil.Ex e) {
-                final String message=e.getLocalizedMessage();
+            catch (final ReCaptchaException e) {
+                errorMessage=e.getLocalizedMessage();
+            }
+            catch (Throwable t) {
+                errorMessage=t.getLocalizedMessage();
+            }
+            if (!success) {
+                final String message=errorMessage!=null?errorMessage:"reCAPTCHA not verified";
                 UIBeanHelper.setErrorMessage(message);
                 FacesMessage facesMessage = new FacesMessage(message);
-                //((UIInput) component).setValid(false);
                 throw new ValidatorException(facesMessage);
             }
-            //if (!success) {
-            //    final String message="reCAPTCHA not verified";
-            //    UIBeanHelper.setErrorMessage(message);
-            //    FacesMessage facesMessage = new FacesMessage(message);
-            //    //((UIInput) component).setValid(false);
-            //    throw new ValidatorException(facesMessage);
-            //}
         }
     }
 
