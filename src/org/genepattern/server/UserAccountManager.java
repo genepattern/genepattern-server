@@ -339,33 +339,6 @@ public class UserAccountManager {
         return user != null;
     }
 
-    /**
-     * Create a new GenePattern user account.
-     * 
-     * @param username
-     * @throws AuthenticationException - if the user is already registered.
-     * 
-     * @deprecated should pass in valid HibernateSessionManager and GpConfig
-     */
-    public void createUser(String username) throws AuthenticationException {
-        String password = "";
-        createUser(username, password);
-    }
-
-    /**
-     * Create a new GenePattern user account.
-     * 
-     * @param username
-     * @param password
-     * @throws AuthenticationException if the user is already registered.
-     * 
-     * @deprecated pass in a valid GpConfig and Hibernate session
-     */
-    public void createUser(String username, String password) throws AuthenticationException {
-        String email = null;
-        createUser(ServerConfigurationFactory.instance(), HibernateUtil.instance(), username, password, email);
-    }
-    
     /** @deprecated pass in a valid GpConfig and Hibernate session */
     public static void createUser(final String username, final String passwordOrNull, final String email) throws AuthenticationException {
         createUser(ServerConfigurationFactory.instance(), HibernateUtil.instance(), username, passwordOrNull, email);
