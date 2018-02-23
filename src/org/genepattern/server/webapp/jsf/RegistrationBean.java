@@ -24,8 +24,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
-import org.genepattern.server.recaptcha.ReCaptchaException;
-import org.genepattern.server.recaptcha.ReCaptchaUtil;
+import org.genepattern.server.recaptcha.ReCaptchaSession;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -48,8 +47,6 @@ public class RegistrationBean {
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
     private boolean passwordRequired = true;
-    private boolean recaptchaEnabled = false;
-    private String recaptchaSiteKey = "";
     private boolean joinMailingList = true;
     private boolean showTermsOfService = false;
     private String termsOfService =
@@ -58,14 +55,12 @@ public class RegistrationBean {
         "\n"+
         "The hosted GenePattern server is provided free of charge.\n"+
         "We make no guarantees whatsoever.";
-    
+    private ReCaptchaSession recaptcha = null;
 
     public RegistrationBean() {
         this.gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
         this.passwordRequired=gpConfig.isPasswordRequired(serverContext);
-        this.recaptchaEnabled=gpConfig.getGPBooleanProperty(serverContext, ReCaptchaUtil.PROP_ENABLED, false);
-        this.recaptchaSiteKey=gpConfig.getGPProperty(serverContext, ReCaptchaUtil.PROP_SITE_KEY, "");
 
         String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
         boolean createAccountAllowed = (
@@ -84,6 +79,9 @@ public class RegistrationBean {
         else {
             showTermsOfService = true;
         }
+        
+        //show reCAPTCHA?
+        this.recaptcha=ReCaptchaSession.init(gpConfig, serverContext);
     }
 
     public String getEmail() {
@@ -127,12 +125,40 @@ public class RegistrationBean {
     }
     
     /**
-     * 
-     * <div class="g-recaptcha" data-sitekey="6LefkkcUAAAAAP3FxMP8iTWb0ZiTpDJ0xJff_8JZ"></div>
-     * @param event
+     * for client side reCAPTCHA, add a div to the registration form 
+     * <pre>
+       <div class="g-recaptcha" data-sitekey="#{registrationBean.recaptchaSiteKey}"></div>
+     * </pre>
      */
     public String getRecaptchaSiteKey() {
-        return this.recaptchaSiteKey;
+        if (recaptcha != null) {
+            return recaptcha.getSiteKey();
+        }
+        return "";
+    }
+
+    /**
+     * verify server side reCAPTCHA
+     */
+    protected void verifyReCaptcha(final HttpServletRequest request) {
+        if (recaptcha == null) {
+            // short circuit
+            return;
+        }
+        boolean success=false;
+        String errorMessage=null;
+        try {
+            success=recaptcha.verifyReCaptcha(request);
+        }
+        catch (Throwable t) {
+            errorMessage=t.getLocalizedMessage();
+        }
+        if (!success) {
+            final String message=errorMessage!=null?errorMessage:"reCAPTCHA not verified";
+            UIBeanHelper.setErrorMessage(message);
+            FacesMessage facesMessage = new FacesMessage(message);
+            throw new ValidatorException(facesMessage);
+        }
     }
 
     private void registerUserSSO(ActionEvent event) {
@@ -169,33 +195,9 @@ public class RegistrationBean {
         }
     }
 
-    protected void validateReCaptcha(final HttpServletRequest request) {
-        if (recaptchaEnabled) {
-            boolean success=false;
-            String errorMessage=null;
-            final ReCaptchaUtil r = ReCaptchaUtil.init(gpConfig);
-            final String recaptchaResponse=request.getParameter(ReCaptchaUtil.G_RECAPTCHA_RESPONSE);
-            try {
-                success=r.verifyReCaptcha(recaptchaResponse);
-            }
-            catch (final ReCaptchaException e) {
-                errorMessage=e.getLocalizedMessage();
-            }
-            catch (Throwable t) {
-                errorMessage=t.getLocalizedMessage();
-            }
-            if (!success) {
-                final String message=errorMessage!=null?errorMessage:"reCAPTCHA not verified";
-                UIBeanHelper.setErrorMessage(message);
-                FacesMessage facesMessage = new FacesMessage(message);
-                throw new ValidatorException(facesMessage);
-            }
-        }
-    }
-
-    private void registerUserDefault(ActionEvent event) {
+    private void registerUserDefault(final ActionEvent event) {
         try {
-            validateReCaptcha(UIBeanHelper.getRequest());
+            verifyReCaptcha(UIBeanHelper.getRequest());
             UserAccountManager.createUser(
                     gpConfig, HibernateUtil.instance(), 
                     username, password, email);
@@ -335,7 +337,10 @@ public class RegistrationBean {
     }
     
     public boolean isRecaptchaEnabled() {
-        return this.recaptchaEnabled;
+        if (recaptcha != null) {
+            return recaptcha.isEnabled();
+        }
+        return false;
     }
 
 }
