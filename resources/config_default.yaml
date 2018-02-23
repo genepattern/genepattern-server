@@ -74,6 +74,28 @@ default.properties:
     # }
     #
     
+    ##############################################################
+    # reCAPTCHA configuration
+    #   add an "I'm not a robot" challenge to the user registration page
+    # Links
+    #   https://www.google.com/recaptcha
+    #   https://developers.google.com/recaptcha/
+    #   https://developers.google.com/recaptcha/docs/invisible
+    #   https://www.google.com/recaptcha/admin
+    # 
+    # Setup
+    #   Register a new Invisible reCAPTCHA site on the admin page:
+    #     https://www.google.com/recaptcha/admin
+    #   Copy the 'Site key' and 'Secret key' to this config file
+    # Example
+    #   recaptcha.enabled: "true"
+    #   recaptcha.site-key: "{Site key from admin page}"
+    #   repatcha.secret-key: "{Secret key from admin page}"
+    # 
+    # Additional param(s)
+    #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
+    # 
+
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 
@@ -142,7 +164,7 @@ default.properties:
     #
     #googleAnalytics.enabled: true
     #googleAnalytics.trackingId: ""
-    
+
     # 
     # for per-module End-user license agreements (EULA)
     #

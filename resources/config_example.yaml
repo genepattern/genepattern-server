@@ -87,6 +87,28 @@ default.properties:
     # }
     #
 
+    ##############################################################
+    # reCAPTCHA configuration
+    #   add an "I'm not a robot" challenge to the user registration page
+    # Links
+    #   https://www.google.com/recaptcha
+    #   https://developers.google.com/recaptcha/
+    #   https://developers.google.com/recaptcha/docs/invisible
+    #   https://www.google.com/recaptcha/admin
+    # 
+    # Setup
+    #   Register a new Invisible reCAPTCHA site on the admin page:
+    #     https://www.google.com/recaptcha/admin
+    #   Copy the 'Site key' and 'Secret key' to this config file
+    # Example
+    #   recaptcha.enabled: "true"
+    #   recaptcha.site-key: "{Site key from admin page}"
+    #   repatcha.secret-key: "{Secret key from admin page}"
+    # 
+    # Additional param(s)
+    #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
+    # 
+
     # when set to true, delete empty stdout files from the job results directory
     job.deleteEmptyStdout: false
     job.deleteEmptyStdout.default: true
