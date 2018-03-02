@@ -179,7 +179,7 @@ public class FileCache {
             final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
             throw new JobDispatchException(errorMessage);
         }
-        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
+        //final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
         if (!cachedFile.getServerFile().canRead()) {
             throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
         }
