@@ -1,5 +1,6 @@
 package org.genepattern.server.recaptcha;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -179,7 +180,8 @@ public class ReCaptchaSession {
             throw new ReCaptchaException("reCAPTCHA config error: '"+PROP_SECRET_KEY+"' not set, contact your server admin");
         }
         if (Strings.isNullOrEmpty(recaptchaResponseToken)) {
-            throw new ReCaptchaException("reCAPTCHA config error: '"+G_RECAPTCHA_RESPONSE+"' not set, contact your server admin");
+            log.debug("reCAPTCHA error: reCAPTCHA response not set, '"+G_RECAPTCHA_RESPONSE+"='"+recaptchaResponseToken+"'");
+            throw new ReCaptchaException("Missing reCAPTCHA response");
         }
         
         try {
@@ -196,14 +198,21 @@ public class ReCaptchaSession {
                 return true;
             }
             if (jsonResponse.has("error-codes")) {
-                throw new ReCaptchaException("reCAPTCHA not verified: "+jsonResponse.get("error-codes"));
+                final String message="reCAPTCHA not verified: "+jsonResponse.get("error-codes");
+                log.error(message);
+                throw new ReCaptchaException(message);
             }
             else {
-                throw new ReCaptchaException("reCAPTCHA not verified: no 'error-codes' in response");
+                log.debug("reCAPTCHA not verified: no 'error-codes' in response");
+                throw new ReCaptchaException("reCAPTCHA not verified");
             }
         }
         catch (ReCaptchaException e) {
             throw e;
+        }
+        catch (FileNotFoundException e) {
+            log.error("reCAPTCHA error: "+e.getClass().getName()+": "+e.getMessage()+", double check '"+PROP_VERIFY_URL+"' in the config file");
+            throw new ReCaptchaException("reCAPTCHA error: "+PROP_VERIFY_URL+" not found, contact your server admin");
         }
         catch (Throwable t) {
             throw new ReCaptchaException("reCAPTCHA not verified: "+t.getLocalizedMessage(), t);
