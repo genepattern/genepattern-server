@@ -638,6 +638,24 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         return cl;
     }
+
+    /**
+     * Should I skip pushing the inputFile from the gp server head node into an S3 bucket?
+     * @param inputFile a local file path
+     * @return true to skip the s3 upload
+     * 
+     * TODO: make this a configurable property, similar to job.FilenameFilter.
+     * <pre>
+           job.awsbatch.s3-skip-filename-filter: [ " \*\/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts/*" ]
+     * </pre>
+     */
+    protected static boolean skipS3Upload(final File inputFile) {
+        // should I skip the push to s3
+        if (inputFile.getPath().contains("/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts/")) {
+            return true;
+        }
+        return false;
+    }
     
     protected static void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root) {
         final AwsS3Cmd s3Cmd=new AwsS3Cmd.Builder()
@@ -645,8 +663,15 @@ public class AWSBatchJobRunner implements JobRunner {
             .awsCliEnv(cmdEnv)
             .s3_bucket(s3_root)
         .build();
+        
+        // optionally skip the push to s3 step
         for(final File inputFile : inputFiles) {
-            s3Cmd.syncToS3(inputFile);
+            if (skipS3Upload(inputFile)) {
+                log.debug("skipping s3 push: "+inputFile);
+            }
+            else {
+                s3Cmd.syncToS3(inputFile);
+            }
         }
         
         // create 'aws-sync-from-s3.sh' script in the metadataDir
