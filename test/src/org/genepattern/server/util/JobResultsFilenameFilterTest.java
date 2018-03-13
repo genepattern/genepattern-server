@@ -43,7 +43,7 @@ public class JobResultsFilenameFilterTest {
     @Test
     public void testGetProperties() throws Exception {
         Properties props = new Properties();
-        InputStream properties = this.getClass().getResourceAsStream("jobsFilenameFilter.properties");
+        InputStream properties = this.getClass().getResourceAsStream("jobFilenameFilter.properties");
         props.load(properties);
         
         String glob = props.getProperty(JobResultsFilenameFilter.KEY);
