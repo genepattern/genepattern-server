@@ -20,14 +20,14 @@ import org.apache.oro.io.GlobFilenameFilter;
  * <p>
  * Some examples, 
  * <pre>
-   jobs.FilenameFilter=.*
-   jobs.FilenameFilter=.nfs*
+   job.FilenameFilter=.*
+   job.FilenameFilter=.nfs*
  * </pre>
  * 
  * @author pcarr
  */
 public class JobResultsFilenameFilter implements FilenameFilter {
-    public static final String KEY = "jobs.FilenameFilter";
+    public static final String KEY = "job.FilenameFilter";
     
     private Set<String> exactMatches = new TreeSet<String>();
     private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();
