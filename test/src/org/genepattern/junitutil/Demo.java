@@ -68,7 +68,7 @@ public class Demo {
     // common file system paths, (as opposed to URI paths)
     /** 
      * File system path to example data on server's file system, includes trailing slash. 
-     *     href template: {gpUrl}/data/{localDataDir}{relativePath}
+     *     href template: {gpUrl}/data/{localDataDirPath}{relativePath}
      *     example: http://127.0.0.1:8080/gp/data//Users/my_user/genepattern/test/data/all_aml/all_aml_test.gct
      * 
      * Note: file name encoding has not been worked out, be careful. When constructing href's should use valid href path.
@@ -77,7 +77,7 @@ public class Demo {
      * The actual path is to the ./test/data folder of the project; the all_aml folder includes
      * example data files.
      */
-    public static final String localDataDir=FileUtil.getDataDir().getAbsolutePath() + "/";
+    public static final String localDataDirPath=FileUtil.getDataDir().getAbsolutePath() + "/";
     
     protected static String portStr(final String scheme, final int port) {
         if ("http".equals(scheme) && port==80) return "";
@@ -331,7 +331,7 @@ public class Demo {
      * @return
      */
     public static String serverFile(final String path) {
-        return "/data/"+localDataDir+path;
+        return "/data/"+localDataDirPath+path;
     }
 
 }

@@ -8,7 +8,7 @@ import static org.genepattern.junitutil.Demo.dataGsDir;
 import static org.genepattern.junitutil.Demo.gpHref;
 import static org.genepattern.junitutil.Demo.gpUrl;
 import static org.genepattern.junitutil.Demo.jobResultFile;
-import static org.genepattern.junitutil.Demo.localDataDir;
+import static org.genepattern.junitutil.Demo.localDataDirPath;
 import static org.genepattern.junitutil.Demo.proxyHref;
 import static org.genepattern.junitutil.Demo.proxyUrl;
 import static org.genepattern.junitutil.Demo.serverFile;
@@ -109,7 +109,7 @@ public class TestInitExternalUrl {
     @Test
     public void serverFile_literalPath() {
         // pass in a server file path, e.g. '/xchip/.../'
-        final String urlSpec=localDataDir+"all_aml_test.cls";
+        final String urlSpec=localDataDirPath+"all_aml_test.cls";
         assertEquals("initExternalUrl('"+urlSpec+"')", null, 
                 JobInputHelper.initExternalUrl(gpConfig, jobInput, urlSpec));
     }
