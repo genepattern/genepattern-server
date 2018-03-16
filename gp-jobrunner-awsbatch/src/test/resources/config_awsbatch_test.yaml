@@ -1,0 +1,37 @@
+#
+# basic config file for junit tests
+#
+
+default.properties:
+    executor: LocalJobRunner
+    
+    #
+    # custom job.awsbatch.s3-upload-filter
+    # 
+    job.awsbatch.s3-upload-filter: [
+        "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2017-12-15{,/**}",
+        "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2018-03-14{,/**}",
+        "**/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts{,/**}"
+    ]
+
+executors:
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties: {
+        }
+        # by executor 
+        default.properties: {
+        }
+
+# by module
+module.properties: {
+}
+
+# by group
+group.properties: {
+}
+        
+# by user id
+user.properties: {
+}
+

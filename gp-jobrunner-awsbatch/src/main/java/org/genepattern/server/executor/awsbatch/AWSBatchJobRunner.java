@@ -121,8 +121,6 @@ public class AWSBatchJobRunner implements JobRunner {
      */
     public static final String PROP_JOB_AWSBATCH_JOB_DEF="job.awsbatch.job-definition-name";
     
-    //public static final String PROP_AWS_BATCH_JOB_DEF="aws-batch-job-definition-name";
-
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
     public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("aws_batch");
     public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
@@ -639,7 +637,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return cl;
     }
 
-    protected static void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root) {
+    protected void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root, final AwsS3Filter awsS3Filter) {
         final AwsS3Cmd s3Cmd=new AwsS3Cmd.Builder()
             .awsCmd(awsCmd)
             .awsCliEnv(cmdEnv)
@@ -648,7 +646,7 @@ public class AWSBatchJobRunner implements JobRunner {
         
         // optionally skip the push to s3 step
         for(final File inputFile : inputFiles) {
-            if (AwsS3Filter.skipS3Upload(inputFile)) {
+            if (awsS3Filter.skipS3Upload(inputFile)) {
                 log.debug("skipping s3 push: "+inputFile);
             }
             else {
@@ -791,7 +789,8 @@ public class AWSBatchJobRunner implements JobRunner {
         final String s3_root=gpJob.getProperty(PROP_AWS_S3_ROOT);
         final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
         final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
-        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root);
+        final AwsS3Filter awsS3Filter=AwsS3Filter.initAwsS3Filter(gpJob.getGpConfig(), gpJob.getJobContext());
+        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter);
 
         //final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
         final Map<String,String> inputFileMap=Collections.emptyMap();
