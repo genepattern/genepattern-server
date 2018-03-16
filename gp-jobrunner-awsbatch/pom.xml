@@ -99,23 +99,23 @@
          </settings>
          
       2) add gp-full-<snapshot>.jar to local mvn repository
-         For example, to add 'gp-full-3.9.11-snapshot-05.jar'
+         For example, to add 'gp-full-3.9.11-snapshot-09.jar'
 
          # create snapshot build
          cd ../
          ant clean common
-         cp -p build/gp-full.jar build/gp-full-3.9.11-snapshot-05.jar
+         cp -p build/gp-full.jar build/gp-full-3.9.11-snapshot-09.jar
          # add to local repository
          mvn deploy:deploy-file \
            -Durl=file:///Broad/dev/maven-repo/ \
            -DgroupId=org.genepattern -DartifactId=gp-full -Dpackaging=jar \
-           -Dversion=3.9.11-snapshot-05 \
-           -Dfile=build/gp-full-3.9.11-snapshot-05.jar 
+           -Dversion=3.9.11-snapshot-08 \
+           -Dfile=build/gp-full-3.9.11-snapshot-08.jar 
     -->
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-snapshot-07</version>
+      <version>3.9.11-snapshot-08</version>
       <!-- scope>runtime,test</scope -->
     </dependency>
 

@@ -66,12 +66,20 @@ public class FileUtil {
         return patchesDir;
     }
 
-    private static File dataDir=new File("test/data");
+    private static File dataDir=initDataDir();
+
+    /** 
+     * Initialize the dataDir, optionally from the GP_DATA_DIR
+     * system property.
+     */
+    protected static File initDataDir() { 
+        return new File(System.getProperty("GP_DATA_DIR", "test/data")).getAbsoluteFile();
+    }
+
     /**
      * Get the top-level directory for data files used by the unit tests. 
      * It's hard-coded to 'test/data'.
-     * 
-     * @return
+     * Set GP_DATA_DIR as a system property if you need to use a different path.
      */
     public static File getDataDir() {
         return dataDir;

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.util.GenericFileFilter;
 
 /**
  * Helper class for filtering AWS S3 files as part of the AWS Batch integration.
