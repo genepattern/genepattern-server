@@ -72,6 +72,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-mapper-asl-1.9.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/Jama-1.0.1.jar"/>
 	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-compiler.jar"/>
 	<classpathentry kind="lib" path="installer-2014/gpdist/Tomcat/common/lib/jasper-runtime.jar"/>
