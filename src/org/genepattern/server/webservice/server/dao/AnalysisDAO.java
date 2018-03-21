@@ -530,6 +530,8 @@ public class AnalysisDAO extends BaseDAO {
             break;
         case COMPLETED_DATE:
             hql.append(orderBy("a.completedDate", ascending));
+            hql.append(ascending ? " ASC" : " DESC");
+            hql.append(", a.submittedDate");
             break;
         case USER:
             hql.append(" ORDER BY a.userId");
@@ -553,7 +555,8 @@ public class AnalysisDAO extends BaseDAO {
        select * from analysis_job 
            order by 
                case when date_completed is NULL then 0 else 1 END,
-               date_completed desc, date_submitted desc
+               date_completed desc, 
+               date_submitted desc
      * </pre>
      */
     protected String orderBy(final String colSpec, final boolean ascending) {
