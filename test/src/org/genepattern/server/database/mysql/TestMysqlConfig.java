@@ -188,7 +188,7 @@ public class TestMysqlConfig {
     public void _04_selectDbSchemaVersion() throws DbException {
         // do a test query
         String dbSchemaVersion=PropsTable.selectValue(mgr, "schemaVersion");
-        assertEquals("after update", "3.9.9", dbSchemaVersion); 
+        assertEquals("after update", "3.9.11", dbSchemaVersion); 
     }
     
     @Test

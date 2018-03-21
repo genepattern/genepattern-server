@@ -529,7 +529,7 @@ public class AnalysisDAO extends BaseDAO {
             hql.append(" ORDER BY a.submittedDate");
             break;
         case COMPLETED_DATE:
-            hql.append(" ORDER BY a.completedDate");
+            hql.append(orderBy("a.completedDate", ascending));
             break;
         case USER:
             hql.append(" ORDER BY a.userId");
@@ -539,6 +539,30 @@ public class AnalysisDAO extends BaseDAO {
             break;
         }
         hql.append(ascending ? " ASC" : " DESC");
+    }
+    
+    /**
+     * Special-case for null dates in MySQL, GP-6887
+     * From the MySQL doc ...
+     *   "When using ORDER BY, NULL values are presented first, or last if you specify DESC to sort in descending order"
+     * 
+     * On the Job Summary page, NULL Completion Dates should appear first when sorting in descending order.
+     * 
+     * Example sql query which works in Oracle and MySQL
+     * <pre>
+       select * from analysis_job 
+           order by 
+               case when date_completed is NULL then 0 else 1 END,
+               date_completed desc, date_submitted desc
+     * </pre>
+     */
+    protected String orderBy(final String colSpec, final boolean ascending) {
+        if (ascending) {
+            return " ORDER BY case when "+colSpec+" is NULL then 1 else 0 END, "+colSpec;
+        }
+        else {
+            return " ORDER BY case when "+colSpec+" is NULL then 0 else 1 END, "+colSpec;
+        }
     }
 
     private List<JobInfo> convertResults(List<AnalysisJob> analysisJobs) {
