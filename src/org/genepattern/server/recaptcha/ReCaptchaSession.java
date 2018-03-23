@@ -1,6 +1,5 @@
 package org.genepattern.server.recaptcha;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -130,6 +129,21 @@ public class ReCaptchaSession {
         return siteKey;
     }
 
+    /** for testing only **/
+    protected String getSecretKey() {
+        return secretKey;
+    }
+    
+    /**
+     * Get the 'G_RECAPTCHA_RESPONSE' from the HttpServletRequest.
+     */
+    protected static String initResponseTokenFromRequest(final HttpServletRequest request) {
+        if (request == null) {
+            return "";
+        }
+        return request.getParameter(G_RECAPTCHA_RESPONSE);
+    }
+
     /**
      * Verify the user's response to the reCAPTCHA challenge
      * with the 'g-recaptcha-response' from the request parameter.
@@ -139,13 +153,7 @@ public class ReCaptchaSession {
      * @throws ReCaptchaException if not verified
      */
     public boolean verifyReCaptcha(final HttpServletRequest request) throws ReCaptchaException {
-        if (!isEnabled()) {
-            return true;
-        }
-        else {
-            final String recaptchaResponse=request.getParameter(G_RECAPTCHA_RESPONSE);
-            return verifyReCaptcha(recaptchaResponse);
-        }
+        return verifyReCaptcha(initResponseTokenFromRequest(request));
     }
 
     /**
@@ -164,6 +172,13 @@ public class ReCaptchaSession {
      * @throws ReCaptchaException if not verified
      */
     public boolean verifyReCaptcha(final String recaptchaResponseToken) throws ReCaptchaException {
+        if (!isEnabled()) {
+            if (log.isDebugEnabled()) {
+                log.debug("isEnabled="+isEnabled());
+            }
+            return true;
+        }
+
         if (log.isDebugEnabled()) {
             log.debug("verifying reCAPTCHA ...");
             log.debug("   g-recaptcha-response="+recaptchaResponseToken);
@@ -197,7 +212,7 @@ public class ReCaptchaSession {
                 log.debug("success");
                 return true;
             }
-            if (jsonResponse.has("error-codes")) {
+            else if (jsonResponse.has("error-codes")) {
                 final String message="reCAPTCHA not verified: "+jsonResponse.get("error-codes");
                 log.error(message);
                 throw new ReCaptchaException(message);
@@ -210,7 +225,7 @@ public class ReCaptchaSession {
         catch (ReCaptchaException e) {
             throw e;
         }
-        catch (FileNotFoundException e) {
+        catch (IOException e) {
             log.error("reCAPTCHA error: "+e.getClass().getName()+": "+e.getMessage()+", double check '"+PROP_VERIFY_URL+"' in the config file");
             throw new ReCaptchaException("reCAPTCHA error: "+PROP_VERIFY_URL+" not found, contact your server admin");
         }
