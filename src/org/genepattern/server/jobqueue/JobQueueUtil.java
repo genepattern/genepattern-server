@@ -65,12 +65,6 @@ public class JobQueueUtil {
         GpJobAddedEvent event = new GpJobAddedEvent(jobInfo.getTaskLSID(), jobStatus);
         JobEventBus.instance().post(event);
     }
-
-    /** @deprecated pass in a Hibernate session */
-    static public List<JobQueue> getPendingJobs(int maxJobCount) throws Exception {
-        return getPendingJobs(org.genepattern.server.database.HibernateUtil.instance(),
-                maxJobCount);
-    }
     
     static public List<JobQueue> getPendingJobs(final HibernateSessionManager mgr, int maxJobCount) 
     throws Exception

@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.JobExecutor;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
@@ -180,7 +181,8 @@ public class AnalysisJobScheduler implements Runnable {
                     if (!suspended && pendingJobQueue.isEmpty()) {
                         List<Integer> waitingJobs = null;
                         try {
-                            final List<JobQueue> records = JobQueueUtil.getPendingJobs(batchSize);
+                            final HibernateSessionManager mgr=HibernateUtil.instance();
+                            final List<JobQueue> records = JobQueueUtil.getPendingJobs(mgr,batchSize);
                             waitingJobs = new ArrayList<Integer>();
                             if (records != null) {
                                 for(JobQueue record : records) {
