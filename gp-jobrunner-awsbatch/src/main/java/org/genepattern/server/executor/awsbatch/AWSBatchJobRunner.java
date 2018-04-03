@@ -31,6 +31,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
+import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -269,18 +270,20 @@ public class AWSBatchJobRunner implements JobRunner {
             // tasklib
             cl.addArgument(awsId);
             try {
-                final File metadataDir=getMetadataDir(jobRecord);
-                final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord, metadataDir);
+                final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord);
                 exec.execute(cl, cmdEnv);
           
                 String awsStatus =  outputStream.toString().trim();
                 JSONObject jobJSON = new JSONObject(awsStatus);
                 JSONObject awsJob =  ((JSONObject)jobJSON.getJSONArray("jobs").get(0));
-                String awsStatusCode = awsJob.getString("status");
+                final String awsStatusCode = awsJob.getString("status");
+                final String awsStatusReason = awsJob.getString("statusReason");
+                final String statusMessage=Strings.nullToEmpty(awsStatusCode)+": "+Strings.nullToEmpty(awsStatusReason);
                 
                 DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
                 b.jobState(jobState);
+                b.jobStatusMessage(statusMessage);
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
                 }
@@ -293,6 +296,7 @@ public class AWSBatchJobRunner implements JobRunner {
                     b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
                     b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
                     b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
+                    final File metadataDir=getMetadataDir(jobRecord);
                     try {
                         refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
                     } 
@@ -343,61 +347,75 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     /**
-     * Set optional aws cli environment variables 
-     * @param cmdEnv
-     * @param gpConfig
-     * @param jobContext
-     * @return the environment variables to set before running the aws command
+     * Initialize aws cli environment variables
+     * @return a new map of aws cli environment variables
      */
-    protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext, final File metadataDir, final Memory jobMemory) {
+    protected final Map<String,String> initAwsCliEnv(final GpConfig gpConfig, final GpContext jobContext) {
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        return initAwsCliEnv(cmdEnv, gpConfig, jobContext);
+    }
+
+    protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext) {
+        @SuppressWarnings("deprecation")
         final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE);
         if (aws_profile != null) {
             cmdEnv.put("AWS_PROFILE", aws_profile);
         }
+        @SuppressWarnings("deprecation")
         final String s3_root=gpConfig.getGPProperty(jobContext, PROP_AWS_S3_ROOT);
         if (s3_root != null) {
             cmdEnv.put("S3_ROOT", s3_root);
         }
-        final String job_queue=gpConfig.getGPProperty(jobContext, JobRunner.PROP_QUEUE);
-        if (Strings.isNullOrEmpty(job_queue)) {
-            log.warn("job.queue not set");
-        }
-        else {
-            cmdEnv.put("JOB_QUEUE", job_queue);
-        }
-        // vcpus=integer,
-        final Integer cpuCount=gpConfig.getGPIntegerProperty(jobContext, JobRunner.PROP_CPU_COUNT);
-        if (cpuCount != null) {
-            cmdEnv.put("GP_JOB_CPU_COUNT", ""+cpuCount);
-        }
-        if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
-        }
-        if (jobMemory != null) {
-            final String mib=""+AwsBatchUtil.numMiB(jobMemory);
-            cmdEnv.put("GP_JOB_MEMORY_MB", mib);
-        }
         return cmdEnv; 
     }
 
+    /**
+     * Get environment variables for the aws batch submit-job command line.
+     * @return a Map<String,String> of environment variables
+     */
     protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
-        final Map<String,String> cmdEnv=new HashMap<String,String>();
-        final File metadataDir=getMetadataDir(gpJob);
-        initAwsCliEnv(cmdEnv, gpJob.getGpConfig(), gpJob.getJobContext(), metadataDir, gpJob.getMemory());
+        final Map<String,String> cmdEnv=initAwsCliEnv(gpJob.getGpConfig(), gpJob.getJobContext());
+
+        final File metadataDir=getMetadataDir(gpJob.getWorkingDir());
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+
+        final String jobQueue=gpJob.getQueue();
+        if (Strings.isNullOrEmpty(jobQueue)) {
+            log.warn("job.queue not set");
+        }
+        else {
+            cmdEnv.put("JOB_QUEUE", jobQueue);
+        }
+        final Integer cpuCount=gpJob.getCpuCount();
+        if (cpuCount != null) {
+            cmdEnv.put("GP_JOB_CPU_COUNT", ""+cpuCount);
+        }
+        final Memory jobMemory=gpJob.getMemory();
+        if (jobMemory != null) {
+            final String mib=""+AwsBatchUtil.numMiB(jobMemory);
+            cmdEnv.put("GP_JOB_MEMORY_MB", mib);
+        } 
+        final Walltime walltime=gpJob.getWalltime();
+        if (walltime != null) {
+            final String walltimeSec=""+walltime.getTimeUnit().toSeconds(walltime.getDuration());
+            cmdEnv.put("GP_JOB_WALLTIME_SEC", walltimeSec);
+        }
         return cmdEnv;
     }
 
     protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord) {
-        final File metadataDir=getMetadataDir(jobRecord);
-        return initAwsCmdEnv(jobRecord, metadataDir);
-    }
-
-    protected final Map<String,String> initAwsCmdEnv(final DrmJobRecord jobRecord, final File metadataDir) {
-        final Map<String,String> cmdEnv=new HashMap<String,String>();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
-        initAwsCliEnv(cmdEnv, gpConfig, jobContext, metadataDir, (Memory)null);
-        return cmdEnv;
+        final Map<String,String> cmdEnv=initAwsCliEnv(gpConfig, jobContext);
+        
+        final File metadataDir=getMetadataDir(jobRecord.getWorkingDir());
+        if (metadataDir != null) {
+            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        
+         return cmdEnv;
     }
 
     /**

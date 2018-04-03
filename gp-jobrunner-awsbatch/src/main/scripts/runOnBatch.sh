@@ -61,10 +61,46 @@ shift
 : ${GP_METADATA_DIR=$WORKING_DIR/.gp_metadata}
 mkdir -p "${GP_METADATA_DIR}"
 
+: ${JOB_STDOUT=$GP_METADATA_DIR/stdout.txt}
+: ${JOB_STDERR=$GP_METADATA_DIR/stderr.txt}
+
 EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
+
+# job.walltime, kill the job after GP_JOB_WALLTIME_SEC seconds ...
+#   default walltime, 4 hours, 14400 hours
+#   max walltime, 1 week, 604800 seconds
+# 
+# Implement job timeout with a perl one-liner which "execs" the 
+#   module command line after setting up the alarm
+# See: http://mywiki.wooledge.org/BashFAQ/068
+#
+echo "calculating job.walltime limit ..." >> ${CMD_LOG} 2>&1
+echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
+: ${GP_JOB_WALLTIME_SEC=14400}
+if in_range "${GP_JOB_WALLTIME_SEC:-x}" "1" "604800"; then
+  # no-op
+  :
+else
+  GP_JOB_WALLTIME_SEC=14400;
+fi
+echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
+
+echo "# wrapper script, cancel the task  ..." >> $EXEC_SHELL
+echo "\
+doalarm() { 
+  local timeout_sec=\$1;
+  perl -E 'alarm shift; open STDOUT, \">\", \"${JOB_STDOUT}\"; open STDERR, \">\", \"${JOB_STDERR}\"; exec @ARGV or print STDERR \"Error running \\\"@ARGV[0]\\\": \$\!\n\"' -- \"\${@}\"
+  
+  local exit_code=\$?;
+  if [ \$exit_code -eq 142 ]; then
+    echo \"Job timed out after \$timeout_sec seconds\" >> \"${JOB_STDERR}\";
+  fi
+  exit \$exit_code;
+}
+" >> $EXEC_SHELL
 
 # copy data files from s3 into the container
 echo "# sync from s3 into the container" >> $EXEC_SHELL
@@ -74,6 +110,7 @@ echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
+printf "doalarm ${GP_JOB_WALLTIME_SEC} " >> $EXEC_SHELL
 for arg in "$@"
 do
   printf %q "${arg}" >> $EXEC_SHELL
