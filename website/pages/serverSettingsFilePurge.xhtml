@@ -55,7 +55,7 @@
             <tr valign="top">
                 <td>&#160;</td>
                 <td>You can <b>customize</b> the 'purgeJobsAfter' setting by user or by group by making an edit <br />
-                to the config yaml file (#{jobConfigurationBean.configurationFilepath}) for your server.<br />
+                    to the config yaml file (#{jobConfigurationBean.configurationFilepath}) for your server.<br />
                 <pre>
 # keep all jobs and job input files for users in 'my.group' for 28 days
 group.properties:
@@ -66,9 +66,13 @@ user.properties:
     my.user:
         purgeJobsAfter: 14
                 </pre>
-                Note: The server level 'purgeTime' defines the time of day, each day, that the 
-                purger will start. There is not much of a need to customize this setting.
-                </td>            
+                    The 'purgeTime' setting defines the time of day, each day, that the purger will run. This should be set as a global (aka server level) value. <br />
+                    Note: You must force the file purger to restart before custom edits take effect. There are two ways to do this:
+                    <ol>
+                      <li>restart the server, or</li>
+                      <li>set a different purge time, for example by changing it to 23:01, hitting 'Save' and then changing it back</li>
+                    </ol>
+                </td> 
             </tr>
         </table>
         <p />
