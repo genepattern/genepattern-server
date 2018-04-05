@@ -42,6 +42,42 @@ default.properties:
     job.error_status.stderr: false
 
     ##############################################################
+    # File Purge configuration
+    #   Nightly cleanup of job input and result files.
+    # 
+    # Properties
+    #   purgeTime - the time of day, each day, to run the file purger, 
+    #     in HH:MM, 24 hour format.
+    #     Set as a global (aka server level) value. 
+    #   purgeJobsAfter - the number of days to keep each job. 
+    #     To never delete files set purgeJobsAfter to -1. 
+    #     Can be customized per user or group.
+    #
+    # Example 1: cleanup nightly at 11pm, keep jobs for one week
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "7"
+    # 
+    # Example 2: disable file purge
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "-1"
+    #
+    # Note: You must force the file purger to restart before custom edits take effect. 
+    # There are two ways to do this:
+    #   1. restart the server, or
+    #   2. from the web GUI, Admin > Server Settings > File Purge, 
+    #        Set the Purge Time and click Save.
+    #
+    # Additional rules for purging user upload files from the Files tab
+    #   using the same schedule as the job purger, it only purges files older than the cutoff date
+    # Properties
+    #   upload.purge.all - delete all files older than the cutoff date 
+    #     default: false
+    #   upload.purge.tmp - delete tmp files, including job input files
+    #     default: true
+    #   upload.purge.partial - delete any (presumably) stalled partially uploaded files
+    #     default: true
+    
+    ##############################################################
     # allow.input.file.paths
     #   set to true to allow user access to arbitrary server file paths
     allow.input.file.paths: "false"
@@ -150,11 +186,6 @@ default.properties:
     # enable custom categories for pipelines and visualizers
     # New feature added in GP 3.7.1 
     org.genepattern.server.webapp.jsf.ModuleHelper.enableCustomCategories: true
-    
-    # to customize the file purger, add the 'purgeJobsAfter' property to
-    # an entry in the 'user.properties' or 'group.propeties' section
-    #purgeTime: "23:00"
-    #purgeJobsAfter: "-1"
     
     #
     # enable setting of job configuration parameters in the job input form
