@@ -66,6 +66,9 @@ mkdir -p "${GP_METADATA_DIR}"
 
 EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
 
+S3_LOG=${GP_METADATA_DIR}/s3_uploads.log
+CMD_LOG=${GP_METADATA_DIR}/aws_cmd.log
+
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 
@@ -92,13 +95,21 @@ echo "# wrapper script, cancel the task  ..." >> $EXEC_SHELL
 echo "\
 doalarm() { 
   local timeout_sec=\$1;
-  perl -E 'alarm shift; open STDOUT, \">\", \"${JOB_STDOUT}\"; open STDERR, \">\", \"${JOB_STDERR}\"; exec @ARGV or print STDERR \"Error running \\\"@ARGV[0]\\\": \$\!\n\"' -- \"\${@}\"
+  perl -e '\
+my \$timeout_sec=shift; \
+\$SIG{ALRM} = sub { \
+  print STDERR \"Job timed out after \$timeout_sec seconds\n\"; \
+  exit(142); \
+}; \
+open STDOUT, \">\", \"${JOB_STDOUT}\"; \
+open STDERR, \">\", \"${JOB_STDERR}\"; \
+alarm \$timeout_sec; \
+my \$system_code=system @ARGV; \
+alarm 0; \
+my \$exit_code=\$system_code >> 8; \
+exit \$exit_code' \
+-- \"\${@}\";
   
-  local exit_code=\$?;
-  if [ \$exit_code -eq 142 ]; then
-    echo \"Job timed out after \$timeout_sec seconds\" >> \"${JOB_STDERR}\";
-  fi
-  exit \$exit_code;
 }
 " >> $EXEC_SHELL
 
@@ -128,9 +139,6 @@ echo "" >> $EXEC_SHELL
 chmod u+x $EXEC_SHELL
 
 REMOTE_COMMAND=$EXEC_SHELL
-
-S3_LOG=${GP_METADATA_DIR}/s3_uploads.log
-CMD_LOG=${GP_METADATA_DIR}/aws_cmd.log
 
 #
 # Copy the input files to S3 using the same path
