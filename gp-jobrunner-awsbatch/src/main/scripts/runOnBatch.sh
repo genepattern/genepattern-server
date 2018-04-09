@@ -91,25 +91,34 @@ else
 fi
 echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 
-echo "# wrapper script, cancel the task  ..." >> $EXEC_SHELL
-echo "\
-doalarm() { 
+echo \
+"############################################################
+# run_with_timeout
+#   run the command, cancel after the given timeout interval
+# Usage:
+#   run_with_timeout timeout-sec stdout-file stderr-file cmd [args]*
+# Example:
+#   run_with_timeout 120 stdout.txt stderr.txt echo "Hello"
+############################################################
+run_with_timeout() { 
   local timeout_sec=\$1;
-  perl -e '\
-my \$timeout_sec=shift; \
-\$SIG{ALRM} = sub { \
-  print STDERR \"Job timed out after \$timeout_sec seconds\n\"; \
-  exit(142); \
-}; \
-open STDOUT, \">\", \"${JOB_STDOUT}\"; \
-open STDERR, \">\", \"${JOB_STDERR}\"; \
-alarm \$timeout_sec; \
-my \$system_code=system @ARGV; \
-alarm 0; \
-my \$exit_code=\$system_code >> 8; \
-exit \$exit_code' \
--- \"\${@}\";
-  
+  perl -e '
+    my \$timeout_sec=shift; 
+    my \$stdout_file=shift;
+    my \$stderr_file=shift;
+    \$SIG{ALRM} = sub { 
+      print STDERR \"Job timed out after \$timeout_sec seconds\n\"; 
+      exit(142); 
+    }; 
+    open STDOUT, \">\", \"\$stdout_file\"; 
+    open STDERR, \">\", \"\$stderr_file\"; 
+    alarm \$timeout_sec; 
+    my \$system_code=system @ARGV; 
+    alarm 0; 
+    my \$exit_code=\$system_code >> 8; 
+    exit \$exit_code;
+  ' \
+  -- \"\${@}\";
 }
 " >> $EXEC_SHELL
 
@@ -121,7 +130,7 @@ echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
-printf "doalarm ${GP_JOB_WALLTIME_SEC} " >> $EXEC_SHELL
+printf "run_with_timeout \"${GP_JOB_WALLTIME_SEC}\" \"${JOB_STDOUT}\" \"${JOB_STDERR}\" " >> $EXEC_SHELL
 for arg in "$@"
 do
   printf %q "${arg}" >> $EXEC_SHELL
