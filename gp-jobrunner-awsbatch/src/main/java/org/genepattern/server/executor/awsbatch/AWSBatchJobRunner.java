@@ -38,6 +38,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -239,14 +240,18 @@ public class AWSBatchJobRunner implements JobRunner {
     }
     
     protected int getExitCodeFromMetadataDir(final File metadataDir) throws IOException, JSONException {
-        File exitCodeFile = new File(metadataDir, "exit_code.txt");
+        final File exitCodeFile = new File(metadataDir, "exit_code.txt");
         return parseExitCodeFromFile(exitCodeFile);
     }
 
     protected int parseExitCodeFromFile(final File exitCodeFile) throws IOException, JSONException {
-        byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
-        String jsonText = new String(encoded);
-        JSONObject json = new JSONObject(jsonText);
+        if (!exitCodeFile.canRead()) {
+            log.error("Can't read exitCodeFile="+exitCodeFile);
+            throw new IOException("Can't read exitCodeFile="+exitCodeFile);
+        }
+        final byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
+        final String jsonText = new String(encoded);
+        final JSONObject json = new JSONObject(jsonText);
         return json.getInt("exit_code");
     }
 
@@ -262,28 +267,58 @@ public class AWSBatchJobRunner implements JobRunner {
             .build();
         }
         else {
+            // cmd: aws batch describe-jobs --jobs {awsbatch.jobId}
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             DefaultExecutor exec=new DefaultExecutor();
-            exec.setStreamHandler( new PumpStreamHandler(outputStream));
+            exec.setStreamHandler(new PumpStreamHandler(outputStream));
             final String checkStatusScript=getCheckStatusScript(jobRecord);
-            CommandLine cl= new CommandLine(checkStatusScript);
-            // tasklib
+            final CommandLine cl=new CommandLine(checkStatusScript);
             cl.addArgument(awsId);
             try {
                 final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord);
                 exec.execute(cl, cmdEnv);
-          
-                String awsStatus =  outputStream.toString().trim();
-                JSONObject jobJSON = new JSONObject(awsStatus);
-                JSONObject awsJob =  ((JSONObject)jobJSON.getJSONArray("jobs").get(0));
-                final String awsStatusCode = awsJob.getString("status");
-                final String awsStatusReason = awsJob.getString("statusReason");
-                final String statusMessage=Strings.nullToEmpty(awsStatusCode)+": "+Strings.nullToEmpty(awsStatusReason);
+                final JSONObject jobJSON = new JSONObject(outputStream.toString().trim());
+                final JSONArray jobsArr=jobJSON.optJSONArray("jobs");
+                if (jobsArr==null || jobsArr.length()==0) {
+                    final String message="Error getting status for job: expecting 'jobs' key in JSON response";
+                    log.error(message+", gp_job_id='"+jobRecord.getGpJobNo()+"', aws_job_id="+jobRecord.getExtJobId());
+                    return new DrmJobStatus.Builder()
+                        .extJobId(jobRecord.getExtJobId())
+                        .jobState(DrmJobState.UNDETERMINED)
+                        .jobStatusMessage(message)
+                    .build();
+                }
+                final JSONObject awsJob = jobsArr.optJSONObject(0);
+                // jobs[0].jobDefinition
+                final String jobDefinition = awsJob.optString("jobDefinition");
+                // jobs[0].container.image
+                final String containerImage;
+                final JSONObject container=awsJob.optJSONObject("container");
+                if (container != null) {
+                    containerImage=container.optString("image");
+                }
+                else {
+                    containerImage=null;
+                }
+                // jobs[0].jobQueue
+                final String jobQueue=awsJob.optString("jobQueue");
+                // jobs[0].status
+                final String awsStatusCode = awsJob.optString("status");
+                // jobs[0].statusReason
+                final String awsStatusReason = awsJob.optString("statusReason");
+                if (log.isDebugEnabled()) {
+                    log.debug("jobs[0].jobDefinition: "+jobDefinition);
+                    if (containerImage!=null) {
+                        log.debug("jobs[0].container.image: "+containerImage);
+                    }
+                    log.debug("jobs[0].jobQueue: "+jobQueue);
+                    log.debug("jobs[0].status: "+awsStatusCode);
+                    log.debug("jobs[0].statusReason: "+awsStatusReason);
+                } 
                 
-                DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
-                DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
+                final DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
+                final DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
                 b.jobState(jobState);
-                b.jobStatusMessage(statusMessage);
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
                 }
@@ -303,9 +338,14 @@ public class AWSBatchJobRunner implements JobRunner {
                     catch (Throwable t) {
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
+                    final int exitCode;
                     try {
-                        final int exitCode=getExitCodeFromMetadataDir(metadataDir);
+                        exitCode=getExitCodeFromMetadataDir(metadataDir);
                         b.exitCode(exitCode);
+                        // special-case, job.walltime timeout
+                        if (exitCode==142) {
+                            b.jobState(DrmJobState.TERM_RUNLIMIT);
+                        }
                     } 
                     catch (Throwable t) {
                         log.error("Error getting exitCode for job="+jobRecord.getGpJobNo(), t);
