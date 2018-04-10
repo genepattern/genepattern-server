@@ -125,13 +125,13 @@ public interface JobRunner {
     /**
      * Set the 'job.docker.image' to run the module in a particular container. E.g.
      * <pre>
-           job.docker.image: genepattern/docker-java17
+           job.docker.image: "genepattern/docker-java17:0.12"
      * </pre>
      * <p>
      * This corresponds to the IMAGE[:TAG|@DIGEST] option of the docker run command.
      * <p>
      * This property was added to support the AWS Batch integration, but is intended to be
-     * used more general for docker enabled GenePattern instances.
+     * used generally for docker enabled GenePattern instances.
      * <p>
      * Links:
      * <ul>
