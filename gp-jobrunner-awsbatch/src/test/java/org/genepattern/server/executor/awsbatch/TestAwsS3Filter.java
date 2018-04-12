@@ -10,11 +10,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.executor.awsbatch.testutil.Util;
 import org.junit.Test;
 
 public class TestAwsS3Filter {
@@ -35,29 +34,6 @@ public class TestAwsS3Filter {
         return file;
     }
 
-    /**
-     * factory method, create a new GpConfig instance from the given config_yaml file.
-     * Initialize a GpConfig instance from a config_yaml file.
-     * The returned value is not a mock.
-     * 
-     * Note: this automatically turns off log4j logging output.
-     */
-    public static GpConfig initGpConfig(final File configFile) throws Throwable {
-        if (!configFile.exists()) { 
-            fail("configFile doesn't exist: "+configFile);
-        }
-        LogManager.getRootLogger().setLevel(Level.OFF);
-        final File webappDir=new File("website").getAbsoluteFile();
-        final GpConfig gpConfig=new GpConfig.Builder()
-            .webappDir(webappDir)
-            .configFile(configFile)
-        .build();
-        if (gpConfig.hasInitErrors()) {
-            throw gpConfig.getInitializationErrors().get(0);
-        }
-        return gpConfig;
-    }
-
     /*
      * Example: pre-cache datasets.genepattern.org subdirectory
      */
@@ -73,7 +49,6 @@ public class TestAwsS3Filter {
     final String ccmi1=dataDirPath+"/ccmi_tutorial/2017-12-15";
     final String ccmi2=dataDirPath+"/ccmi_tutorial/2018-03-14";
 
-
     /** for testing AwsS3Filter.skipS3Upload */
     protected static void assertSkipUpload(final boolean expected, final AwsS3Filter awsS3filter, final File file) {
         assertEquals("skipS3Upload('"+file+"')",
@@ -83,7 +58,6 @@ public class TestAwsS3Filter {
 
     /** testing AwsS3Filter with example custom configuration */
     protected void assertCustom(final AwsS3Filter awsS3filter) {
-
         assertSkipUpload(true, awsS3filter, new File(userRootDir+"/"+brca));
         assertSkipUpload(true, awsS3filter, new File(userRootDir+"/"+ccmi1));
         assertSkipUpload(true, awsS3filter, new File(userRootDir+"/"+ccmi2));
@@ -136,7 +110,7 @@ public class TestAwsS3Filter {
     @Test
     public void with_custom_config_from_yaml() throws Throwable {
         final File configFile=getTestResource("/config_awsbatch_test.yaml");
-        final GpConfig gpConfig=initGpConfig(configFile);
+        final GpConfig gpConfig=Util.initGpConfig(configFile);
         assertNotNull(gpConfig);
         final GpContext serverContext=GpContext.getServerContext();
         final Value s3UploadFilter=gpConfig.getValue(serverContext,PROP_JOB_AWSBATCH_S3_UPLOAD_FILTER);
@@ -144,5 +118,23 @@ public class TestAwsS3Filter {
         final AwsS3Filter awsS3filter=AwsS3Filter.initAwsS3Filter(gpConfig, serverContext);
         assertCustom(awsS3filter);
     }
+
+//    @Test
+//    public void parse_config_example_awsbatch() throws Throwable {
+//        final File configFile=new File(Util.awsbatchConfDir(),"config_example_awsbatch.yaml");
+//
+//        final GpConfig gpConfig=Util.initGpConfig(configFile);
+//        assertNotNull(gpConfig);
+//        final GpContext serverContext=GpContext.getServerContext();
+//        
+//        assertEquals("default executorId", 
+//            "AWSBatch",
+//            gpConfig.getExecutorId(serverContext));
+//        
+//        //final Value s3UploadFilter=gpConfig.getValue(serverContext,PROP_JOB_AWSBATCH_S3_UPLOAD_FILTER);
+//        //assertNotNull("expecting non-null "+PROP_JOB_AWSBATCH_S3_UPLOAD_FILTER, s3UploadFilter); 
+//        //final AwsS3Filter awsS3filter=AwsS3Filter.initAwsS3Filter(gpConfig, serverContext);
+//        //assertCustom(awsS3filter);
+//    }
 
 }

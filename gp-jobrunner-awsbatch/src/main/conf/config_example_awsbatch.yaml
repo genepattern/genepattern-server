@@ -1,0 +1,194 @@
+#
+# config_example_awsbatch.yaml
+#   Example AWS Batch Job Runner configuration
+# Use this as a reference when editing your site's config_custom.yaml file
+#
+default.properties:
+    # set AWSBatch as the default executor
+    executor: "AWSBatch"
+
+executors:
+    "AWSBatch":
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.server.executor.awsbatch.AWSBatchJobRunner
+            jobRunnerName: AWSBatchJobRunner
+
+            # when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            useDynamicDelay: true
+            # initial polling interval for job status (in ms)
+            minDelay: 1000
+            # max polling interval for job status (in ms)
+            #   when 'useDynamicDelay' is true
+            maxDelay: 60000
+
+        default.properties:
+            # workaround for built-in commands which use the <env-custom> substitution
+            env-custom: ""
+            # workaround, run-with-env.sh exec flag is not set in the docker container
+            "run-with-env": "bash <wrapper-scripts>/run-with-env.sh"
+
+            # job.memory, default: (not set)
+            job.memory: 2 Gb
+            
+            # job.walltime, default: (not set)
+            #   the runtime limit for the job in d-hh:mm:ss format 
+            # set to 2 hours
+            job.walltime: "02:00:00"
+
+            # job.logFile, default: ".rte.out"
+            #   name of hidden log file added to each job result directory
+            # Example:
+            #   job.logFile: ".rte.out"
+
+            # aws-profile, default: (not set)
+            #   see: http://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
+            # Example:
+            #   aws-profile: "genepattern"
+            
+            # aws-s3-root
+            #   s3 prefix for intermediate storage of data files
+            # Example:
+            #   aws-s3-root: "s3://gp-example"
+            #
+            #   A note on data file transfer
+            #     step 1: copy input files and resources into S3
+            #       gp.local -> s3 
+            #     step 2: pull files from s3 into the docker container
+            #       docker.local <- s3
+            #     step 3: push files from docker container into s3
+            #       docker.local -> s3
+            #     step 4: pull files from s3 into genepattern 
+            #       gp.local <- s3
+            #
+
+            # aws-job-name-prefix, default=GP_Job_
+            # Example:
+            #   aws-job-name-prefix: "example_job_"
+
+            # job.queue
+            #   Set this to the name of an AWS Batch queue.
+            #
+            # Example:
+            job.queue: "job-queue-default"
+
+            # aws-batch-script-dir, default: <wrapper-scripts>/aws_batch
+            #   aws-cli wrapper scripts
+            # the path is relative to <wrapper-scripts> (preferred)
+            # it can be fully qualified (when needed)
+            # 
+            # Examples:
+            #   # custom relative path
+            #   aws-batch-script-dir: "aws_batch_custom"
+            #   # fully qualified path, for example when developing locally
+            #   aws-batch-script-dir: "/Users/test_user/genepattern-server/gp-jobrunner-awsbatch/src/main/scripts"
+            
+            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch.sh
+            #   the job submission aws cli wrapper script
+            # relative to <aws-batch-script-dir>, can be fully qualified (when needed)
+            # Examples:
+            #   # default
+            #   aws-batch-script: "runOnBatch.sh"
+            #   # for debugging
+            #   aws-batch-script: "runOnBatch-debug.sh"
+            
+            # job.awsbatch.job-definition-name, default: (not set)
+            #   Set the AWS Batch Job Definition for a job. The docker image is declared
+            # in the job definition. This is configured on a per module basis in the 
+            # 'module.properties' section
+            job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8"
+
+            # executor.props
+            # 
+            executor.props: "gp-core/1.0"
+            
+            # job.awsbatch.s3-upload-filter, (optional), default: (not set)
+            #   Workaround to skip aws s3 sync for some external URLs
+            # Example: 
+            #     job.awsbatch.s3-upload-filter: [
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2017-12-15{,/**}",
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2018-03-14{,/**}",
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts{,/**}"
+            #     ]
+            
+
+# executor.properties
+#   Map of <env-name> : <env-properties>
+#
+# Each module[:version] is optionally associated with a 
+# named environment (<env-name>).
+# Runtime properties can be defined (or overloaded) in the
+# associated map (<env-properties>).
+#
+#
+# For AWS Batch integration, define module runtime environments here. 
+# Each environment is associated with an AWS Batch Job Definition.
+#
+# Note: The docker image is set in the Job Definition, which is
+#   (currently) created via the AWS Console.
+#
+# Template: 
+#     # define a runtime environment in the 'executor.properties' map
+#     "<env-name>" : {
+#         "job.docker.image": "<docker-image>",
+#         "job.awsbatch.job-definition-name": "<job.awsbatch.job-definition-name>",
+#         ... additional customization ... 
+#     } 
+#
+#     # associate an env-name in the 'module.properties' map
+#     "<module-name|module-lsid>":
+#         executor.props: "<env-name>"
+# Example:
+#     # in executor.properties ...
+#     "gp-core/1.0": {
+#         job.docker.image: "genepattern/docker-java17:0.12",
+#         job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+#     },
+#
+#     # in module.properties ...
+#     "ConvertLineEndings":
+#         executor.props: "gp-core/1.0"
+#
+executor.properties: {
+    "gp-core/1.0": {
+        job.docker.image: "genepattern/docker-java17:0.12",
+        job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+    },
+
+    #########################################
+    # language environments
+    #########################################
+
+    "java/1.8": { 
+        job.docker.image: "genepattern/docker-java18:0.1",
+        job.awsbatch.job-definition-name: "Java18_Oracle_Generic:8",
+    },
+
+    "java/1.7": { 
+        job.docker.image: "genepattern/docker-java17:0.12",
+        # JTL 02/16/18 changing this to use version 8 which has the image on AWS ECR
+        job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+    },
+
+}
+
+module.properties:
+    # GSEA >= v19 requires java/1.8 
+    "GSEA":
+        executor.props: "java/1.8"
+        job.memory: 8 Gb
+        java_flags: -Xmx8g
+        job.queue: "job-queue-30gb-disk"
+
+    # GSEAv18 (<= v18), requires java/1.7
+    #   Note: declaration by lsid version inherit all properties declared by name
+    "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00072:18":
+        executor.props: "java/1.7"
+
+    #
+    # Mock module config for junit tests
+    #
+    "MockBigMemoryModule":
+        executor.props: "java/1.8"
+        job.memory: 512Gb
+        job.queue: "job-queue-big-memory"

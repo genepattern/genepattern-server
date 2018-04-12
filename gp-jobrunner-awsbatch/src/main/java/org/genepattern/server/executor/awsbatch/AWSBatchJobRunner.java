@@ -68,7 +68,7 @@ import com.google.common.base.Strings;
                 # optional AWS Profile, 
                 #   see: http://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
                 aws-profile: "genepattern"
-                aws-s3-root: "s3://moduleiotest"
+                aws-s3-root: "s3://gp-example"
                 job.queue: "GenePatternAWS"
 
                 # location for aws_batch scripts

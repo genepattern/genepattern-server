@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.8-snapshot</version>
+  <version>0.1.9-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -72,6 +72,7 @@
         <configuration>
           <systemPropertyVariables>
             <GP_DATA_DIR>../test/data</GP_DATA_DIR>
+            <AWSBATCH_CONF_DIR>src/main/conf</AWSBATCH_CONF_DIR>
           </systemPropertyVariables>
         </configuration>
       </plugin>
