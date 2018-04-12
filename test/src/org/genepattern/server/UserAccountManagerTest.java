@@ -97,6 +97,7 @@ public class UserAccountManagerTest {
         }
     }
     
+    @SuppressWarnings("deprecation")
     protected static void assertPropNotSet(final GpConfig gpConfig, final GpContext serverContext, final String key) {
         final String message="test setup, getValue('"+key+"')";
         assertNull(message, 
@@ -107,6 +108,7 @@ public class UserAccountManagerTest {
         );
     }
 
+    @SuppressWarnings("deprecation")
     protected static void assertPropSet(final GpConfig gpConfig, final GpContext serverContext, final String key) {
         assertNotNull("test setup, getValue('"+key+"')", 
             gpConfig.getValue(serverContext, key)
@@ -173,7 +175,7 @@ public class UserAccountManagerTest {
     
     /**
      * Run parameterized tests from a list of usernames mined from the gpprod database.
-     * circa Feb 2018.
+     * circa Feb 2018, edited to a smaller list circa April 2018.
      * <p>
      * Note: this is for a one-off test to validate pre-existing user_id from the 
      * production server (gpprod) database. E.g.
@@ -191,12 +193,15 @@ public class UserAccountManagerTest {
      *   14 failed with the default regex 
      *  232 failed when the space ' ' character is not allowed
      */
-    // @Parameters(name="\"{1}\", {0}")
+    //@Parameters(name="\"{1}\", {0}")
     public static Collection<Object[]> sample_usernames_from_gpprod() throws FileNotFoundException, IOException {
-        File file=FileUtil.getDataFile("gpprod_user_id.txt");
+        File file=FileUtil.getDataFile("user_id_test.txt");
         return initTestsFromFile(file);
     }
 
+    /**
+     * Run parameterized tests.
+     */
     @Parameters(name="\"{1}\", {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
@@ -217,6 +222,7 @@ public class UserAccountManagerTest {
             { "tab character", "my\tusername", false, false },
             { "double quote", "\"myusername\"", false, false },
             { "double quote at end", "myusername\"", false, false },
+            { "double quote in name", "my\"user\"name", false, false },
             { "single quote", "'myusername'", false, false },
             { "single quote at end", "myusername'", false, false },            
             { "user with bracket '<'", "<myusername", false, false },
