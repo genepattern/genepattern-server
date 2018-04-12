@@ -1,16 +1,22 @@
 package org.genepattern.server.executor.awsbatch;
 
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE;
+import static org.genepattern.drm.JobRunner.PROP_MEMORY;
+import static org.genepattern.drm.JobRunner.PROP_QUEUE;
+import static org.genepattern.drm.JobRunner.PROP_WALLTIME;
+import static org.genepattern.server.executor.awsbatch.AWSBatchJobRunner.PROP_JOB_AWSBATCH_JOB_DEF;
+
 import static org.junit.Assert.*;
 
 import java.io.File;
 
-import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.Memory;
 import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.executor.awsbatch.testutil.Util;
 import org.genepattern.webservice.TaskInfo;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,7 +59,7 @@ public class TestExampleAwsBatchConfigFile {
     public void jobMemory() {
         assertEquals("default job.memory",
             Memory.fromString("2 Gb"),
-            gpConfig.getGPMemoryProperty(serverContext, JobRunner.PROP_MEMORY)
+            gpConfig.getGPMemoryProperty(serverContext, PROP_MEMORY)
         );
     }
     
@@ -63,7 +69,7 @@ public class TestExampleAwsBatchConfigFile {
         assertEquals("default job.walltime",
             Walltime.fromString("02:00:00"),
             Walltime.fromString(
-                gpConfig.getGPProperty(serverContext, JobRunner.PROP_WALLTIME))
+                gpConfig.getGPProperty(serverContext, PROP_WALLTIME))
         );
     }
     
@@ -72,7 +78,7 @@ public class TestExampleAwsBatchConfigFile {
     public void jobQueue_default() {
         assertEquals("default job.queue", 
             "job-queue-default", 
-            gpConfig.getGPProperty(serverContext, JobRunner.PROP_QUEUE));
+            gpConfig.getGPProperty(serverContext, PROP_QUEUE));
     }
     
     @SuppressWarnings("deprecation")
@@ -96,7 +102,7 @@ public class TestExampleAwsBatchConfigFile {
         final GpContext jobContext=initJobContext("MockBigMemoryModule", Util.MOCK_LSID_PREFIX+"00001:1");
         assertEquals(
             "job-queue-big-memory",
-            gpConfig.getValue(jobContext, JobRunner.PROP_QUEUE).getValue());
+            gpConfig.getValue(jobContext, PROP_QUEUE).getValue());
     }
 
     @Test
@@ -104,7 +110,7 @@ public class TestExampleAwsBatchConfigFile {
         final GpContext jobContext=initJobContext("GSEA", GSEA_BASE_LSID+":19.0.24");
         assertEquals(
             "job-queue-30gb-disk",
-            gpConfig.getValue(jobContext, JobRunner.PROP_QUEUE).getValue());
+            gpConfig.getValue(jobContext, PROP_QUEUE).getValue());
     }
 
     @Test
@@ -113,15 +119,14 @@ public class TestExampleAwsBatchConfigFile {
         // inherited from 'GSEA' config
         assertEquals(
             "job-queue-30gb-disk",
-            gpConfig.getValue(jobContext, JobRunner.PROP_QUEUE).getValue());
+            gpConfig.getValue(jobContext, PROP_QUEUE).getValue());
     }
 
     @Test
     public void jobDefn_default() {
         assertEquals(
             "Java17_Oracle_Generic:8",
-            gpConfig.getValue(serverContext, 
-                AWSBatchJobRunner.PROP_JOB_AWSBATCH_JOB_DEF).getValue());
+            gpConfig.getValue(serverContext, PROP_JOB_AWSBATCH_JOB_DEF).getValue());
     }
 
     @Test
@@ -129,8 +134,7 @@ public class TestExampleAwsBatchConfigFile {
         final GpContext jobContext=initJobContext("GSEA", GSEA_BASE_LSID+":19.0.24");
         assertEquals(
             "Java18_Oracle_Generic:8",
-            gpConfig.getValue(jobContext, 
-                AWSBatchJobRunner.PROP_JOB_AWSBATCH_JOB_DEF).getValue());
+            gpConfig.getValue(jobContext, PROP_JOB_AWSBATCH_JOB_DEF).getValue());
     }
 
     @Test
@@ -138,8 +142,15 @@ public class TestExampleAwsBatchConfigFile {
         final GpContext jobContext=initJobContext("GSEA", GSEA_BASE_LSID+":18");
         assertEquals(
             "Java17_Oracle_Generic:8",
-            gpConfig.getValue(jobContext, 
-                AWSBatchJobRunner.PROP_JOB_AWSBATCH_JOB_DEF).getValue());
+            gpConfig.getValue(jobContext, PROP_JOB_AWSBATCH_JOB_DEF).getValue());
+    }
+    
+    @Test
+    public void dockerImage() {
+        assertEquals("job.docker.image (default)",
+            "genepattern/docker-java17:0.12",
+            gpConfig.getValue(serverContext, PROP_DOCKER_IMAGE).getValue()
+        );
     }
 
 }
