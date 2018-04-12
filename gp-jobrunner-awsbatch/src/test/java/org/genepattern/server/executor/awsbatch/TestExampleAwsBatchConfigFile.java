@@ -43,7 +43,7 @@ public class TestExampleAwsBatchConfigFile {
     @BeforeClass
     public static void beforeClass() throws Throwable {
         serverContext=GpContext.getServerContext();
-        configFile=new File(Util.awsbatchConfDir(),"config_example_awsbatch.yaml");
+        configFile=new File(Util.getAwsbatchConfDir(),"config_example_awsbatch.yaml");
         gpConfig=Util.initGpConfig(configFile);
         assertNotNull("sanity check after initializing gpConfig from file", gpConfig);
     }

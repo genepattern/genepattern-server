@@ -20,50 +20,6 @@ public class Util {
      * </pre>
      */
     public static final String MOCK_LSID_PREFIX="urn:lsid:com.example:mock.module.analysis";
-
-    public static final String PROP_GP_CONF_DIR="GP_CONF_DIR";
-    public static final String DEFAULT_GP_CONF_DIR="gp-jobrunner-awsbatch/src/main/conf";
-    
-    //public static final String PROP_GP_DATA_DIR="GP_DATA_DIR";
-    //public static final String DEFAULT_GP_DATA_DIR="test/data";
-    
-    private static final File confDir=initFile(PROP_GP_CONF_DIR, DEFAULT_GP_CONF_DIR);
-
-    //private static final File dataDir=initFile(PROP_GP_DATA_DIR, DEFAULT_GP_DATA_DIR);
-    
-    /** 
-     * Initialize the dataDir, optionally from the GP_DATA_DIR
-     * system property.
-     */
-    protected static File initFile(final String prop_name, final String default_path) { 
-        return new File(System.getProperty(prop_name, default_path)).getAbsoluteFile();
-    }
-
-    /** 
-     * Initialize the dataDir, optionally from the GP_DATA_DIR
-     * system property.
-     */
-    protected static File initDataDir() { 
-        return new File(System.getProperty("GP_DATA_DIR", "test/data")).getAbsoluteFile();
-    }
-
-    /**
-     * Get the top-level directory for data files used by the unit tests. 
-     * It's hard-coded to 'test/data'.
-     * Set GP_DATA_DIR as a system property if you need to use a different path.
-     */
-    //public static File getDataDir() {
-    //    return dataDir;
-    //}
-
-    /**
-     * Get the path to the awsbatch configuration file directory.
-     * This is for unit tests.
-      */
-    public static File awsbatchConfDir() {
-        return initFile("AWSBATCH_CONF_DIR", "gp-jobrunner-awsbatch/src/main/conf");
-        //return confDir;
-    }
     
     /**
      * factory method, create a new GpConfig instance from the given config_yaml file.
@@ -86,6 +42,40 @@ public class Util {
             throw gpConfig.getInitializationErrors().get(0);
         }
         return gpConfig;
+    }
+
+    /**
+     * Initialize a path to a test file or folder, optionally from a system property.
+     * @param SYS_PROP a System property
+     * @param default_path a default value
+     * 
+     * Example:
+     * <pre>
+     *   File gpDataDir=initFile("GP_DATA_DIR", "test/data");
+     * </pre>
+     */
+    protected static File initFile(final String SYS_PROP, final String default_path) { 
+        return new File(System.getProperty(SYS_PROP, default_path)).getAbsoluteFile();
+    }
+
+    /**
+     * Initialize the dataDir, optionally from the GP_DATA_DIR system property.
+     * Default: 'test/data'
+     * Customize:
+     *   -DGP_DATA_DIR="../test/data"
+     */
+    public static File getDataDir() {
+        return initFile("GP_DATA_DIR", "test/data");
+    }
+
+    /**
+     * Initialize the awsbatchConfDir, optionally from the AWSBATCH_CONF_DIR system property.
+     * Default: 'gp-jobrunner-awsbatch/src/main/conf'
+     * Customize:
+     *   -DAWSBATCH_CONF_DIR="src/main/conf"
+     */
+    public static File getAwsbatchConfDir() {
+        return initFile("AWSBATCH_CONF_DIR", "gp-jobrunner-awsbatch/src/main/conf");
     }
 
 }
