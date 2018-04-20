@@ -38,7 +38,18 @@ function run_with_docker() {
   source "${__dir}/gp-common.sh"
   parse_args "${@}";
   init_module_envs;
-  $DRY_RUN /usr/local/bin/docker run --read-only -w "`pwd`" -v "/Users:/Users" "${GP_JOB_DOCKER_IMAGE}" "${__gp_module_cmd[@]}";
+  
+  ## check for required arg
+  #    note: -z $var-name will fail when var-name is not set AND when var-name is the empty string
+  #    note: see http://tldp.org/LDP/abs/html/exitcodes.html#EXITCODESREF
+  if [ -z "${GP_JOB_DOCKER_IMAGE}" ]; then
+    echo "Missing required variable: 'job.docker.image'" >&2
+    exit 64;
+  fi
+  
+  ## run the command in a docker container ...
+  #    see: https://docs.docker.com/engine/reference/commandline/run/
+  $DRY_RUN /usr/local/bin/docker run -w "`pwd`" -v "/Users:/Users" "${GP_JOB_DOCKER_IMAGE}" "${__gp_module_cmd[@]}";
 }
 
 run_with_docker "${@}"
