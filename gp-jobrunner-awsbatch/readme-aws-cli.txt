@@ -15,7 +15,7 @@ Links:
   * https://conda.io/miniconda.html
   * https://anaconda.org/conda-forge/awscli
   * https://stackoverflow.com/questions/45421163/anaconda-vs-miniconda
-
+  * https://github.com/ContinuumIO/anaconda-issues/issues/1429
 
 ----------------------------------------
   Conda installation
@@ -39,9 +39,11 @@ smaller disk footprint than anaconda.
   AWS CLI installation
 ----------------------------------------
   I installed the aws cli as a conda environment on my dev
-  See: https://github.com/ContinuumIO/anaconda-issues/issues/1429
 
-  Command Log
+    $ aws --version
+    aws-cli/1.15.4 Python/2.7.13 Darwin/15.6.0 botocore/1.10.4
+
+  Command log: initial installation
     conda create -n awscli
     source activate awscli
     conda install pip
@@ -50,13 +52,22 @@ smaller disk footprint than anaconda.
     conda env list
     conda list
     which aws
-    conda env export > awscli_environment.yml
+    conda env export > src/main/conf/awscli_environment.yml
+    aws cli --version
+    
+  Command log: upgrade (default env)
+    $ pip install awscli --upgrade --user
+    $ aws cli --version
+
+  Command log: upgrade (custom env)
+    $ source activate awscli
+    $ pip install awscli
+    $ pip install --upgrade pip
+    $ conda install -c conda-forge awscli
+    $ aws cli --version
 
   Integration notes
     For <run-with-env> integration in Bash environment on my dev machine.
-
-    (awscli) $ aws --version
-    aws-cli/1.11.87 Python/2.7.13 Darwin/15.6.0 botocore/1.5.50
 
     Example env-custom.sh snippets ...
     # miniconda
@@ -65,7 +76,7 @@ smaller disk footprint than anaconda.
         export PATH="${PATH}:${MINICONDA2_HOME}/bin"
     fi
     # aws-cli
-    if [ "$1" = "aws-cli/1.11.87" ]; then
+    if [ "$1" = "aws-cli/1.15.4" ]; then
         # depends on 'miniconda2/4.3.13'
         source activate awscli
     fi
