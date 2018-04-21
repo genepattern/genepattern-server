@@ -239,20 +239,32 @@ public class AWSBatchJobRunner implements JobRunner {
         return default_value;
     }
     
-    protected int getExitCodeFromMetadataDir(final File metadataDir) throws IOException, JSONException {
+    protected Integer getExitCodeFromMetadataDir(final File metadataDir) { 
         final File exitCodeFile = new File(metadataDir, "exit_code.txt");
         return parseExitCodeFromFile(exitCodeFile);
     }
 
-    protected int parseExitCodeFromFile(final File exitCodeFile) throws IOException, JSONException {
+    protected Integer parseExitCodeFromFile(final File exitCodeFile) { 
         if (!exitCodeFile.canRead()) {
-            log.error("Can't read exitCodeFile="+exitCodeFile);
-            throw new IOException("Can't read exitCodeFile="+exitCodeFile);
+            log.debug("Can't read exitCodeFile="+exitCodeFile);
+            return null;
         }
-        final byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
-        final String jsonText = new String(encoded);
-        final JSONObject json = new JSONObject(jsonText);
-        return json.getInt("exit_code");
+        try {
+            final byte[] encoded = Files.readAllBytes(Paths.get(exitCodeFile.getAbsolutePath()));
+            final String jsonText = new String(encoded);
+            final JSONObject json = new JSONObject(jsonText);
+            return json.getInt("exit_code");
+        }
+        catch (IOException e) {
+            log.error("Error parsing exitCodeFile="+exitCodeFile, e);
+        }
+        catch (JSONException e) {
+            log.error("Error parsing exitCodeFile="+exitCodeFile, e);
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error parsing exitCodeFile="+exitCodeFile, t);
+        }
+        return null;
     }
 
     @Override
@@ -300,6 +312,18 @@ public class AWSBatchJobRunner implements JobRunner {
                 else {
                     containerImage=null;
                 }
+                // jobs[0].container.exitCode, (exitCode=-1 treated as not set)
+                final int containerExitCode;
+                if (container != null) {
+                    containerExitCode=container.optInt("exitCode", -1);
+                    if (log.isDebugEnabled()) {
+                        log.debug("jobs[0].container.exitCode: "+containerExitCode);
+                    }
+                }
+                else {
+                    containerExitCode=-1;
+                }
+
                 // jobs[0].jobQueue
                 final String jobQueue=awsJob.optString("jobQueue");
                 // jobs[0].status
@@ -327,6 +351,7 @@ public class AWSBatchJobRunner implements JobRunner {
                     // job cleanup, TERMINATED covers SUCCEEDED and FAILED
                     if (log.isDebugEnabled()) {
                         log.debug("job finished with awsStatusCode="+awsStatusCode+", drmJobState="+jobState);
+                        log.debug("    jobs[0].statusReason: "+awsStatusReason);
                     }
                     b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
                     b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
@@ -338,17 +363,29 @@ public class AWSBatchJobRunner implements JobRunner {
                     catch (Throwable t) {
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
-                    final int exitCode;
-                    try {
-                        exitCode=getExitCodeFromMetadataDir(metadataDir);
+                    final Integer exitCode=getExitCodeFromMetadataDir(metadataDir);
+                    if (exitCode != null) {
                         b.exitCode(exitCode);
-                        // special-case, job.walltime timeout
+                        // special-case: custom timeout
                         if (exitCode==142) {
                             b.jobState(DrmJobState.TERM_RUNLIMIT);
                         }
-                    } 
-                    catch (Throwable t) {
-                        log.error("Error getting exitCode for job="+jobRecord.getGpJobNo(), t);
+                    }
+                    else if (containerExitCode >= 0) {
+                        // special-case: aws batch timeout
+                        //   awsStatusCode: FAILED
+                        //   awsStatusReason: Job attempt duration exceeded timeout
+                        //   containerExitCode: 137
+                        b.exitCode(containerExitCode);
+                        if (awsStatusReason != null) {
+                            b.jobStatusMessage(awsStatusReason);
+                        }
+                    }
+                    else {
+                        log.error("Error getting exitCode for job="+jobRecord.getGpJobNo());
+                        if (awsStatusReason != null) {
+                            b.jobStatusMessage(awsStatusReason);
+                        }
                     }
                 }
                 return b.build();

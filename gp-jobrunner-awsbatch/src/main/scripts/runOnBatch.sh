@@ -83,44 +83,16 @@ echo "" >> $EXEC_SHELL
 echo "calculating job.walltime limit ..." >> ${CMD_LOG} 2>&1
 echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 : ${GP_JOB_WALLTIME_SEC=14400}
-if in_range "${GP_JOB_WALLTIME_SEC:-x}" "1" "604800"; then
+: ${WALLTIME_MIN=60}
+: ${WALLTIME_DEFAULT=14400}
+: ${WALLTIME_MAX=604800}
+if in_range "${GP_JOB_WALLTIME_SEC:-x}" "${WALLTIME_MIN}" "${WALLTIME_MAX}"; then
   # no-op
   :
 else
-  GP_JOB_WALLTIME_SEC=14400;
+  GP_JOB_WALLTIME_SEC=${WALLTIME_DEFAULT};
 fi
 echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
-
-echo \
-"############################################################
-# run_with_timeout
-#   run the command, cancel after the given timeout interval
-# Usage:
-#   run_with_timeout timeout-sec stdout-file stderr-file cmd [args]*
-# Example:
-#   run_with_timeout 120 stdout.txt stderr.txt echo "Hello"
-############################################################
-run_with_timeout() { 
-  local timeout_sec=\$1;
-  perl -e '
-    my \$timeout_sec=shift; 
-    my \$stdout_file=shift;
-    my \$stderr_file=shift;
-    \$SIG{ALRM} = sub { 
-      print STDERR \"Job timed out after \$timeout_sec seconds\n\"; 
-      exit(142); 
-    }; 
-    open STDOUT, \">\", \"\$stdout_file\"; 
-    open STDERR, \">\", \"\$stderr_file\"; 
-    alarm \$timeout_sec; 
-    my \$system_code=system @ARGV; 
-    alarm 0; 
-    my \$exit_code=\$system_code >> 8; 
-    exit \$exit_code;
-  ' \
-  -- \"\${@}\";
-}
-" >> $EXEC_SHELL
 
 # copy data files from s3 into the container
 echo "# sync from s3 into the container" >> $EXEC_SHELL
@@ -130,7 +102,11 @@ echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
-printf "run_with_timeout \"${GP_JOB_WALLTIME_SEC}\" \"${JOB_STDOUT}\" \"${JOB_STDERR}\" " >> $EXEC_SHELL
+# custom job.walltime interval (not used in production) 
+#if [ -e "${script_dir}/gp-timeout.sh" ]; then
+#  cat "${script_dir}/gp-timeout.sh" >> $EXEC_SHELL
+#fi
+#printf "run_with_timeout \"${GP_JOB_WALLTIME_SEC}\" \"${JOB_STDOUT}\" \"${JOB_STDERR}\" " >> $EXEC_SHELL
 for arg in "$@"
 do
   printf %q "${arg}" >> $EXEC_SHELL
@@ -183,6 +159,9 @@ if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
   vcpus_arg="vcpus=${GP_JOB_CPU_COUNT},";
 fi
 
+# timeout override, e.g.
+#   --timeout attemptDurationSeconds=60
+
 # environment override
 __env_arg="environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}, \
   {name=STDOUT_FILENAME,value=${GP_METADATA_DIR}/stdout.txt}, \
@@ -192,6 +171,7 @@ __env_arg="environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}, \
 __args=( \
   "--job-name" "$JOB_ID" \
   "--job-queue" "$JOB_QUEUE" \
+  "--timeout" "attemptDurationSeconds=${GP_JOB_WALLTIME_SEC}" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
   "--parameters" "taskLib=$TASKLIB,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$S3_ROOT,working_dir=$WORKING_DIR,exe1=$REMOTE_COMMAND"  \
   "--container-overrides" "${vcpus_arg}${mem_arg}${__env_arg:-}" \
