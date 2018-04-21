@@ -1,12 +1,7 @@
 ############################################################
 # gp-timeout.sh
-#
-#   Defines a helper function which cancels a command after
-# the timeout interval 
+#   Defines the 'run_with_timeout' function.
 #   Must be sourced rather than executed.
-#
-# Usage:
-#   source gp-timeout.sh
 ############################################################
 
 ############################################################

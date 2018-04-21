@@ -94,6 +94,11 @@ else
 fi
 echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 
+# hand-crafted job.walltime interval ... 
+#if [ -e "${script_dir}/gp-timeout.sh" ]; then
+#  cat "${script_dir}/gp-timeout.sh" >> $EXEC_SHELL
+#fi
+
 # copy data files from s3 into the container
 echo "# sync from s3 into the container" >> $EXEC_SHELL
 echo "cd ${GP_METADATA_DIR}" >> $EXEC_SHELL
@@ -102,7 +107,7 @@ echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
 echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
-# custom job.walltime interval (not used in production) 
+# hand-crafted job.walltime interval ... 
 #if [ -e "${script_dir}/gp-timeout.sh" ]; then
 #  cat "${script_dir}/gp-timeout.sh" >> $EXEC_SHELL
 #fi
