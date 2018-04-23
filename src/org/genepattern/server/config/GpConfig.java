@@ -905,17 +905,18 @@ public class GpConfig {
     } 
 
     /**
-     * @deprecated use getValue instead, which supports lists.
+     * Get a String property from this configuration or null if the property is not set.
+     * 
+     * @see #getValue(GpContext, String) to load more complex data structures,
+     * such as a List or a Map, from the config_custom.yaml file.
+     * 
+     * @param context the configuration context
+     * @param key the property key
+     * 
+     * @return the config value with the specified key
      */
     public String getGPProperty(final GpContext context, final String key) {
-        final Value value = getValue(context, key);
-        if (value == null) {
-            return null;
-        }
-        if (value.getNumValues() > 1) {
-            log.error("returning first item of a "+value.getNumValues()+" item list");
-        }
-        return value.getValue();
+        return getGPProperty(context, key, null);
     }
 
     public String getGPProperty(final GpContext context, final String key, final String defaultValue) {
