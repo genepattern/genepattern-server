@@ -42,6 +42,13 @@ default.properties:
     job.error_status.stderr: false
 
     ##############################################################
+    # "create.account.allowed"
+    #   Set to true to allow users to create new accounts from 
+    # the login page
+    # Default: 
+    #   create.account.allowed=true
+    
+    ##############################################################
     # File Purge configuration
     #   Nightly cleanup of job input and result files.
     # 
