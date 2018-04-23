@@ -73,7 +73,32 @@ public class TestGpConfig {
         assertIsPasswordRequired(true, "y");
         assertIsPasswordRequired(true, "Y");
     }
-    
+
+    @Test
+    public void isShowRegistrationLink() {
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        // by default, yes
+        assertEquals("isShowRegistrationLink, default", true, 
+        gpConfig.isShowRegistrationLink(gpContext));
+    }
+
+    @Test
+    public void isShowRegistrationLink_custom_true() {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("show.registration.link", "true")
+        .build();
+        assertEquals("isShowRegistrationLink, false", true, 
+        gpConfig.isShowRegistrationLink(gpContext));
+    }
+
+    @Test
+    public void isShowRegistrationLink_custom_False() {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("show.registration.link", "false")
+        .build();
+        assertEquals("isShowRegistrationLink, false", false, 
+        gpConfig.isShowRegistrationLink(gpContext));
+    }
 
     @Test
     public void getDbSchemaPrefix_HSQL() {

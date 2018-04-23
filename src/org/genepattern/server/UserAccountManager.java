@@ -79,9 +79,6 @@ public class UserAccountManager {
     
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
-
-    //this property is used in the DefaultGenePatternAuthentication class, and in the LoginBean
-    private boolean showRegistrationLink = true;
     
     //this property is optionally (when set) used in the default goup membership class, XmlGroupMembership
     private File userGroups=null;
@@ -90,12 +87,7 @@ public class UserAccountManager {
      * private constructor requires call to {@link #instance()}.
      */
     private UserAccountManager() {
-        p_refreshProperties();
         p_refreshUsersAndGroups();
-    }
-    
-    public boolean isShowRegistrationLink() {
-        return showRegistrationLink;
     }
 
     /**
@@ -429,14 +421,7 @@ public class UserAccountManager {
      * it cause the GP server to reload group membership information from the config file.
      */
     public synchronized void refreshUsersAndGroups() {
-        p_refreshProperties();
         p_refreshUsersAndGroups();
-    }
-
-    private void p_refreshProperties() {
-        final String prop = System.getProperty("show.registration.link", "true").toLowerCase();
-        this.showRegistrationLink = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
     }
 
     //don't know if this is necessary, but it is here because it is called from the constructor

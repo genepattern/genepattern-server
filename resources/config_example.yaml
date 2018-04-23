@@ -42,11 +42,16 @@ default.properties:
     job.error_status.stderr: false
 
     ##############################################################
+    # "show.registration.link"
+    #   Show the link to the registration page on the login page
+    # Default:
+    #   show.registration.link: true
+
+    ##############################################################
     # "create.account.allowed"
-    #   Set to true to allow users to create new accounts from 
-    # the login page
+    #   Allow users to create new accounts from the login page
     # Default: 
-    #   create.account.allowed=true
+    #   create.account.allowed: true
     
     ##############################################################
     # File Purge configuration

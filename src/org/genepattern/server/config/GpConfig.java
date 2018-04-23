@@ -202,9 +202,15 @@ public class GpConfig {
     public static final String PROP_REQUIRE_PASSWORD="require.password";
     
     /**
+     * Set 'show.registration.link' to show the link to the registration page on the login page
+     * Default: show.registration.link=true
+     */
+    public static final String PROP_SHOW_REGISTRATION_LINK="show.registration.link";
+    
+    /**
      * Set 'create.account.allowed' to true to allow users to create
      * new accounts from the login page
-     *   Default: create.account.allowed: true
+     *   Default: create.account.allowed=true
      */
     public static final String PROP_CREATE_ACCOUNT_ALLOWED="create.account.allowed";
     
@@ -821,6 +827,14 @@ public class GpConfig {
      */
     public boolean isPasswordRequired(final GpContext serverContext) {
         return getGPTrueProperty(serverContext, PROP_REQUIRE_PASSWORD, false);
+    }
+
+    /**
+     * Show the link to the registration page on the login page?
+     *   Default: true
+     */
+    public boolean isShowRegistrationLink(final GpContext serverContext) {
+        return getGPTrueProperty(serverContext, PROP_SHOW_REGISTRATION_LINK, true); 
     }
 
     /**
