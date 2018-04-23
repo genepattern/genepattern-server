@@ -62,11 +62,7 @@ public class RegistrationBean {
         final GpContext serverContext=GpContext.getServerContext();
         this.passwordRequired=gpConfig.isPasswordRequired(serverContext);
 
-        String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
-        boolean createAccountAllowed = (
-                createAccountAllowedProp.equals("true") || 
-                createAccountAllowedProp.equals("y") || 
-                createAccountAllowedProp.equals("yes"));
+        final boolean createAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
         if (!createAccountAllowed) {
             log.info("Unauthorized attempt to create new user by " + UIBeanHelper.getRequest().getRemoteAddr() + ".");
             throw new SecurityException("Unauthorized attempt to create new user.");

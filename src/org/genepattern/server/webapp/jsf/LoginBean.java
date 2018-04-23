@@ -31,11 +31,14 @@ public class LoginBean {
     private String password;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
+    private final boolean isCreateAccountAllowed;
     private final boolean isPasswordRequired;
 
     public LoginBean() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        this.isPasswordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
+        final GpContext serverContext=GpContext.getServerContext();
+        this.isPasswordRequired=gpConfig.isPasswordRequired(serverContext);
+        this.isCreateAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
     }
 
     public String getPassword() {
@@ -47,7 +50,7 @@ public class LoginBean {
     }
 
     public boolean isCreateAccountAllowed() {
-        return UserAccountManager.instance().isCreateAccountAllowed();
+        return isCreateAccountAllowed;
     }
     
     public boolean isShowRegistrationLink() {

@@ -80,8 +80,7 @@ public class UserAccountManager {
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
 
-    //these properties are used in the DefaultGenePatternAuthentication class, and in the LoginBean
-    private boolean createAccountAllowed = true;
+    //this property is used in the DefaultGenePatternAuthentication class, and in the LoginBean
     private boolean showRegistrationLink = true;
     
     //this property is optionally (when set) used in the default goup membership class, XmlGroupMembership
@@ -93,14 +92,6 @@ public class UserAccountManager {
     private UserAccountManager() {
         p_refreshProperties();
         p_refreshUsersAndGroups();
-    }
-
-    /**
-     * Flag indicating whether or not users can register new accounts via the web interface.
-     * @return
-     */
-    public boolean isCreateAccountAllowed() {
-        return createAccountAllowed;
     }
     
     public boolean isShowRegistrationLink() {
@@ -443,11 +434,7 @@ public class UserAccountManager {
     }
 
     private void p_refreshProperties() {
-        String prop = System.getProperty("create.account.allowed", "true").toLowerCase();
-        this.createAccountAllowed = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-        
-        prop = System.getProperty("show.registration.link", "true").toLowerCase();
+        final String prop = System.getProperty("show.registration.link", "true").toLowerCase();
         this.showRegistrationLink = 
             prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
     }

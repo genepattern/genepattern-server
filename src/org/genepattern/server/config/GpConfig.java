@@ -202,6 +202,13 @@ public class GpConfig {
     public static final String PROP_REQUIRE_PASSWORD="require.password";
     
     /**
+     * Set 'create.account.allowed' to true to allow users to create
+     * new accounts from the login page
+     *   Default: create.account.allowed: true
+     */
+    public static final String PROP_CREATE_ACCOUNT_ALLOWED="create.account.allowed";
+    
+    /**
      * Set the 'webmaster' as a server configuration parameter. 
      * 
      * Circa GP <= 3.9.11, the webmaster property is set when you install GenePattern.
@@ -810,22 +817,18 @@ public class GpConfig {
 
     /**
      * Are passwords required?
+     *   Default: false
      */
-    public boolean isPasswordRequired(final GpContext gpContext) {
-        final String prop = getGPProperty(gpContext, PROP_REQUIRE_PASSWORD, "false");
-        return isPasswordRequired(prop);
+    public boolean isPasswordRequired(final GpContext serverContext) {
+        return getGPTrueProperty(serverContext, PROP_REQUIRE_PASSWORD, false);
     }
-    
-    protected static boolean isPasswordRequired(final String prop) {
-        if (prop==null) {
-            log.warn(""+PROP_REQUIRE_PASSWORD+" not set, returning default value");
-            return false; 
-        }
-        final boolean passwordRequired = 
-            prop.equalsIgnoreCase("true")
-         || prop.equalsIgnoreCase("y") 
-         || prop.equalsIgnoreCase("yes");
-        return passwordRequired;
+
+    /**
+     * Can users create new accounts from the login page?
+     *   Default: true
+     */
+    public boolean isCreateAccountAllowed(final GpContext serverContext) {
+        return getGPTrueProperty(serverContext, PROP_CREATE_ACCOUNT_ALLOWED, true);
     }
 
     public Value getValue(final GpContext context, final String key) {
@@ -928,6 +931,32 @@ public class GpConfig {
             log.error("returning first item of a "+value.getNumValues()+" item list");
         }
         return value.getValue();
+    }
+
+    /**
+     * Helper method which accepts "true" | "yes" | "y" as True
+     * and all others as false
+     * @param prop
+     * @return
+     */
+    public static boolean isTrue(final String prop) {
+        return prop != null && (
+               prop.equalsIgnoreCase("true")
+           || prop.equalsIgnoreCase("y") 
+           || prop.equalsIgnoreCase("yes")
+        );
+    }
+
+    /**
+     * Utility method for parsing a property as a true/false value.
+     * Special-case for legacy properties which can be configured as 'true', 'yes' or 'y'
+     */
+    public boolean getGPTrueProperty(final GpContext gpContext, final String key, final boolean defaultValue) {
+        final String prop = getGPProperty(gpContext, key);
+        if (prop==null) {
+            return defaultValue;
+        }
+        return isTrue(prop);
     }
 
     /**
