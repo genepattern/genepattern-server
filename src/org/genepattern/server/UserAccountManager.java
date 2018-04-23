@@ -455,10 +455,14 @@ public class UserAccountManager {
     //don't know if this is necessary, but it is here because it is called from the constructor
     //    and from refreshUsersAndGroups (which is synchronized).
     private void p_refreshUsersAndGroups() {
+        p_refreshUsersAndGroups(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+    }
+    
+    private void p_refreshUsersAndGroups(final GpConfig gpConfig, final GpContext serverContext) {
         this.authentication = null;
         this.groupMembership = null;
-        String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
-        String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
+        final String customAuthenticationClass = gpConfig.getGPProperty(serverContext, PROP_AUTHENTICATION_CLASS, null);
+        final String customGroupMembershipClass = gpConfig.getGPProperty(serverContext, PROP_GROUP_MEMBERSHIP_CLASS, null);
         loadAuthentication(customAuthenticationClass);
 
         //check for special case: 
@@ -497,7 +501,7 @@ public class UserAccountManager {
             log.error("this.authentication==null");
         }
         else {
-            log.debug("authentication.class="+this.authentication.getClass().getCanonicalName());
+            log.debug(PROP_AUTHENTICATION_CLASS+"="+this.authentication.getClass().getCanonicalName());
         }
     }
     
