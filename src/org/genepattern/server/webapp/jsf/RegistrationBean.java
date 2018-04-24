@@ -226,8 +226,12 @@ public class RegistrationBean {
         }
     }
 
-    public void sendJoinMailingListRequest(){
-        String mailingListURL = System.getProperty("gp.mailinglist.registration.url","http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi");
+    public void sendJoinMailingListRequest() {
+        final GpContext serverContext=GpContext.getServerContext();
+        final String mailingListURL=gpConfig.getGPProperty(serverContext, 
+            "gp.mailinglist.registration.url", 
+            "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi"
+        );
         StringBuffer buff = new StringBuffer(mailingListURL);
         buff.append("?choice=Add&email="+ this.getEmail()); 
         
