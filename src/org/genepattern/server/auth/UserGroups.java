@@ -40,7 +40,7 @@ public class UserGroups implements IGroupMembershipPlugin {
     }
 
     public static UserGroups initFromConfig(final GpConfig gpConfig, final String filename) {
-        final File userGroupsXmlFile = getResourcesFile(gpConfig, filename );
+        final File userGroupsXmlFile = getResourcesFile(gpConfig, filename);
         return initFromXml(userGroupsXmlFile);
     }
 
@@ -54,11 +54,13 @@ public class UserGroups implements IGroupMembershipPlugin {
             final SAXBuilder builder = new SAXBuilder();
             final Document document = builder.build(is);
             final Element root = document.getRootElement();
-            for (final Iterator i = root.getChildren("group").iterator(); i.hasNext();) {
+            for (@SuppressWarnings("rawtypes")
+            final Iterator i = root.getChildren("group").iterator(); i.hasNext();) {
                 final Element groupElem = (Element) i.next();
                 final String groupName = groupElem.getAttribute("name").getValue();
                 ugb.addGroup(groupName);
-                for (final Iterator i2 = groupElem.getChildren("user").iterator(); i2.hasNext();) {
+                for (@SuppressWarnings("rawtypes")
+                final Iterator i2 = groupElem.getChildren("user").iterator(); i2.hasNext();) {
                     final Element user = (Element) i2.next();
                     final String userName = user.getAttribute("name").getValue();
                     ugb.addUserToGroup(userName, groupName);
@@ -97,6 +99,7 @@ public class UserGroups implements IGroupMembershipPlugin {
         this.users=Multimaps.unmodifiableSortedSetMultimap(builder.users);
     }
 
+    @Override
     public Set<String> getGroups(final String userId) {
         if (userId==null) {
             return null;
@@ -104,6 +107,7 @@ public class UserGroups implements IGroupMembershipPlugin {
         return Sets.union(users.get("*"), users.get(userId));
     }
 
+    @Override
     public boolean isMember(final String userId, final String groupId) {
         return users.containsEntry("*", groupId) ||
             users.containsEntry(userId, groupId);
