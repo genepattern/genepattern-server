@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.genepattern.junitutil.FileUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -23,6 +24,8 @@ import org.junit.Test;
  *     originally developed to test the XmlGroupMembership class.
  * 
  */
+
+@Ignore
 public abstract class IGroupMembershipPluginTest {
     
     protected abstract IGroupMembershipPlugin createInstance(final File xmlFile) throws Exception;
