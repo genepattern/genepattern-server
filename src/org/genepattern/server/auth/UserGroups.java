@@ -19,6 +19,11 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
+/**
+ * The UserGroups loaded from the resources/userGroups.xml file. 
+ * 
+ * @author pcarr
+ */
 public class UserGroups implements IGroupMembershipPlugin {
     private static Logger log = Logger.getLogger(UserGroups.class);
 
@@ -33,6 +38,10 @@ public class UserGroups implements IGroupMembershipPlugin {
         }        
         // special-case: when 'filename' is a relative path
         return new File(gpConfig.getResourcesDir(), filename);
+    }
+    
+    public static UserGroups initDefault() {
+        return new Builder().build();
     }
 
     public static UserGroups initFromConfig(final GpConfig gpConfig) {
@@ -104,12 +113,16 @@ public class UserGroups implements IGroupMembershipPlugin {
         if (userId==null) {
             return null;
         }
-        return Sets.union(users.get("*"), users.get(userId));
+        return Sets.union(users.get(GroupPermission.PUBLIC), users.get(userId));
     }
 
     @Override
     public boolean isMember(final String userId, final String groupId) {
-        return users.containsEntry("*", groupId) ||
+        // special-case: hidden wildcard groupId
+        //if (GroupPermission.PUBLIC.equals(groupId)) {
+        //    return true;
+        //}
+        return users.containsEntry(GroupPermission.PUBLIC, groupId) ||
             users.containsEntry(userId, groupId);
     }
     
@@ -135,6 +148,7 @@ public class UserGroups implements IGroupMembershipPlugin {
         }
 
         public UserGroups build() {
+            addUserToGroup("*", "*");
             return new UserGroups(this);
         }
     }

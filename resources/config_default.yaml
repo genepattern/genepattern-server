@@ -152,24 +152,6 @@ default.properties:
     #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
     # 
 
-    ##############################################################
-    # Custom Authentication configuration
-    #
-    # "authentication.class"
-    #   the name of the [optional] IAuthenticationPlugin class
-    # Default:
-    #   authentication.class: org.genepattern.server.auth.DefaultGenePatternAuthentication
-    #     
-    # "group.membership.class"
-    #   the name of the [optional] IGroupMembershipPlugin class
-    # Default: 
-    #   group.membership.class: "org.genepattern.server.auth.XmlGroupMembership"
-    # 
-    # "group.membership.file"
-    #   the name of the [optional] group membership file
-    # Default:
-    #   group.membership.file: "userGroups.xml"
-
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 

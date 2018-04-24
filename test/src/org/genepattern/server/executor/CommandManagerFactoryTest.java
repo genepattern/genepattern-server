@@ -16,9 +16,9 @@ import java.util.Map;
 
 import org.genepattern.junitutil.DbUtil;
 import org.genepattern.junitutil.FileUtil;
-import org.genepattern.server.auth.GroupMembershipWrapper;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
-import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.auth.UserGroups;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.GpContext;
@@ -45,10 +45,7 @@ public class CommandManagerFactoryTest {
     public void setUp() throws Exception {
         mgr=DbUtil.getTestDbSession();
         File userGroups=FileUtil.getSourceFile(this.getClass(), "userGroups.xml");
-        // wrapper adds the '*' wildcard group
-        groupInfo=new GroupMembershipWrapper(
-                new XmlGroupMembership(userGroups));
-
+        groupInfo=UserGroups.initFromXml(userGroups);
     }
     
     /**
@@ -571,12 +568,10 @@ public class CommandManagerFactoryTest {
         assertTrue("userC is in broadgroup", groupInfo.isMember("userC", "broadgroup"));
         assertFalse("userC is not in admingroup", groupInfo.isMember("userC", "admingroup"));
         assertTrue("adminuser is in admingroup", groupInfo.isMember("adminuser", "admingroup"));
-
-        
-        //ServerConfigurationFactory.reloadConfiguration();
+        assertTrue("userA is in wildcard group", groupInfo.isMember("userA", GroupPermission.PUBLIC));
 
         //tests for 'test' user, use 'default.properties', no overrides
-        GpContext userContext = GpContext.getContextForUser("test");
+        GpContext userContext = GpContext.getContextForUser("test", false);
         assertNull("unset property",  gpConfig.getGPProperty(userContext, "NOT_SET"));
         assertEquals("property which is only set in System.properties", 
                 "SYSTEM", gpConfig.getGPProperty(userContext, "system.prop"));

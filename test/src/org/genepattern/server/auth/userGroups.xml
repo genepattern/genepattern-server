@@ -11,12 +11,12 @@
 </group>
 
 <group name="gp-dev">
-    <user name="pcarr" />
-    <user name="jgould" />
+    <user name="gp_dev_user_01" />
+    <user name="gp_dev_user_02" />
 </group>
 
 <group name="module-dev">
-    <user name="jgould" />
-    <user name="nazaire" />
+    <user name="gp_dev_user_02" />
+    <user name="dev_user_03" />
 </group>
 </userGroups>

@@ -24,4 +24,11 @@ public interface IGroupMembershipPlugin {
      * @return true if the given GenePattern user is a member of the group.
      */
     boolean isMember(String userId, String groupId);
+    
+    /**
+     * Get the set of users in the given group.
+     * @param groupId
+     * @return a Set of zero or more userId
+     */
+    Set<String> getUsers(String groupId);
 }

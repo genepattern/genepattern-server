@@ -36,12 +36,24 @@ public class UserGroupsTest {
         // test getGroupsForUser
         final String userId="gp-common-01";
         final Set<String> groups=userGroups.getGroups(userId);
-        assertEquals("groups.size", 5, groups.size());
+        assertEquals("groups.size", 6, groups.size());
+        assertEquals(userId+"is in '*'", true, groups.contains("*"));
         assertEquals(userId+"is in public", true, groups.contains("public"));
         assertEquals(userId+"is in administrators", true, groups.contains("administrators"));
         assertEquals(userId+"is in dev-users", true, groups.contains("dev-users"));
         assertEquals(userId+"is in test-users", true, groups.contains("test-users"));
         assertEquals(userId+"is in gp-team", true, groups.contains("gp-team"));
+    }
+
+    @Test
+    public void testDefault() {
+        final UserGroups userGroups=UserGroups.initDefault();
+        final Set<String> groups=userGroups.getGroups("test_user");
+        assertEquals("groups.size", 1, groups.size());
+        assertTrue("groups.contains('*')", groups.contains("*"));
+        
+        assertTrue("'test_user' is member of '*' group", userGroups.isMember("test_user", "*"));
+        assertFalse("'test_user' is member of 'admin' group", userGroups.isMember("test_user", "admin"));
     }
 
 }

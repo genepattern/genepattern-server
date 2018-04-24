@@ -13,7 +13,6 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
-import org.genepattern.server.auth.DefaultGroupMembership;
 import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
@@ -95,7 +94,7 @@ public class UserAccountManager {
      * Optionally set a non-default location for the users and groups file.
      * You must call refreshUsersAndGroups before this change takes effect.
      * 
-     * Note: this only has effect if you are using the default (XmlGroupMembership) implementation
+     * Note: this only has effect if you are using the default (UserGroups) implementation
      * of the IGroupMembershipPlugin interface.
      * 
      * @param userGroups
@@ -445,9 +444,8 @@ public class UserAccountManager {
         else {
             loadGroupMembership(gpConfig, customGroupMembershipClass);            
         }
-        this.groupMembership = new GroupMembershipWrapper(this.groupMembership);
     }
-    
+
     private void loadAuthentication(String customAuthenticationClass) {
         log.debug("loading IAuthenticationPlugin, customAuthenticationClass="+customAuthenticationClass);
         if (customAuthenticationClass == null) {
@@ -484,11 +482,13 @@ public class UserAccountManager {
         }
         else {
             try {
-                this.groupMembership = (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+                final IGroupMembershipPlugin customGroupMembership = 
+                        (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+                this.groupMembership = new GroupMembershipWrapper(customGroupMembership);
             }
             catch (Exception e) {
                 log.error("Failed to load custom group membership class: "+customGroupMembershipClass, e);
-                this.groupMembership = new DefaultGroupMembership();
+                this.groupMembership = UserGroups.initDefault();
             }
         }
     }
