@@ -34,7 +34,7 @@ public class TestGetExecutorId {
         if (this.gpConfig.hasInitErrors()) {
             throw this.gpConfig.getInitializationErrors().get(0);
         }
-        ConfigUtil.setUserGroups(this.getClass(), "userGroups.xml");
+        ConfigUtil.setUserGroups(this.getClass(), "drm_test_userGroups.xml");
     }
     
     @Test

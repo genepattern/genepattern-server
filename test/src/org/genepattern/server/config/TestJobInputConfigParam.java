@@ -34,7 +34,7 @@ public class TestJobInputConfigParam {
         if (this.gpConfig.hasInitErrors()) {
             throw this.gpConfig.getInitializationErrors().get(0);
         }
-        ConfigUtil.setUserGroups(this.getClass(), "userGroups.xml");
+        ConfigUtil.setUserGroups(this.getClass(), "drm_test_userGroups.xml");
         jobInput=new JobInput();
         jobInput.setLsid(cleLsid);
         jobInput.addValue("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct");

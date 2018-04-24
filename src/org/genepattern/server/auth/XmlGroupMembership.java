@@ -20,6 +20,8 @@ import org.jdom.input.SAXBuilder;
  * Implement GenePattern group membership by parsing an xml file at server startup.
  * Based on AuthorizationManger code from GP 3.1.1 (and earlier).
  * 
+ * @deprecated use UserGroups class instead
+ * 
  * @author pcarr
  */
 public class XmlGroupMembership extends DefaultGroupMembership {

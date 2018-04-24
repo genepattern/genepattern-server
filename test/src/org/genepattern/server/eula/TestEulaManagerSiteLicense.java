@@ -47,7 +47,7 @@ public class TestEulaManagerSiteLicense {
     
     @After
     public void tearDown() {
-        UserAccountManager.instance().setUserGroups(null);
+        UserAccountManager.instance().setUserGroupsXml(null);
         UserAccountManager.instance().refreshUsersAndGroups();
 
         //revert back to a 'default' config.file

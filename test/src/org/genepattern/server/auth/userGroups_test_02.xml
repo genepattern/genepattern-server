@@ -1,0 +1,46 @@
+<!-- for testing -->
+
+<userGroups>
+    <!--  wildcard group -->
+    <group name="public">
+        <user name="*"/>
+    </group>
+
+    <group name="administrators">
+        <user name="admin" />
+
+        <user name="gp-admin-01" />
+        <user name="gp-admin-02" />
+        <user name="gp-common-01" />
+    </group>
+
+    <group name="dev-users">
+        <user name="dev-01"/>
+        <user name="dev-02" />
+
+        <user name="gp-dev-01" />
+        <user name="gp-dev-02" />
+
+        <user name="gp-common-01" />
+    </group>
+
+    <group name="test-users">
+        <user name="gp-test-01" />
+        <user name="gp-test-02" />
+        <user name="gp-common-01" />
+    </group>
+  
+    <group name="gp-team">
+        <user name="gp-admin-01" />
+        <user name="gp-admin-02" />
+
+        <user name="gp-dev-01" />
+        <user name="gp-dev-02" />
+
+        <user name="gp-test-01" />
+        <user name="gp-test-02" />
+
+        <user name="gp-common-01" />
+    </group>
+  
+</userGroups>

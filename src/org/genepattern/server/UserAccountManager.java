@@ -18,7 +18,7 @@ import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
-import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.auth.UserGroups;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -79,9 +79,10 @@ public class UserAccountManager {
     
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
+    private UserGroups userGroups = null;
     
-    //this property is optionally (when set) used in the default goup membership class, XmlGroupMembership
-    private File userGroups=null;
+    //this property is optionally (when set) used in the default group membership class, UserGroups
+    private File userGroupsXml=null;
 
     /**
      * private constructor requires call to {@link #instance()}.
@@ -99,19 +100,8 @@ public class UserAccountManager {
      * 
      * @param userGroups
      */
-    public void setUserGroups(final File userGroups) {
-        this.userGroups=userGroups;
-    }
-
-    /** @deprecated should pass in a valid GpConfig and userContext */
-    public static void validateNewUsername(final String username) throws AuthenticationException {
-        validateNewUsername(HibernateUtil.instance(), username);
-    }
-
-    /** @deprecated should pass in a valid GpConfig and userContext */
-    public static void validateNewUsername(final HibernateSessionManager mgr, final String username) throws AuthenticationException {
-        final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        validateNewUsername(gpConfig, mgr, username);
+    public void setUserGroupsXml(final File userGroupsXml) {
+        this.userGroupsXml=userGroupsXml;
     }
 
     /**
@@ -133,7 +123,8 @@ public class UserAccountManager {
         }
         //3) can create user dir for user
         try {
-            final GpContext userContext = GpContext.getContextForUser(username);
+            final boolean initIsAdmin=false;
+            final GpContext userContext = GpContext.getContextForUser(username, initIsAdmin);
             final File userDir = gpConfig.getUserDir(userContext);
             log.info("creating user dir: "+userDir.getPath());
         }
@@ -374,7 +365,7 @@ public class UserAccountManager {
         
         User user = null;
         try {
-            user = (new UserDAO()).findById(username);
+            user = (new UserDAO(HibernateUtil.instance())).findById(username);
         }
         catch (Error e) {
             throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE, e.getLocalizedMessage());
@@ -415,6 +406,10 @@ public class UserAccountManager {
         return groupMembership;
     }
     
+    public UserGroups getUserGroups() {
+        return userGroups;
+    }
+    
     /**
      * If necessary reload user and groups information by reloading the IAuthenticationPlugin and IGroupMembershipPlugins.
      * This supports one specific use-case: when GP default group membership is used, and an admin edits the configuration file,
@@ -448,7 +443,7 @@ public class UserAccountManager {
             this.groupMembership = (IGroupMembershipPlugin) this.authentication;
         }
         else {
-            loadGroupMembership(customGroupMembershipClass);            
+            loadGroupMembership(gpConfig, customGroupMembershipClass);            
         }
         this.groupMembership = new GroupMembershipWrapper(this.groupMembership);
     }
@@ -477,14 +472,15 @@ public class UserAccountManager {
         }
     }
     
-    private void loadGroupMembership(String customGroupMembershipClass) {
-        if (customGroupMembershipClass == null) {
-            if (userGroups != null) {
-                this.groupMembership = new XmlGroupMembership(userGroups); 
+    private void loadGroupMembership(final GpConfig gpConfig, String customGroupMembershipClass) {
+        if (customGroupMembershipClass == null) { 
+            if (userGroupsXml != null) {
+                this.userGroups = UserGroups.initFromXml(userGroupsXml);
             }
             else {
-                this.groupMembership = new XmlGroupMembership(); 
+                this.userGroups = UserGroups.initFromConfig(gpConfig);
             }
+            this.groupMembership = userGroups;
         }
         else {
             try {

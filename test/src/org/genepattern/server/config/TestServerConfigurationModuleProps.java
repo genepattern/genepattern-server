@@ -31,7 +31,7 @@ public class TestServerConfigurationModuleProps {
     @Before
     public void setUp() {
         File configFile=FileUtil.getSourceFile(this.getClass(), "test_module_properties.yaml");
-        File userGroups=FileUtil.getSourceFile(this.getClass(), "userGroups.xml");
+        File userGroups=FileUtil.getSourceFile(this.getClass(), "drm_test_userGroups.xml");
         // wrapper adds the '*' wildcard group
         IGroupMembershipPlugin groupInfo=new GroupMembershipWrapper(
                 new XmlGroupMembership(userGroups));

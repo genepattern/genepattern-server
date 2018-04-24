@@ -79,7 +79,7 @@ public class ConfigUtil {
                 Assert.fail("jUnit test initialization error, can't read userGroups file="+userGroups.getAbsolutePath());
             }
         }
-        UserAccountManager.instance().setUserGroups(userGroups);
+        UserAccountManager.instance().setUserGroupsXml(userGroups);
         UserAccountManager.instance().refreshUsersAndGroups();
     }
     
