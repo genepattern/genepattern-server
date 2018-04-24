@@ -48,7 +48,7 @@ public class RegistrationBean {
     private UIInput emailConfirmComponent;
     private boolean passwordRequired = true;
     private boolean joinMailingList = true;
-    private boolean showTermsOfService = false;
+    private final boolean showTermsOfService;
     private String termsOfService =
         "GenePattern Terms of Service\n"+
         "============================\n"+
@@ -69,13 +69,8 @@ public class RegistrationBean {
         }
 
         //show registration agreement?
-        if (System.getProperty("show.terms.of.service", "false").equalsIgnoreCase("false")) {
-            showTermsOfService = false;
-        }
-        else {
-            showTermsOfService = true;
-        }
-        
+        this.showTermsOfService=gpConfig.getGPTrueProperty(serverContext, GpConfig.PROP_SHOW_TERMS_OF_SERVICE, false);
+
         //show reCAPTCHA?
         this.recaptcha=ReCaptchaSession.init(gpConfig, serverContext);
     }
@@ -322,10 +317,6 @@ public class RegistrationBean {
     
     public boolean isShowTermsOfService() {
         return this.showTermsOfService;
-    }
-    
-    public void setShowTermsOfService(boolean b) {
-        this.showTermsOfService = b;
     }
     
     public String getTermsOfService() {

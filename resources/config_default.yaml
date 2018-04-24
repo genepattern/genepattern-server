@@ -30,6 +30,12 @@ default.properties:
     #   show.registration.link: true
 
     ##############################################################
+    # "show.terms.of.service"
+    #   Display the terms of service on the registration page
+    # Default:
+    #   show.terms.of.service: false
+
+    ##############################################################
     # "create.account.allowed"
     #   Allow users to create new accounts from the login page
     # Default: 

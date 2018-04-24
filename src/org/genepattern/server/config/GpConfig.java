@@ -203,10 +203,16 @@ public class GpConfig {
     
     /**
      * Set 'show.registration.link' to show the link to the registration page on the login page
-     * Default: show.registration.link=true
+     *   Default: show.registration.link=true
      */
     public static final String PROP_SHOW_REGISTRATION_LINK="show.registration.link";
-    
+
+    /**
+     * Set 'show.terms.of.service' to show the terms of service on the registration page.
+     *   Default: show.terms.of.service=false
+     */
+    public static final String PROP_SHOW_TERMS_OF_SERVICE="show.terms.of.service";
+
     /**
      * Set 'create.account.allowed' to true to allow users to create
      * new accounts from the login page
