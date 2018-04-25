@@ -190,7 +190,9 @@
 
     <target name="compile-junit" depends="init,compile">
         <mkdir dir="${build}/junit/classes" />
-        <javac debug="true" classpathref="junit.classpath"
+        <javac debug="true" 
+            includeantruntime="false"
+            classpathref="junit.classpath"
             destdir="${build}/junit/classes"
             srcdir="test/src"
         />
@@ -225,7 +227,9 @@
     </target>
 
     <target name="compile" depends="init, initBuildProperties" description="Compiles all the source.">
-        <javac debug="true" source="${java.source}" target="${java.target}"
+        <javac debug="true" 
+            includeantruntime="false"
+            source="${java.source}" target="${java.target}" 
             classpathref="library.classpath"
             destdir="${genepattern.build}"
             srcdir="${src}"
@@ -356,12 +360,14 @@
 
     <target depends="init" name="runtask">
         <javac debug="true" 
+            includeantruntime="false"
             classpathref="library.classpath" 
             destdir="${genepattern.build}" 
             srcdir="${src}" 
             source="${java.source}" 
             target="${java.target}" 
-            includes="org/genepattern/util/RunGenePatternTaskMain.java" />
+            includes="org/genepattern/util/RunGenePatternTaskMain.java" 
+        />
 
         <!-- Makes runMain.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class" jarfile="${genepattern.build}/${runtask-jarname}">
@@ -439,6 +445,7 @@
     <target name="compile-visualizer-applet" depends="init">
         <mkdir dir="applet-build" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="applet-build" 
             srcdir="src" 
             classpathref="library.classpath" 
@@ -541,9 +548,11 @@
 
         <mkdir dir="${genepattern.website}/WEB-INF/classes" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="${genepattern.build}/website/classes" 
             srcdir="${genepattern.website}/WEB-INF/classes" 
-            classpathref="library.classpath" />
+            classpathref="library.classpath" 
+        />
 
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
@@ -579,9 +588,11 @@
     <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="${genepattern.build}/website/classes" 
             srcdir="${genepattern.website}/WEB-INF/classes" 
-            classpathref="library.classpath" />
+            classpathref="library.classpath" 
+        />
         <!-- Now call any custom post-compilation people want to do -->
         <antcall target="post-compile" />
     </target>
@@ -632,9 +643,10 @@
     <target name="compile-jspc" depends="jspc, compile" description="generate .class files from .jsp files">
         <mkdir dir="${webapp.path}/WEB-INF/classes" />
 
-        <javac 
+        <javac debug="${java.debug}" 
+            includeantruntime="false"
             source="${java.source}" target="${java.target}"
-            debug="${java.debug}" optimize="${java.optimize}"
+            optimize="${java.optimize}"
             destdir="${webapp.path}/WEB-INF/classes"
             srcdir="${webapp.path}/WEB-INF/src"
         >
@@ -643,7 +655,7 @@
                 <path refid="jspc.classpath" />
                 <pathelement location="${genepattern.build}" />
             </classpath>
-            </javac>
+        </javac>
     </target>
 
 </project>
