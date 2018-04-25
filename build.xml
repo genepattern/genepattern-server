@@ -3,7 +3,7 @@
         <!ENTITY release_targets SYSTEM "./releaseTargets.xml">
         ]>
 <project basedir="." default="targets" name="genepattern">
-	<import file="test/build.xml"/>
+    <import file="test/build.xml"/>
 
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.7" />
@@ -586,28 +586,7 @@
         <antcall target="post-compile" />
     </target>
 
-    <target name="getSvnInfoLastRev" unless="version"
-        description="Sets property 'version' to the head svn Last Changed Rev">
-
-        <!-- find out revision number of HEAD, need svn.exe installed on local machine -->
-        <exec executable="svn" outputproperty="svninfo.out">
-            <arg line="info -r HEAD" />
-        </exec>
-        <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
-            <arg line="'Last Changed Rev:'" />
-        </exec>
-        <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
-            <arg value="s/Last\ Changed\ Rev:\ //" />
-        </exec>
-
-        <property name="version" value="${svn.info.lastRev}" />
-    </target>
-
-    <target name="getVersion" depends="getSvnInfoLastRev">
-        <echo>version: ${version}</echo>
-    </target>
-
-    <target name="initBuildProperties" depends="getVersion"
+    <target name="initBuildProperties"
         description="Updates the build.properties file." >
 
         <property file="build.versionNumbers" />
