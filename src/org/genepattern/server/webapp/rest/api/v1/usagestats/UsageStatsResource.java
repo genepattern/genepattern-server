@@ -65,7 +65,8 @@ public class UsageStatsResource {
         if (! userContext.isAdmin()) {
             return Response.status(401).entity("Only admins can set a system message!").build();
         }
-        
+        // This is used for deciding if jobs are internal or external
+        String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
         
         JSONObject object = new JSONObject();
         try {
@@ -83,17 +84,27 @@ public class UsageStatsResource {
             }
             object.put("ReportPeriodStart", startDay);
             object.put("ReportPeriodEnd", endDay);
-            String excludedUsers = getUserExclusionClause(userContext);
             
             final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
             UsageStatsDAO ds = new UsageStatsDAO(mgr);
+            String excludedUsers = getUserExclusionClause(userContext, ds);
+            System.out.println("D " + excludedUsers);
+            
             try {            
                 object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("TotalUsers", ds.getTotalRegistrationCount(excludedUsers));
-                object.put("ReturningUsers",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("NewUsers",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("Totaljobs",ds.getTotalJobsRunCount(excludedUsers));
+                object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
+                object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
                 object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
+                object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
+                object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
+                object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
+                object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
                 
             } catch (Exception e){
                 e.printStackTrace();
@@ -116,19 +127,22 @@ public class UsageStatsResource {
      * @param userContext
      * @return
      */
-    private String getUserExclusionClause( GpContext userContext){
-        StringBuffer buff = new StringBuffer(" and user_id not in (  ");
+    private String getUserExclusionClause( GpContext userContext, UsageStatsDAO ds){
+        StringBuffer buff = new StringBuffer("  (  ");
         String propValue = ServerConfigurationFactory.instance().getGPProperty(userContext, "excludeUsersFromStats", null);
         if (propValue == null) return "";
         
         String[] user_ids = propValue.split("\\s+");
         for (String user : user_ids) {
-            buff.append("\"");
+            buff.append("\'");
             buff.append(user);
-            buff.append("\", "); 
+            buff.append("\', "); 
         }
-        buff.append(" \"admin\") ");  // default to except
-        return buff.toString();
+        buff.append(" \'admin\') ");  // default to except
+        
+        // hand this off to the dao to get the user_ids of any users that match case insensitive on username or email
+        return ds.generateUserExclusionClause(buff.toString());
+      
     }
     
     /**
