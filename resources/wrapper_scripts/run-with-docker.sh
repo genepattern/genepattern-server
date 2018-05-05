@@ -27,10 +27,18 @@
 #
 ############################################################
 
-#
-# Example docker command line ...
-#   $ docker run -w `pwd` -v "/Users:/Users" genepattern/docker-perl52:0.1 perl -version
-# 
+# Run the command in a docker container ...
+#    see: https://docs.docker.com/engine/reference/commandline/run/
+#    see: https://docs.docker.com/storage/bind-mounts/
+#  Template:
+#    # (option 1: with '--mount')
+#    docker run -w {dir} --mount type=bind,src={bind_src},dst={bind_dst} {image} {args}
+#    # (option 2: with '--volume')
+#    docker run -w {dir} -v {bind_src}:{bind_dst} {image} {args}
+#  Example:
+#    docker run -w "`pwd`" --mount type=bind,src=/Users,dst=/Users genepattern/docker-python36:0.4 python3 --version
+#    docker run -w "`pwd`" -v "/Users:/Users" genepattern/docker-python36:0.4 python3 --version
+
 
 ### copy of gp-common.sh:run-with-env()
 function run_with_docker() {
@@ -46,10 +54,22 @@ function run_with_docker() {
     echo "Missing required variable: 'job.docker.image'" >&2
     exit 64;
   fi
-  
-  ## run the command in a docker container ...
-  #    see: https://docs.docker.com/engine/reference/commandline/run/
-  $DRY_RUN /usr/local/bin/docker run -w "`pwd`" -v "/Users:/Users" "${GP_JOB_DOCKER_IMAGE}" "${__gp_module_cmd[@]}";
+
+  local docker_cmd="/usr/local/bin/docker";
+  local bind_src="/Users";
+  local bind_dst="/Users";
+
+  # with '--mount'
+  $DRY_RUN "${docker_cmd}" run -w "`pwd`" \
+    --mount "type=bind,src=${bind_src},dst=${bind_dst}" \
+    "${GP_JOB_DOCKER_IMAGE}" \
+    "${__gp_module_cmd[@]}";
+
+  # (option 2), with '--volume'
+  #$DRY_RUN "${docker_cmd}" run -w "`pwd`" \
+  #  --volume "${bind_src}:${bind_dst}" \
+  #  "${GP_JOB_DOCKER_IMAGE}" \
+  #  "${__gp_module_cmd[@]}";
 }
 
 run_with_docker "${@}"
