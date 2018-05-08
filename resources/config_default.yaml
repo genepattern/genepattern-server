@@ -290,12 +290,30 @@ executors:
             "job.docker.bind_src": "/Users"
             "job.docker.bind_dst": "/Users"
             "job.workingDir": "<jobs>/<job_id>"
+            run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+                -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+                -e DOCKER_CMD=<docker> \
+                -e GP_JOB_WORKING_DIR=<job.workingDir> \
+                -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+                -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+                -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+                -u docker"
+
+            #
+            # (experimental) 'docker-run' command
+            #   Note: we are using the 'run-with-docker.sh' wrapper because it
+            #   outputs a better error message when the 'job.docker.image'
+            #   is not set
             "docker-run": "<docker> run -w <job.workingDir> \
                  --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
                  <job.docker.image>"
-            
-            # (experimental) python/3 docker integration
-            #   run all <python_3.6> commands in the docker image
-            # 
-            # # substitute '<python_3.6>' with the docker run ... python ... command 
-            # python_3.6: "<docker-run> python3"
+            #"docker-run": "<docker> run -w <job.workingDir> --mount <job.docker.mount> <job.docker.image>"
+
+            ## <java> in docker
+            java: "<run-with-docker> java"
+
+            ## <perl> in docker
+            perl: "<run-with-docker> perl"
+
+            ## <python_3.6> in docker
+            python_3.6: "<run-with-docker> python"

@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 
 ############################################################
-# run-with-docker.sh (v0.2) (for debugging only) 
+# run-with-docker.sh (v0.2)
 #   Wrapper script for running a GenePattern module in a local
 # docker container
-#
-# Note: this script is for illustration, debugging, and prototyping. 
-# The 'docker-run' substitution defined in the config_default.yaml file 
-# can be used instead of this wrapper script.
 #
 # Usage:
 #   run-with-docker.sh [run-with-env-args]
 #
 # Configuration 
+#   Copy this file to your ./resources/wrapper_scripts directory
 #   Edit your ./resources/config_custom.yaml file
 #
 # default.properties:
@@ -25,15 +22,16 @@
 #     "job.docker.bind_src": "/Users"
 #     "job.docker.bind_dst": "/Users"
 #     "job.workingDir": "<jobs>/<job_id>"
-#     # run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
-#     #     -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
-#     #     -e DOCKER_CMD=<docker> \
-#     #     -e GP_JOB_WORKING_DIR=<job.workingDir> \
-#     #     -e DOCKER_BIND_SRC=<job.docker.bind_src> \
-#     #     -e DOCKER_BIND_DST=<job.docker.bind_dst> \
-#     #     -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
-#     #     -u docker"
-#     # python_3.6: "<run-with-docker> python3"
+#     run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+#         -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+#         -e DOCKER_CMD=<docker> \
+#         -e GP_JOB_WORKING_DIR=<job.workingDir> \
+#         -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+#         -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+#         -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+#         -u docker"
+#
+#     python_3.6: "<run-with-docker> python3"
 #
 #     ...
 #
