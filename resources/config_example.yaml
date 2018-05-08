@@ -290,17 +290,58 @@ default.properties:
 #    map := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [default.properties: <map>]
 executors:
     # default executor for all jobs, it is included in GenePattern
-    RuntimeExec: 
-        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+    # switched from RuntimeExec to LocalJobRunner in 3.9.0
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
-            # the total number of jobs to run concurrently
-            num.threads: 20
-            # the total number of jobs to keep on the queue, not yet implemented
-            #max.pending.jobs: 20000
-            # flag, if true save the command line into a log file in the working directory for each job
-            rte.save.logfile: false
-            # the name of the command line log file
-            rte.logfile: .rte.out
+            jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
+            jobRunnerName: CommonsExecJobRunner
+            # interval for polling for job status (in ms)
+            #minDelay: 100
+            ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            #useDynamicDelay: true
+            ## the max polling interval, when 'useDynamicDelay' is true
+            #maxDelay: 30000
+            
+        default.properties:
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"
+
+            ##############################################################
+            # (experimental) Docker integration
+            #   run the command in a docker container ...
+            #   see: https://docs.docker.com/engine/reference/commandline/run/
+            #   see: https://docs.docker.com/storage/bind-mounts/
+            # Template:
+            #    # (option 1: with '--mount')
+            #    docker run -w {workdir} --mount type=bind,src={bind_src},dst={bind_dst} {image} {args}
+            #    # (option 2: with '--volume')
+            #    docker run -w {workdir} -v {bind_src}:{bind_dst} {image} {args}
+            # Example:
+            #   docker run -w "`pwd`" --mount type=bind,src=/Users,dst=/Users genepattern/docker-python36:0.4 python3 --version
+            #   docker run -w "`pwd`" -v "/Users:/Users" genepattern/docker-python36:0.4 python3 --version
+            #
+            # Options:
+            #   'docker', the path to the docker executable
+            # '--mount' args 
+            #   'job.docker.bind_src', the local path on the docker daemon host
+            #   'job.docker.bind_dst', the path where the src is mounted in the container
+            #   The bind_src and bind_dst must be the same path. They are separated for 
+            #   illustration purposes.
+            # 
+            "docker": "/usr/local/bin/docker"
+            "job.docker.bind_src": "/Users"
+            "job.docker.bind_dst": "/Users"
+            "job.workingDir": "<jobs>/<job_id>"
+            "docker-run": "<docker> run -w <job.workingDir> \
+                 --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
+                 <job.docker.image>"
+            
+            # (experimental) python/3 docker integration
+            #   run all <python_3.6> commands in the docker image
+            # 
+            # # substitute '<python_3.6>' with the docker run ... python ... command 
+            # python_3.6: "<docker-run> python3"
 
     # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:

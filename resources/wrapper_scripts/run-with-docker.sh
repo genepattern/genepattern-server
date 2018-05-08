@@ -1,19 +1,40 @@
 #!/usr/bin/env bash
 
 ############################################################
-# run-with-docker.sh (v0.1)
+# run-with-docker.sh (v0.2) (for debugging only) 
 #   Wrapper script for running a GenePattern module in a local
 # docker container
+#
+# Note: this script is for illustration, debugging, and prototyping. 
+# The 'docker-run' substitution defined in the config_default.yaml file 
+# can be used instead of this wrapper script.
 #
 # Usage:
 #   run-with-docker.sh [run-with-env-args]
 #
 # Configuration 
-#   Example config_custom.yaml file for a local Mac OS X GP server
+#   Edit your ./resources/config_custom.yaml file
 #
 # default.properties:
 #     ...
+#     # Basic
 #     run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> -e GP_JOB_DOCKER_IMAGE=<job.docker.image> -u docker"
+#
+#     # Advanced (with additional customization)
+#     "docker": "/usr/local/bin/docker"
+#     "job.docker.bind_src": "/Users"
+#     "job.docker.bind_dst": "/Users"
+#     "job.workingDir": "<jobs>/<job_id>"
+#     # run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+#     #     -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+#     #     -e DOCKER_CMD=<docker> \
+#     #     -e GP_JOB_WORKING_DIR=<job.workingDir> \
+#     #     -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+#     #     -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+#     #     -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+#     #     -u docker"
+#     # python_3.6: "<run-with-docker> python3"
+#
 #     ...
 #
 # module.properties:
@@ -23,7 +44,7 @@
 #
 #     "txt2odf":
 #         job.docker.image: "genepattern/docker-python36:0.4"
-#         "python_3.6": "<run-with-docker> python"
+#         "python_3.6": "<run-with-docker> python3"
 #
 ############################################################
 
@@ -42,8 +63,8 @@
 
 ### copy of gp-common.sh:run-with-env()
 function run_with_docker() {
-  local __dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-  source "${__dir}/gp-common.sh"
+  local script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  source "${script_dir}/gp-common.sh"
   parse_args "${@}";
   init_module_envs;
   
@@ -54,22 +75,19 @@ function run_with_docker() {
     echo "Missing required variable: 'job.docker.image'" >&2
     exit 64;
   fi
-
-  local docker_cmd="/usr/local/bin/docker";
-  local bind_src="/Users";
-  local bind_dst="/Users";
+  
+  local docker_cmd="${DOCKER_CMD:-/usr/local/bin/docker}";
+  local bind_src="${DOCKER_BIND_SRC:-/Users}";
+  local bind_dst="${DOCKER_BIND_DST:-/Users}";
+  local docker_img="${GP_JOB_DOCKER_IMAGE:-genepattern/docker-java17:0.12}";
+  local workdir="${GP_JOB_WORKING_DIR:-`pwd`}";
 
   # with '--mount'
-  $DRY_RUN "${docker_cmd}" run -w "`pwd`" \
+  $DRY_RUN "${docker_cmd}" run \
+    --workdir "${workdir}" \
     --mount "type=bind,src=${bind_src},dst=${bind_dst}" \
-    "${GP_JOB_DOCKER_IMAGE}" \
+    "${docker_img}" \
     "${__gp_module_cmd[@]}";
-
-  # (option 2), with '--volume'
-  #$DRY_RUN "${docker_cmd}" run -w "`pwd`" \
-  #  --volume "${bind_src}:${bind_dst}" \
-  #  "${GP_JOB_DOCKER_IMAGE}" \
-  #  "${__gp_module_cmd[@]}";
 }
 
 run_with_docker "${@}"
