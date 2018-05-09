@@ -423,6 +423,16 @@ public class TestJobStatus {
         assertEquals("extJobId", "8937799", statusObj.getString("extJobId"));
     }
 
+//    @Test 
+//    public void refactor() {
+//        Status status=new Status.Builder()
+//                .jobInfo(jobInfo)
+//                .executionLogLocation(executionLogLocation)
+//                .jobStatusRecord(jobRunnerJob)
+//                .addUsageStat("job.docker.image", "genepattern/docker-java17:0.12")
+//            .build();
+//    }
+
     @Test
     public void finishedInLsf_fullStatusCheck() throws Exception { 
         when(jobRunnerJob.getJobState()).thenReturn(DrmJobState.DONE.name());
@@ -689,11 +699,11 @@ public class TestJobStatus {
             .jobStatusRecord(jobRunnerJob)
         .build();
 
-        assertEquals("requestedMemory", "8 GB", status.getRequestedMemory().getDisplayValue());
-        assertEquals("requestedCpuCount", (Integer)4, status.getRequestedCpuCount());
-        assertEquals("requestedNodeCount", (Integer)5, status.getRequestedNodeCount());
-        assertEquals("requestedWalltime", reqWalltime, status.getRequestedWalltime());
-        assertEquals("requestedQueue", "my_queue", status.getRequestedQueue());
+        //assertEquals("requestedMemory", "8 GB", status.getRequestedMemory().getDisplayValue());
+        //assertEquals("requestedCpuCount", (Integer)4, status.getRequestedCpuCount());
+        //assertEquals("requestedNodeCount", (Integer)5, status.getRequestedNodeCount());
+        //assertEquals("requestedWalltime", reqWalltime, status.getRequestedWalltime());
+        //assertEquals("requestedQueue", "my_queue", status.getRequestedQueue());
         
         assertEquals("resourceRequirements.size", 5, status.getResourceRequirements().size());
         assertEquals("resourceRequirements[0].key", "job.memory", status.getResourceRequirements().get(0).getKey());

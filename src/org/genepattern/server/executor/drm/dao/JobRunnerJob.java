@@ -34,11 +34,11 @@ import com.google.common.base.Strings;
 @Table(name="job_runner_job",
        uniqueConstraints=@UniqueConstraint(columnNames={"jr_classname", "jr_name"}))
 public class JobRunnerJob {
-     private static final Logger log = Logger.getLogger(JobRunnerJob.class);
+    private static final Logger log = Logger.getLogger(JobRunnerJob.class);
      
-     /** DB max length of the status_message column, e.g. varchar2(2000) in Oracle. */
-     public static final int STATUS_MESSAGE_LENGTH=2000;
-   
+    /** DB max length of the status_message column, e.g. varchar2(2000) in Oracle. */
+    public static final int STATUS_MESSAGE_LENGTH=2000;
+    
     /**
      * Truncate the string so that it is no longer than MAX characters.
      * @param in
@@ -81,6 +81,31 @@ public class JobRunnerJob {
         return f;
     }
 
+    /**
+     * Helper method for extacting the DrmJobState from the 'job_runner_job.job_state' column.
+     * Special-cases:
+     *   return null when the record is null
+     *   return null when job_runner_job.job_state is null or empty
+     *   return null when job_runner_job.job_state is not in the DrmJobState enum
+     * 
+     * @param jobStatusRecord a single record from the database
+     * @return a DrmJobState or null
+     */
+    public static DrmJobState toDrmJobState(final JobRunnerJob jobStatusRecord) {
+        if (jobStatusRecord == null) {
+            // no-op
+            return null;
+        }
+        final String jobStateStr=jobStatusRecord.getJobState();
+        try {
+            return DrmJobState.valueOf(jobStateStr);
+        }
+        catch (Throwable t) {
+            log.error("Error initializing DrmJobState enum from job_runner_job.job_state column="+jobStateStr, t);
+        }
+        return null;
+    }
+   
     /**
      * Helper method for creating a new DrmJobRecord from a given JobRunnerJob.
      * @param jobRunnerJob

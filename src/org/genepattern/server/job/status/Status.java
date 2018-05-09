@@ -78,15 +78,8 @@ public class Status {
     private Integer maxThreads=null;
     private String queueId = "";
     private List<GpLink> links=null;
-    private List<ResourceRequirement> resourceRequirements=null;
-    
-    //hard-coded resource requirements
-    private Memory requestedMemory=null;
-    private Integer requestedCpuCount=null;
-    private Integer requestedNodeCount=null;
-    private Walltime requestedWalltime=null;
-    private String requestedQueue=null;
-    
+    private List<StatusEntry> resourceRequirements=null;
+
     private void addLink(GpLink link) {
         if (links==null) {
             links=new ArrayList<GpLink>();
@@ -253,50 +246,46 @@ public class Status {
         return Collections.unmodifiableList(eventLog);
     }
 
-    public Memory getRequestedMemory() {
-        return this.requestedMemory;
-    }
-    
-    public Integer getRequestedCpuCount() {
-        return this.requestedCpuCount;
-    }
-    
-    public Integer getRequestedNodeCount() {
-        return this.requestedNodeCount;
-    }
-    
-    public Walltime getRequestedWalltime() {
-        return this.requestedWalltime;
-    }
-    
-    public String getRequestedQueue() {
-        return this.requestedQueue;
-    }
-
-    public List<ResourceRequirement> getResourceRequirements() {
+    /**
+     * Get the list of resource requirements for display on the Job Details page.
+     * These are resource requests (as opposed to resource usage), such as the 
+     * job.memory or the job.walltime.
+     */
+    public List<StatusEntry> getResourceRequirements() {
         return resourceRequirements;
     }
     
     /**
-     * A resource requirement for a job submitted to the external queuing system.
-     * For example, the requested amount of memory or the maximum wall clock time.
-     * Add these to the Status object so they can be displayed on the Job Status page.
+     * A key:value property associated with a job status object, such as
+     * the list of resourceRequirements or job usageStats.
      * 
      * @author pcarr
      */
-    public static class ResourceRequirement {
-        private String key;  // e.g. 'job.memory'
-        private String value; // e.g. '16 Gb'
-        private String displayValue; // optional, defaults to '<key>=<value>'
+    public static class StatusEntry {
+        private final String key;  // e.g. 'job.memory'
+        private final String keyName; // e.g. Memory
+        private final String value; // e.g. '16 Gb'
+        private final String displayValue; // optional, defaults to '<key>=<value>'
         
-        public ResourceRequirement(final String key, final String value, final String displayValue) {
+        public StatusEntry(final String key, final String value) {
+            this(key, key, value, value);
+        }
+        public StatusEntry(final String key, final String value, final String displayValue) {
+            this(key, key, value, displayValue);
+        }
+        public StatusEntry(final String key, final String keyName, final String value, final String displayValue) {
             this.key=key;
+            this.keyName=keyName;
             this.value=value;
             this.displayValue=displayValue;
         }
         
         public String getKey() {
             return key;
+        }
+        
+        public String getKeyName() {
+            return keyName;
         }
         
         public String getValue() {
@@ -310,6 +299,7 @@ public class Status {
         public JSONObject toJsonObj() throws JSONException {
             final JSONObject eventObj=new JSONObject();
             eventObj.put("key", key);
+            eventObj.put("keyName", keyName);
             eventObj.put("value", value);
             eventObj.put("displayValue", displayValue);
             return eventObj;
@@ -399,8 +389,8 @@ public class Status {
         jobStatus.put("eventLog", eventLog);
 
         if (resourceRequirements != null) {
-            JSONArray arr=new JSONArray();
-            for(ResourceRequirement r : resourceRequirements) {
+            final JSONArray arr=new JSONArray();
+            for(final StatusEntry r : resourceRequirements) {
                 arr.put(r.toJsonObj());
             }
             jobStatus.put("resourceRequirements", arr);
@@ -441,7 +431,7 @@ public class Status {
         private String stderrLocation=null;
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
-        private List<ResourceRequirement> resourceRequirements=null;
+        private List<StatusEntry> resourceRequirements=null;
         
         public Builder gpJobNo(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
@@ -522,12 +512,12 @@ public class Status {
         }
         
         public Builder addResourceRequirement(final String key, final String value, final String displayValue) {
-            return addResourceRequirement(new ResourceRequirement(key, value, displayValue));
+            return addResourceRequirement(new StatusEntry(key, value, displayValue));
         }
 
-        public Builder addResourceRequirement(ResourceRequirement r) {
+        public Builder addResourceRequirement(StatusEntry r) {
             if (resourceRequirements==null) {
-                resourceRequirements=new ArrayList<ResourceRequirement>();
+                resourceRequirements=new ArrayList<StatusEntry>();
             }
             resourceRequirements.add(r);
             return this;
@@ -595,23 +585,19 @@ public class Status {
                 
                 //initialize resource requirements
                 if (jobStatusRecord.getRequestedMemory() != null) {
-                    status.requestedMemory=Memory.fromSizeInBytes(jobStatusRecord.getRequestedMemory());
-                    this.addResourceRequirement(JobRunner.PROP_MEMORY, status.requestedMemory.getDisplayValue());
+                    this.addResourceRequirement(JobRunner.PROP_MEMORY, Memory.fromSizeInBytes(jobStatusRecord.getRequestedMemory()).getDisplayValue());
                 }
-                status.requestedCpuCount=jobStatusRecord.getRequestedCpuCount();
-                if (status.requestedCpuCount != null) {
+                if (jobStatusRecord.getRequestedCpuCount() != null) {
                     this.addResourceRequirement(JobRunner.PROP_CPU_COUNT, ""+jobStatusRecord.getRequestedCpuCount());
                 }
-                status.requestedNodeCount=jobStatusRecord.getRequestedNodeCount();
-                if (status.requestedNodeCount != null) {
+                if (jobStatusRecord.getRequestedNodeCount() != null) {
                     this.addResourceRequirement(JobRunner.PROP_NODE_COUNT, ""+jobStatusRecord.getRequestedNodeCount());
                 }
-                status.requestedWalltime=initWalltime(jobStatusRecord);
-                if (status.requestedWalltime != null) {
-                    this.addResourceRequirement(JobRunner.PROP_WALLTIME, status.requestedWalltime.toString());
+                final Walltime requestedWalltime=initWalltime(jobStatusRecord);
+                if (requestedWalltime != null) {
+                    this.addResourceRequirement(JobRunner.PROP_WALLTIME, requestedWalltime.toString());
                 }
-                status.requestedQueue=jobStatusRecord.getRequestedQueue();
-                if (status.requestedQueue != null) {
+                if (jobStatusRecord.getRequestedQueue() != null) {
                     this.addResourceRequirement(JobRunner.PROP_QUEUE, jobStatusRecord.getRequestedQueue());
                 }
             }
