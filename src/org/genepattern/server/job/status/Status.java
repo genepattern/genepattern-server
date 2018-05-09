@@ -45,6 +45,13 @@ import com.google.common.collect.ImmutableList;
      "statusFlag":"DONE",
      "statusMessage":"Completed on 2014-06-04T13:20:10-04:00"
    }
+   
+   REST API keys for Usage stats 
+     'cpuTimeMillis', 'cpuTime',   
+     'maxMemoryBytes', 'maxMemory', 
+     'maxSwapBytes', 'maxSwap'
+     'maxProcesses', 
+     'maxThreads'
 
  * </pre>
  * 
@@ -71,14 +78,20 @@ public class Status {
     private Date startTime=null;  // date the job started in the external queue
     private Date endTime=null;    // date the job ending in the external queue
     private Integer exitCode=null;
+    
+    // Requested resources
+    private List<StatusEntry> resourceRequirements=null;
+
+    // Usage stats
+    private List<StatusEntry> usageStats=null;
     private CpuTime cpuTime=null;
     private Memory maxMemory=null;
     private Memory maxSwap=null;
     private Integer maxProcesses=null;
     private Integer maxThreads=null;
+
     private String queueId = "";
     private List<GpLink> links=null;
-    private List<StatusEntry> resourceRequirements=null;
 
     private void addLink(GpLink link) {
         if (links==null) {
@@ -152,26 +165,6 @@ public class Status {
     
     public Integer getExitCode() {
         return exitCode;
-    }
-    
-    public CpuTime getCpuTime() {
-        return cpuTime;
-    }
-    
-    public Memory getMaxMemory() {
-        return maxMemory;
-    }
-    
-    public Memory getMaxSwap() {
-        return maxSwap;
-    }
-    
-    public Integer getMaxProcesses() {
-        return maxProcesses;
-    }
-    
-    public Integer getMaxThreads() {
-        return maxThreads;
     }
     
     public String getQueueId() {
@@ -255,6 +248,10 @@ public class Status {
         return resourceRequirements;
     }
     
+    public List<StatusEntry> getUsageStats() {
+        return usageStats;
+    }
+
     /**
      * A key:value property associated with a job status object, such as
      * the list of resourceRequirements or job usageStats.
@@ -314,7 +311,7 @@ public class Status {
     public String getJson() throws JSONException {
         return toJsonObj().toString(2);
     }
-    
+
     public JSONObject toJsonObj() throws JSONException {
         //init jobStatus
         final JSONObject jobStatus = new JSONObject();
@@ -351,6 +348,7 @@ public class Status {
         if (dateCompletedInGp != null) {
             jobStatus.put("completedInGp", DateUtil.toIso8601(dateCompletedInGp));
         }
+        
         if (cpuTime != null) {
             jobStatus.put("cpuTimeMillis",    cpuTime.asMillis());
             jobStatus.put("cpuTime", cpuTime.getDisplayValue());
@@ -432,6 +430,7 @@ public class Status {
         private JobRunnerJob jobStatusRecord=null;
         private String jobHref;
         private List<StatusEntry> resourceRequirements=null;
+        private List<StatusEntry> usageStats=null;
         
         public Builder gpJobNo(final Integer gpJobNo) {
             this.gpJobNo=gpJobNo;
@@ -515,11 +514,27 @@ public class Status {
             return addResourceRequirement(new StatusEntry(key, value, displayValue));
         }
 
-        public Builder addResourceRequirement(StatusEntry r) {
+        public Builder addResourceRequirement(final StatusEntry entry) {
             if (resourceRequirements==null) {
                 resourceRequirements=new ArrayList<StatusEntry>();
             }
-            resourceRequirements.add(r);
+            resourceRequirements.add(entry);
+            return this;
+        }
+
+        public Builder addUsageStat(final String key, final String value) {
+            return addUsageStat(key, key, value, value);
+        }
+
+        public Builder addUsageStat(final String key, final String keyName, final String value, final String displayValue) {
+            return addUsageStat(new StatusEntry(key, keyName, value, displayValue));
+        }
+
+        public Builder addUsageStat(final StatusEntry entry) {
+            if (usageStats==null) {
+                usageStats=new ArrayList<StatusEntry>();
+            }
+            usageStats.add(entry);
             return this;
         }
 
@@ -565,23 +580,12 @@ public class Status {
                 status.startTime=jobStatusRecord.getStartTime();
                 status.endTime=jobStatusRecord.getEndTime();
                 status.exitCode=jobStatusRecord.getExitCode();
+                status.queueId=jobStatusRecord.getQueueId();
 
-                if (jobStatusRecord.getCpuTime() != null) {
-                    status.cpuTime= new CpuTime(jobStatusRecord.getCpuTime());
-                }
-                if (jobStatusRecord.getMaxMemory() != null) {
-                    status.maxMemory=Memory.fromSizeInBytes(jobStatusRecord.getMaxMemory());
-                }
-                if (jobStatusRecord.getMaxSwap() != null) {
-                    status.maxSwap=Memory.fromSizeInBytes(jobStatusRecord.getMaxSwap());
-                }
+
                 if (jobStatusRecord.getExitCode() != null && jobStatusRecord.getExitCode() != 0) {
                     status.hasError = true;
                 }
-                
-                status.maxProcesses=jobStatusRecord.getMaxProcesses();
-                status.maxThreads=jobStatusRecord.getMaxThreads();
-                status.queueId=jobStatusRecord.getQueueId();
                 
                 //initialize resource requirements
                 if (jobStatusRecord.getRequestedMemory() != null) {
@@ -600,6 +604,52 @@ public class Status {
                 if (jobStatusRecord.getRequestedQueue() != null) {
                     this.addResourceRequirement(JobRunner.PROP_QUEUE, jobStatusRecord.getRequestedQueue());
                 }
+
+                // initialize usage stats ...
+                //   CPU Usage     ('cpuTimeMillis', 'cpuTime')
+                if (jobStatusRecord.getCpuTime() != null) {
+                    final CpuTime cpuTime= new CpuTime(jobStatusRecord.getCpuTime());
+                    status.cpuTime=cpuTime;
+                    this.addUsageStat("cpuTime", "CPU usage", ""+cpuTime.asMillis(), cpuTime.getDisplayValue());
+                }
+                //   Max memory    ('maxMemoryBytes', 'maxMemory')
+                if (jobStatusRecord.getMaxMemory() != null) {
+                    final Memory maxMemory=Memory.fromSizeInBytes(jobStatusRecord.getMaxMemory());
+                    status.maxMemory=maxMemory;
+                    this.addUsageStat("maxMemory", "Max memory", ""+maxMemory.format(), maxMemory.getDisplayValue());
+                }
+                else {
+                    // for debugging (not set)
+                    this.addUsageStat("maxMemory", "Max memory", "0", "");
+                }
+                //   Max swap      ('maxSwapBytes', 'maxSwap')
+                if (jobStatusRecord.getMaxSwap() != null) {
+                    final Memory maxSwap=Memory.fromSizeInBytes(jobStatusRecord.getMaxSwap());
+                    status.maxSwap=maxSwap;
+                    this.addUsageStat("maxSwap", "Max swap", maxSwap.format(), maxSwap.getDisplayValue());
+                }
+                else {
+                    // for debugging
+                    this.addUsageStat("maxSwap", "Max swap", "", "");
+                }
+                //   Max processes ('maxProcesses')
+                status.maxProcesses=jobStatusRecord.getMaxProcesses();
+                if (jobStatusRecord.getMaxProcesses() != null) {
+                    this.addUsageStat("maxProcesses", "Max processes", ""+jobStatusRecord.getMaxProcesses(), ""+jobStatusRecord.getMaxProcesses());
+                }
+                else {
+                    // for debugging
+                    this.addUsageStat("maxProcesses", "Max processes", "", "");
+                }
+                //   Max threads   ('maxThreads')
+                status.maxThreads=jobStatusRecord.getMaxThreads();
+                if (jobStatusRecord.getMaxThreads() != null) {
+                    this.addUsageStat("maxThreads", "Max threads", ""+jobStatusRecord.getMaxThreads(), ""+jobStatusRecord.getMaxThreads());
+                }
+                else {
+                    // for debugging
+                    this.addUsageStat("maxThreads", "Max threads", "", "");
+                }
             }
             
             // when jobInfo != null, only set the isFinished flag after the 
@@ -611,6 +661,13 @@ public class Status {
             }
             else {
                 status.resourceRequirements=ImmutableList.copyOf(this.resourceRequirements);
+            }
+            
+            if (this.usageStats == null || this.usageStats.size()==0) {
+                status.usageStats=Collections.emptyList();
+            }
+            else {
+                status.usageStats=ImmutableList.copyOf(this.usageStats);
             }
 
             return status;
