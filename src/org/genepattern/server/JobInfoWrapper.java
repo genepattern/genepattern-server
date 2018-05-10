@@ -1176,17 +1176,17 @@ public class JobInfoWrapper implements Serializable {
     }
     
     public boolean getHasVisualizer() {
-    	if (isVisualizer()) {
-    	    return true;
-    	}
-    	else if (isPipeline()) {
-    		for (JobInfoWrapper child : children) {
-    			if (child.isVisualizer()) {
-    			    return true;
-    			}
-    		}
-    	}
-    	return false;
+        if (isVisualizer()) {
+            return true;
+        }
+        else if (isPipeline()) {
+            for (JobInfoWrapper child : children) {
+                if (child.isVisualizer()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean getHasJavascript() {
