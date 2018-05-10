@@ -166,14 +166,14 @@ public class JobStatusBean {
         return jobInfoWrapper;
     }
 
-	/**
-	 * Get the job status details. This method uses the same model as the REST api call to 
-	 *     GET /rest/v1/jobs/{jobId}/status.json
-	 * @return
-	 */
-	public Status getJobStatus() {
-	    return jobStatus;
-	}
+    /**
+     * Get the job status details. This method uses the same model as the REST api call to 
+     *     GET /rest/v1/jobs/{jobId}/status.json
+     * @return
+     */
+    public Status getJobStatus() {
+        return jobStatus;
+    }
 
     /**
      * @return the top level job info, including all steps if it is a pipeline.
