@@ -56,7 +56,6 @@ public class JobStatusBean {
 
     private boolean sendEmailNotification = false;
     private boolean showExecutionLogs = false;
-    private boolean openVisualizers = false;
     private boolean canViewJob = false;
 
     //track the list of automatically opened visualizers
@@ -94,9 +93,6 @@ public class JobStatusBean {
         }
 
         this.canViewJob = initCanViewJob(currentUserId, jobNumber);
-
-        String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
-        setOpenVisualizers(openVisualizersParameter != null);
 
         UserDAO userDao = new UserDAO();
         User user = userDao.findById(currentUserId);
@@ -170,14 +166,6 @@ public class JobStatusBean {
         return jobInfoWrapper;
     }
 
-    public boolean getOpenVisualizers() {
-        return openVisualizers;
-    }
-
-	public void setOpenVisualizers(boolean openVisualizers) {
-		this.openVisualizers = openVisualizers;
-	}
-
 	/**
 	 * Get the job status details. This method uses the same model as the REST api call to 
 	 *     GET /rest/v1/jobs/{jobId}/status.json
@@ -205,7 +193,7 @@ public class JobStatusBean {
     }
 
     public boolean isShowExecutionLogs() {
-        return this.showExecutionLogs;
+        return showExecutionLogs;
     }
     
     public boolean isSendEmailNotification() {
