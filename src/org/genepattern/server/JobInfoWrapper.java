@@ -860,6 +860,11 @@ public class JobInfoWrapper implements Serializable {
     }
 
     //--- end JobInfo wrapper methods
+    
+    public boolean isShowExecutionLogs() {
+        return this.showExecutionLogs;
+    }
+
     public long getElapsedTimeMillis() {
         if (jobInfo != null) {
             if (jobInfo.getDateSubmitted() == null) {
