@@ -51,18 +51,26 @@ public class JobStatusBean {
     private JobInfoWrapper jobInfoWrapper = null;
     private JobRunnerJob jrj = null;
     private List<JobInfoWrapper> allSteps = null;
-    private String currentUserId = null;
+    private final String currentUserId;
     private String currentUserEmail = null;
 
     private boolean sendEmailNotification = false;
     private boolean showExecutionLogs = false;
     private boolean openVisualizers = false;
+    private boolean canViewJob = false;
 
     //track the list of automatically opened visualizers
     private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
     
     public JobStatusBean() {
-      init();
+        this.currentUserId = UIBeanHelper.getUserId();
+        init();
+    }
+    
+    protected boolean initCanViewJob(final String userId, int jobNumber) {
+        final boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        final PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobNumber);
+        return ph.canReadJob();
     }
     
     public void init(){
@@ -85,10 +93,11 @@ public class JobStatusBean {
             return;
         }
 
+        this.canViewJob = initCanViewJob(currentUserId, jobNumber);
+
         String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
         setOpenVisualizers(openVisualizersParameter != null);
 
-        currentUserId = UIBeanHelper.getUserId();
         UserDAO userDao = new UserDAO();
         User user = userDao.findById(currentUserId);
         if (user != null) {
@@ -154,10 +163,7 @@ public class JobStatusBean {
     }
 
     public boolean getCanViewJob() {
-        String user = UIBeanHelper.getUserId();
-        final boolean isAdmin = AuthorizationHelper.adminJobs(user);
-        PermissionsHelper ph = new PermissionsHelper(isAdmin, user, jobInfoWrapper.getJobNumber());
-        return ph.canReadJob();
+        return canViewJob;
     }
     
     public JobInfoWrapper getJobInfo() {
