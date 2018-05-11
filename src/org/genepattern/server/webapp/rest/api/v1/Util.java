@@ -28,8 +28,6 @@ public class Util {
      * This method has the effect of requiring a valid logged in gp user, because a 
      * RuntimeException will be thrown if the user is not logged in.
      * 
-     * @param request
-     * @return
      * @throws WebApplicationException if there is not a current user.
      */
     public static GpContext getUserContext(final HttpServletRequest request) {
@@ -48,6 +46,8 @@ public class Util {
      * administrator account.
      * This helper method will throw a '403 Forbidden' exception if the
      * current user is not an admin.
+     * 
+     * @throws WebApplicationException the current user is not an admin
      */
     public static GpContext getAdminUserContext(final HttpServletRequest request) {
         final GpContext userContext = Util.getUserContext(request);
