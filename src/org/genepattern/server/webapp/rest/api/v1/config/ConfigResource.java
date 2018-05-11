@@ -40,7 +40,7 @@ public class ConfigResource {
     public Response checkIsAdmin(@Context HttpServletRequest request) {
         final GpContext userContext = Util.getAdminUserContext(request);
         return Response.ok().entity(
-                "400 OK: User '"+userContext.getUserId()+"' is an administrator."
+                "200 OK: User '"+userContext.getUserId()+"' is an administrator."
         ).build();
     }
 
