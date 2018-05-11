@@ -117,6 +117,15 @@
 
             <ui:insert name="headText" />
 
+            <!-- Global site tag (gtag.js) - Goggle Analytics -->
+            <script async="async" src="https://www.googletagmanager.com/gtag/js?id=#{aboutBean.googleAnalyticsTrackingId}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '#{aboutBean.googleAnalyticsTrackingId}');
+            </script>            
         </head>
         <body onload="onLoad();">
             <script language="JavaScript1.2" type="text/javascript">

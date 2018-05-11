@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 
 <!--
-~ Copyright 2013 The Broad Institute, Inc.
-~ SOFTWARE COPYRIGHT NOTICE
-~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
-~
-~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
 -->
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk">
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
     <f:view contentType="text/html">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -201,6 +198,15 @@
 
             <ui:insert name="headText" />
 
+            <!-- Global site tag (gtag.js) - Goggle Analytics -->
+            <script async="async" src="https://www.googletagmanager.com/gtag/js?id=#{aboutBean.googleAnalyticsTrackingId}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '#{aboutBean.googleAnalyticsTrackingId}');
+            </script>            
         </head>
         <body onload="onLoad();">
 			<!-- Floating header  -->
