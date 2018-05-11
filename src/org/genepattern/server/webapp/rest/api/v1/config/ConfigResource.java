@@ -30,6 +30,20 @@ import java.util.Date;
 public class ConfigResource {
     final static private Logger log = Logger.getLogger(ConfigResource.class);
 
+    /**
+     * Example of how to require admin access to a REST endpoint
+     * Usage:
+     *     curl --user test http://127.0.0.1:8080/gp/rest/v1/config/is-admin
+     */
+    @GET
+    @Path("/is-admin")
+    public Response checkIsAdmin(@Context HttpServletRequest request) {
+        final GpContext userContext = Util.getAdminUserContext(request);
+        return Response.ok().entity(
+                "400 OK: User '"+userContext.getUserId()+"' is an administrator."
+        ).build();
+    }
+
     @GET
     @Path("/admin")
     @Produces(MediaType.APPLICATION_JSON)

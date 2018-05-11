@@ -42,7 +42,25 @@ public class Util {
         GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
         return userContext;
     }
-        
+    
+    /**
+     * Create a new userContext from the HTTP request which requires a valid
+     * administrator account.
+     * This helper method will throw a '403 Forbidden' exception if the
+     * current user is not an admin.
+     */
+    public static GpContext getAdminUserContext(final HttpServletRequest request) {
+        final GpContext userContext = Util.getUserContext(request);
+        if (!userContext.isAdmin()) {
+            // 403, see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.2
+            final String message="403 FORBIDDEN: User '"+userContext.getUserId()+"' not authorized. Must be an administrator.";
+            throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity(
+                message
+            ).build());
+        }
+        return userContext;
+    }
+
     public static GpContext getTaskContext(
             final HttpServletRequest request,
             final String taskNameOrLsid) 
