@@ -278,5 +278,15 @@ test_vcpus_flag() {
     "" "$(vcpus_flag)"
 }
 
+function doalarm_perl_wrapper() { 
+  perl -e 'alarm shift; exec @ARGV' -- "${@}" > /dev/null 2>&1 
+  exit_code=$?
+  echo "exit_code: $exit_code"
+}
+  
+test_doalarm_perl_wrapper() {
+  doalarm_perl_wrapper 1 sleep 10  
+}
+
 # run the tests
 source ${SHUNIT2_HOME}/src/shunit2
