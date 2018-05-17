@@ -280,6 +280,19 @@ default.properties:
     # Turn off the auto-creation of accounts with GenomeSpace
     # genomeSpaceAutoCreate: false
     
+    ##############################################################
+    # job.commandPrefix
+    #   add an optional command line prefix to the module command line
+    # this is prepended before command substutions are resolved.
+    #
+    # Example: 
+    #     # 'dry-run' via echo
+    #     job.commandPrefix: "echo"
+    #
+    # Example: 
+    #     # 'docker run' prefix
+    #     job.commandPrefix: "<run-with-docker>"
+    # 
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.

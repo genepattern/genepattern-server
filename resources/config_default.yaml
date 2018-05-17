@@ -244,7 +244,21 @@ default.properties:
     #     insert into task_category (task_category) values ('<baseLsid>', '<categoryName>')
     # (added in 3.7.3)
     org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
-    
+
+    ##############################################################
+    # job.commandPrefix
+    #   add an optional command line prefix to the module command line
+    # this is prepended before command substutions are resolved.
+    #
+    # Example: 
+    #     # 'dry-run' via echo
+    #     job.commandPrefix: "echo"
+    #
+    # Example: 
+    #     # 'docker run' prefix
+    #     job.commandPrefix: "<run-with-docker>"
+    # 
+
 executors:
     # default executor for all jobs, it is included in GenePattern
     # switched from RuntimeExec to LocalJobRunner in 3.9.0

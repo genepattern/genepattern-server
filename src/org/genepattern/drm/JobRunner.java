@@ -33,6 +33,22 @@ public void start();
  */
 public interface JobRunner {
     public static final String PROP_PREFIX="job.";
+    /**
+     * set the 'job.commandPrefix' to customize the way the server executes the module command.
+     *   This optional command line prefix  is prepended to the module command line before 
+     * command substutions are resolved.
+     * 
+     * Example: 'docker run' prefix
+     * <pre>
+           job.commandPrefix: "<run-with-docker>"
+     * </pre>
+     * 
+     * Example: 'dry-run' via echo
+     * <pre>
+           job.commandPrefix: "echo"
+     * </pre>
+     */
+    public static final String PROP_JOB_COMMAND_PREFIX="job.commandPrefix";
     public static final String PROP_JOB_INPUT_PARAMS="job.inputParams";
     /** 
      * optional param, when set it is the name of a log file for saving meta data about the completed job.

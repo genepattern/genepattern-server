@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.config;
 
+import static org.genepattern.drm.JobRunner.PROP_JOB_COMMAND_PREFIX;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -1120,6 +1122,13 @@ public class GpConfig {
             throw new IllegalArgumentException("jobContext is null");
         }
         final boolean isCommandLineJob = TaskType.JOB == jobContext.getTaskType();
+        if (isCommandLineJob) {
+            // get the 'job.commandPrefix' from the config_yaml file
+            final String custom_prefix=this.getGPProperty(jobContext, PROP_JOB_COMMAND_PREFIX);
+            if (!Strings.isNullOrEmpty(custom_prefix)) {
+                return custom_prefix;
+            }
+        }
         final String lsidStr = jobContext.getLsid();
         return CommandPrefixConfig.getCommandPrefix(this, isCommandLineJob, lsidStr);
     }

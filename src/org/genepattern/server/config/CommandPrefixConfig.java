@@ -18,14 +18,6 @@ import com.google.common.base.Strings;
  */
 public class CommandPrefixConfig {
 
-    public static String getCommandPrefix(final GpConfig gpConfig, final GpContext jobContext) 
-    throws MalformedURLException
-    {
-        final boolean isCommandLineJob = TaskType.JOB == jobContext.getTaskType();
-        final String lsidStr = jobContext.getLsid();
-        return getCommandPrefix(gpConfig, isCommandLineJob, lsidStr);
-    }
-
     /**
      * handle 'getCommandPrefix' for job in GenePatternAnalysisTask
      * 
@@ -90,39 +82,6 @@ public class CommandPrefixConfig {
     public String getDefaultCommandPrefix() {
         final String prefix=gpConfig().getCommandPrefixProps().getProps().get("default");
         return Strings.nullToEmpty(prefix);
-    }
-
-    /**
-     * handle 'getCommandPrefix' for job in GenePatternAnalysisTask
-     * 
-     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 
-     * 1. task version specific entry in task prefix mapping 
-     * 2. task versionless entry in task prefix mapping 
-     * 3. default command prefix only applies to non-visualizers
-     * 
-     * @return null if no command prefix is specified.
-     * @throws IllegalArgumentException if lsid is null
-     * @throws MalformedURLException if lsid is not valid
-     */
-    public String getCommandPrefix(final GpContext jobContext) 
-    throws MalformedURLException
-    {
-        if (jobContext==null) {
-            throw new IllegalArgumentException("jobContext is null");
-        } 
-        final boolean isCommandLineJob = TaskType.JOB == jobContext.getTaskType();
-        final String lsidStr = jobContext.getLsid();
-        final LSID lsid=new LSID(lsidStr);
-        final Map<String,String> taskPrefixMapping = gpConfig.getTaskPrefixMappingProps().getProps();
-        final String commandPrefixName = getCommandPrefixName(taskPrefixMapping, lsid);
-
-        final Map<String,String> commandPrefixProps=gpConfig.getCommandPrefixProps().getProps();
-        final String commandPrefixCustom=commandPrefixProps.get(commandPrefixName);
-        if (commandPrefixCustom == null && isCommandLineJob) {
-            // default command prefix only applies to command line jobs
-            return gpConfig.getCommandPrefixProps().getProps().get("default");
-        }
-        return commandPrefixCustom;
     }
 
     public Properties getCommandPrefixProperties() {
