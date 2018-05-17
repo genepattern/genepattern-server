@@ -63,7 +63,7 @@ public class UsageStatsResource {
     public Response userSummary(@Context HttpServletRequest request,@PathParam("startDate") String startDay, @PathParam("endDate") String endDay) {
         GpContext userContext = Util.getUserContext(request);
         if (! userContext.isAdmin()) {
-            return Response.status(403).entity("Forbidden: User"+userContext.getUserId() + " is not authorized to access the summary usage data.Must be administrator").build();
+            return Response.status(403).entity("Forbidden: User "+userContext.getUserId() + " is not authorized to access the summary usage data.Must be administrator.\n").build();
         }
         // This is used for deciding if jobs are internal or external
         String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
@@ -88,7 +88,6 @@ public class UsageStatsResource {
             final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
             UsageStatsDAO ds = new UsageStatsDAO(mgr);
             String excludedUsers = getUserExclusionClause(userContext, ds);
-            System.out.println("D " + excludedUsers);
             
             try {            
                 object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));

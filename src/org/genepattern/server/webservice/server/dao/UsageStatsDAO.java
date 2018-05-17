@@ -22,13 +22,11 @@ public class UsageStatsDAO extends BaseDAO {
     public String generateUserExclusionClause(String userOrEmailList){
         StringBuffer sqlBuff = new StringBuffer("select USER_ID from gp_user where (USER_ID  in "+userOrEmailList +") or (EMAIL in "+userOrEmailList+")" );
         ResultSet rs = null;
-        System.out.println("SQL "+sqlBuff.toString());
         StringBuffer buff = new StringBuffer(" and ( USER_ID not in (");
         try {
             rs = this.executeSQL(sqlBuff.toString());
             while (rs.next()) {
                 String userId = rs.getString(1);
-                System.out.println(" -- " + userId);
                 buff.append("\'");
                 buff.append(userId);
                 buff.append("\'");
