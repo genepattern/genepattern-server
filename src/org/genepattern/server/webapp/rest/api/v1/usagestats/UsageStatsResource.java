@@ -63,7 +63,7 @@ public class UsageStatsResource {
     public Response userSummary(@Context HttpServletRequest request,@PathParam("startDate") String startDay, @PathParam("endDate") String endDay) {
         GpContext userContext = Util.getUserContext(request);
         if (! userContext.isAdmin()) {
-            return Response.status(401).entity("Only admins can set a system message!").build();
+            return Response.status(403).entity("Forbidden: User"+userContext.getUserId() + " is not authorized to access the summary usage data.Must be administrator").build();
         }
         // This is used for deciding if jobs are internal or external
         String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
