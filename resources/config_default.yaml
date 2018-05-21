@@ -279,7 +279,7 @@ executors:
             job.logFile: ".rte.out"
 
             ##############################################################
-            # (experimental) Docker integration
+            # Docker integration
             #   run the command in a docker container ...
             #   see: https://docs.docker.com/engine/reference/commandline/run/
             #   see: https://docs.docker.com/storage/bind-mounts/
@@ -300,11 +300,13 @@ executors:
             #   The bind_src and bind_dst must be the same path. They are separated for 
             #   illustration purposes.
             # 
+            "job.commandPrefix": "<run-with-docker>"
+            "job.docker.image": "genepattern/docker-java17:0.12" 
             "docker": "/usr/local/bin/docker"
             "job.docker.bind_src": "/Users"
             "job.docker.bind_dst": "/Users"
             "job.workingDir": "<jobs>/<job_id>"
-            run-with-docker: "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+            "run-with-docker": "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
                 -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
                 -e DOCKER_CMD=<docker> \
                 -e GP_JOB_WORKING_DIR=<job.workingDir> \
@@ -318,16 +320,15 @@ executors:
             #   Note: we are using the 'run-with-docker.sh' wrapper because it
             #   outputs a better error message when the 'job.docker.image'
             #   is not set
-            "docker-run": "<docker> run -w <job.workingDir> \
-                 --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
-                 <job.docker.image>"
-            #"docker-run": "<docker> run -w <job.workingDir> --mount <job.docker.mount> <job.docker.image>"
+            #"docker-run": "<docker> run -w <job.workingDir> \
+            #     --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
+            #     <job.docker.image>"
 
-            ## <java> in docker
-            java: "<run-with-docker> java"
+            ## default <java> substitution
+            java: "java"
 
-            ## <perl> in docker
-            perl: "<run-with-docker> perl"
+            ## default <perl> substitution
+            perl: "perl"
 
-            ## <python_3.6> in docker
-            python_3.6: "<run-with-docker> python"
+            ## default <python_3.6> in substitution
+            python_3.6: "python3"
