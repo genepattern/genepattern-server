@@ -66,7 +66,7 @@ function run_with_docker() {
   parse_args "${@}";
   init_module_envs;
   
-  ## check for required arg
+  ## check for required arg, 'job.docker.image'
   #    note: -z $var-name will fail when var-name is not set AND when var-name is the empty string
   #    note: see http://tldp.org/LDP/abs/html/exitcodes.html#EXITCODESREF
   if [ -z "${GP_JOB_DOCKER_IMAGE}" ]; then
@@ -77,9 +77,36 @@ function run_with_docker() {
   local docker_cmd="${DOCKER_CMD:-/usr/local/bin/docker}";
   local bind_src="${DOCKER_BIND_SRC:-/Users}";
   local bind_dst="${DOCKER_BIND_DST:-/Users}";
+  # note: this default is ignored by the check for 'job.docker.image' above
   local docker_img="${GP_JOB_DOCKER_IMAGE:-genepattern/docker-java17:0.12}";
   local workdir="${GP_JOB_WORKING_DIR:-`pwd`}";
+  
+  ## check for 'docker' executable
+  #    use the 'command -v' idiom to check the docker_cmd
+  #    it will have a non-zero status if the command is not found
+  # Example:
+  #   $ command -v /usr/local/bin/docker
+  #   $ echo $?
+  # See:
+  #   http://pubs.opengroup.org/onlinepubs/9699919799/utilities/command.html
+  command -v "$docker_cmd" >/dev/null || { 
+    echo "\
+Command not found: '${docker_cmd}'
 
+Make sure to install Docker and configure your GenePattern Server.
+
+To install Docker on Mac OS X ...
+  See: https://docs.docker.com/docker-for-mac/install/
+  
+To configure your server ...
+  Set the 'docker' property in your config_yaml file. E.g.
+default.properties:
+    ...
+    # path to docker executable
+    \"docker\": \"/usr/local/bin/docker\"
+" >&2; exit 127; 
+  }
+  
   # with '--mount'
   $DRY_RUN "${docker_cmd}" run \
     --workdir "${workdir}" \
