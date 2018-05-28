@@ -40,6 +40,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
@@ -73,6 +74,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 /**
  * RESTful implementation of the /jobs resource.
  *
@@ -528,8 +535,9 @@ public class JobsResource {
         }
     }
 
-
-
+    protected static LoadingCache<String, JSONObject> jobCache;
+    protected final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
+    
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
@@ -556,7 +564,6 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
-
         final GpContext jobContext=Util.getJobContext(request, jobId);
 
         final String gpUrl=UrlUtil.getBaseGpHref(request);
@@ -566,15 +573,55 @@ public class JobsResource {
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
-
-            JSONObject job=null;
-            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
-                    includePermissions, includeComments, includeTags);
-            if (job==null) {
-                throw new Exception("Unexpected null return value");
+            final String composite_key = jobId + includeChildren + includeOutputFiles + includePermissions + includeComments + includeTags;
+            System.err.println("JobResource getJob");
+            Object[] params = new Object[6];
+            params[0]=jobContext.getJobInfo();
+            params[1]=includeChildren;
+            params[2]=includeOutputFiles;
+            params[3]=includePermissions;
+            params[4]=includeComments;
+            params[5]=includeTags;
+            paramMap.put(composite_key, params);
+            
+            if (jobCache == null){
+                jobCache = CacheBuilder.newBuilder()
+                    .maximumSize(1000)
+                    .expireAfterWrite(10, TimeUnit.DAYS)
+                     .build(
+                        new CacheLoader<String, JSONObject>() {
+                          public JSONObject load(String key) throws Exception {
+                              Object[] params = paramMap.get(key);
+                              JobInfo ji = (JobInfo)params[0];
+                              Boolean inclChildren = (Boolean)params[1];
+                              Boolean inclOutputFiles = (Boolean)params[2];
+                              Boolean inclPermissions = (Boolean)params[3];
+                              Boolean inclComments = (Boolean)params[4];
+                              Boolean inclTags = (Boolean)params[5];
+                              
+                              JSONObject job=null;
+                              job=getJobImpl.getJob(jobContext, ji, inclChildren, inclOutputFiles,
+                                      inclPermissions, inclComments, inclTags);
+                              if (job==null) {
+                                  throw new Exception("Unexpected null return value");
+                              }
+                              System.err.println("ADDING TO CACHE "+ ji.getJobNumber() + "  " + composite_key);
+                              //decorate with 'self'
+                              job.put("self", self);                   
+                            return job;
+                          }
+                        });
             }
-            //decorate with 'self'
-            job.put("self", self);
+            JobInfo jobInfo = jobContext.getJobInfo();
+            JSONObject job=jobCache.get(composite_key);
+            
+            if (!isFinished(jobInfo.getStatus()) ){
+                // don't cache it for real if its not finished
+                jobCache.invalidate(composite_key);
+                System.err.println("REMOVING UNFINISHED FROM CACHE "+ jobId + "  " + jobInfo.getStatus() + "  " + composite_key);
+                
+            }
+            
             if (prettyPrint) {
                 final int indentFactor=2;
                 jsonStr=job.toString(indentFactor);
@@ -582,7 +629,7 @@ public class JobsResource {
             else {
                 jsonStr=job.toString();
             }
-
+            
             //for debugging
             if (log.isDebugEnabled()) {
                 try {
@@ -597,6 +644,8 @@ public class JobsResource {
                     log.error("Unexpected error in debugging code", t);
                 }
             }
+            
+           
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
@@ -615,6 +664,21 @@ public class JobsResource {
                 .entity(jsonStr)
                 .build();
     }
+    
+    /**
+     * XXX JTL GP-7041   This is copies from GenePatternAnalysisTask - is there one we can sue without copying somewhere?
+     * @param jobStatus
+     * @return
+     */
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
+    }
+    
+    
 
     /**
      * GET status.json for the given jobId.
@@ -859,6 +923,7 @@ public class JobsResource {
         final GpContext userContext = Util.getUserContext(request);
 
         try {
+            System.err.println("XXX GetRecentJobs");
             final String gpUrl=UrlUtil.getBaseGpHref(request);
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO(mgr);
@@ -882,7 +947,7 @@ public class JobsResource {
 
             // Put the job JSON in an array
             boolean includePermissions = false;
-            JSONArray jobs = new JSONArray();
+             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
                 JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles,
                         includePermissions, includeComments, includeTags);

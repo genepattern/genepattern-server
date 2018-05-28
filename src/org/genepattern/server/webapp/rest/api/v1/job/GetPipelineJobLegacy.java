@@ -5,7 +5,10 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
@@ -15,6 +18,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
@@ -31,6 +35,10 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 public class GetPipelineJobLegacy implements GetJob {
     private static final Logger log = Logger.getLogger(GetPipelineJobLegacy.class);
@@ -115,43 +123,111 @@ public class GetPipelineJobLegacy implements GetJob {
         return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
+    
+    protected static LoadingCache<String, JSONObject> jobCache;
+    protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
+    
     public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
                              final boolean includeOutputFiles, final boolean includePermissions,
                              final boolean includeComments, final boolean includeTags) throws GetJobException {
         //manually create a JSONObject representing the job
-        final JSONObject job;
-        if (!includeChildren) {
-            job = initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
+        
+        final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includePermissions + includeComments + includeTags;
+        Object[] params = new Object[6];
+        params[0]=jobInfo;
+        params[1]=includeChildren;
+        params[2]=includeOutputFiles;
+        params[3]=includePermissions;
+        params[4]=includeComments;
+        params[5]=includeTags;
+        paramMap.put(composite_key, params);
+        // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
+        if (jobCache == null){
+            jobCache = CacheBuilder.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(10, TimeUnit.DAYS)
+                 .build(
+                    new CacheLoader<String, JSONObject>() {
+                      public JSONObject load(String key) throws Exception {
+                          Object[] params = paramMap.get(key);
+                          JobInfo ji = (JobInfo)params[0];
+                          Boolean inclChildren = (Boolean)params[1];
+                          Boolean inclOutputFiles = (Boolean)params[2];
+                          Boolean inclPermissions = (Boolean)params[3];
+                          Boolean inclComments = (Boolean)params[4];
+                          Boolean inclTags = (Boolean)params[5];
+                              
+                          
+                          JSONObject job=null;
+                          if (!inclChildren) {
+                              job = initJsonObject(gpUrl, ji, inclOutputFiles, inclComments, inclTags);
+                          }
+                          else {
+                              try {
+                                  InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, ji,
+                                          inclOutputFiles, inclComments, inclTags);
+                                  walker.prepareJsonObject();
+                                  job=walker.getJsonObject();
+                              }
+                              catch (Throwable t) {
+                                  final String errorMessage="Error getting JSON representation for children of jobId="+ji.getJobNumber();
+                                  log.error(errorMessage, t);
+                                  throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+                              }
+                          }
+                          if (inclPermissions && job!=null) {
+                              //only include permissions for the top-level job
+                              try {
+                              JSONObject permissions=initPermissionsFromJob(userContext, ji);
+                              if (permissions!=null) {
+                                  job.put("permissions", permissions);
+                              }
+                              }
+                              catch (Throwable t) {
+                                  final String errorMessage="Error initializing permissions for jobId="+ji.getJobNumber();
+                                  log.error(errorMessage, t);
+                                  throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+                              }
+                          }       
+                         return job;
+                      }
+                    });
         }
-        else {
-            try {
-                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo,
-                        includeOutputFiles, includeComments, includeTags);
-                walker.prepareJsonObject();
-                job=walker.getJsonObject();
-            }
-            catch (Throwable t) {
-                final String errorMessage="Error getting JSON representation for children of jobId="+jobInfo.getJobNumber();
-                log.error(errorMessage, t);
-                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-            }
+        JSONObject job = null;
+        try {
+            job=jobCache.get(composite_key);
+        } catch (ExecutionException e){
+            e.printStackTrace(System.err);
+            final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+            log.error(errorMessage, e);
+            throw new GetJobException(errorMessage);
         }
-        if (includePermissions && job!=null) {
-            //only include permissions for the top-level job
-            try {
-            JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
-            if (permissions!=null) {
-                job.put("permissions", permissions);
-            }
-            }
-            catch (Throwable t) {
-                final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
-                log.error(errorMessage, t);
-                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-            }
+        if (!isFinished(jobInfo.getStatus()) ){
+            // don't cache it for real if its not finished
+            jobCache.invalidate(composite_key);
+            System.err.println("REMOVING UNFINISHED FROM CACHE "+ jobInfo.getJobNumber() + "  " + jobInfo.getStatus() + "  " + composite_key);
+            
         }
+       
+          
         return job;
     }
+    
+    
+    /**
+     * XXX JTL GP-7041   This is copies from GenePatternAnalysisTask - is there one we can sue without copying somewhere?
+     * @param jobStatus
+     * @return
+     */
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
+    }
+    
+    
     
     private JSONObject initPermissionsFromJob(final GpContext userContext, final JobInfo jobInfo) throws JSONException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
