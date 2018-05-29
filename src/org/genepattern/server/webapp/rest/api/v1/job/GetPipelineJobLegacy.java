@@ -132,14 +132,13 @@ public class GetPipelineJobLegacy implements GetJob {
                              final boolean includeComments, final boolean includeTags) throws GetJobException {
         //manually create a JSONObject representing the job
         
-        final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includePermissions + includeComments + includeTags;
-        Object[] params = new Object[6];
+        final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includeComments + includeTags;
+        Object[] params = new Object[5];
         params[0]=jobInfo;
         params[1]=includeChildren;
         params[2]=includeOutputFiles;
-        params[3]=includePermissions;
-        params[4]=includeComments;
-        params[5]=includeTags;
+        params[3]=includeComments;
+        params[4]=includeTags;
         paramMap.put(composite_key, params);
         // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
         if (jobCache == null){
@@ -153,9 +152,8 @@ public class GetPipelineJobLegacy implements GetJob {
                           JobInfo ji = (JobInfo)params[0];
                           Boolean inclChildren = (Boolean)params[1];
                           Boolean inclOutputFiles = (Boolean)params[2];
-                          Boolean inclPermissions = (Boolean)params[3];
-                          Boolean inclComments = (Boolean)params[4];
-                          Boolean inclTags = (Boolean)params[5];
+                          Boolean inclComments = (Boolean)params[3];
+                          Boolean inclTags = (Boolean)params[3];
                               
                           System.err.println("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
                           
