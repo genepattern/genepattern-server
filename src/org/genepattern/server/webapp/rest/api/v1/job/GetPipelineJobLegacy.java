@@ -157,7 +157,7 @@ public class GetPipelineJobLegacy implements GetJob {
                           Boolean inclComments = (Boolean)params[4];
                           Boolean inclTags = (Boolean)params[5];
                               
-                          System.err.println("--->>>  ADDING TO CACHE "+ jobInfo.getJobNumber() + "  " + jobInfo.getStatus() + "  " + composite_key);
+                          System.err.println("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
                           
                           JSONObject job=null;
                           if (!inclChildren) {

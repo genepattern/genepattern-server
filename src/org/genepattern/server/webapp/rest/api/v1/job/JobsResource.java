@@ -891,7 +891,6 @@ public class JobsResource {
         final GpContext userContext = Util.getUserContext(request);
 
         try {
-            System.err.println("XXX GetRecentJobs");
             final String gpUrl=UrlUtil.getBaseGpHref(request);
             // Get the number of recent jobs to show
             UserDAO userDao = new UserDAO(mgr);
