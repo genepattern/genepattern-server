@@ -534,9 +534,6 @@ public class JobsResource {
             return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
         }
     }
-
-    protected static LoadingCache<String, JSONObject> jobCache;
-    protected final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
     
     ////////////////////////////////////
     // Getting a job
@@ -573,23 +570,15 @@ public class JobsResource {
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
-            final String composite_key = jobId + includeChildren + includeOutputFiles + includePermissions + includeComments + includeTags;
-            System.err.println("JobResource getJob");
-           
-                             
-                              
-              JSONObject job=null;
-              job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
-                      includePermissions, includeComments, includeTags);
-              if (job==null) {
-                  throw new Exception("Unexpected null return value");
-              }
-               //decorate with 'self'
-              job.put("self", self);                   
-                           
-            JobInfo jobInfo = jobContext.getJobInfo();
-         
-            
+            JSONObject job=null;
+            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
+                    includePermissions, includeComments, includeTags);
+            if (job==null) {
+                throw new Exception("Unexpected null return value");
+            }
+            //decorate with 'self'
+            job.put("self", self);                   
+
             if (prettyPrint) {
                 final int indentFactor=2;
                 jsonStr=job.toString(indentFactor);

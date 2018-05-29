@@ -124,6 +124,34 @@ public class GetPipelineJobLegacy implements GetJob {
     }
 
     
+    
+    
+    protected JSONObject _getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
+            final boolean includeOutputFiles,
+            final boolean includeComments, final boolean includeTags) throws GetJobException {
+        
+        JSONObject job=null;
+        if (!includeChildren) {
+            job = initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
+        }
+        else {
+            try {
+                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo,
+                        includeOutputFiles, includeComments, includeTags);
+                walker.prepareJsonObject();
+                job=walker.getJsonObject();
+            }
+            catch (Throwable t) {
+                final String errorMessage="Error getting JSON representation for children of jobId="+jobInfo.getJobNumber();
+                log.error(errorMessage, t);
+                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+            }
+        }
+        
+       return job;
+    
+    }
+    
     protected static LoadingCache<String, JSONObject> jobCache;
     protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
     
@@ -133,12 +161,13 @@ public class GetPipelineJobLegacy implements GetJob {
         //manually create a JSONObject representing the job
         
         final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includeComments + includeTags;
-        Object[] params = new Object[5];
+        Object[] params = new Object[6];
         params[0]=jobInfo;
         params[1]=includeChildren;
         params[2]=includeOutputFiles;
         params[3]=includeComments;
         params[4]=includeTags;
+        params[5]=userContext;
         paramMap.put(composite_key, params);
         // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
         if (jobCache == null){
@@ -154,62 +183,42 @@ public class GetPipelineJobLegacy implements GetJob {
                           Boolean inclOutputFiles = (Boolean)params[2];
                           Boolean inclComments = (Boolean)params[3];
                           Boolean inclTags = (Boolean)params[3];
-                              
+                          GpContext uc = (GpContext)params[5];
                           System.err.println("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
                           
-                          JSONObject job=null;
-                          if (!inclChildren) {
-                              job = initJsonObject(gpUrl, ji, inclOutputFiles, inclComments, inclTags);
-                          }
-                          else {
-                              try {
-                                  InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, ji,
-                                          inclOutputFiles, inclComments, inclTags);
-                                  walker.prepareJsonObject();
-                                  job=walker.getJsonObject();
-                              }
-                              catch (Throwable t) {
-                                  final String errorMessage="Error getting JSON representation for children of jobId="+ji.getJobNumber();
-                                  log.error(errorMessage, t);
-                                  throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-                              }
-                          }
-                          
-                         return job;
+                         return _getJob(uc, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
                       }
                     });
         }
         JSONObject job = null;
         try {
-            job=jobCache.get(composite_key);
+            if (isFinished(jobInfo.getStatus())){
+                job=jobCache.get(composite_key);                 
+            } else {
+                // skip the cache if not finished, don't use the constructor since we don't want it cached
+                job = _getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+            }
             if (includePermissions && job!=null) {
                 //only include permissions for the top-level job
                 try {
-                JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
-                if (permissions!=null) {
-                    job.put("permissions", permissions);
-                }
+                    JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
+                    if (permissions!=null) {
+                        job.put("permissions", permissions);
+                    }
                 }
                 catch (Throwable t) {
                     final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
                     log.error(errorMessage, t);
                     throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
                 }
-            }       
+            } 
         } catch (ExecutionException e){
             e.printStackTrace(System.err);
             final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
             log.error(errorMessage, e);
             throw new GetJobException(errorMessage);
         }
-        if (!isFinished(jobInfo.getStatus()) ){
-            // don't cache it for real if its not finished
-            jobCache.invalidate(composite_key);
-            System.err.println("REMOVING UNFINISHED FROM CACHE "+ jobInfo.getJobNumber() + "  " + jobInfo.getStatus() + "  " + composite_key);
-            
-        }
-       
-          
+        
         return job;
     }
     
