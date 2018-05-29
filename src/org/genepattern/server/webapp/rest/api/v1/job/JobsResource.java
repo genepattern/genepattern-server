@@ -575,52 +575,20 @@ public class JobsResource {
         try {
             final String composite_key = jobId + includeChildren + includeOutputFiles + includePermissions + includeComments + includeTags;
             System.err.println("JobResource getJob");
-            Object[] params = new Object[6];
-            params[0]=jobContext.getJobInfo();
-            params[1]=includeChildren;
-            params[2]=includeOutputFiles;
-            params[3]=includePermissions;
-            params[4]=includeComments;
-            params[5]=includeTags;
-            paramMap.put(composite_key, params);
-            
-            if (jobCache == null){
-                jobCache = CacheBuilder.newBuilder()
-                    .maximumSize(1000)
-                    .expireAfterWrite(10, TimeUnit.DAYS)
-                     .build(
-                        new CacheLoader<String, JSONObject>() {
-                          public JSONObject load(String key) throws Exception {
-                              Object[] params = paramMap.get(key);
-                              JobInfo ji = (JobInfo)params[0];
-                              Boolean inclChildren = (Boolean)params[1];
-                              Boolean inclOutputFiles = (Boolean)params[2];
-                              Boolean inclPermissions = (Boolean)params[3];
-                              Boolean inclComments = (Boolean)params[4];
-                              Boolean inclTags = (Boolean)params[5];
+           
+                             
                               
-                              JSONObject job=null;
-                              job=getJobImpl.getJob(jobContext, ji, inclChildren, inclOutputFiles,
-                                      inclPermissions, inclComments, inclTags);
-                              if (job==null) {
-                                  throw new Exception("Unexpected null return value");
-                              }
-                              System.err.println("ADDING TO CACHE "+ ji.getJobNumber() + "  " + composite_key);
-                              //decorate with 'self'
-                              job.put("self", self);                   
-                            return job;
-                          }
-                        });
-            }
+              JSONObject job=null;
+              job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
+                      includePermissions, includeComments, includeTags);
+              if (job==null) {
+                  throw new Exception("Unexpected null return value");
+              }
+               //decorate with 'self'
+              job.put("self", self);                   
+                           
             JobInfo jobInfo = jobContext.getJobInfo();
-            JSONObject job=jobCache.get(composite_key);
-            
-            if (!isFinished(jobInfo.getStatus()) ){
-                // don't cache it for real if its not finished
-                jobCache.invalidate(composite_key);
-                System.err.println("REMOVING UNFINISHED FROM CACHE "+ jobId + "  " + jobInfo.getStatus() + "  " + composite_key);
-                
-            }
+         
             
             if (prettyPrint) {
                 final int indentFactor=2;

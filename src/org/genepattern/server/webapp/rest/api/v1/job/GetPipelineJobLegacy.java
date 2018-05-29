@@ -157,6 +157,7 @@ public class GetPipelineJobLegacy implements GetJob {
                           Boolean inclComments = (Boolean)params[4];
                           Boolean inclTags = (Boolean)params[5];
                               
+                          System.err.println("--->>>  ADDING TO CACHE "+ jobInfo.getJobNumber() + "  " + jobInfo.getStatus() + "  " + composite_key);
                           
                           JSONObject job=null;
                           if (!inclChildren) {
@@ -175,20 +176,7 @@ public class GetPipelineJobLegacy implements GetJob {
                                   throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
                               }
                           }
-                          if (inclPermissions && job!=null) {
-                              //only include permissions for the top-level job
-                              try {
-                              JSONObject permissions=initPermissionsFromJob(userContext, ji);
-                              if (permissions!=null) {
-                                  job.put("permissions", permissions);
-                              }
-                              }
-                              catch (Throwable t) {
-                                  final String errorMessage="Error initializing permissions for jobId="+ji.getJobNumber();
-                                  log.error(errorMessage, t);
-                                  throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-                              }
-                          }       
+                          
                          return job;
                       }
                     });
@@ -196,6 +184,20 @@ public class GetPipelineJobLegacy implements GetJob {
         JSONObject job = null;
         try {
             job=jobCache.get(composite_key);
+            if (includePermissions && job!=null) {
+                //only include permissions for the top-level job
+                try {
+                JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
+                if (permissions!=null) {
+                    job.put("permissions", permissions);
+                }
+                }
+                catch (Throwable t) {
+                    final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+                    log.error(errorMessage, t);
+                    throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+                }
+            }       
         } catch (ExecutionException e){
             e.printStackTrace(System.err);
             final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
