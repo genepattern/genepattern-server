@@ -215,45 +215,113 @@ public class StartupServlet extends HttpServlet {
     }
 
     /**
-     * Initialize the path to the Log4J logging directory.
+     * Get the optional custom path to the 'gp.log' directory
+     * @return the 'gp.log' property or null if not set
      */
-    protected void initLogDir() {
-        File logDir=null;
-        // By default, logDir is '<gpHomeDir>/logs'
-        if (this.gpHomeDir != null) {
-            logDir=new File(this.gpHomeDir, "logs");
+    protected static String getCustomGpLog(final ServletConfig config) {
+        String gpLog=System.getProperty("GP_LOG", System.getProperty("gp.log", null));
+        if (!Strings.isNullOrEmpty(gpLog)) {
+            return gpLog;
         }
-        // On older version of GP (which don't define a gpHomeDir) the logDir is '<gpWorkingDir>../logs'
-        else if (this.gpWorkingDir != null) {
-            logDir=new File(this.gpWorkingDir, "../logs");
+        gpLog = config.getInitParameter("GP_LOG");
+        if (!Strings.isNullOrEmpty(gpLog)) {
+            return gpLog;
+        }
+        gpLog = config.getInitParameter("gp.log");
+        if (!Strings.isNullOrEmpty(gpLog)) {
+            return gpLog;
+        }
+        gpLog = System.getenv("GP_LOG");
+        if (!Strings.isNullOrEmpty(gpLog)) {
+            return gpLog;
+        }
+        gpLog = System.getenv("gp.log");
+        if (!Strings.isNullOrEmpty(gpLog)) {
+            return gpLog;
+        }
+        return null;
+    }
+
+    /**
+     * Initialize the path to the Log4J logs directory.
+     * Default:
+     *   <gp.home>/logs
+     * Legacy:
+     *   ../logs
+     * Custom:
+     *   <gp.log>
+     */
+    protected static File initLogDirPath(final ServletConfig servletConfig, final File gpHomeDir, final File gpWorkingDir) {
+        // customize by setting 'gp.log' as a system property
+        final String customGpLog=getCustomGpLog(servletConfig);
+        if (!Strings.isNullOrEmpty(customGpLog)) {
+            return new File(customGpLog);
+        }
+        // By default, logDir is '<gpHomeDir>/logs'
+        if (gpHomeDir != null) {
+            return new File(gpHomeDir, "logs");
+        }
+        // On older versions of GP (which don't define gpHomeDir) the logDir is '<gpWorkingDir>../logs'
+        else if (gpWorkingDir != null) {
+            return new File(gpWorkingDir.getParentFile(), "logs");
         }
         else {
             System.err.println("gpHomeDir and gpWorkingDir are not defined, setting log dir relative to 'user.dir'");
-            logDir=new File(GpConfig.getJavaProperty("user.dir"), "logs");
+            return new File(GpConfig.getJavaProperty("user.dir"), "logs");
         }
-        
+    }
+
+    /**
+     * Initialize the Log4J Logger instance. Creates the 'logDir' if necessary.
+     * Sets the 'gp.log' system property. This is required for the ${gp.log} 
+     * substitutions in the ./resources/log4j.properties file.
+     * 
+     * @param logDir the location for the log files
+     * @param log4jProps the path to the log4j.properties file
+     */
+    protected static Logger initLogger(final File logDir, final File log4jProps) {
         try {
-            //File logDir=new File(this.gpWorkingDir, "../logs");
-            logDir=new File(GpConfig.normalizePath(logDir.getPath()));
+            // create the gp.log directory
             if (!logDir.exists()) {
+                System.out.println("creating logDir='"+logDir+"' ... ");
                 boolean success=logDir.mkdirs();
                 if (success) {
-                    System.out.println("Created log directory: "+logDir);
+                    System.out.println("    Success!");
+                }
+                else {
+                    System.out.println("    Failed!");
                 }
             }
-            System.setProperty("gp.log", logDir.getAbsolutePath());
 
-            File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
-            PropertyConfigurator.configure(log4jProps.getAbsolutePath());
-            this.log=Logger.getLogger(StartupServlet.class);
+            System.setProperty("gp.log", logDir.getAbsolutePath());
             ServerConfigurationFactory.setLogDir(logDir);
+            PropertyConfigurator.configure(log4jProps.getAbsolutePath());
+            return Logger.getLogger(StartupServlet.class);
         }
         catch (Throwable t) {
             System.err.println("Error initializing logger");
             t.printStackTrace();
+            return null;
         }
     }
-    
+
+    /**
+     * Initialize the Log4J Logger instance
+     */
+    protected static Logger initLogger(final ServletConfig servletConfig, final File gpHomeDir, final File gpWorkingDir, final File gpResourcesDir) {
+        try {
+            final File logDirPath=initLogDirPath(servletConfig, gpHomeDir, gpWorkingDir);
+            final File logDir=new File(GpConfig.normalizePath(logDirPath.getPath()));
+            final File log4jProps=new File(GpConfig.normalizePath(new File(gpResourcesDir, "log4j.properties").getPath()));
+            return initLogger(logDir, log4jProps);
+        }
+        catch (Throwable t) {
+            System.err.println("Error initializing logger");
+            t.printStackTrace();
+            return null;
+        }
+    }
+
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
         this.webappDir=initWebappDir(servletConfig);
@@ -267,8 +335,8 @@ public class StartupServlet extends HttpServlet {
         // must init resourcesDir ...
         this.gpResourcesDir=initResourcesDir(gpHomeDir, gpWorkingDir);
         ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
-        // ...  before initializing logDir 
-        initLogDir();
+        // ...  before initializing the logger 
+        this.log = initLogger(servletConfig, gpHomeDir, gpWorkingDir, gpResourcesDir);
 
         // must initialize logger before calling any methods which output to the log
         announceStartup();
