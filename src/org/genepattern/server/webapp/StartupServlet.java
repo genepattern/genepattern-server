@@ -93,14 +93,6 @@ public class StartupServlet extends HttpServlet {
         return gpHomeDir;
     }
     
-    protected void setGpResourcesDir(final File gpResourcesDir) {
-        this.gpResourcesDir=gpResourcesDir;
-    }
-    
-    protected File getGpResourcesDir() {
-        return this.gpResourcesDir;
-    }
-    
     protected void setGpJobResultsDir(final File gpJobResultsDir) {
         this.gpJobResultsDir=gpJobResultsDir;
     }
@@ -111,10 +103,9 @@ public class StartupServlet extends HttpServlet {
     
     /**
      * Initialize the webapp dir (e.g. ./Tomcat/webapps/gp) for the servlet.
-     * @return
+     * Implemented to work with Servlet spec <= 2.5, e.g. Tomcat-5.5
      */
-    protected File initWebappDir(final ServletConfig servletConfig) {
-        // implemented to work with Servlet spec <= 2.5, e.g. Tomcat-5.5
+    protected static File initWebappDir(final ServletConfig servletConfig) {
         return new File(servletConfig.getServletContext().getRealPath(""));    
     }
     
@@ -133,16 +124,16 @@ public class StartupServlet extends HttpServlet {
      * For debugging/developing, you can override the default settings with a system property, 
      *     -DGENEPATTERN_WORKING_DIR=/fully/qualified/path
      */
-    protected File initGpWorkingDir(final ServletConfig servletConfig) {
-        return initGpWorkingDir(System.getProperty("GENEPATTERN_WORKING_DIR"), servletConfig);
+    protected static File initGpWorkingDir(final ServletConfig servletConfig, final File gpHomeDir) {
+        return initGpWorkingDir(System.getProperty("GENEPATTERN_WORKING_DIR"), servletConfig, gpHomeDir);
     }
     
-    protected File initGpWorkingDir(final String gpWorkingDirProp, final ServletConfig servletConfig) {
+    protected static File initGpWorkingDir(final String gpWorkingDirProp, final ServletConfig servletConfig, final File gpHomeDir) {
         if (!Strings.isNullOrEmpty(gpWorkingDirProp)) {
             return new File(gpWorkingDirProp);
         }
         
-        if (this.gpHomeDir != null) {
+        if (gpHomeDir != null) {
             return null;
         }
 
@@ -150,6 +141,26 @@ public class StartupServlet extends HttpServlet {
         return new File(gpWorkingDir);
     }
     
+    protected static String getGpHomeDirProp(final ServletConfig config) {
+        String gpHome=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
+        if (!Strings.isNullOrEmpty(gpHome)) {
+            return gpHome;
+        }
+        gpHome = config.getInitParameter("GENEPATTERN_HOME");
+        if (!Strings.isNullOrEmpty(gpHome)) {
+            return gpHome;
+        }
+        gpHome = config.getInitParameter("gp.home");
+        if (!Strings.isNullOrEmpty(gpHome)) {
+            return gpHome;
+        }
+        gpHome = System.getenv("GENEPATTERN_HOME");
+        if (!Strings.isNullOrEmpty(gpHome)) {
+            return gpHome;
+        }
+        return null;
+    }
+
     /**
      * Initialize the path to the GENEPATTERN_HOME directory for the web application.
      * 
@@ -162,27 +173,14 @@ public class StartupServlet extends HttpServlet {
      * @param config
      * @return
      */
-    protected File initGpHomeDir(ServletConfig config) {
-        final String gpHomeProp=System.getProperty("GENEPATTERN_HOME", System.getProperty("gp.home", null));
-        String gpHome=gpHomeProp;
-        
-        if (Strings.isNullOrEmpty(gpHome)) {
-            gpHome = config.getInitParameter("GENEPATTERN_HOME");
-        }
-        if (Strings.isNullOrEmpty(gpHome)) {
-            gpHome = config.getInitParameter("gp.home");
-        }
-        if (Strings.isNullOrEmpty(gpHome)) {
-            gpHome = System.getenv("GENEPATTERN_HOME");
-        }
-        
-        if (Strings.isNullOrEmpty(gpHome)) {
+    protected static File initGpHomeDir(final ServletConfig config) {
+        final String gpHomeProp=getGpHomeDirProp(config);
+        if (Strings.isNullOrEmpty(gpHomeProp)) {
             return null;
         }
         
         //normalize
-        gpHome=GpConfig.normalizePath(gpHome);
-        
+        final String gpHome=GpConfig.normalizePath(gpHomeProp);
         File gpHomeDir=new File(gpHome);
         if (gpHomeDir.isAbsolute()) {
             return gpHomeDir;
@@ -192,19 +190,18 @@ public class StartupServlet extends HttpServlet {
             System.err.println("GENEPATTERN_HOME='"+gpHome+"': Should not be a relative path");
             gpHomeDir=new File(config.getServletContext().getRealPath("../../../"), gpHome).getAbsoluteFile();
             System.err.println("Setting GENEPATTERN_HOME="+gpHomeDir);
-            return new File(gpHome);
+            return gpHomeDir;
         } 
     }
     
     /**
      * Get the path to the 'resources' directory for the web application.
-     * 
-     * @param gpWorkingDir, the working director for the GenePattern Server.
-     * @return
+     * @param gpHomeDir, the GENEPATTERN_HOME directory, can be null for legacy servers
+     * @param gpWorkingDir, the working directory for the GenePattern Server
      */
-    protected File initResourcesDir(final File gpWorkingDir) {
+    protected static File initResourcesDir(final File gpHomeDir, final File gpWorkingDir) {
         File resourcesDir;
-        if (this.gpHomeDir != null) {
+        if (gpHomeDir != null) {
             resourcesDir=new File(gpHomeDir, "resources");
         }
         else {
@@ -264,11 +261,11 @@ public class StartupServlet extends HttpServlet {
         this.gpHomeDir=initGpHomeDir(servletConfig);
         ServerConfigurationFactory.setGpHomeDir(gpHomeDir);
 
-        this.gpWorkingDir=initGpWorkingDir(servletConfig);
+        this.gpWorkingDir=initGpWorkingDir(servletConfig, this.gpHomeDir);
         ServerConfigurationFactory.setGpWorkingDir(gpWorkingDir);
         
         // must init resourcesDir ...
-        this.gpResourcesDir=initResourcesDir(gpWorkingDir);
+        this.gpResourcesDir=initResourcesDir(gpHomeDir, gpWorkingDir);
         ServerConfigurationFactory.setResourcesDir(gpResourcesDir);
         // ...  before initializing logDir 
         initLogDir();
@@ -648,8 +645,6 @@ public class StartupServlet extends HttpServlet {
                 sysProps.setProperty(key, val);
             }
 
-            //System.setProperty("serverInfo", config.getServletContext().getServerInfo());
-	    
             TreeMap tmProps = new TreeMap(sysProps);
             for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
                 String propName = (String) iProps.next();
