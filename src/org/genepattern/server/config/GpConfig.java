@@ -240,10 +240,7 @@ public class GpConfig {
         }
         try {
             Path thePath=Paths.get(pathStr);
-            thePath=thePath.normalize();
-            URI uri=thePath.toUri();
-            String rval=uri.getPath();
-            return rval;
+            return Paths.get(thePath.toUri().getPath()).normalize().toUri().getPath();
         }
         catch (Throwable t) {
             System.err.print("Error intializing path from String="+pathStr);
