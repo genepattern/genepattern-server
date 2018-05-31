@@ -455,7 +455,7 @@ public class AWSBatchJobRunner implements JobRunner {
 
         final File metadataDir=getMetadataDir(gpJob.getWorkingDir());
         if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+            cmdEnv.put("GP_JOB_METADATA_DIR", metadataDir.getAbsolutePath());
         }
 
         final String jobQueue=gpJob.getQueue();
@@ -489,7 +489,7 @@ public class AWSBatchJobRunner implements JobRunner {
         
         final File metadataDir=getMetadataDir(jobRecord.getWorkingDir());
         if (metadataDir != null) {
-            cmdEnv.put("GP_METADATA_DIR", metadataDir.getAbsolutePath());
+            cmdEnv.put("GP_JOB_METADATA_DIR", metadataDir.getAbsolutePath());
         }
         
          return cmdEnv;

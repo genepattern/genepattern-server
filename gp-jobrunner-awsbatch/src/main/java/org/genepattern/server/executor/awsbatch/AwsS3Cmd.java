@@ -97,7 +97,7 @@ public class AwsS3Cmd {
         this.profile=b.profile;
         this.cmdEnv=Collections.unmodifiableMap(b.cmdEnv);
         this.s3_bucket=b.s3_bucket;
-        this.metadataDir=new File(cmdEnv.get("GP_METADATA_DIR"));
+        this.metadataDir=new File(cmdEnv.get("GP_JOB_METADATA_DIR"));
     }
 
     protected String toS3Uri(final File filePath) {

@@ -57,17 +57,17 @@ shift
 : ${JOB_QUEUE?not set}
 
 # ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
-# create 'exec.sh' script in the GP_METADATA_DIR
-: ${GP_METADATA_DIR=$WORKING_DIR/.gp_metadata}
-mkdir -p "${GP_METADATA_DIR}"
+# create 'exec.sh' script in the GP_JOB_METADATA_DIR
+: ${GP_JOB_METADATA_DIR=$WORKING_DIR/.gp_metadata}
+mkdir -p "${GP_JOB_METADATA_DIR}"
 
-: ${JOB_STDOUT=$GP_METADATA_DIR/stdout.txt}
-: ${JOB_STDERR=$GP_METADATA_DIR/stderr.txt}
+: ${JOB_STDOUT=$GP_JOB_METADATA_DIR/stdout.txt}
+: ${JOB_STDERR=$GP_JOB_METADATA_DIR/stderr.txt}
 
-EXEC_SHELL="${GP_METADATA_DIR}/exec.sh"
+EXEC_SHELL="${GP_JOB_METADATA_DIR}/exec.sh"
 
-S3_LOG=${GP_METADATA_DIR}/s3_uploads.log
-CMD_LOG=${GP_METADATA_DIR}/aws_cmd.log
+S3_LOG=${GP_JOB_METADATA_DIR}/s3_uploads.log
+CMD_LOG=${GP_JOB_METADATA_DIR}/aws_cmd.log
 
 echo "#!/usr/bin/env bash" > $EXEC_SHELL
 echo "" >> $EXEC_SHELL
@@ -101,7 +101,7 @@ echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 
 # copy data files from s3 into the container
 echo "# sync from s3 into the container" >> $EXEC_SHELL
-echo "cd ${GP_METADATA_DIR}" >> $EXEC_SHELL
+echo "cd ${GP_JOB_METADATA_DIR}" >> $EXEC_SHELL
 echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
 
 echo "" >> $EXEC_SHELL
@@ -136,7 +136,7 @@ REMOTE_COMMAND=$EXEC_SHELL
 aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY >> ${S3_LOG} 2>&1
 aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              >> ${S3_LOG} 2>&1
 aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          >> ${S3_LOG} 2>&1
-aws s3 sync $GP_METADATA_DIR      $S3_ROOT$GP_METADATA_DIR      >> ${S3_LOG} 2>&1
+aws s3 sync $GP_JOB_METADATA_DIR      $S3_ROOT$GP_JOB_METADATA_DIR      >> ${S3_LOG} 2>&1
 
 #
 # initialize 'aws batch submit-job' args ...
@@ -168,9 +168,9 @@ fi
 #   --timeout attemptDurationSeconds=60
 
 # environment override
-__env_arg="environment=[{name=GP_METADATA_DIR,value=${GP_METADATA_DIR}}, \
-  {name=STDOUT_FILENAME,value=${GP_METADATA_DIR}/stdout.txt}, \
-  {name=STDERR_FILENAME,value=${GP_METADATA_DIR}/stderr.txt} \
+__env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
+  {name=STDOUT_FILENAME,value=${GP_JOB_METADATA_DIR}/stdout.txt}, \
+  {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt} \
 ]";
 
 __args=( \
