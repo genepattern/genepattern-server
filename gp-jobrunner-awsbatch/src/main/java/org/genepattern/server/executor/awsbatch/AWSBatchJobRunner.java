@@ -42,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 /**
@@ -75,7 +76,7 @@ import com.google.common.base.Strings;
                 #   'aws-batch-script-dir' path is relative to '<wrapper-scripts>'
                 #   'aws-batch-script' path is relative to 'aws-batch-script-dir'
                 aws-batch-script-dir: "aws_batch"
-                aws-batch-script: "runOnBatch.sh" 
+                aws-batch-script: "runOnBatch-v0.2.sh" 
 </pre>
  *
  * Links:
@@ -126,7 +127,7 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
     public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("aws_batch");
     public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
-    public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch.sh");
+    public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch-v0.2.sh");
     public static final String PROP_STATUS_SCRIPT="aws-batch-check-status-script";
     public static final Value DEFAULT_STATUS_SCRIPT=new Value("awsCheckStatus.sh");
     public static final String PROP_SYNCH_SCRIPT="aws-batch-synch-script";
@@ -442,6 +443,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final String s3_root=gpConfig.getGPProperty(jobContext, PROP_AWS_S3_ROOT);
         if (s3_root != null) {
             cmdEnv.put("S3_ROOT", s3_root);
+            cmdEnv.put("AWS_S3_PREFIX", s3_root);
         }
         return cmdEnv; 
     }
@@ -453,9 +455,30 @@ public class AWSBatchJobRunner implements JobRunner {
     protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
         final Map<String,String> cmdEnv=initAwsCliEnv(gpJob.getGpConfig(), gpJob.getJobContext());
 
+        cmdEnv.put("GP_JOB_ID", ""+gpJob.getGpJobNo());
+        cmdEnv.put("GP_JOB_WORKING_DIR", gpJob.getWorkingDir().getAbsolutePath());
         final File metadataDir=getMetadataDir(gpJob.getWorkingDir());
         if (metadataDir != null) {
             cmdEnv.put("GP_JOB_METADATA_DIR", metadataDir.getAbsolutePath());
+        }
+        cmdEnv.put("GP_MODULE_NAME", gpJob.getJobContext().getTaskName());
+        cmdEnv.put("GP_MODULE_LSID", gpJob.getJobContext().getLsid());
+        cmdEnv.put("GP_MODULE_DIR", gpJob.getTaskLibDir().getAbsolutePath());
+        
+        final Value bindMounts=gpJob.getValue("job.docker.bind_mounts");
+        if (bindMounts != null) {
+            cmdEnv.put(
+                "GP_JOB_DOCKER_BIND_MOUNTS",
+                Joiner.on(":").skipNulls().join(bindMounts.getValues())
+            );
+        }
+
+        final String dockerImage=gpJob.getProperty("job.docker.image");
+        if (Strings.isNullOrEmpty(dockerImage)) {
+            log.warn("job.docker.image not set");
+        }
+        else {
+            cmdEnv.put("GP_JOB_DOCKER_IMAGE", dockerImage);
         }
 
         final String jobQueue=gpJob.getQueue();

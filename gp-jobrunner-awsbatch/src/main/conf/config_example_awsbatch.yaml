@@ -46,6 +46,20 @@ executors:
             # Example:
             #   aws-profile: "genepattern"
             
+            # job.docker.bind_mounts
+            #   for docker-in-docker, must define a list of 1 or more directory paths to
+            #   mount from the outer container into the inner container, e.g.
+            #
+            #     docker run ... --mount type=bind,src=<job.docker.bind_mounts[0]>,dst=<job.docker.bind_mounts[0]>
+            #                    --mount type=bind,src=<job.docker.bind_mounts[1]>,dst=<job.docker.bind_mounts[1]>
+            #
+            # Example: a single mount
+            #   job.docker.bind_mounts: "/opt/gpbeta/gp_home"
+            # Example: equivalent, a single mount as a 1 item list
+            #   job.docker.bind_mounts: [ "/opt/gpbeta/gp_home" ]
+            # Example: a list of mounts
+            #   job.docker.bind_mounts: [ "/opt/gpbeta/gp_home", "/opt/gpbeta/shared_data" ]
+
             # aws-s3-root
             #   s3 prefix for intermediate storage of data files
             # Example:
@@ -83,14 +97,16 @@ executors:
             #   # fully qualified path, for example when developing locally
             #   aws-batch-script-dir: "/Users/test_user/genepattern-server/gp-jobrunner-awsbatch/src/main/scripts"
             
-            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch.sh
+            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch-v0.2.sh
             #   the job submission aws cli wrapper script
             # relative to <aws-batch-script-dir>, can be fully qualified (when needed)
             # Examples:
             #   # default
-            #   aws-batch-script: "runOnBatch.sh"
+            #   aws-batch-script: "runOnBatch-v0.2.sh"
             #   # for debugging
             #   aws-batch-script: "runOnBatch-debug.sh"
+            #   # while developing the next api version
+            #   aws-batch-script: "runOnBatch-v0.3-develop.sh"
             
             # job.awsbatch.job-definition-name, default: (not set)
             #   Set the AWS Batch Job Definition for a job. The docker image is declared
