@@ -25,9 +25,9 @@ oneTimeSetUp()  {
   set +o errexit
   
   : ${WORKING_DIR=.}
-  : ${GP_METADATA_DIR=.}
-  : ${GP_METADATA_DIR=$WORKING_DIR/.gp_metadata}
-  CMD_LOG=${GP_METADATA_DIR}/aws_cmd.log
+  : ${GP_JOB_METADATA_DIR=.}
+  : ${GP_JOB_METADATA_DIR=$WORKING_DIR/.gp_metadata}
+  CMD_LOG=${GP_JOB_METADATA_DIR}/aws_cmd.log
 }
 
 setUp() {
