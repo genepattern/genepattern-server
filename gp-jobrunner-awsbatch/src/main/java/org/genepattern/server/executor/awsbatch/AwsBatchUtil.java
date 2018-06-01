@@ -166,6 +166,15 @@ public class AwsBatchUtil {
         final Set<File> jobInputFiles=getJobInputFiles(gpJob);
         inputFiles.addAll(jobInputFiles);
         
+        // sync the entire taskLib directory
+        final File taskLibDir=gpJob.getTaskLibDir().getAbsoluteFile();
+        if (taskLibDir != null && taskLibDir.exists()) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", sync taskLib directory: "+taskLibDir);
+            }
+            inputFiles.add(taskLibDir);
+        }
+        
         // special-case, sync the entire wrapper-scripts directory
         final File wrapperScripts=getGPFileProperty(gpJob, GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
         if (wrapperScripts != null && wrapperScripts.exists()) {

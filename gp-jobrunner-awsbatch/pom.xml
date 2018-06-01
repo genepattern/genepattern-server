@@ -20,6 +20,27 @@
     <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.0</version>
+                </requireMavenVersion>
+              </rules>    
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- 
         added to set javac compiler flags 
         see:
@@ -63,7 +84,8 @@
       <!-- 
         maven-surefire-plugin
           http://maven.apache.org/surefire/maven-surefire-plugin/
-          added to pass environment variable into junit test
+        to set environment variables for junit tests, e.g.
+          GP_DATA_DIR=../test/data
       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -77,12 +99,40 @@
         </configuration>
       </plugin>
       
+      <!-- 
+        maven-assembly-plugin
+          https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin
+        to package binaries for distribution
+          
+        Documentation links:
+          http://maven.apache.org/plugins/maven-assembly-plugin/
+          https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html
+      -->
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-assembly-plugin</artifactId>
+         <!-- Note: versions > 2.4.1 fail to build, as tested when v3.1.0 was the latest release -->
+         <version>2.4.1</version>
+         <configuration>
+           <descriptors><descriptor>src/assembly/bin.xml</descriptor></descriptors>
+           <!-- finalName>gp-awsbatch-${pom.version}</finalName -->
+         </configuration>
+         <executions>
+           <execution>
+             <phase>package</phase>
+               <goals>
+                 <goal>single</goal>
+               </goals>
+           </execution>
+         </executions>
+      </plugin>      
     </plugins>
 
   </build>
     
   <properties>
     <maven.build.timestamp.format>yyyy-MM-dd-HHmmss</maven.build.timestamp.format>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
