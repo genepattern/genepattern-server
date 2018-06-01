@@ -486,6 +486,7 @@ public class AWSBatchJobRunner implements JobRunner {
             log.warn("job.queue not set");
         }
         else {
+            cmdEnv.put("GP_JOB_QUEUE", jobQueue);
             cmdEnv.put("JOB_QUEUE", jobQueue);
         }
         final Integer cpuCount=gpJob.getCpuCount();
