@@ -169,6 +169,7 @@ fi
 
 # environment override
 __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
+  {name=GP_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDOUT_FILENAME,value=${GP_JOB_METADATA_DIR}/stdout.txt}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt} \
 ]";
