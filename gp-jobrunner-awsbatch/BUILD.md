@@ -75,9 +75,12 @@ To display a list of those plugins with newer versions available
   mvn versions:display-plugin-updates
 ```
 
-### Maven assembly plugin
-
 Describe the assembly plugin
 ```
 mvn help:describe -Dplugin=assembly [-Ddetail=true]
+```
+
+Display the effective pom
+```
+mvn help:effective-pom
 ```
