@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# bash 'strict mode'
+set -euo pipefail
+
 # initialize aws-cli environment
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
 source "${script_dir}/init-aws-cli-env.sh"
@@ -56,21 +59,10 @@ shift
 : ${S3_ROOT?not set}
 : ${JOB_QUEUE?not set}
 
-# ##### NEW PART FOR SCRIPT INSTEAD OF COMMAND LINE ################################
-# create 'exec.sh' script in the GP_JOB_METADATA_DIR
 : ${GP_JOB_METADATA_DIR=$WORKING_DIR/.gp_metadata}
 mkdir -p "${GP_JOB_METADATA_DIR}"
 
-: ${JOB_STDOUT=$GP_JOB_METADATA_DIR/stdout.txt}
-: ${JOB_STDERR=$GP_JOB_METADATA_DIR/stderr.txt}
-
-EXEC_SHELL="${GP_JOB_METADATA_DIR}/exec.sh"
-
-S3_LOG=${GP_JOB_METADATA_DIR}/s3_uploads.log
 CMD_LOG=${GP_JOB_METADATA_DIR}/aws_cmd.log
-
-echo "#!/usr/bin/env bash" > $EXEC_SHELL
-echo "" >> $EXEC_SHELL
 
 # job.walltime, kill the job after GP_JOB_WALLTIME_SEC seconds ...
 #   default walltime, 4 hours, 14400 hours
@@ -81,7 +73,6 @@ echo "" >> $EXEC_SHELL
 # See: http://mywiki.wooledge.org/BashFAQ/068
 #
 echo "calculating job.walltime limit ..." >> ${CMD_LOG} 2>&1
-echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 : ${GP_JOB_WALLTIME_SEC=14400}
 : ${WALLTIME_MIN=60}
 : ${WALLTIME_DEFAULT=14400}
@@ -90,28 +81,21 @@ if in_range "${GP_JOB_WALLTIME_SEC:-x}" "${WALLTIME_MIN}" "${WALLTIME_MAX}"; the
   # no-op
   :
 else
+  echo "    WARN: invalid GP_JOB_WALLTIME_SEC='${GP_JOB_WALLTIME_SEC}', must be less than ${WALLTIME_MIN} and greater than ${WALLTIME_MAX}" >> ${CMD_LOG} 2>&1
+  echo "    setting to built-in default value" >> ${CMD_LOG} 2>&1
   GP_JOB_WALLTIME_SEC=${WALLTIME_DEFAULT};
 fi
 echo "    GP_JOB_WALLTIME_SEC=${GP_JOB_WALLTIME_SEC:-x}" >> ${CMD_LOG} 2>&1
 
-# hand-crafted job.walltime interval ... 
-#if [ -e "${script_dir}/gp-timeout.sh" ]; then
-#  cat "${script_dir}/gp-timeout.sh" >> $EXEC_SHELL
-#fi
-
-## copy data files from s3 into the container
-#echo "# sync from s3 into the container" >> $EXEC_SHELL
-#echo "cd ${GP_JOB_METADATA_DIR}" >> $EXEC_SHELL
-#echo "sh aws-sync-from-s3.sh" >> $EXEC_SHELL
+############################################################
+# create 'exec.sh' in GP_JOB_METADATA_DIR
+#   this is the command which is run in docker on aws batch
 #
-#echo "" >> $EXEC_SHELL
+EXEC_SHELL="${GP_JOB_METADATA_DIR}/exec.sh"
+echo "#!/usr/bin/env bash" > $EXEC_SHELL
+echo "" >> $EXEC_SHELL
 echo "cd ${WORKING_DIR}" >> $EXEC_SHELL
 
-# hand-crafted job.walltime interval ... 
-#if [ -e "${script_dir}/gp-timeout.sh" ]; then
-#  cat "${script_dir}/gp-timeout.sh" >> $EXEC_SHELL
-#fi
-#printf "run_with_timeout \"${GP_JOB_WALLTIME_SEC}\" \"${JOB_STDOUT}\" \"${JOB_STDERR}\" " >> $EXEC_SHELL
 for arg in "$@"
 do
   printf %q "${arg}" >> $EXEC_SHELL
@@ -119,7 +103,7 @@ do
 done
 
 # optionally, redirect stdin from a file
-if [[ -s $GP_STDIN_FILE ]]; then
+if [[ -s "${GP_STDIN_FILE:-}" ]]; then
   printf %s " < " >> $EXEC_SHELL
   printf %q "${GP_STDIN_FILE}" >> $EXEC_SHELL
 fi
@@ -128,18 +112,17 @@ echo "" >> $EXEC_SHELL
 
 chmod u+x $EXEC_SHELL
 
-REMOTE_COMMAND=$EXEC_SHELL
-
+############################################################
+# copy files into s3
 #
-# Copy the input files to S3 using the same path
-#
+S3_LOG=${GP_JOB_METADATA_DIR}/s3_uploads.log
 aws s3 sync $INPUT_FILE_DIRECTORY $S3_ROOT$INPUT_FILE_DIRECTORY >> ${S3_LOG} 2>&1
 aws s3 sync $TASKLIB              $S3_ROOT$TASKLIB              >> ${S3_LOG} 2>&1
 aws s3 sync $WORKING_DIR          $S3_ROOT$WORKING_DIR          >> ${S3_LOG} 2>&1
 aws s3 sync $GP_JOB_METADATA_DIR  $S3_ROOT$GP_JOB_METADATA_DIR  >> ${S3_LOG} 2>&1
 
-#
-# initialize 'aws batch submit-job' args ...
+############################################################
+# submit the job to aws batch
 #
 
 # memory override, e.g.
@@ -164,9 +147,6 @@ if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
   vcpus_arg="vcpus=${GP_JOB_CPU_COUNT},";
 fi
 
-# timeout override, e.g.
-#   --timeout attemptDurationSeconds=60
-
 # environment override
 __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt}, \
@@ -182,6 +162,7 @@ __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}},
   {name=AWS_S3_PREFIX,value=${AWS_S3_PREFIX}}, \
   {name=S3_ROOT,value=${AWS_S3_PREFIX}}, \
   {name=GP_S3_ROOT,value=${AWS_S3_PREFIX}}, \
+  {name=GP_AWS_SYNC_SCRIPT_NAME,value=${GP_AWS_SYNC_SCRIPT_NAME}}, \
   {name=GP_JOB_DOCKER_BIND_MOUNTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_DOCKER_MOUNT_POINTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_JOB_DOCKER_IMAGE,value=${GP_JOB_DOCKER_IMAGE}}, \
@@ -193,14 +174,12 @@ __args=( \
   "--job-queue" "$JOB_QUEUE" \
   "--timeout" "attemptDurationSeconds=${GP_JOB_WALLTIME_SEC}" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
-  "--parameters" "taskLib=$GP_MODULE_DIR,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$AWS_S3_PREFIX,working_dir=$WORKING_DIR,exe1=$REMOTE_COMMAND"  \
+  "--parameters" "taskLib=$GP_MODULE_DIR,inputFileDirectory=$INPUT_FILE_DIRECTORY,s3_root=$AWS_S3_PREFIX,working_dir=$WORKING_DIR,exe1=$EXEC_SHELL"  \
   "--container-overrides" "${vcpus_arg}${mem_arg}${__env_arg:-}" \
 );
 
 # for debugging ...
 echo   "AWS_PROFILE=${AWS_PROFILE:- (not set)}" >> ${CMD_LOG}
-echo   "    S3_ROOT=${S3_ROOT:- (not set)}" >> ${CMD_LOG}
-echo   "  JOB_QUEUE=${JOB_QUEUE:- (not set)}" >> ${CMD_LOG}
 echo   "aws batch submit-job" >> ${CMD_LOG}
 printf "  '%s'\n" "${__args[@]}" >> ${CMD_LOG}
 echo >> ${CMD_LOG}

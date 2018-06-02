@@ -11,6 +11,7 @@
 #   gp-timeout.sh
 ############################################################
 
+# bash 'strict mode', see http://redsymbol.net/articles/unofficial-bash-strict-mode/
 set -euo pipefail
 
 # initialize aws-cli environment
