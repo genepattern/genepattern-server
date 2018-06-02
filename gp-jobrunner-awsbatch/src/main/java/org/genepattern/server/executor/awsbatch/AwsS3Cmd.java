@@ -95,9 +95,24 @@ public class AwsS3Cmd {
     private AwsS3Cmd(final Builder b) {
         this.awsCmd=b.awsCmd;
         this.profile=b.profile;
-        this.cmdEnv=Collections.unmodifiableMap(b.cmdEnv);
+        if (b.cmdEnv==null) {
+            this.cmdEnv=Collections.emptyMap();
+        }
+        else {
+            this.cmdEnv=Collections.unmodifiableMap(b.cmdEnv);
+        }
         this.s3_bucket=b.s3_bucket;
-        this.metadataDir=new File(cmdEnv.get("GP_JOB_METADATA_DIR"));
+        if (Strings.isNullOrEmpty(this.s3_bucket)) {
+            log.warn("s3_bucket is not set");
+        }
+        final String dirPath=cmdEnv.get("GP_JOB_METADATA_DIR");
+        if (Strings.isNullOrEmpty(dirPath)) {
+            log.warn("'GP_JOB_METADATA_DIR' not set, setting metadataDir=null");
+            this.metadataDir=null;
+        }
+        else {
+            this.metadataDir=new File(dirPath);
+        }
     }
 
     protected String toS3Uri(final File filePath) {
@@ -202,7 +217,22 @@ public class AwsS3Cmd {
         runCmd(cmdEnv, awsCmd, args); 
     }
     
-    protected List<String> getSyncFromS3Args(final File localFile) {
+    /**
+     * get the 'aws s3 sync' command line args to copy the file from 
+     * a source s3 bucket into a destination path on the local file system
+     * 
+     * Template
+     *   aws s3 sync {s3_prefix}{src_path} {dest_prefix}{dest_path} --exclude "*" --include "{filename}"
+     * Example 1: (default) dest_prefix not set
+     *   aws s3 sync s3://gpbeta/temp /temp --exclude "*" --include "test.txt"
+     * Example 2: dest_prefix=/local
+     *   aws s3 sync s3://gpbeta/temp /local/temp --exclude "*" --include "test.txt"
+     * 
+     * @param localFile
+     * @param destPrefix
+     * @return
+     */
+    protected List<String> getSyncFromS3Args(final File localFile, final String destPrefix) {
         List<String> args=new ArrayList<String>();
         args.add("s3");
         args.add("sync");
@@ -210,7 +240,7 @@ public class AwsS3Cmd {
             // from s3Uri
             args.add(s3_bucket+""+localFile.getParent());
             // to container local path
-            args.add(localFile.getParent());
+            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getParent());
             // filter all but the file
             args.add("--exclude");
             args.add("*");
@@ -221,7 +251,7 @@ public class AwsS3Cmd {
             // from s3Uri
             args.add(s3_bucket+""+localFile.getPath());
             // to container local path
-            args.add(localFile.getPath());
+            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getPath());
         }
         if (!Strings.isNullOrEmpty(profile)) {
             args.add("--profile");

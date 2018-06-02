@@ -434,16 +434,18 @@ public class AWSBatchJobRunner implements JobRunner {
     }
 
     protected final Map<String,String> initAwsCliEnv(final Map<String,String> cmdEnv, final GpConfig gpConfig, final GpContext jobContext) {
-        @SuppressWarnings("deprecation")
         final String aws_profile=gpConfig.getGPProperty(jobContext, PROP_AWS_PROFILE);
         if (aws_profile != null) {
             cmdEnv.put("AWS_PROFILE", aws_profile);
         }
-        @SuppressWarnings("deprecation")
         final String s3_root=gpConfig.getGPProperty(jobContext, PROP_AWS_S3_ROOT);
         if (s3_root != null) {
             cmdEnv.put("S3_ROOT", s3_root);
             cmdEnv.put("AWS_S3_PREFIX", s3_root);
+        } 
+        final String dest_prefix=gpConfig.getGPProperty(jobContext, "job.awsbatch.dest-prefix", "");
+        if (dest_prefix != null) {
+            cmdEnv.put("GP_LOCAL_PREFIX", dest_prefix);
         }
         return cmdEnv; 
     }
@@ -480,6 +482,14 @@ public class AWSBatchJobRunner implements JobRunner {
         else {
             cmdEnv.put("GP_JOB_DOCKER_IMAGE", dockerImage);
         }
+        
+        // set GP_AWS_SYNC_SCRIPT_NAME, default=aws-sync-from-s3.sh
+        final String syncFromScriptName=gpJob.getGpConfig().
+            getGPProperty(gpJob.getJobContext(), "job.awsbatch.sync-from-s3-script", "aws-sync-from-s3.sh");
+        if (Strings.isNullOrEmpty(syncFromScriptName)) {
+            log.warn("job.awsbatch.sync-from-s3-script not set");
+        }
+        cmdEnv.put("GP_AWS_SYNC_SCRIPT_NAME", syncFromScriptName);
 
         final String jobQueue=gpJob.getQueue();
         if (Strings.isNullOrEmpty(jobQueue)) {
@@ -516,7 +526,7 @@ public class AWSBatchJobRunner implements JobRunner {
             cmdEnv.put("GP_JOB_METADATA_DIR", metadataDir.getAbsolutePath());
         }
         
-         return cmdEnv;
+        return cmdEnv;
     }
 
     /**
@@ -774,7 +784,8 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         
         // create 'aws-sync-from-s3.sh' script in the metadataDir
-        final String script_name="aws-sync-from-s3.sh";
+        final String script_name=getOrDefault(cmdEnv,"GP_AWS_SYNC_SCRIPT_NAME", "aws-sync-from-s3.sh");
+        final String dest_prefix=getOrDefault(cmdEnv, "GP_LOCAL_PREFIX", "");
         final File script_dir=s3Cmd.getMetadataDir();
         if (!script_dir.exists()) {
             if (log.isDebugEnabled()) {
@@ -802,18 +813,14 @@ public class AWSBatchJobRunner implements JobRunner {
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(script))) {
             bw.write("#!/usr/bin/env bash"); bw.newLine();
             for(final File inputFile : inputFiles) {
-                // Template
-                //   aws s3 sync {s3_bucket}{localDir} {localDir} --exclude "*" --include "{filename}"  
-                // Example
-                //   aws s3 sync s3://gpbeta/temp /temp --exclude "*" --include "test.txt"
-                final List<String> args=s3Cmd.getSyncFromS3Args(inputFile);
+                final List<String> args=s3Cmd.getSyncFromS3Args(inputFile, dest_prefix);
                 bw.write("aws \\"); bw.newLine();
                 for(int i=0; i<args.size(); ++i) {
                     bw.write("    \""+args.get(i)+"\" ");
                     bw.write(" \\");
                     bw.newLine();
                 }
-                bw.write(" >> "+script_dir+"/s3_downloads.log");
+                bw.write(" >> "+dest_prefix+""+script_dir+"/s3_downloads.log");
                 bw.newLine();
                 bw.newLine();
                 

@@ -148,6 +148,7 @@ if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
 fi
 
 # environment override
+: ${GP_LOCAL_PREFIX=/local}
 __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt}, \
   {name=GP_JOB_ID,value=${GP_JOB_ID}}, \
@@ -162,6 +163,7 @@ __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}},
   {name=AWS_S3_PREFIX,value=${AWS_S3_PREFIX}}, \
   {name=S3_ROOT,value=${AWS_S3_PREFIX}}, \
   {name=GP_S3_ROOT,value=${AWS_S3_PREFIX}}, \
+  {name=GP_LOCAL_PREFIX,value=${GP_LOCAL_PREFIX}}, \
   {name=GP_AWS_SYNC_SCRIPT_NAME,value=${GP_AWS_SYNC_SCRIPT_NAME}}, \
   {name=GP_JOB_DOCKER_BIND_MOUNTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_DOCKER_MOUNT_POINTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \

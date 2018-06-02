@@ -127,6 +127,14 @@ executors:
             #         "**/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts{,/**}"
             #     ]
             
+            # job.awsbatch.sync-from-s3-script, (optional), default: aws-sync-from-s3.sh
+            #   for v0.2 api
+            #   set the name of the script to run in the outer container which pulls required data files
+            #   from an s3 bucket into the compute node file system
+            # Example:
+            #     "job.awsbatch.sync-from-s3-script": "aws-sync-from-s3.sh"
+            
+            
 
 # executor.properties
 #   Map of <env-name> : <env-properties>
