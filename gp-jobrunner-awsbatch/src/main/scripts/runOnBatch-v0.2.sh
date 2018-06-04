@@ -168,7 +168,8 @@ __env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}},
   {name=GP_JOB_DOCKER_BIND_MOUNTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_DOCKER_MOUNT_POINTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_JOB_DOCKER_IMAGE,value=${GP_JOB_DOCKER_IMAGE}}, \
-  {name=GP_DOCKER_CONTAINER,value=${GP_JOB_DOCKER_IMAGE}} \
+  {name=GP_DOCKER_CONTAINER,value=${GP_JOB_DOCKER_IMAGE}}, \
+  {name=GP_JOB_WALLTIME_SEC,value=${GP_JOB_WALLTIME_SEC}}
 ]";
 
 __args=( \
