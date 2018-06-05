@@ -107,8 +107,15 @@ if [[ -s "${GP_STDIN_FILE:-}" ]]; then
   printf %s " < " >> $EXEC_SHELL
   printf %q "${GP_STDIN_FILE}" >> $EXEC_SHELL
 fi
-
 echo "" >> $EXEC_SHELL
+
+# save exitCode to exit_code.txt file in v0.1 json format
+# Example
+#   { "exit_code": 0 }
+#
+echo "exit_code=\$?;" >> $EXEC_SHELL
+echo "echo \"{ \\\"exit_code\\\": \$exit_code }\" >> ${GP_JOB_METADATA_DIR}/exit_code.txt" >> $EXEC_SHELL
+echo "exit \$?;" >> $EXEC_SHELL
 
 chmod u+x $EXEC_SHELL
 
@@ -149,7 +156,8 @@ fi
 
 # environment override
 : ${GP_LOCAL_PREFIX=/local}
-__env_arg="environment=[{name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
+__env_arg="environment=[\
+  {name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt}, \
   {name=GP_JOB_ID,value=${GP_JOB_ID}}, \
   {name=GP_JOB_WORKING_DIR,value=${GP_JOB_WORKING_DIR}}, \
