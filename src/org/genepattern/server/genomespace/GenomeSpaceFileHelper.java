@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.genomespace;
 
@@ -28,6 +28,27 @@ public class GenomeSpaceFileHelper {
      */
     public static boolean isGenomeSpaceFile(URL url) {
         return url.getHost().contains("genomespace.org");
+    }
+
+    /**
+     * Determines whether a given URL is a public GenomeSpace URL.
+     * Use this pattern:
+         <pre>*.genomespace.org/datamanager/file/Home/Public/*</pre>
+     */
+    public static boolean isPublicGenomeSpaceFile(final URL url) {
+        if (url==null) {
+            log.error("Unexpected input, url==null");
+            return false;
+        }
+        final String host=url.getHost();
+        if (host == null || ! host.endsWith("genomespace.org")) {
+            return false;
+        }
+        final String path=url.getPath();
+        if (path.startsWith("/datamanager/file/Home/Public/")) {
+            return true;
+        }
+        return false;
     }
 
     /**

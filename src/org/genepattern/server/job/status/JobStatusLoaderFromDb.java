@@ -1,9 +1,10 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.status;
 
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DbException;
@@ -11,6 +12,9 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
+import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamId;
+import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.job.output.JobOutputFile;
 import org.genepattern.server.job.output.dao.JobOutputDao;
 
@@ -99,6 +103,19 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
             if (executionLogLocation != null) {
                 b.executionLogLocation(executionLogLocation);
             }
+            
+            // TODO: special-case for job.* inputs
+            final boolean debug=false;
+            if (debug && jobContext.getJobInput() != null) {
+                for(final Entry<ParamId, Param> entry : jobContext.getJobInput().getParams().entrySet()) {
+                    final String pname = entry.getKey().getFqName();
+                    if (pname.startsWith("job.")) {
+                        final String pvalue=formatParam(entry.getValue());
+                        b.addResourceRequirement(pname, pvalue);
+                    }
+                }
+            }
+            
             final Status status=b.build();
             return status;
         }
@@ -111,6 +128,18 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
                 mgr.closeCurrentSession();
             }
         }
+    }
+    
+    protected static String formatParam(final Param param) {
+        String rval="";
+        final String pname=param.getParamId().getFqName();
+        final String pad="    ";
+        int i=0;
+        for(final ParamValue paramValue : param.getValues()) {
+            rval += paramValue.getValue()+", ";
+            log.debug("    "+pname+"["+(i++)+"]: "+paramValue.getValue());
+        }
+        return rval;
     }
     
     // http://gpdev.broadinstitute.org/gp/rest/v1/jobs/66724

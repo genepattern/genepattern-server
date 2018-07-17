@@ -204,7 +204,8 @@ public class TestRunModule extends TestCase {
 	}
     
     public void testHierarchicalClusteringExternalUrl() {
-        final String lsid="HierarchicalClustering";
+        //final String lsid="HierarchicalClustering";
+        final String lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:6";
         Parameter[] params = new Parameter[1];
         params[0] = new Parameter("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct");
         

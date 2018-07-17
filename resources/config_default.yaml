@@ -12,13 +12,146 @@
 default.properties:
     executor: LocalJobRunner
     java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
-    # flag to allow users to input arbitrary network file paths as value to input file input parameters
-    #allow.input.file.paths: false
     
     # filter job results based on the given comma separated list of glob patterns
     # default setting hides all files which begin with a '.' character
     job.FilenameFilter: [ ".*" ]
     
+    # Error handling 
+    #  by default, non-zero exit code is an ERROR
+    job.error_status.exit_value: true
+    #  by default, ignore stderr output
+    job.error_status.stderr: false
+    
+    ##############################################################
+    # "show.registration.link"
+    #   Show the link to the registration page on the login page
+    # Default:
+    #   show.registration.link: true
+
+    ##############################################################
+    # "show.terms.of.service"
+    #   Display the terms of service on the registration page
+    # Default:
+    #   show.terms.of.service: false
+
+    ##############################################################
+    # "create.account.allowed"
+    #   Allow users to create new accounts from the login page
+    # Default: 
+    #   create.account.allowed: true
+
+    ##############################################################
+    # File Purge configuration
+    #   Nightly cleanup of job input and result files.
+    # 
+    # Properties
+    #   purgeTime - the time of day, each day, to run the file purger, 
+    #     in HH:MM, 24 hour format.
+    #     Set as a global (aka server level) value. 
+    #   purgeJobsAfter - the number of days to keep each job. 
+    #     To never delete files set purgeJobsAfter to -1. 
+    #     Can be customized per user or group.
+    #
+    # Example 1: cleanup nightly at 11pm, keep jobs for one week
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "7"
+    # 
+    # Example 2: disable file purge
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "-1"
+    #
+    # Note: You must force the file purger to restart before custom edits take effect. 
+    # There are two ways to do this:
+    #   1. restart the server, or
+    #   2. from the web GUI, Admin > Server Settings > File Purge, 
+    #        Set the Purge Time and click Save.
+    #
+    # Additional rules for purging user upload files from the Files tab
+    #   using the same schedule as the job purger, it only purges files older than the cutoff date
+    # Properties
+    #   upload.purge.all - delete all files older than the cutoff date 
+    #     default: false
+    #   upload.purge.tmp - delete tmp files, including job input files
+    #     default: true
+    #   upload.purge.partial - delete any (presumably) stalled partially uploaded files
+    #     default: true
+    
+    # when purge.all is true, delete all files (default: false)
+    upload.purge.all: false 
+    # when purge.tmp is true, delete tmp files (default: true)
+    upload.purge.tmp: true
+    # when purge.partial is true, delete any (presumably) stalled partially uploaded files
+    upload.purge.partial: true
+
+    ##############################################################
+    # allow.input.file.paths
+    #   set to true to allow user access to arbitrary server file paths
+    allow.input.file.paths: "false"
+
+    ##############################################################
+    # server.browse.file.system.root
+    #   root directory for browsing server file paths, when allow.input.file.paths is true. 
+    # Examples:
+    # ## a single path
+    # server.browse.file.system.root: "/opt/genepattern/shared_data"
+    # ## a list of paths
+    # server.browse.file.system.root: [ "/opt/genepattern/shared_data",  "/srv/custom_data" ]
+    # ## default, the root of the file system
+    # server.browse.file.system.root: "/"
+
+    ##############################################################
+    # cache.externalUrlDirs
+    #   Cache external data files into a local directory
+    # Input file URLs matching these prefixes are downloaded
+    # and cached into the uploads directory for the '.cache' user account. 
+    #
+    #   <gp.home>/users/.cache/uploads/cache
+    #
+    # Examples
+    # ## accept all
+    # cache.externalUrlDirs: [ "*" ]
+    # ## accept none
+    # cache.externalUrlDirs: [ "!*" ]
+    # ## cache data files from ftp server
+    # cache.externalUrlDirs: [ 
+    #     "ftp://gpftp.broadinstitute.org/",
+    #     "ftp://ftp.broadinstitute.org/" ] 
+
+    ##############################################################
+    # local.choiceDirs
+    #   local file path for dynamic drop-down FTP files
+    #
+    # Example:
+    # # direct access to broad ftp server files
+    # local.choiceDirs: {
+    #     "ftp://ftp.broadinstitute.org/pub/genepattern/": "/srv/ftp/pub/genepattern/",
+    #     "ftp://gpftp.broadinstitute.org/": "/srv/ftp/gpftp/pub/",
+    # }
+    #
+    
+    ##############################################################
+    # reCAPTCHA configuration
+    #   add an "I'm not a robot" challenge to the user registration page
+    # Links
+    #   https://www.google.com/recaptcha
+    #   https://developers.google.com/recaptcha/
+    #   https://developers.google.com/recaptcha/docs/invisible
+    #   https://www.google.com/recaptcha/admin
+    # 
+    # Setup
+    #   Register a new Invisible reCAPTCHA site on the admin page:
+    #     https://www.google.com/recaptcha/admin
+    #   Copy the 'Site key' and 'Secret key' to this config file
+    # Example
+    #   recaptcha.enabled: "true"
+    #   recaptcha.site-key: "{Site key from admin page}"
+    #   repatcha.secret-key: "{Secret key from admin page}"
+    # 
+    # Additional param(s)
+    #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
+    # 
+
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 
@@ -27,14 +160,6 @@ default.properties:
     upload.partition.size: 10000000
     upload.max.size: 20000000000
     upload.jumploader: true
-    # rules for the file purger for purging files from each user's uploads tab 
-    #     using the same schedule as the job purger, it only purges files older than the cutoff date
-    # when purge.all is true, it means purge all files (default: false)
-    upload.purge.all: false 
-    # when purge.tmp is true, it means purge the tmp files (default: true)
-    upload.purge.tmp: true
-    # when purge.partial is true, it means purge any (presumably) stalled partially uploaded files
-    upload.purge.partial: true
     # rule for hiding/showing the tmp.dir in the uploads tab, by default it's hidden
     upload.hide.tmp: true
     
@@ -87,7 +212,7 @@ default.properties:
     #
     #googleAnalytics.enabled: true
     #googleAnalytics.trackingId: ""
-    
+
     # 
     # for per-module End-user license agreements (EULA)
     #
@@ -119,7 +244,21 @@ default.properties:
     #     insert into task_category (task_category) values ('<baseLsid>', '<categoryName>')
     # (added in 3.7.3)
     org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
-    
+
+    ##############################################################
+    # job.commandPrefix
+    #   add an optional command line prefix to the module command line
+    # this is prepended before command substutions are resolved.
+    #
+    # Example: 
+    #     # 'dry-run' via echo
+    #     job.commandPrefix: "echo"
+    #
+    # Example: 
+    #     # 'docker run' prefix
+    #     job.commandPrefix: "<run-with-docker>"
+    # 
+
 executors:
     # default executor for all jobs, it is included in GenePattern
     # switched from RuntimeExec to LocalJobRunner in 3.9.0
@@ -138,4 +277,58 @@ executors:
         default.properties:
             # name of hidden log file added to each job result directory
             job.logFile: ".rte.out"
-            
+
+            ##############################################################
+            # Docker integration
+            #   run the command in a docker container ...
+            #   see: https://docs.docker.com/engine/reference/commandline/run/
+            #   see: https://docs.docker.com/storage/bind-mounts/
+            # Template:
+            #    # (option 1: with '--mount')
+            #    docker run -w {workdir} --mount type=bind,src={bind_src},dst={bind_dst} {image} {args}
+            #    # (option 2: with '--volume')
+            #    docker run -w {workdir} -v {bind_src}:{bind_dst} {image} {args}
+            # Example:
+            #   docker run -w "`pwd`" --mount type=bind,src=/Users,dst=/Users genepattern/docker-python36:0.4 python3 --version
+            #   docker run -w "`pwd`" -v "/Users:/Users" genepattern/docker-python36:0.4 python3 --version
+            #
+            # Options:
+            #   'docker', the path to the docker executable
+            # '--mount' args 
+            #   'job.docker.bind_src', the local path on the docker daemon host
+            #   'job.docker.bind_dst', the path where the src is mounted in the container
+            #   The bind_src and bind_dst must be the same path. They are separated for 
+            #   illustration purposes.
+            # 
+            "job.commandPrefix": "<run-with-docker>"
+            "job.docker.image": "genepattern/docker-java17:0.12" 
+            "docker": "/usr/local/bin/docker"
+            "job.docker.bind_src": "/Users"
+            "job.docker.bind_dst": "/Users"
+            "job.workingDir": "<jobs>/<job_id>"
+            "run-with-docker": "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+                -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+                -e DOCKER_CMD=<docker> \
+                -e GP_JOB_WORKING_DIR=<job.workingDir> \
+                -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+                -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+                -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+                -u docker"
+
+            #
+            # (experimental) 'docker-run' command
+            #   Note: we are using the 'run-with-docker.sh' wrapper because it
+            #   outputs a better error message when the 'job.docker.image'
+            #   is not set
+            #"docker-run": "<docker> run -w <job.workingDir> \
+            #     --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
+            #     <job.docker.image>"
+
+            ## default <java> substitution
+            java: "java"
+
+            ## default <perl> substitution
+            perl: "perl"
+
+            ## default <python_3.6> in substitution
+            python_3.6: "python3"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.util;
 
@@ -20,14 +20,14 @@ import org.apache.oro.io.GlobFilenameFilter;
  * <p>
  * Some examples, 
  * <pre>
-   jobs.FilenameFilter=.*
-   jobs.FilenameFilter=.nfs*
+   job.FilenameFilter=.*
+   job.FilenameFilter=.nfs*
  * </pre>
  * 
  * @author pcarr
  */
 public class JobResultsFilenameFilter implements FilenameFilter {
-    public static final String KEY = "jobs.FilenameFilter";
+    public static final String KEY = "job.FilenameFilter";
     
     private Set<String> exactMatches = new TreeSet<String>();
     private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();

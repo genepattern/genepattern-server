@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1;
 
@@ -28,8 +28,6 @@ public class Util {
      * This method has the effect of requiring a valid logged in gp user, because a 
      * RuntimeException will be thrown if the user is not logged in.
      * 
-     * @param request
-     * @return
      * @throws WebApplicationException if there is not a current user.
      */
     public static GpContext getUserContext(final HttpServletRequest request) {
@@ -42,7 +40,27 @@ public class Util {
         GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
         return userContext;
     }
-        
+    
+    /**
+     * Create a new userContext from the HTTP request which requires a valid
+     * administrator account.
+     * This helper method will throw a '403 Forbidden' exception if the
+     * current user is not an admin.
+     * 
+     * @throws WebApplicationException the current user is not an admin
+     */
+    public static GpContext getAdminUserContext(final HttpServletRequest request) {
+        final GpContext userContext = Util.getUserContext(request);
+        if (!userContext.isAdmin()) {
+            // 403, see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.2
+            final String message="403 FORBIDDEN: User '"+userContext.getUserId()+"' not authorized. Must be an administrator.";
+            throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity(
+                message
+            ).build());
+        }
+        return userContext;
+    }
+
     public static GpContext getTaskContext(
             final HttpServletRequest request,
             final String taskNameOrLsid) 

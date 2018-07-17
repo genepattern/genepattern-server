@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm.impl.local.commons_exec;
 
@@ -372,8 +372,6 @@ public class LocalCommonsExecJobRunner implements JobRunner {
            # the name of the log file, relative to the working directory for the job
            job.logfile: .rte.out
      * </pre>
-     * 
-     * @author pcarr
      */
     protected void logCommandLine(final DrmJobSubmission job) {
         final File jobLogFile=job.getLogFile(); 

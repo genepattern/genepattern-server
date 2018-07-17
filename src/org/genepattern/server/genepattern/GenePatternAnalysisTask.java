@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 package org.genepattern.server.genepattern;
@@ -1086,8 +1086,15 @@ public class GenePatternAnalysisTask {
                                             name = getGSDownloadFileName(url.openConnection(), url);
                                         }
                                         catch (GenomeSpaceException e) {
-                                            vProblems.add("Error connecting to GenomeSpace: "+e.getLocalizedMessage());
-                                            log.error("Error connecting to GenomeSpace", e);
+                                            vProblems.add(e.getLocalizedMessage());
+                                            log.error(e);
+                                            downloadUrl = false;
+                                        }
+                                        catch (Throwable t) {
+                                            final String message="Error getting GenomeSpace input file: "+t.getLocalizedMessage()+
+                                                ", gpUserId='"+jobInfo.getUserId()+"' "+url;
+                                            vProblems.add(message);
+                                            log.error(message, t);
                                             downloadUrl = false;
                                         }
                                     } 
@@ -1764,9 +1771,9 @@ public class GenePatternAnalysisTask {
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
         boolean checkExitValue = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, 
-                JobRunner.PROP_ERROR_STATUS_EXIT_VALUE, false);
+                JobRunner.PROP_ERROR_STATUS_EXIT_VALUE, true);
         boolean checkStderr = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, 
-                JobRunner.PROP_ERROR_STATUS_STDERR, true);
+                JobRunner.PROP_ERROR_STATUS_STDERR, false);
 
         log.debug("for job#"+jobId+" checkExitValue="+checkExitValue+", checkStderr="+checkStderr);
 

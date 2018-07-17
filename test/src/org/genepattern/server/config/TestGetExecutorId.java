@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -34,7 +34,7 @@ public class TestGetExecutorId {
         if (this.gpConfig.hasInitErrors()) {
             throw this.gpConfig.getInitializationErrors().get(0);
         }
-        ConfigUtil.setUserGroups(this.getClass(), "userGroups.xml");
+        ConfigUtil.setUserGroups(this.getClass(), "drm_test_userGroups.xml");
     }
     
     @Test

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
@@ -16,27 +16,25 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.DbException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
-import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.congestion.CongestionManager;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.congestion.Congestion;
-import org.genepattern.server.executor.drm.dao.JobRunnerJob;
-import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+
+import com.google.common.base.Strings;
 
 /**
  * Access job status for a single job result from a JSF page.
@@ -49,48 +47,73 @@ public class JobStatusBean {
     private Status jobStatus = null;
     private boolean showEstimatedQueuetime = false; // by default, don't show the estimated queuetime (GP-5313)
     private JobInfoWrapper jobInfoWrapper = null;
-    private JobRunnerJob jrj = null;
     private List<JobInfoWrapper> allSteps = null;
-    private String currentUserId = null;
+    private final String currentUserId;
     private String currentUserEmail = null;
 
     private boolean sendEmailNotification = false;
     private boolean showExecutionLogs = false;
-    private boolean openVisualizers = false;
+    private boolean canViewJob = false;
 
     //track the list of automatically opened visualizers
     private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
     
     public JobStatusBean() {
-      init();
+        this.currentUserId = UIBeanHelper.getUserId();
+        init();
     }
     
-    public void init(){
-        allSteps = null;
-
-        //get the job number from the request parameter
-        int jobNumber = -1;
+    /**
+     * Parse the 'jobNumber' request parameter
+     * @return the jobNumber or '-1' if there are errors
+     */
+    protected int initJobNumber(final HttpServletRequest request) {
         String jobNumberParameter = null;
         jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
         jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
         if (jobNumberParameter == null) {
             log.warn("init(): Missing jobNumber.");
-            return;
+            return -1;
         }
         try {
-            jobNumber = Integer.parseInt(jobNumberParameter);
+            return Integer.parseInt(jobNumberParameter);
         }
         catch (NumberFormatException e) {
             log.error("init(): Invalid jobNumber="+jobNumberParameter+": "+e.getLocalizedMessage());
+            return -1;
+        }
+    }
+
+    protected GpContext initJobContext(final HibernateSessionManager mgr, final int jobNumber) {
+        final GpContext jobContext;
+        try {
+            jobContext=GpContext.createContextForJob(mgr, currentUserId, jobNumber);
+            return jobContext;
+        }
+        catch (Throwable t) {
+            log.error("init(): Error creating jobContext for jobNumber="+jobNumber, t);
+            return null;
+        }
+    }
+
+    public void init(){
+        allSteps = null;
+        
+        final HttpServletRequest request = UIBeanHelper.getRequest();
+        final int jobNumber=initJobNumber(request);
+        if (jobNumber < 0) {
             return;
         }
+        final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance();
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        final GpContext jobContext=initJobContext(mgr, jobNumber); 
+        if (jobContext==null) {
+            return;
+        }
+        this.canViewJob=jobContext.canReadJob();
 
-        String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
-        setOpenVisualizers(openVisualizersParameter != null);
-
-        currentUserId = UIBeanHelper.getUserId();
-        UserDAO userDao = new UserDAO();
-        User user = userDao.findById(currentUserId);
+        final UserDAO userDao = new UserDAO(mgr);
+        final User user = userDao.findById(currentUserId);
         if (user != null) {
             currentUserEmail = user.getEmail();
             showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
@@ -108,16 +131,29 @@ public class JobStatusBean {
             UIBeanHelper.setErrorMessage(errorMessage);
         }
 
-        HttpServletRequest request = UIBeanHelper.getRequest();
         String contextPath = request.getContextPath();
         String cookie = request.getHeader("Cookie");   
         
-        AnalysisDAO analysisDao = new AnalysisDAO();
-        JobInfo jobInfo = analysisDao.getJobInfo(jobNumber);
+        final JobInfo jobInfo;
+        if (jobContext.getJobInfo()==null) {
+            log.warn("jobContext.jobInfo not initialized for jobNumber="+jobNumber);
+            final AnalysisDAO analysisDao = new AnalysisDAO(mgr);
+            jobInfo = analysisDao.getJobInfo(jobNumber);
+        }
+        else {
+            jobInfo=jobContext.getJobInfo();
+        }
 
-        
         JobInfoManager jobInfoManager = new JobInfoManager();
-        final String baseGpHref=UrlUtil.getBaseGpHref(request);
+        final String baseGpHref;
+        if (Strings.isNullOrEmpty(jobContext.getBaseGpHref())) {
+            log.warn("jobContext.baseGpHref not initialized for jobNumber="+jobNumber);
+            baseGpHref=UrlUtil.getBaseGpHref(request);
+        }
+        else {
+            baseGpHref=jobContext.getBaseGpHref();
+        }
+
         final boolean includeJobStatus=true;
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobInfo, includeJobStatus, baseGpHref);
           
@@ -144,42 +180,26 @@ public class JobStatusBean {
         }
         
         // initialize job status
-        GpContext jobContext=new GpContext.Builder()
-            .userId(currentUserId)
-            .jobInfo(jobInfo)
-        .build();
-        this.jobStatus = new JobStatusLoaderFromDb(baseGpHref).loadJobStatus(jobContext);
-        GpConfig gpConfig=ServerConfigurationFactory.instance();
+        this.jobStatus = new JobStatusLoaderFromDb(mgr, baseGpHref).loadJobStatus(jobContext);
         this.showEstimatedQueuetime = gpConfig.getGPBooleanProperty(jobContext, GpConfig.PROP_SHOW_ESTIMATED_QUEUETIME, false);
     }
 
     public boolean getCanViewJob() {
-        String user = UIBeanHelper.getUserId();
-        final boolean isAdmin = AuthorizationHelper.adminJobs(user);
-        PermissionsHelper ph = new PermissionsHelper(isAdmin, user, jobInfoWrapper.getJobNumber());
-        return ph.canReadJob();
+        return canViewJob;
     }
     
     public JobInfoWrapper getJobInfo() {
         return jobInfoWrapper;
     }
 
-    public boolean getOpenVisualizers() {
-        return openVisualizers;
+    /**
+     * Get the job status details. This method uses the same model as the REST api call to 
+     *     GET /rest/v1/jobs/{jobId}/status.json
+     * @return
+     */
+    public Status getJobStatus() {
+        return jobStatus;
     }
-
-	public void setOpenVisualizers(boolean openVisualizers) {
-		this.openVisualizers = openVisualizers;
-	}
-
-	/**
-	 * Get the job status details. This method uses the same model as the REST api call to 
-	 *     GET /rest/v1/jobs/{jobId}/status.json
-	 * @return
-	 */
-	public Status getJobStatus() {
-	    return jobStatus;
-	}
 
     /**
      * @return the top level job info, including all steps if it is a pipeline.
@@ -199,7 +219,8 @@ public class JobStatusBean {
     }
 
     public boolean isShowExecutionLogs() {
-        return this.showExecutionLogs;
+        //return jobInfoWrapper != null && jobInfoWrapper.isShowExecutionLogs();
+        return showExecutionLogs;
     }
     
     public boolean isSendEmailNotification() {
@@ -277,21 +298,6 @@ public class JobStatusBean {
             UIBeanHelper.setErrorMessage("Error downloading output files for job "+jobInfoWrapper.getJobNumber()+": "+e.getLocalizedMessage());
         }
         UIBeanHelper.getFacesContext().responseComplete();
-    }
-
-    public JobRunnerJob getJobRunnerJob() {
-        if (this.jrj == null) {
-            JobRunnerJobDao dao = new JobRunnerJobDao();
-            JobRunnerJob jrj = null;
-            try {
-                jrj = dao.selectJobRunnerJob(jobInfoWrapper.getJobNumber());
-            } catch (DbException e) {
-                log.warn("Trouble getting JobRunnerJob for job number:" + jobInfoWrapper.getJobNumber());
-            }
-            this.jrj = jrj;
-        }
-
-        return this.jrj;
     }
 
     /**

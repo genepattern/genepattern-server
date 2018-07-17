@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.input.cache;
 
@@ -183,7 +183,7 @@ abstract public class CachedFtpFile implements CachedFile {
 
         // Add it to the database
         try {
-            JobInputFileUtil.__addUploadFileToDb(mgr, realPath);
+            JobInputFileUtil.__addUploadFileToDb(mgr, gpConfig, realPath);
         }
         catch (Throwable t) {
             //ignore this, because we don't rely on the DB entry for managing cached data files

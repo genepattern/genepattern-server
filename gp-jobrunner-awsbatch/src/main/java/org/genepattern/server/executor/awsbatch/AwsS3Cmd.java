@@ -3,6 +3,7 @@ package org.genepattern.server.executor.awsbatch;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,14 +19,42 @@ import org.apache.log4j.Logger;
 import com.google.common.base.Strings;
 
 /**
- * Utility class for copying local files into S3.
- * Example command,
- *   aws s3 sync `pwd` s3://gpbeta`pwd` --exclude "*" --include "test.txt" --profile genepattern
- *   
- * See:
- *   http://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
+ * Utility class for copying local files and directories into S3.
+ * Files are uploaded with the 'aws s3 sync' command based on this template:
  * 
- * @author pcarr
+ * <pre>
+ *   aws s3 sync <LocalPath> <S3Prefix><LocalPath>
+ *       [--exclude exclude-pattern]*
+ *       [--include include-pattern]*
+ *       [aws-profile] 
+ * </pre>
+ * 
+ * See the <a 
+ *   href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html"
+ * >aws s3 reference</a> for more details about the <a 
+ *   href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html#path-argument-type"
+ * >path-argument-type</a>.
+ * 
+ * <h3>Example Jupyter Notebook</h3>
+ * For more details open the <b>awscli_examples.ipynb</b> notebook which is saved in this project.
+ * <ul>
+ *   <li>./gp-jobrunner-awsbatch/awscli_examples.ipynb
+ * </ul>
+ * I use this notebook to test, develop, and document aws cli commands. If you have a
+ * jupyter notebook app running locally, open this from your notebook dashboard.
+ * You can also view a static (read only) html rendering in GitHub.
+ * <ul>
+ * <li><a href="https://github.com/genepattern/genepattern-server/blob/develop/gp-jobrunner-awsbatch/awscli_examples.ipynb"
+ *      >gp-jobrunner-awsbatch/awscli_examples.ipynb (latest published version)</a> 
+ * </ul>
+ * 
+ * <h3>Links</h3>
+ * <ul>
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html">aws cli user guide</a>, for an overview
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/index.html">aws s3 reference</a>
+ *   <li><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html">aws s3 sync command reference</a>
+ *   <li><a href="http://jupyter.org">jupyter.org</a>, to learn about the Jupyter Notebook
+ * </ul>
  */
 public class AwsS3Cmd {
     private static final Logger log = Logger.getLogger(AwsS3Cmd.class);
@@ -66,9 +95,24 @@ public class AwsS3Cmd {
     private AwsS3Cmd(final Builder b) {
         this.awsCmd=b.awsCmd;
         this.profile=b.profile;
-        this.cmdEnv=Collections.unmodifiableMap(b.cmdEnv);
+        if (b.cmdEnv==null) {
+            this.cmdEnv=Collections.emptyMap();
+        }
+        else {
+            this.cmdEnv=Collections.unmodifiableMap(b.cmdEnv);
+        }
         this.s3_bucket=b.s3_bucket;
-        this.metadataDir=new File(cmdEnv.get("GP_METADATA_DIR"));
+        if (Strings.isNullOrEmpty(this.s3_bucket)) {
+            log.warn("s3_bucket is not set");
+        }
+        final String dirPath=cmdEnv.get("GP_JOB_METADATA_DIR");
+        if (Strings.isNullOrEmpty(dirPath)) {
+            log.warn("'GP_JOB_METADATA_DIR' not set, setting metadataDir=null");
+            this.metadataDir=null;
+        }
+        else {
+            this.metadataDir=new File(dirPath);
+        }
     }
 
     protected String toS3Uri(final File filePath) {
@@ -90,6 +134,23 @@ public class AwsS3Cmd {
         return new File(localPath);
     }
     
+    public void syncToS3(final File localFile) {
+        if (localFile==null) {
+            log.error("ignoring null arg");
+            return;
+        }
+        if (localFile.isFile()) {
+            copyFileToS3(localFile);
+        }
+        else if (localFile.isDirectory()) {
+            copyDirToS3(localFile);
+        }
+        else {
+            log.error("localFile must be a file or a directory, localFile="+localFile);
+            return;
+        }
+    }
+    
     /**
      * Copy the local file to the s3 bucket. 
      * Template:
@@ -99,7 +160,7 @@ public class AwsS3Cmd {
      *   
      * @param localFile
      */
-    public void copyFileToS3(final File localFile) {
+    private void copyFileToS3(final File localFile) {
         // aws s3 sync fq-local-path s3uri
         if (!localFile.isFile()) {
             log.error("Expecting a file not a directory, inputFile="+localFile);
@@ -109,7 +170,6 @@ public class AwsS3Cmd {
             log.error("Expecting a fully qualified file, inputFile="+localFile);
             return;
         }
-        // TODO: handle special characters
         List<String> args=Arrays.asList( "s3", "sync",
                 // from local path
                 localFile.getParent(), 
@@ -125,22 +185,81 @@ public class AwsS3Cmd {
         runCmd(cmdEnv, awsCmd, args);
     }
     
-    // TODO: handle special characters
-    public List<String> getCopyFileFromS3Args(final File localFile) {
-        List<String> args=Arrays.asList( "s3", "sync", 
-            // from s3Uri
-            s3_bucket+""+localFile.getParent(),
-            // to container local path
-            localFile.getParent(),
-            "--exclude", "*", "--include", localFile.getName()
+    private void copyDirToS3(final File localDir) {
+        if (!localDir.isDirectory()) {
+            log.error("Expecting a directory, localDir="+localDir);
+            return;
+        }
+        if (!localDir.isAbsolute()) {
+            log.error("Expecting a fully qualified path, localDir="+localDir);
+            return;
+        }
+        List<String> args=Arrays.asList("s3", "sync",
+            //// for debugging ...
+            // "--dryrun",
+            //// optional delete mode
+            ////   --delete (boolean) Files that exist in the destination but not in the source are deleted during sync.
+            // "--delete", 
+            // from local path
+            localDir.getPath(), 
+            // to s3Uri
+            s3_bucket+""+localDir.getPath(),
+            // hard-coded default-excludes 
+            "--exclude", "*~", 
+            "--exclude", ".DS_Store",
+            "--exclude", ".git*"
         );
+        if (!Strings.isNullOrEmpty(profile)) {
+            args.add("--profile");
+            args.add(profile);
+        }
+
+        runCmd(cmdEnv, awsCmd, args); 
+    }
+    
+    /**
+     * get the 'aws s3 sync' command line args to copy the file from 
+     * a source s3 bucket into a destination path on the local file system
+     * 
+     * Template
+     *   aws s3 sync {s3_prefix}{src_path} {dest_prefix}{dest_path} --exclude "*" --include "{filename}"
+     * Example 1: (default) dest_prefix not set
+     *   aws s3 sync s3://gpbeta/temp /temp --exclude "*" --include "test.txt"
+     * Example 2: dest_prefix=/local
+     *   aws s3 sync s3://gpbeta/temp /local/temp --exclude "*" --include "test.txt"
+     * 
+     * @param localFile
+     * @param destPrefix
+     * @return
+     */
+    protected List<String> getSyncFromS3Args(final File localFile, final String destPrefix) {
+        List<String> args=new ArrayList<String>();
+        args.add("s3");
+        args.add("sync");
+        if (localFile.isFile()) {
+            // from s3Uri
+            args.add(s3_bucket+""+localFile.getParent());
+            // to container local path
+            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getParent());
+            // filter all but the file
+            args.add("--exclude");
+            args.add("*");
+            args.add("--include");
+            args.add(localFile.getName());
+        }
+        else if (localFile.isDirectory()) {
+            // from s3Uri
+            args.add(s3_bucket+""+localFile.getPath());
+            // to container local path
+            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getPath());
+        }
         if (!Strings.isNullOrEmpty(profile)) {
             args.add("--profile");
             args.add(profile);
         }
         return args;
     }
-    
+
     public File getMetadataDir() {
         return metadataDir;
     }

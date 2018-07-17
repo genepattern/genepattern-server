@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.eula;
 
@@ -47,7 +47,7 @@ public class TestEulaManagerSiteLicense {
     
     @After
     public void tearDown() {
-        UserAccountManager.instance().setUserGroups(null);
+        UserAccountManager.instance().setUserGroupsXml(null);
         UserAccountManager.instance().refreshUsersAndGroups();
 
         //revert back to a 'default' config.file

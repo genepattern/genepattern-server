@@ -1,21 +1,23 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server;
 
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
-import org.genepattern.server.auth.DefaultGroupMembership;
 import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
-import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.auth.UserGroups;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -23,6 +25,8 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+
+import com.google.common.base.Strings;
 
 /**
  * Common interface for managing user accounts and groups, used in the web application and soap server.
@@ -34,6 +38,29 @@ public class UserAccountManager {
     
     public static final String PROP_AUTHENTICATION_CLASS = "authentication.class";
     public static final String PROP_GROUP_MEMBERSHIP_CLASS = "group.membership.class";
+
+    /**
+     * The 'username.regex' is a regular expression which matches all valid usernames 
+     * and which must not match any invalid usernames. This pattern is used to validate
+     * prospective usernames via the java.util.regex.Pattern class.
+     * 
+     * @see "https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html" 
+     * 
+     * Java code:
+     * <pre>
+     * Pattern pattern = Pattern.compile(usernameRegex);
+       return pattern.matcher(username).matches();
+     * </pre>
+     * 
+     * <p>
+     * Example usage:
+     * <pre>
+     *     # match all alphanumeric characters and the '@' symbol
+     *     username.regex: "[A-Za-z0-9_@.\\- ]+"
+     * </pre>
+     */
+    public static final String PROP_USERNAME_REGEX="username.regex";
+    public static final String DEFAULT_USERNAME_REGEX="[A-Za-z0-9_@.\\- ]+";
 
     /**
      * @return the singleton instance of the UserAccountManager.
@@ -51,56 +78,29 @@ public class UserAccountManager {
     
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
-
-    //these properties are used in the DefaultGenePatternAuthentication class, and in the LoginBean
-    private boolean createAccountAllowed = true;
-    private boolean showRegistrationLink = true;
+    private UserGroups userGroups = null;
     
-    //this property is optionally (when set) used in the default goup membership class, XmlGroupMembership
-    private File userGroups=null;
+    //this property is optionally (when set) used in the default group membership class, UserGroups
+    private File userGroupsXml=null;
 
     /**
      * private constructor requires call to {@link #instance()}.
      */
     private UserAccountManager() {
-        p_refreshProperties();
         p_refreshUsersAndGroups();
-    }
-
-    /**
-     * Flag indicating whether or not users can register new accounts via the web interface.
-     * @return
-     */
-    public boolean isCreateAccountAllowed() {
-        return createAccountAllowed;
-    }
-    
-    public boolean isShowRegistrationLink() {
-        return showRegistrationLink;
     }
 
     /**
      * Optionally set a non-default location for the users and groups file.
      * You must call refreshUsersAndGroups before this change takes effect.
      * 
-     * Note: this only has effect if you are using the default (XmlGroupMembership) implementation
+     * Note: this only has effect if you are using the default (UserGroups) implementation
      * of the IGroupMembershipPlugin interface.
      * 
      * @param userGroups
      */
-    public void setUserGroups(final File userGroups) {
-        this.userGroups=userGroups;
-    }
-
-    /** @deprecated */
-    public static void validateNewUsername(final String username) throws AuthenticationException {
-        validateNewUsername(HibernateUtil.instance(), username);
-    }
-
-    /** @deprecated, should pass in a valid GpConfig and userContext */
-    public static void validateNewUsername(final HibernateSessionManager mgr, final String username) throws AuthenticationException {
-        final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        validateNewUsername(gpConfig, mgr, username);
+    public void setUserGroupsXml(final File userGroupsXml) {
+        this.userGroupsXml=userGroupsXml;
     }
 
     /**
@@ -113,7 +113,7 @@ public class UserAccountManager {
      */
     public static void validateNewUsername(final GpConfig gpConfig, final HibernateSessionManager mgr, final String username) throws AuthenticationException {
         //1) is it a valid username
-        validateUsername(username);
+        validateUsername(gpConfig, username);
         //2) is it a unique username
         User user = (new UserDAO(mgr)).findByIdIgnoreCase(username);
         if (user != null) {
@@ -122,7 +122,8 @@ public class UserAccountManager {
         }
         //3) can create user dir for user
         try {
-            final GpContext userContext = GpContext.getContextForUser(username);
+            final boolean initIsAdmin=false;
+            final GpContext userContext = GpContext.getContextForUser(username, initIsAdmin);
             final File userDir = gpConfig.getUserDir(userContext);
             log.info("creating user dir: "+userDir.getPath());
         }
@@ -132,6 +133,63 @@ public class UserAccountManager {
         }
     }
 
+    /**
+     * Validate the username with the {@code username.regex}
+     * Throw an exception if the username  does not match the pattern.
+     * {@link #PROP_USERNAME_REGEX}
+     * 
+     * 
+     * @throws AuthenticationException if the username is not valid
+     * 
+     * @see "https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html"
+     */
+    public static boolean validateUsernameFromRegex(final GpConfig gpConfig, final GpContext serverContext, final String username) 
+    throws AuthenticationException
+    {
+        final String regex;
+        if (gpConfig==null) {
+            regex=DEFAULT_USERNAME_REGEX;
+        }
+        else {
+            final String prop=gpConfig.getGPProperty(serverContext, PROP_USERNAME_REGEX, DEFAULT_USERNAME_REGEX);
+            if (Strings.nullToEmpty(prop).trim().isEmpty()) {
+                regex=DEFAULT_USERNAME_REGEX;
+                log.warn("ignoring empty property: "+PROP_USERNAME_REGEX+"='"+regex+"'");
+            }
+            else {
+                regex=prop;
+            }
+        }
+        try {
+            final Pattern pattern = Pattern.compile(regex);
+            //return pattern.matcher(username).matches();
+            final Matcher m = pattern.matcher(username);
+            final boolean valid=m.matches();
+            if (!valid) {
+                // remove matching characters
+                final String invalidChars=m.replaceAll("");
+                if (!Strings.isNullOrEmpty(invalidChars)) {
+                    throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                        "Invalid username: '"+username+"': characters not allowed: '"+invalidChars+"'");
+                }
+                else {
+                    throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                        "Invalid username: '"+username+"': does not match 'username.regex'");
+                }
+            }
+            return valid;
+        }
+        catch (PatternSyntaxException e) {
+            log.error("Invalid regex pattern, "+PROP_USERNAME_REGEX+"='"+regex+"'", e);
+            throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE,
+                "Server configuration error, invalid regex pattern");
+        }
+        catch (Throwable t) {
+            throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE,
+                "Unexpected server error: "+t.getLocalizedMessage());
+        }
+    }
+    
     /**
      * Is the username valid for a GenePattern account. This does not check for similar names in the database.
      * It just enforces any rules on what constitutes a valid name.
@@ -143,10 +201,14 @@ public class UserAccountManager {
      * @param username
      * @throws AuthenticationException if the username is not valid
      */
-    static public void validateUsername(String username) throws AuthenticationException {
+    static public void validateUsername(final GpConfig gpConfig, final String username) throws AuthenticationException {
         if (username == null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Username is null");
+        }
+        if (username.trim().length()==0) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Username not set (empty string)");
         }
         if (username.startsWith(" ")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
@@ -192,6 +254,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain a TAB character.");
         }
+        if (username.contains("\n")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't contain a NEWLINE character.");
+        }
         if (username.contains(";")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain a semicolon (';') character.");
@@ -200,6 +266,34 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't start with the dot ('.') character.");
         }
+        if (username.startsWith("@")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't start with the dot ('@') character.");
+        }
+        // match the allowed username regex
+        validateUsernameFromRegex(gpConfig, GpContext.getServerContext(), username);
+
+        if (contains2(username, '@')) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't contain more than one '@' character");            
+        }
+    }
+    
+    /**
+     * Helper method, return true if the given string contains two or more of the given characters.
+     */
+    protected static boolean contains2(final String str, final char c) {
+        if (str==null || str.length()<2) {
+            return false;
+        }
+        int i=str.indexOf(c);
+        if (i>=0) {
+            i=str.indexOf(c,i+1);
+            if (i>=0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @deprecated */
@@ -218,32 +312,7 @@ public class UserAccountManager {
         return user != null;
     }
 
-    /**
-     * Create a new GenePattern user account.
-     * 
-     * @param username
-     * @throws AuthenticationException - if the user is already registered.
-     * 
-     * @deprecated should pass in valid HibernateSessionManager and GpConfig
-     */
-    public void createUser(String username) throws AuthenticationException {
-        String password = "";
-        createUser(username, password);
-    }
-
-    /**
-     * Create a new GenePattern user account.
-     * 
-     * @param username
-     * @param password
-     * @throws AuthenticationException - if the user is already registered.
-     */
-    public void createUser(String username, String password) throws AuthenticationException {
-        String email = null;
-        createUser(username, password, email);
-    }
-    
-    /** @deprecated */
+    /** @deprecated pass in a valid GpConfig and Hibernate session */
     public static void createUser(final String username, final String passwordOrNull, final String email) throws AuthenticationException {
         createUser(ServerConfigurationFactory.instance(), HibernateUtil.instance(), username, passwordOrNull, email);
     }
@@ -295,7 +364,7 @@ public class UserAccountManager {
         
         User user = null;
         try {
-            user = (new UserDAO()).findById(username);
+            user = (new UserDAO(HibernateUtil.instance())).findById(username);
         }
         catch (Error e) {
             throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE, e.getLocalizedMessage());
@@ -336,33 +405,30 @@ public class UserAccountManager {
         return groupMembership;
     }
     
+    public UserGroups getUserGroups() {
+        return userGroups;
+    }
+    
     /**
      * If necessary reload user and groups information by reloading the IAuthenticationPlugin and IGroupMembershipPlugins.
      * This supports one specific use-case: when GP default group membership is used, and an admin edits the configuration file,
      * it cause the GP server to reload group membership information from the config file.
      */
     public synchronized void refreshUsersAndGroups() {
-        p_refreshProperties();
         p_refreshUsersAndGroups();
-    }
-
-    private void p_refreshProperties() {
-        String prop = System.getProperty("create.account.allowed", "true").toLowerCase();
-        this.createAccountAllowed = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-        
-        prop = System.getProperty("show.registration.link", "true").toLowerCase();
-        this.showRegistrationLink = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
     }
 
     //don't know if this is necessary, but it is here because it is called from the constructor
     //    and from refreshUsersAndGroups (which is synchronized).
     private void p_refreshUsersAndGroups() {
+        p_refreshUsersAndGroups(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+    }
+    
+    private void p_refreshUsersAndGroups(final GpConfig gpConfig, final GpContext serverContext) {
         this.authentication = null;
         this.groupMembership = null;
-        String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
-        String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
+        final String customAuthenticationClass = gpConfig.getGPProperty(serverContext, PROP_AUTHENTICATION_CLASS, null);
+        final String customGroupMembershipClass = gpConfig.getGPProperty(serverContext, PROP_GROUP_MEMBERSHIP_CLASS, null);
         loadAuthentication(customAuthenticationClass);
 
         //check for special case: 
@@ -376,11 +442,10 @@ public class UserAccountManager {
             this.groupMembership = (IGroupMembershipPlugin) this.authentication;
         }
         else {
-            loadGroupMembership(customGroupMembershipClass);            
+            loadGroupMembership(gpConfig, customGroupMembershipClass);            
         }
-        this.groupMembership = new GroupMembershipWrapper(this.groupMembership);
     }
-    
+
     private void loadAuthentication(String customAuthenticationClass) {
         log.debug("loading IAuthenticationPlugin, customAuthenticationClass="+customAuthenticationClass);
         if (customAuthenticationClass == null) {
@@ -401,26 +466,29 @@ public class UserAccountManager {
             log.error("this.authentication==null");
         }
         else {
-            log.debug("authentication.class="+this.authentication.getClass().getCanonicalName());
+            log.debug(PROP_AUTHENTICATION_CLASS+"="+this.authentication.getClass().getCanonicalName());
         }
     }
     
-    private void loadGroupMembership(String customGroupMembershipClass) {
-        if (customGroupMembershipClass == null) {
-            if (userGroups != null) {
-                this.groupMembership = new XmlGroupMembership(userGroups); 
+    private void loadGroupMembership(final GpConfig gpConfig, String customGroupMembershipClass) {
+        if (customGroupMembershipClass == null) { 
+            if (userGroupsXml != null) {
+                this.userGroups = UserGroups.initFromXml(userGroupsXml);
             }
             else {
-                this.groupMembership = new XmlGroupMembership(); 
+                this.userGroups = UserGroups.initFromConfig(gpConfig);
             }
+            this.groupMembership = userGroups;
         }
         else {
             try {
-                this.groupMembership = (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+                final IGroupMembershipPlugin customGroupMembership = 
+                        (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+                this.groupMembership = new GroupMembershipWrapper(customGroupMembership);
             }
             catch (Exception e) {
                 log.error("Failed to load custom group membership class: "+customGroupMembershipClass, e);
-                this.groupMembership = new DefaultGroupMembership();
+                this.groupMembership = UserGroups.initDefault();
             }
         }
     }

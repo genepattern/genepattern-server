@@ -1,7 +1,5 @@
 ## SOFTWARE COPYRIGHT NOTICE AGREEMENT
-## This software and its documentation are copyright (2015) by the
-## Broad Institute/Massachusetts Institute of Technology. All rights are
-## reserved.
+## Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
 ##
 ## This software is supplied without any warranty or guaranteed support
 ## whatsoever. Neither the Broad Institute nor MIT can be responsible for its

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -131,9 +131,7 @@ public class GpContext {
     }
 
     /**
-     * @deprecated
-     * @param userId
-     * @return
+     * @deprecated call getContextForUser with initIsAdmin flag instead
      */
     public static GpContext getContextForUser(final String userId) {
         return getContextForUser(userId, false);
@@ -227,7 +225,6 @@ public class GpContext {
     /**
      * Get the '<libdir>' for the current TaskInfo, can be null if it
      * has not been initialized for this particular context.
-     * @return
      */
     public File getTaskLibDir() {
         return this.taskLibDir;
@@ -239,7 +236,6 @@ public class GpContext {
     
     /**
      * can return null if not set.
-     * @return
      */
     public Integer getJobNumber() {
         if (jobInfo!=null) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.jobqueue;
 
@@ -64,12 +64,6 @@ public class JobQueueUtil {
         .build();
         GpJobAddedEvent event = new GpJobAddedEvent(jobInfo.getTaskLSID(), jobStatus);
         JobEventBus.instance().post(event);
-    }
-
-    /** @deprecated pass in a Hibernate session */
-    static public List<JobQueue> getPendingJobs(int maxJobCount) throws Exception {
-        return getPendingJobs(org.genepattern.server.database.HibernateUtil.instance(),
-                maxJobCount);
     }
     
     static public List<JobQueue> getPendingJobs(final HibernateSessionManager mgr, int maxJobCount) 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm;
 
@@ -84,7 +84,6 @@ public class DrmJobStatus {
     
     /**
      * Get the external job id.
-     * @return
      */
     public String getDrmJobId() {
         return drmJobId;
@@ -99,7 +98,6 @@ public class DrmJobStatus {
 
     /**
      * Get the current status of the job.
-     * @return
      */
     public DrmJobState getJobState() {
         return jobState;
@@ -107,7 +105,6 @@ public class DrmJobStatus {
 
     /**
      * Get the time that the job was added to the queue, e.g. for LSF the time that the bsub command was issued.
-     * @return
      */
     public Date getSubmitTime() {
         if (submitTime==null) {
@@ -118,7 +115,6 @@ public class DrmJobStatus {
     
     /**
      * Get the time that the job started on the queue, can be null if the job hasn't started yet.
-     * @return
      */
     public Date getStartTime() {
         if (startTime==null) {
@@ -129,7 +125,6 @@ public class DrmJobStatus {
 
     /**
      * Get the time that the job completed, can be null of the job hasn't finished.
-     * @return
      */
     public Date getEndTime() {
         if (endTime==null) {
@@ -140,7 +135,6 @@ public class DrmJobStatus {
 
     /**
      * Get the amount of cpu time used by the job, can be null if this is not known.
-     * @return
      */
     public CpuTime getCpuTime() {
         return cpuTime;
@@ -155,7 +149,6 @@ public class DrmJobStatus {
     
     /**
      * Get the amount of swap memory used by the job, can be null if this is not known.
-     * @return
      */
     public Memory getMaxSwap() {
         return maxSwap;
@@ -171,7 +164,6 @@ public class DrmJobStatus {
 
     /**
      * For completed jobs, get the exit code, can be null of the job is not finished or if for some other reason the exit code is not available.
-     * @return 
      */
     public Integer getExitCode() {
         return exitCode;
@@ -179,7 +171,6 @@ public class DrmJobStatus {
 
     /**
      * Get an optional status message providing details about the current status of the job.
-     * @return
      */
     public String getJobStatusMessage() {
         return jobStatusMessage;
@@ -273,7 +264,6 @@ public class DrmJobStatus {
         /**
          * The time the job was submitted to the queue.
          * @param submitTime
-         * @return
          */
         public Builder submitTime(final Date submitTime) {
             if (submitTime==null) {
@@ -288,7 +278,6 @@ public class DrmJobStatus {
         /**
          * The time the job started running on the queue.
          * @param startTime
-         * @return
          */
         public Builder startTime(final Date startTime) {
             if (startTime==null) {
@@ -303,7 +292,6 @@ public class DrmJobStatus {
         /**
          * The time the job completed running on the queue.
          * @param endTime
-         * @return
          */
         public Builder endTime(final Date endTime) {
             if (endTime==null) {
@@ -319,7 +307,6 @@ public class DrmJobStatus {
          * The current CPU usage for the job.
          * 
          * @param cpuTime
-         * @return
          */
         public Builder cpuTime(final CpuTime cpuTime) {
             this.cpuTime=cpuTime;
@@ -330,7 +317,6 @@ public class DrmJobStatus {
          * The current memory usage for the job.
          * 
          * @param sizeInBytes
-         * @return
          */
         public Builder memory(final long sizeInBytes) {
             this.memory=Memory.fromSizeInBytes(sizeInBytes);
@@ -341,7 +327,6 @@ public class DrmJobStatus {
          * The current memory usage for the job as a String, for example "2 Gb".
          * 
          * @param memSpec
-         * @return
          */
         public Builder memory(final String memSpec) {
             this.memory=Memory.fromString(memSpec);
@@ -352,7 +337,6 @@ public class DrmJobStatus {
          * The current memory usage for the job.
          * 
          * @param memory
-         * @return
          */
         public Builder memory(final Memory memory) {
             this.memory=memory;
@@ -363,7 +347,6 @@ public class DrmJobStatus {
          * The peak amount of swap memory used by the job.
          * 
          * @param sizeInBytes
-         * @return
          */
         public Builder maxSwap(final long sizeInBytes) {
             this.maxSwap=Memory.fromSizeInBytes(sizeInBytes);
@@ -373,7 +356,6 @@ public class DrmJobStatus {
         /**
          * The peak amount of swap memory used by the job as a String, for example "2 Gb".
          * @param memSpec
-         * @return
          */
         public Builder maxSwap(final String memSpec) {
             this.maxSwap=Memory.fromString(memSpec);
@@ -384,7 +366,6 @@ public class DrmJobStatus {
          * The peak amount of swap memory used by the job.
          * 
          * @param maxSwap
-         * @return
          */
         public Builder maxSwap(final Memory maxSwap) {
             this.maxSwap=maxSwap;
@@ -395,7 +376,6 @@ public class DrmJobStatus {
          * The peak number of processes used by the job.
          * 
          * @param maxProcesses
-         * @return
          */
         public Builder maxProcesses(final Integer maxProcesses) {
             this.maxProcesses=maxProcesses;
@@ -406,7 +386,6 @@ public class DrmJobStatus {
          * The peak number of threads used by the job.
          * 
          * @param maxThreads
-         * @return
          */
         public Builder maxThreads(final Integer maxThreads) {
             this.maxThreads=maxThreads;
@@ -418,7 +397,6 @@ public class DrmJobStatus {
          * A status message to be displayed on the Show details section of the job status page.
          * 
          * @param jobStatusMessage
-         * @return
          */
         public Builder jobStatusMessage(final String jobStatusMessage) {
             this.jobStatusMessage=jobStatusMessage;
@@ -429,7 +407,6 @@ public class DrmJobStatus {
          * The exitCode from the job, zero means success, non-zero means error.
          * 
          * @param exitCode
-         * @return
          */
         public Builder exitCode(final Integer exitCode) {
             this.exitCode=exitCode;

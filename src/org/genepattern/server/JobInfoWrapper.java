@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server;
 
@@ -145,11 +145,11 @@ public class JobInfoWrapper implements Serializable {
         }
         
         public String getTruncatedDisplayValue() {
-        	if (getDisplayValue() != null && getDisplayValue().length() > 70) {
-        		return getDisplayValue().substring(0, 35)+"..." + getDisplayValue().substring(getDisplayValue().length()-32, getDisplayValue().length());
-        	} else {
-        		return getDisplayValue();
-        	}
+            if (getDisplayValue() != null && getDisplayValue().length() > 70) {
+                return getDisplayValue().substring(0, 35)+"..." + getDisplayValue().substring(getDisplayValue().length()-32, getDisplayValue().length());
+            } else {
+                return getDisplayValue();
+            }
         }
 
         protected void setDisplayValue(String displayValue) {
@@ -805,11 +805,11 @@ public class JobInfoWrapper implements Serializable {
         return "";
     }
     public String getTruncatedTaskName() {
-    	if (getTaskName() != null && getTaskName().length() > 70) {
-    		return getTaskName().substring(0, 67)+"...";
-    	} else {
-    		return getTaskName();
-    	}
+        if (getTaskName() != null && getTaskName().length() > 70) {
+            return getTaskName().substring(0, 67)+"...";
+        } else {
+            return getTaskName();
+        }
     }
     public String getTaskLSID() {
         if (jobInfo != null) {
@@ -860,6 +860,11 @@ public class JobInfoWrapper implements Serializable {
     }
 
     //--- end JobInfo wrapper methods
+    
+    public boolean isShowExecutionLogs() {
+        return this.showExecutionLogs;
+    }
+
     public long getElapsedTimeMillis() {
         if (jobInfo != null) {
             if (jobInfo.getDateSubmitted() == null) {
@@ -1124,7 +1129,7 @@ public class JobInfoWrapper implements Serializable {
         String mode = (String) param.getAttributes().get("MODE");
         boolean dirFlag = true;
         if (type != null && type.equals("DIRECTORY")) {
-        	dirFlag = false;
+            dirFlag = false;
         }
         if (mode != null && mode.equals("URL_IN") && dirFlag) {
             return true;
@@ -1176,17 +1181,17 @@ public class JobInfoWrapper implements Serializable {
     }
     
     public boolean getHasVisualizer() {
-    	if (isVisualizer()) {
-    	    return true;
-    	}
-    	else if (isPipeline()) {
-    		for (JobInfoWrapper child : children) {
-    			if (child.isVisualizer()) {
-    			    return true;
-    			}
-    		}
-    	}
-    	return false;
+        if (isVisualizer()) {
+            return true;
+        }
+        else if (isPipeline()) {
+            for (JobInfoWrapper child : children) {
+                if (child.isVisualizer()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean getHasJavascript() {
@@ -1367,7 +1372,7 @@ public class JobInfoWrapper implements Serializable {
         }
         Integer[] returnedArray = new Integer[this.parent.children.size()];
         for (int i = 0; i < this.parent.children.size(); i++) {
-        	returnedArray[i] = i;
+            returnedArray[i] = i;
         }
         return returnedArray;
     }

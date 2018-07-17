@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest;
 
@@ -466,9 +466,10 @@ public class RunTaskServlet extends HttpServlet
                 throw new Exception("User not logged in");
             }
 
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             GpContext jobContext=GpContext.getContextForUser(username);
 
-            JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
             final String fileName=fileDetail.getFileName();
             log.debug("fileName="+fileName);
             GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, paramName, fileName);

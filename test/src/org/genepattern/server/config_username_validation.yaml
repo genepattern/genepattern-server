@@ -1,0 +1,38 @@
+#
+# gp config file for testing the UserAccountManager
+#
+
+# apply these properties to all jobs
+default.properties:
+    executor: LocalJobRunner
+    
+    # configurable username.regex
+    # default:
+    #   ascii alpha-numeric characters plus
+    #     ' ', '_', '-', '.', and '@'
+    #   username.regex: "[A-Za-z0-9 _\\-.@]+"
+    username.regex: "[A-Za-z0-9 _\\-.@]+"
+
+executors:
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties: {
+        }
+        # by executor 
+        default.properties: {
+        }
+
+
+# override default.properties and executor->default.properties based on taskname or lsid
+# Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
+module.properties: {
+}
+
+# by group
+group.properties: {
+}
+        
+# by user id
+user.properties: {
+}
+

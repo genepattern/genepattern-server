@@ -49,7 +49,7 @@ public class TestGpFileObjFactory {
     
     @Test
     public void relativeUri_serverFile() throws Exception {
-        gpFilePath=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+Demo.localDataDir+filename);
+        gpFilePath=GpFileObjFactory.getRequestedGpFileObj("/data", "/"+Demo.localDataDirPath+filename);
         assertEquals("gpFilePath.name", filename, gpFilePath.getName());
     }
 

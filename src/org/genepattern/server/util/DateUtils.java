@@ -3,7 +3,7 @@ package org.genepattern.server.util;
 import java.util.Calendar;
 import java.util.Date;
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 /**
  * @author Scott Violet

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -112,8 +112,6 @@ public class Value {
      * 
      * In both cases, numValues is 1. For param1, isCollection is false.
      * For param2, isCollection is true.
-     * 
-     * @return
      */
     public boolean isFromCollection() {
         return fromCollection;
@@ -122,8 +120,6 @@ public class Value {
     /**
      * Helper method, to allow for more complicated values (other than String and List<String>).
      * Added to make it easier to configure details for module repositories.
-     * 
-     * @return
      */
     public boolean isMap() {
         return mapValue != null;
@@ -169,7 +165,6 @@ public class Value {
 
     /**
      * Call join() with the default ' ' separator character.
-     * @return
      */
     public String join() {
         return join(" ");
@@ -177,8 +172,7 @@ public class Value {
 
     /**
      * Print the list of values as a {sep} separated String.
-     * @param sep, the separator character, by default ' '.
-     * @return
+     * @param sep the separator character, by default ' '.
      */
     public String join(String sep) {
         if (sep==null) { sep = " "; }

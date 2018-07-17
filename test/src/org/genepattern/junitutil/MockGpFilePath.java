@@ -1,9 +1,10 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.junitutil;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -78,7 +79,7 @@ public class MockGpFilePath extends GpFilePath {
     }
 
     @Override
-    public URL getUrl() throws Exception {
+    public URL getUrl() throws MalformedURLException {
         // lazy init
         if (this.url==null) {
             this.url=new URL(urlSpec);
@@ -87,7 +88,7 @@ public class MockGpFilePath extends GpFilePath {
     }
     
     @Override
-    public URL getUrl(final GpConfig gpConfig) throws Exception {
+    public URL getUrl(final GpConfig gpConfig) throws MalformedURLException {
         return getUrl();
     }
 

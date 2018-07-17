@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
@@ -34,6 +34,8 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
@@ -41,7 +43,6 @@ import org.genepattern.server.webapp.rest.api.v1.Util;
 
 import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -119,10 +120,11 @@ public class DataResource {
             final InputStream in) 
     {
         try { 
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext=Util.getUserContext(request);
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext); 
-            final GpFilePath gpFilePath=writeJobInputFile(userContext, in, filename, maxNumBytes);
-            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            final GpFilePath gpFilePath=writeJobInputFile(gpConfig, userContext, in, filename, maxNumBytes);
+            final String location = UrlUtil.getHref(request, gpFilePath);
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -167,10 +169,11 @@ public class DataResource {
             final @FormDataParam("file") FormDataContentDisposition fileDetail)
     {
         try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
             final GpContext userContext=Util.getUserContext(request);
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
-            final GpFilePath gpFilePath=writeJobInputFile(userContext, in, fileDetail.getFileName(), maxNumBytes);
-            final String location = ""+gpFilePath.getUrl().toExternalForm();
+            final GpFilePath gpFilePath=writeJobInputFile(gpConfig, userContext, in, fileDetail.getFileName(), maxNumBytes);
+            final String location = UrlUtil.getHref(request, gpFilePath);
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -200,15 +203,16 @@ public class DataResource {
             to = URLDecoder.decode(to, "UTF-8");
 
             // Get the file location to copy from
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             GpContext userContext = Util.getUserContext(request);
             GpFilePath fromPath = null;
             if (from.startsWith("/users")) {
                 File fromFile = extractUsersPath(userContext, from);
-                fromPath = GpFileObjFactory.getUserUploadFile(userContext, fromFile);
+                fromPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, fromFile);
             }
             else if (from.startsWith("/jobResults")) {
                 String fromFileString = extractJobResultsPath(from);
-                fromPath = GpFileObjFactory.getRequestedGpFileObj("/jobResults", fromFileString);
+                fromPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/jobResults", fromFileString);
             }
             else {
                 return Response.status(500).entity("Copy not implemented for this source file type: " + from).build();
@@ -216,7 +220,7 @@ public class DataResource {
 
             if (to.startsWith("/users")) { // If copying to a user upload
                 File toFile = extractUsersPath(userContext, to);
-                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
+                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, toFile);
 
                 boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
 
@@ -255,10 +259,11 @@ public class DataResource {
             // Handle space characters
             path = URLDecoder.decode(path, "UTF-8");
 
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             final GpContext userContext = Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
                 File uploadFilePath = extractUsersPath(userContext, path);
-                GpFilePath fileToDownload = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+                GpFilePath fileToDownload = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, uploadFilePath);
 
                 if (fileToDownload.isDirectory()) {
                     UploadDirectoryZipWriter udzw = new UploadDirectoryZipWriter(fileToDownload);
@@ -367,15 +372,16 @@ public class DataResource {
             }
 
             // Get the file location to copy from
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             GpContext userContext = Util.getUserContext(request);
             GpFilePath fromPath = null;
             if (from.startsWith("/users")) {
                 File fromFile = extractUsersPath(userContext, from);
-                fromPath = GpFileObjFactory.getUserUploadFile(userContext, fromFile);
+                fromPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, fromFile);
             }
             else if (from.startsWith("/jobResults")) {
                 String fromFileString = extractJobResultsPath(from);
-                fromPath = GpFileObjFactory.getRequestedGpFileObj("/jobResults", fromFileString);
+                fromPath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "/jobResults", fromFileString);
             }
             else {
                 return Response.status(500).entity("Move not implemented for this source file type: " + from).build();
@@ -383,7 +389,7 @@ public class DataResource {
 
             if (to.startsWith("/users")) { // If copying to a user upload
                 File toFile = extractUsersPath(userContext, to);
-                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(userContext, toFile);
+                GpFilePath toPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, toFile);
 
                 boolean moved = DataManager.moveToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
 
@@ -419,10 +425,11 @@ public class DataResource {
         }
 
         try {
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             final GpContext userContext=Util.getUserContext(request);
             if (path.startsWith("/users")) { // If this is a user upload
                 final File uploadFilePath=extractUsersPath(userContext, path);
-                final GpFilePath uploadFileToDelete = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+                final GpFilePath uploadFileToDelete = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, uploadFilePath);
 
                 boolean deleted = DataManager.deleteUserUploadFile(HibernateUtil.instance(), userContext.getUserId(), uploadFileToDelete);
 
@@ -435,7 +442,7 @@ public class DataResource {
             }
             else if (path.startsWith("/jobResults/")) { // If this is a job result file
                 try {
-                    String relativePath=deleteJobResultFile(userContext, path);
+                    String relativePath=deleteJobResultFile(HibernateUtil.instance(), gpConfig, userContext, path);
                     return Response.ok().entity("Deleted " + relativePath).build();
                 }
                 catch (Exception e) {
@@ -456,7 +463,7 @@ public class DataResource {
         }
     }
     
-    private String deleteJobResultFile(final GpContext userContext, final String path) throws Exception {
+    private String deleteJobResultFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final String path) throws Exception {
         //example path="/jobResults/14855/all # aml test.cvt.gct"
         final int idx0="/jobResults/".length();
         if (idx0<0) {
@@ -474,7 +481,7 @@ public class DataResource {
 
         final boolean isInTransaction=HibernateUtil.isInTransaction();
         try {
-            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userContext.getUserId());
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(mgr, gpConfig, userContext.getUserId());
             analysisClient.deleteJobResultFile(jobId, jobId + "/" + relativePath.getPath());
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
@@ -593,10 +600,11 @@ public class DataResource {
             final InputStream in) 
     {
         try {
+            final GpConfig gpConfig = ServerConfigurationFactory.instance();
             final GpContext userContext=Util.getUserContext(request);  
             final long maxNumBytes=initMaxNumBytes(contentLength, userContext);
-            final GpFilePath gpFilePath=writeUserUploadFile(userContext, in, path, maxNumBytes);
-            final String location = ""+gpFilePath.getUrl().toExternalForm(); 
+            final GpFilePath gpFilePath=writeUserUploadFile(gpConfig, userContext, in, path, maxNumBytes);
+            final String location = UrlUtil.getHref(request, gpFilePath);
             return Response.status(201)
                     .header("Location", location)
                     .entity(location).build();
@@ -638,12 +646,11 @@ public class DataResource {
 
     ////////////////////////////////////////////////////////////////
     // Helper methods for adding user upload files to GenePattern
-    // TODO: should refactor these methods into an interface
     ////////////////////////////////////////////////////////////////
-    GpFilePath writeUserUploadFile(final GpContext userContext, final InputStream in, final String path, final long maxNumBytes) 
-    throws Exception
+    GpFilePath writeUserUploadFile(final GpConfig gpConfig, final GpContext userContext, final InputStream in, final String path, final long maxNumBytes) 
+    throws GpFilePathException 
     {
-        JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
+        JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
         
         File relativePath = new File(path);
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(relativePath);
@@ -663,7 +670,7 @@ public class DataResource {
      * @return
      * @throws Exception
      */
-    GpFilePath writeJobInputFile(final GpContext userContext, final InputStream in, final String filename, final long maxNumBytes) 
+    GpFilePath writeJobInputFile(final GpConfig gpConfig, final GpContext userContext, final InputStream in, final String filename, final long maxNumBytes) 
     throws WebApplicationException
     {
         if (userContext==null) {
@@ -674,10 +681,9 @@ public class DataResource {
         }
         GpFilePath gpFilePath=null;
         try {
-            gpFilePath=createJobInputDir(userContext, filename);
+            gpFilePath=createJobInputDir(gpConfig, userContext, filename);
         }
         catch (Exception e) {
-            //TODO: figure out how to include more meaningful error message in the response header
             throw new WebApplicationException(
                     Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
         }
@@ -687,10 +693,9 @@ public class DataResource {
         return gpFilePath;
     }
 
-    private String createPipelineMessage(String user, List<ParameterInfo> params) throws UnsupportedEncodingException {
+    private String createPipelineMessage(final GpConfig gpConfig, final GpContext userContext, List<ParameterInfo> params) throws UnsupportedEncodingException {
         String toReturn = "";
-        GpContext userContext = GpContext.getContextForUser(user);
-        long maxFileSize = ServerConfigurationFactory.instance().getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
+        long maxFileSize = gpConfig.getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
         for (ParameterInfo i : params) {
             toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";
         }
@@ -715,16 +720,20 @@ public class DataResource {
         }
 
         try {
-            String user = (String) request.getSession().getAttribute(GPConstants.USERID);
-            GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj("<GenePatternURL>" + path);
-            Integer jobNumber = Integer.parseInt(((JobResultFile) filePath).getJobId());
+            final HibernateSessionManager mgr=HibernateUtil.instance();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext userContext=Util.getUserContext(request);
+
+            final GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, "<GenePatternURL>" + path);
+            final Integer jobNumber = Integer.parseInt(((JobResultFile) filePath).getJobId());
 
             // Set the pipeline name
-            if (pipelineName == null) pipelineName = "job_" + jobNumber;
-
-            ProvenanceFinder.ProvenancePipelineResult pipelineResult = new LocalAnalysisClient(user).createProvenancePipeline(jobNumber.toString(), pipelineName);
+            if (pipelineName == null) {
+                pipelineName = "job_" + jobNumber;
+            }
+            ProvenanceFinder.ProvenancePipelineResult pipelineResult = new LocalAnalysisClient(mgr, gpConfig, userContext.getUserId()).createProvenancePipeline(jobNumber.toString(), pipelineName);
             String lsid = pipelineResult.getLsid();
-            String message = createPipelineMessage(user, pipelineResult.getReplacedParams());
+            String message = createPipelineMessage(gpConfig, userContext, pipelineResult.getReplacedParams());
             if (lsid == null) {
                 return Response.status(500).entity("Unable to create pipeline: " + filePath.getName()).build();
             }
@@ -735,16 +744,14 @@ public class DataResource {
         catch (Exception ex) {
             return Response.status(500).entity("Unable to create pipeline: " + ex.getLocalizedMessage()).build();
         }
-
-        //UIBeanHelper.getResponse().sendRedirect(UIBeanHelper.getRequest().getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid) + message);
     }
     
-    public static GpFilePath createJobInputDir(final GpContext userContext, final String filename) 
+    public static GpFilePath createJobInputDir(final GpConfig gpConfig, final GpContext userContext, final String filename) 
     throws Exception
     {
         GpFilePath tmpDir=null;
         try {
-            tmpDir=JobInputFileUtil.createTmpDir(userContext);
+            tmpDir=JobInputFileUtil.createTmpDir(gpConfig, userContext);
         }
         catch (Exception e) {
             String message="Error creating unique parent directory for the job input file: "+filename;
@@ -755,7 +762,7 @@ public class DataResource {
         File relativeFile=new File(path);
         GpFilePath job_input_file=null;
         try {
-            job_input_file=GpFileObjFactory.getUserUploadFile(userContext, relativeFile);
+            job_input_file=GpFileObjFactory.getUserUploadFile(gpConfig, userContext, relativeFile);
             return job_input_file;
         }
         catch (Exception e) {
@@ -776,8 +783,8 @@ public class DataResource {
         }
     }
     
-    public static GpFilePath moveSoapAttachmentToUserUploads(final GpContext userContext, final File fromFile, final String toFilename) throws Exception {
-        GpFilePath toPath=DataResource.createJobInputDir(userContext, toFilename);
+    public static GpFilePath moveSoapAttachmentToUserUploads(final GpConfig gpConfig, final GpContext userContext, final File fromFile, final String toFilename) throws Exception {
+        GpFilePath toPath=DataResource.createJobInputDir(gpConfig, userContext, toFilename);
         boolean success=fromFile.renameTo(toPath.getServerFile());
         if (!success) {
             log.error("Failed to rename soap attachment file from "+fromFile+" to "+toPath.getServerFile());
@@ -823,7 +830,8 @@ public class DataResource {
         }
         try {
             final HibernateSessionManager mgr=HibernateUtil.instance();
-            JobInputFileUtil.addUploadFileToDb(mgr, userContext, gpFilePath);
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            JobInputFileUtil.addUploadFileToDb(mgr, gpConfig, userContext, gpFilePath);
         }
         catch (Throwable t) {
             log.error("Error saving record of job_input_file to DB, filename="+gpFilePath.getRelativePath(), t);
@@ -872,8 +880,8 @@ public class DataResource {
 
     ////////////////////////////////////////////////////////////////
     // Helper methods for working with HTTP requests
-    // TODO: should refactor into a common utility class
     ////////////////////////////////////////////////////////////////
+    @SuppressWarnings("unused")
     private void debugHeaders(final HttpServletRequest request) {
         //for debugging
         Enumeration<?> hNames = request.getHeaderNames();
@@ -884,6 +892,7 @@ public class DataResource {
         }
     }
     
+    @SuppressWarnings("unused")
     private void debugContent(final InputStream in) {
         final byte[] bytes; 
         if (in == null) {

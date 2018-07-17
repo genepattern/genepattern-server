@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.input.cache;
 
@@ -179,7 +179,7 @@ public class FileCache {
             final String errorMessage="Error getting cached value for externalUrl="+externalUrl+": file is null";
             throw new JobDispatchException(errorMessage);
         }
-        final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
+        //final boolean canRead=cachedFile.canRead(jobContext.isAdmin(), jobContext);
         if (!cachedFile.getServerFile().canRead()) {
             throw new JobDispatchException("Read access permission error: "+cachedFile.getServerFile());
         }

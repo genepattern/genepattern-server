@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.5-snapshot</version>
+  <version>0.2.1-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -20,6 +20,27 @@
     <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.0</version>
+                </requireMavenVersion>
+              </rules>    
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- 
         added to set javac compiler flags 
         see:
@@ -59,12 +80,59 @@
           <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>   
         </configuration>
       </plugin> 
+      
+      <!-- 
+        maven-surefire-plugin
+          http://maven.apache.org/surefire/maven-surefire-plugin/
+        to set environment variables for junit tests, e.g.
+          GP_DATA_DIR=../test/data
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.21.0</version>
+        <configuration>
+          <systemPropertyVariables>
+            <GP_DATA_DIR>../test/data</GP_DATA_DIR>
+            <AWSBATCH_CONF_DIR>src/main/conf</AWSBATCH_CONF_DIR>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      
+      <!-- 
+        maven-assembly-plugin
+          https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin
+        to package binaries for distribution
+          
+        Documentation links:
+          http://maven.apache.org/plugins/maven-assembly-plugin/
+          https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html
+      -->
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-assembly-plugin</artifactId>
+         <!-- Note: versions > 2.4.1 fail to build, as tested when v3.1.0 was the latest release -->
+         <version>2.4.1</version>
+         <configuration>
+           <descriptors><descriptor>src/assembly/bin.xml</descriptor></descriptors>
+           <!-- finalName>gp-awsbatch-${pom.version}</finalName -->
+         </configuration>
+         <executions>
+           <execution>
+             <phase>package</phase>
+               <goals>
+                 <goal>single</goal>
+               </goals>
+           </execution>
+         </executions>
+      </plugin>      
     </plugins>
 
   </build>
     
   <properties>
     <maven.build.timestamp.format>yyyy-MM-dd-HHmmss</maven.build.timestamp.format>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
@@ -82,23 +150,33 @@
          </settings>
          
       2) add gp-full-<snapshot>.jar to local mvn repository
-         For example, to add 'gp-full-3.9.11-snapshot-05.jar'
+         For example, to add 'gp-full-3.9.11-snapshot-09.jar'
 
          # create snapshot build
          cd ../
          ant clean common
-         cp -p build/gp-full.jar build/gp-full-3.9.11-snapshot-05.jar
+         cp -p build/gp-full.jar build/gp-full-3.9.11-snapshot-09.jar
          # add to local repository
          mvn deploy:deploy-file \
            -Durl=file:///Broad/dev/maven-repo/ \
            -DgroupId=org.genepattern -DartifactId=gp-full -Dpackaging=jar \
-           -Dversion=3.9.11-snapshot-05 \
-           -Dfile=build/gp-full-3.9.11-snapshot-05.jar 
+           -Dversion=3.9.11-snapshot-08 \
+           -Dfile=build/gp-full-3.9.11-snapshot-08.jar 
     -->
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-snapshot-06</version>
+      <version>3.9.11-snapshot-08</version>
+      <!-- scope>runtime,test</scope -->
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+    <!--   needed to parse the GpConfig file from the junit tests -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.6</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
@@ -119,6 +197,22 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
       <version>1.2</version>
+    </dependency>
+    
+    <!-- https://mvnrepository.com/artifact/junit/junit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.9.5</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

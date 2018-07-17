@@ -1,0 +1,30 @@
+name: awscli
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - awscli=1.15.4=py27_0
+  - botocore=1.10.4=py_0
+  - ca-certificates=2018.4.16=0
+  - colorama=0.3.7=py27_0
+  - docutils=0.14=py27_0
+  - futures=3.2.0=py27_0
+  - jmespath=0.9.3=py27_0
+  - openssl=1.0.2o=0
+  - pyasn1=0.4.2=py_0
+  - python-dateutil=2.6.1=py27_0
+  - pyyaml=3.12=py27_1
+  - rsa=3.4.2=py27_0
+  - s3transfer=0.1.13=py27_0
+  - six=1.11.0=py27_1
+  - yaml=0.1.7=0
+  - pip=9.0.1=py27_1
+  - python=2.7.13=0
+  - readline=6.2=2
+  - setuptools=27.2.0=py27_0
+  - sqlite=3.13.0=0
+  - tk=8.5.18=0
+  - wheel=0.29.0=py27_0
+  - zlib=1.2.8=3
+prefix: /Broad/Applications/miniconda2/envs/awscli
+

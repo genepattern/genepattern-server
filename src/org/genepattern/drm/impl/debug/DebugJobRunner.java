@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm.impl.debug;
 
@@ -111,7 +111,6 @@ public class DebugJobRunner implements JobRunner {
      * You don't need to set each value, we use reasonable defaults if they are not yet set (e.g. endTime()) 
      * or not known (e.g. maxThreads()). 
      * 
-     * @return
      */
     protected DrmJobStatus demoGetStatus() {
         return new DrmJobStatus.Builder()

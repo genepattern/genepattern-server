@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.database;
 
@@ -252,4 +252,39 @@ public class TestSchemaUpdater {
         boolean upToDate=SchemaUpdater.isUpToDate(schemaFiles);
         assertEquals("schemaFiles.size>0, dbSchemaVersion > maxSchemaVersion", true, upToDate);
     }
+    
+    @Test
+    public void escapeSemicolon_create_trigger_example() throws Exception {
+        final String triggerStmtEsc=
+                "CREATE TRIGGER testref BEFORE INSERT ON test1\n"+
+                        "  FOR EACH ROW\n"+
+                        "  BEGIN\n"+
+                        "    INSERT INTO test2 SET a2 = NEW.a1\\;\n"+
+                        "    DELETE FROM test3 WHERE a3 = NEW.a1\\;\n"+
+                        "    UPDATE test4 SET b4 = b4 + 1 WHERE a4 = NEW.a1\\;\n"+
+                        "  END;";
+        final String triggerStmt=
+                "CREATE TRIGGER testref BEFORE INSERT ON test1\n"+
+                        "  FOR EACH ROW\n"+
+                        "  BEGIN\n"+
+                        "    INSERT INTO test2 SET a2 = NEW.a1;\n"+
+                        "    DELETE FROM test3 WHERE a3 = NEW.a1;\n"+
+                        "    UPDATE test4 SET b4 = b4 + 1 WHERE a4 = NEW.a1;\n"+
+                        "  END";
+                
+        final String all=triggerStmtEsc;
+        
+        List<String >sqlStatements=SchemaUpdater.extractSqlStatements(all);
+        assertEquals("sqlStatements.size", 1, sqlStatements.size());
+        assertEquals("sqlStatements[0]", triggerStmt, sqlStatements.get(0));
+    }
+
+    @Test
+    public void escapeSemicolon_mysql_3_9_11() throws DbException {
+        final File schemaFile=new File("website/WEB-INF/schema/analysis_mysql-3.9.11.sql");
+        assertTrue("schemaFile.exists: "+schemaFile, schemaFile.exists());
+        List<String> sqlStatements=SchemaUpdater.extractSqlStatements(schemaFile);
+        assertEquals("sqlStatements.size", 4, sqlStatements.size());
+    }
+
 }

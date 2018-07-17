@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -28,6 +28,31 @@ public class TestGpConfig {
     public TemporaryFolder temp= new TemporaryFolder();
     
     @Test
+    public void isTrue() {
+        assertEquals("null arg",        false, GpConfig.isTrue((String)null));
+        assertEquals("isTrue('FALSE')", false, GpConfig.isTrue("FALSE"));
+        assertEquals("isTrue('false')", false, GpConfig.isTrue("false"));
+        assertEquals("isTrue('n')",     false, GpConfig.isTrue("n"));
+        assertEquals("isTrue('no')",    false, GpConfig.isTrue("no"));
+        assertEquals("isTrue('NO')",    false, GpConfig.isTrue("NO"));
+
+        assertEquals("isTrue('TRUE')",  true,  GpConfig.isTrue("TRUE"));
+        assertEquals("isTrue('True')",  true,  GpConfig.isTrue("True"));
+        assertEquals("isTrue('true')",  true,  GpConfig.isTrue("true"));
+        assertEquals("isTrue('yes')",   true,  GpConfig.isTrue("yes"));
+        assertEquals("isTrue('y')",     true,  GpConfig.isTrue("y"));
+        assertEquals("isTrue('Y')",     true,  GpConfig.isTrue("Y"));
+    }
+
+    public void assertIsPasswordRequired(final boolean expected, final String value) {
+        final GpContext serverContext=GpContext.getServerContext();
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("require.password", value)
+        .build();
+        assertEquals("isPasswordRequired('"+value+"')", expected, gpConfig.isPasswordRequired(serverContext));
+    }
+    
+    @Test
     public void isPasswordRequired() {
         GpConfig gpConfig=new GpConfig.Builder().build();
         // by default, no
@@ -35,13 +60,44 @@ public class TestGpConfig {
             false,
             gpConfig.isPasswordRequired(gpContext));
         
-        assertEquals("null arg", false, GpConfig.isPasswordRequired((String)null));
-        assertEquals("isPasswordRequired('FALSE')", false, GpConfig.isPasswordRequired("FALSE"));
-        assertEquals("isPasswordRequired('false')", false, GpConfig.isPasswordRequired("false"));
-        assertEquals("isPasswordRequired('n')", false, GpConfig.isPasswordRequired("n"));
-        assertEquals("isPasswordRequired('no')", false, GpConfig.isPasswordRequired("no"));
-        assertEquals("isPasswordRequired('NO')", false, GpConfig.isPasswordRequired("NO"));
-        assertEquals("isPasswordRequired('TRUE')", true, GpConfig.isPasswordRequired("TRUE"));
+        assertIsPasswordRequired(false, "FALSE");
+        assertIsPasswordRequired(false, "false");
+        assertIsPasswordRequired(false, "n");
+        assertIsPasswordRequired(false, "no");
+        assertIsPasswordRequired(false, "NO");
+
+        assertIsPasswordRequired(true, "TRUE");
+        assertIsPasswordRequired(true, "True");
+        assertIsPasswordRequired(true, "true");
+        assertIsPasswordRequired(true, "yes");
+        assertIsPasswordRequired(true, "y");
+        assertIsPasswordRequired(true, "Y");
+    }
+
+    @Test
+    public void isShowRegistrationLink() {
+        final GpConfig gpConfig=new GpConfig.Builder().build();
+        // by default, yes
+        assertEquals("isShowRegistrationLink, default", true, 
+        gpConfig.isShowRegistrationLink(gpContext));
+    }
+
+    @Test
+    public void isShowRegistrationLink_custom_true() {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("show.registration.link", "true")
+        .build();
+        assertEquals("isShowRegistrationLink, false", true, 
+        gpConfig.isShowRegistrationLink(gpContext));
+    }
+
+    @Test
+    public void isShowRegistrationLink_custom_False() {
+        final GpConfig gpConfig=new GpConfig.Builder()
+            .addProperty("show.registration.link", "false")
+        .build();
+        assertEquals("isShowRegistrationLink, false", false, 
+        gpConfig.isShowRegistrationLink(gpContext));
     }
 
     @Test

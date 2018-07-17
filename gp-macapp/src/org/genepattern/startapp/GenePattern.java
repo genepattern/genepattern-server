@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.startapp;
 
@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.List;
  * @author Thorin Tabor
  */
 public class GenePattern {
+    protected static final void log(final String message) {
+        System.out.println(message);
+    }
 
     /**
      * Main method for the executable bootstrap.jar
@@ -28,6 +32,8 @@ public class GenePattern {
      * @param args
      */
     public static void main(String[] args) {
+        log("starting "+GenePattern.class.getName()+" main method ...");
+        
         // Double check args
         if (args.length < 1) {
             // fail
@@ -36,34 +42,47 @@ public class GenePattern {
         }
 
         // Pass in the working directory
-        final File workingDir = getWorkingDirectory(args[0]);
+        log("Initializing working directory, args[0]='"+args[0]+"' ...");
+        final File workingDir = new File(args[0]);
+        log("Done! workdingDir="+workingDir);
 
         // Generate LSID
+        log("Generating lsid ...");
         String lsid = GenerateLsid.lsid();
+        log("Done! lsid="+lsid);
 
+        log("Writing lsid to PropertiesWriter ...");
         PropertiesWriter pw = new PropertiesWriter();
         pw.setLsid(lsid);
+        log("Done!");
 
         // Lazily create the GP Home directory
+        log("creating GP Home directory ...");
         try {
             lazilyCreateGPHome(workingDir);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log("Done!");
 
-        final String user = System.getProperty("user.name");
-        final File resourcesDir = new File("/Users/" + user + "/.genepattern/resources");
-        final File propFile = new File(resourcesDir, "genepattern.properties");
-        final File gpHome = new File(resourcesDir.getParent());
+        log("writeInstallTime ...");
+        final File gpHome=ConfigApp.initGpHome();
+        final File propFile=new File(gpHome, "resources/genepattern.properties");
         try {
             pw.writeInstallTime(propFile, args[0], gpHome.getAbsolutePath());
         } 
         catch (IOException e) {
             e.printStackTrace();
         }
+        log("Done!");
 
         // Prompt the user for config
-        ConfigApp.main(new String[] {args[0]});
+        log("launching ConfigApp.main ...");
+        ConfigApp.main(new String[] {
+                args[0],
+                gpHome.getAbsolutePath()
+        });
+        log("Done!");
     }
 
     /**
@@ -142,16 +161,33 @@ public class GenePattern {
      * @throws IOException
      */
     protected static boolean editCustomProps(File toCustomProps) {
+        final List<String> lines=new ArrayList<String>();
+        lines.add("#");
+        lines.add("# site customization for MacOS X");
+        lines.add("#");
+        lines.add("env-custom=env-custom-macos.sh");
+        // hard-coded R_HOME and R2.5_HOME previously set in the dialog
+        lines.add("R_HOME=/usr/bin/r");
+        lines.add("R2.5_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources");
+        return appendToFile(toCustomProps, lines);
+    }
+
+    /**
+     * Append the lines to the given file.
+     * 
+     * @param toFile the file to edit
+     * @param lines the lines to add
+     * 
+     * Use-case, to add lines to an existing custom.properties file.
+     */
+    protected static boolean appendToFile(File toFile, final List<String> lines) {
         PrintWriter w=null;
         try {
-            w=new PrintWriter(new FileWriter(toCustomProps, true));
-            w.println("#");
-            w.println("# site customization for MacOS X");
-            w.println("#");
-            w.println("env-custom=env-custom-macos.sh");
-            // hard-coded R_HOME and R2.5_HOME previously set in the dialog
-            w.println("R_HOME=/usr/bin/r");
-            w.println("R2.5_HOME=/Library/Frameworks/R.framework/Versions/2.5/Resources");
+            final boolean append=true;
+            w=new PrintWriter(new FileWriter(toFile, append));
+            for(final String line : lines) {
+                w.println(line);
+            }
         }
         catch (Throwable t) {
             t.printStackTrace();
@@ -259,10 +295,6 @@ public class GenePattern {
         editCustomProps(toCustomProps);
 
         return createdDirectory;
-    }
-
-    public static File getWorkingDirectory(String workingDirString) {
-        return new File(workingDirString);
     }
 
 }

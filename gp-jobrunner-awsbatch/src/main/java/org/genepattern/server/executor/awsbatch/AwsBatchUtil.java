@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -43,7 +45,24 @@ import com.google.common.base.Strings;
  */
 public class AwsBatchUtil {
     private static final Logger log = Logger.getLogger(AwsBatchUtil.class);
-    
+
+    /**
+     * Round up to the nearest mebibyte (MiB).
+     * Example usage:
+     * <pre>
+     *   String mib=""+numMiB(m);
+     * </pre>
+     * 
+     * @param m the memory instance
+     * @return the amount of memory in mebibytes
+     */
+    public static long numMiB(final Memory m) {
+        long mib = (long) Math.ceil(
+            (double) m.getNumBytes() / (double) Memory.Unit.m.getMultiplier()
+        );
+        return mib;
+    }
+
     public static final Value getValue(final GpConfig gpConfig, final GpContext jobContext, final String key, final Value defaultValue) {
         return gpConfig.getValue(jobContext, key, defaultValue);
     }
@@ -74,9 +93,10 @@ public class AwsBatchUtil {
                 Matcher.quoteReplacement(replacement));
     }
 
-    protected static void makeSymLink(final File linkDir, final File target, final String linkName) throws CommandExecutorException {
+    private static void makeSymLink(final File linkDir, final File target, final String linkName) throws CommandExecutorException {
         makeSymLink(linkDir, target.toPath(), linkName);
     }
+
     /**
      * Make symbolic link to the target file in the given directory.
      *     ln -s <targetFile> <targetFile.name>
@@ -85,7 +105,7 @@ public class AwsBatchUtil {
      * @param linkName
      * @throws CommandExecutorException
      */
-    protected static void makeSymLink(final File linkDir, final Path target, final String linkName) throws CommandExecutorException {
+    private static void makeSymLink(final File linkDir, final Path target, final String linkName) throws CommandExecutorException {
         try {
             Files.createSymbolicLink(
                 // link
@@ -99,6 +119,23 @@ public class AwsBatchUtil {
             log.error(message, t);
             throw new CommandExecutorException(message, t);
         }
+    }
+
+    /**
+     * Make symlinks 
+     * @param inputDir - the local input directory to be sync'ed into aws s3
+     * @param inputFiles - the list of job input files in the GP server local file system
+     * @return 
+     * @throws CommandExecutorException
+     */
+    private static Map<String, String> makeSymLinks(final File inputDir, final Set<File> inputFiles) throws CommandExecutorException {
+        final Map<String,String> inputFileMap = new HashMap<String,String>();
+        for (final File inputFile : inputFiles) {
+            final File linkedFile = new File(inputDir, inputFile.getName());
+            AwsBatchUtil.makeSymLink(inputDir, inputFile, inputFile.getName());
+            inputFileMap.put(inputFile.getAbsolutePath(), linkedFile.getAbsolutePath());
+        }
+        return inputFileMap;
     }
 
     protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
@@ -128,11 +165,55 @@ public class AwsBatchUtil {
         final Set<File> inputFiles = new LinkedHashSet<File>();
         final Set<File> jobInputFiles=getJobInputFiles(gpJob);
         inputFiles.addAll(jobInputFiles);
-        // special-case, include <run-with-env> support files
-        final Set<File> additionalSupportFiles=getWrapperScripts(gpJob);
-        inputFiles.addAll(additionalSupportFiles);
-        // special-case, include selected <aws-batch-scripts>
-        inputFiles.addAll(getAwsBatchWrapperScripts(gpJob));
+        
+        // sync the entire taskLib directory
+        final File taskLibDir=gpJob.getTaskLibDir().getAbsoluteFile();
+        if (taskLibDir != null && taskLibDir.exists()) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", sync taskLib directory: "+taskLibDir);
+            }
+            inputFiles.add(taskLibDir);
+        }
+        
+        // special-case, sync the entire wrapper-scripts directory
+        final File wrapperScripts=getGPFileProperty(gpJob, GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
+        if (wrapperScripts != null && wrapperScripts.exists()) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", sync wrapper_scripts directory: "+wrapperScripts);
+            }
+            inputFiles.add(wrapperScripts);
+        }
+        
+        // special-case, sync required patches
+        // TODO: implement getPatchInfoForJob, instead of manual edit of config file
+        final Value requiredPatches=gpJob.getValue("required-patches");
+        if (requiredPatches!=null && requiredPatches.getNumValues() > 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("gpJobNo="+gpJob.getGpJobNo()+", adding required-patches ...");
+            }
+            for(final String requiredPatch : requiredPatches.getValues()) {
+                // assume relative paths are relative to the <patches> directory
+                final File requiredFile = getPatchFile(gpJob.getGpConfig(), gpJob.getJobContext(), requiredPatch);
+                if (requiredFile==null) {
+                    log.error("gpJobNo="+gpJob.getGpJobNo()+", patchFile is null, requiredPatch="+requiredPatch);
+                }
+                else if (!requiredFile.canRead()) {
+                    log.error("gpJobNo="+gpJob.getGpJobNo()+", can't read file, requiredPatch="+requiredPatch);
+                }
+                else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("     "+requiredFile);
+                    }
+                    inputFiles.add(requiredFile);                    
+                }
+            }
+        }
+
+//        // special-case, include <run-with-env> support files
+//        final Set<File> additionalSupportFiles=getWrapperScripts(gpJob);
+//        inputFiles.addAll(additionalSupportFiles);
+//        // special-case, include selected <aws-batch-scripts>
+//        inputFiles.addAll(getAwsBatchWrapperScripts(gpJob));
         return Collections.unmodifiableSet(inputFiles);
     }
 
@@ -178,21 +259,25 @@ public class AwsBatchUtil {
      * @param gpJob
      * @param KEY
      * @param includePaths
-     * @return
+     * @return a set of files
      */
     protected static Set<File> getFileSet(final DrmJobSubmission gpJob, final String KEY, String... includePaths) {
         final File parentDir=getGPFileProperty(gpJob, KEY);
+        return getFileSet(gpJob, KEY, parentDir, includePaths);
+    }
+
+    protected static Set<File> getFileSet(final DrmJobSubmission gpJob, final String KEY, final File parentDir, String... includePaths) {
         if (parentDir==null) {
             if (log.isDebugEnabled()) {
                 log.debug("gpJobNo="+gpJob.getGpJobNo()+", skipping <"+KEY+"> files, property not set");
             }
             return Collections.emptySet();
         } 
-        final Path parentPath=parentDir.toPath();
         if (log.isDebugEnabled()) {
             log.debug("gpJobNo="+gpJob.getGpJobNo()+", including <"+KEY+"> files ...");
         }
         final Set<File> fileSet = new LinkedHashSet<File>();
+        final Path parentPath=parentDir.toPath();
         for(final String path : includePaths) {
             if (Strings.isNullOrEmpty(path)) {
                 // skip empty path
@@ -210,13 +295,20 @@ public class AwsBatchUtil {
         return fileSet;
     }
 
+    protected static Set<File> getWrapperScriptsDir(final DrmJobSubmission gpJob) {
+        final File wrapperScripts=getGPFileProperty(gpJob, GpConfig.PROP_WRAPPER_SCRIPTS_DIR);
+        final Set<File> fileSet = new LinkedHashSet<File>();
+        fileSet.add(wrapperScripts);
+        return fileSet;
+    }
+
     /**
      * get the '<wrapper-scripts>' files to be copied into the container, e.g.
      *   <wrapper-scripts>/run-with-env.sh 
      * these are required for <run-with-env> modules, e.g.
      *   commandLine=<run-with-env> -u java/1.8 java ...
      */
-    protected static Set<File> getWrapperScripts(final DrmJobSubmission gpJob) {
+    protected static Set<File> getWrapperScripts(final DrmJobSubmission gpJob) { 
         return getFileSet(gpJob, GpConfig.PROP_WRAPPER_SCRIPTS_DIR, 
             "run-with-env.sh",
             "env-hashmap.sh",
@@ -224,7 +316,8 @@ public class AwsBatchUtil {
             "gp-common.sh",
             "env-default.sh",
             "env-custom.sh",
-            gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), "env-custom", "env-custom.sh")
+            gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), "env-custom", "env-custom.sh"),
+            "R"
         );
     }
     
@@ -236,6 +329,26 @@ public class AwsBatchUtil {
             "runS3OnBatch.sh"
         );
     } 
+
+    /**
+     * Resolve the path to the named patch directory or file. Paths are resolved
+     * relative to the 'patches' directory.
+     * 
+     * @param gpConfig
+     * @param jobContext
+     * @param path 
+     * @return the path relative to the patches directory
+     */
+    protected static File getPatchFile(final GpConfig gpConfig, final GpContext jobContext, final String path) {
+        File file = new File(path);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        
+        // special-case: when 'path' is a relative path, make it relative to the patches directory
+        File parent = gpConfig.getRootPluginDir(jobContext);
+        return new File(parent, path);
+    }
 
     protected static ParameterInfo getFormalParam(final Map<String,ParameterInfoRecord> paramInfoMap, final String pname) {
         if (paramInfoMap.containsKey(pname)) {

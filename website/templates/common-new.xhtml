@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 
 <!--
-~ Copyright 2013 The Broad Institute, Inc.
-~ SOFTWARE COPYRIGHT NOTICE
-~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
-~
-~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
 -->
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk">
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
     <f:view contentType="text/html">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -84,63 +81,63 @@
             <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern_layout.js?version=#{aboutBean.buildTag}"></script>
 
             <script type="text/javascript" language="javascript">
-            	/* <![CDATA[ */
+                /* <![CDATA[ */
                          
-	         	// Init jQuery components
-	            $(document).ready(function() {
-	            	$("#left-nav").tabs({
-	                    cookie:{
-	                        expires:1
-	                    }
-	                });
-	            	
-	            	// Build the nav menu
-	            	if (userLoggedIn) {
-	            	    Menu.buildNavMenu();
-	            	}
-	
-	            	// IE layout hack
-	            	if (navigator.userAgent.indexOf("MSIE") !== -1) {
-	            		jq("#systemMessageLink").css("right", "");
-	            		jq("#systemMessageLink").css("left", (jq(document).width() - 500) + "px");
-	            	}
-	            	
-	            	// Display nicely at load hack
-	            	$("#left-nav-tabs").show();
-	            	//$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
-	            	
-	            	// Load the modules
-	            	$.ajax({
+                 // Init jQuery components
+                $(document).ready(function() {
+                    $("#left-nav").tabs({
+                        cookie:{
+                            expires:1
+                        }
+                    });
+                    
+                    // Build the nav menu
+                    if (userLoggedIn) {
+                        Menu.buildNavMenu();
+                    }
+    
+                    // IE layout hack
+                    if (navigator.userAgent.indexOf("MSIE") !== -1) {
+                        jq("#systemMessageLink").css("right", "");
+                        jq("#systemMessageLink").css("left", (jq(document).width() - 500) + "px");
+                    }
+                    
+                    // Display nicely at load hack
+                    $("#left-nav-tabs").show();
+                    //$($("#left-nav-tabs .ui-tabs-active a").attr("href")).show();
+                    
+                    // Load the modules
+                    $.ajax({
                         cache: false,
-	                    url: '#{facesContext.externalContext.requestContextPath}/rest/v1/tasks/all.json',
-	                    dataType: 'json',
-	                    success: function(data, status, xhr) {
-	                    	all_modules = data.all_modules;
+                        url: '#{facesContext.externalContext.requestContextPath}/rest/v1/tasks/all.json',
+                        dataType: 'json',
+                        success: function(data, status, xhr) {
+                            all_modules = data.all_modules;
                             initAllModulesMap(all_modules);
                             kindToModules = data.kindToModules;
-	                    	
-	                    	// Initialize the displays on the left nav bar
-	                    	$("#loading-modules").hide();
-	                    	initPinned();
-	                    	initRecent();
+                            
+                            // Initialize the displays on the left nav bar
+                            $("#loading-modules").hide();
+                            initPinned();
+                            initRecent();
 
-	                    	// Initialize the search slider
-	                    	initSearchSlider();
-	                    	
-	                    	all_categories = data.all_categories;
-	                        // Initialize the module browse button and slider
-	                        var allnsuite = initBrowseTop();
-	                        var browse = initBrowseModules();
-	                                
-	                        // Initialize the slider
-	                        var modbrowse = $('#module-browse').searchslider({
-	                            lists: [allnsuite, browse]
-	                        });
-	                        
-	                        // Initialize the suites slider
-	                        all_suites = data.all_suites;
-	                        initBrowseSuites();
-	                    },
+                            // Initialize the search slider
+                            initSearchSlider();
+                            
+                            all_categories = data.all_categories;
+                            // Initialize the module browse button and slider
+                            var allnsuite = initBrowseTop();
+                            var browse = initBrowseModules();
+                                    
+                            // Initialize the slider
+                            var modbrowse = $('#module-browse').searchslider({
+                                lists: [allnsuite, browse]
+                            });
+                            
+                            // Initialize the suites slider
+                            all_suites = data.all_suites;
+                            initBrowseSuites();
+                        },
                         error: function(data) {
                             var userAborted = !data.getAllResponseHeaders();
                             if (!userAborted) {
@@ -149,49 +146,49 @@
                                 $("#loading-modules").css("font-size", "14pt");
                             }
                         }
-	                });
+                    });
 
-//	            	$.ajax({
-//	                    url: '#{facesContext.externalContext.requestContextPath}/rest/v1/suites/all.json',
-//	                    dataType: 'json',
-//	                    success: function(data, status, xhr) {
-//	                    	all_suites = data;
-//	                    	
-//	                        // Initialize suites slider
-//	                    	initBrowseSuites();
-//	                    }
-//	                });
+//                    $.ajax({
+//                        url: '#{facesContext.externalContext.requestContextPath}/rest/v1/suites/all.json',
+//                        dataType: 'json',
+//                        success: function(data, status, xhr) {
+//                            all_suites = data;
+//                            
+//                            // Initialize suites slider
+//                            initBrowseSuites();
+//                        }
+//                    });
 
-	            	// Search box controls
-	                jq("#module-search-box").keyup(function(event) {
-	                    if (jq(".search-widget:visible").length === 0) {
-	                    	jq("#module-search").searchslider("show");
-	                        setModuleSearchTitle($(this).val())
-	                    }
-	                    jq("#module-search").searchslider("show");
-	                    jq("#module-search").searchslider("filter", $(this).val());
-	                    setModuleSearchTitle($(this).val())
+                    // Search box controls
+                    jq("#module-search-box").keyup(function(event) {
+                        if (jq(".search-widget:visible").length === 0) {
+                            jq("#module-search").searchslider("show");
+                            setModuleSearchTitle($(this).val())
+                        }
+                        jq("#module-search").searchslider("show");
+                        jq("#module-search").searchslider("filter", $(this).val());
+                        setModuleSearchTitle($(this).val())
 
                         // Handle enter key
 //                        if (event.originalEvent.keyIdentifier == "Enter") {
 //                            jq("#module-search").searchslider("select_default", $(this).val());
 //                        }
-	                });
-	
-	                // Browse button controls
-	                jq("#module-browse-button button").button().click(function() {
+                    });
+    
+                    // Browse button controls
+                    jq("#module-browse-button button").button().click(function() {
                         jq( ".module-listing" ).removeHighlight();
-	                	jq("#module-search-box").val("");
-	                	jq("#module-browse").searchslider("show");
-	                });
-	            });
+                        jq("#module-search-box").val("");
+                        jq("#module-browse").searchslider("show");
+                    });
+                });
 
                 // Hack for left scroll issue
                 $(document).scroll(function() {
                     $(document).scrollLeft(0);
                 });
-            	
-	            /* ]]> */
+                
+                /* ]]> */
             </script>
 
             <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
@@ -201,10 +198,19 @@
 
             <ui:insert name="headText" />
 
+            <!-- Global site tag (gtag.js) - Goggle Analytics -->
+            <script async="async" src="https://www.googletagmanager.com/gtag/js?id=#{aboutBean.googleAnalyticsTrackingId}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '#{aboutBean.googleAnalyticsTrackingId}');
+            </script>            
         </head>
         <body onload="onLoad();">
-			<!-- Floating header  -->
-			<div id="header">
+            <!-- Floating header  -->
+            <div id="header">
                 <div id="top-status-box" style="display: none;">
                     <div id="user-box-main" >
                         <div id="user-box" onclick="userBoxClick();">
@@ -236,24 +242,24 @@
                 </ul>
                 <div id="disk-quota-tooltip" style="display: none;"></div>
 
-				<!-- top band with the logo -->
-	            <div id="topband" class="topband">
-	                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
-	                    <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="229" height="48" style="border: 0;" />
-	                </h:outputLink>
-	            </div>
-	            <!-- horizontal navigation band -->
-	           	<div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
-		            <ul>
-		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Modules &#38; Pipelines</a>
-		                    <ul>
-		                        <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf');">New Pipeline</a></li>
-		                        <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/modules/creator.jsf');">New Module</a></li>
-		                        <li class="createTaskAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">Install From Repository</a></li>
-		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf">Install From ZIP</a></li>
-		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageTasks.jsf">Manage</a></li>
-		                    </ul>
-		                </li>
+                <!-- top band with the logo -->
+                <div id="topband" class="topband">
+                    <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+                        <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="229" height="48" style="border: 0;" />
+                    </h:outputLink>
+                </div>
+                <!-- horizontal navigation band -->
+                   <div id="navband1" class="navband1 ddsmoothmenu" style="white-space: nowrap; display:none;">
+                    <ul>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Modules &#38; Pipelines</a>
+                            <ul>
+                                <li class="createPrivatePipelineAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf');">New Pipeline</a></li>
+                                <li class="createTaskAllowed"><a href="JavaScript:Menu.denyIE('#{facesContext.externalContext.requestContextPath}/modules/creator.jsf');">New Module</a></li>
+                                <li class="createTaskAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">Install From Repository</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/importTask.jsf">Install From ZIP</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageTasks.jsf">Manage</a></li>
+                            </ul>
+                        </li>
                         <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Suites</a>
                             <ul>
                                 <li class="createPrivateSuiteAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/createSuite.jsf">New Suite</a></li>
@@ -262,91 +268,91 @@
                                 <li><a href="#{facesContext.externalContext.requestContextPath}/pages/manageSuite.jsf">Manage</a></li>
                             </ul>
                         </li>
-		                <li><a id="job-results" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
-		                    <ul>
-		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
-		                    </ul>
-		                </li>
-		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?splash=resources">Resources</a>
-		                    <ul>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
-		                        <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
-		                        <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
+                        <li><a id="job-results" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Job Results</a>
+                            <ul>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}">Results Summary</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?splash=resources">Resources</a>
+                            <ul>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
+                                <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
+                                <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                                 <li><a href="#{facesContext.externalContext.requestContextPath}/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
                                 <li><a href="JavaScript:Menu.go('//software.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
                                 <li><a href="JavaScript:Menu.go('http://www.gparc.org/')">GParc</a></li>
-		                    </ul>
-		                </li>
-		                <li class="adminServerAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Administration</a>
-		                    <ul>
-		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Server Settings</a></li>
-		                    </ul>
-		                </li>
-		                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Help</a>
-		                    <ul>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
+                            </ul>
+                        </li>
+                        <li class="adminServerAllowed"><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Administration</a>
+                            <ul>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">Server Settings</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">Help</a>
+                            <ul>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
                                 <li><a class="gp_tours" href="#">Tour of GenePatttern UI</a></li>
                                 <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
-		                        <li><a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About</a></li>
-		                    </ul>
-		                </li>
-		                <li class="genomeSpaceMenu">
-		                	<a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"><img src="#{facesContext.externalContext.requestContextPath}/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
-		                    <ul>
-		                        <li class="genomeSpaceLoggedOut"><a href="#{facesContext.externalContext.requestContextPath}/GenomeSpaceOpenID?login=Login">Login</a></li>
-		                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Logout</a></li>
-		                        <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-		                        <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
-		                        <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
-		                        <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
-		                    </ul>
-		                </li>
-		            </ul>
-		            <br style="clear: left"/>
-		            <script type="text/javascript">
-		            	if (userLoggedIn) {
-		            		jq("#navband1").ready(function() {
-		            			Menu.initNavMenu();
-		            		});	
-		            	}
-		            	
-						// Stub out old embeded javascript calls
-		                function MM_swapImage() { return true; }
-		                function MM_swapImgRestore() { return true; }
-		            </script>
-		        </div>
-			</div>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
+                                <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
+                                <li><a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About</a></li>
+                            </ul>
+                        </li>
+                        <li class="genomeSpaceMenu">
+                            <a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"><img src="#{facesContext.externalContext.requestContextPath}/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
+                            <ul>
+                                <li class="genomeSpaceLoggedOut"><a href="#{facesContext.externalContext.requestContextPath}/GenomeSpaceOpenID?login=Login">Login</a></li>
+                                <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Logout</a></li>
+                                <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
+                                <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
+                                <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
+                                <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <br style="clear: left"/>
+                    <script type="text/javascript">
+                        if (userLoggedIn) {
+                            jq("#navband1").ready(function() {
+                                Menu.initNavMenu();
+                            });    
+                        }
+                        
+                        // Stub out old embeded javascript calls
+                        function MM_swapImage() { return true; }
+                        function MM_swapImgRestore() { return true; }
+                    </script>
+                </div>
+            </div>
             
             <!--  Main content area -->
             <div id="content" class="content">
             
-            	<!-- Insert the left nav -->
-            	<div id="left-nav" class="ui-layout-west">
-            		<ul id="left-nav-tabs">
-	                    <li id="left-nav-modules-tab"><a href="#left-nav-modules">Modules</a></li>
-	                    <li id="left-nav-jobs-tab"><a href="#left-nav-jobs">Jobs</a></li>
-	                    <li id="left-nav-files-tab"><a href="#left-nav-files">Files</a></li>
-	                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-                        	<li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace">GenomeSpace</a></li>
+                <!-- Insert the left nav -->
+                <div id="left-nav" class="ui-layout-west">
+                    <ul id="left-nav-tabs">
+                        <li id="left-nav-modules-tab"><a href="#left-nav-modules">Modules</a></li>
+                        <li id="left-nav-jobs-tab"><a href="#left-nav-jobs">Jobs</a></li>
+                        <li id="left-nav-files-tab"><a href="#left-nav-files">Files</a></li>
+                        <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                            <li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace">GenomeSpace</a></li>
                         </h:outputText>
-	                </ul>
-	                <div id="left-nav-modules" class="left-nav-tab">
-	                	<div class="left-nav-top">
-		                    <div id="module-search-block">
-		                        <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
-		                    </div>
-		                    <div id="module-browse-button">
-		                    	<div class="current-job-status">
+                    </ul>
+                    <div id="left-nav-modules" class="left-nav-tab">
+                        <div class="left-nav-top">
+                            <div id="module-search-block">
+                                <input id="module-search-box" type="search" class="search-box" placeholder="Search Modules &amp; Pipelines" />
+                            </div>
+                            <div id="module-browse-button">
+                                <div class="current-job-status">
                                     <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                                 </div>
-		                        <button>Browse Modules &#x203a;</button>
-		                    </div>
-	                    </div>
+                                <button>Browse Modules &#x203a;</button>
+                            </div>
+                        </div>
                         <div id="left-nav-modules-list">
                             <div id="loading-modules">
                                 <h4>Loading GenePattern Modules...</h4>
@@ -355,8 +361,8 @@
                             <div id="pinned-modules"></div>
                             <div id="recent-modules"></div>
                         </div>
-	                </div>
-		            <div id="left-nav-jobs" class="left-nav-tab">
+                    </div>
+                    <div id="left-nav-jobs" class="left-nav-tab">
                         <div class="left-nav-top">
                             <button id="left-nav-jobs-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                             <div class="current-job-status">
@@ -364,7 +370,7 @@
                             </div>
                         </div>
                         <h:outputText rendered="!#{uiBean.newUI}">
-	                        <ui:include src="/pages/recentJobs.xhtml" />
+                            <ui:include src="/pages/recentJobs.xhtml" />
                         </h:outputText>
                         <h:outputText rendered="#{uiBean.newUI}">
                             <div id="loading-jobs">
@@ -379,78 +385,78 @@
                                 });
                         </script>
                         </h:outputText>
-	                </div>
-	                <div id="left-nav-files" class="left-nav-tab">
+                    </div>
+                    <div id="left-nav-files" class="left-nav-tab">
                         <div class="left-nav-top">
                             <div class="current-job-status">
                                 <a onclick="loadJobResults('userId=${requestScope.userID}'); return false;" href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf?jobResults=userId%3D${requestScope.userID}"></a>
                             </div>
                             <button id="left-nav-files-refresh" onclick="refreshUploadTree();"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                         </div>
-	                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
-	                </div>
-	                <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-		                <div id="left-nav-genomespace" class="left-nav-tab">
-		                    <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
-		                </div>
-		            </h:outputText>
-            	</div>
-            	
-				<div id="module-search"></div>
-	            <div id="module-browse"></div>
-	            <div id="module-suites"></div>
+                        <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
+                    </div>
+                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                        <div id="left-nav-genomespace" class="left-nav-tab">
+                            <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
+                        </div>
+                    </h:outputText>
+                </div>
+                
+                <div id="module-search"></div>
+                <div id="module-browse"></div>
+                <div id="module-suites"></div>
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>
                 <div id="menus-genomespace"></div>
                 <div id="menus-inputs"></div>
-	
-	            <div id="main-pane" class="ui-layout-center">
-	            	<!-- Error message area -->
-	            	<div id="errorMessageDiv" style="display:none;">
-		            	<span id="errorMessageHeader" style="font-weight:bold">
-		                	Please correct the following errors before proceeding:
-		              	</span>
-	                    <div id="errorMessageContent"></div>
-	               </div>
+    
+                <div id="main-pane" class="ui-layout-center">
+                    <!-- Error message area -->
+                    <div id="errorMessageDiv" style="display:none;">
+                        <span id="errorMessageHeader" style="font-weight:bold">
+                            Please correct the following errors before proceeding:
+                          </span>
+                        <div id="errorMessageContent"></div>
+                   </div>
 
                     <!-- Info message area -->
                     <div id="infoMessageDiv" style="display:none;">
                         <div id="infoMessageContent"></div>
                     </div>
                
-	               <!-- Include System Alert Message  -->
-	               <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
-	                   <ui:include src="../pages/systemMessage.xhtml" />
-	               </t:div>
-	
-	               <!-- JSF (Server side) errors or messages -->
-	               <ui:include src="../pages/messages.xhtml" />
-	               <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
-	            
-	            	<ui:insert name="body" />
-	            </div>
-	        </div>
+                   <!-- Include System Alert Message  -->
+                   <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
+                       <ui:include src="../pages/systemMessage.xhtml" />
+                   </t:div>
+    
+                   <!-- JSF (Server side) errors or messages -->
+                   <ui:include src="../pages/messages.xhtml" />
+                   <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+                
+                    <ui:insert name="body" />
+                </div>
+            </div>
             
             <!-- Floating footer area -->
             <div id="footer">
-            	<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	                <tr>
-	                    <td>
-	                        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{aboutBean.contactUs}">Contact Us</h:outputLink>
-	                    </td>
-	                    <td>
-	                        <div align="right">&#169;2003-2017&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
-	                        </div>
-	                    </td>
-	                    <td width="10">&#160;</td>
-	                    <td width="27">
-	                        <h:outputLink value="http://www.broadinstitute.org" target="_blank">
-	                            <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
-	                        </h:outputLink>
-	                    </td>
-	                </tr>
-	            </table>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td>
+                            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{aboutBean.contactUs}">Contact Us</h:outputLink>
+                        </td>
+                        <td>
+                            <div align="right">&#169;2003-2017&#160; <h:outputLink value="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</h:outputLink>
+                            </div>
+                        </td>
+                        <td width="10">&#160;</td>
+                        <td width="27">
+                            <h:outputLink value="http://www.broadinstitute.org" target="_blank">
+                                <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
+                            </h:outputLink>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </body>
     </f:view>

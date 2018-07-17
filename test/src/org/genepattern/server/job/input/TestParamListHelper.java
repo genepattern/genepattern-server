@@ -15,8 +15,8 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.jobinput.ParameterInfoUtil;
-import org.genepattern.server.job.input.ParamListHelper.Record;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.util.UrlPrefixFilter;
 import org.genepattern.webservice.ParameterInfo;
@@ -100,9 +100,9 @@ public class TestParamListHelper {
         final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
 
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
-        assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
+        assertEquals("record.type",  ParamListValue.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
         assertEquals("gpFilePath.owner", userId, record.getGpFilePath().getOwner());
@@ -117,9 +117,9 @@ public class TestParamListHelper {
         final File gpHomeDir=createGpHomeDir();
         final GpConfig gpConfig=initGpConfig(gpHomeDir);
 
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
-        assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
+        assertEquals("record.type",  ParamListValue.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
         assertEquals("gpFilePath.owner", userId, record.getGpFilePath().getOwner());
@@ -141,9 +141,9 @@ public class TestParamListHelper {
         assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
         
         //final boolean downloadExternalUrl=true;
-        final Record record=ParamListHelper.initFromValue(mgr, cachedConfig, userContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
+        final ParamListValue record=ParamListHelper.initFromValue(mgr, cachedConfig, userContext, jobInput.getBaseGpHref(), formalParam, ftpVal); 
         assertEquals("record.url", ftpValue, record.getUrl().toString());
-        assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
+        assertEquals("record.type",  ParamListValue.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", true, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
         assertEquals("gpFilePath.owner", FileCache.CACHE_USER_ID, record.getGpFilePath().getOwner());
@@ -173,9 +173,9 @@ public class TestParamListHelper {
         assertNotNull("expecting non-null '"+UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL+"'", value);
         assertEquals("ftp://gpftp.broadinstitute.org/", value.getValues().get(0));
 
-        Record record=ParamListHelper.initFromValue(mgr, cachedConfig, mockContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
+        ParamListValue record=ParamListHelper.initFromValue(mgr, cachedConfig, mockContext, jobInput.getBaseGpHref(), formalParam, httpVal); 
         assertEquals("record.url", httpValue, record.getUrl().toString());
-        assertEquals("record.type",  Record.Type.EXTERNAL_URL, record.type);
+        assertEquals("record.type",  ParamListValue.Type.EXTERNAL_URL, record.type);
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
         assertEquals("gpFilePath.owner", userId, record.getGpFilePath().getOwner());
@@ -200,8 +200,8 @@ public class TestParamListHelper {
         final String value=Demo.gpHref + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);
         
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
-        assertEquals("record.type",  Record.Type.SERVER_URL, record.type);
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
+        assertEquals("record.type",  ParamListValue.Type.SERVER_URL, record.type);
         assertEquals("record.url", null, record.getUrl());
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
@@ -216,8 +216,8 @@ public class TestParamListHelper {
         final String value="<GenePatternURL>" + Demo.uploadPath("all_aml_test.gct");
         final ParamValue paramValue=new ParamValue(value);
         
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
-        assertEquals("record.type",  Record.Type.SERVER_URL, record.type);
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
+        assertEquals("record.type",  ParamListValue.Type.SERVER_URL, record.type);
         assertEquals("record.url", null, record.getUrl());
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
@@ -236,12 +236,31 @@ public class TestParamListHelper {
         when(jobContext.getJobInput()).thenReturn(jobInput);
         when(jobContext.getLsid()).thenReturn(Demo.cleLsid);
         
-        Record record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
-        assertEquals("record.type",  Record.Type.SERVER_URL, record.type);
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
+        assertEquals("record.type",  ParamListValue.Type.SERVER_URL, record.type);
         assertEquals("record.url", null, record.getUrl());
         assertEquals("record.isCached", false, record.isCached);
         assertEquals("record.isPassByReference", false, record.isPassByReference);
         assertEquals("gpFilePath.owner", Demo.testUserId, record.getGpFilePath().getOwner());
+    }
+    
+    @Test
+    public void passByReference_fileGroup_gsInput() throws IOException, GpFilePathException {
+        ParameterInfoUtil.setGroupInfo(formalParam);
+        ParameterInfoUtil.setPassByReference(formalParam, true);
+        
+        final String value=Demo.dataGsDir+"all_aml_test.gct";
+        final ParamValue paramValue=new ParamValue(value);
+        
+        final File gpHomeDir=createGpHomeDir();
+        final GpConfig gpConfig=initGpConfig(gpHomeDir);
+
+        ParamListValue record=ParamListHelper.initFromValue(mgr, gpConfig, jobContext, jobInput.getBaseGpHref(), formalParam, paramValue);
+        assertEquals("record.type",  ParamListValue.Type.EXTERNAL_URL, record.type);
+        assertEquals("record.url", new URL(value), record.getUrl());
+        assertEquals("record.isCached", false, record.isCached);
+        assertEquals("record.isPassByReference", true, record.isPassByReference);
+        assertEquals("gpFilePath.owner", "", record.getGpFilePath().getOwner());
     }
 
 }

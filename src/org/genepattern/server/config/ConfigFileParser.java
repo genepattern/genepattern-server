@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -70,8 +70,6 @@ public class ConfigFileParser {
     
     /**
      * Parse the config file, creating a new JobConfigObj.
-     * @param configFile
-     * @return
      */
     protected static JobConfigObj parse(final File configurationFile) throws ConfigurationException {
         Reader reader = null;

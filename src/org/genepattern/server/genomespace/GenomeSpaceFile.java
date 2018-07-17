@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.genomespace;
 
@@ -222,12 +222,12 @@ public class GenomeSpaceFile extends GpFilePath {
     }
     
     @Override
-    public URL getUrl() throws Exception {
+    public URL getUrl() { 
         return gsUrl;
     }
 
     @Override
-    public URL getUrl(final GpConfig gpConfig) throws Exception {
+    public URL getUrl(final GpConfig gpConfig) {
         return gsUrl;
     }
 

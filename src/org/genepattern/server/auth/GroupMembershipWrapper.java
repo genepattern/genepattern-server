@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.auth;
 
@@ -28,6 +28,7 @@ public class GroupMembershipWrapper implements IGroupMembershipPlugin {
         this.groupMembership = groupMembership;
     }
 
+    @Override
     public Set<String> getGroups(String userId) {
         Set<String> groups = null;
         if (groupMembership != null) {
@@ -43,10 +44,16 @@ public class GroupMembershipWrapper implements IGroupMembershipPlugin {
         }
     }
 
+    @Override
     public boolean isMember(String userId, String groupId) {
         if (wildCardGroupId.equals(groupId)) {
             return true;
         }
         return groupMembership != null && groupMembership.isMember(userId, groupId);
+    }
+
+    @Override
+    public Set<String> getUsers(String groupId) {
+        return groupMembership.getUsers(groupId);
     }
 }

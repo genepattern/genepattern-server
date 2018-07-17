@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.database;
 
@@ -292,13 +292,56 @@ public class SchemaUpdater {
             String all = HsqlDbUtil.readFile(schemaFile);
             return extractSqlStatements(all);
         }
-        catch (IOException e) {
-            log.error("Error reading schema file=" + schemaFile.getPath(), e);
-            throw new DbException("Error reading schema file="+schemaFile.getPath(), e);
+        catch (Throwable t) {
+            final String message="Error reading schema file=" + schemaFile.getPath();
+            log.error(message, t);
+            throw new DbException(message, t);
         }
     }
 
-    protected static List<String> extractSqlStatements(String all) {
+    /**
+     * Get the index of the next statement delimiter.
+     * Use this as a replacement for
+     *   i = all.indexOf(';');
+     * to allow for escape characters ('\;') in the schema file.
+     * 
+     * @throws Exception if there are errors parsing the string
+     */
+    protected static int indexOfNext(final String str) throws Exception {
+        // the statement delimiter ';'
+        final String DELIMITER=";";
+        // the escaped delimiter, '\;', is skipped
+        final String ESCAPED_DELIMITER="\\;";
+        // for sanity check
+        final int MAX_COUNT=10000;
+        int start=0;
+        int count=0;
+        do {
+            int i=str.indexOf(DELIMITER, start);
+            int j=str.indexOf(ESCAPED_DELIMITER, start);
+            if (j!=(i-1)) {
+                return i;
+            }
+            start=i+1;
+            ++count;
+            // sanity check 
+            if (count > MAX_COUNT) {
+                throw new Exception("Parse error checking for delimiters, ESCAPED_DELIMITER='"+ESCAPED_DELIMITER+"', max count exceeded, count="+count);
+            }
+        }
+        while (true);
+    }
+    
+    /**
+     * Use this as a replacement for
+     *   sql = sql.trim();
+     * Trim the string AND replace escaped semicolons. 
+     */
+    protected static String trimEsc(final String str) {
+        return str.trim().replace("\\;", ";");
+    }
+    
+    protected static List<String> extractSqlStatements(String all) throws Exception {
         final List<String> statements=new ArrayList<String>();
         while (!all.equals("")) {
             all = all.trim();
@@ -309,7 +352,7 @@ public class SchemaUpdater {
                 continue;
             }
 
-            i = all.indexOf(';');
+            i = indexOfNext(all);
             String sql;
             if (i != -1) {
                 sql = all.substring(0, i);
@@ -319,7 +362,8 @@ public class SchemaUpdater {
                 sql = all;
                 all = "";
             }
-            sql = sql.trim();
+            // trim the string AND replace escaped semicolons
+            sql = sql.trim().replace("\\;", ";");
             statements.add(sql);
         }
         return statements;

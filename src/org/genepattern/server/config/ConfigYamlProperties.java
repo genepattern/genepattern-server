@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.config;
 
@@ -287,9 +287,7 @@ public class ConfigYamlProperties {
     }
 
     /**
-     * @deprecated, use getValue(context,key) instead.
-     * @param jobInfo
-     * @return
+     * @deprecated use getValue(context,key) instead.
      */
     public CommandProperties getCommandProperties(final JobInfo jobInfo) {
         CommandProperties cmdProperties = new CommandProperties();
@@ -368,11 +366,8 @@ public class ConfigYamlProperties {
     }
 
     /**
-     * @deprecated, does not allow setting the executorId in the 'executor.props' entry,
+     * @deprecated does not allow setting the executorId in the 'executor.props' entry,
      *     does not allow setting the executorId from the job input form.
-     *     
-     * @param jobInfo
-     * @return
      */
     public String getCommandExecutorId(JobInfo jobInfo) {
         final String key = "executor";

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.startapp;
 
@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +34,18 @@ import com.jgoodies.forms.layout.FormLayout;
  *
  * @author Thorin Tabor
  */
-public class ConfigApp {
+public class ConfigApp implements ActionListener {
+    private static final String DEFAULT_WORKING_DIR="gp-macapp/resources/GenePattern.app/Contents/Resources";
+    
+    public static File initGpHome() {
+        final String user = System.getProperty("user.name");
+        final File gpHome = new File("/Users/" + user + "/.genepattern");
+        return gpHome;
+    }
+
+    private final File workingDir;
+    private final File gpHome;
+    
     private JButton saveAndLaunchGenePatternButton;
     private JRadioButton yesRadioButton;
     private JRadioButton noRadioButton;
@@ -40,94 +53,86 @@ public class ConfigApp {
     private JTextField daysPurgeField;
     private JTextField timePurgeField;
     private JPanel genepatternConfigPanel;
-
-    private static JFrame _instance;
-    private static File workingDir;
-
+    
+    private final JFrame frame;
+    
     /**
-     * Display the config form
-     *
+     * Start the GenePattern Configuration app
      * @param args
      */
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("GenePattern Configuration");
-        frame.setContentPane(new ConfigApp().genepatternConfigPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-
-        // Set the singleton
-        ConfigApp._instance = frame;
-
-        // Set the working directory
-        String workingString = "gp-macapp/resources/GenePattern.app/Contents/Resources";
-        if (args.length >= 1) {
-            workingString = args[0];
-        }
-        workingDir = new File(workingString);
+    public static void main(final String[] args) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // display the GenePattern Configuration form
+                final ConfigApp configApp;
+                if (args.length==0) {
+                    configApp=new ConfigApp();
+                }
+                else if (args.length==1) {
+                    configApp=new ConfigApp(args[0], initGpHome().getAbsolutePath());
+                }
+                else {
+                    configApp=new ConfigApp(args[0], args[1]);
+                }
+                configApp.frame.setVisible(true);
+            }
+        });
     }
 
     /**
      * Attach listeners to the form
      */
     public ConfigApp() {
-        saveAndLaunchGenePatternButton.addActionListener(new ActionListener() {
-
-            /**
-             * When the save & launch GenePattern button is pressed
-             *
-             * @param e
-             */
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Validate form
-                String email = emailField.getText();
-                if (!ConfigApp.isValidEmailAddress(email)) {
-                    JOptionPane.showMessageDialog(null, "Email address is not valid!");
-                    return;
-                }
-
-                String daysPurge = daysPurgeField.getText();
-                if (!ConfigApp.isValidDaysPurge(daysPurge)) {
-                    JOptionPane.showMessageDialog(null, "Days purge is not valid!");
-                    return;
-                }
-
-                String timePurge = timePurgeField.getText();
-                if (!ConfigApp.isValidTimePurge(timePurge)) {
-                    JOptionPane.showMessageDialog(null, "Time purge is not valid!");
-                    return;
-                }
-
-                // If everything checks out, call properties writer
-                writeConfig();
-
-                // Create the setup flag
-                File resources = new File(workingDir.getParent(), "Resources");
-                File readyFlag = new File(resources, "ready");
-                try {
-                    readyFlag.createNewFile();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                // Show the dialog
-                JFrame frame = ConfigApp.instance();
-                JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");
-
-                // Close
-                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-            }
-        });
+        this(DEFAULT_WORKING_DIR, initGpHome().getAbsolutePath());
+    }
+    public ConfigApp(final String workingDirStr, final String gpHomeDirStr) {
+        this.workingDir=new File(workingDirStr);
+        this.gpHome=new File(gpHomeDirStr);
+        this.frame = new JFrame("GenePattern Configuration");
+        this.frame.setContentPane(this.genepatternConfigPanel);
+        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.frame.pack();
+        saveAndLaunchGenePatternButton.addActionListener(this);
     }
 
-    /**
-     * Get the JFrame instance
-     *
-     * @return
-     */
-    public static JFrame instance() {
-        return _instance;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Validate form
+        String email = emailField.getText();
+        if (!ConfigApp.isValidEmailAddress(email)) {
+            JOptionPane.showMessageDialog(null, "Email address is not valid!");
+            return;
+        }
+
+        String daysPurge = daysPurgeField.getText();
+        if (!ConfigApp.isValidDaysPurge(daysPurge)) {
+            JOptionPane.showMessageDialog(null, "Days purge is not valid!");
+            return;
+        }
+
+        String timePurge = timePurgeField.getText();
+        if (!ConfigApp.isValidTimePurge(timePurge)) {
+            JOptionPane.showMessageDialog(null, "Time purge is not valid!");
+            return;
+        }
+
+        // If everything checks out, call properties writer
+        writeConfig();
+
+        // Create the setup flag
+        File resources = new File(workingDir.getParent(), "Resources");
+        File readyFlag = new File(resources, "ready");
+        try {
+            readyFlag.createNewFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        // Show the dialog
+        JOptionPane.showMessageDialog(frame, "Configuration saved. Please restart GenePattern.");
+
+        // Close
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
     /**
@@ -154,6 +159,12 @@ public class ConfigApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        // Write 'webmaster={registration.email}' to custom.properties
+        File customProps=new File(gpHome,"resources/custom.properties");
+        final List<String> lines=new ArrayList<String>();
+        lines.add("webmaster="+emailField.getText());
+        GenePattern.appendToFile(customProps, lines);
     }
 
     /**

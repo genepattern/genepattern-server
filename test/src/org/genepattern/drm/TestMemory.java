@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm;
 
@@ -378,6 +378,29 @@ public class TestMemory {
     @Test(expected=IllegalArgumentException.class)
     public void fromSizeInBytes_negativeNumber() {
         Memory.fromSizeInBytes(-90L);
+    }
+    
+    // convert to mebibytes (MiB)
+    // Usage:
+    //   String mib=""+numMiB(m); //(int)Math.ceil(numMb);
+    public static long numMiB(final Memory m) {
+        long mib = (long) Math.ceil(
+            (double) m.getNumBytes() / (double) Memory.Unit.m.getMultiplier()
+        );
+        return mib;
+    }
+
+    @Test
+    public void mebiByteConversion() {
+        // expect 2 GiB to be 2000 MiB
+        Memory m=Memory.GB;
+
+        //long mebi = m.getNumBytes() / Memory.Unit.m.getMultiplier();
+        assertEquals("1 GiB to MiB", 1024L, numMiB(m));
+        
+        //double numMb=(double) m.getNumBytes() / (double) Unit.mb.getMultiplier();
+        String mib=""+numMiB(m); //(int)Math.ceil(numMb);
+        assertEquals("1 GiB to MiB", "1024", mib);
     }
 
 }

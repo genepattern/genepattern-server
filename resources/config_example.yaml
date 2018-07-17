@@ -32,12 +32,156 @@ default.properties:
     job.dispatch.timeout: 300000
     # the number of milliseconds to wait before canceling a job termination request (default to 30 seconds)
     job.termination.timeout: 30000
-    # policy for flagging a job as an error, by default, a non-empty stderr stream causes a job to be flagged as an error
-    # optionally, a non-zero exitValue of the job can cause a job to be flagged as an error
-    job.error_status.stderr: true
-    job.error_status.exit_value: false
     # filter job results based on the given comma separated list of glob patterns
     job.FilenameFilter: [ ".nfs*", ".rte.out", ".lsf*", ".sge.out" ]
+    
+    # Error handling 
+    #  by default, non-zero exit code is an ERROR
+    job.error_status.exit_value: true
+    #  by default, ignore stderr output
+    job.error_status.stderr: false
+
+    ##############################################################
+    # "show.registration.link"
+    #   Show the link to the registration page on the login page
+    # Default:
+    #   show.registration.link: true
+
+    ##############################################################
+    # "show.terms.of.service"
+    #   Display the terms of service on the registration page
+    # Default:
+    #   show.terms.of.service: false
+
+    ##############################################################
+    # "create.account.allowed"
+    #   Allow users to create new accounts from the login page
+    # Default: 
+    #   create.account.allowed: true
+    
+    ##############################################################
+    # File Purge configuration
+    #   Nightly cleanup of job input and result files.
+    # 
+    # Properties
+    #   purgeTime - the time of day, each day, to run the file purger, 
+    #     in HH:MM, 24 hour format.
+    #     Set as a global (aka server level) value. 
+    #   purgeJobsAfter - the number of days to keep each job. 
+    #     To never delete files set purgeJobsAfter to -1. 
+    #     Can be customized per user or group.
+    #
+    # Example 1: cleanup nightly at 11pm, keep jobs for one week
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "7"
+    # 
+    # Example 2: disable file purge
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "-1"
+    #
+    # Note: You must force the file purger to restart before custom edits take effect. 
+    # There are two ways to do this:
+    #   1. restart the server, or
+    #   2. from the web GUI, Admin > Server Settings > File Purge, 
+    #        Set the Purge Time and click Save.
+    #
+    # Additional rules for purging user upload files from the Files tab
+    #   using the same schedule as the job purger, it only purges files older than the cutoff date
+    # Properties
+    #   upload.purge.all - delete all files older than the cutoff date 
+    #     default: false
+    #   upload.purge.tmp - delete tmp files, including job input files
+    #     default: true
+    #   upload.purge.partial - delete any (presumably) stalled partially uploaded files
+    #     default: true
+    
+    ##############################################################
+    # allow.input.file.paths
+    #   set to true to allow user access to arbitrary server file paths
+    allow.input.file.paths: "false"
+
+    ##############################################################
+    # server.browse.file.system.root
+    #   root directory for browsing server file paths, when allow.input.file.paths is true. 
+    # Examples:
+    # ## a single path
+    # server.browse.file.system.root: "/opt/genepattern/shared_data"
+    # ## a list of paths
+    # server.browse.file.system.root: [ "/opt/genepattern/shared_data",  "/srv/custom_data" ]
+    # ## default, the root of the file system
+    # server.browse.file.system.root: "/"
+
+    ##############################################################
+    # cache.externalUrlDirs
+    #   Cache external data files into a local directory
+    # Input file URLs matching these prefixes are downloaded
+    # and cached into the uploads directory for the '.cache' user account. 
+    #
+    #   <gp.home>/users/.cache/uploads/cache
+    #
+    # Examples
+    # ## accept all
+    # cache.externalUrlDirs: [ "*" ]
+    # ## accept none
+    # cache.externalUrlDirs: [ "!*" ]
+    # ## cache data files from ftp server
+    # cache.externalUrlDirs: [ 
+    #     "ftp://gpftp.broadinstitute.org/",
+    #     "ftp://ftp.broadinstitute.org/" ] 
+
+    ##############################################################
+    # local.choiceDirs
+    #   local file path for dynamic drop-down FTP files
+    #
+    # Example:
+    # # direct access to broad ftp server files
+    # local.choiceDirs: {
+    #     "ftp://ftp.broadinstitute.org/pub/genepattern/": "/srv/ftp/pub/genepattern/",
+    #     "ftp://gpftp.broadinstitute.org/": "/srv/ftp/gpftp/pub/",
+    # }
+    #
+
+    ##############################################################
+    # reCAPTCHA configuration
+    #   add an "I'm not a robot" challenge to the user registration page
+    # Links
+    #   https://www.google.com/recaptcha
+    #   https://developers.google.com/recaptcha/
+    #   https://developers.google.com/recaptcha/docs/invisible
+    #   https://www.google.com/recaptcha/admin
+    # 
+    # Setup
+    #   Register a new Invisible reCAPTCHA site on the admin page:
+    #     https://www.google.com/recaptcha/admin
+    #   Copy the 'Site key' and 'Secret key' to this config file
+    # Example
+    #   recaptcha.enabled: "true"
+    #   recaptcha.site-key: "{Site key from admin page}"
+    #   repatcha.secret-key: "{Secret key from admin page}"
+    # 
+    # Additional param(s)
+    #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
+    # 
+
+    ##############################################################
+    # Custom Authentication configuration
+    #
+    # "authentication.class"
+    #   the name of the [optional] IAuthenticationPlugin class
+    # Default:
+    #   authentication.class: org.genepattern.server.auth.DefaultGenePatternAuthentication
+    #     
+    # "group.membership.class"
+    #   the name of the [optional] IGroupMembershipPlugin class
+    # Default: 
+    #   group.membership.class: "org.genepattern.server.auth.UserGroups"
+    # 
+    # "group.membership.file"
+    #   the name of the [optional] group membership file
+    # Default:
+    #   group.membership.file: "userGroups.xml"
+
+
     # when set to true, delete empty stdout files from the job results directory
     job.deleteEmptyStdout: false
     job.deleteEmptyStdout.default: true
@@ -46,18 +190,6 @@ default.properties:
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
     allow.new.job: true
-    
-    # flag for enabling server files
-    # Set this to true to allow users to access data files which are on the server file path
-    allow.input.file.paths: false
-    # when allow.input.file.paths is true, define the paths on the server file system
-    # which can be used as input files
-    # If you don't set this, then all files are allowed
-    #
-    # Can be a single path
-    #server.browse.file.system.root: "/Users/SharedData"
-    # Can be a list of paths
-    #server.browse.file.system.root: [ "/Users/SharedData",  "/Custom/Path" ]
     
     #set the disk quota
     #quota: 20 GB
@@ -92,11 +224,6 @@ default.properties:
     # New feature added in GP 3.7.1 
     org.genepattern.server.webapp.jsf.ModuleHelper.enableCustomCategories: true
     
-    # to customize the file purger, add the 'purgeJobsAfter' property to
-    # an entry in the 'user.properties' or 'group.propeties' section
-    #purgeTime: "23:00"
-    #purgeJobsAfter: "-1"
-    
     #
     # enable setting of job configuration parameters in the job input form
     # added in GP 3.8.1
@@ -110,7 +237,7 @@ default.properties:
     #ftpDownloader.type: COMMONS_NET_3_3
     #ftpDownloader.type: EDT_FTP_J_SIMPLE
     
-    # the mail server for sending messages from the GenePattern server
+    # the mail server for sending messages from the GenePattern server      
     smtp.server: smtp.broadinstitute.org
     # the email recipient of help requests sent via the 'contact us' link
     contact.us.email: "gp-help@broadinstitute.org"
@@ -118,6 +245,27 @@ default.properties:
     smtp.from.email: "no-reply@genepattern.org"
     # (optional), workaround for 'Helo command rejected: need fully-qualified hostname'
     #mail.smtp.localhost: "fully-qualified hostname"
+
+    # Example config with auth to smtp server
+    #smtp.server: "example.com"
+    #smtp.from.email: "sender@example.com"
+    ## optional username/password credentials
+    #smtp.auth.username: "username-api-key"
+    #smtp.auth.password: "password-secret-key"
+    ## additional JavaMail properties
+    #"javax.mail.Session.properties": {
+    #    # (optional) workaround for 'Helo command rejected: need fully-qualified hostname'
+    #    "mail.smtp.localhost": "example.com",
+    #    # "mail.host": "example.com",
+    #    # optionally set 'mail.smtp.host' here, takes precedence over
+    #    #   'mail.host' and 'smtp.server'
+    #    "mail.smtp.host":  "example.com",
+    #    # 
+    #    "mail.smtp.port":  "587",
+    #    "mail.smtp.auth": "true",
+    #    "mail.smtp.starttls.enable": "true",
+    #    "mail.debug.auth": "true",
+    #}
 
     # Change the skin GenePattern uses
     display.skin: frozen
@@ -132,6 +280,19 @@ default.properties:
     # Turn off the auto-creation of accounts with GenomeSpace
     # genomeSpaceAutoCreate: false
     
+    ##############################################################
+    # job.commandPrefix
+    #   add an optional command line prefix to the module command line
+    # this is prepended before command substutions are resolved.
+    #
+    # Example: 
+    #     # 'dry-run' via echo
+    #     job.commandPrefix: "echo"
+    #
+    # Example: 
+    #     # 'docker run' prefix
+    #     job.commandPrefix: "<run-with-docker>"
+    # 
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
@@ -142,17 +303,77 @@ default.properties:
 #    map := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [default.properties: <map>]
 executors:
     # default executor for all jobs, it is included in GenePattern
-    RuntimeExec: 
-        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+    # switched from RuntimeExec to LocalJobRunner in 3.9.0
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
         configuration.properties:
-            # the total number of jobs to run concurrently
-            num.threads: 20
-            # the total number of jobs to keep on the queue, not yet implemented
-            #max.pending.jobs: 20000
-            # flag, if true save the command line into a log file in the working directory for each job
-            rte.save.logfile: false
-            # the name of the command line log file
-            rte.logfile: .rte.out
+            jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
+            jobRunnerName: CommonsExecJobRunner
+            # interval for polling for job status (in ms)
+            #minDelay: 100
+            ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            #useDynamicDelay: true
+            ## the max polling interval, when 'useDynamicDelay' is true
+            #maxDelay: 30000
+            
+        default.properties:
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"
+
+            ##############################################################
+            # Docker integration
+            #   run the command in a docker container ...
+            #   see: https://docs.docker.com/engine/reference/commandline/run/
+            #   see: https://docs.docker.com/storage/bind-mounts/
+            # Template:
+            #    # (option 1: with '--mount')
+            #    docker run -w {workdir} --mount type=bind,src={bind_src},dst={bind_dst} {image} {args}
+            #    # (option 2: with '--volume')
+            #    docker run -w {workdir} -v {bind_src}:{bind_dst} {image} {args}
+            # Example:
+            #   docker run -w "`pwd`" --mount type=bind,src=/Users,dst=/Users genepattern/docker-python36:0.4 python3 --version
+            #   docker run -w "`pwd`" -v "/Users:/Users" genepattern/docker-python36:0.4 python3 --version
+            #
+            # Options:
+            #   'docker', the path to the docker executable
+            # '--mount' args 
+            #   'job.docker.bind_src', the local path on the docker daemon host
+            #   'job.docker.bind_dst', the path where the src is mounted in the container
+            #   The bind_src and bind_dst must be the same path. They are separated for 
+            #   illustration purposes.
+            # 
+            "job.commandPrefix": "<run-with-docker>"
+            "job.docker.image": "genepattern/docker-java17:0.12" 
+            "docker": "/usr/local/bin/docker"
+            "job.docker.bind_src": "/Users"
+            "job.docker.bind_dst": "/Users"
+            "job.workingDir": "<jobs>/<job_id>"
+            "run-with-docker": "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+                -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+                -e DOCKER_CMD=<docker> \
+                -e GP_JOB_WORKING_DIR=<job.workingDir> \
+                -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+                -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+                -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+                -u docker"
+
+            #
+            # (experimental) 'docker-run' command
+            #   Note: we are using the 'run-with-docker.sh' wrapper because it
+            #   outputs a better error message when the 'job.docker.image'
+            #   is not set
+            #"docker-run": "<docker> run -w <job.workingDir> \
+            #     --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
+            #     <job.docker.image>"
+
+            ## default <java> substitution
+            java: "java"
+
+            ## default <perl> substitution
+            perl: "perl"
+
+            ## default <python_3.6> in substitution
+            python_3.6: "python3"
 
     # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:

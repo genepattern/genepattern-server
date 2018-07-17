@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.input.collection;
 
@@ -13,10 +13,12 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.job.input.ParamListException;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.collection.ParamGroupWriter.Column;
 import org.genepattern.server.rest.ParameterInfoRecord;
@@ -103,9 +105,10 @@ public class ParamGroupHelper {
         try {
             this.gpFilePaths=ParamListHelper.getListOfValues(mgr, gpConfig, jobContext, jobInput, formalParam, param, downloadExternalFiles);
         }
-        catch (Exception e) {
-            log.error(e);
-            throw new IllegalArgumentException("Error initializing gpFilePaths for param");
+        catch (Throwable t) {
+            String msg="Error initializing gpFilePaths for param='"+formalParam.getName()+"': "+t.getMessage();
+            log.error(msg, t);
+            throw new IllegalArgumentException(t);
         }
         if (in.toFile != null) {
             this.toFile=in.toFile;
@@ -121,16 +124,16 @@ public class ParamGroupHelper {
         }
     }
     
-    private GpFilePath initToFile() throws Exception {
+    private GpFilePath initToFile() throws GpFilePathException { 
         //now, create a new group file, add it into the user uploads directory for the given job
-        JobInputFileUtil fileUtil = new JobInputFileUtil(jobContext);
+        JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, jobContext);
         final int index=-1;
         final String pname=param.getParamId().getFqName();
         GpFilePath gpFilePath=fileUtil.initUploadFileForInputParam(index, pname, filenameSuffix);
         return gpFilePath;
     }
 
-    public GpFilePath createFilelist() throws Exception {
+    public GpFilePath createFilelist() throws ParamListException {
         writeGroupFile(toFile, gpFilePaths);
         return toFile;
     }
@@ -147,10 +150,10 @@ public class ParamGroupHelper {
      *     the values appear in the 'param' instance.
      * @throws Exception
      */
-    private void writeGroupFile(final GpFilePath toFile, final List<GpFilePath> gpFilePaths) throws Exception {
+    private void writeGroupFile(final GpFilePath toFile, final List<GpFilePath> gpFilePaths) throws ParamListException {
         writeGroupFile(toFile.getServerFile(), gpFilePaths);
     }
-    private void writeGroupFile(final File toFile, final List<GpFilePath> gpFilePaths) throws Exception {
+    private void writeGroupFile(final File toFile, final List<GpFilePath> gpFilePaths) throws ParamListException {
         final DefaultParamGroupWriter writer=initParamGroupWriter(baseGpHref, toFile);
         writer.writeParamGroup(groupInfo, param, gpFilePaths);
     }
@@ -162,7 +165,6 @@ public class ParamGroupHelper {
             .addColumn(Column.GROUP)
             .addColumn(Column.URL)
             .includeHeader(true)
-            .tableWriter(new TsvWriter())
             .build();
         return writer;
     }

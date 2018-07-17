@@ -67,7 +67,7 @@ create table ANALYSIS_JOB (
     TASK_NAME varchar(511),
     PARENT integer,
     DELETED bit not null,
-    PARAMETER_INFO TEXT,
+    PARAMETER_INFO mediumtext,
     primary key (JOB_NO));
 
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm;
 
@@ -74,7 +74,6 @@ public class Walltime {
      * <pre>
            ""+this.getTimeUnit().toMinutes(this.getDuration());
      * </pre>
-     * @return
      */
     public String formatMinutes() {
         return ""+timeUnit.toMinutes(duration);
@@ -109,8 +108,6 @@ public class Walltime {
     
     /**
      * Parse a string in 'days-hh:mm:ss' format, where hours are on a 24 hour scale.
-     * @param val
-     * @return
      */
     public static Walltime fromString(final String in) throws Exception {
         if (in==null) {

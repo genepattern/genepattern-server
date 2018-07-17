@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.dm;
 
@@ -79,7 +79,9 @@ public class GpFileObjFactory {
      * 
      * @deprecated pass in a valid GpConfig.
      */
-    public static GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) throws Exception {
+    public static GpFilePath getUserUploadFile(GpContext userContext, File uploadFile) 
+    throws GpFilePathException 
+    {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         return getUserUploadFile(gpConfig, userContext, uploadFile);
     }
@@ -93,7 +95,9 @@ public class GpFileObjFactory {
      * @return
      * @throws Exception
      */
-    public static GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) throws Exception {
+    public static GpFilePath getUserUploadFile(GpConfig gpConfig, final GpContext userContext, final File uploadFile) 
+    throws GpFilePathException 
+    {
         if (gpConfig == null) {
             log.error("gpConfig==null, using ServerConfigurationFactory.instance");
             gpConfig=ServerConfigurationFactory.instance();
@@ -102,19 +106,21 @@ public class GpFileObjFactory {
         return getUserUploadFile(userContext, userUploadDir, uploadFile);
     }
 
-    static public GpFilePath getUserUploadFile(final GpContext userContext, final File userUploadDir, final File uploadFile) throws Exception {
+    static public GpFilePath getUserUploadFile(final GpContext userContext, final File userUploadDir, final File uploadFile) 
+    throws GpFilePathException 
+    {
         if (uploadFile == null) {
-            throw new IllegalArgumentException("uploadFile must not be null");
+            throw new GpFilePathException("uploadFile must not be null");
         }
         if (uploadFile.isAbsolute()) {
-            throw new Exception("user upload file must be a relative path, uploadFile="+uploadFile.getPath());
+            throw new GpFilePathException("user upload file must be a relative path, uploadFile="+uploadFile.getPath());
         }
         // quick and dirty way to prevent relative paths to forbidden parent directories
         if (uploadFile.getPath().startsWith("../")) {
-            throw new Exception("uploadFile.path can't start with '../'");
+            throw new GpFilePathException("uploadFile.path can't start with '../'");
         }
         if (uploadFile.getPath().contains("/../")) {
-            throw new Exception("uploadFile.path can't contain '/../'");
+            throw new GpFilePathException("uploadFile.path can't contain '/../'");
         }
         
         if (userContext == null) {

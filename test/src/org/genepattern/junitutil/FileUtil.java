@@ -1,9 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 
@@ -60,12 +66,20 @@ public class FileUtil {
         return patchesDir;
     }
 
-    private static File dataDir=new File("test/data");
+    private static File dataDir=initDataDir();
+
+    /** 
+     * Initialize the dataDir, optionally from the GP_DATA_DIR
+     * system property.
+     */
+    protected static File initDataDir() { 
+        return new File(System.getProperty("GP_DATA_DIR", "test/data")).getAbsoluteFile();
+    }
+
     /**
      * Get the top-level directory for data files used by the unit tests. 
      * It's hard-coded to 'test/data'.
-     * 
-     * @return
+     * Set GP_DATA_DIR as a system property if you need to use a different path.
      */
     public static File getDataDir() {
         return dataDir;
@@ -79,5 +93,33 @@ public class FileUtil {
     public static File getDataFile(final String relativePath) {
         return new File(dataDir, relativePath);
     }
+    
+    /**
+     * Read all lines from the given input file.
+     * 
+     * @param file
+     * @return a list of lines
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static List<String> readLines(final File file) throws FileNotFoundException, IOException {
+        final List<String> lines=new ArrayList<String>();
+        BufferedReader b=null;
+        try {
+            b = new BufferedReader(new FileReader(file));
+            String line="";
+            while ((line = b.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        finally {
+            if (b!=null) {
+                b.close();
+            }
+        }
+        return lines;
+    }
+
+
 
 }

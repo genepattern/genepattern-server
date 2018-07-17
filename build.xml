@@ -3,7 +3,7 @@
         <!ENTITY release_targets SYSTEM "./releaseTargets.xml">
         ]>
 <project basedir="." default="targets" name="genepattern">
-	<import file="test/build.xml"/>
+    <import file="test/build.xml"/>
 
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.7" />
@@ -190,7 +190,9 @@
 
     <target name="compile-junit" depends="init,compile">
         <mkdir dir="${build}/junit/classes" />
-        <javac debug="true" classpathref="junit.classpath"
+        <javac debug="true" 
+            includeantruntime="false"
+            classpathref="junit.classpath"
             destdir="${build}/junit/classes"
             srcdir="test/src"
         />
@@ -225,7 +227,9 @@
     </target>
 
     <target name="compile" depends="init, initBuildProperties" description="Compiles all the source.">
-        <javac debug="true" source="${java.source}" target="${java.target}"
+        <javac debug="true" 
+            includeantruntime="false"
+            source="${java.source}" target="${java.target}" 
             classpathref="library.classpath"
             destdir="${genepattern.build}"
             srcdir="${src}"
@@ -283,15 +287,16 @@
             classpathref="library.classpath"
         >
             <doctitle><![CDATA[<h1>GenePattern API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright (c) 2003-2018 Regents of the University of California and Broad Institute</i>]]></bottom>
           </javadoc>
     </target>
 
     <target name="javadoc-jobrunner" depends="compile" unless="skipdoc"
         description="Builds the javadoc for the JobRunner API">
 
-        <javadoc destdir="build/javadoc/jobrunner" packagenames="org.genepattern.drm.*,org.genepattern.server.config.*"
-            sourcepath="src"
+        <javadoc
+            additionalparam="-Xdoclint:none"
+            destdir="build/javadoc/jobrunner" 
             defaultexcludes="yes"
             author="true"
             version="true"
@@ -299,8 +304,19 @@
             windowtitle="JobRunner API"
             classpathref="library.classpath"
         >
+            <!-- jobrunner api -->
+            <packageset dir="src" defaultexcludes="yes">
+                <include name="org/genepattern/drm/**" />
+                <include name="org/genepattern/server/config/**" />
+                <exclude name="com/dummy/test/doc-files/**"/>
+            </packageset>
+            <!-- awsbatch integration -->
+            <packageset dir="gp-jobrunner-awsbatch/src/main/java" defaultexcludes="yes">
+                <include name="org/genepattern/server/executor/awsbatch/**"/>
+                <exclude name="com/dummy/test/doc-files/**"/>
+            </packageset>
             <doctitle><![CDATA[<h1>GenePattern JobRunner API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright &#169; 2003-2014 Broad Institute, MIT</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright (c) 2003-2018 Regents of the University of California and Broad Institute</i>]]></bottom>
           </javadoc>
     </target>
 
@@ -344,12 +360,14 @@
 
     <target depends="init" name="runtask">
         <javac debug="true" 
+            includeantruntime="false"
             classpathref="library.classpath" 
             destdir="${genepattern.build}" 
             srcdir="${src}" 
             source="${java.source}" 
             target="${java.target}" 
-            includes="org/genepattern/util/RunGenePatternTaskMain.java" />
+            includes="org/genepattern/util/RunGenePatternTaskMain.java" 
+        />
 
         <!-- Makes runMain.jar -->
         <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class" jarfile="${genepattern.build}/${runtask-jarname}">
@@ -427,6 +445,7 @@
     <target name="compile-visualizer-applet" depends="init">
         <mkdir dir="applet-build" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="applet-build" 
             srcdir="src" 
             classpathref="library.classpath" 
@@ -529,9 +548,11 @@
 
         <mkdir dir="${genepattern.website}/WEB-INF/classes" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="${genepattern.build}/website/classes" 
             srcdir="${genepattern.website}/WEB-INF/classes" 
-            classpathref="library.classpath" />
+            classpathref="library.classpath" 
+        />
 
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
@@ -567,35 +588,16 @@
     <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes" />
         <javac debug="true" 
+            includeantruntime="false"
             destdir="${genepattern.build}/website/classes" 
             srcdir="${genepattern.website}/WEB-INF/classes" 
-            classpathref="library.classpath" />
+            classpathref="library.classpath" 
+        />
         <!-- Now call any custom post-compilation people want to do -->
         <antcall target="post-compile" />
     </target>
 
-    <target name="getSvnInfoLastRev" unless="version"
-        description="Sets property 'version' to the head svn Last Changed Rev">
-
-        <!-- find out revision number of HEAD, need svn.exe installed on local machine -->
-        <exec executable="svn" outputproperty="svninfo.out">
-            <arg line="info -r HEAD" />
-        </exec>
-        <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
-            <arg line="'Last Changed Rev:'" />
-        </exec>
-        <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
-            <arg value="s/Last\ Changed\ Rev:\ //" />
-        </exec>
-
-        <property name="version" value="${svn.info.lastRev}" />
-    </target>
-
-    <target name="getVersion" depends="getSvnInfoLastRev">
-        <echo>version: ${version}</echo>
-    </target>
-
-    <target name="initBuildProperties" depends="getVersion"
+    <target name="initBuildProperties"
         description="Updates the build.properties file." >
 
         <property file="build.versionNumbers" />
@@ -641,9 +643,10 @@
     <target name="compile-jspc" depends="jspc, compile" description="generate .class files from .jsp files">
         <mkdir dir="${webapp.path}/WEB-INF/classes" />
 
-        <javac 
+        <javac debug="${java.debug}" 
+            includeantruntime="false"
             source="${java.source}" target="${java.target}"
-            debug="${java.debug}" optimize="${java.optimize}"
+            optimize="${java.optimize}"
             destdir="${webapp.path}/WEB-INF/classes"
             srcdir="${webapp.path}/WEB-INF/src"
         >
@@ -652,7 +655,7 @@
                 <path refid="jspc.classpath" />
                 <pathelement location="${genepattern.build}" />
             </classpath>
-            </javac>
+        </javac>
     </target>
 
 </project>

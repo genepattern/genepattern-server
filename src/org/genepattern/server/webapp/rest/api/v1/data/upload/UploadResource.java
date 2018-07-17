@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
@@ -449,7 +449,7 @@ public class UploadResource {
             if(success)
             {
                 //update the user uploads database
-                JobInputFileUtil fileUtil = new JobInputFileUtil(userContext);
+                JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
                 fileUtil.updateUploadsDb(HibernateUtil.instance(), file);
             }
             else

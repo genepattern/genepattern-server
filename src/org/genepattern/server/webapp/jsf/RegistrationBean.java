@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
@@ -22,7 +22,9 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genomespace.*;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
+import org.genepattern.server.recaptcha.ReCaptchaSession;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -46,35 +48,31 @@ public class RegistrationBean {
     private UIInput emailConfirmComponent;
     private boolean passwordRequired = true;
     private boolean joinMailingList = true;
-    private boolean showTermsOfService = false;
+    private final boolean showTermsOfService;
     private String termsOfService =
         "GenePattern Terms of Service\n"+
         "============================\n"+
         "\n"+
         "The hosted GenePattern server is provided free of charge.\n"+
         "We make no guarantees whatsoever.";
+    private ReCaptchaSession recaptcha = null;
 
     public RegistrationBean() {
         this.gpConfig=ServerConfigurationFactory.instance();
-        this.passwordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
+        final GpContext serverContext=GpContext.getServerContext();
+        this.passwordRequired=gpConfig.isPasswordRequired(serverContext);
 
-        String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
-        boolean createAccountAllowed = (
-                createAccountAllowedProp.equals("true") || 
-                createAccountAllowedProp.equals("y") || 
-                createAccountAllowedProp.equals("yes"));
+        final boolean createAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
         if (!createAccountAllowed) {
             log.info("Unauthorized attempt to create new user by " + UIBeanHelper.getRequest().getRemoteAddr() + ".");
             throw new SecurityException("Unauthorized attempt to create new user.");
         }
 
         //show registration agreement?
-        if (System.getProperty("show.terms.of.service", "false").equalsIgnoreCase("false")) {
-            showTermsOfService = false;
-        }
-        else {
-            showTermsOfService = true;
-        }
+        this.showTermsOfService=gpConfig.getGPTrueProperty(serverContext, GpConfig.PROP_SHOW_TERMS_OF_SERVICE, false);
+
+        //show reCAPTCHA?
+        this.recaptcha=ReCaptchaSession.init(gpConfig, serverContext);
     }
 
     public String getEmail() {
@@ -116,6 +114,43 @@ public class RegistrationBean {
     public void setJoinMailingList(boolean joinMailingList) {
         this.joinMailingList = joinMailingList;
     }
+    
+    /**
+     * for client side reCAPTCHA, add a div to the registration form 
+     * <pre>
+       <div class="g-recaptcha" data-sitekey="#{registrationBean.recaptchaSiteKey}"></div>
+     * </pre>
+     */
+    public String getRecaptchaSiteKey() {
+        if (recaptcha != null) {
+            return recaptcha.getSiteKey();
+        }
+        return "";
+    }
+
+    /**
+     * verify server side reCAPTCHA
+     */
+    protected void verifyReCaptcha(final HttpServletRequest request) {
+        if (recaptcha == null) {
+            // short circuit
+            return;
+        }
+        boolean success=false;
+        String errorMessage=null;
+        try {
+            success=recaptcha.verifyReCaptcha(request);
+        }
+        catch (Throwable t) {
+            errorMessage=t.getLocalizedMessage();
+        }
+        if (!success) {
+            final String message=errorMessage!=null?errorMessage:"reCAPTCHA not verified";
+            UIBeanHelper.setErrorMessage(message);
+            FacesMessage facesMessage = new FacesMessage(message);
+            throw new ValidatorException(facesMessage);
+        }
+    }
 
     private void registerUserSSO(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
@@ -151,8 +186,9 @@ public class RegistrationBean {
         }
     }
 
-    private void registerUserDefault(ActionEvent event) {
+    private void registerUserDefault(final ActionEvent event) {
         try {
+            verifyReCaptcha(UIBeanHelper.getRequest());
             UserAccountManager.createUser(
                     gpConfig, HibernateUtil.instance(), 
                     username, password, email);
@@ -190,8 +226,12 @@ public class RegistrationBean {
         }
     }
 
-    public void sendJoinMailingListRequest(){
-        String mailingListURL = System.getProperty("gp.mailinglist.registration.url","http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi");
+    public void sendJoinMailingListRequest() {
+        final GpContext serverContext=GpContext.getServerContext();
+        final String mailingListURL=gpConfig.getGPProperty(serverContext, 
+            "gp.mailinglist.registration.url", 
+            "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi"
+        );
         StringBuffer buff = new StringBuffer(mailingListURL);
         buff.append("?choice=Add&email="+ this.getEmail()); 
         
@@ -283,12 +323,15 @@ public class RegistrationBean {
         return this.showTermsOfService;
     }
     
-    public void setShowTermsOfService(boolean b) {
-        this.showTermsOfService = b;
-    }
-    
     public String getTermsOfService() {
         return this.termsOfService;
+    }
+    
+    public boolean isRecaptchaEnabled() {
+        if (recaptcha != null) {
+            return recaptcha.isEnabled();
+        }
+        return false;
     }
 
 }

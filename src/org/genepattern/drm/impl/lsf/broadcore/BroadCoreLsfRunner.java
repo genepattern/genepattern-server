@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm.impl.lsf.broadcore;
 
@@ -201,8 +201,6 @@ public class BroadCoreLsfRunner implements JobRunner {
        job.memory: 8gb
        lsf.max.memory: 8
      * </pre>
-     * 
-     * @return
      */
     protected static List<String> getMemFlags(final DrmJobSubmission gpJob) {
         final Memory drmMemory=gpJob.getMemory();

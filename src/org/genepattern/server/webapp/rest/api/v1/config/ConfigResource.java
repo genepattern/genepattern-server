@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.config;
 
@@ -29,6 +29,20 @@ import java.util.Date;
 @Path("/v1/config")
 public class ConfigResource {
     final static private Logger log = Logger.getLogger(ConfigResource.class);
+
+    /**
+     * Example of how to require admin access to a REST endpoint
+     * Usage:
+     *     curl --user test http://127.0.0.1:8080/gp/rest/v1/config/is-admin
+     */
+    @GET
+    @Path("/is-admin")
+    public Response checkIsAdmin(@Context HttpServletRequest request) {
+        final GpContext userContext = Util.getAdminUserContext(request);
+        return Response.ok().entity(
+                "200 OK: User '"+userContext.getUserId()+"' is an administrator."
+        ).build();
+    }
 
     @GET
     @Path("/admin")

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm;
 
@@ -33,6 +33,22 @@ public void start();
  */
 public interface JobRunner {
     public static final String PROP_PREFIX="job.";
+    /**
+     * set the 'job.commandPrefix' to customize the way the server executes the module command.
+     *   This optional command line prefix  is prepended to the module command line before 
+     * command substutions are resolved.
+     * 
+     * Example: 'docker run' prefix
+     * <pre>
+           job.commandPrefix: "<run-with-docker>"
+     * </pre>
+     * 
+     * Example: 'dry-run' via echo
+     * <pre>
+           job.commandPrefix: "echo"
+     * </pre>
+     */
+    public static final String PROP_JOB_COMMAND_PREFIX="job.commandPrefix";
     public static final String PROP_JOB_INPUT_PARAMS="job.inputParams";
     /** 
      * optional param, when set it is the name of a log file for saving meta data about the completed job.
@@ -121,6 +137,25 @@ public interface JobRunner {
      * </pre>
      */
     public static final String PROP_ERROR_STATUS_EXIT_VALUE="job.error_status.exit_value";
+
+    /**
+     * Set the 'job.docker.image' to run the module in a particular container. E.g.
+     * <pre>
+           job.docker.image: "genepattern/docker-java17:0.12"
+     * </pre>
+     * <p>
+     * This corresponds to the IMAGE[:TAG|@DIGEST] option of the docker run command.
+     * <p>
+     * This property was added to support the AWS Batch integration, but is intended to be
+     * used generally for docker enabled GenePattern instances.
+     * <p>
+     * Links:
+     * <ul>
+     *   <li>https://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties
+     *   <li>https://docs.docker.com/engine/reference/run/
+     * </ul>
+     */
+    public static final String PROP_DOCKER_IMAGE="job.docker.image";
     
     /** 
      * Service shutdown, clean up resources. 
@@ -141,8 +176,6 @@ public interface JobRunner {
 
     /**
      * Get the status of the job.
-     * @param drmJobId
-     * @return
      */
     DrmJobStatus getStatus(DrmJobRecord drmJobRecord);
 
@@ -150,7 +183,7 @@ public interface JobRunner {
      * This method is called when the GP server wants to cancel a job before it has completed on the queuing system. 
      * For example when a user terminates a job from the web ui.
      * 
-     * @param drmJobRecord, contains a record of the job
+     * @param drmJobRecord contains a record of the job
      * @return true if the job was successfully cancelled, false otherwise.
      * @throws Exception
      */  

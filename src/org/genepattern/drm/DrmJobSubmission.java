@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm;
 
@@ -112,9 +112,9 @@ public class DrmJobSubmission {
     /**
      * initialize the amount of memory to request from the Queue, taking into account config settings:
      *     job.memory, job.javaXmx, job.javaXmxPad
-     * @param gpConfig
-     * @param jobContext
-     * @return
+     * @param gpConfig the server configuration instance
+     * @param jobContext the job context
+     * @return the amount of memory to request for the job
      */
     protected static Memory initQueueMemory(GpConfig gpConfig, GpContext jobContext) {
         // by default, use the job.memory from the config
@@ -148,7 +148,6 @@ public class DrmJobSubmission {
     
     /**
      * The GenePattern job number.
-     * @return
      */
     public Integer getGpJobNo() {
         return this.jobContext.getJobNumber();
@@ -156,7 +155,6 @@ public class DrmJobSubmission {
 
     /**
      * The job details as a JobInfo instance.
-     * @return
      */
     public JobInfo getJobInfo() {
         return this.jobContext.getJobInfo();
@@ -164,7 +162,6 @@ public class DrmJobSubmission {
     
     /**
      * The command line as a list of args.
-     * @return
      */
     public List<String> getCommandLine() {
         return Collections.unmodifiableList(commandLine);
@@ -172,7 +169,6 @@ public class DrmJobSubmission {
 
     /**
      * Runtime environment variables.
-     * @return
      */
     public Map<String,String> getEnvironmentVariables() {
         return Collections.unmodifiableMap(environmentVariables);
@@ -180,7 +176,6 @@ public class DrmJobSubmission {
 
     /**
      * The working directory for the job.
-     * @return
      */
     public File getWorkingDir() {
         return workingDir;
@@ -188,7 +183,6 @@ public class DrmJobSubmission {
 
     /**
      * Stream stdout into this file.
-     * @return
      */
     public File getStdoutFile() {
         return stdoutFile;
@@ -196,7 +190,6 @@ public class DrmJobSubmission {
 
     /**
      * Stream stderr into this file.
-     * @return
      */
     public File getStderrFile() {
         return stderrFile;
@@ -204,7 +197,6 @@ public class DrmJobSubmission {
 
     /**
      * When set, stream stdin from this file.
-     * @return
      */
     public File getStdinFile() {
         return stdinFile;
@@ -212,7 +204,6 @@ public class DrmJobSubmission {
 
     /**
      * The location of queuing system specific log information, such as the lsf meta data.
-     * @return
      */
     public File getLogFile() {
         return logFile;
@@ -221,7 +212,6 @@ public class DrmJobSubmission {
     /**
      * The name of the queue.
      * The default value is null.
-     * @return 
      */
     public String getQueue() {
         return queue;
@@ -231,7 +221,6 @@ public class DrmJobSubmission {
      * The name of the queue, with default value specified.
      *
      * @param defaultValue
-     * @return
      */
     public String getQueue(String defaultValue) {
         if (queue==null) {
@@ -243,7 +232,6 @@ public class DrmJobSubmission {
     /**
      * This is the [optional] queueId, in support of the job.virtualQueue feature.
      * When job.virtualQueue is not set, return the job.queue value.
-     * @return
      */
     public String getQueueId() {
         return queueId;
@@ -275,7 +263,6 @@ public class DrmJobSubmission {
      * Get the maximum amount of time a job is allowed to run, default is specified
      *
      * @param defaultValue
-     * @return
      */
     public Walltime getWalltime(String defaultValue) {
         try {
@@ -329,7 +316,7 @@ public class DrmJobSubmission {
     /**
      * Helper method for working with files relative to the working directory.
      * 
-     * @param file, the file (e.g. for stdout redirect)
+     * @param file the file (e.g. for stdout redirect)
      * @return the the file is an absolute path, return it, otherwise return a new file 
      *     with the workingDir for the job as the parent directory.
      */
@@ -368,7 +355,6 @@ public class DrmJobSubmission {
      * uses the GenePattern configuration system to get the value for a property.
      * 
      * @param key
-     * @return
      */
     public String getProperty(final String key) {
         return _gpConfig.getGPProperty(jobContext, key);

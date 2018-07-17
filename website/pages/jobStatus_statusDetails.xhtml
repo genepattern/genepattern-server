@@ -1,9 +1,5 @@
 <!--
-  ~ Copyright 2014 The Broad Institute, Inc.
-  ~ SOFTWARE COPYRIGHT NOTICE
-  ~ This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
-  ~
-  ~ This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not responsible for its use, misuse, or functionality.
+  ~ Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
   -->
 
 
@@ -11,7 +7,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:t="http://myfaces.apache.org/tomahawk">
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
 
 <!-- include job status details in the JSF job status page
     Inputs:
@@ -34,35 +31,29 @@
                             </h:outputText>
                             <tr><td style="white-space: nowrap">Status date</td><td style="width: 99%"><h:outputText value="#{jobStatus.statusDate}" converter="gp" /></td></tr>
 
+                            <!--  Requested resources -->
                             <tr><th colspan="2">Requested resources</th></tr>
-                            <h:outputText rendered="#{jobStatus.requestedMemory != null}" escape="false">
-                            <tr><td style="white-space: nowrap">job.memory</td><td style="width: 99%">#{jobStatus.requestedMemory.displayValue}</td></tr>
+                            <c:forEach var="row" items="#{jobStatus.resourceRequirements}">
+                            <h:outputText rendered="true" escape="false">
+                            <tr><td style="white-space: nowrap">#{row.keyName}</td><td style="width: 99%">#{row.displayValue}</td></tr>
                             </h:outputText>
-                            <h:outputText rendered="#{jobStatus.requestedCpuCount != null}" escape="false">
-                            <tr><td style="white-space: nowrap">job.cpuCount</td><td style="width: 99%">#{jobStatus.requestedCpuCount}</td></tr>
-                            </h:outputText>
-                            <h:outputText rendered="#{jobStatus.requestedNodeCount != null}" escape="false">
-                            <tr><td style="white-space: nowrap">job.nodeCount</td><td style="width: 99%">#{jobStatus.requestedNodeCount}</td></tr>
-                            </h:outputText>
-                            <h:outputText rendered="#{jobStatus.requestedWalltime != null}" escape="false">
-                            <tr><td style="white-space: nowrap">job.walltime</td><td style="width: 99%">#{jobStatus.requestedWalltime}</td></tr>
-                            </h:outputText>
-                            <h:outputText rendered="#{jobStatus.requestedQueue != null}" escape="false">
-                            <tr><td style="white-space: nowrap">job.queue</td><td style="width: 99%">#{jobStatus.requestedQueue}</td></tr>
-                            </h:outputText>
-                            
+                            </c:forEach>
+
+                            <!--  Event log -->
                             <tr><th colspan="2">Event log</th></tr>
                             <tr><td style="white-space: nowrap">Added to GenePattern</td><td style="width: 99%"><h:outputText value="#{jobStatus.dateSubmittedToGp}" converter="gp" /></td></tr>
                             <tr><td style="white-space: nowrap">Submitted to queue</td><td style="width: 99%"><h:outputText value="#{jobStatus.submitTime}" converter="gp" /></td></tr>
                             <tr><td style="white-space: nowrap">Started running</td><td style="width: 99%"><h:outputText value="#{jobStatus.startTime}" converter="gp" /></td></tr>
                             <tr><td style="white-space: nowrap">Finished running</td><td style="width: 99%"><h:outputText value="#{jobStatus.endTime}" converter="gp" /></td></tr>
                             <tr><td style="white-space: nowrap">Completed in GenePattern</td><td style="width: 99%"><h:outputText value="#{jobStatus.dateCompletedInGp}" converter="gp" /></td></tr>
+
+                            <!-- Usage stats -->
                             <tr><th colspan="2">Usage stats</th></tr>
-                            <tr><td style="white-space: nowrap">CPU usage</td><td style="width: 99%"><h:outputText value="#{jobStatus.cpuTime.displayValue}"  /></td></tr>
-                            <tr><td style="white-space: nowrap">Max memory</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxMemory.displayValue}"  /></td></tr>
-                            <tr><td style="white-space: nowrap">Max swap</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxSwap.displayValue}"  /></td></tr>
-                            <tr><td style="white-space: nowrap">Max processes</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxProcesses}"  /></td></tr>
-                            <tr><td style="white-space: nowrap">Max threads</td><td style="width: 99%"><h:outputText value="#{jobStatus.maxThreads}"  /></td></tr>
+                            <c:forEach var="row" items="#{jobStatus.usageStats}">
+                            <h:outputText rendered="true" escape="false">
+                            <tr><td style="white-space: nowrap">#{row.keyName}</td><td style="width: 99%">#{row.displayValue}</td></tr>
+                            </h:outputText>
+                            </c:forEach>
                         </table>
                     </td>
                 </tr>

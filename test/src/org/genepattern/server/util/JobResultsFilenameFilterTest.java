@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.util;
 
@@ -43,7 +43,7 @@ public class JobResultsFilenameFilterTest {
     @Test
     public void testGetProperties() throws Exception {
         Properties props = new Properties();
-        InputStream properties = this.getClass().getResourceAsStream("jobsFilenameFilter.properties");
+        InputStream properties = this.getClass().getResourceAsStream("jobFilenameFilter.properties");
         props.load(properties);
         
         String glob = props.getProperty(JobResultsFilenameFilter.KEY);

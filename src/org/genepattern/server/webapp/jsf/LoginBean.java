@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 
 package org.genepattern.server.webapp.jsf;
@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -31,11 +30,16 @@ public class LoginBean {
     private String password;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
+    private final boolean isShowRegistrationLink;
     private final boolean isPasswordRequired;
+    private final boolean isCreateAccountAllowed;
 
     public LoginBean() {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        this.isPasswordRequired=gpConfig.isPasswordRequired(GpContext.getServerContext());
+        final GpContext serverContext=GpContext.getServerContext();
+        this.isShowRegistrationLink=gpConfig.isShowRegistrationLink(serverContext);
+        this.isPasswordRequired=gpConfig.isPasswordRequired(serverContext);
+        this.isCreateAccountAllowed=gpConfig.isCreateAccountAllowed(serverContext);
     }
 
     public String getPassword() {
@@ -47,11 +51,11 @@ public class LoginBean {
     }
 
     public boolean isCreateAccountAllowed() {
-        return UserAccountManager.instance().isCreateAccountAllowed();
+        return isCreateAccountAllowed;
     }
     
     public boolean isShowRegistrationLink() {
-        return UserAccountManager.instance().isShowRegistrationLink();
+        return isShowRegistrationLink;
     }
 
     public boolean isInvalidPassword() {

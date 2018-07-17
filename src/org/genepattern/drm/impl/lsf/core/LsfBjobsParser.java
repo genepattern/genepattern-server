@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.drm.impl.lsf.core;
 
@@ -74,12 +74,11 @@ public class LsfBjobsParser {
     /**
      * Get the job status from the LSF system.
      * 
-     * @param line, the output from the bjobs -W command
-     * @param lsfLogFile, the optional path to the .lsf.out log file
-     * @param sleepInterval, the optional amount of time in milliseconds to wait for the lsfLogFile to become available. This is a workaround for NFS file systems.
-     * @param retryCount, the optional retry count to wait for the lsfLogFile.
+     * @param line the output from the bjobs -W command
+     * @param lsfLogFile the optional path to the .lsf.out log file
+     * @param sleepInterval the optional amount of time in milliseconds to wait for the lsfLogFile to become available. This is a workaround for NFS file systems.
+     * @param retryCount the optional retry count to wait for the lsfLogFile.
      * 
-     * @return
      * @throws InterruptedException
      */
     public static DrmJobStatus parseAsJobStatus(final Pattern LINE_PATTERN, final String line, final File lsfLogFile, final int sleepInterval, final int retryCount) throws InterruptedException { 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2015 Broad Institute, Inc. and Massachusetts Institute of Technology.  All rights reserved.
+ * Copyright (c) 2003-2018 Regents of the University of California and Broad Institute. All rights reserved.
  *******************************************************************************/
 package org.genepattern.server.job.input.choice.ftp;
 
@@ -52,9 +52,8 @@ public class FtpDirListerCommonsNet_3_3 implements FtpDirLister {
         int socketTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_SOCKET_TIMEOUT, 30000);
         int dataTimeout=gpConfig.getGPIntegerProperty(gpContext, PROP_FTP_DATA_TIMEOUT, 30000);
         
-        String webmaster=gpConfig.getGPProperty(gpContext, "webmaster", "gp-help@broadinstitute.org");
         String username=gpConfig.getGPProperty(gpContext, PROP_FTP_USERNAME, "anonymous");
-        String password=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, webmaster);
+        String password=gpConfig.getGPProperty(gpContext, PROP_FTP_PASSWORD, "anonymous@example.com");
         return new Builder()
             .socketTimeout(socketTimeout)
             .dataTimeout(dataTimeout)

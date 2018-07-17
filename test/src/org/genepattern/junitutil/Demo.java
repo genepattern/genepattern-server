@@ -3,6 +3,7 @@ package org.genepattern.junitutil;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -10,6 +11,8 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 
@@ -24,6 +27,12 @@ import com.google.common.base.Strings;
  * Note: see http://tools.ietf.org/html/rfc2606
  */
 public class Demo {
+
+    /** to illustrate how to suppress log4j output */
+    public static final void suppressLog() {
+        LogManager.getRootLogger().setLevel(Level.OFF);
+    }
+
     public static final GpContext serverContext=GpContext.getServerContext();
     
     /** servlet context path is '/gp' */
@@ -66,9 +75,13 @@ public class Demo {
     public static final String dataGsDir_noVersion="https://dm.genomespace.org/datamanager/file/Home/Public/SharedData/Demos/SampleData/"; //all_aml_test.gct
     
     // common file system paths, (as opposed to URI paths)
+    public static final File dataDir() {
+        return FileUtil.getDataDir();
+    }
+
     /** 
      * File system path to example data on server's file system, includes trailing slash. 
-     *     href template: {gpUrl}/data/{localDataDir}{relativePath}
+     *     href template: {gpUrl}/data/{localDataDirPath}{relativePath}
      *     example: http://127.0.0.1:8080/gp/data//Users/my_user/genepattern/test/data/all_aml/all_aml_test.gct
      * 
      * Note: file name encoding has not been worked out, be careful. When constructing href's should use valid href path.
@@ -77,7 +90,7 @@ public class Demo {
      * The actual path is to the ./test/data folder of the project; the all_aml folder includes
      * example data files.
      */
-    public static final String localDataDir=FileUtil.getDataDir().getAbsolutePath() + "/";
+    public static final String localDataDirPath=FileUtil.getDataDir().getAbsolutePath() + "/";
     
     protected static String portStr(final String scheme, final int port) {
         if ("http".equals(scheme) && port==80) return "";
@@ -331,7 +344,7 @@ public class Demo {
      * @return
      */
     public static String serverFile(final String path) {
-        return "/data/"+localDataDir+path;
+        return "/data/"+localDataDirPath+path;
     }
 
 }
