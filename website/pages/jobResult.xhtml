@@ -266,23 +266,23 @@
 
                         if (getURLParameter("openVisualizers") == "true") {
 
-//                            div.gpJavascript({
-//                                taskName: taskName,
-//                                taskLsid: taskLsid,
-//                                jobId: jobId,
-//                                url: launchUrl,  //The URL to the main javascript html file
-//                                onCreateActionBar: function (element) {
-//                                    if (jobId !== undefined && jobId !== null && jobId.length > 0) {
-//                                        var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
-//                                        element.append(moreOptionsMenu);
-//
-//                                        moreOptionsMenu.click(function () {
-//                                            //open the slide out menu for the  job
-//                                            $("a[data-jobid='" + jobId + "']").click();
-//                                        });
-//                                    }
-//                                }
-//                            });
+                            div.gpJavascript({
+                                taskName: taskName,
+                                taskLsid: taskLsid,
+                                jobId: jobId,
+                                url: launchUrl,  //The URL to the main javascript html file
+                                onCreateActionBar: function (element) {
+                                    if (jobId !== undefined && jobId !== null && jobId.length > 0) {
+                                        var moreOptionsMenu = $("<span id='jsViewerMoreMenu' class='glyphicon glyphicon-info-sign'></span>");
+                                        element.append(moreOptionsMenu);
+
+                                        moreOptionsMenu.click(function () {
+                                            //open the slide out menu for the  job
+                                            $("a[data-jobid='" + jobId + "']").click();
+                                        });
+                                    }
+                                }
+                            });
 
                             mainLayout.close('west');
                         }
