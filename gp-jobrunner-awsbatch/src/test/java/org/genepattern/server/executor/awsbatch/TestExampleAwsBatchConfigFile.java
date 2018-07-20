@@ -21,7 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Test 'config_example_awsbatch.yaml' file
+ * Test 'config_example_awsbatch-v0.1.yaml' file
  */
 public class TestExampleAwsBatchConfigFile {
     public static final String GSEA_BASE_LSID="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00072";
@@ -43,7 +43,7 @@ public class TestExampleAwsBatchConfigFile {
     @BeforeClass
     public static void beforeClass() throws Throwable {
         serverContext=GpContext.getServerContext();
-        configFile=new File(Util.getAwsbatchConfDir(),"config_example_awsbatch.yaml");
+        configFile=new File(Util.getAwsbatchConfDir(),"config_example_awsbatch-v0.1.yaml");
         gpConfig=Util.initGpConfig(configFile);
         assertNotNull("sanity check after initializing gpConfig from file", gpConfig);
     }
