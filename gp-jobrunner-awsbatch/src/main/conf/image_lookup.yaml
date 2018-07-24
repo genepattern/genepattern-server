@@ -1,0 +1,139 @@
+#
+# config_custom.yaml file snippet for customizing the 'job.docker.image'
+# for older modules which do not declare a 'job.docker.image' in the manifest file
+#
+# Note: when 'job.docker.image' is customized in the config file it takes precedence 
+#   over any setting in the manifest file
+#
+#
+
+    #
+    # 'job.awsbatch.job-definition-name'
+    #   The AWS Batch job definition for each job, this is pinned to the 
+    # docker in docker container
+    #
+    "job.awsbatch.job-definition-name": "S3ModuleWrapper"
+
+    #
+    # 'job.docker.image.default'
+    #   The default value to use'job.docker.image' to use when ...
+    #     ... not declared in the manifest file, AND
+    #     ... not customized in the config file
+    #
+    "job.docker.image.default": "genepattern/docker-java17:0.12"
+
+    #
+    # 'job.docker.image.lookup'
+    #   Lookup table to use when 'job.docker.image' is not declared in the manifest file
+    #
+    # Template:
+    #   {taskName}         : {dockerImage}
+    #   {taskName:version} : {dockerImage}
+    #   {lsid}             : {dockerImage}
+    #   {lsid_no_version}  : {dockerImage}
+    #
+    # Examples:
+    #   {taskName} : {dockerImage}
+    #     "ExampleLookup": "genepattern/docker-example:1-from-lookup",
+    #
+    #   {taskName:version} : {dockerImage}
+    #     "ExampleLookup:1" : "genepattern/docker-example:1",
+    # 
+    #   {lsid} : {dockerImage}
+    #     "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2",
+    # 
+    #   {lsid_no_version} : {dockerImage}
+    #     "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3",
+    #
+    # Lookup table for legacy modules based on cloud.genepattern.org circa July 2018
+    #
+    job.docker.image.lookup: {
+
+        "ABasicModule": "genepattern/docker-python36:0.4",
+        "ABSOLUTE": "genepattern/docker-r-2-15",
+        "ABSOLUTE.review": "genepattern/docker-r-2-15",
+        "ABSOLUTE.summarize": "genepattern/docker-r-2-15",
+        "CART": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation": "genepattern/docker-r-2-5:0.1",
+        "CBS": "genepattern/docker-r-2-15:0.1",
+        "Chip2Chip": "genepattern/docker-java18:0.1",
+        "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
+        "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
+        "ConstellationMap": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConumeeCNVAnalysis": "genepattern/docker-r-3-4-methylationanalysis:0.15",
+        "ConvertLineEndings": "genepattern/docker-perl52:0.1",
+
+        # Note: r/2.0 runs in the r/2.5 container
+        "CoxRegression": "genepattern/docker-r-2-5:0.1",
+
+        "DESeq2": "genepattern/docker-r-3-2:0.1",
+        "DiffEx:0.1.10": "genepattern/docker-python36:0.5",
+        "ExpressionFileCreator": "genepattern/docker-r-2-15:0.1",
+        "ExtractComparativeMarkerResults": "genepattern/docker-java17:0.12",
+        "FLAMEPreprocess": "genepattern/docker-r-2-7:0.1",
+
+        # GISTIC_2.0, (2.0.23) v6.14 custom config
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00125:6.14": "genepattern/docker-gistic:0.12",
+
+        # GSEA >= v19 requires java/1.8 
+        GSEA: "genepattern/docker-java18:0.1",
+        # GSEAv18 (<= v18), requires java/1.7
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00072:18": "genepattern/docker-java17:0.12",
+
+        "GSEACollapseDataset": "genepattern/docker-java18:0.1",
+        "GSEALeadingEdgeReport": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (>= v6) requires java/1.8
+        "GSEAPreranked": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (<= v5) prefers java/1.7
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00317:5": "genepattern/docker-java17:0.12",
+
+        "helloWorld_R2.5_Rjava": "genepattern/docker-r-2-5:0.1",
+        "helloWorld_R2.7": "genepattern/docker-r-2-7:0.1",
+        "helloWorld_R2.15_Rscript": "genepattern/docker-r-2-15:0.1",
+        "helloWorld_R3.2_Rscript": "genepattern/docker-r-3-2:0.1",
+
+        # HierarchicalClustering (>= v7) requires python
+        "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5",
+
+        # HierarchicalClustering (<= v6) prefers java/1.7
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:6": "genepattern/docker-java17:0.12",
+        "HierarchicalClustering:5.4": "genepattern/docker-java17:0.12",
+
+        "HierarchicalClusteringImage": "genepattern/docker-java17:0.12",
+        Hisat2Aligner: "genepattern/docker-hisat2:0.23",
+        Hisat2Indexer: "genepattern/docker-hisat2:0.23",
+        KNN: "genepattern/docker-java17:0.12",
+
+        "MinfiPreprocessing": "genepattern/docker-r-3-4-methylationanalysis:0.15",
+
+        # MutSigCV (circa v1.2) requires matlab_mcr/2013a
+        "MutSigCV:1.2": "genepattern/docker-mutsigcv:0.1",
+
+        NearestTemplatePrediction: "genepattern/docker-r-3-13:0.1",
+        NMFConsensus: "genepattern/docker-r-2-5:0.1",
+        PreprocessDataset: "genepattern/docker-java17:0.12",
+        PreprocessReadCounts: "genepattern/docker-r-3-13:0.1",
+        SNPFileCreator: "genepattern/docker-java17:0.12",
+        ssGSEAProjection: "genepattern/docker-r-2-15:0.1",
+        STAR.aligner: "genepattern/docker-staraligner:v0.43",
+        STAR.indexer: "genepattern/docker-staraligner:v0.43",
+        SubMap: "genepattern/docker-r-2-5:0.1",
+        SurvivalCurve: "genepattern/docker-r-2-7:0.1",
+        SVM: "genepattern/docker-r-2-5:0.1",
+        TestStep: "genepattern/docker-java17:0.12",
+ 
+        # TopHat v8.9
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.9": "genepattern/docker-tophat:0.1",
+        # TopHat v8.11
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.11": "genepattern/docker-tophat:0.1",
+
+        Tophat: "genepattern/docker-tophat:0.1",
+        "txt2odf": "genepattern/docker-python36:0.5",
+        UniquifyLabels: "genepattern/docker-java17:0.12",
+        "which_R3.2": "genepattern/docker-r-3-2:0.1",
+
+    }
+
+
