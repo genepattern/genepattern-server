@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -106,12 +107,16 @@ public class TestMysqlConfig {
             }
         }
     }
-    
+
+    public static Connection getTestDbConnection() throws SQLException {
+        final String jdbcUrl="jdbc:mysql://"+dbHost+":3306/"+dbName;
+        return DriverManager.getConnection(jdbcUrl, dbName, dbName);
+    }
+
     protected static void testDbConnection(final String dbHost, final String dbName) throws SQLException {
         Connection conn=null;
         try {
-            final String jdbcUrl="jdbc:mysql://"+dbHost+":3306/"+dbName;
-            conn = DriverManager.getConnection(jdbcUrl, dbName, dbName);
+            conn = getTestDbConnection();
         }
         catch (Throwable t) {
             throw t;
@@ -201,6 +206,34 @@ public class TestMysqlConfig {
         SchemaUpdater.updateDbSchemaVersion(mgr, schemaPrefix, mockSchemaFile);
         assertEquals("after update", updatedVersion, SchemaUpdater.getDbSchemaVersion(mgr));
         SchemaUpdater.updateDbSchemaVersion(mgr, origVersion);
+    }
+    
+    @Test
+    public void _06_check_task_docker_image_view() throws SQLException {
+        Connection conn=null;
+        try {
+            conn = getTestDbConnection();
+            String selectTableSQL = "SELECT * from TASK_DOCKER_IMAGE";
+            final Statement statement = conn.createStatement();
+            final ResultSet rs = statement.executeQuery(selectTableSQL);
+            int columnCount=rs.getMetaData().getColumnCount();
+            assertEquals("columnCount", 4, columnCount);
+            assertEquals("columnName[1]", "TASK_NAME", rs.getMetaData().getColumnName(1));
+            assertEquals("columnName[2]", "LSID_VERSION", rs.getMetaData().getColumnName(2));
+            assertEquals("columnName[3]", "DOCKER_IMAGE", rs.getMetaData().getColumnName(3));
+            assertEquals("columnName[4]", "LSID", rs.getMetaData().getColumnName(4));
+        }
+        catch (SQLException e) {
+            throw e;
+        }
+        catch (Throwable t) {
+            throw t;
+        }
+        finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
     }
 
 }

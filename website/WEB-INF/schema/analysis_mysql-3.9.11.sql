@@ -181,3 +181,26 @@ BEGIN
   from JOB_RUNNER_JOB where `gp_job_no` = OLD.job_no\;
 END;
 
+--
+-- create TASK_DOCKER_IMAGE view 
+--   to make it easier to query the job.docker.image for
+--   all installed modules
+-- 
+create or replace view TASK_DOCKER_IMAGE as 
+select 
+  TASK_NAME,
+  substring_index(lsid, ':', -1) as "LSID_VERSION",
+  substring_index(
+    substring_index(
+      taskinfoattributes, 
+      'job.docker.image">\n<object>', 
+      -1
+    ), 
+    '</object>', 
+    1
+  ) as "DOCKER_IMAGE",
+  LSID
+from 
+  TASK_MASTER 
+where 
+  TASKINFOATTRIBUTES like '%job.docker.image%'
