@@ -119,22 +119,4 @@ public class TestAwsS3Filter {
         assertCustom(awsS3filter);
     }
 
-//    @Test
-//    public void parse_config_example_awsbatch() throws Throwable {
-//        final File configFile=new File(Util.awsbatchConfDir(),"config_example_awsbatch.yaml");
-//
-//        final GpConfig gpConfig=Util.initGpConfig(configFile);
-//        assertNotNull(gpConfig);
-//        final GpContext serverContext=GpContext.getServerContext();
-//        
-//        assertEquals("default executorId", 
-//            "AWSBatch",
-//            gpConfig.getExecutorId(serverContext));
-//        
-//        //final Value s3UploadFilter=gpConfig.getValue(serverContext,PROP_JOB_AWSBATCH_S3_UPLOAD_FILTER);
-//        //assertNotNull("expecting non-null "+PROP_JOB_AWSBATCH_S3_UPLOAD_FILTER, s3UploadFilter); 
-//        //final AwsS3Filter awsS3filter=AwsS3Filter.initAwsS3Filter(gpConfig, serverContext);
-//        //assertCustom(awsS3filter);
-//    }
-
 }
