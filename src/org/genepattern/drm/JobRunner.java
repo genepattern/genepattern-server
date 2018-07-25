@@ -157,6 +157,37 @@ public interface JobRunner {
      */
     public static final String PROP_DOCKER_IMAGE="job.docker.image";
     
+    /**
+     * Set 'job.docker.image.default' in the config file for legacy modules which do not set 
+     * 'job.docker.image' in the manifest. Use this instead of adding 'job.docker.image' to the 
+     * config file because config file properties take precedence over manifest file properties.
+     * Example:
+     *   job.docker.image.default: genepattern/docker-default:1
+     */
+    public static final String PROP_DOCKER_IMAGE_DEFAULT="job.docker.image.default";
+
+    /**
+     * Set 'job.docker.image.lookup' in the config file for legacy modules which do not set
+     * the 'job.docker.image' in the manifest. 
+     * Example:
+     * <pre>
+    job.docker.image.lookup: {
+        # {taskName:version} : {dockerImage}
+        "ExampleLookup:1" : "genepattern/docker-example:1",
+      
+        # {lsid} : {dockerImage}
+        "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2",
+      
+        # {lsid_no_version} : {dockerImage}
+        "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3",
+        
+        # {taskName} : {dockerImage}
+        "ExampleLookup": "genepattern/docker-example:1-from-lookup",
+    }
+    </pre>
+     */
+    public static final String PROP_DOCKER_IMAGE_LOOKUP="job.docker.image.lookup";
+    
     /** 
      * Service shutdown, clean up resources. 
      * This is called when the parent JobExecutor is shut down.
