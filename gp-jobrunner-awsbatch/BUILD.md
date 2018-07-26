@@ -7,6 +7,13 @@
 This creates a number of single-file distributions, via the maven assembly plugin. For example,
   gp-awsbatch-0.2.1-snapshot.6-bin.zip
   gp-awsbatch-0.2.1-snapshot.6-bin.tar.gz
+  
+#### To view the junit report
+```
+    mvn surefire-report:report
+    mvn site -DgenerateReports=false
+    open target/site/surefire-report.html
+```
 
 ### To deploy the latest build snapshot to the server
 for example, v0.2.1, build 6

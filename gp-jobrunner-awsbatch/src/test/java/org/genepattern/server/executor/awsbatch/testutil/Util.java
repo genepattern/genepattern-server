@@ -3,6 +3,9 @@ package org.genepattern.server.executor.awsbatch.testutil;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -77,5 +80,23 @@ public class Util {
     public static File getAwsbatchConfDir() {
         return initFile("AWSBATCH_CONF_DIR", "gp-jobrunner-awsbatch/src/main/conf");
     }
+
+    /**
+     * Load a file from the standard maven location:
+     *     gp-jobrunner-awsbatch/src/test/resources
+     */
+    public static File getTestResource(final Class<?> clazz, final String filename) throws UnsupportedEncodingException {
+        final URL url=clazz.getResource(filename);
+        if (url==null) {
+            fail("test resource not found: "+filename);
+        }
+        final File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
+        if (!file.exists()) {
+            fail("test resource file doesn't exist: "+file);
+        }
+        return file;
+    }
+
+
 
 }

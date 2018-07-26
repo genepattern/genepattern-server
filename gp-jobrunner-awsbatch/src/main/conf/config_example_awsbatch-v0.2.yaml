@@ -1,0 +1,407 @@
+#
+# config_example_awsbatch-v0.2.yaml
+#   Example AWS Batch Job Runner configuration
+# Use this as a reference when editing your site's config_custom.yaml file
+#
+default.properties:
+    # set AWSBatch as the default executor
+    executor: "AWSBatch"
+
+    #
+    # awsbatch v0.2 api 
+    #   (prototype for 'server-dev' group)
+    #
+    "aws-batch-script": "runOnBatch-v0.3.sh"
+
+    # set default GP_LOCAL_PREFIX
+    "job.awsbatch.dest-prefix": "/local"
+    "job.docker.bind_mounts": [ "/opt/gpbeta/gp_home" ]
+
+    #
+    # 'job.awsbatch.job-definition-name'
+    #   The AWS Batch job definition for each job, this is pinned to the 
+    # docker in docker container
+    #
+    "job.awsbatch.job-definition-name": "S3ModuleWrapper"
+
+    #
+    # 'job.docker.image.default'
+    #   The default 'job.docker.image' to use when ...
+    #     ... not declared in the manifest file, AND
+    #     ... not customized in the config file
+    #
+    "job.docker.image.default": "genepattern/docker-java17:0.12"
+
+    #
+    # 'job.docker.image.lookup'
+    #   Lookup table to use when 'job.docker.image' is not declared in the manifest file
+    #
+    # Template:
+    #   {taskName}         : {dockerImage}
+    #   {taskName:version} : {dockerImage}
+    #   {lsid}             : {dockerImage}
+    #   {lsid_no_version}  : {dockerImage}
+    #
+    # Examples:
+    #   {taskName} : {dockerImage}
+    #     "ExampleLookup": "genepattern/docker-example:1-from-lookup",
+    #
+    #   {taskName:version} : {dockerImage}
+    #     "ExampleLookup:1" : "genepattern/docker-example:1",
+    # 
+    #   {lsid} : {dockerImage}
+    #     "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2",
+    # 
+    #   {lsid_no_version} : {dockerImage}
+    #     "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3",
+    #
+    # Lookup table for legacy modules based on cloud.genepattern.org circa July 2018
+    #
+    job.docker.image.lookup: {
+
+        "ABSOLUTE": "genepattern/docker-r-2-15",
+        "ABSOLUTE.review": "genepattern/docker-r-2-15",
+        "ABSOLUTE.summarize": "genepattern/docker-r-2-15",
+        "CART": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation": "genepattern/docker-r-2-5:0.1",
+        "CBS": "genepattern/docker-r-2-15:0.1",
+        "Chip2Chip": "genepattern/docker-java18:0.1",
+        "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
+        "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
+        # ConstellationMap v1.4.6 and v1.4.9 set in job.docker.image
+        # ConstellationMap (<= v1.4.5) must use genepattern/docker-r-3-0-conmap:0.1
+        "ConstellationMap:1.4.5": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.4": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConvertLineEndings:2": "genepattern/docker-perl52:0.1",
+        "ConvertLineEndings:1": "genepattern/docker-perl52:0.1",
+
+        # Note: r/2.0 runs in the r/2.5 container
+        "CoxRegression:1.3": "genepattern/docker-r-2-5:0.1",
+
+        "DESeq2:0.4.2": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4.1": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4": "genepattern/docker-r-3-2:0.1",
+
+        "DiffEx:0.1.10": "genepattern/docker-python36:0.5",
+        "ExpressionFileCreator": "genepattern/docker-r-2-15:0.1",
+        "ExtractComparativeMarkerResults": "genepattern/docker-java17:0.12",
+        "FLAMEPreprocess": "genepattern/docker-r-2-7:0.1",
+
+        # GISTIC_2.0, (2.0.23) v6.14 custom config
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00125:6.14": "genepattern/docker-gistic:0.12",
+
+        # GSEA >= v19 requires java/1.8 
+        #      >= v19.0.25 must be set in the manifest
+        "GSEA:19.0.19": "genepattern/docker-java18:0.1",
+        "GSEA:19.0.18": "genepattern/docker-java18:0.1",
+        # GSEAv18 (<= v18), requires java/1.7
+        "GSEA:18": "genepattern/docker-java17:0.12",
+
+        "GSEALeadingEdgeViewer:5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (>= v6) requires java/1.8
+        #   >= v6.0.11, must be set in the manifest file
+        "GSEAPreranked:6.0.5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (<= v5) prefers java/1.7
+        "GSEAPreranked:5": "genepattern/docker-java17:0.12",
+
+        "helloWorld_R2.5_Rjava": "genepattern/docker-r-2-5:0.1",
+        "helloWorld_R2.7": "genepattern/docker-r-2-7:0.1",
+        "helloWorld_R2.15_Rscript": "genepattern/docker-r-2-15:0.1",
+        "helloWorld_R3.2_Rscript": "genepattern/docker-r-3-2:0.1",
+
+        # HierarchicalClustering (>= v7) requires python
+        #   (>= v7.17), must be set in the manifest 
+        #   (<= v6) prefers java/1.7
+        "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5",
+        "HierarchicalClustering:6": "genepattern/docker-java17:0.12",
+        "HierarchicalClustering:5.4": "genepattern/docker-java17:0.12",
+
+        "HierarchicalClusteringImage": "genepattern/docker-java17:0.12",
+        "Hisat2Aligner:0.72": "genepattern/docker-hisat2:0.23",
+        "Hisat2Indexer:0.2": "genepattern/docker-hisat2:0.23",
+        "Hisat2Indexer:0.1": "genepattern/docker-hisat2:0.23",
+        "KNN:4": "genepattern/docker-java17:0.12",
+        "KNN:2": "genepattern/docker-java17:0.12",
+
+        #"MinfiPreprocessing": "genepattern/docker-r-3-4-methylationanalysis:0.15",
+
+        # MutSigCV (circa v1.2) requires matlab_mcr/2013a
+        "MutSigCV:1.2": "genepattern/docker-mutsigcv:0.1",
+
+        NearestTemplatePrediction: "genepattern/docker-r-3-13:0.1",
+        NMFConsensus: "genepattern/docker-r-2-5:0.1",
+        PreprocessDataset: "genepattern/docker-java17:0.12",
+        PreprocessReadCounts: "genepattern/docker-r-3-13:0.1",
+        SNPFileCreator: "genepattern/docker-java17:0.12",
+        
+        # ssGSEAProjection (>= v9.0.10), must set in manifest
+        "ssGSEAProjection:9.0.6": "genepattern/docker-r-2-15:0.1",
+
+        STAR.aligner: "genepattern/docker-staraligner:v0.43",
+        STAR.indexer: "genepattern/docker-staraligner:v0.43",
+
+        "SubMap:3": "genepattern/docker-r-2-5:0.1",
+        "SurvivalCurve:3": "genepattern/docker-r-2-7:0.1",
+        "SurvivalCurve:2": "genepattern/docker-r-2-7:0.1",
+        "SVM:4": "genepattern/docker-r-2-5:0.1",
+        "TestStep:0.3": "genepattern/docker-java17:0.12",
+
+        # TopHat, v9.00
+        "Tophat:9.00": "genepattern/docker-tophat:0.1",
+ 
+        # TopHat v8.11
+        "TopHat:8.11": "genepattern/docker-tophat:0.1",
+
+        # TopHat v8.9
+        "TopHat:8.9": "genepattern/docker-tophat:0.1",
+
+        "txt2odf:2": "genepattern/docker-python36:0.5",
+        "UniquifyLabels:1": "genepattern/docker-java17:0.12",
+        "which_R3.2": "genepattern/docker-r-3-2:0.1",
+    }
+
+    #
+    # 'job.docker.image'
+    #
+    #   The 'job.docker.image' should be set in the manifest file
+    # for each module.
+    #
+    #   When 'job.docker.image' is not in the manifest file, the following 
+    # rules are used to determine which container to use ...
+    #
+    #   user.properties -> <user> -> module.properties -> [<name_no_version> | <lsid> | <lsid_no_version>] : job.docker.image
+    #   user.properties -> job.docker.image.default
+    #
+    # Note:
+    #   user.properties -> job.docker.image
+
+    # Recommendation:
+    #   Use the defaults in the 'job.docker.image.lookup' table. 
+    #
+    # For special-cases, you can set the 'job.docker.image' on a per-user, per-group basis.
+    # 
+    # 
+    # 
+    #   (1) use a custom value if set in the config file
+    #   (2) use 'job.docker.image.default', when no custom value is set
+    #   (3) use built-in default (compiled into Java source code) if not set elsewhere
+    #   
+    # To set a custom 'job.docker.image' by user ...
+
+executors:
+    "AWSBatch":
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.server.executor.awsbatch.AWSBatchJobRunner
+            jobRunnerName: AWSBatchJobRunner
+
+            # when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            useDynamicDelay: true
+            # initial polling interval for job status (in ms)
+            minDelay: 1000
+            # max polling interval for job status (in ms)
+            #   when 'useDynamicDelay' is true
+            maxDelay: 60000
+
+        default.properties:
+            # workaround for built-in commands which use the <env-custom> substitution
+            env-custom: ""
+            # workaround, run-with-env.sh exec flag is not set in the docker container
+            "run-with-env": "bash <wrapper-scripts>/run-with-env.sh"
+
+            # job.memory, default: (not set)
+            job.memory: 2 Gb
+            
+            # job.walltime, default: (not set)
+            #   the runtime limit for the job in d-hh:mm:ss format 
+            # set to 2 hours
+            job.walltime: "02:00:00"
+
+            # job.logFile, default: ".rte.out"
+            #   name of hidden log file added to each job result directory
+            # Example:
+            #   job.logFile: ".rte.out"
+
+            # aws-profile, default: (not set)
+            #   see: http://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
+            # Example:
+            #   aws-profile: "genepattern"
+            
+            # job.docker.bind_mounts
+            #   for docker-in-docker, must define a list of 1 or more directory paths to
+            #   mount from the outer container into the inner container, e.g.
+            #
+            #     docker run ... --mount type=bind,src=<job.docker.bind_mounts[0]>,dst=<job.docker.bind_mounts[0]>
+            #                    --mount type=bind,src=<job.docker.bind_mounts[1]>,dst=<job.docker.bind_mounts[1]>
+            #
+            # Example: a single mount
+            #   job.docker.bind_mounts: "/opt/gpbeta/gp_home"
+            # Example: equivalent, a single mount as a 1 item list
+            #   job.docker.bind_mounts: [ "/opt/gpbeta/gp_home" ]
+            # Example: a list of mounts
+            #   job.docker.bind_mounts: [ "/opt/gpbeta/gp_home", "/opt/gpbeta/shared_data" ]
+
+            # aws-s3-root
+            #   s3 prefix for intermediate storage of data files
+            # Example:
+            #   aws-s3-root: "s3://gp-example"
+            #
+            #   A note on data file transfer
+            #     step 1: copy input files and resources into S3
+            #       gp.local -> s3 
+            #     step 2: pull files from s3 into the docker container
+            #       docker.local <- s3
+            #     step 3: push files from docker container into s3
+            #       docker.local -> s3
+            #     step 4: pull files from s3 into genepattern 
+            #       gp.local <- s3
+            #
+
+            # aws-job-name-prefix, default=GP_Job_
+            # Example:
+            #   aws-job-name-prefix: "example_job_"
+
+            # job.queue
+            #   Set this to the name of an AWS Batch queue.
+            #
+            # Example:
+            job.queue: "job-queue-default"
+
+            # aws-batch-script-dir, default: <wrapper-scripts>/aws_batch
+            #   aws-cli wrapper scripts
+            # the path is relative to <wrapper-scripts> (preferred)
+            # it can be fully qualified (when needed)
+            # 
+            # Examples:
+            #   # custom relative path
+            #   aws-batch-script-dir: "aws_batch_custom"
+            #   # fully qualified path, for example when developing locally
+            #   aws-batch-script-dir: "/Users/test_user/genepattern-server/gp-jobrunner-awsbatch/src/main/scripts"
+            
+            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch-v0.3.sh
+            #   the job submission aws cli wrapper script
+            # relative to <aws-batch-script-dir>, can be fully qualified (when needed)
+            # Examples:
+            #   # default
+            #   aws-batch-script: "runOnBatch-v0.3.sh"
+            #   # for debugging
+            #   aws-batch-script: "runOnBatch-debug.sh"
+            #   # while developing the next api version
+            #   aws-batch-script: "runOnBatch-v0.3-develop.sh"
+            
+            # job.awsbatch.job-definition-name, default: (not set)
+            #   Set the AWS Batch Job Definition for a job. The docker image is declared
+            # in the job definition. This is configured on a per module basis in the 
+            # 'module.properties' section
+            job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8"
+
+            # executor.props
+            # 
+            #executor.props: "gp-core/1.0"
+            
+            # job.awsbatch.s3-upload-filter, (optional), default: (not set)
+            #   Workaround to skip aws s3 sync for some external URLs
+            # Example: 
+            #     job.awsbatch.s3-upload-filter: [
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2017-12-15{,/**}",
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/ccmi_tutorial/2018-03-14{,/**}",
+            #         "**/.cache/uploads/cache/datasets.genepattern.org/data/TCGA_BRCA/BRCA_HTSeqCounts{,/**}"
+            #     ]
+            
+            # job.awsbatch.sync-from-s3-script, (optional), default: aws-sync-from-s3.sh
+            #   for v0.2 api
+            #   set the name of the script to run in the outer container which pulls required data files
+            #   from an s3 bucket into the compute node file system
+            # Example:
+            #     "job.awsbatch.sync-from-s3-script": "aws-sync-from-s3.sh"
+            
+            
+
+# executor.properties
+#   Map of <env-name> : <env-properties>
+#
+# Each module[:version] is optionally associated with a 
+# named environment (<env-name>).
+# Runtime properties can be defined (or overloaded) in the
+# associated map (<env-properties>).
+#
+#
+# For AWS Batch integration, define module runtime environments here. 
+# Each environment is associated with an AWS Batch Job Definition.
+#
+# Note: The docker image is set in the Job Definition, which is
+#   (currently) created via the AWS Console.
+#
+# Template: 
+#     # define a runtime environment in the 'executor.properties' map
+#     "<env-name>" : {
+#         "job.docker.image": "<docker-image>",
+#         "job.awsbatch.job-definition-name": "<job.awsbatch.job-definition-name>",
+#         ... additional customization ... 
+#     } 
+#
+#     # associate an env-name in the 'module.properties' map
+#     "<module-name|module-lsid>":
+#         executor.props: "<env-name>"
+# Example:
+#     # in executor.properties ...
+#     "gp-core/1.0": {
+#         job.docker.image: "genepattern/docker-java17:0.12",
+#         job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+#     },
+#
+#     # in module.properties ...
+#     "ConvertLineEndings":
+#         executor.props: "gp-core/1.0"
+#
+executor.properties: {
+    "gp-core/1.0": {
+        job.docker.image: "genepattern/docker-java17:0.12",
+        job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+    },
+
+    #########################################
+    # language environments
+    #########################################
+
+    "java/1.8": { 
+        job.docker.image: "genepattern/docker-java18:0.1",
+        job.awsbatch.job-definition-name: "Java18_Oracle_Generic:8",
+    },
+
+    "java/1.7": { 
+        job.docker.image: "genepattern/docker-java17:0.12",
+        # JTL 02/16/18 changing this to use version 8 which has the image on AWS ECR
+        job.awsbatch.job-definition-name: "Java17_Oracle_Generic:8",
+    },
+
+}
+
+module.properties:
+    # "Example_v3.1"
+    "urn:lsid:example.com:example.module.analysis:00002:3.1":
+        job.docker.image: "genepattern/docker-example:3-custom"
+
+    # GSEA >= v19 requires java/1.8 
+    "GSEA":
+        executor.props: "java/1.8"
+        job.memory: 8 Gb
+        java_flags: -Xmx8g
+        job.queue: "job-queue-30gb-disk"
+
+    # GSEAv18 (<= v18), requires java/1.7
+    #   Note: declaration by lsid version inherit all properties declared by name
+    "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00072:18":
+        executor.props: "java/1.7"
+
+    #
+    # Mock module config for junit tests
+    #
+    "MockBigMemoryModule":
+        executor.props: "java/1.8"
+        job.memory: 512Gb
+        job.queue: "job-queue-big-memory"
