@@ -1,0 +1,111 @@
+#
+# config_test_job_docker_image.yaml
+#   for junit test 
+#
+default.properties:
+    executor: "AWSBatch"
+    
+    #
+    # tests for job.docker.image in 'default.properties'
+    #
+    
+    # Note: executors -> {executorId} -> default.properties take precedence
+    #
+
+    #
+    # 'job.docker.image.default'
+    #   for testing set it to a different value than the built-in default
+    #
+    "job.docker.image.default": "genepattern/docker-default:1-custom"
+   
+    job.docker.image.lookup: {
+      # {taskName_no_version} : {dockerImage}
+      "ExampleLookup": "genepattern/docker-example:1-lookup-name-no-version",
+
+      # {taskName:version}    : {dockerImage}
+      "ExampleLookup:1" : "genepattern/docker-example:1",
+      
+      # ExampleLookup
+      # {lsid}                : {dockerImage}
+      "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2",
+
+      # ExampleLookup    
+      # {lsid_no_version}     : {dockerImage}
+      "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3",
+      
+      # Example 
+      "Example:3.1": "genepattern/docker-example:3.1-from-lookup"
+    }
+
+executors:
+    "AWSBatch":
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.server.executor.awsbatch.AWSBatchJobRunner
+            jobRunnerName: AWSBatchJobRunner
+        
+        default.properties:
+            #
+            # 'job.docker.image.default'
+            #    for testing AWSBatch executor set it to a different value than the top level default
+            #
+            "job.docker.image.default": "genepattern/docker-default:1-awsbatch-default"
+   
+            job.docker.image.lookup: {
+              # {taskName_no_version} : {dockerImage}
+              "ExampleLookupByName": "genepattern/docker-example:awsbatch-lookup-name-no-version",
+
+              # {taskName:version}    : {dockerImage}
+              "ExampleLookup:1" : "genepattern/docker-example:1-awsbatch-lookup-name-version",
+              
+              # ExampleLookup
+              # {lsid}                : {dockerImage}
+              "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2-awsbatch-lookup-lsid",
+
+              # ExampleLookup    
+              # {lsid_no_version}     : {dockerImage}
+              "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3-awsbatch-lookup-lsid-no-version",
+
+              # ExampleLookup (this one is ignored because taskName_no_version takes precedence)
+              # {taskName_no_version} : {dockerImage}
+              "ExampleLookup": "genepattern/docker-example:awsbatch-lookup-name-no-version-ignore",
+              
+              # Example 
+              "Example:3.1": "genepattern/docker-example:3.1-awsbatch-lookup-lsid"
+            }
+
+module.properties:
+    # "Example_v2.1"
+    "urn:lsid:example.com:example.module.analysis:00002:2.1":
+        job.docker.image.default: "genepattern/docker-example:2.1-custom"
+
+    # "Example_v3.1"
+    "urn:lsid:example.com:example.module.analysis:00002:3.1":
+        job.docker.image: "genepattern/docker-example:3.1-custom"
+
+
+group.properties:
+    group_custom:
+        "job.docker.image.default": "genepattern/docker-default:1-custom-group"
+    
+user.properties:
+    test_user_custom_exec:
+        "executor": "Custom"
+
+    test_user_custom:
+        "job.docker.image.default": "genepattern/docker-default:1-custom-user"
+    
+    user_custom:
+        job.docker.image.default: "genepattern/docker-test"
+        module.properties:
+            # name no version (ignored, because lsid no version takes precedence)
+            module_22:
+                job.docker.image.default: "genepattern/docker-module-22:name-no-version-ignored"
+            # lsid no version
+            "urn:lsid:example.com:example.module.analysis:00022":
+                job.docker.image.default: "genepattern/docker-module-22:lsid-no-version"
+            # lsid version
+            "urn:lsid:example.com:example.module.analysis:00022:1":
+                job.docker.image: "genepattern/docker-module-22:1"
+                job.docker.image.default: "genepattern/docker-module-22:1-ignored"
+        

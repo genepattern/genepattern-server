@@ -141,7 +141,7 @@ public class UserGroups implements IGroupMembershipPlugin {
             return this;
         }
 
-        protected Builder addUserToGroup(final String userId, final String groupId) {
+        public Builder addUserToGroup(final String userId, final String groupId) {
             users.put(userId, groupId);
             groups.put(groupId, userId);
             return this;

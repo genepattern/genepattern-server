@@ -3,13 +3,18 @@
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpConfigLoader;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -100,5 +105,37 @@ public class ConfigUtil {
         }
         return props;
     }
+    
+    public static GpConfig initGpConfig(final File configFile) throws Throwable {
+        return initGpConfig(configFile, (IGroupMembershipPlugin)null);
+    }
+
+    /**
+     * factory method, create a new GpConfig instance from the given config_yaml file.
+     * Initialize a GpConfig instance from a config_yaml file.
+     * The returned value is not a mock.
+     * 
+     * Note: this automatically turns off log4j logging output.
+     */
+    public static GpConfig initGpConfig(final File configFile, final IGroupMembershipPlugin groupInfo) throws Throwable {
+        if (!configFile.exists()) { 
+            fail("configFile doesn't exist: "+configFile);
+        }
+        LogManager.getRootLogger().setLevel(Level.OFF);
+        final File webappDir=new File("website").getAbsoluteFile();
+        final GpConfig.Builder b=new GpConfig.Builder();
+        //final GpConfig gpConfig=new GpConfig.Builder()
+        b.webappDir(webappDir);
+        b.configFile(configFile);
+        if (groupInfo != null) {
+            b.groupInfo(groupInfo);
+        }
+        final GpConfig gpConfig=b.build();
+        if (gpConfig.hasInitErrors()) {
+            throw gpConfig.getInitializationErrors().get(0);
+        }
+        return gpConfig;
+    }
+
 
 }
