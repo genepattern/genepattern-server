@@ -1767,7 +1767,6 @@ public class GenePatternAnalysisTask {
         }
         
         JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(mgr, gpConfig, jobInfo.getUserId(), jobInfo.getJobNumber());
-        cleanupInputFiles(jobDir, jobInfoWrapper);
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
         boolean checkExitValue = ServerConfigurationFactory.instance().getGPBooleanProperty(jobContext, 
@@ -1934,52 +1933,6 @@ public class GenePatternAnalysisTask {
             return true;
         }
         return false;        
-    }
-
-    /**
-     * Delete the files from the job results directory which were added before job execution.
-     * For example, external urls are downloaded into the job results directory and must be cleaned up before processing the job results.
-     * 
-     * @param jobDir, the job results directory, e.g. GenePatternServer/Tomcat/webapps/gp/jobResults/<job_no>
-     * @param jobInfoWrapper
-     * 
-     * @deprecated should re-implement this method without use of the JobInfoWrapper class
-     */
-    private static void cleanupInputFiles(File jobDir, JobInfoWrapper jobInfoWrapper) {
-        for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
-            if (inputFile.isUrl()) {
-                if (inputFile.isExternalLink()) {
-                    log.debug("isExternalLink: "+inputFile.getValue());
-                    String path=null;
-                    final URL url = inputFile.getUrl();
-                    if (url==null) {
-                        log.error("can't initialize url for input file: "+inputFile.getValue());
-                    }
-                    else {
-                        try {
-                            final URI uri=url.toURI();
-                            path=uri.getPath();
-                        } 
-                        catch (URISyntaxException e) {
-                            log.error("can't initialize url for input file: "+inputFile.getValue(), e);
-                        }
-                        if (path != null) {
-                            String filename = path;
-                            int idx = path.lastIndexOf('/');
-                            if (idx > 0) {
-                                ++idx;
-                                filename = path.substring(idx);
-                            }
-                            File inputFileToDelete = new File(jobDir, filename);
-                            if (inputFileToDelete.canWrite()) {
-                                boolean deleted = inputFileToDelete.delete();
-                                log.debug("deleted input file from job results directory, '"+inputFileToDelete.getAbsolutePath()+"', deleted="+deleted);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**

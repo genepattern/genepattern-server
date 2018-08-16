@@ -1186,7 +1186,9 @@ public class PipelineHandler {
      * @param inheritedInputParams
      * @return
      */
-    private static Map<String,String> updateInheritedParamValues(final HibernateSessionManager mgr, final AnalysisDAO dao, JobInfo[] childJobs, final List<ParameterInfo> inheritedInputParams) {
+    private static Map<String,String> updateInheritedParamValues(final HibernateSessionManager mgr, final AnalysisDAO dao, JobInfo[] childJobs, final List<ParameterInfo> inheritedInputParams) 
+    throws PipelineException 
+    {
         final Map<String,String> rval=new LinkedHashMap<String,String>();
         for(final ParameterInfo inputParam : inheritedInputParams) {
             final String url = getInheritedFilename(mgr, dao, childJobs, inputParam);
@@ -1199,7 +1201,7 @@ public class PipelineHandler {
                     //ignore
                 }
                 else {
-                    log.error("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+inputParam.getName());
+                    throw new PipelineException("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+inputParam.getName());
                 }
             }
         } 

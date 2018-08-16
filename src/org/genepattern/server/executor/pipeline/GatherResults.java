@@ -77,40 +77,6 @@ public class GatherResults {
         }
     };
 
-    final private Comparator<File> filepathComparator = new Comparator<File>() {
-        public int compare(File arg0, File arg1) {
-            if (arg0 == null) {
-                if (arg1 == null) {
-                    return 0;
-                }
-                //null is > than everything else
-                return 1;
-            }
-            return arg0.getPath().compareTo( arg1.getPath() );
-        }
-    };
-    
-//    final private Comparator<File> timestampComparator = new Comparator<File>() {
-//        public int compare(File arg0, File arg1) {
-//            if (arg0 == null) {
-//                if (arg1 == null) {
-//                    return 0;
-//                }
-//                //null is > than everything else
-//                return 1;
-//            }
-//            long t0 = arg0.lastModified();
-//            long t1 = arg1.lastModified();
-//            if (t0 < t1) {
-//                return -1;
-//            }
-//            if (t0 > t1) {
-//                return 1;
-//            }
-//            return 0;
-//        }
-//    };
-    
     final private Comparator<GpFilePath> gpFilePathComparator = new Comparator<GpFilePath>() {
         public int compare(GpFilePath arg0, GpFilePath arg1) {
             return filenameComparator.compare(arg0.getServerFile(), arg1.getServerFile());
@@ -119,10 +85,7 @@ public class GatherResults {
 
     /**
      * Gather all of the result files into a filelist, and output that list to a file.
-     * 
-     * Output a filelist to a file.
-     * 
-     * @return
+     * @return a filelist to a file
      */
     public GpFilePath writeFilelist() throws Exception {
         FileFilter nullFileFilter = null;
@@ -173,11 +136,31 @@ public class GatherResults {
         return gpFilePath;
     }
     
-    public static void writeFileList(File output, List<GpFilePath> files, boolean writeTimestamp) throws IOException {
-        FileWriter writer = null;
+    private static final boolean mkdirsIfNecessary(final File file) {
+        if (file==null) {
+            log.warn("Unexpected arg: file is null");
+            return false;
+        }
+        final File dir=file.getParentFile();
+        if (dir==null) {
+            log.warn("file.getParentFile is null");
+        }
+        if (dir != null) {
+            return dir.mkdirs();
+        }
+        return false;
+    }
+
+    public static void writeFileList(final File output, final List<GpFilePath> files, final boolean writeTimestamp) throws IOException {
         BufferedWriter out = null;
         try {
-            writer = new FileWriter(output);
+            final boolean mkdirs=mkdirsIfNecessary(output);
+            if (log.isDebugEnabled()) {
+                if (mkdirs) {
+                    log.debug("created output directory for file: "+output);
+                }
+            }
+            final FileWriter writer = new FileWriter(output);
             out = new BufferedWriter(writer);
             for(GpFilePath filePath : files) {
                 File file = filePath.getServerFile();
