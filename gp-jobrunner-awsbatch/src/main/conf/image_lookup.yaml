@@ -16,7 +16,7 @@
 
     #
     # 'job.docker.image.default'
-    #   The default value to use'job.docker.image' to use when ...
+    #   The default 'job.docker.image' to use when ...
     #     ... not declared in the manifest file, AND
     #     ... not customized in the config file
     #
@@ -49,7 +49,6 @@
     #
     job.docker.image.lookup: {
 
-        "ABasicModule": "genepattern/docker-python36:0.4",
         "ABSOLUTE": "genepattern/docker-r-2-15",
         "ABSOLUTE.review": "genepattern/docker-r-2-15",
         "ABSOLUTE.summarize": "genepattern/docker-r-2-15",
@@ -59,14 +58,22 @@
         "Chip2Chip": "genepattern/docker-java18:0.1",
         "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
         "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
-        "ConstellationMap": "genepattern/docker-r-3-0-conmap:0.1",
-        "ConumeeCNVAnalysis": "genepattern/docker-r-3-4-methylationanalysis:0.15",
-        "ConvertLineEndings": "genepattern/docker-perl52:0.1",
+        # ConstellationMap v1.4.6 and v1.4.9 set in job.docker.image
+        # ConstellationMap (<= v1.4.5) must use genepattern/docker-r-3-0-conmap:0.1
+        "ConstellationMap:1.4.5": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.4": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConvertLineEndings:2": "genepattern/docker-perl52:0.1",
+        "ConvertLineEndings:1": "genepattern/docker-perl52:0.1",
 
         # Note: r/2.0 runs in the r/2.5 container
-        "CoxRegression": "genepattern/docker-r-2-5:0.1",
+        "CoxRegression:1.3": "genepattern/docker-r-2-5:0.1",
 
-        "DESeq2": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4.2": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4.1": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4": "genepattern/docker-r-3-2:0.1",
+
         "DiffEx:0.1.10": "genepattern/docker-python36:0.5",
         "ExpressionFileCreator": "genepattern/docker-r-2-15:0.1",
         "ExtractComparativeMarkerResults": "genepattern/docker-java17:0.12",
@@ -76,18 +83,20 @@
         "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00125:6.14": "genepattern/docker-gistic:0.12",
 
         # GSEA >= v19 requires java/1.8 
-        GSEA: "genepattern/docker-java18:0.1",
+        #      >= v19.0.25 must be set in the manifest
+        "GSEA:19.0.19": "genepattern/docker-java18:0.1",
+        "GSEA:19.0.18": "genepattern/docker-java18:0.1",
         # GSEAv18 (<= v18), requires java/1.7
-        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00072:18": "genepattern/docker-java17:0.12",
+        "GSEA:18": "genepattern/docker-java17:0.12",
 
-        "GSEACollapseDataset": "genepattern/docker-java18:0.1",
-        "GSEALeadingEdgeReport": "genepattern/docker-java18:0.1",
+        "GSEALeadingEdgeViewer:5": "genepattern/docker-java18:0.1",
 
         # GSEAPreranked (>= v6) requires java/1.8
-        "GSEAPreranked": "genepattern/docker-java18:0.1",
+        #   >= v6.0.11, must be set in the manifest file
+        "GSEAPreranked:6.0.5": "genepattern/docker-java18:0.1",
 
         # GSEAPreranked (<= v5) prefers java/1.7
-        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00317:5": "genepattern/docker-java17:0.12",
+        "GSEAPreranked:5": "genepattern/docker-java17:0.12",
 
         "helloWorld_R2.5_Rjava": "genepattern/docker-r-2-5:0.1",
         "helloWorld_R2.7": "genepattern/docker-r-2-7:0.1",
@@ -95,18 +104,20 @@
         "helloWorld_R3.2_Rscript": "genepattern/docker-r-3-2:0.1",
 
         # HierarchicalClustering (>= v7) requires python
+        #   (>= v7.17), must be set in the manifest 
+        #   (<= v6) prefers java/1.7
         "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5",
-
-        # HierarchicalClustering (<= v6) prefers java/1.7
-        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:6": "genepattern/docker-java17:0.12",
+        "HierarchicalClustering:6": "genepattern/docker-java17:0.12",
         "HierarchicalClustering:5.4": "genepattern/docker-java17:0.12",
 
         "HierarchicalClusteringImage": "genepattern/docker-java17:0.12",
-        Hisat2Aligner: "genepattern/docker-hisat2:0.23",
-        Hisat2Indexer: "genepattern/docker-hisat2:0.23",
-        KNN: "genepattern/docker-java17:0.12",
+        "Hisat2Aligner:0.72": "genepattern/docker-hisat2:0.23",
+        "Hisat2Indexer:0.2": "genepattern/docker-hisat2:0.23",
+        "Hisat2Indexer:0.1": "genepattern/docker-hisat2:0.23",
+        "KNN:4": "genepattern/docker-java17:0.12",
+        "KNN:2": "genepattern/docker-java17:0.12",
 
-        "MinfiPreprocessing": "genepattern/docker-r-3-4-methylationanalysis:0.15",
+        #"MinfiPreprocessing": "genepattern/docker-r-3-4-methylationanalysis:0.15",
 
         # MutSigCV (circa v1.2) requires matlab_mcr/2013a
         "MutSigCV:1.2": "genepattern/docker-mutsigcv:0.1",
@@ -116,24 +127,79 @@
         PreprocessDataset: "genepattern/docker-java17:0.12",
         PreprocessReadCounts: "genepattern/docker-r-3-13:0.1",
         SNPFileCreator: "genepattern/docker-java17:0.12",
-        ssGSEAProjection: "genepattern/docker-r-2-15:0.1",
+        
+        # ssGSEAProjection (>= v9.0.10), must set in manifest
+        "ssGSEAProjection:9.0.6": "genepattern/docker-r-2-15:0.1",
+
         STAR.aligner: "genepattern/docker-staraligner:v0.43",
         STAR.indexer: "genepattern/docker-staraligner:v0.43",
-        SubMap: "genepattern/docker-r-2-5:0.1",
-        SurvivalCurve: "genepattern/docker-r-2-7:0.1",
-        SVM: "genepattern/docker-r-2-5:0.1",
-        TestStep: "genepattern/docker-java17:0.12",
- 
-        # TopHat v8.9
-        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.9": "genepattern/docker-tophat:0.1",
-        # TopHat v8.11
-        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00230:8.11": "genepattern/docker-tophat:0.1",
 
-        Tophat: "genepattern/docker-tophat:0.1",
-        "txt2odf": "genepattern/docker-python36:0.5",
-        UniquifyLabels: "genepattern/docker-java17:0.12",
+        "SubMap:3": "genepattern/docker-r-2-5:0.1",
+        "SurvivalCurve:3": "genepattern/docker-r-2-7:0.1",
+        "SurvivalCurve:2": "genepattern/docker-r-2-7:0.1",
+        "SVM:4": "genepattern/docker-r-2-5:0.1",
+        "TestStep:0.3": "genepattern/docker-java17:0.12",
+
+        # TopHat, v9.00
+        "Tophat:9.00": "genepattern/docker-tophat:0.1",
+ 
+        # TopHat v8.11
+        "TopHat:8.11": "genepattern/docker-tophat:0.1",
+
+        # TopHat v8.9
+        "TopHat:8.9": "genepattern/docker-tophat:0.1",
+
+        "txt2odf:2": "genepattern/docker-python36:0.5",
+        "UniquifyLabels:1": "genepattern/docker-java17:0.12",
         "which_R3.2": "genepattern/docker-r-3-2:0.1",
 
     }
 
 
+#
+# these items already declare their job.docker.image
+#
+    "ABasicModule:1": "genepattern/docker-python36:0.4"
+    "CoGAPS:0.1": "genepattern/docker-cogaps:v0.1-prerelease-1"
+    "ConstellationMap:1.4.6": "genepattern/docker-r-3-0-conmap"
+    "ConstellationMap:1.4.9": "genepattern/docker-r-3-0-conmap"
+    "ConumeeCNVAnalysis:1.0.0": "genepattern/docker-r-3-4-MethylationAnalysis:0.15"
+    "copyOfCoGAPS:1": "genepattern/docker-cogaps:v0.1-prerelease-1"
+    "devCoGAPS:1": "genepattern/docker-cogaps:v0.1-prerelease-1"
+    "devCoGAPS:2": "genepattern/docker-cogaps:v0.1-prerelease-1"
+
+    "GISTIC_2.0:6.15.7": "genepattern/docker-gistic:0.12"
+    "GISTIC_2.0:6.15.8": "genepattern/docker-gistic:latest"
+    "GISTIC_2.0:6.15.9": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.10": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.11": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.15": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.16": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.17": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.18": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.19": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.20": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.21": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.28": "genepattern/docker-gistic:0.13"
+    "GISTIC_2.0:6.15.4": "genepattern/docker-gistic:0.11"
+
+    "GSEA:19.0.25": "genepattern/docker-java18:0.1"
+    "GSEAPreranked:6.0.11": "genepattern/docker-java18:0.1"
+
+    "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5"
+    "HierarchicalClusteringImage:4": "genepattern/docker-java17:0.12"
+
+    "Hisat2Aligner:0.72": "genepattern/docker-hisat2:v0.12"
+    "Hisat2Indexer:0.1": "genepattern/docker-hisat2:v0.12"
+    "Hisat2Indexer:0.2": "genepattern/docker-hisat2:v0.12"
+
+    "MethylationCNVAnalysis:999999999": "genepattern/docker-r-3-4-methylationanalysis:0.15"
+    "MinfiPreprocessing:1.0.0": "genepattern/docker-r-3-4-MethylationAnalysis:0.15"
+
+    "SingleCellToolkit:0.1": "genepattern/docker-sctk"
+
+    "ssGSEAProjection:9.0.10": "genepattern/docker-r-2-15:0.1"
+
+    "TCGAImporter:3.2": "genepattern/docker-download-from-gdc:0.1"
+    "TCGAImporter:3.3": "genepattern/docker-download-from-gdc:0.1"
+    "TCGAImporter:3.4": "genepattern/docker-download-from-gdc:0.1"
