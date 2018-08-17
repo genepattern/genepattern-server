@@ -25,6 +25,7 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DockerImage;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -38,7 +39,6 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.util.LSID;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -450,53 +450,6 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         return cmdEnv; 
     }
-    
-    protected static final String getJobDockerImage(final GpConfig gpConfig, final GpContext jobContext) {
-        final String dockerImage=gpConfig.getGPProperty(jobContext, JobRunner.PROP_DOCKER_IMAGE);
-        if (!Strings.isNullOrEmpty(dockerImage)) {
-            return dockerImage;
-        }
-        log.warn("'"+PROP_DOCKER_IMAGE_LOOKUP+"' not set, trying '"+PROP_DOCKER_IMAGE_LOOKUP+"'");
-        final Value lookup=gpConfig.getValue(jobContext, PROP_DOCKER_IMAGE_LOOKUP);
-        if (lookup != null) {
-            if (!lookup.isMap()) {
-                log.error("ignoring '"+PROP_DOCKER_IMAGE_LOOKUP+"', expecting a value of type Map");
-            }
-            else {
-                final Map<?,?> map=lookup.getMap();
-                final String lsid=jobContext.getLsid();
-                final String taskName=jobContext.getTaskName();
-                String lsidNoVersion=null;
-                String taskNameVersion=null;
-
-                try {
-                    LSID lsidObj=new LSID(lsid);
-                    lsidNoVersion=lsidObj.toStringNoVersion();
-                    if (lsidObj.hasVersion()) {
-                        taskNameVersion=taskName+":"+lsidObj.getVersion();
-                    }
-                }
-                catch (Throwable t) {
-                    log.error(t);
-                }
-                if (map.containsKey(lsid)) {
-                    return map.get(lsid).toString();
-                }
-                else if (taskNameVersion != null && map.containsKey(taskNameVersion)) {
-                    return map.get(taskNameVersion).toString();
-                    
-                }
-                else if (lsidNoVersion != null && map.containsKey(lsidNoVersion)) {
-                    return map.get(lsidNoVersion).toString();
-                }
-                else if (map.containsKey(taskName)) {
-                    return map.get(taskName).toString();
-                } 
-            }
-        }
-        final String dockerImageDefault=gpConfig.getGPProperty(jobContext, JobRunner.PROP_DOCKER_IMAGE_DEFAULT, "genepattern/docker-java17:0.12");
-        return dockerImageDefault;
-    }
 
     /**
      * Get environment variables for the aws batch submit-job command line.
@@ -523,7 +476,7 @@ public class AWSBatchJobRunner implements JobRunner {
             );
         }
 
-        final String dockerImage=getJobDockerImage(gpJob.getGpConfig(), gpJob.getJobContext());
+        final String dockerImage=DockerImage.getJobDockerImage(gpJob.getGpConfig(), gpJob.getJobContext());
         if (log.isDebugEnabled()) {
             log.debug("+"+PROP_DOCKER_IMAGE+"'="+dockerImage);
         }

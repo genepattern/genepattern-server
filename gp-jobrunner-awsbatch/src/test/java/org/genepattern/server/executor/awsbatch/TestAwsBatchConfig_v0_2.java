@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.genepattern.drm.DockerImage;
 import org.genepattern.drm.Memory;
 import org.genepattern.drm.Walltime;
 import org.genepattern.server.config.GpConfig;
@@ -104,7 +105,7 @@ public class TestAwsBatchConfig_v0_2 {
         // urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:7.17
         assertEquals("getDockerImage, HCL_v7.17",
             "genepattern/docker-python36:0.5",
-            AWSBatchJobRunner.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:7.17"))
+            DockerImage.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:7.17"))
         );
     }
 
@@ -113,7 +114,7 @@ public class TestAwsBatchConfig_v0_2 {
         final String lsid="urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:6";
         assertEquals("custom HierarchicalClustering",
             "genepattern/docker-java17:0.12",
-            AWSBatchJobRunner.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", lsid))
+            DockerImage.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", lsid))
         );
     }
 
@@ -122,7 +123,7 @@ public class TestAwsBatchConfig_v0_2 {
         // urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:7.17
         assertEquals("getDockerImage, HCL_v5.4",
             "genepattern/docker-java17:0.12",
-            AWSBatchJobRunner.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:5.4"))
+            DockerImage.getJobDockerImage(gpConfig, initJobContext("HierarchicalClustering", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:5.4"))
         );
     }
 
