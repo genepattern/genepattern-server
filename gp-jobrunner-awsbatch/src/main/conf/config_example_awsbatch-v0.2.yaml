@@ -11,7 +11,7 @@ default.properties:
     # awsbatch v0.2 api 
     #   (prototype for 'server-dev' group)
     #
-    "aws-batch-script": "runOnBatch-v0.3.sh"
+    "aws-batch-script": "runOnBatch-v0.4.sh"
 
     # set default GP_LOCAL_PREFIX
     "job.awsbatch.dest-prefix": "/local"
@@ -282,16 +282,16 @@ executors:
             #   # fully qualified path, for example when developing locally
             #   aws-batch-script-dir: "/Users/test_user/genepattern-server/gp-jobrunner-awsbatch/src/main/scripts"
             
-            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch-v0.3.sh
+            # aws-batch-script, default: <aws-batch-script-dir>/runOnBatch-v0.4.sh
             #   the job submission aws cli wrapper script
             # relative to <aws-batch-script-dir>, can be fully qualified (when needed)
             # Examples:
             #   # default
-            #   aws-batch-script: "runOnBatch-v0.3.sh"
+            #   aws-batch-script: "runOnBatch-v0.4.sh"
             #   # for debugging
             #   aws-batch-script: "runOnBatch-debug.sh"
             #   # while developing the next api version
-            #   aws-batch-script: "runOnBatch-v0.3-develop.sh"
+            #   aws-batch-script: "runOnBatch-develop.sh"
             
             # job.awsbatch.job-definition-name, default: (not set)
             #   Set the AWS Batch Job Definition for a job. The docker image is declared

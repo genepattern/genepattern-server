@@ -77,7 +77,7 @@ import com.google.common.base.Strings;
                 #   'aws-batch-script-dir' path is relative to '<wrapper-scripts>'
                 #   'aws-batch-script' path is relative to 'aws-batch-script-dir'
                 aws-batch-script-dir: "aws_batch"
-                aws-batch-script: "runOnBatch-v0.3.sh" 
+                aws-batch-script: "runOnBatch-v0.4.sh" 
 </pre>
  *
  * Links:
@@ -128,7 +128,7 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final String PROP_AWS_BATCH_SCRIPT_DIR="aws-batch-script-dir";
     public static final Value DEFAULT_AWS_BATCH_SCRIPT_DIR=new Value("aws_batch");
     public static final String PROP_AWS_BATCH_SCRIPT="aws-batch-script";
-    public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch-v0.3.sh");
+    public static final Value DEFAULT_AWS_BATCH_SCRIPT=new Value("runOnBatch-v0.4.sh");
     public static final String PROP_STATUS_SCRIPT="aws-batch-check-status-script";
     public static final Value DEFAULT_STATUS_SCRIPT=new Value("awsCheckStatus.sh");
     public static final String PROP_SYNCH_SCRIPT="aws-batch-synch-script";
