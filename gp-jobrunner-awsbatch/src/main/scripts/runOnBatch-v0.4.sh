@@ -107,14 +107,16 @@ if [[ -s "${GP_STDIN_FILE:-}" ]]; then
   printf %s " < " >> $EXEC_SHELL
   printf %q "${GP_STDIN_FILE}" >> $EXEC_SHELL
 fi
-# (experimental), redirect stderr to a file
+
+# redirect stderr to a file, stderr.txt
 #   2>stderr.txt
-printf %s " > " >> $EXEC_SHELL
-printf %q "${GP_JOB_METADATA_DIR}/stderr.txt" >> $EXEC_SHELL
-# (experimental), redirect stdout to a file
+printf " 2>%q" "${GP_JOB_METADATA_DIR}/stderr.txt" >> $EXEC_SHELL
+
+# redirect stdout to a file, stdout.txt
 #   >stdout.txt
-printf %s " > " >> $EXEC_SHELL
-printf %q "${GP_JOB_METADATA_DIR}/stdout.txt" >> $EXEC_SHELL
+#printf %s " > " >> $EXEC_SHELL
+#printf %q "${GP_JOB_METADATA_DIR}/stdout.txt" >> $EXEC_SHELL
+printf " >%q" "${GP_JOB_METADATA_DIR}/stdout.txt" >> $EXEC_SHELL
 
 echo "" >> $EXEC_SHELL
 
