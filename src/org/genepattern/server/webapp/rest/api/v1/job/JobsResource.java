@@ -40,7 +40,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.UrlUtil;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.server.job.input.JobInput;
@@ -74,12 +73,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 /**
  * RESTful implementation of the /jobs resource.
  *
@@ -534,7 +527,9 @@ public class JobsResource {
             return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
         }
     }
-    
+
+
+
     ////////////////////////////////////
     // Getting a job
     ////////////////////////////////////
@@ -561,6 +556,7 @@ public class JobsResource {
             final @DefaultValue("true") @QueryParam("includeOutputFiles") boolean includeOutputFiles,
             final @DefaultValue("true") @QueryParam("prettyPrint") boolean prettyPrint
     ) {
+
         final GpContext jobContext=Util.getJobContext(request, jobId);
 
         final String gpUrl=UrlUtil.getBaseGpHref(request);
@@ -570,6 +566,7 @@ public class JobsResource {
         final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
+
             JSONObject job=null;
             job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
                     includePermissions, includeComments, includeTags);
@@ -577,8 +574,7 @@ public class JobsResource {
                 throw new Exception("Unexpected null return value");
             }
             //decorate with 'self'
-            job.put("self", self);                   
-
+            job.put("self", self);
             if (prettyPrint) {
                 final int indentFactor=2;
                 jsonStr=job.toString(indentFactor);
@@ -586,7 +582,7 @@ public class JobsResource {
             else {
                 jsonStr=job.toString();
             }
-            
+
             //for debugging
             if (log.isDebugEnabled()) {
                 try {
@@ -601,8 +597,6 @@ public class JobsResource {
                     log.error("Unexpected error in debugging code", t);
                 }
             }
-            
-           
         }
         catch (Throwable t) {
             //TODO: customize the response errors, e.g.
@@ -621,21 +615,6 @@ public class JobsResource {
                 .entity(jsonStr)
                 .build();
     }
-    
-    /**
-     * XXX JTL GP-7041   This is copies from GenePatternAnalysisTask - is there one we can sue without copying somewhere?
-     * @param jobStatus
-     * @return
-     */
-    private static boolean isFinished(String jobStatus) {
-        if ( JobStatus.FINISHED.equals(jobStatus) ||
-                JobStatus.ERROR.equals(jobStatus) ) {
-            return true;
-        }
-        return false;        
-    }
-    
-    
 
     /**
      * GET status.json for the given jobId.
@@ -903,7 +882,7 @@ public class JobsResource {
 
             // Put the job JSON in an array
             boolean includePermissions = false;
-             JSONArray jobs = new JSONArray();
+            JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
                 JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles,
                         includePermissions, includeComments, includeTags);
