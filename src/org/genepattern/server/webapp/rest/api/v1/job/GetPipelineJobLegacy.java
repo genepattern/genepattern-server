@@ -184,8 +184,9 @@ public class GetPipelineJobLegacy implements GetJob {
                           Boolean inclComments = (Boolean)params[3];
                           Boolean inclTags = (Boolean)params[3];
                           GpContext uc = (GpContext)params[5];
-                          System.err.println("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
-                          
+                          if (log.isDebugEnabled()) {
+                              log.debug("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
+                          }
                          return _getJob(uc, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
                       }
                     });
@@ -213,7 +214,6 @@ public class GetPipelineJobLegacy implements GetJob {
                 }
             } 
         } catch (ExecutionException e){
-            e.printStackTrace(System.err);
             final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
             log.error(errorMessage, e);
             throw new GetJobException(errorMessage);
@@ -224,7 +224,7 @@ public class GetPipelineJobLegacy implements GetJob {
     
     
     /**
-     * XXX JTL GP-7041   This is copies from GenePatternAnalysisTask - is there one we can sue without copying somewhere?
+     * XXX JTL GP-7041   copied from GenePatternAnalysisTask - is there one we can use without copying somewhere?
      * @param jobStatus
      * @return
      */
@@ -243,6 +243,7 @@ public class GetPipelineJobLegacy implements GetJob {
         try {
             // constructor starts a new DB transaction
             final PermissionsHelper ph=new PermissionsHelper(
+                    HibernateUtil.instance(),
                     userContext.isAdmin(), //final boolean _isAdmin, 
                     userContext.getUserId(), // final String _userId, 
                     jobInfo.getJobNumber(), // final int _jobNo, 
