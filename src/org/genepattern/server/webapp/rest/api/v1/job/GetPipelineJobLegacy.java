@@ -172,7 +172,7 @@ public class GetPipelineJobLegacy implements GetJob {
         // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
         if (jobCache == null){
             jobCache = CacheBuilder.newBuilder()
-                .maximumSize(1000)
+                .maximumSize(10000)
                 .expireAfterWrite(10, TimeUnit.DAYS)
                  .build(
                     new CacheLoader<String, JSONObject>() {
