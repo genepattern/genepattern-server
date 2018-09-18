@@ -9,17 +9,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -573,7 +564,8 @@ public class TasksResource {
             @DefaultValue("true") @QueryParam("includeChildren") boolean includeChildren,
             @DefaultValue("true") @QueryParam("includeEula") boolean includeEula,
             @DefaultValue("true") @QueryParam("includeSupportFiles") boolean includeSupportFiles,
-            @DefaultValue("true") @QueryParam("includeParamGroups") boolean includeParamGroups
+            @DefaultValue("true") @QueryParam("includeParamGroups") boolean includeParamGroups,
+            @DefaultValue("true") @QueryParam("includeMemorySettings") boolean includeMemorySettings
             ) {
         GpContext userContext=Util.getUserContext(request);
         final String userId=userContext.getUserId();
@@ -592,7 +584,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups);
+            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups, includeMemorySettings);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -627,12 +619,13 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups) throws Exception
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups, boolean includeMemorySettings) throws Exception
     {
-        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups);
+        return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups, includeMemorySettings);
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
+
         GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         JSONObject jsonObj=new JSONObject();
         String href=getTaskInfoPath(request, taskInfo);
@@ -682,7 +675,7 @@ public class TasksResource {
                 for (JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups);
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups, includeMemorySettings);
                         applyJobSubmission(childObject, js);
                         children.put(childObject);
                     }
@@ -721,8 +714,7 @@ public class TasksResource {
 //            }
         }
 
-        if(includeSupportFiles)
-        {
+        if(includeSupportFiles) {
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(taskContext.getUserId());
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 
@@ -778,6 +770,31 @@ public class TasksResource {
             paramsJson.put(paramJson);
         }
         jsonObj.put("params", paramsJson);
+
+        if (includeMemorySettings) {
+            // Is a default memory even set? If not, don't attach anything
+            String defaultMemory = ServerConfigurationFactory.instance().getGPProperty(taskContext, "job.memory");
+            if (defaultMemory != null && !defaultMemory.isEmpty()) {
+
+                // If paramGroups is to be returned, returned the memory parameter in a group
+                if (includeParamGroups) {
+                    JSONArray paramGroupsJson = jsonObj.getJSONArray("paramGroups");
+                    JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(ServerConfigurationFactory.instance(), taskContext);
+                    if (jobConfigParams != null) {
+                        JSONObject jobConfigGroupJson = jobConfigParams.getInputParamGroup().toJson();
+                        jobConfigGroupJson.put("hidden", true);
+                        paramGroupsJson.put(jobConfigGroupJson);
+                        for(ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+                            JSONObject paramJsonObj = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                            paramsJson.put(paramJsonObj);
+                        }
+                    }
+                }
+
+                // Otherwise just attach it to the main JSON Object
+                jsonObj.put("memoryDefault", defaultMemory);
+            }
+        }
 
         return jsonObj;
     }

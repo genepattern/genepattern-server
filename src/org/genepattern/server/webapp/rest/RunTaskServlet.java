@@ -391,7 +391,7 @@ public class RunTaskServlet extends HttpServlet
                     for (JobSubmission js : model.getTasks()) {
                         try {
                             TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false);
+                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false, false);
                             TasksResource.applyJobSubmission(childObject, js);
                             children.put(childObject);
                         }
@@ -999,7 +999,7 @@ public class RunTaskServlet extends HttpServlet
         return parametersObject;
     }
 
-    private static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+    public static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
         // don't initialize the drop-down menu; instead wait for the web client to make a callback
         final boolean initDropdown=false;
         final ParametersJSON parameter = new ParametersJSON(pinfo);
