@@ -771,7 +771,8 @@ public class TasksResource {
         }
         jsonObj.put("params", paramsJson);
 
-        if (includeMemorySettings) {
+        // TODO: disabled until we can resolve GP-7403
+        if (false && includeMemorySettings) {
             // Is a default memory even set? If not, don't attach anything
             String defaultMemory = ServerConfigurationFactory.instance().getGPProperty(taskContext, "job.memory");
             if (defaultMemory != null && !defaultMemory.isEmpty()) {
