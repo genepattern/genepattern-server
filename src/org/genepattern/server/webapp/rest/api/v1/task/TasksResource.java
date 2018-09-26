@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
@@ -54,6 +55,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -112,6 +114,23 @@ import com.google.common.collect.Multimap;
 "type":"PASSWORD"
    </pre>
  *   
+ * 
+ * The memory options for the job are also included in the JSON representation.
+ * The 'job.memory' from the manifest file (if there is one) will be a top level element.
+ * The job.inputParams (custom drop-down menu) will be included in the optional 'config' element.
+   <pre>
+{
+  ...
+  "job.memory": "16 Gb",
+  ...
+  "config": {
+    "job.memory.default": "",
+    "job.inputParams" : [ ... ],
+    "job.inputParamGroup": { ... }
+  }
+  ...
+}    
+   </pre>
  * 
  * @author pcarr
  *
@@ -765,30 +784,37 @@ public class TasksResource {
         }
         jsonObj.put("params", paramsJson);
 
-        // TODO: disabled until we can resolve GP-7403
-        if (false && includeMemorySettings) {
-            // Is a default memory even set? If not, don't attach anything
-            String defaultMemory = ServerConfigurationFactory.instance().getGPProperty(taskContext, "job.memory");
-            if (defaultMemory != null && !defaultMemory.isEmpty()) {
-
-                // If paramGroups is to be returned, returned the memory parameter in a group
-                if (includeParamGroups) {
-                    JSONArray paramGroupsJson = jsonObj.getJSONArray("paramGroups");
-                    JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(ServerConfigurationFactory.instance(), taskContext);
-                    if (jobConfigParams != null) {
-                        JSONObject jobConfigGroupJson = jobConfigParams.getInputParamGroup().toJson();
-                        jobConfigGroupJson.put("hidden", true);
-                        paramGroupsJson.put(jobConfigGroupJson);
-                        for(ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                            JSONObject paramJsonObj = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
-                            paramsJson.put(paramJsonObj);
-                        }
-                    }
+        if (includeMemorySettings) {
+            // optional 'job.memory' from the manifest file
+            try { 
+                final String memoryFromManifest=taskInfo.getTaskInfoAttributes().get("job.memory");
+                if (!Strings.isNullOrEmpty(memoryFromManifest)) {
+                    jsonObj.put("job.memory", memoryFromManifest);
                 }
-
-                // Otherwise just attach it to the main JSON Object
-                jsonObj.put("memoryDefault", defaultMemory);
             }
+            catch (Throwable t) {
+                log.error("Error getting job.memory from manifest file, for task='"+taskInfo.getName()+"'", t);
+            }
+
+            final JSONObject configObj=new JSONObject();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final Memory defaultMemory=gpConfig.getGPMemoryProperty(taskContext, "job.memory");
+            if (defaultMemory != null) {
+                configObj.put("job.memory.default", 
+                    defaultMemory.toString());
+            }
+            final JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(gpConfig, taskContext);
+            configObj.put("job.inputParamGroup", 
+                jobConfigParams.getInputParamGroup().toJson()
+            );
+            
+            final JSONArray jobOptionsParams=new JSONArray();
+            for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+                final JSONObject jobOption = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                jobOptionsParams.put(jobOption);
+            }
+            configObj.put("job.inputParams", jobOptionsParams);
+            jsonObj.put("config", configObj);
         }
 
         return jsonObj;
