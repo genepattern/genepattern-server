@@ -715,18 +715,12 @@ public class TasksResource {
         }
 
         if(includeSupportFiles) {
-            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(taskContext.getUserId());
-            File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-
-            String[] supportFilesRelativeUri = new String[allFiles.length];
-            for(int i=0;i<allFiles.length; i++)
-            {
-                File file =  allFiles[i];
-                TasklibPath tasklibPath = new TasklibPath(taskInfo, file.getName());
-                supportFilesRelativeUri[i] = tasklibPath.getRelativeUri().toString();
+            final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(taskContext.getUserId());
+            for (final File file : taskIntegratorClient.getAllFiles(taskInfo)) {
+                final TasklibPath tasklibPath = new TasklibPath(taskInfo, file.getName());
+                final String supportFile = tasklibPath.getRelativeUri().toString();
+                jsonObj.append("supportFiles", supportFile);
             }
-
-            jsonObj.put("supportFiles", supportFilesRelativeUri);
         }
         try {
             final LSID lsid=new LSID(taskInfo.getLsid());
