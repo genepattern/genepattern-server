@@ -10,12 +10,6 @@ default.properties:
     executor: RuntimeExec
     
     #
-    # to include job configuration options in the job input form ...
-    #
-    enableJobConfigParams: true
-    #jobConfigParams: ../server/job/input/configparam/job_config_params.yaml
-    
-    #
     # job memory settings
     #
     job.memory: "2gb"

@@ -225,12 +225,6 @@ default.properties:
     org.genepattern.server.webapp.jsf.ModuleHelper.enableCustomCategories: true
     
     #
-    # enable setting of job configuration parameters in the job input form
-    # added in GP 3.8.1
-    #
-    enableJobConfigParams: true
-    
-    #
     # set the ftp downloader by uncommenting one of these lines
     #ftpDownloader.type: EDT_FTP_J
     #ftpDownloader.type: JAVA_6
