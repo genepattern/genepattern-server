@@ -18,7 +18,6 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.JobInfoLoaderDefault;
@@ -29,6 +28,7 @@ import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
@@ -193,7 +193,7 @@ public class GetPipelineJobLegacy implements GetJob {
         }
         JSONObject job = null;
         try {
-            if (isFinished(jobInfo.getStatus())){
+            if (JobInfoUtil.isFinished(jobInfo)) {
                 job=jobCache.get(composite_key);                 
             } else {
                 // skip the cache if not finished, don't use the constructor since we don't want it cached
@@ -221,22 +221,6 @@ public class GetPipelineJobLegacy implements GetJob {
         
         return job;
     }
-    
-    
-    /**
-     * XXX JTL GP-7041   copied from GenePatternAnalysisTask - is there one we can use without copying somewhere?
-     * @param jobStatus
-     * @return
-     */
-    private static boolean isFinished(String jobStatus) {
-        if ( JobStatus.FINISHED.equals(jobStatus) ||
-                JobStatus.ERROR.equals(jobStatus) ) {
-            return true;
-        }
-        return false;        
-    }
-    
-    
     
     private JSONObject initPermissionsFromJob(final GpContext userContext, final JobInfo jobInfo) throws JSONException {
         final boolean isInTransaction=HibernateUtil.isInTransaction();
