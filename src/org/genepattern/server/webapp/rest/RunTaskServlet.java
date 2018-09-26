@@ -39,6 +39,7 @@ import org.genepattern.data.pipeline.GetIncludedTasks;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineUtil;
+import org.genepattern.json.LinkedJSONObject;
 import org.genepattern.modules.ModuleJSON;
 import org.genepattern.modules.ParametersJSON;
 import org.genepattern.modules.ResponseJSON;
@@ -391,8 +392,12 @@ public class RunTaskServlet extends HttpServlet
                     for (JobSubmission js : model.getTasks()) {
                         try {
                             TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                            JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false, false);
-                            TasksResource.applyJobSubmission(childObject, js);
+                            //JSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false, false);
+                            //TasksResource.applyJobSubmission(childObject, js);
+                            LinkedJSONObject childObject = TasksResource.createTaskObject(childTask, request, true, true, true, false, false);
+                            JSONArray params = childObject.getJSONArray("params");
+                            TasksResource.applyJobSubmission(params, js);
+
                             children.put(childObject);
                         }
                         catch (TaskLSIDNotFoundException e) {

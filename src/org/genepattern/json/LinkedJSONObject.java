@@ -1,4 +1,4 @@
-package org.json;
+package org.genepattern.json;
 
 /*
 Copyright (c) 2002 JSON.org
@@ -26,9 +26,16 @@ SOFTWARE.
 
 import java.util.Collection;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONString;
+import org.json.JSONTokener;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -85,7 +92,7 @@ import java.io.Writer;
  * @author JSON.org
  * @version 2
  */
-public class JSONObject {
+public class LinkedJSONObject {
 
     /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
@@ -128,7 +135,7 @@ public class JSONObject {
     /**
      * The hash map where the JSONObject's properties are kept.
      */
-    private HashMap myHashMap;
+    private LinkedHashMap myHashMap;
 
 
     /**
@@ -143,8 +150,8 @@ public class JSONObject {
     /**
      * Construct an empty JSONObject.
      */
-    public JSONObject() {
-        this.myHashMap = new HashMap();
+    public LinkedJSONObject() {
+        this.myHashMap = new LinkedHashMap();
     }
 
 
@@ -156,7 +163,7 @@ public class JSONObject {
      * @param sa An array of strings.
      * @exception JSONException If a value is a non-finite number.
      */
-    public JSONObject(JSONObject jo, String[] sa) throws JSONException {
+    public LinkedJSONObject(LinkedJSONObject jo, String[] sa) throws JSONException {
         this();
         for (int i = 0; i < sa.length; i += 1) {
             putOpt(sa[i], jo.opt(sa[i]));
@@ -169,7 +176,7 @@ public class JSONObject {
      * @param x A JSONTokener object containing the source string.
      * @throws JSONException If there is a syntax error in the source string.
      */
-    public JSONObject(JSONTokener x) throws JSONException {
+    public LinkedJSONObject(JSONTokener x) throws JSONException {
         this();
         char c;
         String key;
@@ -229,10 +236,10 @@ public class JSONObject {
      * @param map A map object that can be used to initialize the contents of
      *  the JSONObject.
      */
-    public JSONObject(Map map) {
+    public LinkedJSONObject(Map map) {
         this.myHashMap = (map == null) ?
-        	new HashMap() :
-        	new HashMap(map);
+        	new LinkedHashMap() :
+        	new LinkedHashMap(map);
     }
 
     
@@ -247,7 +254,7 @@ public class JSONObject {
      * @param names An array of strings, the names of the fields to be used
      * from the object.
      */
-    public JSONObject(Object object, String names[]) {
+    public LinkedJSONObject(Object object, String names[]) {
     	this();
     	Class c = object.getClass();
     	for (int i = 0; i < names.length; i += 1) {
@@ -271,7 +278,7 @@ public class JSONObject {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @exception JSONException If there is a syntax error in the source string.
      */
-    public JSONObject(String string) throws JSONException {
+    public LinkedJSONObject(String string) throws JSONException {
         this(new JSONTokener(string));
     }
 
@@ -288,7 +295,7 @@ public class JSONObject {
      * @throws JSONException If the value is an invalid number
      *  or if the key is null.
      */
-    public JSONObject accumulate(String key, Object value)
+    public LinkedJSONObject accumulate(String key, Object value)
             throws JSONException {
         testValidity(value);
         Object o = opt(key);
@@ -316,7 +323,7 @@ public class JSONObject {
      * @throws JSONException If the key is null or if the current value 
      * 	associated with the key is not a JSONArray.
      */
-    public JSONObject append(String key, Object value)
+    public LinkedJSONObject append(String key, Object value)
             throws JSONException {
         testValidity(value);
         Object o = opt(key);
@@ -461,10 +468,10 @@ public class JSONObject {
      * @throws   JSONException if the key is not found or
      *  if the value is not a JSONObject.
      */
-    public JSONObject getJSONObject(String key) throws JSONException {
+    public LinkedJSONObject getJSONObject(String key) throws JSONException {
         Object o = get(key);
-        if (o instanceof JSONObject) {
-            return (JSONObject)o;
+        if (o instanceof LinkedJSONObject) {
+            return (LinkedJSONObject)o;
         }
         throw new JSONException("JSONObject[" + quote(key) +
                 "] is not a JSONObject.");
@@ -517,7 +524,7 @@ public class JSONObject {
      *  the value is the JSONObject.NULL object.
      */
     public boolean isNull(String key) {
-        return JSONObject.NULL.equals(opt(key));
+        return LinkedJSONObject.NULL.equals(opt(key));
     }
 
 
@@ -633,7 +640,7 @@ public class JSONObject {
      * @return		this.
      * @throws JSONException
      */
-    public JSONObject put(String key, Collection value) throws JSONException {
+    public LinkedJSONObject put(String key, Collection value) throws JSONException {
         put(key, new JSONArray(value));
         return this;
     }
@@ -729,9 +736,9 @@ public class JSONObject {
      * @param key   A key string.
      * @return      A JSONObject which is the value.
      */
-    public JSONObject optJSONObject(String key) {
+    public LinkedJSONObject optJSONObject(String key) {
         Object o = opt(key);
-        return o instanceof JSONObject ? (JSONObject)o : null;
+        return o instanceof LinkedJSONObject ? (LinkedJSONObject)o : null;
     }
 
 
@@ -803,7 +810,7 @@ public class JSONObject {
      * @return this.
      * @throws JSONException If the key is null.
      */
-    public JSONObject put(String key, boolean value) throws JSONException {
+    public LinkedJSONObject put(String key, boolean value) throws JSONException {
         put(key, value ? Boolean.TRUE : Boolean.FALSE);
         return this;
     }
@@ -817,7 +824,7 @@ public class JSONObject {
      * @return this.
      * @throws JSONException If the key is null or if the number is invalid.
      */
-    public JSONObject put(String key, double value) throws JSONException {
+    public LinkedJSONObject put(String key, double value) throws JSONException {
         put(key, new Double(value));
         return this;
     }
@@ -831,7 +838,7 @@ public class JSONObject {
      * @return this.
      * @throws JSONException If the key is null.
      */
-    public JSONObject put(String key, int value) throws JSONException {
+    public LinkedJSONObject put(String key, int value) throws JSONException {
         put(key, new Integer(value));
         return this;
     }
@@ -845,7 +852,7 @@ public class JSONObject {
      * @return this.
      * @throws JSONException If the key is null.
      */
-    public JSONObject put(String key, long value) throws JSONException {
+    public LinkedJSONObject put(String key, long value) throws JSONException {
         put(key, new Long(value));
         return this;
     }
@@ -859,8 +866,8 @@ public class JSONObject {
      * @return		this.
      * @throws JSONException
      */
-    public JSONObject put(String key, Map value) throws JSONException {
-        put(key, new JSONObject(value));
+    public LinkedJSONObject put(String key, Map value) throws JSONException {
+        put(key, new LinkedJSONObject(value));
         return this;
     }
     
@@ -876,7 +883,7 @@ public class JSONObject {
      * @throws JSONException If the value is non-finite number
      *  or if the key is null.
      */
-    public JSONObject put(String key, Object value) throws JSONException {
+    public LinkedJSONObject put(String key, Object value) throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");
         }
@@ -900,7 +907,7 @@ public class JSONObject {
      * @return this.
      * @throws JSONException If the value is a non-finite number.
      */
-    public JSONObject putOpt(String key, Object value) throws JSONException {
+    public LinkedJSONObject putOpt(String key, Object value) throws JSONException {
         if (key != null && value != null) {
             put(key, value);
         }
@@ -1088,7 +1095,7 @@ public class JSONObject {
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @throws JSONException If the object contains an invalid number.
      */
-    public String toString(int indentFactor, int indent) throws JSONException {
+    String toString(int indentFactor, int indent) throws JSONException {
         int          i;
         int          n = length();
         if (n == 0) {
@@ -1167,7 +1174,7 @@ public class JSONObject {
         if (value instanceof Number) {
             return numberToString((Number) value);
         }
-        if (value instanceof Boolean || value instanceof JSONObject ||
+        if (value instanceof Boolean || value instanceof LinkedJSONObject ||
                 value instanceof JSONArray) {
             return value.toString();
         }
@@ -1210,6 +1217,9 @@ public class JSONObject {
         if (value instanceof Boolean) {
             return value.toString();
         }
+        if (value instanceof LinkedJSONObject) {
+            return ((LinkedJSONObject)value).toString(indentFactor, indent);
+        }
         if (value instanceof JSONObject) {
             return ((JSONObject)value).toString(indentFactor, indent);
         }
@@ -1243,8 +1253,8 @@ public class JSONObject {
                 writer.write(quote(k.toString()));
                 writer.write(':');
                 Object v = this.myHashMap.get(k);
-                if (v instanceof JSONObject) {
-                    ((JSONObject)v).write(writer);
+                if (v instanceof LinkedJSONObject) {
+                    ((LinkedJSONObject)v).write(writer);
                 } else if (v instanceof JSONArray) {
                     ((JSONArray)v).write(writer);
                 } else {

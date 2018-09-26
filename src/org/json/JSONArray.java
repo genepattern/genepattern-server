@@ -799,7 +799,7 @@ public class JSONArray {
      *  representation of the array.
      * @throws JSONException
      */
-    String toString(int indentFactor, int indent) throws JSONException {
+    public String toString(int indentFactor, int indent) throws JSONException {
         int len = length();
         if (len == 0) {
             return "[]";
