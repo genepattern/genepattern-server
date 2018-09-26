@@ -25,6 +25,7 @@ import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.Memory;
+import org.genepattern.json.LinkedJSONObject;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
@@ -603,7 +604,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups, includeMemorySettings);
+            final LinkedJSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups, includeMemorySettings);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -638,23 +639,30 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups, boolean includeMemorySettings) throws Exception
+    public static LinkedJSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups, boolean includeMemorySettings) throws Exception
     {
         return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups, includeMemorySettings);
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
-
-        GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
-        JSONObject jsonObj=new JSONObject();
-        String href=getTaskInfoPath(request, taskInfo);
+    public static LinkedJSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
+        final GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
+        final LinkedJSONObject jsonObj=new LinkedJSONObject();
+        final String href=getTaskInfoPath(request, taskInfo);
         jsonObj.put("href", href);
         jsonObj.put("name", taskInfo.getName());
+        try {
+            final LSID lsid=new LSID(taskInfo.getLsid());
+            jsonObj.put("version", lsid.getVersion());
+        }
+        catch (MalformedURLException e) {
+            log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
+        }
+        jsonObj.put("lsid", taskInfo.getLsid());
         jsonObj.put("description", taskInfo.getDescription());
+        jsonObj.put("documentation", getDocLink(request, taskInfo));
 
+        final TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
         if (includeProperties) {
-            TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-
             // Author
             jsonObj.put("author", tia.get(GPConstants.AUTHOR));
             // Privacy
@@ -685,17 +693,18 @@ public class TasksResource {
         }
 
         if (includeChildren) {
-            TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
-            String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
+            //TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+            final String serializedModel = tia.get(GPConstants.SERIALIZED_MODEL);
             if (serializedModel != null && serializedModel.length() > 0) {
-                PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+                final PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
 
                 JSONArray children = new JSONArray();
-                for (JobSubmission js : model.getTasks()) {
+                for (final JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups, includeMemorySettings);
-                        applyJobSubmission(childObject, js);
+                        LinkedJSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups, includeMemorySettings);
+                        JSONArray params = childObject.getJSONArray("params");
+                        applyJobSubmission(params, js);
                         children.put(childObject);
                     }
                     catch (TaskLSIDNotFoundException e) {
@@ -722,15 +731,6 @@ public class TasksResource {
             final TasklibPath filePath = new TasklibPath(libdirStrategy, taskInfo, "paramgroups.json");
             JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(taskInfo, filePath.getServerFile());
             jsonObj.put("paramGroups", paramGroupsJson);
-//            final JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(gpConfig, taskContext);
-//            if (jobConfigParams != null) {
-//                final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
-//                paramGroupsJson.put(jobConfigGroupJson);
-//                for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-//                    JSONObject jsonObj= RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
-//                    parametersArray.put(jsonObj);
-//                }
-//            }
         }
 
         if(includeSupportFiles) {
@@ -741,15 +741,6 @@ public class TasksResource {
                 jsonObj.append("supportFiles", supportFile);
             }
         }
-        try {
-            final LSID lsid=new LSID(taskInfo.getLsid());
-            jsonObj.put("version", lsid.getVersion());
-        }
-        catch (MalformedURLException e) {
-            log.error("Error getting lsid for task.name="+taskInfo.getName(), e);
-        }
-        jsonObj.put("documentation", getDocLink(request, taskInfo));
-        jsonObj.put("lsid", taskInfo.getLsid());
 
         JSONArray paramsJson=new JSONArray();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
@@ -820,8 +811,7 @@ public class TasksResource {
         return jsonObj;
     }
 
-    public static void applyJobSubmission(JSONObject taskObject, JobSubmission js) throws JSONException {
-        JSONArray params = taskObject.getJSONArray("params");
+    public static void applyJobSubmission(final JSONArray params, JobSubmission js) throws JSONException {
         boolean[] pwrs = js.getRuntimePrompt();
         Vector pias = js.getParameters();
 
