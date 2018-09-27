@@ -355,13 +355,13 @@ public class JobsResource {
             final List<JobInfo> jobInfoResults=searchResults.getJobInfos();
 
             //create JSON representation
-            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath, includePermissions);
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
             JSONArray jobs = new JSONArray();
             for (final JobInfo jobInfo : jobInfoResults) {
                 JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren,
-                        includeOutputFiles, includeComments, includeTags);
+                        includeOutputFiles, includePermissions, includeComments, includeTags);
                 //decorate with 'self'
                 final String self=jobsResourcePath+"/"+jobObject.getString("jobId");
                 jobObject.put("self", self);
@@ -563,12 +563,13 @@ public class JobsResource {
         final String self=uriInfo.getAbsolutePath().toString();
         final URI baseUri=uriInfo.getBaseUri();
         final String jobsResourcePath=baseUri.toString()+URI_PATH;
-        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath, includePermissions);
+        final GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
         String jsonStr;
         try {
 
             JSONObject job=null;
-            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles, includeComments, includeTags);
+            job=getJobImpl.getJob(jobContext, jobContext.getJobInfo(), includeChildren, includeOutputFiles,
+                    includePermissions, includeComments, includeTags);
             if (job==null) {
                 throw new Exception("Unexpected null return value");
             }
@@ -877,14 +878,14 @@ public class JobsResource {
             // Create the object for getting the job JSON
             URI baseUri = uriInfo.getBaseUri();
             String jobsResourcePath = baseUri.toString() + URI_PATH;
-            final boolean includePermissions = false;
-            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath, includePermissions);
+            GetPipelineJobLegacy getJobImpl = new GetPipelineJobLegacy(gpUrl, jobsResourcePath);
 
             // Put the job JSON in an array
+            boolean includePermissions = false;
             JSONArray jobs = new JSONArray();
             for (JobInfo jobInfo : recentJobs) {
                 JSONObject jobObject = getJobImpl.getJob(userContext, jobInfo, includeChildren, includeOutputFiles,
-                        includeComments, includeTags);
+                        includePermissions, includeComments, includeTags);
                 jobs.put(jobObject);
             }
 
