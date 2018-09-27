@@ -25,7 +25,6 @@ import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.Memory;
-import org.genepattern.json.LinkedJSONObject;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.cm.CategoryUtil;
 import org.genepattern.server.config.GpConfig;
@@ -604,7 +603,7 @@ public class TasksResource {
         //form a JSON response, from the given taskInfo
         String jsonStr="";
         try {
-            final LinkedJSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups, includeMemorySettings);
+            final JSONObject jsonObj = createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, includeSupportFiles, includeParamGroups, includeMemorySettings);
 
             final boolean prettyPrint=true;
             if (prettyPrint) {
@@ -639,14 +638,14 @@ public class TasksResource {
         return toReturn;
     }
 
-    public static LinkedJSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups, boolean includeMemorySettings) throws Exception
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeParamGroups, boolean includeMemorySettings) throws Exception
     {
         return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups, includeMemorySettings);
     }
 
-    public static LinkedJSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
+    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
         final GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
-        final LinkedJSONObject jsonObj=new LinkedJSONObject();
+        final JSONObject jsonObj=new JSONObject();
         final String href=getTaskInfoPath(request, taskInfo);
         jsonObj.put("href", href);
         jsonObj.put("name", taskInfo.getName());
@@ -702,7 +701,7 @@ public class TasksResource {
                 for (final JobSubmission js : model.getTasks()) {
                     try {
                         TaskInfo childTask = TaskInfoCache.instance().getTask(js.getLSID());
-                        LinkedJSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups, includeMemorySettings);
+                        JSONObject childObject = createTaskObject(childTask, request, includeProperties, includeChildren, includeEula, includeParamGroups, includeMemorySettings);
                         JSONArray params = childObject.getJSONArray("params");
                         applyJobSubmission(params, js);
                         children.put(childObject);
