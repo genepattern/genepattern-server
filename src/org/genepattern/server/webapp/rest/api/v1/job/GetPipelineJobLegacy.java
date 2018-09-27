@@ -120,7 +120,7 @@ public class GetPipelineJobLegacy implements GetJob {
     public JSONObject getJob(final GpContext userContext, final String jobId, final boolean includeChildren,
                              final boolean includeOutputFiles, boolean includeComments, boolean includeTags) throws GetJobException {
         final JobInfo jobInfo=initJobInfo(userContext, jobId);
-        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
+        return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
     }
 
     
@@ -156,7 +156,7 @@ public class GetPipelineJobLegacy implements GetJob {
     protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
     
     public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
-                             final boolean includeOutputFiles, final boolean includePermissions,
+                             final boolean includeOutputFiles, 
                              final boolean includeComments, final boolean includeTags) throws GetJobException {
         //manually create a JSONObject representing the job
         
