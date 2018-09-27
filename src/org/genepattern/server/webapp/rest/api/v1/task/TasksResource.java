@@ -795,16 +795,19 @@ public class TasksResource {
                     defaultMemory.toString());
             }
             final JobConfigParams jobConfigParams = JobConfigParams.initJobConfigParams(gpConfig, taskContext);
-            configObj.put("job.inputParamGroup", 
-                jobConfigParams.getInputParamGroup().toJson()
-            );
-            
-            final JSONArray jobOptionsParams=new JSONArray();
-            for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                final JSONObject jobOption = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
-                jobOptionsParams.put(jobOption);
+            if (jobConfigParams != null) {
+                configObj.put("job.inputParamGroup",
+                        jobConfigParams.getInputParamGroup().toJson()
+                );
+
+                final JSONArray jobOptionsParams=new JSONArray();
+                for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
+                    final JSONObject jobOption = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                    jobOptionsParams.put(jobOption);
+                }
+                configObj.put("job.inputParams", jobOptionsParams);
             }
-            configObj.put("job.inputParams", jobOptionsParams);
+
             jsonObj.put("config", configObj);
         }
 
