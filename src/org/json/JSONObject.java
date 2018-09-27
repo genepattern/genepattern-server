@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.io.IOException;
 import java.io.Writer;
@@ -128,7 +129,7 @@ public class JSONObject {
     /**
      * The hash map where the JSONObject's properties are kept.
      */
-    private HashMap myHashMap;
+    private LinkedHashMap myHashMap;
 
 
     /**
@@ -144,7 +145,7 @@ public class JSONObject {
      * Construct an empty JSONObject.
      */
     public JSONObject() {
-        this.myHashMap = new HashMap();
+        this.myHashMap = new LinkedHashMap();
     }
 
 
@@ -231,8 +232,8 @@ public class JSONObject {
      */
     public JSONObject(Map map) {
         this.myHashMap = (map == null) ?
-        	new HashMap() :
-        	new HashMap(map);
+            new LinkedHashMap() :
+            new LinkedHashMap(map);
     }
 
     
