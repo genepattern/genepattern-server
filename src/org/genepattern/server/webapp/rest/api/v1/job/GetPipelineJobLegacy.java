@@ -5,10 +5,7 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
@@ -28,17 +25,12 @@ import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 public class GetPipelineJobLegacy implements GetJob {
     private static final Logger log = Logger.getLogger(GetPipelineJobLegacy.class);
@@ -123,14 +115,11 @@ public class GetPipelineJobLegacy implements GetJob {
         return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
-    
-    
-    
-    protected JSONObject _getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
-            final boolean includeOutputFiles,
-            final boolean includeComments, final boolean includeTags) throws GetJobException {
-        
-        JSONObject job=null;
+    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
+                             final boolean includeOutputFiles, final boolean includePermissions,
+                             final boolean includeComments, final boolean includeTags) throws GetJobException {
+        //manually create a JSONObject representing the job
+        final JSONObject job;
         if (!includeChildren) {
             job = initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
         }
@@ -147,78 +136,20 @@ public class GetPipelineJobLegacy implements GetJob {
                 throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
             }
         }
-        
-       return job;
-    
-    }
-    
-    protected static LoadingCache<String, JSONObject> jobCache;
-    protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
-    
-    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
-                             final boolean includeOutputFiles, final boolean includePermissions,
-                             final boolean includeComments, final boolean includeTags) throws GetJobException {
-        //manually create a JSONObject representing the job
-        
-        final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includeComments + includeTags;
-        Object[] params = new Object[6];
-        params[0]=jobInfo;
-        params[1]=includeChildren;
-        params[2]=includeOutputFiles;
-        params[3]=includeComments;
-        params[4]=includeTags;
-        params[5]=userContext;
-        paramMap.put(composite_key, params);
-        // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
-        if (jobCache == null){
-            jobCache = CacheBuilder.newBuilder()
-                .maximumSize(10000)
-                .expireAfterWrite(10, TimeUnit.DAYS)
-                 .build(
-                    new CacheLoader<String, JSONObject>() {
-                      public JSONObject load(String key) throws Exception {
-                          Object[] params = paramMap.get(key);
-                          JobInfo ji = (JobInfo)params[0];
-                          Boolean inclChildren = (Boolean)params[1];
-                          Boolean inclOutputFiles = (Boolean)params[2];
-                          Boolean inclComments = (Boolean)params[3];
-                          Boolean inclTags = (Boolean)params[3];
-                          GpContext uc = (GpContext)params[5];
-                          if (log.isDebugEnabled()) {
-                              log.debug("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
-                          }
-                         return _getJob(uc, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
-                      }
-                    });
-        }
-        JSONObject job = null;
-        try {
-            if (JobInfoUtil.isFinished(jobInfo)) {
-                job=jobCache.get(composite_key);                 
-            } else {
-                // skip the cache if not finished, don't use the constructor since we don't want it cached
-                job = _getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+        if (includePermissions && job!=null) {
+            //only include permissions for the top-level job
+            try {
+            JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
+            if (permissions!=null) {
+                job.put("permissions", permissions);
             }
-            if (includePermissions && job!=null) {
-                //only include permissions for the top-level job
-                try {
-                    JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
-                    if (permissions!=null) {
-                        job.put("permissions", permissions);
-                    }
-                }
-                catch (Throwable t) {
-                    final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
-                    log.error(errorMessage, t);
-                    throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-                }
-            } 
-        } catch (ExecutionException e){
-            final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
-            log.error(errorMessage, e);
-            throw new GetJobException(errorMessage);
+            }
+            catch (Throwable t) {
+                final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+                log.error(errorMessage, t);
+                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+            }
         }
-        
         return job;
     }
     
@@ -227,7 +158,6 @@ public class GetPipelineJobLegacy implements GetJob {
         try {
             // constructor starts a new DB transaction
             final PermissionsHelper ph=new PermissionsHelper(
-                    HibernateUtil.instance(),
                     userContext.isAdmin(), //final boolean _isAdmin, 
                     userContext.getUserId(), // final String _userId, 
                     jobInfo.getJobNumber(), // final int _jobNo, 
