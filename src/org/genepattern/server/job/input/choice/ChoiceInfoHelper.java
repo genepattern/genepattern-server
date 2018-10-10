@@ -8,15 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.Logger;
-import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.common.base.Strings;
 
 /**
  * 
@@ -155,22 +153,31 @@ public class ChoiceInfoHelper {
         }
     }
 
+    public static final String initChoiceInfoHref(final String parentHref, final ChoiceInfo choiceInfo) {
+        if (choiceInfo==null) {
+            return null;
+        }
+        if (Strings.isNullOrEmpty(parentHref)) {
+            return null;
+        }
+        if (Strings.isNullOrEmpty(choiceInfo.getParamName())) {
+            return null;
+        }
+        final String choiceInfoHref = parentHref + "/" + choiceInfo.getParamName()  + "/choiceInfo.json";
+        return choiceInfoHref;
+    }
+    
     /**
      * Get the JSON representation for the given choiceInfo.
-     * 
-     * @see TasksResource#getChoiceInfo(javax.ws.rs.core.UriInfo, String, String, HttpServletRequest)
-     * 
-     * @param pinfo
-     * @return
      */
-    final static public JSONObject initChoiceInfoJson(final HttpServletRequest request, final TaskInfo taskInfo, final ChoiceInfo choiceInfo) throws JSONException {
+    final static public JSONObject initChoiceInfoJson(final String parentHref, final ChoiceInfo choiceInfo) throws JSONException {
         if (choiceInfo==null) {
             throw new IllegalArgumentException("choiceInfo==null");
         }
         final JSONObject json=new JSONObject();
-        if (request != null && taskInfo != null && isSet(choiceInfo.getParamName())) {
-            final String href=TasksResource.getChoiceInfoPath(request, taskInfo, choiceInfo.getParamName());
-            json.put("href", href);
+        final String choiceInfoHref=initChoiceInfoHref(parentHref, choiceInfo);
+        if (!Strings.isNullOrEmpty(choiceInfoHref)) {
+            json.put("href", choiceInfoHref);
         }
         if (isSet(choiceInfo.getChoiceDir())) {
             json.put(ChoiceInfo.PROP_CHOICE_DIR, choiceInfo.getChoiceDir());

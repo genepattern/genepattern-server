@@ -3,15 +3,16 @@
  *******************************************************************************/
 package org.genepattern.server.job.input.choice;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.genepattern.webservice.TaskInfo;
+import org.genepattern.junitutil.Demo;
+import org.genepattern.server.webapp.rest.api.v1.task.TasksResource;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * junit tests for initializing the JSON representation for a drop-down menu for a module input parameter.
@@ -24,28 +25,27 @@ import org.mockito.Mockito;
  *
  */
 public class TestChoiceInfoToJson {
-    private String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
-    HttpServletRequest request=null;
-    TaskInfo taskInfo=null;
-    ChoiceInfo choiceInfo=Mockito.mock(ChoiceInfo.class);
+    ChoiceInfo choiceInfo=mock(ChoiceInfo.class);
 
-    @Before
-    public void setUp() {
-    }
-    
     @Test
     public void nullChoiceInfo()  throws JSONException {
-        
-        JSONObject jsonObj = ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);
-        Assert.assertNotNull(jsonObj);
+        final String href="";
+        JSONObject jsonObj = ChoiceInfoHelper.initChoiceInfoJson(href, choiceInfo);
+        assertNotNull(jsonObj);
     }
     
     @Test
     public void dynamicDropDown() throws JSONException {
-        Mockito.when(choiceInfo.getChoiceDir()).thenReturn(choiceDir);
-        JSONObject jsonObj = ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);
-        Assert.assertEquals("choiceDir", choiceDir, 
-                jsonObj.getString("choiceDir"));
-        
+        final String lsid=Demo.cleLsid;
+        final String pname="my.parameter";
+        final String choiceDir="ftp://gpftp.broadinstitute.org/example_data/gpservertest/DemoFileDropdown/input.file/";
+        final String baseHref="http://127.0.0.1:8080/gp";
+        final String taskHref=baseHref + "/rest/"+TasksResource.URI_PATH+"/"+lsid;
+        when(choiceInfo.getChoiceDir()).thenReturn(choiceDir);
+        when(choiceInfo.getParamName()).thenReturn(pname);
+        final JSONObject jsonObj = ChoiceInfoHelper.initChoiceInfoJson(taskHref, choiceInfo);
+        final String expectedHref=taskHref+"/"+pname+"/choiceInfo.json";
+       assertEquals("href", expectedHref, jsonObj.getString("href"));
+        assertEquals("choiceDir", choiceDir, jsonObj.getString("choiceDir"));
     }
 }
