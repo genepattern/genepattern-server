@@ -42,7 +42,6 @@ import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
-import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -761,8 +760,7 @@ public class TasksResource {
 
                 final JSONArray jobOptionsParams=new JSONArray();
                 for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                    // TODO: change to newer REST API representation
-                    final JSONObject jobOption = RunTaskServlet.initParametersJSON(taskHref, jobConfigParameterInfo);
+                    final JSONObject jobOption = initParamJson(taskHref, taskContext, jobConfigParameterInfo);
                     jobOptionsParams.put(jobOption);
                 }
                 configObj.put("job.inputParams", jobOptionsParams);
