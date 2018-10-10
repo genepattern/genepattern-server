@@ -42,7 +42,6 @@ import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
-import org.genepattern.server.webapp.rest.RunTaskServlet;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.suite.SuiteResource;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -148,21 +147,6 @@ public class TasksResource {
         rootPath += "rest/";
         rootPath += URI_PATH + "/" + taskInfo.getLsid();
         return rootPath;
-    }
-
-    /**
-     * Get the relative path, relative to the root REST API end point, to GET the choiceInfo for the given parameter for the given task.
-     *
-     * @param taskInfo
-     * @param pname
-     * @return
-     */
-    public static String getChoiceInfoPath(final HttpServletRequest request, final TaskInfo taskInfo, final String pname) {
-        // at the moment, (circa GP 3.7.0), the task LSID and the parameter name will be valid URI path components
-        // if this ever changes we should encode them
-        //String path = URI_PATH + "/" + UrlUtil.encodeURIcomponent( taskInfo.getLsid() ) + "/" + UrlUtil.encodeURIcomponent( pname ) + "/choiceInfo.json";
-        String path = getTaskInfoPath(request, taskInfo) + "/" + pname  + "/choiceInfo.json";
-        return path;
     }
 
     /**
@@ -643,11 +627,12 @@ public class TasksResource {
         return createTaskObject(taskInfo, request, includeProperties, includeChildren, includeEula, false, includeParamGroups, includeMemorySettings);
     }
 
-    public static JSONObject createTaskObject(TaskInfo taskInfo, HttpServletRequest request, boolean includeProperties, boolean includeChildren, boolean includeEula, boolean includeSupportFiles, boolean includeParamGroups, boolean includeMemorySettings) throws Exception {
+    public static JSONObject createTaskObject(final TaskInfo taskInfo, final HttpServletRequest request, final boolean includeProperties, final boolean includeChildren, final boolean includeEula, final boolean includeSupportFiles, final boolean includeParamGroups, final boolean includeMemorySettings) 
+    throws Exception {
         final GpContext taskContext = Util.getTaskContext(request, taskInfo.getLsid());
         final JSONObject jsonObj=new JSONObject();
-        final String href=getTaskInfoPath(request, taskInfo);
-        jsonObj.put("href", href);
+        final String taskHref=getTaskInfoPath(request, taskInfo);
+        jsonObj.put("href", taskHref);
         jsonObj.put("name", taskInfo.getName());
         try {
             final LSID lsid=new LSID(taskInfo.getLsid());
@@ -743,33 +728,7 @@ public class TasksResource {
 
         JSONArray paramsJson=new JSONArray();
         for(ParameterInfo pinfo : taskInfo.getParameterInfoArray()) {
-            final JSONObject attributesJson = new JSONObject();
-            for(final Object key : pinfo.getAttributes().keySet()) {
-                final Object value = pinfo.getAttributes().get(key);
-                if (value != null) {
-                    attributesJson.put(key.toString(), value.toString());
-                }
-            }
-            final JSONObject attrObj = new JSONObject();
-            attrObj.put("attributes", attributesJson);
-            attrObj.put("description", pinfo.getDescription());
-
-            // Handle static choice parameters
-            if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
-                ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
-                attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
-            }
-
-            // Handle dynamic choice parameters
-            if (pinfo.getAttributes().containsKey("choiceDir")) {
-                ParameterInfoRecord pinfoRecord = new ParameterInfoRecord(pinfo);
-                ChoiceInfoParser parser = ChoiceInfo.getChoiceInfoParser(taskContext);
-                ChoiceInfo choices = parser.initChoiceInfo(pinfoRecord.getFormal());
-                attrObj.put("choiceInfo", ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choices));
-            }
-
-            final JSONObject paramJson = new JSONObject();
-            paramJson.put(pinfo.getName(), attrObj);
+            final JSONObject paramJson = initParamJson(taskHref, taskContext, pinfo);
             paramsJson.put(paramJson);
         }
         jsonObj.put("params", paramsJson);
@@ -801,7 +760,7 @@ public class TasksResource {
 
                 final JSONArray jobOptionsParams=new JSONArray();
                 for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                    final JSONObject jobOption = RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                    final JSONObject jobOption = initParamJson(taskHref, taskContext, jobConfigParameterInfo);
                     jobOptionsParams.put(jobOption);
                 }
                 configObj.put("job.inputParams", jobOptionsParams);
@@ -811,6 +770,39 @@ public class TasksResource {
         }
 
         return jsonObj;
+    }
+
+    private static JSONObject initParamJson(final String taskHref, final GpContext taskContext, final ParameterInfo pinfo) throws JSONException {
+        final JSONObject attributesJson = new JSONObject();
+        for(final Object key : pinfo.getAttributes().keySet()) {
+            final Object value = pinfo.getAttributes().get(key);
+            if (value != null) {
+                attributesJson.put(key.toString(), value.toString());
+            }
+        }
+        final JSONObject attrObj = new JSONObject();
+        attrObj.put("attributes", attributesJson);
+        attrObj.put("description", pinfo.getDescription());
+
+        // Handle static choice parameters
+        if (pinfo.getChoices() != null && pinfo.getChoices().size() > 0) {
+            final ChoiceInfo choices = ChoiceInfoHelper.initChoiceInfo(pinfo);
+            final JSONObject choiceInfoObj=ChoiceInfoHelper.initChoiceInfoJson(taskHref, choices);
+            attrObj.put("choiceInfo", choiceInfoObj);
+        }
+
+        // Handle dynamic choice parameters
+        if (pinfo.getAttributes().containsKey("choiceDir")) {
+            final ParameterInfoRecord pinfoRecord = new ParameterInfoRecord(pinfo);
+            final ChoiceInfoParser parser = ChoiceInfo.getChoiceInfoParser(taskContext);
+            final ChoiceInfo choices = parser.initChoiceInfo(pinfoRecord.getFormal());
+            final JSONObject choiceInfoObj=ChoiceInfoHelper.initChoiceInfoJson(taskHref, choices);
+            attrObj.put("choiceInfo", choiceInfoObj);
+        }
+
+        final JSONObject paramJson = new JSONObject();
+        paramJson.put(pinfo.getName(), attrObj);
+        return paramJson;
     }
 
     public static void applyJobSubmission(final JSONArray params, JobSubmission js) throws JSONException {
@@ -924,7 +916,8 @@ public class TasksResource {
         ChoiceInfo choiceInfo=parser.initChoiceInfo(pinfoRecord.getFormal());
 
         try {
-            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskContext.getTaskInfo(), choiceInfo);
+            final String taskHref=TasksResource.getTaskInfoPath(request, taskContext.getTaskInfo());
+            final JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(taskHref, choiceInfo);
             final String choiceInfoStr=choiceInfoJson.toString();
 
             //return the JSON representation of the job

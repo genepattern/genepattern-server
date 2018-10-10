@@ -374,8 +374,9 @@ public class RunTaskServlet extends HttpServlet
             if (jobConfigParams != null) {
                 final JSONObject jobConfigGroupJson=jobConfigParams.getInputParamGroup().toJson();
                 paramGroupsJson.put(jobConfigGroupJson);
+                final String taskHref=TasksResource.getTaskInfoPath(request, taskInfo);
                 for(final ParameterInfo jobConfigParameterInfo : jobConfigParams.getParams()) {
-                    JSONObject jsonObj=RunTaskServlet.initParametersJSON(request, taskInfo, jobConfigParameterInfo);
+                    final JSONObject jsonObj=RunTaskServlet.initParametersJSON(taskHref, jobConfigParameterInfo);
                     parametersArray.put(jsonObj);
                 }
             }
@@ -995,23 +996,24 @@ public class RunTaskServlet extends HttpServlet
 
     private JSONArray getParameterList(final HttpServletRequest request, final TaskInfo taskInfo)
     {
+        final String taskHref=TasksResource.getTaskInfoPath(request, taskInfo);
         final ParameterInfo[] pArray=taskInfo.getParameterInfoArray();
         final JSONArray parametersObject = new JSONArray();
         for(final ParameterInfo pinfo : pArray) {
-            final ParametersJSON parameter = initParametersJSON(request, taskInfo, pinfo);
+            final ParametersJSON parameter = initParametersJSON(taskHref, pinfo);
             parametersObject.put(parameter);
         }
         return parametersObject;
     }
 
-    public static ParametersJSON initParametersJSON(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pinfo) {
+    public static ParametersJSON initParametersJSON(final String taskHref, final ParameterInfo pinfo) {
         // don't initialize the drop-down menu; instead wait for the web client to make a callback
         final boolean initDropdown=false;
         final ParametersJSON parameter = new ParametersJSON(pinfo);
         parameter.addNumValues(pinfo);
         parameter.addRangeInfo(pinfo);
         parameter.addGroupInfo(pinfo);
-        parameter.initChoice(request, taskInfo, pinfo, initDropdown);
+        parameter.addChoiceInfo(taskHref, pinfo, initDropdown);
         return parameter;
     }
 

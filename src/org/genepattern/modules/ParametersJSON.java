@@ -9,15 +9,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.Logger;
-import org.genepattern.server.job.input.*;
+import org.genepattern.server.job.input.GroupInfo;
+import org.genepattern.server.job.input.NumValues;
+import org.genepattern.server.job.input.ParamListHelper;
+import org.genepattern.server.job.input.RangeValues;
+import org.genepattern.server.job.input.RangeValuesParser;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -229,11 +230,11 @@ public class ParametersJSON extends JSONObject {
         }
     }
 
-    public void initChoice(final HttpServletRequest request, final TaskInfo taskInfo, final ParameterInfo pInfo, final boolean initDropdown) {
+    public void addChoiceInfo(final String parentHref, final ParameterInfo pInfo, final boolean initDropdown) {
         try {
             final ChoiceInfo choiceInfo = ChoiceInfoHelper.initChoiceInfo(pInfo, initDropdown);
             if (choiceInfo != null) {
-                JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(request, taskInfo, choiceInfo);
+                JSONObject choiceInfoJson=ChoiceInfoHelper.initChoiceInfoJson(parentHref, choiceInfo);
                 this.put("choiceInfo", choiceInfoJson);
             }
         }
