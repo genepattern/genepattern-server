@@ -12,6 +12,7 @@ import org.genepattern.server.eula.InitException;
 import org.genepattern.server.eula.RecordEulaDefault;
 import org.genepattern.server.eula.remote.PostToBroad.PostException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPostToBroad {
@@ -38,7 +39,9 @@ public class TestPostToBroad {
         post.setEmail(email);
     }
 
-    @Test
+    // Note: the integration test will fail until we migrate to AWS infrastructure
+    //   we took the eulaEndpoint offline
+    @Ignore @Test
     public void integrationTest() {
         try {
             post.doPost();
