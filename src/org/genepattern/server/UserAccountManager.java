@@ -268,7 +268,7 @@ public class UserAccountManager {
         }
         if (username.startsWith("@")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
-                    "Invalid username: '"+username+"': Can't start with the dot ('@') character.");
+                    "Invalid username: '"+username+"': Can't start with the at ('@') character.");
         }
         // match the allowed username regex
         validateUsernameFromRegex(gpConfig, GpContext.getServerContext(), username);
