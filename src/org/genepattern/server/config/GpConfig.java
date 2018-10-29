@@ -335,7 +335,6 @@ public class GpConfig {
      *  When this is the case, save the lookup into the substitutionParams map when initializing the config.
      */
     private final Map<String,String> substitutionParams=new HashMap<String,String>();
-    private final ValueLookup valueLookup;
 
     public GpConfig(final Builder in) {
         this.gpServletContext=in.gpServletContext;
@@ -418,7 +417,6 @@ public class GpConfig {
         else {
             this.yamlProperties=null;
         }
-        this.valueLookup=new ValueLookupFromConfigYaml(this.serverProperties, this.yamlProperties);
 
         if (in.genePatternURL!=null) {
             this.genePatternURL=in.genePatternURL;
@@ -851,8 +849,11 @@ public class GpConfig {
 
     public Value getValue(final GpContext context, final String key) {
         Value value=null;
-        if (valueLookup!=null) {
-            value=valueLookup.getValue(context, key);
+        if (yamlProperties != null) {
+            value=yamlProperties.getValue(context, key);
+        }
+        if (value==null && serverProperties != null) {
+            value=serverProperties.getValue(context, key);
         }
         if (value==null) {
             String substitutionValue=this.substitutionParams.get(key);
