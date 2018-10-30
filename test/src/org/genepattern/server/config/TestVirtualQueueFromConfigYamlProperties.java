@@ -48,11 +48,11 @@ public class TestVirtualQueueFromConfigYamlProperties {
     @Test
     public void virtualQueue_default() {
         assertEquals("expected 'job.queue'", 
-                "genepattern", 
-                configYamlProps.getProperty(gpContext, JobRunner.PROP_QUEUE));
+                new Value("genepattern"), 
+                configYamlProps.getValue(gpContext, JobRunner.PROP_QUEUE));
         assertEquals("expected default 'job.virtualQueue'", 
-                "genepattern_short",
-                configYamlProps.getProperty(gpContext, JobRunner.PROP_VIRTUAL_QUEUE));
+                new Value("genepattern_short"),
+                configYamlProps.getValue(gpContext, JobRunner.PROP_VIRTUAL_QUEUE));
         assertEquals("expected default 'job.extraArgs'",
                 null,
                 configYamlProps.getValue(gpContext, "job.extraArgs"));
@@ -61,10 +61,12 @@ public class TestVirtualQueueFromConfigYamlProperties {
     @Test
     public void virtualQueue_custom() {
         when(gpContext.getTaskInfo()).thenReturn(topHatInfo);
-        assertEquals("expected 'executor.props'for TopHat", new Value("genepattern_long"), configYamlProps.getValue(gpContext, "executor.props"));
+        assertEquals("expected 'executor.props'for TopHat", 
+                new Value("genepattern_long"), 
+                configYamlProps.getValue(gpContext, "executor.props"));
         assertEquals("when taskName is 'TopHat', expected getProperty('job.queue')",
-                "genepattern",
-                configYamlProps.getProperty(gpContext, "job.queue"));
+                new Value("genepattern"),
+                configYamlProps.getValue(gpContext, "job.queue"));
         assertEquals("when taskName is 'TopHat', expected getValue('job.queue')",
                 new Value("genepattern"),
                 configYamlProps.getValue(gpContext, "job.queue"));

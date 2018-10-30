@@ -82,17 +82,6 @@ public class ConfigYamlProperties {
         return getValue(context, "executor.props", null, cmdExecId);
     }
 
-    public String getProperty(final GpContext context, final String key) {
-        Value value = getValue(context, key);
-        if (value == null) {
-            return null;
-        }
-        if (value.getNumValues() > 1) {
-            log.error("returning first item of a "+value.getNumValues()+" item list");
-        }
-        return value.getValue();
-    }
-
     public Value getValue(final GpContext context, final String key) {
         if (key==null) {
             log.debug("key == null");
