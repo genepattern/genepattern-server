@@ -288,6 +288,161 @@ default.properties:
     #     job.commandPrefix: "<run-with-docker>"
     # 
 
+    ##############################################################
+    # Docker image configuration 
+    #
+    # job.docker.image
+    #   This is passed as an arg to the docker run command
+    #     $ docker run [OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]
+    # Must be set in the module manifest file. 
+    #   job.docker.image=IMAGE[:TAG|@DIGEST]
+    # Example
+    #   # use one of the GenePattern images from DockerHub
+    #   job.docker.image=genepattern/docker-java17:0.12
+    #
+    # Links:
+    #   Docker run command
+    #     https://docs.docker.com/engine/reference/run/
+    #   DockerHub GenePattern Dashboard
+    #     https://hub.docker.com/u/genepattern/dashboard/
+
+    # 'job.docker.image.default'
+    #   The default 'job.docker.image' to use when it is not set in the manifest file
+    #   and there is no match in the job.docker.image.lookup table
+    "job.docker.image.default": "genepattern/docker-java17:0.12"
+
+
+    # 'job.docker.image.lookup'
+    #   Lookup table to use when 'job.docker.image' is not declared in the manifest file
+    #
+    # Template:
+    #   {taskName}         : {dockerImage}
+    #   {taskName:version} : {dockerImage}
+    #   {lsid}             : {dockerImage}
+    #   {lsid_no_version}  : {dockerImage}
+    #
+    # Examples:
+    #   {taskName}
+    #     "ConvertLineEndings"   : "genepattern/cle:latest"
+    #   {taskName:version}
+    #     "ConvertLineEndings:2" : "genepattern/cle:2"
+    #   {lsid:version}
+    #     "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2" : "genepattern/cle:2"
+    #   {lsid_no_version}
+    #     "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002" : "genepattern/cle:latest"
+    #
+    # Lookup table for legacy modules based on cloud.genepattern.org circa July 2018
+    #
+    job.docker.image.lookup: {
+
+        # ABSOLUTE (<= v1.5)
+        "ABSOLUTE:1.5": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE:1": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE.review:1.4": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE.summarize:1.4": "genepattern/docker-r-2-15:0.1",
+        "CART:2": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation:2.2": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation:2": "genepattern/docker-r-2-5:0.1",
+        "CBS:3": "genepattern/docker-r-2-15:0.1",
+        "Chip2Chip": "genepattern/docker-java18:0.1",
+        # ComparativeMarkerSelection (<= v10.1)
+        "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
+        "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
+        # ConstellationMap v1.4.6 and v1.4.9 set in job.docker.image
+        # ConstellationMap (<= v1.4.5) must use genepattern/docker-r-3-0-conmap:0.1
+        "ConstellationMap:1.4.5": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.4": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConvertLineEndings:2": "genepattern/docker-perl52:0.1",
+        "ConvertLineEndings:1": "genepattern/docker-perl52:0.1",
+
+        # Note: r/2.0 runs in the r/2.5 container
+        "CoxRegression:1.3": "genepattern/docker-r-2-5:0.1",
+        
+        # DESeq2 (<= v0.4 on gpprod, <= v0.4.2 on cloud.gp)
+        "DESeq2:0.4.2": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4.1": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4":   "genepattern/docker-r-3-2:0.1",
+
+        "DiffEx:0.1.10": "genepattern/docker-python36:0.5",
+        "ExpressionFileCreator:12.3": "genepattern/docker-r-2-15:0.1",
+        "ExtractComparativeMarkerResults": "genepattern/docker-java17:0.12",
+        "FLAMEPreprocess": "genepattern/docker-r-2-7:0.1",
+
+        # GISTIC_2.0, (2.0.23) v6.14 custom config
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00125:6.14": "genepattern/docker-gistic:0.12",
+
+        # GSEA >= v19 requires java/1.8 
+        #      >= v19.0.25 must be set in the manifest
+        "GSEA:19.0.19": "genepattern/docker-java18:0.1",
+        "GSEA:19.0.18": "genepattern/docker-java18:0.1",
+        # GSEAv18 (<= v18), requires java/1.7
+        "GSEA:18": "genepattern/docker-java17:0.12",
+
+        "GSEALeadingEdgeViewer:5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (>= v6) requires java/1.8
+        #   >= v6.0.11, must be set in the manifest file
+        "GSEAPreranked:6.0.5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (<= v5) prefers java/1.7
+        "GSEAPreranked:5": "genepattern/docker-java17:0.12",
+
+        "helloWorld_R2.5_Rjava": "genepattern/docker-r-2-5:0.1",
+        "helloWorld_R2.7": "genepattern/docker-r-2-7:0.1",
+        "helloWorld_R2.15_Rscript": "genepattern/docker-r-2-15:0.1",
+        "helloWorld_R3.2_Rscript": "genepattern/docker-r-3-2:0.1",
+
+        # HierarchicalClustering (>= v7) requires python
+        #   (>= v7.17), must be set in the manifest 
+        #   (<= v6) prefers java/1.7
+        "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5",
+        "HierarchicalClustering:6": "genepattern/docker-java17:0.12",
+        "HierarchicalClustering:5.4": "genepattern/docker-java17:0.12",
+
+        # HierarchicalClusteringImage (<= v4) requires default java 1.7
+
+        # ImputeMissingValues.KNN (<= v13) requires R/2.5
+        "ImputeMissingValues.KNN": "genepattern/docker-r-2-5:0.1",
+        
+        # KNN (<= v4) requires java/1.7
+
+        # MutSigCV (v1.2) requires matlab_mcr/2013a
+        "MutSigCV:1.2": "genepattern/docker-mutsigcv:0.1",
+
+        NearestTemplatePrediction: "genepattern/docker-r-3-13:0.1",
+        NMFConsensus: "genepattern/docker-r-2-5:0.1",
+        PreprocessDataset: "genepattern/docker-java17:0.12",
+        "PreprocessReadCounts:0.6": "genepattern/docker-r-3-13:0.1",
+        SNPFileCreator: "genepattern/docker-java17:0.12",
+        
+        # ssGSEAProjection (>= v9.0.10), must set in manifest
+        "ssGSEAProjection:9.0.6": "genepattern/docker-r-2-15:0.1",
+
+        STAR.aligner: "genepattern/docker-staraligner:v0.43",
+        STAR.indexer: "genepattern/docker-staraligner:v0.43",
+
+        "SubMap:3": "genepattern/docker-r-2-5:0.1",
+        "SurvivalCurve:3": "genepattern/docker-r-2-7:0.1",
+        "SurvivalCurve:2": "genepattern/docker-r-2-7:0.1",
+        "SVM:4": "genepattern/docker-r-2-5:0.1",
+        "TestStep:0.3": "genepattern/docker-java17:0.12",
+
+        # TopHat, v9.00
+        "Tophat:9.00": "genepattern/docker-tophat:0.1",
+ 
+        # TopHat v8.11
+        "TopHat:8.11": "genepattern/docker-tophat:0.1",
+
+        # TopHat v8.9
+        "TopHat:8.9": "genepattern/docker-tophat:0.1",
+
+        "txt2odf:2": "genepattern/docker-python36:0.5",
+        "UniquifyLabels:1": "genepattern/docker-java17:0.12",
+        "which_R3.2": "genepattern/docker-r-3-2:0.1",
+    }
+
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
 # Don't use this as an executor id in this file.

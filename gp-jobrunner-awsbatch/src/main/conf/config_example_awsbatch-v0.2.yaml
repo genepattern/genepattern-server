@@ -167,7 +167,7 @@ default.properties:
     #
     # 'job.docker.image'
     #
-    #   The 'job.docker.image' should be set in the manifest file
+    #   The 'job.docker.image' must be set in the manifest file
     # for each module.
     #
     #   When 'job.docker.image' is not in the manifest file, the following 
@@ -183,8 +183,6 @@ default.properties:
     #   Use the defaults in the 'job.docker.image.lookup' table. 
     #
     # For special-cases, you can set the 'job.docker.image' on a per-user, per-group basis.
-    # 
-    # 
     # 
     #   (1) use a custom value if set in the config file
     #   (2) use 'job.docker.image.default', when no custom value is set

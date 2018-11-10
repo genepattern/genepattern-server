@@ -124,7 +124,6 @@ public class ConfigUtil {
         LogManager.getRootLogger().setLevel(Level.OFF);
         final File webappDir=new File("website").getAbsoluteFile();
         final GpConfig.Builder b=new GpConfig.Builder();
-        //final GpConfig gpConfig=new GpConfig.Builder()
         b.webappDir(webappDir);
         b.configFile(configFile);
         if (groupInfo != null) {
@@ -136,6 +135,5 @@ public class ConfigUtil {
         }
         return gpConfig;
     }
-
 
 }
