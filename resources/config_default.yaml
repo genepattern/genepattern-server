@@ -246,6 +246,13 @@ default.properties:
     org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
 
     ##############################################################
+    # Job Runner API defaults
+    #
+    # job.cpuCount
+    #   the number of cpus requested for the job
+    job.cpuCount: 1
+
+    ##############################################################
     # job.commandPrefix
     #   add an optional command line prefix to the module command line
     # this is prepended before command substutions are resolved.
@@ -487,3 +494,15 @@ executors:
 
             ## default <python_3.6> in substitution
             python_3.6: "python3"
+
+#
+# custom configuration by module
+#
+module.properties:
+    # special-case: ConsensusClustering v7, <R2.5_HOME> substitution
+    "ConsensusClustering":
+        "R2.5_HOME": "/usr/local"
+
+    # SNPFileCreator v1, requires more than the default 512m RAM
+    "SNPFileCreator": 
+        job.memory: 4 Gb

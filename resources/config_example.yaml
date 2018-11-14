@@ -275,6 +275,13 @@ default.properties:
     # genomeSpaceAutoCreate: false
     
     ##############################################################
+    # Job Runner API defaults
+    #
+    # job.cpuCount
+    #   the number of cpus requested for the job
+    job.cpuCount: 1
+
+    ##############################################################
     # job.commandPrefix
     #   add an optional command line prefix to the module command line
     # this is prepended before command substutions are resolved.
