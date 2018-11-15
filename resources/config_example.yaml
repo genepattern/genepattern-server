@@ -275,6 +275,14 @@ default.properties:
     # genomeSpaceAutoCreate: false
     
     ##############################################################
+    # (experimental) JobObjectCache
+    #   cache job details in JSON format, to speed up page load
+    #   performance on the Job Summary page
+    # 
+    jobObjectCache.enabled: false
+    jobObjectCache.maximumSize: 10000
+    
+    ##############################################################
     # Job Runner API defaults
     #
     # job.cpuCount
