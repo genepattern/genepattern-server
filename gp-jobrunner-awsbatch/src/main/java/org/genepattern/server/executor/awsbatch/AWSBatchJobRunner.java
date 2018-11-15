@@ -25,7 +25,6 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.log4j.Logger;
-import org.genepattern.drm.DockerImage;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -476,7 +475,7 @@ public class AWSBatchJobRunner implements JobRunner {
             );
         }
 
-        final String dockerImage=DockerImage.getJobDockerImage(gpJob.getGpConfig(), gpJob.getJobContext());
+        final String dockerImage=gpJob.getGpConfig().getJobDockerImage(gpJob.getJobContext());
         if (log.isDebugEnabled()) {
             log.debug("+"+PROP_DOCKER_IMAGE+"'="+dockerImage);
         }
