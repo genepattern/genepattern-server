@@ -32,4 +32,9 @@ public class JobObjectCache {
         // default is a cache of size of 10,000 records
         return gpConfig.getGPLongProperty(serverContext, PROP_MAX_SIZE, 10000L);
     }
+    
+    public static long getExpireAfterWriteDays(final GpConfig gpConfig, final GpContext serverContext) {
+        // dedfault is 10 days
+        return gpConfig.getGPLongProperty(serverContext, PROP_EXPIRE_AFTER_WRITE_DAYS, 10L);        
+    }
 }

@@ -154,9 +154,10 @@ public class GetPipelineJobLegacy implements GetJob {
     
     protected final LoadingCache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext) {
         final long maxSize=JobObjectCache.getMaximumSize(gpConfig, serverContext);
+        final long days=JobObjectCache.getExpireAfterWriteDays(gpConfig, serverContext);
         return CacheBuilder.newBuilder()
             .maximumSize(maxSize)
-            .expireAfterWrite(10, TimeUnit.DAYS)
+            .expireAfterWrite(days, TimeUnit.DAYS)
             .build(
                 new CacheLoader<String, JSONObject>() {
                     public JSONObject load(String key) throws Exception {
