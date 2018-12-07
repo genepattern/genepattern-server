@@ -153,6 +153,7 @@ public interface JobRunner {
      * <ul>
      *   <li>https://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties
      *   <li>https://docs.docker.com/engine/reference/run/
+     *   <li>https://hub.docker.com/u/genepattern/
      * </ul>
      */
     public static final String PROP_DOCKER_IMAGE="job.docker.image";

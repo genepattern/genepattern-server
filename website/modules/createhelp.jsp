@@ -64,6 +64,9 @@ One of three terms that indicates the author&rsquo;s confidence in the robustnes
 Help file that describes the module and provides instructions
 for its use.</p>
     <p>
+        <strong>Docker Image</strong><br/>
+Docker image in which to run the module.
+    <p>
         <a name="Command_brief"></a><strong>Command line</strong><br>
 Command line used to launch the module. Values enclosed in angle brackets are replaced by specific values before the command executes.</p>
     <p>
@@ -149,6 +152,7 @@ exit from the module integrator and run the module.
 <li><a href="#taskLevelAttributes">Title Bar</a></li>
 <li><a href="#details">Details</a></li>
 <li><a href="#supportFiles">Support Files</a></li>
+<li><a href="#DockerImage">Docker Image</a></li>
 <li><a href="#Command">Command Line</a></li>
 <li><a href="#inputParameters">Parameters</a></li>
 </ul>
@@ -255,7 +259,6 @@ The system will automatically select the next unique version, increasing the ver
 Enter a brief description of the changes that you have made to the module. When GenePattern clients display a drop-down list of versions on the Install from Repository page, the comments for each version are visible in the drop-down list.
 <br><br>
 ConsensusClustering example: <span class="example"><i>Added ability to create heatmap images of clusters</i></span>
-
 
 <a name="TaskType"></a><h4>Module Category</h4>
 On the GenePattern home page, modules and pipelines are organized by categories.
@@ -414,6 +417,21 @@ in your browser.
 <br><br>
 
 ConsensusClustering example: <span class="example">Current files: </span> <span class="exampleLink">Acme.jar</span> <span class="exampleLink">archiver.jar</span> <span class="exampleLink">common_cmdline.jar</span> <span class="exampleLink">ConsensusClustering.pdf</span> <span class="exampleLink">file_support.jar</span> <span class="exampleLink">geneweaver.jar</span> <span class="exampleLink">gp-common.jar</span> <span class="exampleLink">ineq_0.2-2.tar.gz</span> <span class="exampleLink">ineq_0.2-2.tgz</span> <span class="exampleLink">jaxb-rt-1.0-ea.jar</span> <span class="exampleLink">my.local.install.r</span> <span class="exampleLink">RunSomAlg.jar</span> <span class="exampleLink">trove.jar</span> <span class="exampleLink">version.txt</span>
+
+
+<br/><br/><hr>
+<a name="DockerImage"></a><h3>Docker Image</h3>
+Set the 'job.docker.image' for the module. This corresponds to the <span class="example">IMAGE[:TAG|@DIGEST]</span> option of 
+the <a href="https://docs.docker.com/engine/reference/run/">docker run command</a>. 
+Most production GenePattern modules pull their docker images from the DockerHub genepattern organization:<br/>
+<ul>
+  <li><a href="https://hub.docker.com/u/genepattern/">//hub.docker.com/u/genepattern/</a>
+</ul>
+Examples:<br/>
+<ul>
+  <li>genepattern/docker-java17:0.12
+</ul>
+
 
 
 <br><br><hr>
