@@ -295,6 +295,7 @@ function saveModule()
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
     var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
+    var dockerImage = $('input[name="dockerImage"]').val();
 
     var filesToDelete = module_editor.filesToDelete;
 
@@ -303,6 +304,7 @@ function saveModule()
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
+        "job.docker.image": dockerImage,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
@@ -2008,6 +2010,11 @@ function loadModuleInfo(module)
     {
         $('input[name="comment"]').val(module["version"]);
     }
+    
+    if(module["job.docker.image"] !== undefined)
+    {
+        $('input[name="dockerImage"]').val(module["job.docker.image"]);
+    }
 
     if(module["language"] !== undefined)
     {
@@ -2141,6 +2148,7 @@ function loadModuleInfo(module)
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
+            && keyName != "job.docker.image"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
