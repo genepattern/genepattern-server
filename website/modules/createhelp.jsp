@@ -64,8 +64,8 @@ One of three terms that indicates the author&rsquo;s confidence in the robustnes
 Help file that describes the module and provides instructions
 for its use.</p>
     <p>
-        <strong>Docker Image</strong><br/>
-Docker image in which to run the module.
+        <a name="DockerImage_brief"></a><strong>Docker Image</strong><br/>
+The docker image in which to run the module command line.
     <p>
         <a name="Command_brief"></a><strong>Command line</strong><br>
 Command line used to launch the module. Values enclosed in angle brackets are replaced by specific values before the command executes.</p>
@@ -420,18 +420,30 @@ ConsensusClustering example: <span class="example">Current files: </span> <span 
 
 
 <br/><br/><hr>
-<a name="DockerImage"></a><h3>Docker Image</h3>
-Set the 'job.docker.image' for the module. This corresponds to the <span class="example">IMAGE[:TAG|@DIGEST]</span> option of 
-the <a href="https://docs.docker.com/engine/reference/run/">docker run command</a>. 
-Most production GenePattern modules pull their docker images from the DockerHub genepattern organization:<br/>
-<ul>
-  <li><a href="https://hub.docker.com/u/genepattern/">//hub.docker.com/u/genepattern/</a>
-</ul>
-Examples:<br/>
-<ul>
-  <li>genepattern/docker-java17:0.12
-</ul>
+<a name="DockerImage"></a><h3>Docker Image (job.docker.image)</h3>
+Each GenePattern job runs in a docker container. Each module must declare a docker image by setting the 
+<span class="example">job.docker.image</span> property in the manifest file. This is passed as the arg to 
+the <a href="https://docs.docker.com/engine/reference/commandline/run/">docker run command</a>.
+For production modules this should be a tagged version of an image from a public repository. 
+<br/>
+<span class="example"><pre>
+Manifest file format:
+  job.docker.image=<em>IMAGE[:TAG|@DIGEST]</em>
+  job.docker.image=<b>genepattern/docker-java17:0.12</b>
 
+Command line format:
+  $ docker run <em>[OPTIONS] &lt;job.docker.image&gt; &lt;commandLine&gt;</em>
+  $ docker run <em>[OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]</em>
+  $ docker run <b>genepattern/docker-java17:0.12</b> java -version
+</pre></span>
+
+Check out the <a href="https://hub.docker.com/u/genepattern/">GenePattern organization in DockerHub</a> for a list of images that we maintain.
+<p>Additional links
+<ul>
+<li>Default image repository: <a href="https://hub.docker.com/r/genepattern/docker-java17">hub.docker.com/r/genepattern/docker-java17</a>.</li>
+<li>Tags for default image repository: <a href="https://hub.docker.com/r/genepattern/docker-java17/tags/">hub.docker.com/r/genepattern/docker-java17/tags</a>.</li>
+<li>DockerHub overview: <a href="https://docs.docker.com/docker-hub/">docs.docker.com/docker-hub</a>.</li>
+</ul>
 
 
 <br><br><hr>
