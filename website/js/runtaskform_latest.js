@@ -778,6 +778,7 @@ function loadModuleInfo(module) {
     $(".properties-license").text(module["eula"] ? "License Acceptance Required" : "None");
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
+    $(".properties-dockerimage").text(module["job.docker.image"]);
     $(".properties-commandline").text(module["commandLine"]);
     $(".properties-tasktype").text(module["taskType"]);
     $(".properties-categories").text(module["categories"]);
