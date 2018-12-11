@@ -361,6 +361,8 @@ default.properties:
         "CARTXValidation:2": "genepattern/docker-r-2-5:0.1",
         "CBS:3": "genepattern/docker-r-2-15:0.1",
         "Chip2Chip": "genepattern/docker-java18:0.1",
+        # ComBat (<= v3)
+        "ComBat:3": "genepattern/docker-r-2-7:0.1", 
         # ComparativeMarkerSelection (<= v10.1)
         "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
         "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
