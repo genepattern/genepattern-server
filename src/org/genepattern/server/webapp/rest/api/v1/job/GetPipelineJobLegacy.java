@@ -125,7 +125,7 @@ public class GetPipelineJobLegacy implements GetJob {
         return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
-    protected JSONObject _getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
+    protected static JSONObject _getJob(final String gpUrl, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeChildren,
             final boolean includeOutputFiles,
             final boolean includeComments, final boolean includeTags) throws GetJobException {
         
@@ -135,7 +135,7 @@ public class GetPipelineJobLegacy implements GetJob {
         }
         else {
             try {
-                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo,
+                InitPipelineJson walker=new InitPipelineJson(gpUrl, jobsResourcePath, jobInfo,
                         includeOutputFiles, includeComments, includeTags);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
@@ -152,7 +152,7 @@ public class GetPipelineJobLegacy implements GetJob {
     protected static LoadingCache<String, JSONObject> jobCache;
     protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
     
-    protected final LoadingCache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext) {
+    protected static final LoadingCache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext, final String gpUrl, final String jobsResourcePath) {
         final long maxSize=JobObjectCache.getMaximumSize(gpConfig, serverContext);
         final long days=JobObjectCache.getExpireAfterWriteDays(gpConfig, serverContext);
         return CacheBuilder.newBuilder()
@@ -167,11 +167,10 @@ public class GetPipelineJobLegacy implements GetJob {
                         Boolean inclOutputFiles = (Boolean)params[2];
                         Boolean inclComments = (Boolean)params[3];
                         Boolean inclTags = (Boolean)params[3];
-                        GpContext uc = (GpContext)params[5];
                         if (log.isDebugEnabled()) {
                             log.debug("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
                         }
-                        return _getJob(uc, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
+                        return _getJob(gpUrl, jobsResourcePath, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
                     }
                 });
     }
@@ -180,7 +179,7 @@ public class GetPipelineJobLegacy implements GetJob {
         final boolean isEnabled=JobObjectCache.isEnabled(ServerConfigurationFactory.instance(), gpContext);
         
         if (isEnabled && jobCache == null) {
-            jobCache = initJobCache(gpConfig, gpContext);            
+            jobCache = initJobCache(gpConfig, gpContext, gpUrl, jobsResourcePath); 
         }
         
         // special-case: cleanup when the cache is switched from enabled to disabled while the server is running
@@ -191,7 +190,7 @@ public class GetPipelineJobLegacy implements GetJob {
         return isEnabled;
     }
     
-    protected static final String initCompositeKey(final GpContext userContext, final JobInfo jobInfo,final boolean includeChildren, final boolean includeOutputFiles, final boolean includeComments, final boolean includeTags) {
+    protected static final String initCompositeKey(final JobInfo jobInfo,final boolean includeChildren, final boolean includeOutputFiles, final boolean includeComments, final boolean includeTags) {
         // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
         final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includeComments + includeTags;
         Object[] params = new Object[6];
@@ -200,7 +199,6 @@ public class GetPipelineJobLegacy implements GetJob {
         params[2]=includeOutputFiles;
         params[3]=includeComments;
         params[4]=includeTags;
-        params[5]=userContext;
         paramMap.put(composite_key, params);
         return composite_key;
     }
@@ -214,12 +212,12 @@ public class GetPipelineJobLegacy implements GetJob {
         JSONObject job = null;
         try {
             if (isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
-                final String composite_key = initCompositeKey(userContext, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                final String composite_key = initCompositeKey(jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
                 job=jobCache.get(composite_key);                 
             } 
             else {
                 // skip the cache if not finished, don't use the constructor since we don't want it cached
-                job = _getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                job = _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
             }
             if (includePermissions && job!=null) {
                 //only include permissions for the top-level job

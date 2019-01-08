@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.job.DepthFirstJobInfoWalker;
 import org.genepattern.server.job.JobInfoVisitor;
@@ -30,7 +29,6 @@ import org.json.JSONObject;
 public class InitPipelineJson implements JobInfoVisitor {
     private static final Logger log = Logger.getLogger(InitPipelineJson.class);
 
-    private final GpContext userContext;
     private final JobInfo jobInfo;
     private final String gpUrl;
     private final String jobsResourcePath;
@@ -43,13 +41,12 @@ public class InitPipelineJson implements JobInfoVisitor {
     private final Map<Integer,JSONObject> jobMap=new LinkedHashMap<Integer,JSONObject>();
     private final List<GpFilePath> outputFiles=new ArrayList<GpFilePath>();
 
-    public InitPipelineJson(final GpContext userContext, final String gpUrl, final String jobsResourcePath,
+    public InitPipelineJson(final String gpUrl, final String jobsResourcePath,
                             final JobInfo jobInfo, final boolean includeOutputFiles, final boolean includeComments,
                             final boolean includeTags) {
         this.gpUrl=gpUrl;
         this.jobsResourcePath=jobsResourcePath;
         this.jobInfo=jobInfo;
-        this.userContext = userContext;
         this.includeOutputFiles=includeOutputFiles;
         this.includeComments = includeComments;
         this.includeTags = includeTags;
@@ -89,7 +86,7 @@ public class InitPipelineJson implements JobInfoVisitor {
         return jobJson;
     }
 
-    private JSONObject getOrCreateRecord(final GpContext userContext, final String gpUrl, final JobInfo jobInfo) throws GetJobException {
+    private JSONObject getOrCreateRecord(final String gpUrl, final JobInfo jobInfo) throws GetJobException {
         if (jobInfo==null) {
             return null;
         }
@@ -138,10 +135,10 @@ public class InitPipelineJson implements JobInfoVisitor {
     @Override
     public void visitJobInfo(final JobInfo rootJobInfo, final JobInfo parentJobInfo, final JobInfo jobInfo) {
         try {
-            final JSONObject rootJsonObj = getOrCreateRecord(userContext, gpUrl, rootJobInfo);
+            final JSONObject rootJsonObj = getOrCreateRecord(gpUrl, rootJobInfo);
             this.jobJson=rootJsonObj;
-            final JSONObject parentJsonObj = getOrCreateRecord(userContext, gpUrl, parentJobInfo);
-            final JSONObject jsonObj = getOrCreateRecord(userContext, gpUrl, jobInfo);
+            final JSONObject parentJsonObj = getOrCreateRecord(gpUrl, parentJobInfo);
+            final JSONObject jsonObj = getOrCreateRecord(gpUrl, jobInfo);
             addChildRecord(parentJsonObj, jsonObj);
         }
         catch (GetJobException e) {
