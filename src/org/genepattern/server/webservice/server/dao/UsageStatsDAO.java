@@ -3,7 +3,6 @@ package org.genepattern.server.webservice.server.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -245,7 +244,7 @@ public class UsageStatsDAO extends BaseDAO {
         
        String altExclusion = userExclusionClause.toLowerCase().replace("user_id", "gpu.user_id") ;
         
-       @SuppressWarnings("deprecation")
+       //@SuppressWarnings("deprecation")
        /* PreparedStatement pstmt = getSession().connection().prepareStatement(
                "select count (*), dd from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
                + " from analysis_job AJ, GP_USER GPU " 
