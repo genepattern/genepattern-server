@@ -3,7 +3,6 @@
  *******************************************************************************/
 package org.genepattern.server.job.status;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -187,30 +186,17 @@ public class Status {
      */
     public static class JobEvent {
         private String event;
-        private String simpleFormat;
         private String isoFormat;
-        
-
-        private String formatDate(Date in) {
-            if (in==null) {
-                return "";
-            }
-            return new SimpleDateFormat().format(in);
-        }
         
         public JobEvent() {
         }
         public JobEvent(String event, Date date) {
             this.event=event;
-            this.simpleFormat=formatDate(date);
             this.isoFormat=DateUtil.toIso8601(date);
         }
         
         public String getEvent() {
             return event;
-        }
-        public String getTime() {
-            return simpleFormat;
         }
         
         public JSONObject toJsonObj() throws JSONException {
