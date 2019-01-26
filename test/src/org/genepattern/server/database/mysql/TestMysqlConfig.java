@@ -13,6 +13,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.genepattern.junitutil.ConfigUtil;
@@ -21,6 +23,9 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.domain.PropsTable;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -234,6 +239,16 @@ public class TestMysqlConfig {
                 conn.close();
             }
         }
+    }
+    
+    @Test
+    public void _07_getNewUsers() {
+        UserDAO userDao = new UserDAO(mgr);
+        final Date startDate=DateUtil.timeAgoUtc.parseDateTime("2018-01-01 00:00:00").toDate();
+        final Date endDate=new Date();
+        List<User> newUsers = userDao.getNewUsers(startDate, endDate);
+        assertNotNull(newUsers);
+        assertEquals("newUsers", 0, newUsers.size());
     }
 
 }
