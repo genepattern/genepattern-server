@@ -133,14 +133,9 @@ public class ParameterInfo implements Serializable {
      * @return true if this is a uploaded file from client
      */
     public boolean isInputFile() {
-        if (attributes != null && attributes.containsKey(TYPE) && attributes.containsKey(MODE)) {
-            String type = (String) this.attributes.get(TYPE);
-            String mode = (String) this.attributes.get(MODE);
-            if (type.equals(FILE_TYPE) && mode.equals(INPUT_MODE)) {
-                return true;
-            }
-        }
-        return false;
+        return attributes != null
+            && FILE_TYPE.equals(attributes.get(TYPE))
+            && INPUT_MODE.equals(attributes.get(MODE));
     }
 
     /**
@@ -150,15 +145,9 @@ public class ParameterInfo implements Serializable {
      * @return true if this is used to specify result file from server
      */
     public boolean isOutputFile() {
-        if (this.attributes != null && this.attributes.containsKey(ParameterInfo.TYPE)
-                && this.attributes.containsKey(ParameterInfo.MODE)) {
-            String type = (String) this.attributes.get(ParameterInfo.TYPE);
-            String mode = (String) this.attributes.get(ParameterInfo.MODE);
-            if (type.equals(ParameterInfo.FILE_TYPE) && mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                return true;
-            }
-        }
-        return false;
+        return attributes != null 
+            && FILE_TYPE.equals(attributes.get(TYPE))
+            && OUTPUT_MODE.equals(attributes.get(MODE));
     }
 
     /**
@@ -168,27 +157,17 @@ public class ParameterInfo implements Serializable {
      * @return true if this is a uploaded file from client
      */
     public boolean isPassword() {
-        if (attributes != null && (attributes.containsKey(TYPE) || attributes.containsKey(TYPE.toLowerCase()))) {
-            String type = (String) this.attributes.get(TYPE);
-            if (type == null)
-                type = (String) this.attributes.get(TYPE.toLowerCase());
-            if (type.equals(GPConstants.PARAM_INFO_PASSWORD)) {
-                return true;
-            }
-        }
-        return false;
+        return attributes != null 
+            && (   GPConstants.PARAM_INFO_PASSWORD.equals(attributes.get(TYPE))
+                || GPConstants.PARAM_INFO_PASSWORD.equals(attributes.get(TYPE.toLowerCase()))
+               );
     }
     
     public boolean _isDirectory() {
-        if (attributes != null && (attributes.containsKey(TYPE) || attributes.containsKey(TYPE.toLowerCase()))) {
-            String type = (String) this.attributes.get(TYPE);
-            if (type == null)
-                type = (String) this.attributes.get(TYPE.toLowerCase());
-            if (type.equals(GPConstants.PARAM_INFO_TYPE_DIR)) {
-                return true;
-            }
-        }
-        return false;
+        return attributes != null
+            && (   GPConstants.PARAM_INFO_TYPE_DIR.equals(attributes.get(TYPE))
+                || GPConstants.PARAM_INFO_TYPE_DIR.equals(attributes.get(TYPE.toLowerCase()))
+               );
     }
 
     //support for STDERR and STDOUT result files
@@ -201,7 +180,7 @@ public class ParameterInfo implements Serializable {
     public boolean _isStderrFile() {
         return isOutputFile() && attributes != null && attributes.containsKey(IS_STDERR_KEY);
     }
-	
+
     public void _setAsStdoutFile() {
         setAsOutputFile();
         this.attributes.put(IS_STDOUT_KEY, "true");
@@ -211,7 +190,7 @@ public class ParameterInfo implements Serializable {
         setAsOutputFile();
         this.attributes.put(IS_STDERR_KEY, "true");
     }
-	
+
     //helper methods for configuration properties
     //private static String CONFIG_PARAM_PREFIX = ".gp.config.";
     //public boolean _isConfigurationParameter() {
