@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -38,9 +39,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 public class GetPipelineJobLegacy implements GetJob {
     private static final Logger log = Logger.getLogger(GetPipelineJobLegacy.class);
@@ -149,37 +149,23 @@ public class GetPipelineJobLegacy implements GetJob {
        return job;
     }
     
-    protected static LoadingCache<String, JSONObject> jobCache;
+    protected static Cache<String, JSONObject> jobCache;
     protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
     
-    protected static final LoadingCache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext, final String gpUrl, final String jobsResourcePath) {
+    protected static final Cache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext) {
         final long maxSize=JobObjectCache.getMaximumSize(gpConfig, serverContext);
         final long days=JobObjectCache.getExpireAfterWriteDays(gpConfig, serverContext);
         return CacheBuilder.newBuilder()
             .maximumSize(maxSize)
             .expireAfterWrite(days, TimeUnit.DAYS)
-            .build(
-                new CacheLoader<String, JSONObject>() {
-                    public JSONObject load(String key) throws Exception {
-                        Object[] params = paramMap.get(key);
-                        JobInfo ji = (JobInfo)params[0];
-                        Boolean inclChildren = (Boolean)params[1];
-                        Boolean inclOutputFiles = (Boolean)params[2];
-                        Boolean inclComments = (Boolean)params[3];
-                        Boolean inclTags = (Boolean)params[3];
-                        if (log.isDebugEnabled()) {
-                            log.debug("--->>>  ADDING TO CACHE "+ ji.getJobNumber() + "  " + ji.getStatus() + "  " + key);
-                        }
-                        return _getJob(gpUrl, jobsResourcePath, ji, inclChildren, inclOutputFiles, inclComments, inclTags);
-                    }
-                });
+            .build();
     }
     
     protected boolean isCacheEnabled(final GpConfig gpConfig, final GpContext gpContext) {
         final boolean isEnabled=JobObjectCache.isEnabled(ServerConfigurationFactory.instance(), gpContext);
         
         if (isEnabled && jobCache == null) {
-            jobCache = initJobCache(gpConfig, gpContext, gpUrl, jobsResourcePath); 
+            jobCache = initJobCache(gpConfig, gpContext); 
         }
         
         // special-case: cleanup when the cache is switched from enabled to disabled while the server is running
@@ -213,7 +199,12 @@ public class GetPipelineJobLegacy implements GetJob {
         try {
             if (isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
                 final String composite_key = initCompositeKey(jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
-                job=jobCache.get(composite_key);                 
+                job=jobCache.get(composite_key, new Callable<JSONObject>() {
+                    @Override
+                    public JSONObject call() throws GetJobException {
+                        return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                    }
+                });
             } 
             else {
                 // skip the cache if not finished, don't use the constructor since we don't want it cached
