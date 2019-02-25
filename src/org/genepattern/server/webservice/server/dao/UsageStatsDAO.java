@@ -14,7 +14,9 @@ import org.json.JSONObject;
 
 public class UsageStatsDAO extends BaseDAO {
     private static final Logger log = Logger.getLogger(UsageStatsDAO.class);
-
+    private static String analysisJobTableOrView = "analysis_job_total";
+    
+    
     public UsageStatsDAO(HibernateSessionManager mgr) {
         super(mgr);
     }
@@ -117,7 +119,7 @@ public class UsageStatsDAO extends BaseDAO {
     
     public int getTotalJobsRunCount(String userExclusionClause) throws Exception {
         Integer count = null;
-        StringBuffer sqlBuff = new StringBuffer("select count(*) from analysis_job where (USER_ID <> '') "+ userExclusionClause);
+        StringBuffer sqlBuff = new StringBuffer("select count(*) from "+analysisJobTableOrView+" where (USER_ID <> '') "+ userExclusionClause);
         ResultSet rs = null;
         try {
             rs = this.executeSQL(sqlBuff.toString());
@@ -136,7 +138,7 @@ public class UsageStatsDAO extends BaseDAO {
         Integer count = null;
       
         @SuppressWarnings("deprecation")
-        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(*) from analysis_job where (date_completed BETWEEN ? and ?)  "+ userExclusionClause);
+        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "+ userExclusionClause);
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
         pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
@@ -160,7 +162,7 @@ public class UsageStatsDAO extends BaseDAO {
         
           @SuppressWarnings("deprecation")
         PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select count(*) from analysis_job where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                "select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " and (user_id in ( select user_id from GP_USER where email like '%"+internalDomain+"'))");
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -184,7 +186,7 @@ public class UsageStatsDAO extends BaseDAO {
         
         @SuppressWarnings("deprecation")
         PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select count(*) from analysis_job where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                "select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " and (user_id not in ( select user_id from GP_USER where email like '%"  + internalDomain +"'))");
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -209,7 +211,7 @@ public class UsageStatsDAO extends BaseDAO {
         
         @SuppressWarnings("deprecation")
         PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select task_name, count(*) as MC from analysis_job AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                "select task_name, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " GROUP BY TASK_NAME order by MC desc");
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -268,7 +270,7 @@ public class UsageStatsDAO extends BaseDAO {
        
        String sql =
                "select dd, count(*) from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
-               + " from analysis_job AJ, GP_USER GPU " 
+               + " from "+analysisJobTableOrView+" AJ, GP_USER GPU " 
                + date_clause  + altExclusion 
                + " and GPU.USER_ID = AJ.USER_ID"
                + ") as modruncounts GROUP BY dd ";
@@ -302,7 +304,7 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select task_name, count(*) as MC from analysis_job AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select task_name, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " AND STATUS_ID=4 GROUP BY TASK_NAME order by MC desc");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -331,7 +333,7 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select task_name, job_no as MC from analysis_job where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select task_name, job_no as MC from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " AND STATUS_ID=4 ");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
@@ -360,7 +362,7 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select user_id, count(*) as MC from analysis_job AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select user_id, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " GROUP BY USER_ID order by MC desc");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
