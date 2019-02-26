@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -97,6 +98,21 @@ public class DbUtil {
         return mgr;
     }
     
+    /**
+     * Utility test which runs all of the ddl scripts in the ./website/WEB-INF/schema directory.
+     */
+    public static void assertDbUpdateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr) throws DbException {
+        // from empty string to null means run all DDL scripts
+        final String fromVersion=""; 
+        final String toVersion=null;
+        
+        final String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
+        assertEquals("before update", fromVersion, dbSchemaVersion);
+        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(mgr, "props"));
+        assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
+
+        SchemaUpdater.updateSchema(gpConfig, mgr, toVersion);
+    }
 
     /**
      * Add a new user to the database, or ignore if there is already a user with the given userId
