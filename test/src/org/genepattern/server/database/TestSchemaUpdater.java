@@ -284,7 +284,7 @@ public class TestSchemaUpdater {
         final File schemaFile=new File("website/WEB-INF/schema/analysis_mysql-3.9.11.sql");
         assertTrue("schemaFile.exists: "+schemaFile, schemaFile.exists());
         List<String> sqlStatements=SchemaUpdater.extractSqlStatements(schemaFile);
-        assertEquals("sqlStatements.size", 5, sqlStatements.size());
+        assertEquals("sqlStatements.size", 6, sqlStatements.size());
     }
 
 }
