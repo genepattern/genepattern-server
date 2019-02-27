@@ -334,16 +334,17 @@ public class JobExecutor implements CommandExecutor2 {
             return minDelay;
         }
         if (log.isDebugEnabled()) {
+            log.debug("getDynamicDelay ...");
             if (drmJobRecord==null) {
-                log.debug("jobRecord==null");
+                log.debug("    jobRecord==null");
             }
             else {
-                log.debug("   jobRecord.gpJobNo: "+drmJobRecord.getGpJobNo());
+            log.debug("    jobRecord.gpJobNo="+drmJobRecord.getGpJobNo());
             }
-            log.debug("  jobStatus.jobState: "+drmJobStatus.getJobState());
-            log.debug("jobStatus.submitTime: "+drmJobStatus.getSubmitTime());
-            log.debug(" jobStatus.startTime: "+drmJobStatus.getStartTime());
-            log.debug("   jobStatus.endTime: "+drmJobStatus.getEndTime());
+            log.debug("    jobStatus.jobState:   "+drmJobStatus.getJobState());
+            log.debug("    jobStatus.submitTime: "+drmJobStatus.getSubmitTime());
+            log.debug("    jobStatus.startTime:  "+drmJobStatus.getStartTime());
+            log.debug("    jobStatus.endTime:    "+drmJobStatus.getEndTime());
         }
 
         final Date now=new Date();
