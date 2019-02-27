@@ -270,6 +270,10 @@ public class AWSBatchJobRunner implements JobRunner {
 
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
+        if (log.isTraceEnabled()) {
+            log.trace("getStatus for jobRecord.gpJobNo="+jobRecord.getGpJobNo());
+            log.trace("    jobRecord.extJobId="+jobRecord.getExtJobId());
+        }
         final String awsId=jobRecord.getExtJobId();
         if (awsId == null) {
             // special-case: job was terminated in a previous GP instance
@@ -340,6 +344,9 @@ public class AWSBatchJobRunner implements JobRunner {
                     log.debug("jobs[0].status: "+awsStatusCode);
                     log.debug("jobs[0].statusReason: "+awsStatusReason);
                 } 
+
+                final Date startTime=getOrDefaultDate(awsJob, "startedAt", null);
+                final Date submitTime=getOrDefaultDate(awsJob, "createdAt", null);
                 
                 final DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 final DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
@@ -347,16 +354,16 @@ public class AWSBatchJobRunner implements JobRunner {
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
                 }
-                
+                b.startTime( startTime  );
+                b.submitTime( submitTime );
                 if (jobState.is(DrmJobState.TERMINATED)) {
                     // job cleanup, TERMINATED covers SUCCEEDED and FAILED
                     if (log.isDebugEnabled()) {
                         log.debug("job finished with awsStatusCode="+awsStatusCode+", drmJobState="+jobState);
                         log.debug("    jobs[0].statusReason: "+awsStatusReason);
                     }
-                    b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
-                    b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
-                    b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
+                    final Date endTime=getOrDefaultDate(awsJob, "stoppedAt", new Date());
+                    b.endTime( endTime );
                     final File metadataDir=getMetadataDir(jobRecord);
                     try {
                         refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
