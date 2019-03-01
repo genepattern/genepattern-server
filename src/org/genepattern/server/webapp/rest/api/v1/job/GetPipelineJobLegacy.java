@@ -5,11 +5,8 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
@@ -38,9 +35,6 @@ import org.genepattern.webservice.TaskInfoCache;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class GetPipelineJobLegacy implements GetJob {
     private static final Logger log = Logger.getLogger(GetPipelineJobLegacy.class);
@@ -149,46 +143,6 @@ public class GetPipelineJobLegacy implements GetJob {
        return job;
     }
     
-    protected static Cache<String, JSONObject> jobCache;
-    protected static final HashMap<String, Object[]> paramMap = new HashMap<String, Object[]>();
-    
-    protected static final Cache<String, JSONObject> initJobCache(final GpConfig gpConfig, final GpContext serverContext) {
-        final long maxSize=JobObjectCache.getMaximumSize(gpConfig, serverContext);
-        final long days=JobObjectCache.getExpireAfterWriteDays(gpConfig, serverContext);
-        return CacheBuilder.newBuilder()
-            .maximumSize(maxSize)
-            .expireAfterWrite(days, TimeUnit.DAYS)
-            .build();
-    }
-    
-    protected boolean isCacheEnabled(final GpConfig gpConfig, final GpContext gpContext) {
-        final boolean isEnabled=JobObjectCache.isEnabled(ServerConfigurationFactory.instance(), gpContext);
-        
-        if (isEnabled && jobCache == null) {
-            jobCache = initJobCache(gpConfig, gpContext); 
-        }
-        
-        // special-case: cleanup when the cache is switched from enabled to disabled while the server is running
-        if (!isEnabled && jobCache != null) {
-            jobCache.invalidateAll();
-            jobCache = null;
-        }
-        return isEnabled;
-    }
-    
-    protected static final String initCompositeKey(final JobInfo jobInfo,final boolean includeChildren, final boolean includeOutputFiles, final boolean includeComments, final boolean includeTags) {
-        // ***** the paramMap is a hack to get all this stuff up via the composite key even though it must be final
-        final String composite_key = ""+jobInfo.getJobNumber() + includeChildren + includeOutputFiles + includeComments + includeTags;
-        Object[] params = new Object[6];
-        params[0]=jobInfo;
-        params[1]=includeChildren;
-        params[2]=includeOutputFiles;
-        params[3]=includeComments;
-        params[4]=includeTags;
-        paramMap.put(composite_key, params);
-        return composite_key;
-    }
-
     public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
                              final boolean includeOutputFiles, final boolean includePermissions,
                              final boolean includeComments, final boolean includeTags) throws GetJobException {
@@ -197,18 +151,21 @@ public class GetPipelineJobLegacy implements GetJob {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         JSONObject job = null;
         try {
-            if (isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
-                final String composite_key = initCompositeKey(jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
-                job=jobCache.get(composite_key, new Callable<JSONObject>() {
-                    @Override
-                    public JSONObject call() throws GetJobException {
-                        return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
-                    }
-                });
-            } 
+            // this call returns the JSON representation
+            final Callable<JSONObject> f = new Callable<JSONObject>() {
+                @Override
+                public JSONObject call() throws GetJobException {
+                    return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                }
+            };
+            if (JobObjectCache.isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
+                // with the cache
+                final String composite_key = JobObjectCache.initCompositeKey(jobInfo.getJobNumber(), includeChildren, includeOutputFiles, includeComments, includeTags);
+                job = JobObjectCache.getJobJson(composite_key, f);
+            }
             else {
-                // skip the cache if not finished, don't use the constructor since we don't want it cached
-                job = _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                // without the cache
+                job = f.call();
             }
             if (includePermissions && job!=null) {
                 //only include permissions for the top-level job
@@ -224,8 +181,12 @@ public class GetPipelineJobLegacy implements GetJob {
                     throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
                 }
             } 
-        } catch (ExecutionException e){
-            final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+        } 
+        catch (GetJobException e) {
+            throw e;
+        }
+        catch (Throwable e) {
+            final String errorMessage="Error getting JSON representation for jobId="+jobInfo.getJobNumber();
             log.error(errorMessage, e);
             throw new GetJobException(errorMessage);
         }
