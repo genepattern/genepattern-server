@@ -40,7 +40,7 @@ import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.rest.api.v1.Util;
-
+import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCache;
 import org.genepattern.server.webservice.server.ProvenanceFinder;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.ParameterInfo;
@@ -497,6 +497,13 @@ public class DataResource {
             }
         }
         
+        // remove job from cache
+        JobObjectCache.removeJobFromCache(jobId);
+        //TODO: handle pipelines
+        //TODO: consider using an eventbus, fireGpJobChangedEvent
+        //   JobStatusEvent event = new JobStatusEvent(jobIdStr, null, null); 
+        //   JobEventBus.instance().post(event);
+
         //include the jobId in the end-user message
         return jobId + "/" + relativePath.getPath();
     }
