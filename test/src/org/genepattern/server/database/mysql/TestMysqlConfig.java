@@ -244,31 +244,8 @@ public class TestMysqlConfig {
     }
     
     @Test
-    public void _08_check_analysis_job_total_view() throws SQLException {
-        Connection conn=null;
-        try {
-            conn = getTestDbConnection();
-            String selectTableSQL = "SELECT * from ANALYSIS_JOB_TOTAL";
-            final Statement statement = conn.createStatement();
-            final ResultSet rs = statement.executeQuery(selectTableSQL);
-            int columnCount=rs.getMetaData().getColumnCount();
-            assertEquals("columnCount", 14, columnCount);
-            assertEquals("columnName[1]", "JOB_NO", rs.getMetaData().getColumnName(1));
-            // ...
-            // ...
-            assertEquals("columnName[14]", "DELETED", rs.getMetaData().getColumnName(14));
-        }
-        catch (SQLException e) {
-            throw e;
-        }
-        catch (Throwable t) {
-            throw t;
-        }
-        finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+    public void _08_check_analysis_job_total_view() throws DbException, SQLException {
+        DbUtil.assertAnalysisJobTotalView(mgr);
     }
 
 }
