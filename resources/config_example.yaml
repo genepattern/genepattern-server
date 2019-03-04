@@ -21,7 +21,6 @@
 #     arg.list: [ "4", "3.14", "1.32e6", "true", "false" ] 
 # The following example will cause a parse error:
 #     arg.list.error: [ 4, 3.14, 1.32e6, true, false ] 
-#
 # 
 
 # apply these properties to all jobs
