@@ -40,7 +40,7 @@ create table job_runner_job_archive (
     max_processes integer,
     max_threads integer,
     status_date timestamp not null,
-    status_message varchar(255),
+    status_message varchar(2000),
     exit_code integer,
     terminating_signal varchar(255),
     req_mem bigint,
