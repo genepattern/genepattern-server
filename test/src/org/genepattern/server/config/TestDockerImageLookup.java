@@ -166,5 +166,14 @@ public class TestDockerImageLookup {
             "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:5.1"
         );
     }
+    
+    @Test public void check_RankNormalize_1_9() {
+        assertDockerImageNoManifest("genepattern/docker-r-2-15:0.1", 
+            gpConfig,
+            "RankNormalize", 
+            "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00315:1.9"
+        );
+    }
+
 
 }

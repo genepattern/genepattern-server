@@ -404,6 +404,7 @@ default.properties:
         NMFConsensus: "genepattern/docker-r-2-5:0.1",
         PreprocessDataset: "genepattern/docker-java17:0.12",
         "PreprocessReadCounts:0.6": "genepattern/docker-r-3-13:0.1",
+        "RankNormalize": "genepattern/docker-r-2-15:0.1",
         SNPFileCreator: "genepattern/docker-java17:0.12",
         
         # ssGSEAProjection (>= v9.0.10), must set in manifest
