@@ -15,6 +15,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
+//import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCacheDebug;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -104,6 +105,8 @@ public class JobResultFile extends GpFilePath {
     }
     
     private void init(String jobId, File relativeFile) throws ServerConfigurationException {
+        // //for profiling, uncomment 
+        // JobObjectCacheDebug.throttleForProfiling();
         if (relativeFile == null) {
             throw new IllegalArgumentException("invalid null arg, relativePath");
         }
