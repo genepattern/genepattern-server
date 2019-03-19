@@ -1,0 +1,67 @@
+<!--  
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+  <id>distribution</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <files>
+    <file>
+      <source>README.txt</source>
+      <outputDirectory>/</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>LICENSE.txt</source>
+      <outputDirectory>/</outputDirectory>
+    </file>
+    <file>
+      <source>NOTICE.txt</source>
+      <outputDirectory>/</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+  </files>
+</assembly>
+-->
+<assembly>
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>tar.bz2</format>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <!-- baseDirectory>${artifactId}</baseDirectory -->
+  <!-- baseDirectory>/opt/gpbeta</baseDirectory -->
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <!-- gp/Tomcat/webapps/gp/WEB-INF/lib/ -->
+      <outputDirectory>gp/Tomcat/webapps/gp/WEB-INF/lib</outputDirectory>
+      <includes>
+        <include>*.jar</include>
+      </includes>
+    </fileSet>
+    <!--
+    <fileSet>
+      <directory>src/main/scripts</directory>
+      --><!-- gp_home/resources/wrapper_scripts/aws_batch --><!--
+      <outputDirectory>gp_home/resources/wrapper_scripts/aws_batch</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      <excludes>
+        <exclude>aws-cli.sh</exclude>
+        <exclude>init-aws-cli-env.sh</exclude>
+      </excludes>
+    </fileSet>
+    -->
+    <!--
+    <fileSet>
+      <directory>src/main/conf</directory>
+      <outputDirectory>/gp_home/resources</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+    -->
+  </fileSets>
+</assembly>
