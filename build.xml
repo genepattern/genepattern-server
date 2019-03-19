@@ -213,6 +213,8 @@
                 <fileset dir="test/src">
                     <exclude name="org/genepattern/junitutil/*.java" />
                     <exclude name="**/RecordEulaStub.java" />
+                    <!-- skip the FTP integration tests -->
+                    <exclude name="org/genepattern/server/job/input/TestFileDownloader.java" />
                     <include name="**/*.java" />
                 </fileset>
             </batchtest>

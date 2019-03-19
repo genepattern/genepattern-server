@@ -3,7 +3,10 @@
  *******************************************************************************/
 package org.genepattern.server.executor;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +26,6 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +34,7 @@ import org.junit.Test;
  * @author pcarr
  *
  */
-public class TestFileDownloader {
+public class TestFileDownloaderConfig {
     final String gpUrl="http://127.0.0.1:8080/gp/";
     
     private HibernateSessionManager mgr;
@@ -148,8 +150,8 @@ public class TestFileDownloader {
         when(gpConfig.getValue(jobContext, UrlPrefixFilter.PROP_CACHE_EXTERNAL_URL)).thenReturn(cacheExternalDirs);
 
         FileDownloader downloader = FileDownloader.fromJobContext(mgr, gpConfig, jobContext); 
-        Assert.assertEquals("hasFilesToDownload", true, downloader.hasFilesToCache());
-        Assert.assertEquals("filesToDownload[0].value",
+        assertEquals("hasFilesToDownload", true, downloader.hasFilesToCache());
+        assertEquals("filesToDownload[0].value",
                 "ftp://gpftp.broadinstitute.org/example/all_aml_test.gct", 
                 downloader.getFilesToCache().get(0).getUrl().toString());
     } 
