@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.job.input.JobInput;
@@ -354,9 +356,38 @@ public class LocalCommonsExecJobRunner implements JobRunner {
         Executor exec=initExecutorForJob(gpJob);
         CommandLine cl = initCommand(gpJob);
         final CmdResultHandler resultHandler=new CmdResultHandler(gpJob.getGpJobNo());
-        final Map<String,String> cmdEnv=null;
+        final Map<String,String> cmdEnv=initCmdEnv(gpJob);
         exec.execute(cl, cmdEnv, resultHandler);
         return exec;
+    }
+
+    /**
+     * Round up to the nearest mebibyte (MiB).
+     * Example usage:
+     * <pre>
+     *   String mib=""+numMiB(m);
+     * </pre>
+     * 
+     * @param m the memory instance
+     * @return the amount of memory in mebibytes
+     */
+    public static long numMiB(final Memory m) {
+        long mib = (long) Math.ceil(
+            (double) m.getNumBytes() / (double) Memory.Unit.m.getMultiplier()
+        );
+        return mib;
+    }
+
+    protected Map<String,String> initCmdEnv(final DrmJobSubmission gpJob) {
+        final Map<String,String> cmdEnv=new HashMap<String,String>();
+        final Memory jobMemory=gpJob.getMemory();
+        if (jobMemory != null) {
+            jobMemory.getNumBytes();
+            cmdEnv.put("GP_JOB_MEMORY", ""+jobMemory.getNumBytes());
+            final String mib=""+numMiB(jobMemory);
+            cmdEnv.put("GP_JOB_MEMORY_MB", mib);
+        }
+        return cmdEnv;
     }
     
     protected static Executor runJobNoWait(final DrmJobSubmission gpJob, Map<String,String> cmdEnv, ExecuteResultHandler resultHandler) throws ExecutionException, IOException {
