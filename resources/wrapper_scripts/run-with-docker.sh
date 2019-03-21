@@ -108,14 +108,18 @@ default.properties:
     \"docker\": \"/usr/local/bin/docker\"
 " >&2; exit 127; 
   }
-  
+  # get the job number from the run directory name
+  JOB_NO=${PWD##*/} 
   # with '--mount'
-  $DRY_RUN "${docker_cmd}" run \
+  $DRY_RUN "${docker_cmd}" run --name gp_job_${JOB_NO} \
     --workdir "${workdir}" \
     --mount "type=bind,src=${bind_src},dst=${bind_dst}" \
     --memory "${job_memory}" \
     "${docker_img}" \
     "${__gp_module_cmd[@]}";
+
+   # remove the container to avoid wasting space
+   $DRY_RUN "${docker_cmd}" rm gp_job_${JOB_NO}
 }
 
 run_with_docker "${@}"
