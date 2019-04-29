@@ -20,6 +20,14 @@
                 objForm.username.required = 1;
                 objForm.username.err = "Username is required";
             }
+
+            $(document).ready(function () {
+                // Set the cookie on login
+                $("#loginForm").submit(function () {
+                    document.cookie = "GenePattern=" + $("#username").val() + "|" +
+                            encodeURIComponent(btoa($("#password").val())) + ";path=/;domain=" + window.location.hostname;
+                });
+            });
             /* ]]> */
 
         </script>

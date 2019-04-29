@@ -337,8 +337,11 @@
                         <li id="left-nav-modules-tab"><a href="#left-nav-modules">Modules</a></li>
                         <li id="left-nav-jobs-tab"><a href="#left-nav-jobs">Jobs</a></li>
                         <li id="left-nav-files-tab"><a href="#left-nav-files">Files</a></li>
+                        <h:outputText rendered="#{notebookBean.notebookEnabled}">
+                            <li id="left-nav-notebook-tab"><a href="#left-nav-notebook">Notebook</a></li>
+                        </h:outputText>
                         <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-                            <li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace">GenomeSpace</a></li>
+                            <li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace"><img src="/gp/pages/genomespace/genomespace_icon.gif" alt="GenomeSpace" /></a></li>
                         </h:outputText>
                     </ul>
                     <div id="left-nav-modules" class="left-nav-tab">
@@ -395,6 +398,11 @@
                         </div>
                         <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
                     </div>
+                    <h:outputText rendered="#{notebookBean.notebookEnabled}">
+                        <div id="left-nav-notebook" class="left-nav-tab">
+                            <ui:include src="/pages/notebookTab.xhtml" />
+                        </div>
+                    </h:outputText>
                     <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
                         <div id="left-nav-genomespace" class="left-nav-tab">
                             <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
@@ -405,6 +413,9 @@
                 <div id="module-search"></div>
                 <div id="module-browse"></div>
                 <div id="module-suites"></div>
+
+                <div id="notebook-search"></div>
+                <div id="notebook-browse"></div>
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>

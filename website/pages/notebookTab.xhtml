@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+<ui:composition>
+    <ui:define name="headText">
+        <script type="text/javascript" language="javascript">
+            /* <![CDATA[ */
+
+            var notebook_enabled = #{notebookBean.notebookEnabled};
+            var notebook_repo = "${notebookBean.repositoryURL}";
+
+            function init_notebooks_tab() {
+                get_public_notebooks(function(results) {
+                    const all_notebooks = [];
+
+                    results.forEach(function(nb) {
+                        // Attach simplified tags to notebook
+                        const tags = build_tag_list(nb);
+
+                        // Create notebook model
+                        const model = {
+                            "lsid": nb.url,
+                            "name": nb.name,
+                            "description": nb.description,
+                            "version": nb.id,
+                            "documentation": nb.url + "preview/",
+                            "categories": nb.str_tags,
+                            "suites": [],
+                            "tags": nb.str_tags
+                        };
+                        all_notebooks.push(model);
+                    });
+
+                    // Create a data structure to hold the notebook list
+                    window.notebook_models = results;
+                    window.all_notebooks = all_notebooks;
+                    get_pinned_tags();
+                    const pinned_models = get_all_pinned();
+
+                    // Initialize the sliders
+                    init_search_notebooks();
+                    init_browse_notebooks();
+
+                    // Add pinned tags
+                    pinned_models.forEach(function(model) {
+                        $("<div></div>")
+                                .attr("class", "nb-listing")
+                                .attr("name", model.name)
+                                .module({
+                                    data: model,
+                                    click: function (event) {
+                                        var filter = $(event.currentTarget).find(".module-name").text();
+                                        var notebook_search = $("#notebook-search");
+                                        notebook_search.searchslider("show");
+
+                                        if (filter === "all notebooks") {
+                                            notebook_search.searchslider("tagfilter", "");
+                                        }
+                                        else {
+                                            notebook_search.searchslider("tagfilter", filter);
+                                            notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                                        }
+                                    },
+                                    draggable: false
+                                }).appendTo($("#nb-public"));
+                    });
+                });
+            }
+
+            function get_all_pinned() {
+                // If already cached, return the list
+                if (window.all_pinned) return window.all_pinned;
+
+                const pinned_tags = get_pinned_tags();
+                const pinned_with_extras = ["all notebooks"].concat(pinned_tags).concat(["community"]);
+                const all_pinned = [];
+
+                pinned_with_extras.forEach(function(tag) {
+                    const model = {
+                        "lsid": "",
+                        "name": tag,
+                        "description": "",
+                        "version": "",
+                        "documentation": "",
+                        "categories": "",
+                        "suites": [],
+                        "tags": []
+                    };
+                    all_pinned.push(model);
+                });
+
+                window.all_pinned = all_pinned;
+                return all_pinned;
+            }
+
+            function get_pinned_tags() {
+                // If already cached, return the list
+                if (window.pinned_tags) return window.pinned_tags;
+
+                // Otherwise, generate the list
+                const pinned_tags = [];
+                window.notebook_models.forEach(function(nb) {
+                    if (nb.tags) {
+                        nb.tags.forEach(function(tag) {
+                            // If the tag is pinned and not already in the list
+                            if (tag.pinned && !pinned_tags.includes(tag.label)) {
+                                pinned_tags.push(tag.label);
+                            }
+                        });
+                    }
+                });
+                pinned_tags.sort();
+
+                // Set the cache and return
+                window.pinned_tags = pinned_tags;
+                return pinned_tags;
+            }
+
+            function build_tag_list(nb) {
+                // If cached, return
+                if (nb.str_tags) return nb.str_tags;
+
+                // Otherwise generate
+                let to_return = [];
+
+                nb.tags.forEach(function(tag) {
+                    to_return.push(tag.label);
+                });
+
+                // Special case for "community"
+                if (to_return.length === 0) to_return.push("community");
+
+                nb.str_tags = to_return;
+                return to_return;
+            }
+
+            function nb_login(forward_url) {
+                let login_url = notebook_repo + "/hub/login?next=";
+                if (!!forward_url) login_url += encodeURIComponent(forward_url);
+                const genepattern_cookie = getCookie("GenePattern");
+
+                // If user credentials can be retrieved, login
+                if (genepattern_cookie) {
+                    const username = usernameFromCookie(genepattern_cookie);
+                    const password = passwordFromCookie(genepattern_cookie);
+
+                    // Create the new tab
+                    window.open('', 'notebookTab');
+
+                    // Create the login form and submit it in the new tab
+                    $('<form action="' + login_url + '" method="POST" target="notebookTab"></form>')
+                            .append($('<input type="hidden" name="username" value="' + username + '">'))
+                            .append($('<input type="hidden" name="password" value="' + password + '">'))
+                            .appendTo($("body"))
+                            .submit();
+                }
+
+                // Otherwise, open the login page
+                else {
+                    window.open(login_url, 'notebookTab');
+                }
+            }
+
+            function get_public_notebooks(callback) {
+                $.ajax({
+                    type : "GET",
+                    url : notebook_repo + "/services/sharing/notebooks/",
+                    dataType: "json",
+                    crossDomain: true,
+                    success : function(data, textStatus, jqXHR) {
+                        if (!!callback) callback(data['results']);
+                    },
+                    error : function(data, textStatus, jqXHR) {
+                        console.log("Error getting public notebook list");
+                    }
+                });
+            }
+
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            function usernameFromCookie(cookie) {
+                // Handle the null case
+                if (!cookie) return null;
+
+                // Parse the cookie
+                const parts = cookie.split("|");
+                if (parts.length > 1) return parts[0];
+
+                // Cookie not in the expected format
+                else return null;
+            }
+
+            function passwordFromCookie(cookie) {
+                // Handle the null case
+                if (!cookie) return null;
+
+                // Parse the cookie
+                const parts = cookie.split("|");
+                if (parts.length > 1) {
+                    return atob(decodeURIComponent(parts[1]));
+                }
+
+                // Cookie not in the expected format
+                else return null;
+            }
+
+            function init_search_notebooks() {
+                const search = $('<div id="notebook-list-search"></div>').modulelist({
+                    title: 'Search Notebooks',
+                    data: all_notebooks,
+                    droppable: false,
+                    draggable: false,
+                    click: function(event) {
+                        const data = $(event.target).closest(".module-listing").module("get_data");
+                        const id = data.version;
+                        nb_login("/services/sharing/notebooks/" + id + "/copy/?open=true");
+                    }
+                });
+
+                $('#notebook-search').searchslider({
+                    lists: [search]
+                });
+            }
+
+            function init_browse_notebooks() {
+                const browse = $('<div id="notebook-list-browse"></div>').modulelist({
+                    title: 'Browse Notebooks',
+                    data: all_pinned,
+                    droppable: false,
+                    draggable: false,
+                    click: function(event) {
+                        var filter = $(event.currentTarget).find(".module-name").text();
+                        var notebook_earch = $("#notebook-search");
+                        notebook_earch.searchslider("show");
+                        notebook_earch.searchslider("tagfilter", filter);
+                        notebook_earch.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                    }
+                });
+
+                $('#notebook-browse').searchslider({
+                    lists: [browse]
+                });
+            }
+
+            function nb_browse() {
+                $("#notebook-browse").searchslider("show")
+            }
+
+            // Load the notebooks tab
+            $(document).ready(init_notebooks_tab);
+
+            /* ]]> */
+        </script>
+        <style type="text/css">
+            #left-nav-notebook {
+                display: block;
+                padding: 0;
+                bottom: 85px;
+                overflow-x: hidden;
+                position: absolute;
+                bottom: 0px;
+                top: 33px;
+                width: 348px;
+                background-color: #F1F2F2 !important;
+            }
+
+            #nb-header {
+                margin-bottom: 10px;
+                display: inline-block;
+                position: relative;
+                top: 2px;
+            }
+
+            #nb-header img {
+                filter: drop-shadow(2px 2px 2px #445e7e);
+            }
+
+            #nb-login {
+                float: right;
+            }
+
+            #nb-login > .ui-button-text {
+                font-size: 0.9em;
+            }
+
+            .nb-catalog {
+                padding: 10px;
+            }
+
+            #notebook-browse .module-name,
+            #notebook-search .module-list-title,
+            #nb-public .module-name {
+                text-transform: capitalize;
+            }
+
+            #nb-public .module-listing {
+                height: 17px;
+            }
+        </style>
+    </ui:define>
+
+    <div class="left-nav-top">
+        <div id="nb-header">
+            <a href="${notebookBean.repositoryURL}" onclick="nb_login(); return false;"><img src="/gp/images/gpnb.png" alt="GenePattern Notebook" width="200px" /></a>
+        </div>
+        <button id="nb-login" onclick="nb_browse();" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+            Browse ›
+        </button>
+        <div id="module-search-block">
+            <input id="notebook-search-box" class="search-box" placeholder="Search Notebooks" type="search" />
+        </div>
+    </div>
+
+    <div id="nb-public" class="nb-catalog">
+        <h4 class="module-list-title">Public Notebooks</h4>
+    </div>
+
+
+</ui:composition>
+</html>

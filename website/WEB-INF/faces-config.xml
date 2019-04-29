@@ -72,6 +72,12 @@
  </managed-bean>
 
  <managed-bean>
+  <managed-bean-name>notebookBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.NotebookBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+
+ <managed-bean>
   <managed-bean-name>pageMessages</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
