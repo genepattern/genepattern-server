@@ -68,6 +68,26 @@
                                 }).appendTo($("#nb-public"));
                     });
                 });
+
+                // Search box controls
+                $("#notebook-search-box").keyup(function(event) {
+                    if ($(".search-widget:visible").length === 0) {
+                        $("#notebook-search").searchslider("show");
+                        set_search_titleTitle($(this).val())
+                    }
+                    $("#notebook-search").searchslider("show");
+                    $("#notebook-search").searchslider("filter", $(this).val());
+                    set_search_titleTitle($(this).val());
+                });
+            }
+
+            function set_search_titleTitle(filter) {
+                if (filter === '') {
+                    $("#notebook-search").searchslider("set_title", "Search Notebooks");
+                }
+                else {
+                    $("#notebook-search").searchslider("set_title", "Search: " + filter);
+                }
             }
 
             function get_all_pinned() {
@@ -236,16 +256,22 @@
 
             function init_browse_notebooks() {
                 const browse = $('<div id="notebook-list-browse"></div>').modulelist({
-                    title: 'Browse Notebooks',
+                    title: 'Browse Notebooks by Category',
                     data: all_pinned,
                     droppable: false,
                     draggable: false,
                     click: function(event) {
                         var filter = $(event.currentTarget).find(".module-name").text();
-                        var notebook_earch = $("#notebook-search");
-                        notebook_earch.searchslider("show");
-                        notebook_earch.searchslider("tagfilter", filter);
-                        notebook_earch.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                        var notebook_search = $("#notebook-search");
+                        notebook_search.searchslider("show");
+
+                        if (filter === "all notebooks") {
+                            notebook_search.searchslider("tagfilter", "");
+                        }
+                        else {
+                            notebook_search.searchslider("tagfilter", filter);
+                            notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                        }
                     }
                 });
 
