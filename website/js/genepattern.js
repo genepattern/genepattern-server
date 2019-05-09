@@ -1894,6 +1894,16 @@ function createFileWidget(linkElement, appendTo) {
                                     }
                                     if (isJobFile) {
                                         initRecentJobs();
+                                        
+                                        // Handle the case where we delete a file in the current open job on the job status page
+                                        // if so we must refresh the job status view to get rid of the deleted file
+                                        var isJobStatusOpen = $(".on-job-status-page").length > 0 && $("#jobResults:visible").length > 0;
+                                        if (isJobStatusOpen && currentJobNumber !== undefined && currentJobNumber !== null) {
+	                                        if (path.startsWith("/jobResults/"+currentJobNumber)){
+	                                        	loadJobStatus(currentJobNumber);         	
+	                                        }
+                                        }
+                                        
                                     }
 
                                     //check the disk quota

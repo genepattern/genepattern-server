@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.json.JSONObject;
 
 import com.google.common.cache.Cache;
@@ -86,20 +88,31 @@ public class JobObjectCache {
     }
     
     public static final boolean[] flags=new boolean[] { false, true };
+    
     public static void removeJobFromCache(final Integer jobId) {
         if (jobCache==null) {
             return;
         }
         for(boolean includeChildren : flags) {
-            for(boolean includeOutputFiles : flags) {
+             for(boolean includeOutputFiles : flags) {
+               
                 for(boolean includeComments : flags) {
-                    for(boolean includeTags : flags) {
+                     for(boolean includeTags : flags) {
                         final String key=initCompositeKey(jobId, includeChildren, includeOutputFiles, includeComments, includeTags);
+                    
+                       
+                      
                         jobCache.invalidate(key);
+                      
+                       
                     }
                 }
             }
         }
+        // make sure to reset the parent job as well if there is one
+        AnalysisDAO ds = new AnalysisDAO(HibernateUtil.instance());
+        int parentId = ds.getParentJobId(jobId);
+        if (parentId != -1)  removeJobFromCache(parentId);
     }
 
 }
