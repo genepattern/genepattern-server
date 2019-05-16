@@ -246,6 +246,16 @@
                         const data = $(event.target).closest(".module-listing").module("get_data");
                         const id = data.version;
                         nb_login("/services/sharing/notebooks/" + id + "/copy/?open=true");
+                    },
+                    tagclick: function(event) {
+                        var filter = $(event.currentTarget).text();
+                        var notebook_search = $("#notebook-search");
+                        notebook_search.searchslider("show");
+                        notebook_search.searchslider("tagfilter", filter);
+                        notebook_search.searchslider("set_title", '<a href="#" onclick="$(\'#notebook-browse\').searchslider(\'show\');">Browse Notebooks</a> &raquo; ' + filter);
+                        $(event.currentTarget)
+                                .closest('.module-listing')
+                                .module('stopProp', event);
                     }
                 });
 

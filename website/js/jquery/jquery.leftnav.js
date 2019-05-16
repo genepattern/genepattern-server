@@ -336,6 +336,7 @@ $.widget("gp.modulelist", {
         droppable: false,
         draggable: true,
         click: function() {},
+        tagclick: null,
         add: function(event, ui) {},
         remove: function(event, ui) {},
         reposition: function(event, ui) {}
@@ -359,11 +360,14 @@ $.widget("gp.modulelist", {
 
         this.listings = [];
         for (var id in this.options.data) {
-            this.listings.push($('<div>').module({
+            var options = {
                 data: this.options.data[id],
                 click: this.options.click,
                 draggable: this.options.draggable
-            }).appendTo(this.element));
+            };
+            if (this.options.tagclick) options['tagclick'] = this.options.tagclick;
+
+            this.listings.push($('<div>').module(options).appendTo(this.element));
         }        
 
         if (this.options.droppable) {
