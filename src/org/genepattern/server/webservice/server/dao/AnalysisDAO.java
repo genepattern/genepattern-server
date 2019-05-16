@@ -20,6 +20,9 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -733,16 +736,68 @@ public class AnalysisDAO extends BaseDAO {
     public void deleteJob(int jobID) {
         // recursively delete the job directory
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));	
-        deleteJobDir(jobDir);
         AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
+        
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String postJobDeleteScript = null;
+        try {
+            GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
+            postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
+                                   
+        } catch (Throwable e){
+            e.printStackTrace();
+            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+        }
+        deleteJobDir(jobDir);
         getSession().delete(aJob);
+        postDeleteScript( jobID,  jobDir, postJobDeleteScript);
     }
     
     public void deleteJob(AnalysisJob aJob) {
         // recursively delete the job directory
         File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
+        String postJobDeleteScript = null;
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        try {
+            GpContext context = GpContext.createContextForJob(mgr, aJob.getUserId(), aJob.getJobNo());
+            postJobDeleteScript  = gpConfig.getGPProperty(context, "postJobDeleteScript", null);
+        } catch (Throwable e){
+            e.printStackTrace();
+            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+        }
+        
         deleteJobDir(jobDir);
         getSession().delete(aJob);
+        postDeleteScript(aJob.getJobNo() ,  jobDir, postJobDeleteScript);
+    }
+    
+    protected void postDeleteScript(int jobId, File jobDir, String postJobDeleteScript){
+        try {
+            System.out.println("XXXXX AnalysisDAO deleting job "+ jobId);           
+            System.out.println("XXXXX AnalysisDAO post job delete script is  "+ postJobDeleteScript);
+            
+            String[] args = new String[2]; 
+            args[0] = ""+jobId;
+            args[1] = jobDir.getAbsolutePath();
+            
+            if (postJobDeleteScript != null){
+                // Runtime.getRuntime().exec(postJobDeleteScript, args );
+                ProcessBuilder pb = new ProcessBuilder(postJobDeleteScript, "bash", args[0], args[1]).inheritIO();
+                //Map<String, String> env = pb.environment();
+                //env.put("VAR1", "myValue");
+                //env.remove("OTHERVAR");
+                //env.put("VAR2", env.get("VAR1") + "suffix");
+                //pb.directory(new File(jobDir.getAbsolutePath()));
+                Process p = pb.start();
+                
+            
+            }
+            
+            
+        } catch (Throwable e){
+            e.printStackTrace();
+            log.error("Problem encountered with post job delete script: " +postJobDeleteScript ,e);
+        }
     }
 
     /**
@@ -756,6 +811,9 @@ public class AnalysisDAO extends BaseDAO {
             del.setIncludeEmptyDirs(true);
             del.setProject(new Project());
             del.execute();
+            
+            
+            
         }
         catch (Throwable t) {
             log.error("Error deleting job directory, name="+jobDir.getName()+", path="+jobDir.getPath(), t);
