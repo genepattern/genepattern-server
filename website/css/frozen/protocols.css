@@ -57,6 +57,49 @@
     padding-right: 14px;
 }
 
+.protocol_table {
+	margin: 0px 
+	auto;
+}
+
 .optionsHead {
 	font-size: 12px;
 }
+
+.protocol_with_bg {
+	padding: 10px 20px 20px;
+	border: 1px solid #A3B1DD;
+    border-radius: 5px;
+	background: transparent url(images/NBbanner.jpg) center center no-repeat;
+	background-size: cover;
+}
+
+.innerdiv {
+	background-color: rgba(17,34,67,.3);
+	padding: 5px 20px 10px;
+	border: 1px solid #A3B1DD;
+    border-radius: 5px;
+    margin-top: 10px;
+	margin-right: 100px;
+	margin-bottom: 0px;
+	margin-left: 100px;
+}
+
+.protocol_with_bg a {
+	font-size: 12px;
+	color: #ACC6EF;
+	text-align: left;
+}
+
+.protocol_with_bg p {
+	font-size: 12px;
+	color: white;
+	text-align: left;
+}
+
+.protocol_with_bg h1 {
+	color: white;
+	text-align: center;
+}
+
+
