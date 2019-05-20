@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
@@ -773,8 +774,6 @@ public class AnalysisDAO extends BaseDAO {
     
     protected void postDeleteScript(int jobId, File jobDir, String postJobDeleteScript){
         try {
-            System.out.println("XXXXX AnalysisDAO deleting job "+ jobId);           
-            System.out.println("XXXXX AnalysisDAO post job delete script is  "+ postJobDeleteScript);
             
             String[] args = new String[2]; 
             args[0] = ""+jobId;
@@ -789,8 +788,8 @@ public class AnalysisDAO extends BaseDAO {
                 //env.put("VAR2", env.get("VAR1") + "suffix");
                 //pb.directory(new File(jobDir.getAbsolutePath()));
                 Process p = pb.start();
-                
-            
+                p.waitFor(3,   TimeUnit.SECONDS);
+              
             }
             
             
