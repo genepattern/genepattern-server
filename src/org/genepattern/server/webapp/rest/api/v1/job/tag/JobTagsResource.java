@@ -11,6 +11,7 @@ import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.tag.Tag;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCache;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +74,7 @@ public class JobTagsResource
             {
                 throw new Exception("A valid job number must be specified");
             }
-
+            JobObjectCache.removeJobFromCache(jobNo);
             Date date = new Date();
             JobTag jobTag = new JobTag();
             jobTag.setDateTagged(date);
@@ -117,7 +118,7 @@ public class JobTagsResource
         try
         {
             final GpContext userContext = Util.getUserContext(request);
-
+            JobObjectCache.removeJobFromCache(jobNo);
             JSONObject result = new JSONObject();
             boolean success = false;
 
