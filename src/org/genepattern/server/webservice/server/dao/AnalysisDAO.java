@@ -788,7 +788,7 @@ public class AnalysisDAO extends BaseDAO {
                 //env.put("VAR2", env.get("VAR1") + "suffix");
                 //pb.directory(new File(jobDir.getAbsolutePath()));
                 Process p = pb.start();
-                p.waitFor(3,   TimeUnit.SECONDS);
+                p.waitFor();
               
             }
             
