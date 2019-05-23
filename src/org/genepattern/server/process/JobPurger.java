@@ -23,8 +23,7 @@ public class JobPurger implements Runnable {
     protected int purgeInterval = -1;
     public Timer timer = new Timer(true);
     Purger purger = null;
-    boolean DEBUG = false;
-
+    
     static JobPurger instance = null;
     static Thread purgerThread = null;
 
@@ -78,8 +77,8 @@ public class JobPurger implements Runnable {
             // it's already after today's purge time, wait until tomorrow's
             nextPurgeTime.add(GregorianCalendar.DATE, 1);
         }
-        if (DEBUG)
-            log.info("next purge will be at " + nextPurgeTime.getTime());
+        
+        log.info("next purge will be at " + nextPurgeTime.getTime());
         long MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000;
         purger = new Purger(this.purgeInterval);
         timer.scheduleAtFixedRate(purger, nextPurgeTime.getTime(), MILLISECONDS_IN_A_DAY);
