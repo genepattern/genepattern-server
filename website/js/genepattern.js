@@ -1904,6 +1904,16 @@ function createFileWidget(linkElement, appendTo) {
 	                                        }
                                         }
                                         
+                                        var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
+                                        if (isJobResultsOpen) {
+                                        	//window.location.reload(true)
+                                            initRecentJobs();
+                                            var filter = getJobFilter();
+                                            if (!filter) filter = true;
+                                            loadJobResults(filter);
+
+                                        }
+                                        
                                     }
 
                                     //check the disk quota
@@ -2317,6 +2327,13 @@ function createJobWidget(job) {
                             success: function(data) {
                                 showSuccessMessage(data);
                                 initRecentJobs();
+                                var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
+                                if (isJobResultsOpen) {
+                                	//window.location.reload(true)
+                                	var filter = getJobFilter();
+                                	if (!filter) filter = true;
+                                	loadJobResults(filter);
+                                }
                             },
                             error: function(data) {
                                 if (typeof data === 'object') {
