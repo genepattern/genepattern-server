@@ -455,6 +455,16 @@ function updateJobStatusPage() {
     }
 }
 
+function updateJobResultsDisplay(){
+	var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
+    if (isJobResultsOpen) {
+    	 var filter = getJobFilter();
+         if (!filter) filter = true;
+         loadJobResults(filter);
+    }
+}
+
+
 function jobStatusPoll() {
     var _jobStatusPoll = function() {
         var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
@@ -465,6 +475,9 @@ function jobStatusPoll() {
         // Update the job status page, if open and running
         updateJobStatusPage();
 
+        // update the job results page if open
+        updateJobResultsDisplay();
+        
         if (continuePolling) {
             setTimeout(function() {
                 _jobStatusPoll();
@@ -1904,17 +1917,10 @@ function createFileWidget(linkElement, appendTo) {
 	                                        }
                                         }
                                         
-                                        var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
-                                        if (isJobResultsOpen) {
-                                        	//window.location.reload(true)
-                                            initRecentJobs();
-                                            var filter = getJobFilter();
-                                            if (!filter) filter = true;
-                                            loadJobResults(filter);
-
-                                        }
                                         
-                                    }
+                                        updateJobResultsDisplay();
+                                        initRecentJobs();
+                                        }
 
                                     //check the disk quota
                                     checkDiskQuota();
@@ -2327,13 +2333,7 @@ function createJobWidget(job) {
                             success: function(data) {
                                 showSuccessMessage(data);
                                 initRecentJobs();
-                                var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
-                                if (isJobResultsOpen) {
-                                	//window.location.reload(true)
-                                	var filter = getJobFilter();
-                                	if (!filter) filter = true;
-                                	loadJobResults(filter);
-                                }
+                                updateJobResultsDisplay()
                             },
                             error: function(data) {
                                 if (typeof data === 'object') {
@@ -2509,11 +2509,13 @@ function initRecentJobs() {
                     $(ui).text(" " + jobsProcessing + " Jobs Processing");
                     $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
                     $.data($(ui).parent()[0], "continuePolling", true);
+                    updateJobResultsDisplay()
                 }
                 else {
                     $(ui).text(" No Jobs Processing");
                     $(ui).prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
                     $.data($(ui).parent()[0], "continuePolling", false);
+                    updateJobResultsDisplay()
                 }
             });
         },
