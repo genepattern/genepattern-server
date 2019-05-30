@@ -3386,7 +3386,7 @@ function buildJobResultsPage() {
                                              var filter = getJobFilter();
                                              if (!filter) filter = true;
                                              loadJobResults(filter);
-                                             initRecent();
+                                             initRecentJobs();
                                              showSuccessMessage(data);
                                          },
                                          error: function (data) {
