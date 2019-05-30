@@ -3386,12 +3386,14 @@ function buildJobResultsPage() {
                                              var filter = getJobFilter();
                                              if (!filter) filter = true;
                                              loadJobResults(filter);
+                                             initRecent();
                                              showSuccessMessage(data);
                                          },
                                          error: function (data) {
                                              var filter = getJobFilter();
                                              if (!filter) filter = true;
                                              loadJobResults(filter);
+                                             initRecentJobs();
                                              showErrorMessage(data);
                                          }
                                      });
