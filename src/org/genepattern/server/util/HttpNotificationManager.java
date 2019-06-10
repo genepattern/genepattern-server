@@ -180,8 +180,8 @@ class JobWaitThread2 extends Thread {
 
     public void run() {
 	try {
-	    String status = "";
-	    String prevStatus = "";
+	    String status = "Undetermined";
+	    String prevStatus = "Undetermined";
 	    JobInfo info = null;
 	    int count = 0;
 	    int sleep = initialSleep; // wouldn't be here if it was fast
