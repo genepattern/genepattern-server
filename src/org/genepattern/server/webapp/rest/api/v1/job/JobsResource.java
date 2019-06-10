@@ -5,7 +5,9 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +41,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
@@ -56,6 +59,8 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.util.EmailNotificationManager;
+import org.genepattern.server.util.HttpNotificationManager;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearch;
@@ -1034,6 +1039,80 @@ public class JobsResource {
         return res.editComment(multivaluedMap, id, jobNo, request);
     }
 
+    
+    @POST
+    @Path("/{jobNo}/setNotificationCallback")
+    public Response setNotificationCallback(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        System.out.println(" =================  JobsResource setNotificationCallback ======================= " + multivaluedMap);
+        final GpContext userContext = Util.getUserContext(request);
+        String notificationUrl = multivaluedMap.getFirst("notificationUrl");
+        try {
+            URL obj = new URL(notificationUrl);
+        }
+        catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Error setting notification callback for  job " + jobNo, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+        
+        int jobNumber = Integer.parseInt(jobNo);
+        String key = null;
+        if (jobNumber >= 0 && userContext.getUserId() != null && notificationUrl != null) {
+            key = UserProp.getHttpNotificationPropKey(jobNumber);
+        }
+        if (key == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Can't send http notification: jobNumber=" + jobNo + ", user=" + userContext.getUserId()).build();
+        }
+        UserDAO userDao = new UserDAO();
+        String oldUrl = userDao.getProperty(userContext.getUserId(), key).getValue();
+        if (oldUrl != null){
+            //  kill the old thread if it exists as we only allow one callback per job to avoid this becoming a DNS target
+            HttpNotificationManager.getInstance().removeWaitingUser(oldUrl, userContext.getUserId(), jobNo);
+        }
+        // save state
+        HibernateUtil.beginTransaction();
+        String value = String.valueOf(notificationUrl);
+        userDao.setProperty(userContext.getUserId(), key, value);
+        HibernateUtil.commitTransaction();
+        
+        
+        
+        HttpNotificationManager.getInstance().addWaitingUser(notificationUrl, userContext.getUserId(), jobNo);
+        return Response.ok().build();
+    }
+    
+    @POST
+    @Path("/{jobNo}/removeNotificationCallback")
+    public Response removeNotificationCallback(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        System.out.println(" =================  JobsResource removeNotificationCallback ======================= " + multivaluedMap);
+        final GpContext userContext = Util.getUserContext(request);
+        String notificationUrl = multivaluedMap.getFirst("notificationUrl");
+        try {
+            URL obj = new URL(notificationUrl);
+        }
+        catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Error setting notification callback for  job " + jobNo, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+        
+        
+        HttpNotificationManager.getInstance().removeWaitingUser(notificationUrl, userContext.getUserId(), jobNo);
+        
+        return Response.ok().build();
+    }
+    
+    
     @POST
     @Path("/{jobNo}/comments/delete")
     public Response deleteComment(

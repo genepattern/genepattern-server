@@ -24,6 +24,18 @@ public class UserProp {
         return "sendEmailNotification_" + jobNumber;
     }
     
+    /**
+     * @param jobNumber
+     * @return
+     */
+    public static final String getHttpNotificationPropKey(int jobNumber) {
+        if (jobNumber < 0) {
+            return null;
+        }        
+        return "sendHttpNotification_" + jobNumber;
+    }
+    
+    
     @Id
     @GeneratedValue
     private Integer id;
