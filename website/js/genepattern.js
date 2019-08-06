@@ -558,19 +558,28 @@ function ajaxFileTabUpload(file, directory, done, index) {
         reader.onerror = errorFunc;
 
         var start = nextChunk * size;
+        console.log("Reading "+index+" from " + start + " to " + (start + size) + "  " +reader.readyState);
         var blob = file.slice(start, start + size);
+        
         reader.readAsArrayBuffer(blob);
     };
 
     // Init the file reader
-    var reader = new FileReader();
+    
 
     var path = directory + encodeURIComponent(file.name); // The full url of the uploaded file
-    var step = 1024*1024*100;                           // The chunk size
+//    var step = 1024*1024*100;                           // The chunk size - 100MB
+    var step = 1024*1024*100;                           // XXXX  MUST RESET-low value for testing The chunk size - 1MB
     var total = file.size;                              // The total file size
     var totalChunks = Math.ceil(total / step);          // Total number of chunks in file
     var nextChunk = 0;                                  // Index of the next chunk
     var eventQueue = [];                                // The queue of events to execute
+    
+    var runningEvents = [];                             // the N currently running events
+    var completedEvents = [];                           // the list of events that are finished
+    var maxParallelEvents = 3;                          // The max parallel events
+    var completedEvents2 = Object();
+    
     var eventComplete = true ;                          // Flag for if the current event is complete
     var eventError = null;                              // Flag for if the event has encountered an error
     var token = null;                                   // The token for this upload resource
@@ -602,8 +611,10 @@ function ajaxFileTabUpload(file, directory, done, index) {
     // Populate the event queue
 
     // Read the first chunk - Done now so we can detect error states early
-    eventQueue.push(function() {
-        _readChunk(reader, file, nextChunk, step,
+    var reader1 = new FileReader();
+    
+    var readChunk1 = function() {
+    	_readChunk(reader1, file, nextChunk, step,
             function() {
                 eventComplete = true;
                 _setPercentComplete();
@@ -612,7 +623,10 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = "Read Error: This could be because your connection closed during the " +
                     "upload or it could be because you were trying to upload a directory. Aborting upload.";
             });
-    });
+    }
+    readChunk1.gpeventName = 'readChunk1';
+    readChunk1.gpdoParallel= false;	
+    eventQueue.push(readChunk1);
 
     function createUploadPath()
     {
@@ -623,6 +637,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventComplete = true;
                 token = data['token'];
                 _setPercentComplete();
+                completedEvents2[checkQuota.gpeventName] = true;
             },
             error: function(data) {
                 eventError = data;
@@ -631,7 +646,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     }
 
     // Create the upload resource
-    eventQueue.push(function() {
+    var checkQuota = function() {
         checkDiskQuota(function(diskInfo)
         {
             var validateObj = validateDiskQuota(diskInfo, file.size);
@@ -644,11 +659,16 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = validateObj.message;
             }
         });
-    });
+       
+    }
+    checkQuota.gpdoParallel=false;
+    checkQuota.gpeventName="check quota";
+    completedEvents2[checkQuota.gpeventName] = false;
+    eventQueue.push(checkQuota);
 
     // Add the first PUT (since we have already read it in)
-    eventQueue.push(function() {
-        var uploadPayload = new Uint8Array(reader.result);
+    var pushChunk1 = function() {
+        var uploadPayload = new Uint8Array(reader1.result);
         $.ajax({
             type: "PUT",
             dataType: "arraybuffer",
@@ -657,55 +677,78 @@ function ajaxFileTabUpload(file, directory, done, index) {
             data: uploadPayload,
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
             success: function() {
-                eventComplete = true;
                 nextChunk++;
                 _setPercentComplete();
+                completedEvents2[pushChunk1.gpeventName] = true;
             },
             error: function(data) {
                 eventError = data;
             }
         });
-    });
+        
+    }
+    pushChunk1.gpeventName = 'pushChunk1';
+    pushChunk1.gpdoParallel= true;	
+    completedEvents2[pushChunk1.gpeventName] = false;
+    eventQueue.push(pushChunk1);
+    
+    
 
     // Add the remaining reads then PUTs
     for (var i = 1; i < totalChunks; i++) {
-
-        // Read the next chunk
-        eventQueue.push(function() {
-            _readChunk(reader, file, nextChunk, step,
-                function() {
-                    eventComplete = true;
-                    _setPercentComplete();
-                },
-                function() {
-                    eventError = "Uploading directories is not supported. Aborting upload.";
-                });
-        });
-
+    	x = i;
+    	console.log(x);
+    	
         // Then upload it
-        eventQueue.push(function() {
-            var uploadPayload = new Uint8Array(reader.result);
-            $.ajax({
-                type: "PUT",
-                dataType: "arraybuffer",
-                processData: false,
-                contentType: false,
-                data: uploadPayload,
-                url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
-                success: function() {
-                    eventComplete = true;
-                    nextChunk++;
-                    _setPercentComplete();
-                },
-                error: function(data) {
-                    eventError = data;
-                }
-            });
-        });
+        var pushChunk = function() {
+        	chunkindex = arguments.callee.gpindex;
+        	console.log("Pushing " + chunkindex);
+        	var reader = new FileReader();
+        	 reader.onloadend = function() {
+        	      console.log("ready with " + chunkindex);
+        	      var uploadPayload = new Uint8Array(reader.result);
+        	      
+                $.ajax({
+                    type: "PUT",
+                    dataType: "arraybuffer",
+                    processData: false,
+                    contentType: false,
+                    data: uploadPayload,
+                    url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + chunkindex + "&parts=" + totalChunks,
+                    success: function() {
+                         
+                        _setPercentComplete();
+                        completedEvents2['pushChunk'+chunkindex] = true;
+                    },
+                    error: function(data) {
+                        eventError = data;
+                    }
+                });
+                  
+        	      
+        	    };
+        	reader.onerror = function() {
+        	        console.log(reader.error.message);
+        	      };
+        	_readChunk(reader, file, chunkindex, step,
+                    function() {
+                        //eventComplete = true;
+                        _setPercentComplete();
+                    },
+                    function() {
+                        eventError = "Uploading directories is not supported. Aborting upload.";
+                    });
+        	
+        }
+        pushChunk.gpindex = i;
+        pushChunk.gpeventName = 'pushChunk'+i;
+        pushChunk.gpdoParallel= true;	
+        completedEvents2['pushChunk'+i] = false;
+        eventQueue.push(pushChunk)
     }
 
     // Add the check to make sure everything is uploaded
-    eventQueue.push(function() {
+    var finalCheck = function() {
         $.ajax({
             type: "GET",
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&parts=" + totalChunks,
@@ -717,16 +760,21 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 else {
                     eventComplete = true;
                     _setPercentComplete();
+                    completedEvents2['finalCheck'] = true;
                 }
             },
             error: function(data) {
                 eventError = data;
             }
         });
-    });
+    }
+    finalCheck.gpeventName='finalCheck';
+    finalCheck.gpdoParallel=false;
+    completedEvents2['finalCheck'] = false;
+    eventQueue.push(finalCheck);
 
     // Add the command to assemble the file
-    eventQueue.push(function() {
+    var assemble = function() {
         progressbar
             .find(".upload-toaster-file-progress-label")
             .text("Assembling File...");
@@ -738,7 +786,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
             success: function(data) {
                 eventComplete = true;
                 token = data['token'];
-
+                completedEvents2['assemble'] = true;
                 //update the disk usage
                 initStatusBox();
             },
@@ -746,16 +794,24 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = data;
             }
         });
-    });
+    }
+    assemble.gpeventName="assemble";
+    assemble.gpdoParallel = false	;
+    completedEvents2['assemble'] = false;
+    eventQueue.push(assemble);
 
     // Add the event to mark this upload as done
-    eventQueue.push(function() {
+    var finishUI = function() {
         progressbar.progressbar("value", 100);
         done[index] = true;
         eventComplete = true;
-    });
-
-
+        completedEvents2['finishUI'] = true;
+    }
+    finishUI.gpeventName="finishUI";
+    finishUI.gpdoParallel = false;
+    eventQueue.push(finishUI)
+    completedEvents2['finishUI'] = false;
+    
     // Execute the event queue
     var _checkEventQueue = function() {
         if (eventError !== null) {                  // OH SHIT - There's an error
@@ -780,22 +836,141 @@ function ajaxFileTabUpload(file, directory, done, index) {
             return;
         }
 
-        if (eventComplete) {
-            eventComplete = false;                  // Next event is not complete
-            var event = eventQueue.shift();         // Get the next event
-            if (event !== null && event !== undefined) {
-                event();                            // Execute it
-                setTimeout(_checkEventQueue, 1000); // Check the event queue again in a bit
-            }
+        
+        console.log("---------------------------- " + runningEvents.length)
+        for (var i = 0; i < runningEvents.length; i++) {
+        	event = runningEvents[i];
+            console.log("RUNNING " +  completedEvents2[event.gpeventName]);
         }
-        else {
+        
+        // remove any that have completed from the running list
+        for (var i = 0; i < runningEvents.length; i++) {
+        	event = runningEvents[i];
+        	
+        	if ( completedEvents2[event.gpeventName] == true )	{}
+        		console.log("Event completed "+ event.gpeventName)
+	        	runningEvents = runningEvents.filter( function( el ) {
+	        			 return (el != event);
+	        	} );   		
+        		completedEvents.push(event);
+        	}
+    
+        
+        // if the next event says doParallel is OK
+        // then start the next event
+       
+        var event = eventQueue.shift();         // Get the next event
+        
+       
+        if (event !== null && event !== undefined) {
+        	singleOK = (event.gpdoParallel == false) && (runningEvents.length == 0);
+        	anotherParallel = (event.gpdoParallel ==true ) && (runningEvents.length < maxParallelEvents)
+        	launchAnotherEvent =  singleOK || anotherParallel;
+        
+        	if (launchAnotherEvent){
+        		console.log("Running before "+ runningEvents.length);
+        		runningEvents.push(event);
+        		console.log("Running after "+ runningEvents.length);
+        		
+            	event();  
+        	} else {
+        		// put the event back until later
+        		eventQueue.unshift(event)
+        	}
+        	
+            }
+       
+        	
+       
+        	
+        if ((eventQueue.length > 0) || (runningEvents.length > 0)) {
             setTimeout(_checkEventQueue, 1000);     // Check the event queue again in a bit
         }
+        
+        
     };
 
     totalQueue = eventQueue.length;
     _checkEventQueue();
 }
+
+
+function initReusableJSUploads(){
+	
+	 var r = new Resumable({
+         target:'/gp/rest/v1/upload/resumable/',
+         chunkSize:50*1024*1024,
+         simultaneousUploads:4,
+         testChunks: true,
+         throttleProgressCallbacks:1,
+         method: "octet"
+       });
+     
+     if(!r.support) $('.resumable-error').show();
+     else {
+         r.assignDrop($('.resumable-drop')[0]);
+         r.assignBrowse($('.resumable-browse')[0]);
+         
+         $('.resumable-drop').show();
+         
+         r.on('fileAdded', function(file){
+         	 alert('upload now');
+         	 
+         	// Check for special characters
+     	   // var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+         	
+         	// pick the destination directory
+     	    openUploadDirectoryDialog(null, function() {
+     	    	var target = $(uploadDirectorySelected).attr("href");
+     	    	alert('target selected is ' + target)
+     	    	
+     	    	// Show progress pabr
+                 $('.resumable-progress, .resumable-list').show();
+                 // Show pause, hide resume
+                 $('.resumable-progress .progress-resume-link').hide();
+                 $('.resumable-progress .progress-pause-link').show();
+                 // Add the file to the list
+                 $('.resumable-list').append('<li class="resumable-file-'+file.uniqueIdentifier+'">Uploading <span class="resumable-file-name"></span> <span class="resumable-file-progress"></span></li>');
+                 $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-name').html(file.fileName);
+                 // Actually start the upload
+                 r.upload();
+     	    	
+     	    });
+     	   
+         	 
+         	 
+          
+             
+           });
+         
+         r.on('pause', function(){
+             // Show resume, hide pause
+             $('.resumable-progress .progress-resume-link').show();
+             $('.resumable-progress .progress-pause-link').hide();
+           });
+         r.on('complete', function(){
+             // Hide pause/resume when the upload has completed
+             $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
+           });
+         r.on('fileSuccess', function(file,message){
+             // Reflect that the file upload has completed
+             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
+           });
+         r.on('fileError', function(file, message){
+             // Reflect that the file upload has resulted in error
+             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+           });
+         r.on('fileProgress', function(file){
+             // Handle progress for both the file and the overall upload
+             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
+             $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+           });
+         
+     }
+	
+}
+
+
 
 function hasSpecialChars(filelist) {
     var regex = new RegExp("[^A-Za-z0-9_.]");
