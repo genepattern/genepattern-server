@@ -837,12 +837,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         }
 
         
-        console.log("---------------------------- " + runningEvents.length)
-        for (var i = 0; i < runningEvents.length; i++) {
-        	event = runningEvents[i];
-            console.log("RUNNING " +  completedEvents2[event.gpeventName]);
-        }
-        
+     
         // remove any that have completed from the running list
         for (var i = 0; i < runningEvents.length; i++) {
         	event = runningEvents[i];
@@ -868,9 +863,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         	launchAnotherEvent =  singleOK || anotherParallel;
         
         	if (launchAnotherEvent){
-        		console.log("Running before "+ runningEvents.length);
         		runningEvents.push(event);
-        		console.log("Running after "+ runningEvents.length);
         		
             	event();  
         	} else {
@@ -895,15 +888,20 @@ function ajaxFileTabUpload(file, directory, done, index) {
 }
 
 
-function initReusableJSUploads(){
+function initReusableJSUploads(file, directory, done, index){
+	//function ajaxFileTabUpload(file, directory, done, index) {
 	
-	 var r = new Resumable({
+	var uploadToasterFile;
+	var progressbar;
+	
+	var r = new Resumable({
          target:'/gp/rest/v1/upload/resumable/',
          chunkSize:50*1024*1024,
          simultaneousUploads:4,
          testChunks: true,
          throttleProgressCallbacks:1,
-         method: "octet"
+         method: "octet",
+		 query: {'target':'abcd'}
        });
      
      if(!r.support) $('.resumable-error').show();
@@ -914,34 +912,61 @@ function initReusableJSUploads(){
          $('.resumable-drop').show();
          
          r.on('fileAdded', function(file){
-         	 alert('upload now');
+        	 
          	 
          	// Check for special characters
      	   // var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
          	
          	// pick the destination directory
      	    openUploadDirectoryDialog(null, function() {
+     	    	
+     	    	// set this if drop was on a specific dir in old version
+     	    	var directory=null;
+     	    	// to fit into the old API
+     	    	file.name = file.fileName;
+     	    	var filelist = [file];
+     	    	
+     	    	initUploadToaster(filelist, directory);
+     	    	
+     	    	console.log('pause');
+     	    	
+     	    	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
+     	    	
+     	    	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+     	   	
+     	    	
      	    	var target = $(uploadDirectorySelected).attr("href");
-     	    	alert('target selected is ' + target)
+     	    	r.opts.query.target = target + file.name;
+     	    	
+     	    	//var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(target) + "']");
      	    	
      	    	// Show progress pabr
-                 $('.resumable-progress, .resumable-list').show();
+                 //$('.resumable-progress, .resumable-list').show();
                  // Show pause, hide resume
-                 $('.resumable-progress .progress-resume-link').hide();
-                 $('.resumable-progress .progress-pause-link').show();
+                 //$('.resumable-progress .progress-resume-link').hide();
+                 //$('.resumable-progress .progress-pause-link').show();
                  // Add the file to the list
-                 $('.resumable-list').append('<li class="resumable-file-'+file.uniqueIdentifier+'">Uploading <span class="resumable-file-name"></span> <span class="resumable-file-progress"></span></li>');
-                 $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-name').html(file.fileName);
+                 //$('.resumable-list').append('<li class="resumable-file-'+file.uniqueIdentifier+'">Uploading <span class="resumable-file-name"></span> <span class="resumable-file-progress"></span></li>');
+                 //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-name').html(file.fileName);
                  // Actually start the upload
                  r.upload();
-     	    	
+                 $('.resumable-drop').show();
      	    });
      	   
-         	 
-         	 
-          
-             
+         	    
            });
+         
+         r.on('cancel',function() {
+             progressbar.progressbar("value", 100);
+             progressbar
+                 .find(".ui-progressbar-value")
+                 .css("background", "#FCF1F3");
+             progressbar
+                 .find(".upload-toaster-file-progress-label")
+                 .text("Canceled!");
+             $('.resumable-drop').show();
+             
+         });
          
          r.on('pause', function(){
              // Show resume, hide pause
@@ -950,20 +975,40 @@ function initReusableJSUploads(){
            });
          r.on('complete', function(){
              // Hide pause/resume when the upload has completed
-             $('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
+             //$('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
+             progressbar.progressbar("value", 100);
+             $('.resumable-drop').show();
+             cleanUploadToaster();
            });
          r.on('fileSuccess', function(file,message){
              // Reflect that the file upload has completed
-             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
+            // $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
+             // show the drop target, not sure why its hidden
+        	 $('.resumable-drop').show();
            });
          r.on('fileError', function(file, message){
              // Reflect that the file upload has resulted in error
-             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+          //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+          // Set the top error message
+             showErrorMessage(message);
+
+             // Set the progressbar error message
+             progressbar.progressbar("value", 100);
+             progressbar
+                 .find(".ui-progressbar-value")
+                 .css("background", "#FCF1F3");
+             progressbar
+                 .find(".upload-toaster-file-progress-label")
+                 .text("Error!");
+             
+             $('.resumable-drop').show();
+             
            });
          r.on('fileProgress', function(file){
              // Handle progress for both the file and the overall upload
-             $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
-             $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+             //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
+             //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+             progressbar.progressbar("value", Math.floor(r.progress()*100));
            });
          
      }
@@ -1127,6 +1172,7 @@ function uploadAfterDialog(filelist, directory) {
                 // Upload the file
                 var file = filelist[i];
                 ajaxFileTabUpload(file, directory, done, i);
+       
             }
 
             // Finish all uploads, cycling until done

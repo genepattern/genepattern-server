@@ -48,7 +48,7 @@ public class ResumableInfo {
             return true;
         }
     }
-    public boolean checkIfUploadFinished() {
+    public boolean checkIfUploadFinished(File destination) {
         //check if upload finished
         int count = (int) Math.ceil(((double) resumableTotalSize) / ((double) resumableChunkSize));
         for(int i = 1; i < count; i ++) {
@@ -61,9 +61,9 @@ public class ResumableInfo {
         File file = new File(resumableFilePath);
 
         System.out.println("UPLOAD FINISHED - " + file.getAbsolutePath());
-        String new_path = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ".temp".length());
-        file.renameTo(new File(new_path));
-        System.out.println("UPLOAD RENAMED - " + new_path);
+        
+        file.renameTo(destination);
+        System.out.println("UPLOAD RENAMED - " + destination.getAbsolutePath());
         
         return true;
     }

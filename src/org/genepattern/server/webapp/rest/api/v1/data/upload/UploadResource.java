@@ -535,8 +535,17 @@ public class UploadResource {
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
+            
+            String path = request.getParameter("target");
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);      
+            // Check to see if it already exists and throw an error if it does
+            if (file.getServerFile().exists()) {
+                throw new FileUploadException("Upload file already exists : " + path);
+            }
+            
             ResumableInfo info = getResumableInfo(request, gpConfig);
-
+            checkDiskQuota(gpConfig, userContext, info.resumableTotalSize);
+            
         
             int resumableChunkNumber        = getResumableChunkNumber(request);
            
@@ -564,14 +573,21 @@ public class UploadResource {
 
             //Mark as uploaded.
             info.uploadedChunks.add(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber));
-            if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
-                
-                
-                System.out.println("===============\n\n=================\nDone uploading chunks to " + info.resumableRelativePath);
-                
+           
+            // pass in the files final location
+            if (info.checkIfUploadFinished(file.getServerFile())) { //Check if all chunks uploaded, and change filename
                 
                 ResumableInfoStorage.getInstance().remove(info);
-                //response.getWriter().print("All finished.");
+                System.out.println("after copy dest exists: " + file.getServerFile().exists());
+                
+              
+        
+                // Update the database - lengths are 1 since resumable already assembled it
+                final HibernateSessionManager mgr=HibernateUtil.instance();
+                UserUploadManager.createUploadFile(mgr, userContext, file, 1);
+                UserUploadManager.updateUploadFile(mgr, userContext, file, 1, 1);
+
+                
                 
                 return Response.ok().entity("All finished.").build();
             } else {
@@ -608,8 +624,10 @@ public class UploadResource {
     }
     
     private ResumableInfo getResumableInfo(HttpServletRequest request, final GpConfig gpConfig) throws Exception {
-        String base_dir =  getTempDir(gpConfig).getAbsolutePath();
-
+        GpContext userContext = Util.getUserContext(request);
+        File fileTempDir = gpConfig.getTemporaryUploadDir(userContext);
+        String base_dir =  fileTempDir.getAbsolutePath();
+        
         int resumableChunkSize          = ResumableHttpUtils.toInt(request.getParameter("resumableChunkSize"), -1);
         long resumableTotalSize         = ResumableHttpUtils.toLong(request.getParameter("resumableTotalSize"), -1);
         String resumableIdentifier      = request.getParameter("resumableIdentifier");
