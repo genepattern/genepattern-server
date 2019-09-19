@@ -62,6 +62,12 @@ public class RestApiFilter implements Filter {
             return;
         }
 
+        // Don't require basic auth for public module list
+        if (pathInfo.startsWith("/v1/tasks/all.json")) {
+            chain.doFilter(req, resp);
+            return;
+        }
+
         // Check supported forms of authentication
         String gpUserId = null;
         try {

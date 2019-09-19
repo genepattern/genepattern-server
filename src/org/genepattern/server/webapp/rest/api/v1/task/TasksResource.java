@@ -283,7 +283,15 @@ public class TasksResource {
             final @Context HttpServletRequest request,
             final @Context HttpServletResponse response) {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
+        GpContext userContext = null;
+        try {
+            // Handle authenticated users
+            userContext = Util.getUserContext(request);
+        }
+        catch(WebApplicationException e) {
+            // Handle unauthenticated users
+            userContext = GpContext.getContextForUser("", true);
+        }
         final String userId = userContext.getUserId();
 
         // Check the etag and return a 304 if they match
