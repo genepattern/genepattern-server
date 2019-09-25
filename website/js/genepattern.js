@@ -887,6 +887,30 @@ function ajaxFileTabUpload(file, directory, done, index) {
     _checkEventQueue();
 }
 
+function resumableUploadStart(r, file, directory){
+	var fileName = file.fileName;
+	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	
+	if ($('#upload-toaster').dialog('isOpen') === true) {
+		appendToUploadToaster(file);
+	} else {
+		var filelist = [file];
+		initUploadToaster(filelist, directory);
+	}
+	console.log("1. " + fileName + " -- " + file.fileName);
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	// pass in the target directory for the final destination
+	r.opts.query.target = directory;
+	 
+	console.log("2. " + fileName + " -- " + file.fileName, + "  " + r.opts.query.target);
+	 
+    // Actually start the upload
+    r.upload();
+    $('.resumable-drop').show(); 
+}
+
+var resumableUploader;
 
 function initReusableJSUploads(file, directory, done, index){
 	//function ajaxFileTabUpload(file, directory, done, index) {
@@ -904,59 +928,51 @@ function initReusableJSUploads(file, directory, done, index){
 		 query: {'target':'abcd'}
        });
      
+	resumableUploader = r;
+	
      if(!r.support) $('.resumable-error').show();
      else {
+    	 // the dropzone at bottom right
          r.assignDrop($('.resumable-drop')[0]);
          r.assignBrowse($('.resumable-browse')[0]);
+         // drops on the file tree
+         r.assignDrop($('#uploadTree li.jstree-open, li.jstree-closed'));
+         
+         var resumableDrop = $('.resumable-drop')[0];
+         resumableDrop.addEventListener("dragenter", uploadEnter, true);
+         resumableDrop.addEventListener("dragleave", uploadLeave, true);
+         resumableDrop.addEventListener("dragexit", uploadExit, false);
+         resumableDrop.addEventListener("dragover", uploadOver, false);
          
          $('.resumable-drop').show();
          
+       
+         
          r.on('fileAdded', function(file){
         	 
-         	 
-         	// Check for special characters
-     	   // var directory = $(event.target).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
-         	
-         	// pick the destination directory
-     	    openUploadDirectoryDialog(null, function() {
-     	    	
-     	    	// set this if drop was on a specific dir in old version
-     	    	var directory=null;
-     	    	// to fit into the old API
-     	    	file.name = file.fileName;
-     	    	var filelist = [file];
-     	    	
-     	    	initUploadToaster(filelist, directory);
-     	    	
-     	    	console.log('pause');
-     	    	
-     	    	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
-     	    	
-     	    	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-     	   	
-     	    	
-     	    	var target = $(uploadDirectorySelected).attr("href");
-     	    	r.opts.query.target = target + file.name;
-     	    	
-     	    	//var uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(target) + "']");
-     	    	
-     	    	// Show progress pabr
-                 //$('.resumable-progress, .resumable-list').show();
-                 // Show pause, hide resume
-                 //$('.resumable-progress .progress-resume-link').hide();
-                 //$('.resumable-progress .progress-pause-link').show();
-                 // Add the file to the list
-                 //$('.resumable-list').append('<li class="resumable-file-'+file.uniqueIdentifier+'">Uploading <span class="resumable-file-name"></span> <span class="resumable-file-progress"></span></li>');
-                 //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-name').html(file.fileName);
-                 // Actually start the upload
-                 r.upload();
-                 $('.resumable-drop').show();
-     	    });
-     	   
+		        var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+		        	 
+		        r.currentFile = file.fileName;
+		    	
+		         // pick the destination directory
+		        if (directory === undefined || directory === null || directory.length === 0) {
+		            openUploadDirectoryDialog([file], function() {    
+		            	var directory = $(uploadDirectorySelected).attr("href");
+		            	resumableUploadStart(r, file, directory);
+		         	 });
+		        }
+		        else {
+		        	resumableUploadStart(r, file, directory);
+		        	
+		        }
          	    
-           });
+         });
          
-         r.on('cancel',function() {
+         r.on('cancel',function(file) {
+        	 var fileName = r.currentFile;
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             
              progressbar.progressbar("value", 100);
              progressbar
                  .find(".ui-progressbar-value")
@@ -965,32 +981,50 @@ function initReusableJSUploads(file, directory, done, index){
                  .find(".upload-toaster-file-progress-label")
                  .text("Canceled!");
              $('.resumable-drop').show();
-             
+             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
          });
          
-         r.on('pause', function(){
+         r.on('pause', function(file){
              // Show resume, hide pause
              $('.resumable-progress .progress-resume-link').show();
              $('.resumable-progress .progress-pause-link').hide();
            });
-         r.on('complete', function(){
+         r.on('complete', function(file){
              // Hide pause/resume when the upload has completed
              //$('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
-             progressbar.progressbar("value", 100);
-             $('.resumable-drop').show();
+        	 
+        	 //var fileName = r.currentFile;
+        	 //uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+        	 //uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+ 	    	 //progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             
+             //progressbar.progressbar("value", 100);
+             //$('.resumable-drop').show();
              cleanUploadToaster();
+             r.currentFile = null;
+             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
            });
          r.on('fileSuccess', function(file,message){
              // Reflect that the file upload has completed
             // $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
              // show the drop target, not sure why its hidden
         	 $('.resumable-drop').show();
+             var fileName = file.fileName;
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             progressbar.progressbar("value", 100);
+             cleanUploadToaster();
+        	 //
            });
          r.on('fileError', function(file, message){
              // Reflect that the file upload has resulted in error
           //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
           // Set the top error message
-             showErrorMessage(message);
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             
+        	 showErrorMessage(message);
 
              // Set the progressbar error message
              progressbar.progressbar("value", 100);
@@ -1002,12 +1036,15 @@ function initReusableJSUploads(file, directory, done, index){
                  .text("Error!");
              
              $('.resumable-drop').show();
+             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
              
            });
          r.on('fileProgress', function(file){
              // Handle progress for both the file and the overall upload
              //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
              //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
              progressbar.progressbar("value", Math.floor(r.progress()*100));
            });
          
@@ -1053,12 +1090,64 @@ function dirPromptIfNecessary (filelist, directory) {
     }
 }
 
+// resumable js gets drop events one at a time so we need to add to the existing dialog
+function appendToUploadToaster(file){
+    // var toaster = $("<div></div>").addClass("upload-toaster-list");
+    var toaster = $("#upload-toaster")[0];
+    
+    $("<div></div>")
+        .addClass("upload-toaster-file")
+        .attr("name", file.name)
+        .append(
+        $("<span></span>")
+            .addClass("upload-toaster-file-name")
+            .text(file.name)
+    )
+        .append(
+        $("<div></div>")
+            .addClass("upload-toaster-file-progress")
+            .progressbar({
+                change: function() {
+                    $(this).find(".upload-toaster-file-progress-label").text($(this).progressbar("value") + "%");
+                },
+                complete: function() {
+                    $(this).find(".upload-toaster-file-progress-label").text("Complete!");
+                    $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+                }
+            })
+            .append(
+            $("<div></div>")
+                .addClass("upload-toaster-file-progress-label")
+                .text("Pending")
+        )
+    )
+        .append(
+        $("<button></button>")
+            .addClass("upload-toaster-file-cancel")
+            .text("Cancel")
+            .button()
+    )
+        .appendTo(toaster);
+	
+}
+
+
 function initUploadToaster(filelist) {
     // Hide the dropzone
     $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
 
     // Create the dialog contents
-    var toaster = $("<div></div>").addClass("upload-toaster-list");
+    
+    var toaster = $('#upload-toaster');
+    if (toaster.length == 0){
+    	
+    	toaster = $("<div></div>").addClass("upload-toaster-list").attr("id", "upload-toaster");
+    } else {
+    	//empty out the old stuff
+    	toaster.empty();
+    	// toaster.empty();
+    }
+    // toaster = $("<div></div>").addClass("upload-toaster-list").attr("id", "upload-toaster");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
         $("<div></div>")
@@ -1098,7 +1187,6 @@ function initUploadToaster(filelist) {
 
     // Create the dialog
     toaster
-        .attr("id", "upload-toaster")
         .dialog({
             "title" : "GenePattern Uploads",
             "width": 585,
@@ -1216,6 +1304,8 @@ function uploadOver(evt) {
 }
 
 function uploadDrop(event) {
+	alert('OLD DROP UPLOAD CALLED');
+	
     this.classList.remove('leftnav-highlight');
     event.stopPropagation();
     event.preventDefault();
@@ -1324,8 +1414,13 @@ function initUploadTreeDND() {
         folder[0].addEventListener("dragleave", uploadLeave, true);
         folder[0].addEventListener("dragexit", uploadExit, false);
         folder[0].addEventListener("dragover", uploadOver, false);
-        folder[0].addEventListener("drop", uploadDrop, false);
-
+      
+        // JTL RESUMABLEJS comment out the old dropzone
+        //folder[0].addEventListener("drop", uploadDrop, false);
+        // JTL RESUMABLEJS END comment out the old dropzone
+        resumableUploader.assignDrop(element);
+        
+        
         // Add to list to prevent repeats
         eventsAttached.push(folder[0]);
 

@@ -13,7 +13,25 @@ public class ResumableInfo {
     public String   resumableIdentifier;
     public String   resumableFilename;
     public String   resumableRelativePath;
+    public String   destinationFilePath;
+    public String   destinationPath;
 
+    
+    public String toString(){
+        StringBuffer buff = new StringBuffer("ResumableInfo { ");
+        buff.append("   resumableFilename: ");
+        buff.append(resumableFilename);
+        buff.append("   resumableIdentifier: ");
+        buff.append(resumableIdentifier);
+        buff.append("   destinationFilePath: ");
+        buff.append(destinationFilePath);
+        buff.append("   destinationPath: ");
+        buff.append(destinationPath);
+        
+        return buff.toString();
+    }
+    
+    
     public static class ResumableChunkNumber {
         public ResumableChunkNumber(int number) {
             this.number = number;
@@ -48,7 +66,7 @@ public class ResumableInfo {
             return true;
         }
     }
-    public boolean checkIfUploadFinished(File destination) {
+    public boolean checkIfUploadFinished() {
         //check if upload finished
         int count = (int) Math.ceil(((double) resumableTotalSize) / ((double) resumableChunkSize));
         for(int i = 1; i < count; i ++) {
@@ -58,12 +76,12 @@ public class ResumableInfo {
         }
 
         //Upload finished, change filename.
-        File file = new File(resumableFilePath);
+        File file = new File(this.resumableFilePath);
 
         System.out.println("UPLOAD FINISHED - " + file.getAbsolutePath());
         
-        file.renameTo(destination);
-        System.out.println("UPLOAD RENAMED - " + destination.getAbsolutePath());
+        file.renameTo(new File(this.destinationFilePath));
+        System.out.println("UPLOAD RENAMED - DFP " + this.destinationFilePath + "   DP: "+ this.destinationPath);
         
         return true;
     }

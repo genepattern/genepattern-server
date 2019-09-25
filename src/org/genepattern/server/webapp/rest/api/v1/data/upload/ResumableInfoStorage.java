@@ -30,7 +30,7 @@ public class ResumableInfoStorage {
      */
     public synchronized ResumableInfo get(int resumableChunkSize, long resumableTotalSize,
                              String resumableIdentifier, String resumableFilename,
-                             String resumableRelativePath, String resumableFilePath) {
+                             String resumableRelativePath, String resumableFilePath, String destinationFilePath, String destinationPath) {
 
         ResumableInfo info = mMap.get(resumableIdentifier);
 
@@ -43,7 +43,12 @@ public class ResumableInfoStorage {
             info.resumableFilename      = resumableFilename;
             info.resumableRelativePath  = resumableRelativePath;
             info.resumableFilePath      = resumableFilePath;
-
+            info.destinationFilePath    = destinationFilePath;
+            info.destinationPath        = destinationPath;
+            
+            
+            System.out.println("CREATING RESUMABLE "+ info.toString());
+            
             mMap.put(resumableIdentifier, info);
         }
         return info;

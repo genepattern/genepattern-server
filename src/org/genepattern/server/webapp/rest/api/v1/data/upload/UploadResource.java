@@ -537,15 +537,13 @@ public class UploadResource {
             GpContext userContext = Util.getUserContext(request);
             
             String path = request.getParameter("target");
-            GpFilePath file = getUploadFile(gpConfig, userContext, path);      
-            // Check to see if it already exists and throw an error if it does
-            if (file.getServerFile().exists()) {
-                throw new FileUploadException("Upload file already exists : " + path);
-            }
-            
             ResumableInfo info = getResumableInfo(request, gpConfig);
-            checkDiskQuota(gpConfig, userContext, info.resumableTotalSize);
             
+            System.out.println("A. "+  info.toString());
+            
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);      
+            
+            checkDiskQuota(gpConfig, userContext, info.resumableTotalSize);
         
             int resumableChunkNumber        = getResumableChunkNumber(request);
            
@@ -575,18 +573,19 @@ public class UploadResource {
             info.uploadedChunks.add(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber));
            
             // pass in the files final location
-            if (info.checkIfUploadFinished(file.getServerFile())) { //Check if all chunks uploaded, and change filename
-                
+            if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
+                System.out.println("B. "+  info.toString());
                 ResumableInfoStorage.getInstance().remove(info);
-                System.out.println("after copy dest exists: " + file.getServerFile().exists());
+                GpFilePath finalFile = getUploadFile(gpConfig, userContext, info.destinationPath);      
                 
-              
+                System.out.println("after copy dest exists: " + (new File(info.destinationFilePath).exists()) + "  -- " + finalFile.getName());
+                
         
                 // Update the database - lengths are 1 since resumable already assembled it
                 final HibernateSessionManager mgr=HibernateUtil.instance();
-                UserUploadManager.createUploadFile(mgr, userContext, file, 1);
-                UserUploadManager.updateUploadFile(mgr, userContext, file, 1, 1);
-
+                UserUploadManager.createUploadFile(mgr, userContext, finalFile, 1, true);
+                UserUploadManager.updateUploadFile(mgr, userContext, finalFile, 1, 1);
+                System.out.println("Finished upload for " + finalFile.getName());
                 
                 
                 return Response.ok().entity("All finished.").build();
@@ -625,6 +624,7 @@ public class UploadResource {
     
     private ResumableInfo getResumableInfo(HttpServletRequest request, final GpConfig gpConfig) throws Exception {
         GpContext userContext = Util.getUserContext(request);
+        
         File fileTempDir = gpConfig.getTemporaryUploadDir(userContext);
         String base_dir =  fileTempDir.getAbsolutePath();
         
@@ -633,14 +633,23 @@ public class UploadResource {
         String resumableIdentifier      = request.getParameter("resumableIdentifier");
         String resumableFilename        = request.getParameter("resumableFilename");
         String resumableRelativePath    = request.getParameter("resumableRelativePath");
-  
+        
+        String path              = request.getParameter("target");
+        GpFilePath file = getUploadFile(gpConfig, userContext, path);      
+        
+        
         //Here we add a ".temp" to every upload file to indicate NON-FINISHED
         new File(base_dir).mkdir();
         String resumableFilePath        = new File(base_dir, resumableFilename).getAbsolutePath() + ".temp";
 
         ResumableInfoStorage storage = ResumableInfoStorage.getInstance();
 
-        ResumableInfo info = storage.get(resumableChunkSize, resumableTotalSize, resumableIdentifier, resumableFilename, resumableRelativePath, resumableFilePath);
+        ResumableInfo info = storage.get(resumableChunkSize, resumableTotalSize, 
+                            resumableIdentifier, resumableFilename, resumableRelativePath, 
+                            resumableFilePath, file.getServerFile().getAbsolutePath(), path + resumableFilename);
+        
+       
+        System.out.println("    C  " + info);
         
         if (!info.vaild())         {
             storage.remove(info);

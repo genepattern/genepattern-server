@@ -596,6 +596,12 @@ body {
     cursor: pointer;
 }
 
+
+#upload-dropzone-resumable:drop {
+    background-color: #cddcf1 !important;
+    cursor: default !important;
+}
+
 #upload-dropzone:active,  {
     cursor: default;
 }
