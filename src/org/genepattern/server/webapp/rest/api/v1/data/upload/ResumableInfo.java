@@ -77,11 +77,7 @@ public class ResumableInfo {
 
         //Upload finished, change filename.
         File file = new File(this.resumableFilePath);
-
-        System.out.println("UPLOAD FINISHED - " + file.getAbsolutePath());
-        
         file.renameTo(new File(this.destinationFilePath));
-        System.out.println("UPLOAD RENAMED - DFP " + this.destinationFilePath + "   DP: "+ this.destinationPath);
         
         return true;
     }

@@ -46,9 +46,6 @@ public class ResumableInfoStorage {
             info.destinationFilePath    = destinationFilePath;
             info.destinationPath        = destinationPath;
             
-            
-            System.out.println("CREATING RESUMABLE "+ info.toString());
-            
             mMap.put(resumableIdentifier, info);
         }
         return info;

@@ -990,32 +990,20 @@ function initReusableJSUploads(file, directory, done, index){
              $('.resumable-progress .progress-pause-link').hide();
            });
          r.on('complete', function(file){
-             // Hide pause/resume when the upload has completed
-             //$('.resumable-progress .progress-resume-link, .resumable-progress .progress-pause-link').hide();
-        	 
-        	 //var fileName = r.currentFile;
-        	 //uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-        	 //uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
- 	    	 //progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             
-             //progressbar.progressbar("value", 100);
-             //$('.resumable-drop').show();
              cleanUploadToaster();
              r.currentFile = null;
              $('.resumable-drop')[0].classList.remove('leftnav-highlight');
            });
          r.on('fileSuccess', function(file,message){
-             // Reflect that the file upload has completed
-            // $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(completed)');
-             // show the drop target, not sure why its hidden
-        	 $('.resumable-drop').show();
+             $('.resumable-drop').show();
              var fileName = file.fileName;
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
  	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
              progressbar.progressbar("value", 100);
-             cleanUploadToaster();
-        	 //
+             //cleanUploadToaster();
+             // Remove the file, otherwise we cannot re-upload the same file again without a page reload
+             r.removeFile(file);
            });
          r.on('fileError', function(file, message){
              // Reflect that the file upload has resulted in error
@@ -1857,11 +1845,13 @@ function createInputFileWidget(linkElement, appendTo) {
 }
 
 function refreshUploadTree() {
+	$("#uploadTree").jstree('save_cookie');
+	$("#uploadDirectoryTree").jstree('save_cookie');
+    
     var uploadTree = $("#uploadTree");
     uploadTree.data("dndReady", {});
     uploadTree.jstree("refresh");
-
-    $("#uploadDirectoryTree").jstree("refresh");
+    // $("#uploadDirectoryTree").jstree("refresh");
 }
 
 function refreshGenomeSpaceTree() {

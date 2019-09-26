@@ -247,8 +247,6 @@ public class UploadResource {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
-            System.out.println("======= entering MULTIPART CHUNK   " + request.getQueryString());
-            
             
             // Get the file we will be uploading to
             if (log.isDebugEnabled()) {
@@ -266,8 +264,6 @@ public class UploadResource {
             // Create the file to write
             File toWrite = new File(uploadDir, index.toString());
 
-            System.out.println("======= WRITING MULTIPART CHUNK " + toWrite.getAbsolutePath()+ "  " + request.getContentLength());
-         
             // Check to see if it already exists and throw an error if it does
             if (toWrite.exists()) {
                 //throw new FileUploadException("File chunk already exists: " + token + " path: " + path + " index: " + index);
@@ -539,8 +535,6 @@ public class UploadResource {
             String path = request.getParameter("target");
             ResumableInfo info = getResumableInfo(request, gpConfig);
             
-            System.out.println("A. "+  info.toString());
-            
             GpFilePath file = getUploadFile(gpConfig, userContext, path);      
             
             checkDiskQuota(gpConfig, userContext, info.resumableTotalSize);
@@ -548,7 +542,6 @@ public class UploadResource {
             int resumableChunkNumber        = getResumableChunkNumber(request);
            
             RandomAccessFile raf = new RandomAccessFile(info.resumableFilePath, "rw");
-            System.out.println("CHUNK " + resumableChunkNumber + "  FILE " + info.resumableFilePath); 
             
             //Seek to position
             raf.seek((resumableChunkNumber - 1) * (long)info.resumableChunkSize);
@@ -574,19 +567,13 @@ public class UploadResource {
            
             // pass in the files final location
             if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
-                System.out.println("B. "+  info.toString());
                 ResumableInfoStorage.getInstance().remove(info);
                 GpFilePath finalFile = getUploadFile(gpConfig, userContext, info.destinationPath);      
                 
-                System.out.println("after copy dest exists: " + (new File(info.destinationFilePath).exists()) + "  -- " + finalFile.getName());
-                
-        
                 // Update the database - lengths are 1 since resumable already assembled it
                 final HibernateSessionManager mgr=HibernateUtil.instance();
                 UserUploadManager.createUploadFile(mgr, userContext, finalFile, 1, true);
                 UserUploadManager.updateUploadFile(mgr, userContext, finalFile, 1, 1);
-                System.out.println("Finished upload for " + finalFile.getName());
-                
                 
                 return Response.ok().entity("All finished.").build();
             } else {
@@ -649,7 +636,6 @@ public class UploadResource {
                             resumableFilePath, file.getServerFile().getAbsolutePath(), path + resumableFilename);
         
        
-        System.out.println("    C  " + info);
         
         if (!info.vaild())         {
             storage.remove(info);
