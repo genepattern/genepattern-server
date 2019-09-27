@@ -126,7 +126,7 @@ function handleDiskQuotaMsg(diskInfo)
     	$("button.Run").attr("disabled", "disabled");
         $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
 
-        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessageBig'>Max simultaneous processing jobs exceeded.&nbsp;<br/> </div>");
+        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessageBig'>Max simultaneous processing jobs exceeded.&nbsp; </div>");
         quotaExceededMsg.prepend("<img class='elemSpacing' src='/gp/images/exclamation.png' width='20' height='17' />");
         quotaExceededMsg.append("Jobs Processing: " +  diskInfo.numProcessingJobs + ".   Max at one time: " + diskInfo.maxSimultaneousJobs + ".");
         quotaExceededMsg.append("<p>Job submission has been disabled. Please wait for jobs to complete or cancel some jobs before submitting new ones.</p>");
