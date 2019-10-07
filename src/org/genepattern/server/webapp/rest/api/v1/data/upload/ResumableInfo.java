@@ -6,6 +6,8 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.io.Files;
+
 
 public class ResumableInfo {
     public int      resumableChunkSize;
@@ -76,8 +78,18 @@ public class ResumableInfo {
         }
 
         //Upload finished, change filename.
+        
         File file = new File(this.resumableFilePath);
-        file.renameTo(new File(this.destinationFilePath));
+        File dest = new File(this.destinationFilePath+File.separator + this.resumableFilename);
+       
+        try{
+            // System.out.println("Uploaded file complete.  Copying from "+ file.getAbsolutePath() + " to " + dest.getAbsolutePath());
+            
+            Files.move(file, dest);
+            
+        } catch (Exception ioe){
+            ioe.printStackTrace();
+        }
         
         return true;
     }
