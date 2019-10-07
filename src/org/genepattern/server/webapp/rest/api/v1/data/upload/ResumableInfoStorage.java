@@ -52,7 +52,7 @@ public class ResumableInfoStorage {
     }
 
     /**
-     * É¾³ýResumableInfo
+     * ResumableInfo
      * @param info
      */
     public void remove(ResumableInfo info) {
