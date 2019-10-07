@@ -720,6 +720,12 @@ public class RunTaskServlet extends HttpServlet
                 //disk usage exceeded so do not allow user to run a job
                 return true;
             }
+            
+            if (diskInfo.isAboveMaxSimultaneousJobs())
+            {
+                return true;
+            }
+            
         }
         catch(DbException db)
         {

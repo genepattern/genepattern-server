@@ -63,9 +63,14 @@
                     }
                     jq("#left-nav-files").block({message:"<h5 style='line-height:14pt;'>You must <a href='#' style='font-weight:bold;' onclick='JavaScript:location.href = location.href;'>refresh</a> the page before uploads are updated.</h5>"});
                 }
+                
+                
                 /* ]]> */
             </script>
             <link href="/gp/js/themes/default/style.css" rel="stylesheet" type="text/css" />
+            
+            
+            
         </ui:define>
 
         <h:form>
@@ -192,16 +197,45 @@
             </t:div>
         </h:form>
         <h:outputText rendered="#{uiBean.newUI}">
+        
+        
+            
             <div id="upload-dropzone-wrapper">
-                <span>Drag Files to Directories Above or</span>
-                <div id="upload-dropzone">
-                    Drag Files Here
-                </div>
+              <span>Drag Files to Directories Above or</span>
+              <div class="resumable-error">
+			        Your browser, unfortunately, is not supported by Resumable.js. The library requires support for <a href="http://www.w3.org/TR/FileAPI/">the HTML5 File API</a> along with <a href="http://www.w3.org/TR/FileAPI/#normalization-of-params">file slicing</a>.
+			      </div>
+			     
+			      <div class="resumable-drop" id="upload-dropzone-resumable" >
+			        <a class="resumable-browse" style="color:darkgrey !important;">Drag files here<font size="-2"><sub>new</sub></font></a>
+			      </div>
+			      
+			      <div class="resumable-progress">
+			        <table>
+			          <tr>
+			            <td width="100%"><div class="progress-container"><div class="progress-bar"></div></div></td>
+			            <td class="progress-text" nowrap="nowrap"></td>
+			            <td class="progress-pause" nowrap="nowrap">
+			              <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><img src="/gp/images/resume.png" title="Resume upload" /></a>
+			              <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><img src="/gp/images/pause.png" title="Pause upload" /></a>
+			            </td>
+			          </tr>
+			        </table>
+			      </div>
+            
+            
+              
+                
+                  <div id="upload-dropzone">
+                    Drag Files Here (old)
+                </div> 
             </div>
         </h:outputText>
         <script type="text/javascript">
             $(document).ready(function() {
                 initUploads();
+                initReusableJSUploads();
+                
             });
 
             // Stupid IE hack to fix the dropzone display
