@@ -172,7 +172,7 @@ public class JobsResource {
             }
             
             if (diskInfo.isAboveMaxSimultaneousJobs()){
-                return Response.status(Response.Status.FORBIDDEN).entity("Max simultaneous processing jobs exceeded.").build();
+                return Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build();
             }
             
         }
