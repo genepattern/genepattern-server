@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -25,6 +28,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -32,10 +36,13 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.util.LSID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -59,7 +66,7 @@ public class UploadResource {
     private GpFilePath getUploadFile(final GpConfig gpConfig, final GpContext userContext, final String uploadPath) throws FileUploadException {
         try {
             //special-case, block 'tmp'
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath);
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath, (LSID)null);
             if (DataManager.isTmpDir(uploadFilePath)) {
                 throw new FileUploadException("Can't save file with reserved filename: " + uploadPath);
             }
@@ -568,7 +575,18 @@ public class UploadResource {
             // pass in the files final location
             if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
                 ResumableInfoStorage.getInstance().remove(info);
-                GpFilePath finalFile = getUploadFile(gpConfig, userContext, info.destinationPath);      
+                
+                // GpFilePath finalFile = getUploadFile(gpConfig, userContext, info.destinationTargetPath + info.resumableFilename);      
+                
+                String uploadRelPath = getUploadRelativePath(info.destinationFilePath, userContext.getUserId());
+
+               
+                
+                File serverFile = new File(info.destinationFilePath+File.separator + info.resumableFilename);
+                UserUploadFile finalFile = GpFileObjFactory.getUploadedFilePath(userContext, info, uploadRelPath, serverFile);
+                
+                
+                finalFile.setName(info.resumableFilename);
                 
                 // Update the database - lengths are 1 since resumable already assembled it
                 final HibernateSessionManager mgr=HibernateUtil.instance();
@@ -588,6 +606,18 @@ public class UploadResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
+
+
+    
+    private String getUploadRelativePath(String destPath, String username){
+        String root = "/users/" + username + "/uploads";
+        int idx = destPath.indexOf(root);
+        String path =  destPath.substring(idx + root.length());
+        if (path.length() ==0)  return  ".";
+        else return path.substring(1);
+    }
+
+    
     
     @GET
     @Path("resumable/")
@@ -633,7 +663,7 @@ public class UploadResource {
 
         ResumableInfo info = storage.get(resumableChunkSize, resumableTotalSize, 
                             resumableIdentifier, resumableFilename, resumableRelativePath, 
-                            resumableFilePath, file.getServerFile().getAbsolutePath(), path + resumableFilename);
+                            resumableFilePath, file.getServerFile().getAbsolutePath(), path);
         
        
         

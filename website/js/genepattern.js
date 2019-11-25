@@ -888,7 +888,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
 }
 
 function resumableUploadStart(r, file, directory){
-	var fileName = encodeURIComponent(file.fileName);
+	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
 	

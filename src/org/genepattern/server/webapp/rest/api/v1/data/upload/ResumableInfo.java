@@ -16,7 +16,7 @@ public class ResumableInfo {
     public String   resumableFilename;
     public String   resumableRelativePath;
     public String   destinationFilePath;
-    public String   destinationPath;
+    public String   destinationTargetPath;
 
     
     public String toString(){
@@ -27,8 +27,8 @@ public class ResumableInfo {
         buff.append(resumableIdentifier);
         buff.append("   destinationFilePath: ");
         buff.append(destinationFilePath);
-        buff.append("   destinationPath: ");
-        buff.append(destinationPath);
+        buff.append("   destinationTargetPath: ");
+        buff.append(destinationTargetPath);
         
         return buff.toString();
     }
