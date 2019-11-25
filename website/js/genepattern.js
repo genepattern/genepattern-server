@@ -888,12 +888,15 @@ function ajaxFileTabUpload(file, directory, done, index) {
 }
 
 function resumableUploadStart(r, file, directory){
-	var fileName = file.fileName;
+	var fileName = encodeURIComponent(file.fileName);
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
-	if ($('#upload-toaster').dialog('isOpen') === true) {
+	
+	if (($('#upload-toaster').dialog('isOpen') === true)  || (resumableloadsInProgress > 1)){
+		console.log("Should NOT be zero: " + resumableloadsInProgress);
 		appendToUploadToaster(file);
 	} else {
+		console.log("Should be zero: " + resumableloadsInProgress);
 		var filelist = [file];
 		initUploadToaster(filelist, directory);
 	}
@@ -902,7 +905,8 @@ function resumableUploadStart(r, file, directory){
 	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
 	// pass in the target directory for the final destination
 	r.opts.query.target = directory;
-	 
+	r.opts.query.relativePath = 'foofoo';
+	
 	console.log("2. " + fileName + " -- " + file.fileName, + "  " + r.opts.query.target);
 	 
     // Actually start the upload
@@ -910,13 +914,56 @@ function resumableUploadStart(r, file, directory){
     $('.resumable-drop').show(); 
 }
 
+
+function hasSpecialChars_resumable(file) {
+    var regex = new RegExp("[^A-Za-z0-9_.]");
+    
+    if (regex.test(file.name)) {
+        return true;
+    }
+    return false;
+}
+
+function warnSpecialChars_resumable(r, file) {
+    showDialog("Special Characters!",
+            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!<br/><br/>" +
+            "Some older GenePattern modules do not handle special characters well. " +
+            "Are you sure you want to continue?", {
+            "Yes": function() {
+                $(this).dialog("close");
+                onFileAdded_resumable(r, file)
+            },
+            "No": function() {
+                $(this).dialog("close");
+            }
+        });
+}
+
+function onFileAdded_resumable(r, file){
+	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
+    var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    r.currentFile = file.fileName;
+    // pick the destination directory
+    if (directory === undefined || directory === null || directory.length === 0) {
+        openUploadDirectoryDialog([file], function() {    
+        	var directory = $(uploadDirectorySelected).attr("href");
+        	resumableUploadStart(r, file, directory);
+     	 });
+    } else {
+    	resumableUploadStart(r, file, directory);
+    	
+    }
+}; 
+
 var resumableUploader;
+var resumableloadsInProgress = 0;
 
 function initReusableJSUploads(file, directory, done, index){
 	//function ajaxFileTabUpload(file, directory, done, index) {
 	
 	var uploadToasterFile;
 	var progressbar;
+	
 	
 	var r = new Resumable({
          target:'/gp/rest/v1/upload/resumable/',
@@ -925,7 +972,7 @@ function initReusableJSUploads(file, directory, done, index){
          testChunks: true,
          throttleProgressCallbacks:1,
          method: "octet",
-		 query: {'target':'abcd'}
+		 query: {'target':'abcd', 'relativePath':'abcd'}
        });
      
 	resumableUploader = r;
@@ -946,29 +993,20 @@ function initReusableJSUploads(file, directory, done, index){
          
          $('.resumable-drop').show();
          
-       
+
          
          r.on('fileAdded', function(file){
-        	 
-		        var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
-		        	 
-		        r.currentFile = file.fileName;
-		    	
-		         // pick the destination directory
-		        if (directory === undefined || directory === null || directory.length === 0) {
-		            openUploadDirectoryDialog([file], function() {    
-		            	var directory = $(uploadDirectorySelected).attr("href");
-		            	resumableUploadStart(r, file, directory);
-		         	 });
-		        }
-		        else {
-		        	resumableUploadStart(r, file, directory);
-		        	
-		        }
-         	    
+        	 var regex = new RegExp("[^A-Za-z0-9_.]");
+        	 if (regex.test(file.fileName)) {
+        		 warnSpecialChars_resumable(r, file);
+        	 } else {
+        		 onFileAdded_resumable(r, file);
+        	 } 	    
          });
          
          r.on('cancel',function(file) {
+        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+        	 
         	 var fileName = r.currentFile;
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
  	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
@@ -990,11 +1028,14 @@ function initReusableJSUploads(file, directory, done, index){
              $('.resumable-progress .progress-pause-link').hide();
            });
          r.on('complete', function(file){
+        	
              cleanUploadToaster();
              r.currentFile = null;
              $('.resumable-drop')[0].classList.remove('leftnav-highlight');
            });
          r.on('fileSuccess', function(file,message){
+        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+        	 
              $('.resumable-drop').show();
              var fileName = file.fileName;
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
@@ -1006,6 +1047,7 @@ function initReusableJSUploads(file, directory, done, index){
              r.removeFile(file);
            });
          r.on('fileError', function(file, message){
+        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
              // Reflect that the file upload has resulted in error
           //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
           // Set the top error message
