@@ -18,12 +18,25 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 
+import java.util.concurrent.Executor;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.glassfish.jersey.server.ManagedAsync;
+
 
 /**
  * Resource for obtaining config on the client.
@@ -32,7 +45,7 @@ import java.util.List;
  *  
  *         curl --user ted: http://127.0.0.1:8180/gp/rest/v1/usagestats/user_summary/2018-04-14/2018-04-19
  *         
- *  more gernerally
+ *  more generally
  *  
  *         curl --user <gpAdminUsername>: <genepattern-URL>/gp/rest/v1/usagestats/user_summary/YYYY-MM-DD/YYYY-MM-DD
  *
@@ -51,7 +64,6 @@ public class UsageStatsResource {
       DEFAULT_DATE_FORMATS.add("yyyy-MM-dd");
     }
     
-    
     /**
      * Get a JSON object representing summary data about the users from 12:00am on the start date to 11:59 pm on
      * the end date
@@ -60,62 +72,111 @@ public class UsageStatsResource {
     @GET
     @Path("/user_summary/{startDate}/{endDate}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userSummary(@Context HttpServletRequest request,@PathParam("startDate") String startDay, @PathParam("endDate") String endDay) {
-        GpContext userContext = Util.getUserContext(request);
+    public Response userSummary(@Context final HttpServletRequest request,@PathParam("startDate") final String startDay, @PathParam("endDate") final String endDay) {
+        final GpContext userContext = Util.getUserContext(request);
         if (! userContext.isAdmin()) {
             return Response.status(403).entity("Forbidden: User "+userContext.getUserId() + " is not authorized to access the summary usage data.Must be administrator.\n").build();
         }
         // This is used for deciding if jobs are internal or external
-        String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
+        final String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
         
-        JSONObject object = new JSONObject();
-        try {
-            Date startDate = null, endDate=null;
-            try {
-                //Just for validation
-                startDate = DateUtil.parseDate(startDay, DEFAULT_DATE_FORMATS);
-                endDate = DateUtil.parseDate(endDay, DEFAULT_DATE_FORMATS);         
-            } catch (Exception e) {
-                // Does not look like a valid date
-                e.printStackTrace();
-                object.put("Error", e.getMessage());
-                return Response.ok().entity(object.toString()).build();
-
-            }
-            object.put("ReportPeriodStart", startDay);
-            object.put("ReportPeriodEnd", endDay);
-            
-            final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
-            UsageStatsDAO ds = new UsageStatsDAO(mgr);
-            String excludedUsers = getUserExclusionClause(userContext, ds);
-            
-            try {            
-                object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
-                object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
-                object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
-                object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
-                object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
-                object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
-                object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
-                object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
-                object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
-                object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
-                object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                Writer writer = new BufferedWriter(new OutputStreamWriter(os));
                 
-            } catch (Exception e){
+                // write an empty bite so that the client connection gets a response.  Then it will keep-alive
+                // by default.  Without this it can timeout while waiting.  We will repeat this a few times
+                // before we get to the end of the queries and start writing for real
+                writer.write(" ");
+                writer.flush();
+                
+            JSONObject object = new JSONObject();
+            try {
+                Date startDate = null, endDate=null;
+                try {
+                    //Just for validation
+                    startDate = DateUtil.parseDate(startDay, DEFAULT_DATE_FORMATS);
+                    endDate = DateUtil.parseDate(endDay, DEFAULT_DATE_FORMATS);         
+                } catch (Exception e) {
+                    // Does not look like a valid date
+                    e.printStackTrace();
+                    object.put("Error", e.getMessage());
+                    writer.write(object.toString());
+                    writer.flush();
+                    return;
+                }
+                object.put("ReportPeriodStart", startDay);
+                object.put("ReportPeriodEnd", endDay);
+                
+                final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+                UsageStatsDAO ds = new UsageStatsDAO(mgr);
+                String excludedUsers = getUserExclusionClause(userContext, ds);
+                writer.write(" ");
+                writer.flush();
+                try {            
+                    object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));      
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                    object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
+                    writer.write(" ");
+                    writer.flush();
+                } catch (Exception e){
+                    e.printStackTrace();
+                    writer.write(e.getMessage());
+                }
+               
+                
+                
+            } catch (JSONException e) {
                 e.printStackTrace();
-                object.put("Error", e.getMessage());
+                writer.write(e.getMessage());
+                log.error("Error producing JSON object for UsageStatsResource.user_summary()");
             }
-           
             
-            
-        } catch (JSONException e) {
-            log.error("Error producing JSON object for UsageStatsResource.user_summary()");
-        }
-        return Response.ok().entity(object.toString()).build();
+            writer.write(object.toString());
+            writer.flush();
+            }
+        };
+        Response jaxrs = Response.ok(stream).type(MediaType.TEXT_PLAIN).build();
+        
+        return jaxrs;
     }
     
     
