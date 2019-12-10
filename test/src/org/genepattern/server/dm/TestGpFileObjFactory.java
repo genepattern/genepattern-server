@@ -67,12 +67,7 @@ public class TestGpFileObjFactory {
                         dataHttpDir +filename, new LSID(cleLsid));
     }
 
-    @Test(expected=Exception.class)
-    public void getRequestedGpFileObj_fromExternalUrl_genomespace() throws MalformedURLException, Exception {
-        //gpFilePath=
-                GpFileObjFactory.getRequestedGpFileObj(gpConfig, //proxyHref, 
-                        dataGsDir +filename, new LSID(cleLsid));
-    }
+    
     
     @Test
     public void getRequestedJobResultFileObj_gpUrl_literal() throws Exception {

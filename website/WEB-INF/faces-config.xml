@@ -60,16 +60,6 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.LoginBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
- <managed-bean>
-  <managed-bean-name>genomeSpaceReceiveBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.genomespace.GenomeSpaceReceiveBean</managed-bean-class>
-  <managed-bean-scope>session</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>genomeSpaceBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.genomespace.GenomeSpaceBean</managed-bean-class>
-  <managed-bean-scope>session</managed-bean-scope>
- </managed-bean>
 
  <managed-bean>
   <managed-bean-name>notebookBean</managed-bean-name>
@@ -336,14 +326,6 @@
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
    <redirect />
-  </navigation-case>
-  <navigation-case>
-   <from-outcome>genomeSpaceLoginFailed</from-outcome>
-   <to-view-id>/pages/genomespace/signon.xhtml</to-view-id>   <redirect />
-  </navigation-case>
-  <navigation-case>
-   	<from-outcome>genomeSpaceRegFailed</from-outcome>
-    <to-view-id>/pages/genomespace/userRegistration.xhtml</to-view-id>   	<redirect />
   </navigation-case>
   <navigation-case>
    <from-outcome>home</from-outcome>

@@ -5,8 +5,6 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.genepattern.server.genomespace.GenomeSpaceFile;
-import org.genepattern.server.genomespace.TestGenomeSpaceFile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -18,11 +16,10 @@ import org.junit.runners.Parameterized.Parameters;
  * fields are properly initialized for standard use-cases.
  * 
  * Example input:
- *     GenomeSpace: "https://dm.genomespace.org/datamanager/file/Home/Public/test/atm_test.gct";
+ *    
  *     ExternalFile: "http://www.broadinstitute.org/cancer/software/genepattern/data/all_aml/all_aml_test.gct"
  *     
- *     https://dm.genomespace.org/datamanager/file/Home/googledrive:pcarr@broadinstitute.org(lHv4L0eliPcV19HRCqwWQg==)/GenomeSpacePublic/all_aml(0Bx1oidMlPWQtN2RlQV8zd25Md1E)/all_aml_test.gct
- * 
+ *    
  * Note: specialized cases are not presently covered by these test:
  *     - character encoding (e.g. '%20' and '+'
  *     - hostname, with no path info (e.g. 'http://www.host.com')
@@ -61,7 +58,7 @@ public class TestExternalFileInitFromUrl {
     private final boolean isDirectory;
     
     private final ExternalFile extFilePath;
-    private final GenomeSpaceFile gsFilePath;
+  
     private Throwable gsFilePathInitError=null;
     
     public TestExternalFileInitFromUrl(final String expectedName, final String expectedExtension, final String expectedKind, final boolean isDirectory) 
@@ -73,86 +70,36 @@ public class TestExternalFileInitFromUrl {
         
         // initialize ExternalFile
         this.extFilePath=new ExternalFile(dataHttpDir+expectedName);
-        // initialize GsFile (proposed new behavior to match ExternalFile values)
-        this.gsFilePath=initGsFileForTest(expectedName);
-        // initialize GsFile (this version causes some tests to fail)
-        //this.gsFilePath=initGsFileFromGsFileHelper(expectedName);
+     
     }
 
-    // Note: circa GP 3.9.5, the default (name, extension, kind, isDirectory) for a GenomeSpace file will not pass these tests
-    // should come to agreement on this
-    protected GenomeSpaceFile initGsFileFromGsFileHelper(final String expectedName) {
-        try {
-            return TestGenomeSpaceFile.mockGsFileFromGsHelper(expectedName);
-        }
-        catch (Throwable t) {
-            gsFilePathInitError=t;
-        }
-        return null;
-    }
-
-    protected GenomeSpaceFile initGsFileForTest(final String expectedName) {
-        try {
-            return TestGenomeSpaceFile.mockGsFile(expectedName);
-        }
-        catch (Throwable t) {
-            gsFilePathInitError=t;
-        }
-        return null;
-    }
+  
     
-    @Test
-    public void createFile_GenomeSpaceFileHelper() throws Throwable {
-        if (gsFilePathInitError != null) {
-            throw gsFilePathInitError;
-        }
-        assertNotNull("failed to createFile", gsFilePath);
-    }
-    
-    @Test
-    public void getName_GenomeSpace() {
-        assertEquals(expectedName, gsFilePath.getName());
-    }
+   
 
     @Test
     public void getName() {
         assertEquals(expectedName, extFilePath.getName());
     }
     
-    @Test
-    public void getExtension_GenomeSpace() {
-        assertEquals(expectedExtension, gsFilePath.getExtension());
-    }
 
     @Test
     public void getExtension() {
         assertEquals(expectedExtension, extFilePath.getExtension());
     }
 
-    @Test
-    public void getKind_GenomeSpace() {
-        assertEquals(expectedKind, gsFilePath.getKind());
-    }
 
     @Test
     public void getKind() {
         assertEquals(expectedKind, extFilePath.getKind());
     }
     
-    @Test
-    public void isDirectory_GenomeSpace() {
-        assertEquals(isDirectory, gsFilePath.isDirectory());
-    }
     
     @Test
     public void isDirectory() {
         assertEquals(isDirectory, extFilePath.isDirectory());
     }
     
-    @Test
-    public void isLocal_GenomeSpace() {
-        assertEquals(false, gsFilePath.isLocal());
-    }
 
     @Test
     public void isLocal() {

@@ -188,16 +188,14 @@ public class TestIsCreateFilelist {
         final ParameterInfoRecord record=paramInfoMap.get(paramName);
 
         final String internalURL="users/"+ otherUser + "/filename_test/all_aml_test.cls";
-        final String genomeSpaceURL = "https://dm.genomespace.org/datamanager/file/Home/nazaire/all_aml_train.gct";
-        final JobInput jobInput = new JobInput();
+         final JobInput jobInput = new JobInput();
         jobInput.addValue(paramName, ftpFile);
         jobInput.addValue(paramName, "<GenePatternURL>"+internalURL);
         jobInput.addValue(paramName, "http://127.0.0.1:8080/gp/"+internalURL);
         jobInput.addValue(paramName, "http://127.0.0.1:8080/gp/data//Shared/tutorial/all_aml_train.gct");
         jobInput.addValue(paramName, "/Shared/tutorial/all_aml_train.gct");
         jobInput.addValue(paramName, "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct");
-        jobInput.addValue(paramName, genomeSpaceURL);
-
+        
         final Param param=jobInput.getParam(new ParamId(paramName));
         ParamListHelper plh = new ParamListHelper(
                 DbUtil.getTestDbSession(), 
@@ -245,10 +243,6 @@ public class TestIsCreateFilelist {
                 "ftp://gpftp.broadinstitute.org/example_data/datasets/all_aml/all_aml_test.gct",
                  // actual
                 (String)plh.parameterInfoRecord.getActual().getAttributes().get("values_5"));
-
-        assertEquals(paramName + ".Url mode genome space url", 
-                genomeSpaceURL, 
-                (String)plh.parameterInfoRecord.getActual().getAttributes().get("values_6"));
     }
 
     private void doTest(final boolean expectedCreateFilelist, final int actualNumValues, final ListMode mode) throws Exception {

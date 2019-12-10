@@ -63,17 +63,6 @@
 	             <li><a href="/gp/pages/about.jsf">About</a></li>
 	         </ul>
 	     </li>
-	     <li class="genomeSpaceMenu">
-	     	<a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
-	         <ul>
-	             <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
-	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
-	             <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-	             <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
-	             <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
-	             <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
-	         </ul>
-	     </li>
 	 </ul>
 	 <br style="clear: left"/>
 </div>

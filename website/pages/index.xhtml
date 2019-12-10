@@ -258,10 +258,6 @@ function showFileInput(id) {
     <ui:include src="/pages/serverFileDialog.xhtml" />
     <ui:include src="/pages/uploads/uploadToDirectoryDialog.xhtml" />
 
-    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-        <ui:include src="/pages/genomespace/genomespaceDialog.xhtml" />
-    </h:outputText>
-
     <t:div id="protocols" style="display: none;">
         <f:subview rendered="#{empty runTaskBean.splashPage}">
             <ui:include src="splashpage.xhtml" />

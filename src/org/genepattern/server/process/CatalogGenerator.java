@@ -247,7 +247,7 @@ public class CatalogGenerator {
         buff.write("</site_module >");
     }
 
-    public void getModuleDocURL(String env, File dir, ArrayList subdirs) throws IOException {
+    public void getModuleDocURL(String env, File dir, ArrayList<File> subdirs) throws IOException {
         // load the manifest to get the name
         Properties manifestProps = new Properties();
         FileInputStream fio = new FileInputStream(new File(dir, "manifest"));

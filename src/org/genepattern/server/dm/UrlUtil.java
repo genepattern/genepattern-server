@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.util.SemanticUtil;
 
 import com.google.common.base.Joiner;
@@ -410,12 +409,10 @@ public class UrlUtil {
             }
         }  
         
-        final boolean isGsFile=GenomeSpaceFileHelper.isGenomeSpaceFile(url);
+       
         String filename=new File(urlPath).getName();
         // special-case for GenomeSpace linked to Google drive reference
-        if (isGsFile) {
-            filename=stripParen(filename);
-        }
+       
         if (keepTrailingSlash && urlPath.endsWith("/")) {
             filename += "/";
         }
@@ -423,38 +420,15 @@ public class UrlUtil {
     }
     
     /**
-     * Extracts the file's kind from the URL and filename.  Uses a separate implementation from the one 
-     * found in SemanticUtil because we need to handle GenomeSpace file conversions. Example queryString,
-     * 
-     *     "?dataformat=http://www.genomespace.org/datamanager/dataformat/gct"
-     * 
+     * Extracts the file's kind from the URL and filename. 
      * @param url
      * @param filename
      * @return
      * @throws URISyntaxException 
      */
     public static String getKindFromUrl(final URL url, final String filename, final String extension) {
-        final boolean isGsFile=GenomeSpaceFileHelper.isGenomeSpaceFile(url);
-        if (isGsFile) {
-            try {
-                final String query=url.toURI().getQuery();
-                if (query != null) {
-                    final String[] pairs=query.split("&");
-                    for(final String pair : pairs) {
-                        final String[] param=pair.split("=");
-                        if (param != null && param.length==2 && "dataformat".equalsIgnoreCase(param[0])) {
-                            int idx=param[1].lastIndexOf("/dataformat/");
-                            if (idx>=0) {
-                                return param[1].substring(idx+"/dataformat/".length());
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Throwable t) {
-                log.error("Unexpected error getting query from url="+url, t);
-            }
-        } 
+       
+      
         // If no format parameter was found, extract from the filename
         return SemanticUtil.getKindForUrl(filename, extension);
     }

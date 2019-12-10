@@ -46,8 +46,6 @@
                 var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
                 var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
                 var adminServerAllowed = #{authorizationBean.adminServerAllowed};
-                var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
-                var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
                 var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
                 var username = "${requestScope.userID}";
             </script>
@@ -303,17 +301,7 @@
                                 <li><a href="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About</a></li>
                             </ul>
                         </li>
-                        <li class="genomeSpaceMenu">
-                            <a href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"><img src="#{facesContext.externalContext.requestContextPath}/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
-                            <ul>
-                                <li class="genomeSpaceLoggedOut"><a href="#{facesContext.externalContext.requestContextPath}/GenomeSpaceOpenID?login=Login">Login</a></li>
-                                <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/signon.jsf">Logout</a></li>
-                                <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-                                <li class="genomeSpaceLoggedIn"><a href="#{facesContext.externalContext.requestContextPath}/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
-                                <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
-                                <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
-                            </ul>
-                        </li>
+                       
                     </ul>
                     <br style="clear: left"/>
                     <script type="text/javascript">
@@ -342,9 +330,7 @@
                         <h:outputText rendered="#{notebookBean.notebookEnabled}">
                             <li id="left-nav-notebook-tab"><a href="#left-nav-notebook">Notebook</a></li>
                         </h:outputText>
-                        <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-                            <li id="left-nav-genomespace-tab"><a href="#left-nav-genomespace"><img src="/gp/pages/genomespace/genomespace_icon.gif" alt="GenomeSpace" /></a></li>
-                        </h:outputText>
+                      
                     </ul>
                     <div id="left-nav-modules" class="left-nav-tab">
                         <div class="left-nav-top">
@@ -405,11 +391,7 @@
                             <ui:include src="/pages/notebookTab.xhtml" />
                         </div>
                     </h:outputText>
-                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-                        <div id="left-nav-genomespace" class="left-nav-tab">
-                            <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
-                        </div>
-                    </h:outputText>
+                    
                 </div>
                 
                 <div id="module-search"></div>
@@ -421,7 +403,6 @@
 
                 <div id="menus-uploads"></div>
                 <div id="menus-jobs"></div>
-                <div id="menus-genomespace"></div>
                 <div id="menus-inputs"></div>
     
                 <div id="main-pane" class="ui-layout-center">

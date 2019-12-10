@@ -27,7 +27,6 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genomespace.GenomeSpaceManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -281,19 +280,14 @@ public class RunTaskBean {
         UploadFilesBean ufb = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");
 
         HttpSession session = UIBeanHelper.getSession();
-        Boolean isGSLoggedIn = GenomeSpaceManager.getLoggedIn(session);
-
+       
         if (jobBean != null) {
             jobBean.setSelectedModule(taskNameOrLsid);
         }
         if (ufb != null) {
             ufb.setCurrentTaskLsid(taskNameOrLsid);
         }
-        if (isGSLoggedIn){
-            HttpServletRequest request = UIBeanHelper.getRequest();
-            String user = UIBeanHelper.getUserId();
-            GenomeSpaceManager.setSelectedModule(request, user, taskNameOrLsid);
-        }
+      
         UIBeanHelper.getRequest().getSession().setAttribute(GPConstants.LSID, taskNameOrLsid);
         
         TaskInfo taskInfo = null;
@@ -326,9 +320,7 @@ public class RunTaskBean {
         String fileFormat = (String) UIBeanHelper.getRequest().getAttribute("format");
 
         String gsUrl = null;
-        if ((isGSLoggedIn) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
-            gsUrl = downloadPath;
-        } 
+      
         
         String prevUploadedFileUrl = null;
         if ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource)) {
@@ -340,28 +332,6 @@ public class RunTaskBean {
 
         Map<String, String> reloadValues = new HashMap<String, String>();
 
-        if (matchOutputFileSource.equalsIgnoreCase("genomespace")) {
-            Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
-               if (taskParameters != null) {
-                   URL convertUrl = GenomeSpaceManager.getConvertedFileUrl(session, gsUrl, fileFormat);
-                   String gsType = fileFormat;
-                   System.out.println("GS File is a " + gsType);
-               
-                   for (ParameterInfo p : taskParameters) {
-                       if (p.isInputFile()) {
-                           List<String> fileFormats = SemanticUtil.getFileFormats(p); 
-                           for (String format: fileFormats){
-                               System.out.println("format " + format);
-                               if (format.equalsIgnoreCase(gsType)){
-                                   reloadValues.put(p.getName(), convertUrl.toString());
-                                   break;
-                               }
-                           }                           
-                       }
-                   }
-               } 
-        } 
-        
         if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles") || matchOutputFileSource.equalsIgnoreCase("inputfiles")){
             //Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
             if (taskParameters != null) {
