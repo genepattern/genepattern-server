@@ -547,6 +547,12 @@ public class RunTaskServlet extends HttpServlet
             throw new WebApplicationException(
                     Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build());
         }
+        if (checkMaxSimultaneousJobs(taskContext)){
+            throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build());
+        }
+        
+        
+        
         return taskContext;
     }
     
@@ -720,6 +726,8 @@ public class RunTaskServlet extends HttpServlet
                 //disk usage exceeded so do not allow user to run a job
                 return true;
             }
+            
+            
         }
         catch(DbException db)
         {
@@ -732,6 +740,31 @@ public class RunTaskServlet extends HttpServlet
         return false;
     }
 
+    
+    private boolean checkMaxSimultaneousJobs(GpContext userContext) {
+        try
+        {
+            //check if the user is above their disk quota
+            //first check if the disk quota is or will be exceeded
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+            
+            if (diskInfo.isAboveMaxSimultaneousJobs())
+            {
+                return true;
+            }
+            
+        }
+        catch(DbException db)
+        {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(db.getMessage())
+                            .build()
+            );
+        }
+        return false;
+    }
+    
     /**
      * Added this in 3.8.1 release to enable additional job configuration input parameters.
      * @param jobSubmitInfo

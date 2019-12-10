@@ -20,6 +20,7 @@ public class DiskInfoBean {
     private final String diskUsage;
     private final String quota;
     private final boolean isAboveQuota;
+    private final boolean isAboveMaxSimultaneousJobs;
     
     public DiskInfoBean(final DiskInfo diskInfo) {
         this.userId=diskInfo.getUserId();
@@ -36,6 +37,7 @@ public class DiskInfoBean {
             this.quota=diskInfo.getDiskQuota().getDisplayValue();
         }
         this.isAboveQuota=diskInfo.isAboveQuota();
+        this.isAboveMaxSimultaneousJobs=diskInfo.isAboveMaxSimultaneousJobs();
     }
     
     public String getUserId() {
@@ -53,4 +55,9 @@ public class DiskInfoBean {
     public boolean isAboveQuota() {
         return isAboveQuota;
     }
+    
+    public boolean isAboveMaxSimultaneousJobs(){
+        return isAboveMaxSimultaneousJobs;
+    }
+    
 }

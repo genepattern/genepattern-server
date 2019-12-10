@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.dm.tasklib.TasklibPath;
+import org.genepattern.server.webapp.rest.api.v1.data.upload.ResumableInfo;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
@@ -166,6 +168,38 @@ public class GpFileObjFactory {
         userUploadFile.setName( serverFile.getName() );
         return userUploadFile;
     }
+    
+    /**
+     * Added by JTL to get a GpFileObj for a file with a space or special char.  Could not find an example or comments describing
+     * how this should be handled even though it obviously is somewhere
+     * @param userContext
+     * @param info
+     * @param uploadRelPath
+     * @param serverFile
+     * @return
+     */
+    static public UserUploadFile getUploadedFilePath(GpContext userContext, ResumableInfo info, String uploadRelPath, File serverFile) {
+        File tmp = new File("/users/"+userContext.getUserId()+"/"+FileUtil.getPathForwardSlashed(new File(uploadRelPath + "/" + URLEncoder.encode(info.resumableFilename))));
+
+        String tmpPath = UrlUtil.encodeFilePath(tmp);
+        URI relativeUri = null;
+        try {
+            relativeUri = new URI(tmpPath);
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid URI: "+tmpPath, e);
+        }
+        UserUploadFile finalFile = new UserUploadFile( relativeUri );
+        finalFile.setServerFile( serverFile );
+        finalFile.setRelativeFile( new File(uploadRelPath + "/" + serverFile.getName()) );
+        finalFile.setOwner( userContext.getUserId() );
+        finalFile.setName( serverFile.getName() );
+        return finalFile;
+    }
+    
+    
+    
+    
     
     static public GpFilePath getRequestedGpFileObj(HttpServletRequest request) throws Exception {
         try {

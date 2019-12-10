@@ -158,7 +158,7 @@ public class JobsResource {
     {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext jobContext=Util.getUserContext(request);
-
+        
         try
         {
             //check if the user is above their disk quota
@@ -170,6 +170,11 @@ public class JobsResource {
                 //disk usage exceeded so do not allow user to run a job
                 return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
+            
+            if (diskInfo.isAboveMaxSimultaneousJobs()){
+                return Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build();
+            }
+            
         }
         catch(DbException db)
         {
@@ -1047,7 +1052,6 @@ public class JobsResource {
             @PathParam("jobNo") String jobNo,
             @Context HttpServletRequest request)
     {
-        System.out.println(" =================  JobsResource setNotificationCallback ======================= " + multivaluedMap);
         final GpContext userContext = Util.getUserContext(request);
         String notificationUrl = multivaluedMap.getFirst("notificationUrl");
         try {

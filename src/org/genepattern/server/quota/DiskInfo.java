@@ -13,6 +13,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
  * Created by nazaire on 7/10/14.
@@ -27,6 +28,8 @@ public class DiskInfo
     private Memory diskUsageTmp;
     private Memory diskUsageFilesTab;
     private Memory diskQuota;
+    private int numProcessingJobs;
+    private int maxSimultaneousJobs;
 
     public DiskInfo(final String userId) {
         this.userId=userId;
@@ -34,6 +37,22 @@ public class DiskInfo
     
     public String getUserId() {
         return userId;
+    }
+
+    public int getNumProcessingJobs() {
+        return numProcessingJobs;
+    }
+
+    public void setNumProcessingJobs(int numProcessingJobs) {
+        this.numProcessingJobs = numProcessingJobs;
+    }
+
+    public int getMaxSimultaneousJobs() {
+        return maxSimultaneousJobs;
+    }
+
+    public void setMaxSimultaneousJobs(int maxSimultaneousJobs) {
+        this.maxSimultaneousJobs = maxSimultaneousJobs;
     }
 
     public void setDiskUsageTotal(Memory diskUsageTotal)
@@ -89,6 +108,8 @@ public class DiskInfo
     public static DiskInfo createDiskInfo(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext context) throws DbException {
         final String userId=context.getUserId();
         final Memory diskQuota=gpConfig.getGPMemoryProperty(context, "quota");
+        // default to 100 simultaneous jobs per user
+        final int maxSimultaneousJobs = gpConfig.getGPIntegerProperty(context, "max_simultaneous_jobs", 100);
         final DiskInfo diskInfo = new DiskInfo(userId);
         final boolean isInTransaction= mgr.isInTransaction();
         try
@@ -114,6 +135,17 @@ public class DiskInfo
             diskInfo.setDiskUsageFilesTab(diskUsageFilesTab);
             diskInfo.setDiskUsageTmp(diskUsageTmp);
             diskInfo.setDiskQuota(diskQuota);
+            
+            AnalysisDAO dao = new AnalysisDAO(mgr);
+            int numProcessingJobs=dao.getNumProcessingJobsByUser(context.getUserId());
+            
+            //if (numProcessingJobs > maxSimultaneousJobs){
+            //    diskInfo.
+            //    
+            //}
+            diskInfo.setNumProcessingJobs(numProcessingJobs);
+            diskInfo.setMaxSimultaneousJobs(maxSimultaneousJobs);
+            
         }
         catch (Throwable t)
         {
@@ -152,4 +184,10 @@ public class DiskInfo
 
         return diskUsagePlus > diskQuota.getNumBytes();
     }
+    
+    
+    public boolean isAboveMaxSimultaneousJobs(){
+        return this.numProcessingJobs > this.maxSimultaneousJobs;
+    }
+    
 }

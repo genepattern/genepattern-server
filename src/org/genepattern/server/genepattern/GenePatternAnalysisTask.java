@@ -1522,6 +1522,16 @@ public class GenePatternAnalysisTask {
                 //disk usage exceeded so do not allow user to run a job
                 throw new JobDispatchException(errorMessage);
             }
+            
+            if(diskInfo.isAboveMaxSimultaneousJobs())
+            {
+                String errorMessage = "Job did not run because maximum simultaneous processing jobs exceeded." +
+                        "Processing: " + diskInfo.getNumProcessingJobs()
+                        + ". Max simultaneous: " + diskInfo.getMaxSimultaneousJobs();
+                //disk usage exceeded so do not allow user to run a job
+                throw new JobDispatchException(errorMessage);
+            }
+            
         }
         catch(DbException db)
         {
