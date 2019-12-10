@@ -168,7 +168,7 @@
                     const password = passwordFromCookie(genepattern_cookie);
 
                     // Create the new tab
-                    window.open('', 'notebookTab');
+                    window.open('', '_blank');
 
                     // Create the login form and submit it in the new tab
                     $('<form action="' + login_url + '" method="POST" target="notebookTab"></form>')
@@ -180,7 +180,7 @@
 
                 // Otherwise, open the login page
                 else {
-                    window.open(login_url, 'notebookTab');
+                    window.open(login_url, '_blank');
                 }
             }
 
