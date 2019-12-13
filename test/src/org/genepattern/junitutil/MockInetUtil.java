@@ -101,8 +101,7 @@ public class MockInetUtil implements InetUtil {
         mock.add("www.broadinstitute.org", "69.173.64.101", false, false, null);
         // ftp://ftp.broadinstitute.org/...
         mock.add("ftp.broadinstitute.org", "69.173.80.251", false, false, null);
-        // https://dm.genomespace.org/...
-        mock.add("dm.genomespace.org", "23.23.112.114", false, false, null);
+       
         
         return mock;
     }
@@ -187,8 +186,6 @@ public class MockInetUtil implements InetUtil {
         // special-case, ftpDir
         printAddr(Demo.dataFtpDir);
         
-        // special-case, gsDir
-        printAddr(Demo.dataGsDir);
     }
 
     // lazy-init 

@@ -19,8 +19,6 @@ import org.genepattern.junitutil.MockGpFilePath;
 import org.genepattern.server.dm.ExternalFile;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.genomespace.GenomeSpaceFile;
-import org.genepattern.server.genomespace.TestGenomeSpaceFile;
 import org.genepattern.server.job.input.GroupId;
 import org.genepattern.server.job.input.GroupInfo;
 import org.genepattern.server.job.input.Param;
@@ -134,23 +132,7 @@ public class TestDefaultParamGroupWriter {
         assertEquals("toFile.exists", true, toFile.exists());
     }
 
-    @Test
-    public void getRowValue_URL_column() throws Exception {
-        final String ftpHref=Demo.dataFtpDir+"all_aml_test.gct";
-        final ExternalFile ftpFilePath=new ExternalFile(ftpHref);
-        final GenomeSpaceFile gsFilePath=TestGenomeSpaceFile.mockGsFileFromGsHelper("all_aml_test.gct");
-        
-        final GpFilePath uploadFilePath=GpFileObjFactory.getRequestedGpFileObj(Demo.gpConfig(), Demo.proxyHref + Demo.uploadPath());
-        assertEquals("relativeUri, 'Files' tab, expecting relative uri", 
-                Demo.uploadPath(), uploadFilePath.getRelativeUri().toString());
-        
-        final File toFile = tmpDir.newFile("test_group_input.tsv");
-        DefaultParamGroupWriter writer=ParamGroupHelper.initParamGroupWriter(Demo.proxyHref, toFile);
-        
-        checkUrlValue(writer, ftpHref, ftpFilePath);
-        checkUrlValue(writer, Demo.dataGsDir+"all_aml_test.gct", gsFilePath);
-        checkUrlValue(writer, Demo.proxyHref + Demo.uploadPath(), uploadFilePath);
-    }
+   
     
     protected void checkUrlValue(DefaultParamGroupWriter writer, final String expected, final GpFilePath gpFilePath) {
         final int rowIdx=0;

@@ -399,23 +399,6 @@ body {
     width: 319px;
 }
 
-#left-nav-genomespace {
-	padding: 0px !important;
-	/*width: 348px;*/
-}
-
-#left-nav-genomespace-logo {
-    height: 30px;
-}
-
-#left-nav-genomespace-refresh {
-    float: right;
-}
-
-.left-nav-genomespace-files {
-    padding: 10px;
-}
-
 #left-nav-modules.ui-widget-content a {
 	color: #000099;
 }

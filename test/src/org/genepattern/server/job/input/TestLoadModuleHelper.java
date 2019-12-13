@@ -285,42 +285,7 @@ public class TestLoadModuleHelper {
         checkResults(cmsExpectedValues, actualInitialValues);
     }
     
-    /**
-     * Test case for sending a file to a module from the GenomeSpace tab.
-     * 
-     * Example link,
-     *     http://genepattern/gp/pages/index.jsf
-     *        ?lsid=urn%3Alsid%3Abroad.mit.edu%3Acancer.software.genepattern.module.analysis%3A00044%3A9
-     *        &_file=https%3A//dm.genomespace.org/datamanager/file/Home/pcarr/all_aml_test.gct
-     *        &_format=gct
-     */
-    @Test
-    public void testSendFromGenomeSpaceTab() throws Exception {
-        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all_aml_test.gct";
-        _formatParam="gct";
-        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
-        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
-        JSONObject actualInitialValues=
-                loadModuleHelper.getInitialValuesJson(
-                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(cmsExpectedValues, actualInitialValues);
-    }
-    
-    @Test
-    public void testSendFromGsTabSpecialChars() throws Exception {
-        final TaskInfo taskInfo=taskLoader.getTaskInfo(cmsLsid);
-        _fileParam="https://dm.genomespace.org/datamanager/file/Home/pcarr/all%20aml%20test.gct";
-        _formatParam="gct";
-        final LinkedHashMap<String,List<String>> cmsExpectedValues=initCms();
-        cmsExpectedValues.put("input.file", new ArrayList<String>(Arrays.asList( _fileParam )));
-        LoadModuleHelper loadModuleHelper=new LoadModuleHelper(gpConfig, userContext, taskLoader, jobInfoLoader);
-        JSONObject actualInitialValues=
-                loadModuleHelper.getInitialValuesJson(
-                        cmsLsid, taskInfo.getParameterInfoArray(), reloadedValues, _fileParam, _formatParam, parameterMap);
-        checkResults(cmsExpectedValues, actualInitialValues);
-    }
+   
     
 //    /**
 //     * Test case for sending a GenomeSpace file from the landing page to the job input form.

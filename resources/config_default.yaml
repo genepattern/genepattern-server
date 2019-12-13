@@ -184,13 +184,6 @@ default.properties:
     pipeline.max.file.size: 256000000
     
     #
-    # GenomeSpace integration
-    #
-    genomeSpaceEnabled: true
-    genomeSpaceUrl: https://identity.genomespace.org/identityServer/xrd.jsp
-    genomeSpaceEnvironment: prod
-    
-    #
     # configure the Contact Us link
     #
     # open the GenePattern Help forum in a new window

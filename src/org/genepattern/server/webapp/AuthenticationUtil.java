@@ -17,7 +17,6 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.genomespace.*;
 
 /**
  * Utility methods for implementing HTTP Basic Authentication.
@@ -79,12 +78,7 @@ public class AuthenticationUtil {
                 if (userIdFromAuthorizationHeader == null || userIdFromSession.equals(userIdFromAuthorizationHeader)) {
                     return userIdFromSession;
                 }
-                //special-case when the userId from the session is a GP userId, but the userId in the authorizationHeader is a GS userId
-                final String linkedGsUsername = GenomeSpaceDatabaseManager.getGSUsername(userIdFromSession);
-                if (userIdFromAuthorizationHeader.equals(linkedGsUsername)) {
-                    return userIdFromSession;
-                }
-
+                
                 //special-case when the userId from the session doesn't match the one in the authorization header
                 try {
                     boolean redirect = false;
@@ -142,26 +136,6 @@ public class AuthenticationUtil {
          * If other auth fails, try GenomeSpace auth
          */
 
-        final boolean checkGsCredentials=true;
-        if (!authenticated && checkGsCredentials) {
-            //if we are here, it means the gp user_id / password doesn't match
-            //for GP-4540, it could be a GenomeSpace account
-            log.debug("checking GenomeSpace credentials");
-
-            // Try to authenticate using provided GS username and password
-            gpUserId = genomeSpaceAuthentication(userIdFromAuthorizationHeader, password);
-
-            // If that fails, try using a provided GS token
-            if (gpUserId == null) {
-                gpUserId = GenomeSpaceLoginManager.authenticateFromToken(req);
-            }
-
-            if (gpUserId != null) {
-                //we have valid GS credentials and a linked GP account
-                authenticated=true;
-            }
-        }
-
         log.debug("authenticated="+authenticated);
         if (authenticated) {
             log.debug("gpUserId="+gpUserId);
@@ -178,38 +152,7 @@ public class AuthenticationUtil {
         return null;
     }
 
-    /**
-     * Authenticate the username/password pair as a GenomeSpace account.
-     *
-     * @param gsUsername
-     * @param gsPassword
-     * @return the linked GenePattern userId, iff the GS credentials are valid AND there is an linked GP account.
-     *     Otherwise return null.
-     * @throws AuthenticationException
-     */
-    static private String genomeSpaceAuthentication(final String gsUsername, final byte[] gsPassword) throws AuthenticationException {
-        // Protect against nulls
-        if (gsUsername == null || gsPassword == null) {
-            return null;
-        }
-
-        try {
-            final GpContext serverContext = GpContext.getServerContext();
-            final String env = ServerConfigurationFactory.instance().getGPProperty(serverContext, "genomeSpaceEnvironment", "prod");
-            final GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
-            final GenomeSpaceLogin login = gsClient.submitLogin(env, gsUsername, new String(gsPassword));
-            final String gpUserId = GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
-            return gpUserId;
-        }
-        catch (GenomeSpaceException e) {
-            log.debug(e);
-            throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS);
-        }
-        catch (Throwable t) {
-            log.error("Unexpected exception thrown while checking GenomeSpace credentials", t);
-            throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE);
-        }
-    }
+   
 
     /**
      * Parse out the username:password pair from the authorization header.

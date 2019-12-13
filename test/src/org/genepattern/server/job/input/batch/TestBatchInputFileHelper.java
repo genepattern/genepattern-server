@@ -129,13 +129,7 @@ public class TestBatchInputFileHelper {
         assertEquals("all_aml/", BatchInputFileHelper.getFilename(gpFilePath));
     }
 
-    @Test
-    public void getFilename_fromExternalUrl_genomeSpace() throws Exception {
-        URL extUrl=new URL(dataGsDir+"all_aml_test.gct");
-        when(gpFilePath.getUrl()).thenReturn(extUrl);
-        assertEquals("all_aml_test.gct", BatchInputFileHelper.getFilename(gpFilePath));
-    }
-
+   
     @Test
     public void getFilename_fromExternalUrl_ftp() throws Exception {
         URL extUrl=new URL(dataFtpDir+"all_aml_test.gct");

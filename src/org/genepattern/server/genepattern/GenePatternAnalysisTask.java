@@ -137,10 +137,6 @@ import org.genepattern.server.executor.events.GpJobRecordedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.genomespace.GenomeSpaceClient;
-import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
@@ -1077,29 +1073,6 @@ public class GenePatternAnalysisTask {
                                     }
                                 }
                                 
-                                // Handle getting the InputStream for GenomeSpace
-                                if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
-                                    if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
-                                        try {
-                                            is = gsClient.getInputStream(jobInfo.getUserId(), url);
-                                            name = getGSDownloadFileName(url.openConnection(), url);
-                                        }
-                                        catch (GenomeSpaceException e) {
-                                            vProblems.add(e.getLocalizedMessage());
-                                            log.error(e);
-                                            downloadUrl = false;
-                                        }
-                                        catch (Throwable t) {
-                                            final String message="Error getting GenomeSpace input file: "+t.getLocalizedMessage()+
-                                                ", gpUserId='"+jobInfo.getUserId()+"' "+url;
-                                            vProblems.add(message);
-                                            log.error(message, t);
-                                            downloadUrl = false;
-                                        }
-                                    } 
-                                } 
-
                                 // TODO: check for previously cached version of the file
                                 // TODO: if necessary cache the file
                                 

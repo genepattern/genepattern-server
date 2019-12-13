@@ -12,8 +12,6 @@ import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.MailSender;
@@ -55,18 +53,7 @@ public class ForgotPasswordBean {
         setMessageIfJSF("info", message);
     }
 
-    private String resetPasswordSSO() {
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        try {
-            GenomeSpaceLoginManager.resetPassword(request);
-            setInfoIfJSF("A temporary password was sent to your registered email.");
-            return "success";
-        }
-        catch (GenomeSpaceException e) {
-            setErrorIfJSF(e.getMessage());
-            return "failure";
-        }
-    }
+  
 
     private String resetPasswordDefault() {
         final User user = new UserDAO(HibernateUtil.instance()).findById(username);
@@ -109,13 +96,9 @@ public class ForgotPasswordBean {
 
     public String resetPassword() {
         GpContext context = UIBeanHelper.getUserContext();
-        boolean genepatternSSO = ServerConfigurationFactory.instance().getGPBooleanProperty(context, "ssoAuthentication", false);
-        if (genepatternSSO) {
-            return resetPasswordSSO();
-        }
-        else {
+        
             return resetPasswordDefault();
-        }
+       
     }
 
     protected void sendResetPasswordMessage(final String to, final String newPassword) throws Exception {

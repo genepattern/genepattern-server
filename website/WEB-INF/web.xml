@@ -112,11 +112,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.pages.genomespace.error_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.modules.createhelp_jsp</servlet-name>
         <servlet-class>org.apache.jsp.modules.createhelp_jsp</servlet-class>
     </servlet>
@@ -227,11 +222,6 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
-        <url-pattern>/pages/genomespace/error.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.modules.createhelp_jsp</servlet-name>
         <url-pattern>/modules/createhelp.jsp</url-pattern>
     </servlet-mapping>
@@ -329,7 +319,7 @@
   <init-param>
   <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
-   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf,GenomeSpaceOpenID, pages/genomespace/error.jsp, /pages/genomespace/associateAccount.jsf</param-value>
+   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>home.page</param-name>
@@ -664,16 +654,6 @@
         <url-pattern>/AJAXUpload</url-pattern>
     </servlet-mapping>
  
-  <servlet>
-    <display-name>GenomeSpace OpenID Servlet</display-name>
-    <servlet-name>GenomeSpaceOpenID</servlet-name>
-    <servlet-class>org.genepattern.server.genomespace.GenomeSpaceOpenID</servlet-class>    
- </servlet>
- <servlet-mapping>
-  <servlet-name>GenomeSpaceOpenID</servlet-name>
-  <url-pattern>/GenomeSpaceOpenID</url-pattern>
- </servlet-mapping>
- 
  <servlet>
     <display-name>Pipeline Designer Servlet</display-name>
     <servlet-name>PipelineDesigner</servlet-name>
@@ -704,17 +684,7 @@
   <url-pattern>/ServerFileBrowser/*</url-pattern>
  </servlet-mapping>
  
- <servlet>
-    <display-name>GenomeSpace Servlet</display-name>
-    <servlet-name>GenomeSpace</servlet-name>
-    <servlet-class>org.genepattern.server.genomespace.GenomeSpaceServlet</servlet-class>    
- </servlet>
- <servlet-mapping>
-  <servlet-name>GenomeSpace</servlet-name>
-  <url-pattern>/GenomeSpace/*</url-pattern>
- </servlet-mapping>
-
-<filter>
+ <filter>
   <filter-name>RestApiFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.rest.RestApiFilter</filter-class>
 </filter>

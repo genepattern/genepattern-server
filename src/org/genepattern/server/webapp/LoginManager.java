@@ -16,9 +16,6 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
-import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -73,19 +70,19 @@ public class LoginManager {
     public void login(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
     throws AuthenticationException, IOException {
         String gp_username = null;
-        gp_username = handleGenomeSpaceAuthentication(request, response);
-        if (gp_username == null) {
-            log.debug("authenticating from HTTP request...");
-            gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
-            if (log.isDebugEnabled()) {
-                if (gp_username == null) {
-                    log.debug("not authenticated (IAuthenticationPlugin.authenticate returned null)");
-                }
-                else {
-                    log.debug("authenticated user='"+gp_username+"'");
-                }
+
+    
+        log.debug("authenticating from HTTP request...");
+        gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+        if (log.isDebugEnabled()) {
+            if (gp_username == null) {
+                log.debug("not authenticated (IAuthenticationPlugin.authenticate returned null)");
+            }
+            else {
+                log.debug("authenticated user='"+gp_username+"'");
             }
         }
+        
         if (gp_username == null) {
             return;
         }
@@ -97,108 +94,15 @@ public class LoginManager {
         }
 
         addUserIdToSession(request, gp_username);
-        handleGenomeSpaceLogin(gp_username, request.getSession());
-
+       
         if (redirect) {
             redirect(request, response);
         }
     }
 
-    private static String handleGenomeSpaceAuthenticationDefault(HttpServletRequest request, HttpServletResponse response) {
-        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
-        if (gsUsername == null) return null;
-        String gp_username = null;
-
-        // Try to authenticate using GS information in the session
-        gp_username = GenomeSpaceLoginManager.authenticate(request, response);
-
-        // Try to authenticate using a GS token attached to the request
-        if (gp_username == null) {
-            gp_username = GenomeSpaceLoginManager.authenticateFromToken(request);
-        }
-
-        return gp_username;
-    }
-
-    private static String handleGenomeSpaceAuthenticationSSO(HttpServletRequest request, HttpServletResponse response) {
-        // Try to authenticate using a username and password attached to the request
-        String gp_username = null;
-        if (gp_username == null) {
-            gp_username = GenomeSpaceLoginManager.authenticateFromUsername(request);
-        }
-
-        // Handle null GenomeSpace usernames
-        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
-        if (gsUsername == null) return null;
-
-        // Try to authenticate using GS information in the session
-        if (gp_username == null) {
-            gp_username = GenomeSpaceLoginManager.authenticate(request, response);
-        }
-
-        // Try to authenticate using a GS token attached to the request
-        if (gp_username == null) {
-            gp_username = GenomeSpaceLoginManager.authenticateFromToken(request);
-        }
-
-        return gp_username;
-    }
+       
     
-    /**
-     * Checks if one has logged in through the GenomeSpace OpenID.  Returns null if not.
-     * @param request
-     * @param response
-     * @return
-     */
-    public static String handleGenomeSpaceAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        GpContext context = GpContext.getServerContext();
-        boolean genepatternSSO = ServerConfigurationFactory.instance().getGPBooleanProperty(context, "ssoAuthentication", false);
-        if (genepatternSSO) {
-            return handleGenomeSpaceAuthenticationSSO(request, response);
-        }
-        else {
-            return handleGenomeSpaceAuthenticationDefault(request, response);
-        }
-    }
     
-    /**
-     * Initialize the GenomeSpace session and add it to the GenePattern session if one's GenePattern and GenomeSpace 
-     * accounts are associated in the database
-     * @param gp_username
-     * @param session
-     */
-    public static void handleGenomeSpaceLogin(String gp_username, HttpSession session) {
-        GpContext context = GpContext.getContextForUser(gp_username);
-        boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
-        String gsUsername = (String) session.getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
-        if (genomeSpaceEnabled && gsUsername != null) {
-            try {
-                GenomeSpaceLoginManager.loginFromDatabase(gp_username, session);
-            }
-            catch (GenomeSpaceException e) {
-                log.error("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
-            }
-            catch (Throwable t) {
-                log.error("Problem thrown logging into GenomeSpace");
-            }
-        }
-    }
-    
-    /**
-     * Detects if logged into GenomeSpace through OpenID, and if so will return the URL to the GenomeSpace logout page 
-     * so the user can be redirected there
-     * @param session
-     */
-    public static String handleGenomeSpaceLogout(HttpSession session) {
-        Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
-        if (openID != null && openID) {
-            return "/gp/GenomeSpaceOpenID?logout=Logout";
-        }
-        else {
-            return null;
-        }
-    }
-
     public void addUserIdToSession(HttpServletRequest request, String gp_username) {
         HttpSession session = request.getSession();
         if (session == null) {
@@ -281,7 +185,7 @@ public class LoginManager {
         UserAccountManager.instance().getAuthentication().logout(userid, request, response);
 
         HttpSession session = request.getSession();
-        String gsRedirect = LoginManager.handleGenomeSpaceLogout(session);
+       
         if (session != null) {
             session.removeAttribute(GPConstants.USERID);
             session.invalidate();
@@ -293,9 +197,7 @@ public class LoginManager {
             if (redirectTo == null) {
                 redirectTo = request.getContextPath() + "/";
             }
-            if (gsRedirect != null) {
-                redirectTo = gsRedirect;
-            }
+          
             response.sendRedirect( redirectTo );
         }
     }
