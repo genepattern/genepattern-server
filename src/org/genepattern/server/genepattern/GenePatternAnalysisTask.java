@@ -66,6 +66,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1152,6 +1153,19 @@ public class GenePatternAnalysisTask {
         final List<String> inputFiles=listInputFiles(mgr, gpConfig, jobContext, paramsCopy, paramInfoMap);
         for(final String inputFile : inputFiles) {
             jobContext.addLocalFilePath(inputFile);
+            
+            
+            // #### JTL XXX TESTING
+            System.out.println("Input File: " + inputFile);
+            try {
+                File f = new File(inputFile);
+                f.setLastModified(System.currentTimeMillis());
+             } catch (Exception e){
+                System.out.println("  PROBLEM WITH setting last modified on Input File: " + inputFile);
+                e.printStackTrace();
+            }
+            
+         // #### END JTL XXX TESTING
         }
 
         // build the command line, replacing <variableName> with the same name from the properties
