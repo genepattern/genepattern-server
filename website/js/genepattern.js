@@ -590,6 +590,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     // Set the cancel button functionality
     uploadToasterFile.find(".upload-toaster-file-cancel")
         .click(function() {
+        	r.cancel();
             // Set the progressbar cancel message
             progressbar.progressbar("value", 100);
             progressbar
@@ -892,26 +893,60 @@ function resumableUploadStart(r, file, directory){
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
 	
-	if (($('#upload-toaster').dialog('isOpen') === true)  || (resumableloadsInProgress > 1)){
-		console.log("Should NOT be zero: " + resumableloadsInProgress);
+	if (($('#upload-toaster').dialog('isOpen') === true)){
+		
 		appendToUploadToaster(file);
 	} else {
 		console.log("Should be zero: " + resumableloadsInProgress);
 		var filelist = [file];
 		initUploadToaster(filelist, directory);
 	}
-	console.log("1. " + fileName + " -- " + file.fileName);
+	
 	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
 	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
 	// pass in the target directory for the final destination
 	r.opts.query.target = directory;
 	r.opts.query.relativePath = 'foofoo';
-	
-	console.log("2. " + fileName + " -- " + file.fileName, + "  " + r.opts.query.target);
 	 
+	
+	 uploadToasterFile.find(".upload-toaster-file-cancel")
+     .click(function() {
+         
+      	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+    	 
+    	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	     progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+         
+         //progressbar.progressbar("value", 100);
+         progressbar
+             .find(".ui-progressbar-value")
+             .css("background", "#FCF1F3");
+         progressbar
+             .find(".upload-toaster-file-progress-label")
+             .text("Canceled!");
+         // GP-8168 Remove the file, otherwise we cannot re-upload the same file again without a page reload
+         r.removeFile(file);
+         
+         $('.resumable-drop').show();
+         $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+         
+         
+     });
+	
+	
+	
     // Actually start the upload
     r.upload();
     $('.resumable-drop').show(); 
+}
+
+
+function resumableMultipleUploadStart(r, filearray, directory){
+	var len = filearray.length;
+	
+	for (var i=0; i < len; i++){
+		resumableUploadStart(r,filearray[i],directory);
+	}
 }
 
 
@@ -939,19 +974,27 @@ function warnSpecialChars_resumable(r, file) {
         });
 }
 
+currentFileList = [];
 function onFileAdded_resumable(r, file){
 	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
     var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
     r.currentFile = file.fileName;
+    alreadyOpen = $('#uploadDirectoryDialog').dialog('isOpen');
+    currentFileList.push(file);
+    
     // pick the destination directory
-    if (directory === undefined || directory === null || directory.length === 0) {
-        openUploadDirectoryDialog([file], function() {    
+    if (alreadyOpen){
+    	// do nothing but add the file to the list
+    	
+    } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
+        openUploadDirectoryDialog(currentFileList, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	resumableUploadStart(r, file, directory);
+        	resumableMultipleUploadStart(r, currentFileList, directory);
+        	currentFileList = []; // empty 
      	 });
     } else {
-    	resumableUploadStart(r, file, directory);
-    	
+    	resumableMultipleUploadStart(r, currentFileList, directory);
+    	currentFileList = []; // empty 
     }
 }; 
 
@@ -1002,25 +1045,10 @@ function initReusableJSUploads(file, directory, done, index){
         	 } else {
         		 onFileAdded_resumable(r, file);
         	 } 	    
+        	 
          });
          
-         r.on('cancel',function(file) {
-        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
-        	 
-        	 var fileName = r.currentFile;
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             
-             progressbar.progressbar("value", 100);
-             progressbar
-                 .find(".ui-progressbar-value")
-                 .css("background", "#FCF1F3");
-             progressbar
-                 .find(".upload-toaster-file-progress-label")
-                 .text("Canceled!");
-             $('.resumable-drop').show();
-             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
-         });
+
          
          r.on('pause', function(file){
              // Show resume, hide pause
@@ -1073,6 +1101,10 @@ function initReusableJSUploads(file, directory, done, index){
              // Handle progress for both the file and the overall upload
              //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
              //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+        	 
+        	 // On a cancellation, this will get called after but we don't want to reset the progressbar to 0 so bail
+        	 if (!(r.files.includes(file))) return;
+        	 
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
  	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
              progressbar.progressbar("value", Math.floor(r.progress()*100));
@@ -1122,8 +1154,17 @@ function dirPromptIfNecessary (filelist, directory) {
 
 // resumable js gets drop events one at a time so we need to add to the existing dialog
 function appendToUploadToaster(file){
+	
+	
+	
+	
+	
     // var toaster = $("<div></div>").addClass("upload-toaster-list");
     var toaster = $("#upload-toaster")[0];
+    // after a cancel it might already be there
+    existing = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
+  	if (existing.length > 0 ) return;
+    
     
     $("<div></div>")
         .addClass("upload-toaster-file")
