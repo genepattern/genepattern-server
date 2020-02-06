@@ -916,7 +916,7 @@ function resumableUploadStart(r, file, directory){
     	 
     	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
 	     progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-         
+	     $(this).parent().find(".upload-toaster-file-cancel").button("disable");
          //progressbar.progressbar("value", 100);
          progressbar
              .find(".ui-progressbar-value")
