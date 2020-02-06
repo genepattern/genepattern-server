@@ -930,7 +930,7 @@ function resumableUploadStart(r, file, directory){
          $('.resumable-drop').show();
          $('.resumable-drop')[0].classList.remove('leftnav-highlight');
          
-         
+         cleanUploadToaster(); // JTL 02/06/20
      });
 	
 	
@@ -1067,8 +1067,7 @@ function initReusableJSUploads(file, directory, done, index){
              $('.resumable-drop').show();
              var fileName = file.fileName;
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+        	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
              progressbar.progressbar("value", 100);
              //cleanUploadToaster();
              // Remove the file, otherwise we cannot re-upload the same file again without a page reload
