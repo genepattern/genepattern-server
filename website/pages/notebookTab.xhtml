@@ -12,7 +12,9 @@
             var notebook_enabled = #{notebookBean.notebookEnabled};
             var notebook_repo = "${notebookBean.repositoryURL}";
 
+            window.nb_tab_init = false;
             function init_notebooks_tab() {
+                if (window.nb_tab_init) return;
                 get_public_notebooks(function(results) {
                     const all_notebooks = [];
 
@@ -45,6 +47,7 @@
                     init_browse_notebooks();
 
                     // Add pinned tags
+                    if ($("#nb-public").children().length > 1) return;
                     pinned_models.forEach(function(model) {
                         $("<div></div>")
                                 .attr("class", "nb-listing")
@@ -79,6 +82,8 @@
                     $("#notebook-search").searchslider("filter", $(this).val());
                     set_search_titleTitle($(this).val());
                 });
+
+                window.nb_tab_init = true;
             }
 
             function set_search_titleTitle(filter) {
