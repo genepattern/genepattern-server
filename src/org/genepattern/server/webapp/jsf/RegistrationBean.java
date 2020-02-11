@@ -157,7 +157,8 @@ public class RegistrationBean {
      * @param event --
      *                ignored
      */
-    private void registerUser(final ActionEvent event) {
+    
+    public void registerUser(final ActionEvent event) {
         try {
             verifyReCaptcha(UIBeanHelper.getRequest());
             UserAccountManager.createUser(
@@ -178,7 +179,6 @@ public class RegistrationBean {
             throw new RuntimeException(e);
         }
     }
-    
 
     public void sendJoinMailingListRequest() {
         final GpContext serverContext=GpContext.getServerContext();
