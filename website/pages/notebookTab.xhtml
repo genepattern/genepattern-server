@@ -346,6 +346,22 @@
             #nb-public .module-listing {
                 height: 17px;
             }
+            .info-box {
+                margin: 10px;
+                border: 1px solid #A3B1DD;
+                border-radius: 5px;
+                padding: 5px;
+                background: #E2EAF2 url(images/sidebar-topBG.png) repeat-x;
+                font-size: 1.1em;
+                line-height: 1.3em;
+            }
+            .info-box > a {
+                color: #000099;
+                text-decoration: none;
+            }
+            .info-box > a:hover {
+                color: #6666FF;
+            }
         </style>
     </ui:define>
 
@@ -361,8 +377,8 @@
         </div>
     </div>
 
-    <div style="margin: 10px; border: 1px solid #A3B1DD; border-radius: 5px; padding: 5px; background-color: #FCFCFC;">
-        Opening any of these notebooks will take you to the GenePattern Notebook Workspace. To learn more about
+    <div class="info-box">
+        Opening a notebook will take you to the <a href="https://notebook.genepattern.org" target="_blank">GenePattern Notebook Workspace</a>. To learn more about
         <a href="http://genepattern-notebook.org/" target="_blank">GenePattern Notebook, click here</a>.
     </div>
 
