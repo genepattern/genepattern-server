@@ -461,7 +461,7 @@ public class AWSBatchJobRunner implements JobRunner {
      * Get environment variables for the aws batch submit-job command line.
      * @return a Map<String,String> of environment variables
      */
-    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob, final Set<File> inputParentDirs) {
         final Map<String,String> cmdEnv=initAwsCliEnv(gpJob.getGpConfig(), gpJob.getJobContext());
 
         cmdEnv.put("GP_JOB_ID", ""+gpJob.getGpJobNo());
@@ -480,6 +480,18 @@ public class AWSBatchJobRunner implements JobRunner {
                 "GP_JOB_DOCKER_BIND_MOUNTS",
                 Joiner.on(":").skipNulls().join(bindMounts.getValues())
             );
+        } else if (inputParentDirs != null ){
+            // ALTERNATE BIND - bind to parent dirs of any inputs only and not higher level root dirs
+            // to make it harder to have a ,alicious container see things it ought not to
+            List<String> inputParentDirList = new ArrayList<String>();
+            for (File f: inputParentDirs){
+                inputParentDirList.add(f.getAbsolutePath());
+            }
+            inputParentDirList.add(gpJob.getWorkingDir().getAbsolutePath());
+            cmdEnv.put(
+                    "GP_JOB_DOCKER_BIND_MOUNTS",
+                    Joiner.on(":").skipNulls().join(inputParentDirList)
+                );
         }
 
         final String dockerImage=gpJob.getGpConfig().getJobDockerImage(gpJob.getJobContext());
@@ -734,7 +746,8 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         
         final File awsBatchScript=getAwsBatchScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
-        if (log.isDebugEnabled()) {
+        //if (log.isDebugEnabled()) {  // JTL XXX 02/102020
+        {
             log.debug("job "+gpJob.getGpJobNo());
             log.debug("           aws-batch-script='"+awsBatchScript+"'");
             log.debug("    aws-batch-script.fqPath='"+awsBatchScript.getAbsolutePath()+"'");
@@ -924,7 +937,11 @@ public class AWSBatchJobRunner implements JobRunner {
         final File awsCli=getAwsBatchScriptFile(gpJob, PROP_AWS_CLI, DEFAULT_AWS_CLI);
         final String s3_root=gpJob.getProperty(PROP_AWS_S3_ROOT);
         final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
+        
+        final Set<File> inputDirectories = AwsBatchUtil.getInputFileParentDirectories(gpJob);
+        
+        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob, inputDirectories);
+        
         final AwsS3Filter awsS3Filter=AwsS3Filter.initAwsS3Filter(gpJob.getGpConfig(), gpJob.getJobContext());
         copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter);
 
