@@ -465,6 +465,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final Map<String,String> cmdEnv=initAwsCliEnv(gpJob.getGpConfig(), gpJob.getJobContext());
 
         cmdEnv.put("GP_JOB_ID", ""+gpJob.getGpJobNo());
+        cmdEnv.put("GP_USER_ID", ""+ gpJob.getJobContext().getUserId());
         cmdEnv.put("GP_JOB_WORKING_DIR", gpJob.getWorkingDir().getAbsolutePath());
         final File metadataDir=getMetadataDir(gpJob.getWorkingDir());
         if (metadataDir != null) {

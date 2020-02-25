@@ -176,6 +176,7 @@ __env_arg="environment=[\
   {name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt}, \
   {name=GP_JOB_ID,value=${GP_JOB_ID}}, \
+  {name=GP_USER_ID,value=${GP_USER_ID}}, \
   {name=GP_JOB_WORKING_DIR,value=${GP_JOB_WORKING_DIR}}, \
   {name=GP_WORKING_DIR,value=${GP_JOB_WORKING_DIR}}, \
   {name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
@@ -197,7 +198,7 @@ __env_arg="environment=[\
 ]";
 
 __args=( \
-  "--job-name" "$JOB_ID" \
+  "--job-name" "${JOB_ID}_${GP_MODULE_NAME}" \
   "--job-queue" "$JOB_QUEUE" \
   "--timeout" "attemptDurationSeconds=${GP_JOB_WALLTIME_SEC}" \
   "--job-definition" "$JOB_DEFINITION_NAME" \
