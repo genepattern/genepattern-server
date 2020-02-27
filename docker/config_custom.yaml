@@ -1,0 +1,513 @@
+#
+# default job configuration; treat this as a read-only file 
+# To customize your server, first make a copy of this file,
+#     cp config_default.yaml config_custom.yaml
+# Then make edits to the config_custom.yaml file.
+#
+# Note: this is a YAML file, indentation is important, TAB characters are not permitted.
+#     You must use an exact number of spaces to denote each indentation level.
+#     This file uses 4 space characters for each level.
+#
+
+default.properties:
+    executor: LocalJobRunner
+    java_flags: -Xmx512m -Dhttp.proxyHost=<http.proxyHost> -Dhttp.proxyPort=<http.proxyPort>
+    
+    # filter job results based on the given comma separated list of glob patterns
+    # default setting hides all files which begin with a '.' character
+    job.FilenameFilter: [ ".*" ]
+    
+    # Error handling 
+    #  by default, non-zero exit code is an ERROR
+    job.error_status.exit_value: true
+    #  by default, ignore stderr output
+    job.error_status.stderr: false
+
+    ##############################################################
+    # "show.registration.link"
+    #   Show the link to the registration page on the login page
+    # Default:
+    #   show.registration.link: true
+
+    ##############################################################
+    # "show.terms.of.service"
+    #   Display the terms of service on the registration page
+    # Default:
+    #   show.terms.of.service: false
+
+    ##############################################################
+    # "create.account.allowed"
+    #   Allow users to create new accounts from the login page
+    # Default: 
+    #   create.account.allowed: true
+    
+    ##############################################################
+    # File Purge configuration
+    #   Nightly cleanup of job input and result files.
+    # 
+    # Properties
+    #   purgeTime - the time of day, each day, to run the file purger, 
+    #     in HH:MM, 24 hour format.
+    #     Set as a global (aka server level) value. 
+    #   purgeJobsAfter - the number of days to keep each job. 
+    #     To never delete files set purgeJobsAfter to -1. 
+    #     Can be customized per user or group.
+    #
+    # Example 1: cleanup nightly at 11pm, keep jobs for one week
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "7"
+    # 
+    # Example 2: disable file purge
+    #   purgeTime: "23:00"
+    #   purgeJobsAfter: "-1"
+    #
+    # Note: You must force the file purger to restart before custom edits take effect. 
+    # There are two ways to do this:
+    #   1. restart the server, or
+    #   2. from the web GUI, Admin > Server Settings > File Purge, 
+    #        Set the Purge Time and click Save.
+    #
+    # Additional rules for purging user upload files from the Files tab
+    #   using the same schedule as the job purger, it only purges files older than the cutoff date
+    # Properties
+    #   upload.purge.all - delete all files older than the cutoff date 
+    #     default: false
+    #   upload.purge.tmp - delete tmp files, including job input files
+    #     default: true
+    #   upload.purge.partial - delete any (presumably) stalled partially uploaded files
+    #     default: true
+    
+    # when purge.all is true, delete all files (default: false)
+    upload.purge.all: false 
+    # when purge.tmp is true, delete tmp files (default: true)
+    upload.purge.tmp: true
+    # when purge.partial is true, delete any (presumably) stalled partially uploaded files
+    upload.purge.partial: true
+
+    ##############################################################
+    # allow.input.file.paths
+    #   set to true to allow user access to arbitrary server file paths
+    allow.input.file.paths: "false"
+
+    ##############################################################
+    # server.browse.file.system.root
+    #   root directory for browsing server file paths, when allow.input.file.paths is true. 
+    # Examples:
+    # ## a single path
+    # server.browse.file.system.root: "/opt/genepattern/shared_data"
+    # ## a list of paths
+    # server.browse.file.system.root: [ "/opt/genepattern/shared_data",  "/srv/custom_data" ]
+    # ## default, the root of the file system
+    # server.browse.file.system.root: "/"
+
+    ##############################################################
+    # cache.externalUrlDirs
+    #   Cache external data files into a local directory
+    # Input file URLs matching these prefixes are downloaded
+    # and cached into the uploads directory for the '.cache' user account. 
+    #
+    #   <gp.home>/users/.cache/uploads/cache
+    #
+    # Examples
+    # ## accept all
+    # cache.externalUrlDirs: [ "*" ]
+    # ## accept none
+    # cache.externalUrlDirs: [ "!*" ]
+    # ## cache data files from ftp server
+    # cache.externalUrlDirs: [ 
+    #     "ftp://gpftp.broadinstitute.org/",
+    #     "ftp://ftp.broadinstitute.org/" ] 
+
+    ##############################################################
+    # local.choiceDirs
+    #   local file path for dynamic drop-down FTP files
+    #
+    # Example:
+    # # direct access to broad ftp server files
+    # local.choiceDirs: {
+    #     "ftp://ftp.broadinstitute.org/pub/genepattern/": "/srv/ftp/pub/genepattern/",
+    #     "ftp://gpftp.broadinstitute.org/": "/srv/ftp/gpftp/pub/",
+    # }
+    #
+
+    ##############################################################
+    # reCAPTCHA configuration
+    #   add an "I'm not a robot" challenge to the user registration page
+    # Links
+    #   https://www.google.com/recaptcha
+    #   https://developers.google.com/recaptcha/
+    #   https://developers.google.com/recaptcha/docs/invisible
+    #   https://www.google.com/recaptcha/admin
+    # 
+    # Setup
+    #   Register a new Invisible reCAPTCHA site on the admin page:
+    #     https://www.google.com/recaptcha/admin
+    #   Copy the 'Site key' and 'Secret key' to this config file
+    # Example
+    #   recaptcha.enabled: "true"
+    #   recaptcha.site-key: "{Site key from admin page}"
+    #   repatcha.secret-key: "{Secret key from admin page}"
+    # 
+    # Additional param(s)
+    #   recaptcha.verify-url: "https://www.google.com/recaptcha/api/siteverify"
+    # 
+
+    # flag to allow users to submit jobs, set this to false to prevent new jobs
+    allow.new.job: true
+
+    # the max number of files to display in uploaded files tab
+    upload.maxfiles: 50
+    upload.partition.size: 10000000
+    upload.max.size: 20000000000
+    upload.jumploader: true
+    # rule for hiding/showing the tmp.dir in the uploads tab, by default it's hidden
+    upload.hide.tmp: true
+    
+    # flag to disable listing file size and modification date in the gui, 
+    display.file.info: true
+    
+    # by default each gp user account gets a home directory in <GenePatternServer>/users/<user.id>
+    # Set the 'user.root.dir' property to customize this, e.g.
+    # user.root.dir: /Applications/GenePatternServer/users
+    
+    # location for user files uploaded directly to the server from the upload tab
+    # by default, files are uploaded to each user's uploads directory, <user.root.dir>/<user.id>/uploads
+
+    # Turn off input file displays
+    display.input.results: false
+
+    # for the file downloader, set the max file size (in bytes) to display inline in the web browser
+    max.inline.size: 10000000
+    
+    # for 'Create Pipeline', the max file size (in bytes) to copy when creating a new pipeline
+    # (default=250mB)
+    pipeline.max.file.size: 256000000
+    
+    #
+    # configure the Contact Us link
+    #
+    # open the GenePattern Help forum in a new window
+    contact.link: "JavaScript:window.open('https://groups.google.com/forum/#!forum/genepattern-help', 'genepattern-help');"
+    # previous default (<=3.9.10) open the page included in the app
+    # contact.link: "/gp/pages/contactUs.jsf"
+
+    #
+    # GPARC integration
+    #
+    gparcUploadURL: http://www.gparc.org/server_upload.php
+    gparcSubmitURL: http://www.gparc.org/uniqid
+
+    # Use Single Sign-On
+    ssoAuthentication: false
+
+    #
+    # Google Analytics, available in 3.9.2+
+    #
+    #googleAnalytics.enabled: true
+    #googleAnalytics.trackingId: ""
+
+    # 
+    # for per-module End-user license agreements (EULA)
+    #
+    # set this to true, to enable the EulaManager
+    org.genepattern.server.eula.EulaManager.enabled: true
+    # set the list of 0 or more remoteUrls for recording each EULA
+    # this is the default value, so it's not necessary to set
+    #org.genepattern.server.eula.EulaManager.remoteUrl: "http://eulas.genepattern.org/eulas"
+    # an empty list means, don't POST
+    #org.genepattern.server.eula.EulaManager.remoteUrl: []
+    
+    #
+    # by default run pipeline steps in parallel
+    # Set this to 'false' to revert back to the GP <=3.7.0 behavior
+    #
+    org.genepattern.server.executor.pipeline.parallelExec: true
+
+    #
+    # Settings for the 'Modules & Pipelines' panel
+    #
+    # By default, all categories are shown, to  hide a category add it to the list of hiddenCategories
+    # (feature added in 3.7.3)
+    org.genepattern.server.cm.CategoryManager.hiddenCategories: [ ]
+    #
+    # Check the GP database for custom categories.  
+    # To get the list of custom categories ...  go to the /gp/sql.jsp page
+    #     select * from task_category
+    # To add a custom category, use the base lsid of the module
+    #     insert into task_category (task_category) values ('<baseLsid>', '<categoryName>')
+    # (added in 3.7.3)
+    org.genepattern.server.cm.CategoryManager.checkCustomCategories: true
+
+    ##############################################################
+    # (experimental) JobObjectCache
+    #   cache job details in JSON format, to speed up page load
+    #   performance on the Job Summary page
+    # 
+    jobObjectCache.enabled: false
+    jobObjectCache.maximumSize: 10000
+    jobObjectCache.expireAfterWriteDays: 10
+    
+    ##############################################################
+    # Job Runner API defaults
+    #
+    # job.cpuCount
+    #   the number of cpus requested for the job
+    job.cpuCount: 1
+
+    ##############################################################
+    # job.commandPrefix
+    #   add an optional command line prefix to the module command line
+    # this is prepended before command substutions are resolved.
+    #
+    # Example: 
+    #     # 'dry-run' via echo
+    #     job.commandPrefix: "echo"
+    #
+    # Example: 
+    #     # 'docker run' prefix
+    #     job.commandPrefix: "<run-with-docker>"
+    # 
+
+    ##############################################################
+    # Docker image configuration 
+    #
+    # job.docker.image
+    #   This is passed as an arg to the docker run command
+    #     $ docker run [OPTIONS] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG...]
+    # Must be set in the module manifest file. 
+    #   job.docker.image=IMAGE[:TAG|@DIGEST]
+    # Example
+    #   # use one of the GenePattern images from DockerHub
+    #   job.docker.image=genepattern/docker-java17:0.12
+    #
+    # Links:
+    #   Docker run command
+    #     https://docs.docker.com/engine/reference/run/
+    #   DockerHub GenePattern Dashboard
+    #     https://hub.docker.com/u/genepattern/dashboard/
+
+    # 'job.docker.image.default'
+    #   The default 'job.docker.image' to use when it is not set in the manifest file
+    #   and there is no match in the job.docker.image.lookup table
+    "job.docker.image.default": "genepattern/docker-java17:0.12"
+
+
+    # 'job.docker.image.lookup'
+    #   Lookup table to use when 'job.docker.image' is not declared in the manifest file
+    #
+    # Template:
+    #   {taskName}         : {dockerImage}
+    #   {taskName:version} : {dockerImage}
+    #   {lsid}             : {dockerImage}
+    #   {lsid_no_version}  : {dockerImage}
+    #
+    # Examples:
+    #   {taskName}
+    #     "ConvertLineEndings"   : "genepattern/cle:latest"
+    #   {taskName:version}
+    #     "ConvertLineEndings:2" : "genepattern/cle:2"
+    #   {lsid:version}
+    #     "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2" : "genepattern/cle:2"
+    #   {lsid_no_version}
+    #     "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002" : "genepattern/cle:latest"
+    #
+    # Lookup table for legacy modules based on cloud.genepattern.org circa July 2018
+    #
+    job.docker.image.lookup: {
+
+        # ABSOLUTE (<= v1.5)
+        "ABSOLUTE:1.5": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE:1": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE.review:1.4": "genepattern/docker-r-2-15:0.1",
+        "ABSOLUTE.summarize:1.4": "genepattern/docker-r-2-15:0.1",
+        "CART:2": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation:2.2": "genepattern/docker-r-2-5:0.1",
+        "CARTXValidation:2": "genepattern/docker-r-2-5:0.1",
+        "CBS:3": "genepattern/docker-r-2-15:0.1",
+        "Chip2Chip": "genepattern/docker-java18:0.1",
+        # ComBat (<= v3)
+        "ComBat:3": "genepattern/docker-r-2-7:0.1", 
+        # ComparativeMarkerSelection (<= v10.1)
+        "ComparativeMarkerSelection": "genepattern/docker-r-2-5:0.1",
+        "ConsensusClustering": "genepattern/docker-r-2-5:0.1",
+        # ConstellationMap v1.4.6 and v1.4.9 set in job.docker.image
+        # ConstellationMap (<= v1.4.5) must use genepattern/docker-r-3-0-conmap:0.1
+        "ConstellationMap:1.4.5": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.4": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.4.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConstellationMap:1.2": "genepattern/docker-r-3-0-conmap:0.1",
+        "ConvertLineEndings:2": "genepattern/docker-perl52:0.1",
+        "ConvertLineEndings:1": "genepattern/docker-perl52:0.1",
+
+        # Note: r/2.0 runs in the r/2.5 container
+        "CoxRegression:1.3": "genepattern/docker-r-2-5:0.1",
+        
+        # DESeq2 (<= v0.4 on gpprod, <= v0.4.2 on cloud.gp)
+        "DESeq2:0.4.2": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4.1": "genepattern/docker-r-3-2:0.1",
+        "DESeq2:0.4":   "genepattern/docker-r-3-2:0.1",
+
+        "DiffEx:0.1.10": "genepattern/docker-python36:0.5",
+        "ExpressionFileCreator:12.3": "genepattern/docker-r-2-15:0.1",
+        "ExtractComparativeMarkerResults": "genepattern/docker-java17:0.12",
+        "FLAMEPreprocess": "genepattern/docker-r-2-7:0.1",
+
+        # GISTIC_2.0, (2.0.23) v6.14 custom config
+        "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00125:6.14": "genepattern/docker-gistic:0.12",
+
+        # GSEA >= v19 requires java/1.8 
+        #      >= v19.0.25 must be set in the manifest
+        "GSEA:19.0.19": "genepattern/docker-java18:0.1",
+        "GSEA:19.0.18": "genepattern/docker-java18:0.1",
+        # GSEAv18 (<= v18), requires java/1.7
+        "GSEA:18": "genepattern/docker-java17:0.12",
+
+        "GSEALeadingEdgeViewer:5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (>= v6) requires java/1.8
+        #   >= v6.0.11, must be set in the manifest file
+        "GSEAPreranked:6.0.5": "genepattern/docker-java18:0.1",
+
+        # GSEAPreranked (<= v5) prefers java/1.7
+        "GSEAPreranked:5": "genepattern/docker-java17:0.12",
+
+        "helloWorld_R2.5_Rjava": "genepattern/docker-r-2-5:0.1",
+        "helloWorld_R2.7": "genepattern/docker-r-2-7:0.1",
+        "helloWorld_R2.15_Rscript": "genepattern/docker-r-2-15:0.1",
+        "helloWorld_R3.2_Rscript": "genepattern/docker-r-3-2:0.1",
+
+        # HierarchicalClustering (>= v7) requires python
+        #   (>= v7.17), must be set in the manifest 
+        #   (<= v6) prefers java/1.7
+        "HierarchicalClustering:7.17": "genepattern/docker-python36:0.5",
+        "HierarchicalClustering:6": "genepattern/docker-java17:0.12",
+        "HierarchicalClustering:5.4": "genepattern/docker-java17:0.12",
+
+        # HierarchicalClusteringImage (<= v4) requires default java 1.7
+
+        # ImputeMissingValues.KNN (<= v13) requires R/2.5
+        "ImputeMissingValues.KNN": "genepattern/docker-r-2-5:0.1",
+        
+        # KNN (<= v4) requires java/1.7
+
+        # MutSigCV (v1.2) requires matlab_mcr/2013a
+        "MutSigCV:1.2": "genepattern/docker-mutsigcv:0.1",
+
+        NearestTemplatePrediction: "genepattern/docker-r-3-13:0.1",
+        NMFConsensus: "genepattern/docker-r-2-5:0.1",
+        PreprocessDataset: "genepattern/docker-java17:0.12",
+        "PreprocessReadCounts:0.6": "genepattern/docker-r-3-13:0.1",
+        "RankNormalize": "genepattern/docker-r-2-15:0.1",
+        SNPFileCreator: "genepattern/docker-java17:0.12",
+        
+        # ssGSEAProjection (>= v9.0.10), must set in manifest
+        "ssGSEAProjection:9.0.6": "genepattern/docker-r-2-15:0.1",
+
+        STAR.aligner: "genepattern/docker-staraligner:v0.43",
+        STAR.indexer: "genepattern/docker-staraligner:v0.43",
+
+        "SubMap:3": "genepattern/docker-r-2-5:0.1",
+        "SurvivalCurve:3": "genepattern/docker-r-2-7:0.1",
+        "SurvivalCurve:2": "genepattern/docker-r-2-7:0.1",
+        "SVM:4": "genepattern/docker-r-2-5:0.1",
+        "TestStep:0.3": "genepattern/docker-java17:0.12",
+
+        # TopHat, v9.00
+        "Tophat:9.00": "genepattern/docker-tophat:0.1",
+ 
+        # TopHat v8.11
+        "TopHat:8.11": "genepattern/docker-tophat:0.1",
+
+        # TopHat v8.9
+        "TopHat:8.9": "genepattern/docker-tophat:0.1",
+
+        "txt2odf:2": "genepattern/docker-python36:0.5",
+        "UniquifyLabels:1": "genepattern/docker-java17:0.12",
+        "which_R3.2": "genepattern/docker-r-3-2:0.1",
+    }
+
+executors:
+    # default executor for all jobs, it is included in GenePattern
+    # switched from RuntimeExec to LocalJobRunner in 3.9.0
+    LocalJobRunner:
+        classname: org.genepattern.server.executor.drm.JobExecutor
+        configuration.properties:
+            jobRunnerClassname: org.genepattern.drm.impl.local.commons_exec.LocalCommonsExecJobRunner
+            jobRunnerName: CommonsExecJobRunner
+            # interval for polling for job status (in ms)
+            #minDelay: 100
+            ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
+            #useDynamicDelay: true
+            ## the max polling interval, when 'useDynamicDelay' is true
+            #maxDelay: 30000
+            
+        default.properties:
+            # name of hidden log file added to each job result directory
+            job.logFile: ".rte.out"
+
+            ##############################################################
+            # Docker integration
+            #   run the command in a docker container ...
+            #   see: https://docs.docker.com/engine/reference/commandline/run/
+            #   see: https://docs.docker.com/storage/bind-mounts/
+            # Template:
+            #    # (option 1: with '--mount')
+            #    docker run -w {workdir} --mount type=bind,src={bind_src},dst={bind_dst} {image} {args}
+            #    # (option 2: with '--volume')
+            #    docker run -w {workdir} -v {bind_src}:{bind_dst} {image} {args}
+            # Example:
+            #   docker run -w "`pwd`" --mount type=bind,src=/Users,dst=/Users genepattern/docker-python36:0.4 python3 --version
+            #   docker run -w "`pwd`" -v "/Users:/Users" genepattern/docker-python36:0.4 python3 --version
+            #
+            # Options:
+            #   'docker', the path to the docker executable
+            # '--mount' args 
+            #   'job.docker.bind_src', the local path on the docker daemon host
+            #   'job.docker.bind_dst', the path where the src is mounted in the container
+            #   The bind_src and bind_dst must be the same path. They are separated for 
+            #   illustration purposes.
+            # 
+            "job.commandPrefix": "<run-with-docker>"
+            "job.docker.image.default": "genepattern/docker-java17:0.12" 
+            "docker": "/usr/local/bin/docker"
+            "job.docker.bind_src": "/Users/liefeld/GenePattern/gp_dev/genepattern-server/docker"
+            "job.docker.bind_dst": "/opt/genepattern"
+            "job.workingDir": "<jobs>/<job_id>"
+            "run-with-docker": "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \
+                -e GP_DRY_RUN=<job.env.GP_DRY_RUN> \
+                -e DOCKER_CMD=<docker> \
+                -e GP_JOB_WORKING_DIR=<job.workingDir> \
+                -e DOCKER_BIND_SRC=<job.docker.bind_src> \
+                -e DOCKER_BIND_DST=<job.docker.bind_dst> \
+                -e GP_JOB_DOCKER_IMAGE=<job.docker.image> \
+                -u docker"
+
+            #
+            # (experimental) 'docker-run' command
+            #   Note: we are using the 'run-with-docker.sh' wrapper because it
+            #   outputs a better error message when the 'job.docker.image'
+            #   is not set
+            #"docker-run": "<docker> run -w <job.workingDir> \
+            #     --mount type=bind,src=<job.docker.bind_src>,dst=<job.docker.bind_dst> \
+            #     <job.docker.image>"
+
+            ## default <java> substitution
+            java: "java"
+
+            ## default <perl> substitution
+            perl: "perl"
+
+            ## default <python_3.6> in substitution
+            python_3.6: "python3"
+
+#
+# custom configuration by module
+#
+module.properties:
+    # special-case: ConsensusClustering v7, <R2.5_HOME> substitution
+    "ConsensusClustering":
+        "R2.5_HOME": "/usr/local"
+
+    # SNPFileCreator v1, requires more than the default 512m RAM
+    "SNPFileCreator": 
+        job.memory: 4 Gb

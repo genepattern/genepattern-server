@@ -24,6 +24,8 @@ RUN cd /gpinstall && \
     PATH=$PATH:/gpinstall && \
     ./GPserver.bin -f install-gp.properties 
 
+RUN cp /gpinstall/config_custom.yaml /opt/genepattern/resources/config_custom.yaml
+
 
 EXPOSE 8080
 
