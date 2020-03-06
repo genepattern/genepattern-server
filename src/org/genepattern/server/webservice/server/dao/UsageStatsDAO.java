@@ -273,7 +273,7 @@ public class UsageStatsDAO extends BaseDAO {
                + " from "+analysisJobTableOrView+" AJ, GP_USER GPU " 
                + date_clause  + altExclusion 
                + " and GPU.USER_ID = AJ.USER_ID"
-               + ") as modruncounts GROUP BY dd ";
+               + ") GROUP BY dd ";
  
        //  oracle and HSQL
        //    + " where (AJ.date_submitted BETWEEN TO_DATE('"+startsql.toString() +"', 'YYYY-MM-DD') and TO_DATE('"+endsql.toString()+"', 'YYYY-MM-DD') )  "  + altExclusion 

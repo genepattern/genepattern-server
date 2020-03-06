@@ -6,6 +6,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webservice.server.dao.UsageStatsDAO;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.httpclient.util.DateUtil;
@@ -111,52 +112,127 @@ public class UsageStatsResource {
                 
                 final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
                 UsageStatsDAO ds = new UsageStatsDAO(mgr);
+                JSONArray errors = new JSONArray();
+                
                 String excludedUsers = getUserExclusionClause(userContext, ds);
                 writer.write(" ");
                 writer.flush();
                 try {            
-                    object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
+                    try {
+                        object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));      
+                    try {
+                        object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));      
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
+                    try {
+                        object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    try {
+                        object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    try {
+                        object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
-                    object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
+                    try {
+                        object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
                     writer.write(" ");
                     writer.flush();
+                    object.put("ReportGenerationErrors", errors);
                 } catch (Exception e){
                     e.printStackTrace();
                     writer.write(e.getMessage());
