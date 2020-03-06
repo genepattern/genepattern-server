@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.4.3-snapshot</version>
+  <version>0.4.4-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
