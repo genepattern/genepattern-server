@@ -89,12 +89,13 @@ $.widget("gp.module", {
 
         this.description = $('<div>', {
             'class': 'module-description',
-            'text': this._protect(this.options.data.description, "")
+            'html': this._protect(this.options.data.description, "")
         }).appendTo(this.element);
         $(this.description).jTruncate({
             length: 90,
             moreTest: ""
         });
+        $(this.description).children('img').css('max-height', "20px").css("width","auto")
 
         this.tags = $('<div>', {
             'class': 'module-html'
