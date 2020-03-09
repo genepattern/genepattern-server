@@ -916,7 +916,7 @@ function setParamFieldType(parameterInfo) {
         }
 
         if (!isFile && !isChoice) {
-            if (parameterInfo.type === "PASSWORD") {
+            if (parameterInfo.type.toUpperCase() === "PASSWORD") {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
             else if(parameterInfo.minRange !== undefined || parameterInfo.maxRange !== undefined)
