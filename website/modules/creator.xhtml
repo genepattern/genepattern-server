@@ -531,7 +531,8 @@
 
 <div id="addmodcategorydialog" title="Add Module Category" class="dialog">
     <h6> Enter new module category:  </h6>
-    <input type="text" id="newcategoryname"/>
+    <input type="text" id="newcategoryname" onkeyup="return forceLowerCategory(this);"/>
+    <p id="forceLowerCategoryWarning" display="none">Category names must be lower case.</p>
 </div>
 
 <div id="addfileformatdialog" title="Create a new file format" class="dialog">

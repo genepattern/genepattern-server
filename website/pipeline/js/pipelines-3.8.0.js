@@ -2186,7 +2186,7 @@ var library = {
         if (categories === null || categories === "" || categories.length === 0) { categories = ["Uncategorized"]; }
 
         for (var i = 0; i < categories.length; i++) {
-            var category = categories[i];
+            var category = categories[i].toLowerCase();
             if (this.moduleCategoryMap[category] === undefined || this.moduleCategoryMap[category] === null) {
                 this.moduleCategoryMap[category] = new Array();
             }

@@ -45,6 +45,15 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
+function forceLowerCategory(strInput) 
+{
+	if (strInput.value != strInput.value.toLowerCase()){
+		$('#forceLowerCategoryWarning').show();
+	}
+	
+    strInput.value=strInput.value.toLowerCase();
+}
+
 function trim(s)
 {
     var l=0; var r=s.length -1;
@@ -1787,7 +1796,7 @@ function updatemodulecategories()
                 alert(error);
             }
             else {
-                var categories = response["categories"];
+                var categories = response["categories"].toLowerCase();
                 categories = categories.substring(1, categories.length-1);
 
                 var result = categories.split(", ");
@@ -2942,14 +2951,16 @@ jQuery(document).ready(function() {
         }
     });
 
-
+    // start with the warning hidden
+    $('#forceLowerCategoryWarning').hide();
     $( "#addmodcategorydialog" ).dialog({
         autoOpen: false,
         height: 210,
         width: 330,
         buttons: {
             "OK": function() {
-                var category = $("#newcategoryname").val();
+            	$('#forceLowerCategoryWarning').hide();
+                var category = $("#newcategoryname").val().toLowerCase;
                 var newcategory = $("<option>" +category + "</option>");
 
                 var duplicate = false;
@@ -2984,6 +2995,7 @@ jQuery(document).ready(function() {
                 }
             },
             "Cancel": function() {
+            	$('#forceLowerCategoryWarning').hide();
                 $( this ).dialog( "close" );
             }
         },
