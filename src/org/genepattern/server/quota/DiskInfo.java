@@ -233,8 +233,6 @@ public class DiskInfo
                 User badUser = getUser(username);
                 final String notificationEmail = this.getAboveMaxSimultaneousJobsNotificationEmail();
                 
-                System.out.println("TaskName = " + taskName);
-                System.out.println("email = " + badUser);
                 String email = "email unavailable";
                 try {
                     email = badUser.getEmail();

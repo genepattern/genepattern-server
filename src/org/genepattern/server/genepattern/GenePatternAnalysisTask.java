@@ -1519,7 +1519,7 @@ public class GenePatternAnalysisTask {
                         + ". Max simultaneous: " + diskInfo.getMaxSimultaneousJobs();
                 //  max simultaneous jobs exceeded so do not allow user to run a job
                 final GpContext gpContext=GpContext.getServerContext();
-                diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, taskName);
+                diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, taskName);
                 
                 throw new JobDispatchException(errorMessage);
             }

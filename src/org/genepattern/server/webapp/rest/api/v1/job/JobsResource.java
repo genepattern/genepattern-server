@@ -173,9 +173,8 @@ public class JobsResource {
                 return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
             if (diskInfo.isAboveMaxSimultaneousJobs()){
-                final GpContext gpContext=GpContext.getServerContext();
                 
-                diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, jobContext.getTaskName());
+                diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, jobContext.getTaskName());
                 return Response.status(Response.Status.FORBIDDEN).entity("Max simultaneous jobs exceeded.").build();
                 
             }
