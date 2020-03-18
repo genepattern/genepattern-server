@@ -155,8 +155,10 @@ import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
+import org.genepattern.server.util.MailSender;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.util.UrlPrefixFilter;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -609,7 +611,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        checkDiskQuota(mgr, gpConfig, jobContext);
+        checkDiskQuota(mgr, gpConfig, jobContext, taskInfo.getName());
 
         File rootJobDir = null;
         try {
@@ -1487,7 +1489,7 @@ public class GenePatternAnalysisTask {
      * @param jobContext
      * @throws JobDispatchException
      */
-    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String taskName) throws JobDispatchException {
         //is disk space available
         final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1515,7 +1517,10 @@ public class GenePatternAnalysisTask {
                 String errorMessage = "Job did not run because maximum simultaneous processing jobs exceeded." +
                         "Processing: " + diskInfo.getNumProcessingJobs()
                         + ". Max simultaneous: " + diskInfo.getMaxSimultaneousJobs();
-                //disk usage exceeded so do not allow user to run a job
+                //  max simultaneous jobs exceeded so do not allow user to run a job
+                final GpContext gpContext=GpContext.getServerContext();
+                diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, taskName);
+                
                 throw new JobDispatchException(errorMessage);
             }
             

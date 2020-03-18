@@ -61,6 +61,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.util.EmailNotificationManager;
 import org.genepattern.server.util.HttpNotificationManager;
+import org.genepattern.server.util.MailSender;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearch;
@@ -166,13 +167,17 @@ public class JobsResource {
             DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
 
             if(diskInfo.isAboveQuota())
-            {
+            {             
                 //disk usage exceeded so do not allow user to run a job
+                 
                 return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
-            
             if (diskInfo.isAboveMaxSimultaneousJobs()){
-                return Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build();
+                final GpContext gpContext=GpContext.getServerContext();
+                
+                diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, jobContext.getTaskName());
+                return Response.status(Response.Status.FORBIDDEN).entity("Max simultaneous jobs exceeded.").build();
+                
             }
             
         }

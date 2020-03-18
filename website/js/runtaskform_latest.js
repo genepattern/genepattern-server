@@ -131,6 +131,21 @@ function handleDiskQuotaMsg(diskInfo)
         quotaExceededMsg.append("Jobs Processing: " +  diskInfo.numProcessingJobs + ".   Max at one time: " + diskInfo.maxSimultaneousJobs + ".");
         quotaExceededMsg.append("<p>Job submission has been disabled. Please wait for jobs to complete or cancel some jobs before submitting new ones.</p>");
         $("#paramsListingDiv").before(quotaExceededMsg);
+        var taskName = $('#task_name').html();
+        	
+        $.ajax({
+            type: "POST",
+            url: "/gp/rest/v1/disk/notifyMaxJobsExceeded?taskName="+taskName,
+            cache: false,
+            success: function (response) {
+                console.log(response);            
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+                console.log(thrownError);
+            },
+            dataType: "json"
+        });
     }
     else
     {

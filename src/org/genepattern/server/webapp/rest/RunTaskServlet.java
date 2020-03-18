@@ -548,6 +548,16 @@ public class RunTaskServlet extends HttpServlet
                     Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build());
         }
         if (checkMaxSimultaneousJobs(taskContext)){
+            try {
+            final GpContext gpContext=GpContext.getServerContext();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), taskContext);
+            
+            diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, taskContext.getTaskInfo().getName());
+            } catch (Exception e){
+                // don't bother users if it can't notify
+                log.error(e);
+            }
             throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build());
         }
         
