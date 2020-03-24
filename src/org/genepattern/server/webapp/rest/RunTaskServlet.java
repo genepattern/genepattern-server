@@ -54,6 +54,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.GroupId;
@@ -137,10 +138,14 @@ public class RunTaskServlet extends HttpServlet
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
 
             JobInput reloadJobInput = null;
+            JobRunnerJob reloadJobRunnerSettings = null;
+            
             if (reloadJobId != null && !reloadJobId.equals("")) {
                 //This is a reloaded job
                 final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJobId));
                 reloadJobInput = reloadJobContext.getJobInput();
+                reloadJobRunnerSettings = reloadJobContext.getJobRunnerJob();
+                
                 final String reloadedLsidString = reloadJobInput.getLsid();
 
                 //check if taskNameOrLsid is null
@@ -350,6 +355,7 @@ public class RunTaskServlet extends HttpServlet
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
+           
             //check if there are any batch parameters
             Set<Param> batchParams = initialValues.getBatchParams();
             Set<String> batchParamNames = new HashSet<String>();
@@ -381,6 +387,11 @@ public class RunTaskServlet extends HttpServlet
                 }
             }
 
+            if (reloadJobRunnerSettings != null){
+                LoadModuleHelper.asJsonV2(reloadJobRunnerSettings, initialValuesJson, jobConfigParams);
+            }
+   
+            
             // Add children
             if (includeChildren) {
                 TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
