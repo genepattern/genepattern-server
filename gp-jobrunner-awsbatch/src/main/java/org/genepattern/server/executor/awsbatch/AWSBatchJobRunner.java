@@ -483,10 +483,13 @@ public class AWSBatchJobRunner implements JobRunner {
             );
         } else if (inputParentDirs != null ){
             // ALTERNATE BIND - bind to parent dirs of any inputs only and not higher level root dirs
-            // to make it harder to have a ,alicious container see things it ought not to
+            // to make it harder to have a malicious container see things it ought not to
+            // but exempt the jobdir itself which causes a error for binding the same mount twice
             List<String> inputParentDirList = new ArrayList<String>();
+            String parent = gpJob.getWorkingDir().getAbsolutePath();
             for (File f: inputParentDirs){
-                inputParentDirList.add(f.getAbsolutePath());
+                String dirPath = f.getAbsolutePath();
+                if (!parent.equals(dirPath)) inputParentDirList.add(dirPath);
             }
             inputParentDirList.add(gpJob.getWorkingDir().getAbsolutePath());
             cmdEnv.put(
