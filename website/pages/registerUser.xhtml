@@ -96,7 +96,7 @@
                 <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService" />
                 <h:panelGroup id="termsOfService" rendered="#{registrationBean.showTermsOfService}">
                     <h:outputText value="By clicking on 'I accept' below you are agreeing to the " />
-                    <h:outputLink target="_blank" value="/gp/pages/terms.jsf"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
+                    <h:outputLink target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
                     <h:outputText value="." />
                 </h:panelGroup>
                 <h:outputText value="" />

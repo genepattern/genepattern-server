@@ -219,6 +219,12 @@ public class GpConfig {
     public static final String PROP_SHOW_TERMS_OF_SERVICE="show.terms.of.service";
 
     /**
+     * Set 'terms.of.service.link' to use an external link for the terms of service.
+     *   Default: terms.of.service.link=
+     */
+    public static final String PROP_TERMS_OF_SERVICE_LINK="terms.of.service.link";
+
+    /**
      * Set 'create.account.allowed' to true to allow users to create
      * new accounts from the login page
      *   Default: create.account.allowed=true

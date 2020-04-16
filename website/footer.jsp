@@ -7,25 +7,26 @@
   --%>
 
 <%@ page import="org.genepattern.server.webapp.jsf.AboutBean" %>
+<%@ page import="org.genepattern.server.webapp.jsf.RegistrationBean" %>
 <% AboutBean aboutBean = new AboutBean(); %>
+<% RegistrationBean registrationBean = new RegistrationBean(); %>
 </td></tr>
 <tr>
     <td colspan="4" class="footer">
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
-                <td><a href="<%=request.getContextPath()%>/pages/about.jsf">About GenePattern</a>&nbsp;|&nbsp;<a href="<%=aboutBean.getContactUs()%>">Contact Us</a>
+                <td><a href="<%=request.getContextPath()%>/pages/about.jsf">About GenePattern</a>&nbsp;|&nbsp;<a href="<%=aboutBean.getContactUs()%>">Contact Us</a><% if (registrationBean.isShowTermsOfService()) { %>&#160;|&#160;<a target="_blank" href="<%=registrationBean.getTermsOfServiceLink()%>">Terms of Service</a><% }  %>
                     <br />
                 </td>
 
                 <td>
-                    <div align="right">&copy;2003-2019&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Regents of the University of California, Broad Institute, MIT</a>
+                    <div align="right">&copy;2003-2020&nbsp;<a href="http://www.broadinstitute.org" target="_blank">Regents of the University of California, Broad Institute, MIT</a>
                     </div>
                 <td width="10">&nbsp;</td>
                 <td width="27">
                 </td>
                 </td>
             </tr>
-
         </table>
     </td>
 

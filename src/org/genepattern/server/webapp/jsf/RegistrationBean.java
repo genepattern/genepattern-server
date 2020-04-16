@@ -54,7 +54,9 @@ public class RegistrationBean {
         "The hosted GenePattern server is provided free of charge.\n"+
         "We make no guarantees whatsoever.";
     private ReCaptchaSession recaptcha = null;
-
+    private String termsOfServiceLink = null;
+    
+    
     public RegistrationBean() {
         this.gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
@@ -71,6 +73,10 @@ public class RegistrationBean {
 
         //show reCAPTCHA?
         this.recaptcha=ReCaptchaSession.init(gpConfig, serverContext);
+        
+        // override termsOfService link with an external page
+        this.termsOfServiceLink=gpConfig.getGPProperty(serverContext, GpConfig.PROP_TERMS_OF_SERVICE_LINK, "/gp/pages/terms.jsf");
+
     }
 
     public String getEmail() {
@@ -213,6 +219,10 @@ public class RegistrationBean {
     this.email = email;
     }
 
+    public void setTermsOfServiceLink(String link) {
+        this.termsOfServiceLink = link;
+    }
+    
     public void setEmailConfirm(String emailConfirm) {
     this.emailConfirm = emailConfirm;
     }
@@ -280,6 +290,11 @@ public class RegistrationBean {
     public String getTermsOfService() {
         return this.termsOfService;
     }
+    
+    public String getTermsOfServiceLink(){
+        return this.termsOfServiceLink;
+    }
+    
     
     public boolean isRecaptchaEnabled() {
         if (recaptcha != null) {

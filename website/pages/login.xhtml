@@ -47,6 +47,9 @@
                                         rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
                                     Click to Register
                                 </h:outputLink></td>
+                              
+                                
+                                
                             </tr>
                         </table>
 
@@ -83,7 +86,10 @@
                                       rendered="#{loginBean.passwordRequired}">
                             Forgot your password?
                         </h:outputLink>
-
+						<br/><br/> 
+	                    <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
+                              
+                             
                     </h:form>
                 </td>
 
