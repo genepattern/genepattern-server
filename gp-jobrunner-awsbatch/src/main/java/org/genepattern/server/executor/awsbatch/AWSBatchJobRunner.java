@@ -388,11 +388,13 @@ public class AWSBatchJobRunner implements JobRunner {
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
                         }
+                        getAdditionalErrorLogs(jobRecord, metadataDir);
                     }
                     else {
                         log.error("Error getting exitCode for job="+jobRecord.getGpJobNo());
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
+                            getAdditionalErrorLogs(jobRecord, metadataDir);
                         }
                     }
                 }
@@ -615,6 +617,20 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
+    // in the case of a AWS error, there may also be a dockererr.log file in the metadata dir
+    // we will copy it to the working dir so that it can be seen
+    private void  getAdditionalErrorLogs(final DrmJobRecord jobRecord, final File  metadataDir){
+        File dockerErr = new File(metadataDir, "dockererr.log");
+        
+        if (dockerErr.exists()){
+            File visibleDockerErr = new File(jobRecord.getWorkingDir(), "dockererr.log");
+            boolean moved = dockerErr.renameTo(visibleDockerErr);
+            System.out.println("Moved");
+        }
+    }
+    
+    
+    
     protected void copyFileContents(File source, File destination){
         FileReader fr = null;
         FileWriter fw = null;
