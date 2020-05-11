@@ -12,4 +12,7 @@ To make the docker container for a build,
 4. If you want to run a newer version of the container, first "docker stop GenePattern-Server" then "docker rm GenePattern-Server" to get rid of the old container.  Then you pull the latest image and run startgp.sh again in the same directory as before to pickup the old configuration, jobResults and filles. If a newer version has configuration updates or changes in resources, you will need to manually re-run setupgp.sh but first backup the resources directory so that you can manually merge the 2.
 
 
-TBD - hook this into GenePattern server build process somehow
+** IMPORTANT SECURITY CONSIDERATIONS **
+
+This setup allows the GenePatterrn docker container to call docker on the host to launch modules.  It will mount the file system defined in config_custom.yaml at JOB_DOCKER_BIND_SRC into those containers and hypothetically a malicious container could access anything under that point in the file system as root.  Therefore there is some risk involved here.  
+
