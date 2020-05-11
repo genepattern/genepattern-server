@@ -6,17 +6,19 @@
 # this copy back to the same location
 #
 echo "Briefly starts the docker container to copy its resources directory external to the container."
-docker run --name tmpserver -t liefeld/gpserver sleep 30s
-docker cp tmpserver:/opt/genepattern/resources ./resources2
+docker run --name tmpserver -t genepattern/genepattern-server:v3.9.11-rc.5-b250.3 sleep 30s &
+docker cp tmpserver:/opt/genepattern/resources  ./resources
+ls -alrt ./resources
+fg
 docker stop tmpserver
 docker rm tmpserver
 
 # create the other directories we want external to the container
-mkdir -r jobResults
+mkdir -p jobResults
 mkdir -p users
 mkdir -p taskLib
 
-echo "Now you must edi the resources/config_custom.yaml file to set the value of "
+echo "Now you must edit the resources/config_custom.yaml file to set the value of "
 echo "   \"job.docker.bind_src\" to be this directory which will be where you run"
 echo " the container".
 
