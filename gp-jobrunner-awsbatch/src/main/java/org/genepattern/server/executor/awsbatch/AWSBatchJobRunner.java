@@ -621,11 +621,14 @@ public class AWSBatchJobRunner implements JobRunner {
     // we will copy it to the working dir so that it can be seen
     private void  getAdditionalErrorLogs(final DrmJobRecord jobRecord, final File  metadataDir){
         File dockerErr = new File(metadataDir, "dockererr.log");
-        
+        System.out.println("Looking for dockererr.log =============");
         if (dockerErr.exists()){
+            System.out.println("moved dockererr.log to =============" + jobRecord.getWorkingDir().getAbsolutePath());
             File visibleDockerErr = new File(jobRecord.getWorkingDir(), "dockererr.log");
             boolean moved = dockerErr.renameTo(visibleDockerErr);
             System.out.println("Moved");
+        } else {
+            System.out.println("Did NOT find dockererr.log =============" + dockerErr.getAbsolutePath());  
         }
     }
     
