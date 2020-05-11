@@ -9,6 +9,10 @@ on:
   push:
     tags: 
       - v*
+
+env:
+  # TODO: Change variable to your image's name.
+  IMAGE_NAME: genepattern/genepattern-server
  
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -41,3 +45,24 @@ jobs:
         https://api.github.com/repos/genepattern/github-actions-testing/dispatches \
         --data '{"event_type": "my-event", "client_payload": { "ref": "${{ github.ref }}", "ref2": "TED_DID_THIS" }}'
          
+  build_and_push:
+    # Ensure test job passes before pushing image.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run:   |
+          # REF_IN=${{ github.event.client_payload.ref }}
+          REF_IN=release/tags/v3.9.11-rc.5-b250
+        
+          echo TAG IS ${{ github.ref }}
+          
+          VERSION=${REF_IN#*/tags/}
+          INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/${VERSION}/GPserver.bin
+          echo Image name is ${IMAGE_NAME}:${VERSION}
+          docker build --build-arg GP_INSTALLER=${INSTALLER_URL} -t ${IMAGE_NAME}:${VERSION}  docker
+          
+          # TBD PUSH THE IMAGE INTO DOCKERHUB
+          docker login -u liefeld -p ${{ secrets.teds_dockerhub_token }}
+          docker push ${IMAGE_NAME}:${VERSION}
+          echo DONE
