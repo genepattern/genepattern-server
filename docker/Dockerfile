@@ -1,6 +1,5 @@
 FROM docker
 RUN mkdir /testing
-COPY entrypoint.sh /testing/entrypoint.sh
 
 RUN apk update && \
     apk upgrade && \  
@@ -40,4 +39,3 @@ EXPOSE 8080
          
 
 
-ENTRYPOINT  ["/testing/entrypoint.sh", "$NAME"]
