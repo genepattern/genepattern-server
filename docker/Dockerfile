@@ -1,4 +1,5 @@
-FROM docker
+FROM docker:19.03.8-dind
+
 RUN mkdir /testing
 
 RUN apk update && \

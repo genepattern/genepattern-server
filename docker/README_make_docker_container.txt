@@ -1,8 +1,16 @@
+INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/v3.9.11-rc.5-b250/GPserver.bin
+docker build --build-arg GP_INSTALLER=${INSTALLER_URL} -t genepattern/genepattern-server:test  docker
+
 To make the docker container for a build,
 
-1. Download the installer version (linux no-VM) into this folder as GPserver.bin (the default name)
+1. Decide what version of GenePattern you want and get the URL to the installer.  This container build is parameterized to wget the installer from a URL as part of the build process.  For convenience you can set the installer URL as an environment variable
 
-2. execute on a shell "docker build -t genepattern/genepattern-server:<version> ." where you put in the version tag.
+e.g.   INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/v3.9.11-rc.5-b250/GPserver.bin
+
+2. execute the build passing in the INSTALLER_URL as a build argument.  Adjust the tag to the desired value.
+
+e.g.  docker build --build-arg GP_INSTALLER=${INSTALLER_URL} -t genepattern/genepattern-server:test  .
+
 
 3. To run it, 
    a. First run the setupgp.sh script. This will copy the resources dir outside of the container so that when you run it, the config files and DB (HSQL) are external to the container so that you can upgrade the server later.
@@ -15,4 +23,7 @@ To make the docker container for a build,
 ** IMPORTANT SECURITY CONSIDERATIONS **
 
 This setup allows the GenePatterrn docker container to call docker on the host to launch modules.  It will mount the file system defined in config_custom.yaml at JOB_DOCKER_BIND_SRC into those containers and hypothetically a malicious container could access anything under that point in the file system as root.  Therefore there is some risk involved here.  
+
+If you prefer, you can run it with all containers run inside the GenePattern container.  The main change to the server run would be to NOT mount the docker.sock into the container
+
 
