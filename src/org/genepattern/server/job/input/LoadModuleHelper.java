@@ -818,15 +818,19 @@ public class LoadModuleHelper {
         final JSONObject jsonObj=new JSONObject();
         
         Long reqMem = reloadJobRunnerSettings.getRequestedMemory();
-        holder.put("job.memory", _memJobOptionAsJson(reqMem, jobConfigParams));
+        if (reqMem != null)
+            holder.put("job.memory", _memJobOptionAsJson(reqMem, jobConfigParams));
         
         Integer numCpu = reloadJobRunnerSettings.getRequestedCpuCount();
-        holder.put("job.cpuCount", _jobOptionAsJson(numCpu));
+        if (numCpu != null)
+            holder.put("job.cpuCount", _jobOptionAsJson(numCpu));
         
         String queue = reloadJobRunnerSettings.getRequestedQueue();
-        holder.put("job.queue", _jobOptionAsJson(queue));
+        if (queue != null)
+            holder.put("job.queue", _jobOptionAsJson(queue));
         String walltime = reloadJobRunnerSettings.getRequestedWalltime();
-        holder.put("job.walltime", _jobOptionAsJson(walltime));
+        if (walltime != null)
+            holder.put("job.walltime", _jobOptionAsJson(walltime));
         
         
         return jsonObj;
