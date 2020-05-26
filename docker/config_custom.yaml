@@ -470,7 +470,7 @@ executors:
             "job.commandPrefix": "<run-with-docker>"
             "job.docker.image.default": "genepattern/docker-java17:0.12" 
             "docker": "/usr/local/bin/docker"
-            "job.docker.bind_src": "/Users/liefeld/GenePattern/gp_dev/genepattern-server/docker"
+            "job.docker.bind_src": "__PPWWDD__"
             "job.docker.bind_dst": "/opt/genepattern"
             "job.workingDir": "<jobs>/<job_id>"
             "run-with-docker": "<wrapper-scripts>/run-with-docker.sh -c <env-custom> \

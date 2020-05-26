@@ -6,10 +6,11 @@
 # this copy back to the same location
 #
 echo "Briefly starts the docker container to copy its resources directory external to the container."
-docker run --name tmpserver -t genepattern/genepattern-server:v3.9.11-rc.5-b250.3 sleep 30s &
+docker run --name tmpserver -d -t genepattern/genepattern-server:v3.9.11-rc.5-b250.3 sleep 30s &
+# give it a moment to start
+sleep 5s
 docker cp tmpserver:/opt/genepattern/resources  ./resources
-ls -alrt ./resources
-fg
+
 docker stop tmpserver
 docker rm tmpserver
 
