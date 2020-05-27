@@ -22,8 +22,8 @@ fi
 
 if [[  $VERSION == "NULL"  ]]
 then
-    echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b252"
-    VERSION="v3.9.11-rc.5-b252"
+    echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b253"
+    VERSION="v3.9.11-rc.5-b253"
 fi
 
 
@@ -57,28 +57,15 @@ else
     docker stop tmpserver
     docker rm tmpserver
 
-    echo "XXX A"
-    
-    cp -r resources/config_custom.yaml resources_1.yaml 
      
     # update the bind mount for docker
     sed -i.bu s+__PPWWDD__+$PWD+ ./resources/config_custom.yaml 
     
-    cp -r resources/config_custom.yaml resources_2.yaml
-    
-    # and backup for old one with the developers bath
-    sed -i.bu s+"/Users/liefeld/GenePattern/gp_dev/genepattern-server/docker"+$PWD+ ./resources/config_custom.yaml 
-
-    cp -r resources/config_custom.yaml resources_3.yaml
-    exit
-    echo "XXX B"
     # create the other directories we want external to the container
     mkdir -p jobResults
     mkdir -p users
     mkdir -p taskLib
-    echo "XXX c"
     echo "Starting new GenePattern server container with name $name"
     docker run -v $PWD:$PWD -v /var/run/docker.sock:/var/run/docker.sock -w $PWD -v $PWD/resources:/opt/genepattern/resources  -v $PWD/taskLib:/opt/genepattern/taskLib -v $PWD/jobResults:/opt/genepattern/jobResults -v $PWD/users:/opt/genepattern/users  -p 8888:8888 -p 8080:8080  -d --name "$name" genepattern/genepattern-server:$VERSION /opt/genepattern/StartGenePatternServer
-    echo "XXX d"
 fi
 
