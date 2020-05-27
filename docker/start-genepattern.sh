@@ -20,6 +20,20 @@ then
     exit
 fi
 
+docker_cmd="docker"
+command -v "$docker_cmd" >/dev/null || {
+    echo "\
+Command not found: '${docker_cmd}'
+
+Make sure to install Docker and configure your GenePattern Server.
+
+To install Docker  ...
+  See: https://docs.docker.com/get-docker/
+
+" >&2; exit 127;
+}
+
+
 if [[  $VERSION == "NULL"  ]]
 then
     echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b253"
