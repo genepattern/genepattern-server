@@ -22,7 +22,7 @@ fi
 
 if [[  $VERSION == "NULL"  ]]
 then
-    echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b250.3"
+    echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b252"
     VERSION="v3.9.11-rc.5-b252"
 fi
 
@@ -38,19 +38,19 @@ then
 else 
     echo "Starting new GenePattern server container with name $name"
     echo "Using GenePattern server container version: $VERSION"
-    echo "Pulling docker image..."
-    docker pull genepattern/genepattern-server:$VERSION
-    echo "Setting up local directories, this will take up to 30 seconds"
-    if [[ -f resources ]]
+    echo "Pulling docker image...  genepattern/genepattern-server:$VERSION"
+    # docker pull genepattern/genepattern-server:$VERSION
+    echo "Setting up local directories, this will take up to 30 seconds  genepattern/genepattern-server:$VERSION"
+    if [[ -d resources ]]
     then
         var=`date +"%FORMAT_STRING"`
         now=`date +"%m_%d_%Y"`
         now=`date +"%Y-%m-%d"`
         echo "${now}"
-        cp -r resources resources_${now}
+        mv resources resources_${now}
     fi
-
-    docker run --name tmpserver -d -t genepattern/genepattern-server:v3.9.11-rc.5-b250.3 sleep 30s 
+    echo "test run of genepattern/genepattern-server:$VERSION"
+    docker run --name tmpserver -d -t genepattern/genepattern-server:$VERSION sleep 30s 
     # give the container a moment to start
     sleep 5s
     docker cp tmpserver:/opt/genepattern/resources  ./resources
@@ -58,12 +58,19 @@ else
     docker rm tmpserver
 
     echo "XXX A"
-    exit 
+    
+    cp -r resources/config_custom.yaml resources_1.yaml 
+     
     # update the bind mount for docker
-    sed s+__PPWWDD__+$PWD+ ./resources/config_custom.yaml 
+    sed -i.bu s+__PPWWDD__+$PWD+ ./resources/config_custom.yaml 
+    
+    cp -r resources/config_custom.yaml resources_2.yaml
+    
     # and backup for old one with the developers bath
-    sed s+"/Users/liefeld/GenePattern/gp_dev/genepattern-server/docker"+$PWD+ ./resources/config_custom.yaml 
+    sed -i.bu s+"/Users/liefeld/GenePattern/gp_dev/genepattern-server/docker"+$PWD+ ./resources/config_custom.yaml 
 
+    cp -r resources/config_custom.yaml resources_3.yaml
+    exit
     echo "XXX B"
     # create the other directories we want external to the container
     mkdir -p jobResults
