@@ -269,11 +269,11 @@ public class UsageStatsDAO extends BaseDAO {
        
        
        String sql =
-               "select dd, count(*) from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
+               "select MOD_DOMAIN.dd, count(*) from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
                + " from "+analysisJobTableOrView+" AJ, GP_USER GPU " 
                + date_clause  + altExclusion 
                + " and GPU.USER_ID = AJ.USER_ID"
-               + ") GROUP BY dd ";
+               + ") as MOD_DOMAIN GROUP BY dd ";
  
        //  oracle and HSQL
        //    + " where (AJ.date_submitted BETWEEN TO_DATE('"+startsql.toString() +"', 'YYYY-MM-DD') and TO_DATE('"+endsql.toString()+"', 'YYYY-MM-DD') )  "  + altExclusion 
