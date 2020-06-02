@@ -119,7 +119,7 @@ public class UsageStatsDAO extends BaseDAO {
     
     public int getTotalJobsRunCount(String userExclusionClause) throws Exception {
         Integer count = null;
-        StringBuffer sqlBuff = new StringBuffer("select count(*) from "+analysisJobTableOrView+" where (USER_ID <> '') "+ userExclusionClause);
+        StringBuffer sqlBuff = new StringBuffer("select count(*) from "+analysisJobTableOrView+" where (USER_ID <> 'test') "+ userExclusionClause);
         ResultSet rs = null;
         try {
             rs = this.executeSQL(sqlBuff.toString());
