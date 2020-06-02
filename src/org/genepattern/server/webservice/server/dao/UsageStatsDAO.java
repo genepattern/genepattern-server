@@ -103,7 +103,7 @@ public class UsageStatsDAO extends BaseDAO {
     
     public int getTotalRegistrationCount(String userExclusionClause) throws Exception {
         Integer count = null;
-        StringBuffer sqlBuff = new StringBuffer("select count(USER_ID) from gp_user where (USER_ID <> '') "+ userExclusionClause);
+        StringBuffer sqlBuff = new StringBuffer("select count(USER_ID) from gp_user where (USER_ID <> 'test') "+ userExclusionClause);
         ResultSet rs = null;
         try {
             rs = this.executeSQL(sqlBuff.toString());
