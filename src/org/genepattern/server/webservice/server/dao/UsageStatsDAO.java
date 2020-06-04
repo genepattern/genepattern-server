@@ -3,7 +3,13 @@ package org.genepattern.server.webservice.server.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
@@ -11,6 +17,8 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class UsageStatsDAO extends BaseDAO {
     private static final Logger log = Logger.getLogger(UsageStatsDAO.class);
@@ -119,10 +127,11 @@ public class UsageStatsDAO extends BaseDAO {
     
     public int getTotalJobsRunCount(String userExclusionClause) throws Exception {
         Integer count = null;
-        StringBuffer sqlBuff = new StringBuffer("select count(*) from "+analysisJobTableOrView+" where (USER_ID <> 'test') "+ userExclusionClause);
+        StringBuffer sqlBuff1 = new StringBuffer("select count(*) from ANALYSIS_JOB where (USER_ID <> 'test') "+ userExclusionClause);
+        StringBuffer sqlBuff2 = new StringBuffer("select count(*) from ANALYSIS_JOB_ARCHIVE where (USER_ID <> 'test') "+ userExclusionClause);
         ResultSet rs = null;
         try {
-            rs = this.executeSQL(sqlBuff.toString());
+            rs = this.executeSQL(sqlBuff1.toString());
             if (rs.next()) {
                 count = rs.getInt(1);
             }
@@ -130,24 +139,47 @@ public class UsageStatsDAO extends BaseDAO {
             if (rs != null)
                 rs.close();
         }
+        try {
+            rs = this.executeSQL(sqlBuff2.toString());
+            if (rs.next()) {
+                count = count + rs.getInt(1);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        
         return count;
     }
     
     
     public int getJobsRunCountBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
         Integer count = null;
-      
+        // do the two tables seperately so that indexes are used (does not happen with the view)
         @SuppressWarnings("deprecation")
-        PreparedStatement pstmt = getSession().connection().prepareStatement("select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "+ userExclusionClause);
-              
-        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
-        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+        PreparedStatement pstmt1 = getSession().connection().prepareStatement("select count(*) from ANALYSIS_JOB where (date_completed BETWEEN ? and ?)  "+ userExclusionClause);
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt2 = getSession().connection().prepareStatement("select count(*) from ANALYSIS_JOB_ARCHIVE where (date_completed BETWEEN ? and ?)  "+ userExclusionClause);
+             
+        pstmt1.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt1.setDate(2, new java.sql.Date(endDate.getTime()));
+        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
           
         ResultSet rs = null;
         try {
-            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            rs = pstmt1.executeQuery(); // this.executeSQL(sqlBuff.toString());
             if (rs.next()) {
                 count = rs.getInt(1);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        try {
+            rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            if (rs.next()) {
+                count = count + rs.getInt(1);
             }
         } finally {
             if (rs != null)
@@ -160,17 +192,28 @@ public class UsageStatsDAO extends BaseDAO {
     public int getInternalJobsRunCountBetweenDates(Date startDate, Date endDate, String userExclusionClause, String internalDomain) throws Exception {
         Integer count = null;
         
-          @SuppressWarnings("deprecation")
-        PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+        // when possible query the tables separately since the view does not permit indexes to be used in MySQL
+        
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt1 = getSession().connection().prepareStatement(
+                "select count(*) from ANALYSIS_JOB where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                + " and (user_id in ( select user_id from GP_USER where email like '%"+internalDomain+"'))");
+        @SuppressWarnings("deprecation")      
+        PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+                "select count(*) from ANALYSIS_JOB_ARCHIVE where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " and (user_id in ( select user_id from GP_USER where email like '%"+internalDomain+"'))");
               
-        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
-        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+          
+     
+        
+        pstmt1.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt1.setDate(2, new java.sql.Date(endDate.getTime()));
+        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
         
         ResultSet rs = null;
         try {
-            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            rs = pstmt1.executeQuery(); // this.executeSQL(sqlBuff.toString());
             if (rs.next()) {
                 count = rs.getInt(1);
             }
@@ -178,25 +221,54 @@ public class UsageStatsDAO extends BaseDAO {
             if (rs != null)
                 rs.close();
         }
+        try {
+            rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            if (rs.next()) {
+                count = count + rs.getInt(1);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        
         return count;
     }
     
     public int getExternalJobsRunCountBetweenDates(Date startDate, Date endDate, String userExclusionClause, String internalDomain) throws Exception {
         Integer count = null;
+        // when possible query the tables separately since the view does not permit indexes to be used in MySQL
         
         @SuppressWarnings("deprecation")
-        PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select count(*) from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+        PreparedStatement pstmt1 = getSession().connection().prepareStatement(
+                "select count(*) from ANALYSIS_JOB where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " and (user_id not in ( select user_id from GP_USER where email like '%"  + internalDomain +"'))");
               
-        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
-        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
-          
+        pstmt1.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt1.setDate(2, new java.sql.Date(endDate.getTime()));
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+                "select count(*) from ANALYSIS_JOB_ARCHIVE where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                + " and (user_id not in ( select user_id from GP_USER where email like '%"  + internalDomain +"'))");
+              
+        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
+       
+        
         ResultSet rs = null;
         try {
-            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            rs = pstmt1.executeQuery(); // this.executeSQL(sqlBuff.toString());
             if (rs.next()) {
                 count = rs.getInt(1);
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+        
+        try {
+            rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            if (rs.next()) {
+                count = count + rs.getInt(1);
             }
         } finally {
             if (rs != null)
@@ -211,26 +283,66 @@ public class UsageStatsDAO extends BaseDAO {
         
         @SuppressWarnings("deprecation")
         PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select task_name, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                "select task_name, count(*) as MC from ANALYSIS_JOB AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                 + " GROUP BY TASK_NAME order by MC desc");
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
         pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+        PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+                "select task_name, count(*) as MC from ANALYSIS_JOB_ARCHIVE AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                + " GROUP BY TASK_NAME order by MC desc");
+              
+        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
+        HashMap<String, Integer> modJobs = new   HashMap <String, Integer>();
           
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
             while (rs.next()) {
-                JSONObject module = new JSONObject();
-                module.put("moduleName",rs.getString(1));
-                module.put("jobsRun",rs.getInt(2));
-               
-                moduleCounts.put(module);
+                modJobs.put(rs.getString(1), rs.getInt(2));
             }
         } finally {
             if (rs != null)
                 rs.close();
         }
+        
+        
+        try {
+            rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+            while (rs.next()) {
+                String mod = rs.getString(1);
+                Integer c = rs.getInt(2);
+                if (modJobs.containsKey(mod)) {
+                    int prev = modJobs.get(mod);  
+                    modJobs.put(mod, prev + c);
+                } else {        
+                    modJobs.put(mod, c);
+                } 
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+     // Now we have collected the values, sort them and add to the json object
+        Set<Entry<String, Integer>> entries = modJobs.entrySet();
+        
+        Comparator<Entry<String, String>> valueComparator = new Comparator<Entry<String,String>>() { 
+                @Override public int compare(Entry<String, String> e1, Entry<String, String> e2) { 
+                    String v1 = e1.getValue();
+                    String v2 = e2.getValue(); 
+                    return v1.compareTo(v2); } 
+        };
+        List<Entry<String, Integer>> listOfEntries = new ArrayList<Entry<String, Integer>>(entries); // sorting HashMap by values using comparator Collections.sort(listOfEntries, valueComparator);
+
+        for(Entry<String, Integer> entry : listOfEntries){ 
+            
+            JSONObject user = new JSONObject();
+            user.put("user_id",entry.getKey());
+            user.put("jobsRun",entry.getValue());
+           
+            moduleCounts.put(user);
+        }       
         return moduleCounts;
     }
    
@@ -270,31 +382,73 @@ public class UsageStatsDAO extends BaseDAO {
        
        String sql =
                "select MOD_DOMAIN.dd, count(*) from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
-               + " from "+analysisJobTableOrView+" AJ, GP_USER GPU " 
+               + " from ANALYSIS_JOB AJ, GP_USER GPU " 
                + date_clause  + altExclusion 
                + " and GPU.USER_ID = AJ.USER_ID"
                + ") as MOD_DOMAIN GROUP BY dd ";
- 
-       //  oracle and HSQL
-       //    + " where (AJ.date_submitted BETWEEN TO_DATE('"+startsql.toString() +"', 'YYYY-MM-DD') and TO_DATE('"+endsql.toString()+"', 'YYYY-MM-DD') )  "  + altExclusion 
-
-       //
-       
+       String sql2 =
+               "select MOD_DOMAIN.dd, count(*) from ( select substr(GPU.email, INSTR(GPU.email, '@')+1) as dd, AJ.JOB_NO "
+               + " from ANALYSIS_JOB_ARCHIVE AJ, GP_USER GPU " 
+               + date_clause  + altExclusion 
+               + " and GPU.USER_ID = AJ.USER_ID"
+               + ") as MOD_DOMAIN GROUP BY dd ";
+     
        ResultSet rs = null;
+     
+       HashMap<String, Integer> modJobs = new   HashMap <String, Integer>();
+       
+       
        try {
-           // rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
-           rs = this.executeSQL(sql);
+           rs = this.executeSQL(sql);; // this.executeSQL(sqlBuff.toString());
            while (rs.next()) {
-               JSONObject module = new JSONObject();
-               module.put("domain",rs.getString(1));
-               module.put("jobsRun",rs.getInt(2));
-              
-               moduleCounts.put(module);
+               modJobs.put(rs.getString(1), rs.getInt(2));
            }
        } finally {
            if (rs != null)
                rs.close();
        }
+       
+       
+       try {
+           rs = this.executeSQL(sql2);; // this.executeSQL(sqlBuff.toString());
+           while (rs.next()) {
+               String mod = rs.getString(1);
+               Integer c = rs.getInt(2);
+               if (modJobs.containsKey(mod)) {
+                   int prev = modJobs.get(mod);  
+                   modJobs.put(mod, prev + c);
+               } else {        
+                   modJobs.put(mod, c);
+               } 
+           }
+       } finally {
+           if (rs != null)
+               rs.close();
+       }
+       
+    // Now we have collected the values, sort them and add to the json object
+       Set<Entry<String, Integer>> entries = modJobs.entrySet();
+       
+       Comparator<Entry<String, String>> valueComparator = new Comparator<Entry<String,String>>() { 
+               @Override public int compare(Entry<String, String> e1, Entry<String, String> e2) { 
+                   String v1 = e1.getValue();
+                   String v2 = e2.getValue(); 
+                   return v1.compareTo(v2); } 
+       };
+       List<Entry<String, Integer>> listOfEntries = new ArrayList<Entry<String, Integer>>(entries); // sorting HashMap by values using comparator Collections.sort(listOfEntries, valueComparator);
+
+       for(Entry<String, Integer> entry : listOfEntries){ 
+           
+           JSONObject user = new JSONObject();
+           user.put("domain",entry.getKey());
+           user.put("jobsRun",entry.getValue());
+          
+           moduleCounts.put(user);
+       }       
+       
+       
+       
+       
        return moduleCounts;
    }
     
@@ -304,26 +458,70 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select task_name, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select task_name, count(*) as MC from ANALYSIS_JOB AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " AND STATUS_ID=4 GROUP BY TASK_NAME order by MC desc");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+       PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+               "select task_name, count(*) as MC from ANALYSIS_JOB_ARCHIVE AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               + " AND STATUS_ID=4 GROUP BY TASK_NAME order by MC desc");
+             
+       pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+       pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
          
        ResultSet rs = null;
+       HashMap<String, Integer> modJobs = new   HashMap <String, Integer>();
+       
+      
        try {
            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
            while (rs.next()) {
-               JSONObject module = new JSONObject();
-               module.put("moduleName",rs.getString(1));
-               module.put("jobsRun",rs.getInt(2));
-              
-               moduleCounts.put(module);
+               modJobs.put(rs.getString(1), rs.getInt(2));
            }
        } finally {
            if (rs != null)
                rs.close();
        }
+       
+       
+       try {
+           rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+           while (rs.next()) {
+               String mod = rs.getString(1);
+               Integer c = rs.getInt(2);
+               if (modJobs.containsKey(mod)) {
+                   int prev = modJobs.get(mod);  
+                   modJobs.put(mod, prev + c);
+               } else {        
+                   modJobs.put(mod, c);
+               } 
+           }
+       } finally {
+           if (rs != null)
+               rs.close();
+       }
+       
+    // Now we have collected the values, sort them and add to the json object
+       Set<Entry<String, Integer>> entries = modJobs.entrySet();
+       
+       Comparator<Entry<String, String>> valueComparator = new Comparator<Entry<String,String>>() { 
+               @Override public int compare(Entry<String, String> e1, Entry<String, String> e2) { 
+                   String v1 = e1.getValue();
+                   String v2 = e2.getValue(); 
+                   return v1.compareTo(v2); } 
+       };
+       List<Entry<String, Integer>> listOfEntries = new ArrayList<Entry<String, Integer>>(entries); // sorting HashMap by values using comparator Collections.sort(listOfEntries, valueComparator);
+
+       for(Entry<String, Integer> entry : listOfEntries){ 
+           
+           JSONObject user = new JSONObject();
+           user.put("user_id",entry.getKey());
+           user.put("jobsRun",entry.getValue());
+          
+           moduleCounts.put(user);
+       }       
+       
        return moduleCounts;
    }
     
@@ -333,12 +531,18 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select task_name, job_no as MC from "+analysisJobTableOrView+" where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select task_name, job_no as MC from ANALYSIS_JOB where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " AND STATUS_ID=4 ");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
-         
+       PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+               "select task_name, job_no as MC from ANALYSIS_JOB_ARCHIVE where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               + " AND STATUS_ID=4 ");
+             
+       pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+       pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
+        
        ResultSet rs = null;
        try {
            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
@@ -353,6 +557,21 @@ public class UsageStatsDAO extends BaseDAO {
            if (rs != null)
                rs.close();
        }
+       
+       try {
+           rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+           while (rs.next()) {
+               JSONObject module = new JSONObject();
+               module.put("moduleName",rs.getString(1));
+               module.put("jobsNumber",rs.getInt(2));
+              
+               moduleCounts.put(module);
+           }
+       } finally {
+           if (rs != null)
+               rs.close();
+       }
+       
        return moduleCounts;
    }
     
@@ -362,26 +581,81 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select user_id, count(*) as MC from "+analysisJobTableOrView+" AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select user_id, count(*) as MC from ANALYSIS_JOB AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
                + " GROUP BY USER_ID order by MC desc");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
-         
+       
+       
+       
+       @SuppressWarnings("deprecation")
+       PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+               "select user_id, count(*) as MC from ANALYSIS_JOB_ARCHIVE AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               + " GROUP BY USER_ID order by MC desc");
+             
+       pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+       pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
+       HashMap<String, Integer> userJobs = new   HashMap <String, Integer>();
+       
        ResultSet rs = null;
        try {
            rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
            while (rs.next()) {
-               JSONObject user = new JSONObject();
-               user.put("user_id",rs.getString(1));
-               user.put("jobsRun",rs.getInt(2));
-              
-               userCounts.put(user);
+             
+               String u = rs.getString(1);
+               Integer c = rs.getInt(2);
+               
+               userJobs.put(u,c);
            }
        } finally {
            if (rs != null)
                rs.close();
        }
+       
+       try {
+           rs = pstmt2.executeQuery(); // this.executeSQL(sqlBuff.toString());
+           while (rs.next()) {
+           
+               String userId = rs.getString(1);
+               Integer c = rs.getInt(2);
+              
+               if (userJobs.containsKey(userId)) {
+                   int prev = userJobs.get(userId);  
+                  
+                   userJobs.put(userId, prev + c);
+                   
+               } else {
+                   
+                   userJobs.put(userId, c);
+               }
+           }
+       } finally {
+           if (rs != null)
+               rs.close();
+       }
+       
+       
+       // Now we have collected the values, sort them and add to the json object
+       Set<Entry<String, Integer>> entries = userJobs.entrySet();
+       
+       Comparator<Entry<String, String>> valueComparator = new Comparator<Entry<String,String>>() { 
+               @Override public int compare(Entry<String, String> e1, Entry<String, String> e2) { 
+                   String v1 = e1.getValue();
+                   String v2 = e2.getValue(); 
+                   return v1.compareTo(v2); } 
+       };
+       List<Entry<String, Integer>> listOfEntries = new ArrayList<Entry<String, Integer>>(entries); // sorting HashMap by values using comparator Collections.sort(listOfEntries, valueComparator);
+
+       for(Entry<String, Integer> entry : listOfEntries){ 
+           
+           JSONObject user = new JSONObject();
+           user.put("user_id",entry.getKey());
+           user.put("jobsRun",entry.getValue());
+          
+           userCounts.put(user);
+       }       
+       
        return userCounts;
    }
     

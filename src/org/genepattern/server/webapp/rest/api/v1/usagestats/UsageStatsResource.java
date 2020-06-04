@@ -80,7 +80,7 @@ public class UsageStatsResource {
         }
         // This is used for deciding if jobs are internal or external
         final String internalDomain =  ServerConfigurationFactory.instance().getGPProperty(userContext, "internalDomainForStats", "broadinstitute.org");
-        
+        final long startTime = System.currentTimeMillis();
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream os) throws IOException, WebApplicationException {
@@ -113,13 +113,21 @@ public class UsageStatsResource {
                 final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
                 UsageStatsDAO ds = new UsageStatsDAO(mgr);
                 JSONArray errors = new JSONArray();
+                JSONArray executionTime = new JSONArray();
                 
                 String excludedUsers = getUserExclusionClause(userContext, ds);
+                
+                System.out.println("Excluded users: " + excludedUsers);
+                
                 writer.write(" ");
                 writer.flush();
                 try {            
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("NewUserRegistrations", ds.getRegistrationCountBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("NewUserRegistrations et (ms): " + (t2-t1));
+                        System.out.println("NewUserRegistrations et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -127,7 +135,11 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("TotalUsersCount", ds.getTotalRegistrationCount(excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("TotalUsersCount et (ms): " + (t2-t1));
+                        System.out.println("TotalUsersCount et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -135,7 +147,11 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("ReturningUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));      
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("ReturningUsersCount et (ms): " + (t2-t1));
+                        System.out.println("ReturningUsersCount et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -143,7 +159,12 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
+                        
                         object.put("NewUsersCount",ds.getReturnLoginCountBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("NewUsersCount et (ms): " + (t2-t1));
+                        System.out.println("NewUsersCount et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -151,7 +172,11 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("TotalJobs",ds.getTotalJobsRunCount(excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("TotalJobs et (ms): " + (t2-t1));
+                        System.out.println("TotalJobs et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -159,15 +184,24 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("JobsRun",ds.getJobsRunCountBetweenDates(startDate, endDate, excludedUsers));
-                    } catch (Exception e){
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("JobsRun et (ms): " + (t2-t1));
+                        System.out.println("JobsRun et (ms): " + (t2-t1));
+                   } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
                     }
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
+                        
                         object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("InternalJobsRun et (ms): " + (t2-t1));
+                        System.out.println("InternalJobsRun et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -175,15 +209,23 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("ExternalJobsRun",ds.getExternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
-                    } catch (Exception e){
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("ExternalJobsRun et (ms): " + (t2-t1));
+                        System.out.println("ExternalJobsRun et (ms): " + (t2-t1));
+                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
                     }
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("NewUsers",ds.getUserRegistrationsBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("NewUsers et (ms): " + (t2-t1));
+                        System.out.println("NewUsers et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -191,33 +233,49 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
-                        object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
-                    } catch (Exception e){
+                         long t1 = System.currentTimeMillis();
+                         object.put("ModuleRunCounts",ds.getModuleRunCountsBetweenDates(startDate, endDate, excludedUsers));
+                         long t2 = System.currentTimeMillis();
+                         executionTime.put("ModuleRunCounts et (ms): " + (t2-t1));
+                         System.out.println("ModuleRunCounts et (ms): " + (t2-t1));
+                       } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
                     }
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("ModuleErrorCounts",ds.getModuleErrorCountsBetweenDates(startDate, endDate, excludedUsers));
                         
-                    } catch (Exception e){
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("ModuleErrorCounts et (ms): " + (t2-t1));
+                        System.out.println("ModuleErrorCounts et (ms): " + (t2-t1));
+                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
                     }
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("UserRunCounts",ds.getUserRunCountsBetweenDates(startDate, endDate, excludedUsers));
-                    } catch (Exception e){
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("UserRunCounts et (ms): " + (t2-t1));
+                        System.out.println("UserRunCounts et (ms): " + (t2-t1));
+                  } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
                     }
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("DomainRunCounts",ds.getModuleRunCountsBetweenDatesByDomain(startDate, endDate, excludedUsers));
-                        
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("DomainRunCounts et (ms): " + (t2-t1));
+                        System.out.println("DomainRunCounts et (ms): " + (t2-t1));
+                      
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -225,7 +283,11 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     try {
+                        long t1 = System.currentTimeMillis();
                         object.put("ModuleErrors",ds.getModuleErrorsBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("ModuleErrors et (ms): " + (t2-t1));
+                        System.out.println("ModuleErrors et (ms): " + (t2-t1));
                     } catch (Exception e){
                         e.printStackTrace();
                         errors.put(e.getMessage());
@@ -233,6 +295,7 @@ public class UsageStatsResource {
                     writer.write(" ");
                     writer.flush();
                     object.put("ReportGenerationErrors", errors);
+                    object.put("ReportGenerationTimings", executionTime);
                 } catch (Exception e){
                     e.printStackTrace();
                     writer.write(e.getMessage());
@@ -245,13 +308,21 @@ public class UsageStatsResource {
                 writer.write(e.getMessage());
                 log.error("Error producing JSON object for UsageStatsResource.user_summary()");
             }
+            long t3 = System.currentTimeMillis();
+            System.out.println("Queries done after: " + ((t3-startTime)/1000)+ "sec");
             
             writer.write(object.toString());
+            
+            long endTime = System.currentTimeMillis();
+            System.out.println("builder took: " + ((endTime-t3)/1000)+ "sec");
+            System.out.println("All done after: " + ((endTime-startTime)/1000)+ "sec");
+            
             writer.flush();
             }
         };
-        Response jaxrs = Response.ok(stream).type(MediaType.TEXT_PLAIN).build();
         
+        Response jaxrs = Response.ok(stream).type(MediaType.TEXT_PLAIN).build();
+       
         return jaxrs;
     }
     
