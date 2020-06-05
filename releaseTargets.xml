@@ -50,7 +50,7 @@
 			<include name="GenePattern.zip" />
 			<include name="GenePatternMatlab.zip" />
 			<include name="GenePattern.jar" />
-			<include name="runVisualizer.jar" />
+			<!-- include name="runVisualizer.jar" / -->
 		</fileset>
 	</copy>
 	<war destfile="gp.war" basedir="wartemp"
