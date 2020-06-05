@@ -338,7 +338,7 @@ public class UsageStatsDAO extends BaseDAO {
         for(Entry<String, Integer> entry : listOfEntries){ 
             
             JSONObject user = new JSONObject();
-            user.put("user_id",entry.getKey());
+            user.put("moduleName",entry.getKey());
             user.put("jobsRun",entry.getValue());
            
             moduleCounts.put(user);
@@ -516,7 +516,7 @@ public class UsageStatsDAO extends BaseDAO {
        for(Entry<String, Integer> entry : listOfEntries){ 
            
            JSONObject user = new JSONObject();
-           user.put("user_id",entry.getKey());
+           user.put("moduleName",entry.getKey());
            user.put("jobsRun",entry.getValue());
           
            moduleCounts.put(user);
