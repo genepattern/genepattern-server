@@ -14,7 +14,6 @@
     <property name="java.visualizer.source" value="1.7" /> 
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
-    <sysproperty key="https.protocols" value="TLSv1.2" />
  
     <property location="src" name="src" />
     <property location="build" name="build" />
@@ -475,6 +474,7 @@
 
     <macrodef name="signjar" uri="http://genepattern.org/gp">
         <attribute name="jarfile" />
+        <element name="sysproperties" />
         <sequential>
             <echo>signing @{jarfile} with keystore=${signjar.keystore}</echo>
             <signjar jar="@{jarfile}"
@@ -532,7 +532,11 @@
         description="Sign the visualizer applet jar files"
         xmlns:gp="http://genepattern.org/gp"
     >
-        <gp:signjar jarfile="${genepattern.build}/${runVisualizer-jarname}" />
+        <gp:signjar jarfile="${genepattern.build}/${runVisualizer-jarname}">
+		<sysproperties>
+			<sysproperty key="https.protocols" value="TLSv1.2" />
+		</sysproperties>
+        </gp:signjar>
         <gp:signjar jarfile="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar" />
         <gp:signjar jarfile="website/WEB-INF/lib/commons-codec-1.6.jar" />
     </target>
