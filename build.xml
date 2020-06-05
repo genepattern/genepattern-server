@@ -14,7 +14,8 @@
     <property name="java.visualizer.source" value="1.7" /> 
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
-
+    <sysproperty key="https.protocols" value="TLSv1.2" />
+ 
     <property location="src" name="src" />
     <property location="build" name="build" />
     <property name="junit.report.dir" location="${build}/junit/reports" />
