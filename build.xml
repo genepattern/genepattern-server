@@ -592,7 +592,7 @@
         <antcall target="post-compile" inheritall="true" inheritrefs="true" />
     </target>
 
-    <target depends="init,common,analysis,,build-visualizer-applet" name="quick-website">
+    <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes" />
         <javac debug="true" 
             includeantruntime="false"
