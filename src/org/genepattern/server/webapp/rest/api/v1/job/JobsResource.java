@@ -665,6 +665,56 @@ public class JobsResource {
     }
 
     /**
+     * GET status.json for the given jobId.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/jobstatus.json")
+    public Response getMultipleStatus(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            @QueryParam("jobId") final List<String> jobList
+    ) {
+
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        final JSONArray statuses = new JSONArray();
+        
+        for (String jobId: jobList){
+            System.out.println("getting status for " + jobId);
+            final GpContext jobContext=Util.getJobContext(request, jobId);
+            try {
+                final String gpUrl=UrlUtil.getBaseGpHref(request);
+                final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
+    
+                final JSONObject jsonObj = status.toJsonObj();
+                statuses.put(jsonObj);
+                System.out.println("got " + jsonObj);
+            }
+            catch (Throwable t) {
+                String errorMessage="Error getting status.json for jobId="+jobId;
+                log.error(errorMessage, t);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(errorMessage)
+                        .build();
+            }
+        }
+        try {
+            final String jsonStr = statuses.toString(2);
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+        } catch (Throwable t){
+            String errorMessage="Error writing status.json for jobId in " + jobList.toString();
+            log.error(errorMessage, t);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(errorMessage)
+                    .build();
+            
+        }
+    }
+    
+    
+    /**
      * Terminate the specified job
      * @param request
      * @param jobId

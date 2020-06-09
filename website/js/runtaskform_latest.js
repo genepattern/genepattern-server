@@ -3077,6 +3077,21 @@ function submitTask() {
                 {
                     openVisualizers = "&openVisualizers=false";
                     window.open("/gp/pages/jsViewer.jsf?jobNumber=" + response.jobId);
+                } else {
+                	if (sessionStorage.jobStatusNotificationlist == null){
+                		jobs = [];
+                	} else {
+                		try {
+                			jobs = JSON.parse(sessionStorage.getItem("jobStatusNotificationList"));
+                		} catch (e){
+                			jobs = [];
+                		}
+                	}
+                	
+                	jobs.push(response.jobId);
+                	sessionStorage.setItem("jobStatusNotificationList", JSON.stringify(jobs));
+                	var moduleName = $("div.module-name")[0].innerText;
+                	sessionStorage.setItem("job-"+response.jobId, moduleName); 
                 }
 
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + openVisualizers);

@@ -4,6 +4,8 @@ var  username, jq, currentJobNumber, userLoggedIn,
     parameter_and_val_groups, run_task_info, fileURL;
 
 
+
+
 // used to make sure that a jquery id selector is escaped properly
 function escapeJquerySelector(str) {
     return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
@@ -464,6 +466,87 @@ function updateJobResultsDisplay(){
     }
 }
 
+// if a job launched from this browser session completes or errors use the JS desktop notification API to tell the user
+// this is inefficient as we are getting status again every time but no time for a major rewrite right now
+function notifyDesktopOfJobCompletion(){
+	if (sessionStorage.jobStatusNotificationlist == null) return;
+	try {
+		jobList = JSON.parse(sessionStorage.getItem("jobStatusNotificationList"));
+	} catch (e){
+		jobList = [];
+	}
+	
+	
+	if (jobList.length == 0) return;
+	
+	var qstr = ""
+	for (var i=0; i < jobList.length; i++){
+		if (i != 0) qstr += "&";
+		qstr +="jobId="+jobList[i];
+	}
+	
+
+	 $.ajax({
+	        cache: false,
+	        type: "GET",
+	        url: "/gp/rest/v1/jobs/jobstatus.json?"+qstr,
+	        dataType: "json",
+	        success: function(data) {
+	        	remainingJobs = [];
+	        	for (var i=0; i< data.length; i++){
+	        		job = data[i];
+	        		if (job.isFinished){
+	        			
+	        			var moduleName = sessionStorage.getItem("job-"+job.extJobId); 
+	        			notifyDesktop("GenePattern", moduleName + " job "+ job.extJobId + " " + job.statusFlag + " \n" + job.statusMessage);
+	        			sessionStorage.removeItem("job-"+job.extJobId);
+	        			
+	        		} else {
+	        			remainingJobs.push(job.extJobId);
+	        		}
+	        		
+	        	} 
+	        	sessionStorage.setItem("jobStatusNotificationList", JSON.stringify(remainingJobs));
+	        },
+	        failure: function(err){
+	        	
+	        	console.error(err);
+	        }});
+	
+}
+
+function notifyDesktop(title, message) {
+    if (!window.Notification) {
+        console.log('Browser does not support notifications.');
+    } else {
+        // check if permission is already granted
+        if (Notification.permission === 'granted') {
+            // show notification here
+            var notify = new Notification(title, {
+                body: message,
+               
+            });
+        } else {
+            // request permission from user
+            Notification.requestPermission().then(function (p) {
+                if (p === 'granted') {
+                    // show notification here
+                    var notify = new Notification(title, {
+                        body: message,
+                        
+                    });
+                } else {
+                    console.log('User blocked notifications.');
+                }
+            }).catch(function (err) {
+                console.error(err);
+            });
+        }
+    }
+}
+
+
+
 
 function jobStatusPoll() {
     var _jobStatusPoll = function() {
@@ -477,6 +560,11 @@ function jobStatusPoll() {
 
         // update the job results page if open
         updateJobResultsDisplay();
+       
+        
+        // put up a desktop notification if one of this session's jobs has just completed or errored
+        notifyDesktopOfJobCompletion()
+        
         
         if (continuePolling) {
             setTimeout(function() {
