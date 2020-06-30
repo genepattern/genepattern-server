@@ -86,7 +86,12 @@ public class GpContext {
             
             // JTL 03/19/2020  Add in the values set for cpu and memory
             JobRunnerJobDao jobrunnerjobdao = new JobRunnerJobDao();
-            JobRunnerJob jobRunnerJob = jobrunnerjobdao.selectJobRunnerJob(jobNumber);
+            JobRunnerJob jobRunnerJob = null;
+            try { 
+                jobRunnerJob =jobrunnerjobdao.selectJobRunnerJob(jobNumber);
+            } catch (Exception e){
+                jobRunnerJob = null;
+            }
             
             return createContextForJob(currentUser, jobInfo, taskInfo, taskLibDir, jobInput, initFromDb, jobRunnerJob);
         }

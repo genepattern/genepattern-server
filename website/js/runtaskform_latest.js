@@ -1402,6 +1402,10 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
         nField.spinner( "option","max", paramDetails.maxRange);
     }
 
+    if (!(value != undefined && value != null) ){
+    	value = nField.val();
+    }
+    
     if(value != undefined && value != null)
     {
         var valueList = getValuesForGroup(groupId, parameterName);
@@ -2473,6 +2477,13 @@ function createParamTable(parameterNames, initialValues) {
 
         if (initialValues !== null && initialValues !== undefined) {
             initialValuesList = initialValues[parameterName];
+        } else {
+        	//initialValuesList = run_task_info.params[parameterName].initialValues
+        	var x = run_task_info.params[parameterName].default_value;
+        	if (x != null){
+        		initialValueList = {groupid:"", values: [x]}
+        	}
+        	
         }
         run_task_info.params[parameterName].initialValues = initialValuesList;
 
