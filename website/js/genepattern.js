@@ -3888,8 +3888,7 @@ function initStatusBox()
         url: "/gp/rest/v1/disk",
         cache: false,
         success: function (response) {
-            console.log(response);
-
+           
             if (response !== null) {
                 updateDiskUsageBox(response);
             }

@@ -446,20 +446,27 @@ $.widget("gp.modulelist", {
         }
     },
 
-    filter: function(filter) {
+    filter: function(rawFilter) {
+    	//var filter1 = rawFilter.toLowerCase();
+    	var filter = rawFilter.replace(/[^0-9a-z]/gi, '.?');	
         var numberHidden = 0;
         for (var i = 0; i < this.listings.length; i++) {
             var listing = this.listings[i];
             var searchText = listing.find(".module-name, .module-description, .module-tag").text();
-            if (searchText.toLowerCase().indexOf(filter.toLowerCase()) < 0) {
-                listing.hide();
-                numberHidden++;
-            }
-            else {
-                listing.show();
-                $(listing).removeHighlight();
-                $(listing).highlight(filter);
-            }
+           
+   	 		var re = RegExp(filter, "i")
+   	 		var hitStrings = re.exec(searchText);
+   	 	
+            if (hitStrings != null){ 
+             	listing.show();
+            	$(listing).removeHighlight();
+                $(listing).highlight(hitStrings[0]);            
+	        }  else {
+	        	listing.hide();
+	        	numberHidden++;
+	        }
+            
+            // end of for loop
         }
         if (numberHidden >= this.listings.length) {
             // All hidden, hide title as well
