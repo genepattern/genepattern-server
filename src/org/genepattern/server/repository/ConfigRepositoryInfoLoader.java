@@ -37,10 +37,10 @@ import org.yaml.snakeyaml.Yaml;
  * module repository if an about.yaml file is present.
  * <pre>
  *     <repoUrl>/about/about.yaml
- * e.g. for the Broad production repository,
- *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/about.yaml
- * e.g. for the Broad dev repository,
- *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/dev/about.yaml
+ * e.g. for the production repository,
+ *    https://modulerepository.genepattern.org/gpModuleRepository/about/about.yaml
+ * e.g. for the dev repository,
+ *     https://modulerepository.genepattern.org/gpModuleRepository/about/dev/about.yaml
  * </pre>
  * 
  * If an about.yaml file is not present in the repository, 
