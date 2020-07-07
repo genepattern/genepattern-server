@@ -49,6 +49,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTagManager;
@@ -74,6 +75,7 @@ import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -194,6 +196,9 @@ public class JobsResource {
             //TODO: add support for batch jobs to REST API
             final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
 
+            
+            if (! jobContext.isAdmin()) validateJobConfigParamValues(gpConfig, jobContext, jobInput);
+            
             final boolean initDefault=true;
             final JobInputApiImplV2 impl= new JobInputApiImplV2(initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
@@ -245,6 +250,31 @@ public class JobsResource {
                             .entity(t.getMessage())
                             .build()
             );
+        }
+    }
+
+    private void validateJobConfigParamValues(final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput) throws GpServerException {
+        JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  jobContext);
+        // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
+        // using the parameterInfo from the jobConfigParams but admins get a pass
+       
+        for (ParameterInfo jcpPi: jcp.getParams()){
+            Map<String,String> allowedChoices = jcpPi.getChoices();
+            if (allowedChoices.size() > 0){
+                Param p = jobInput.getParam(jcpPi.getName());
+                if (p != null){
+                    for (ParamValue v: p.getValues()) {
+                        String av = allowedChoices.get(v.getValue());
+                        if (av == null){
+                            // we got here because the user is not an admin, but has somehow submitted a job requesting
+                            // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+                            // the job from tunning GP-8347
+                            throw new GpServerException("Job config parameter '" + jcpPi.getName() +"' was requested with a value of " + v.getValue() + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 

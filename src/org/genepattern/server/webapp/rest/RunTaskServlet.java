@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest;
 
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -796,7 +798,13 @@ public class RunTaskServlet extends HttpServlet
         try {
             final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-
+            final TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+          
+            userContext.setTaskInfo(taskInfo);
+            
+            JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  userContext);
+            
+            
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
                 final String parameterName = (String) iter.next();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
@@ -817,6 +825,14 @@ public class RunTaskServlet extends HttpServlet
                     } else {
                         valueList = new JSONArray((String) parameters.get(parameterName));
                     }
+                    
+                    // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
+                    // using the parameterInfo from the jobConfigParams but admins get a pass
+                    
+                    ParameterInfo jcpPi = null;
+                    //if (!userContext.isAdmin()) jcpPi = jcp.getParam(parameterName);
+                    jcpPi = jcp.getParam(parameterName);
+                    
                     for (int v = 0; v < valueList.length(); v++) {
                         final String value = valueList.getString(v);
                         if (isBatch) {
@@ -825,6 +841,23 @@ public class RunTaskServlet extends HttpServlet
                         } else {
                             jobInputHelper.addValue(parameterName, value, groupId);
                         }
+                        
+                        if (jcpPi != null){
+                            Map<String,String> allowedChoices = jcpPi.getChoices();
+                            if (allowedChoices.size() > 0){
+                                String av = allowedChoices.get(value);
+                                
+                                if (av == null){
+                                    // we got here because the user is not an admin, but has somehow submitted a job requesting
+                                    // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+                                    // the job from tunning GP-8347
+                                    throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+                                }
+                                
+                                
+                            }
+                        }
+                        
                     }
                 }
             }

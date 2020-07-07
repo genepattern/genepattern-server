@@ -84,7 +84,7 @@ public class JobInputApiImplV2 implements JobInputApi {
             throw new IllegalArgumentException("jobInput.lsid==null");
         }
         try {
-            JobInputHelper jobInputHelper=new JobInputHelper(taskContext, jobInput, getTaskStrategy, initDefault);
+            JobInputHelper jobInputHelper=new JobInputHelper(taskContext, jobInput, getTaskStrategy, initDefault); 
             final String jobId=jobInputHelper.submitJob();
             return jobId;
         }
