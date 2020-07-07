@@ -265,7 +265,8 @@ public class JobsResource {
                 if (p != null){
                     for (ParamValue v: p.getValues()) {
                         String av = allowedChoices.get(v.getValue());
-                        if (av == null){
+                        Boolean isAGoodValue = allowedChoices.containsValue(v.getValue());
+                        if ((av == null) && !isAGoodValue ){
                             // we got here because the user is not an admin, but has somehow submitted a job requesting
                             // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
                             // the job from tunning GP-8347
