@@ -802,6 +802,7 @@ public class RunTaskServlet extends HttpServlet
           
             userContext.setTaskInfo(taskInfo);
             
+            
             JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  userContext);
             
             
