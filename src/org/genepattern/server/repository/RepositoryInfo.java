@@ -22,7 +22,7 @@ public class RepositoryInfo {
     final static public String GPARC_URL="https://modulerepository.genepattern.org/gparcModuleRepository";
     
     final static public String DEFAULT_MODULE_REPOSITORY_URLS=
-            GP_PROD_URL+","+GPARC_URL+;
+            GP_PROD_URL+","+GPARC_URL;
     
     /**
      * RepositoryInfoFactory implementation
