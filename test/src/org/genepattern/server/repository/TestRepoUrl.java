@@ -68,26 +68,26 @@ public class TestRepoUrl {
     }
     
     @Test
-    public void checkBroadProdUrl() throws MalformedURLException {
-        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.BROAD_PROD_URL);
+    public void checkGPProdUrl() throws MalformedURLException {
+        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_PROD_URL);
         assertEquals("repoInfo.label", "Broad production (new)", repoInfo.getLabel());
     }
 
     @Test
-    public void checkBroadBetaUrl() throws MalformedURLException {
+    public void checkGparcUrl() throws MalformedURLException {
         final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GPARC_URL);
         assertEquals("repoInfo.label", "GParc (GenePattern Archive)", repoInfo.getLabel());
     }
 
     @Test
-    public void checkGparcUrl() throws MalformedURLException {
-        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.BROAD_BETA_URL);
+    public void checkGPBetaUrl() throws MalformedURLException {
+        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_BETA_URL);
         assertEquals("repoInfo.label", "Broad beta (new)", repoInfo.getLabel());
     }
 
     @Test
-    public void checkBroadDevUrl() throws MalformedURLException {
-        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.BROAD_DEV_URL);
+    public void checkGPDevUrl() throws MalformedURLException {
+        final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_DEV_URL);
         assertEquals("repoInfo.label", "Broad dev", repoInfo.getLabel());
     }
 

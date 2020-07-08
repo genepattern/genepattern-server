@@ -75,7 +75,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
             else {
                 // assume it's from Broad beta repository
                 RepositoryInfo beta=
-                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_BETA_URL);
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.GP_BETA_URL);
                 return new FromRepo(beta);
             }
         }
