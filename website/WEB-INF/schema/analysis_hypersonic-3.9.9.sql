@@ -35,6 +35,6 @@ insert into patch_info (lsid) select
 --
 update gp_user_prop
     set value = replace (
-        value, 'www.broadinstitute.org', 'software.broadinstitute.org')
+        value, 'http://software.broadinstitute.org/webservices/gpModuleRepository', 'https://modulerepository.genepattern.org/gpModuleRepository/')
 where key = 'ModuleRepositoryURL'
 

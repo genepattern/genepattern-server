@@ -1225,7 +1225,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].allowMultiple = true;
 
-                parent.find(".batchBox").append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+                parent.find(".batchBox").append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
             }
             else
             {
@@ -1248,7 +1248,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         numericDiv.append(batchBox);
 
@@ -1510,7 +1510,7 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         textDiv.append(batchBox);
 
@@ -2264,7 +2264,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
             batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
             //batchCheck.button();
             batchBox.tooltip();
-            batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+            batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
 
             //if this is a batch parameter then pre-select the batch checkbox
@@ -2778,7 +2778,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
                     else {
                         $("#viewCodeDiv").append("<pre style='overflow: auto;'>" + htmlEncode(response["code"]) + "</pre>");
                         //add a link to the appropriate programmers guide
-                        $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
+                        $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                             "Using GenePattern from " + language + "</a></span>");
                     }
                 },
@@ -3383,8 +3383,7 @@ function checkFileSizes(files) {
             errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
                 " to upload these files.</p>");
             errorMessageDiv.append("<p> More information about using large files can be found in our " +
-                "<a href='http://software.broadinstitute.org/cancer/software/genepattern/user-guide" +
-                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide</a>.</p>");
+                "<a href='https://www.genepattern.org/user-guide#running-modules-and-pipelines-uploading-files' target='_blank'>User Guide</a>.</p>");
             errorMessageDiv.dialog({
                 title: "Max File Upload Size Exceeded",
                 resizable: true,

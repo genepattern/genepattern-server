@@ -1862,7 +1862,7 @@ function loadRunTaskForm(lsid, reloadJob) {
                 {
                     $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
                     //add a link to the appropriate programmers guide
-                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://software.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
+                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                         "Using GenePattern from " + language + "</a></span>");
                 }
             },
