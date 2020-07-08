@@ -54,14 +54,14 @@
     authoring and testing of GenePattern modules."
 }
 --- # Details for the Broad beta repository
-{
-"url": "https://modulerepository.genepattern.org/betaModuleRepository/",
-"label": "GenePattern beta",
-"icon": "/gp/images/broad_beta.png",
-"brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
-"full": 
-    "The GenePattern beta repository contains modules which have have undergone limited testing by the 
-GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
-expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
-accompanies beta modules is likely to be incomplete."
+#{
+#"url": "https://modulerepository.genepattern.org/betaModuleRepository/",
+#"label": "GenePattern beta",
+#"icon": "/gp/images/broad_beta.png",
+#"brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
+#"full": 
+#    "The GenePattern beta repository contains modules which have have undergone limited testing by the 
+#GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
+#expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
+#accompanies beta modules is likely to be incomplete."
 }

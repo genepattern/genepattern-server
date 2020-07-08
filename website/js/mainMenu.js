@@ -52,15 +52,15 @@ function mmLoadMenus() {
 
   // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_documentation.addMenuItem("Help Forum","window.open('http://www.genepattern.org/help','_blank');");
-  mm_menu_documentation.addMenuItem("Tutorial","window.open('http://software.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
-  mm_menu_documentation.addMenuItem("Video Tutorial","window.open('http://software.broadinstitute.org/cancer/software/genepattern/desc/videos', '_blank');");
-  mm_menu_documentation.addMenuItem("User Guide","window.open('http://software.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
-  mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://software.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Help Forum","window.open('https://www.genepattern.org/help','_blank');");
+  mm_menu_documentation.addMenuItem("Tutorial","window.open('https://www.genepattern.org/tutorial/', '_blank');");
+  mm_menu_documentation.addMenuItem("Video Tutorial","window.open('https://www.genepattern.org/video-tutorials', '_blank');");
+  mm_menu_documentation.addMenuItem("User Guide","window.open('https://www.genepattern.org/user-guide', '_blank');");
+  mm_menu_documentation.addMenuItem("Programmers Guide","window.open('https://www.genepattern.org/programmers-guide', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
-  mm_menu_documentation.addMenuItem("File Formats","window.open('http://software.broadinstitute.org/cancer/software/genepattern/gp_guides/file-formats', '_blank');");
-  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
-  mm_menu_documentation.addMenuItem("FAQ","window.open('http://software.broadinstitute.org/cancer/software/genepattern/doc/faq/', '_blank')");
+  mm_menu_documentation.addMenuItem("File Formats","window.open('https://www.genepattern.org/file-formats-guide', '_blank');");
+  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('https://github.com/genepattern/genepattern-server/releases/latest', '_blank')");
+  mm_menu_documentation.addMenuItem("FAQ","window.open('https://www.genepattern.org/FAQ', '_blank')");
   mm_menu_documentation.addMenuItem("About","location=contextRoot + '/pages/about.jsf'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
@@ -70,7 +70,7 @@ function mmLoadMenus() {
 
    
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://software.broadinstitute.org/cancer/software/genepattern/gp_mail.html', '_blank')");
+  mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('https://www.genepattern.org/contact', '_blank')");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
   mm_menu_resources.addMenuItem("Contact Us","location=contextRoot + '/pages/contactUs.jsf'");
  
@@ -82,7 +82,7 @@ function mmLoadMenus() {
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
-  mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('//software.broadinstitute.org/cancer/software/genepattern/datasets/', '_blank')");
+  mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('https://www.genepattern.org/datasets/', '_blank')");
   mm_menu_downloads.addMenuItem("GParc","window.open('http://www.gparc.org/', '_blank')");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
