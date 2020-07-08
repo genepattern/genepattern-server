@@ -88,7 +88,7 @@ public class TestRepoUrl {
     @Test
     public void checkGPDevUrl() throws MalformedURLException {
         final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_DEV_URL);
-        assertEquals("repoInfo.label", "Broad dev", repoInfo.getLabel());
+        assertEquals("repoInfo.label", "GenePattern dev", repoInfo.getLabel());
     }
 
 }
