@@ -38,7 +38,7 @@ public class TestRepoUrl {
         }
         
         //RepositoryInfo beta=map.get("https://modulerepository.genepattern.org/gpModuleRepository/");
-        assertEquals("GenePattern production", 
+        assertEquals("GenePattern production (new)", 
                 map.get(RepositoryInfo.GP_PROD_URL).getLabel());
         assertEquals("GParc (GenePattern Archive)", 
                 map.get(RepositoryInfo.GPARC_URL).getLabel());
@@ -70,7 +70,7 @@ public class TestRepoUrl {
     @Test
     public void checkGPProdUrl() throws MalformedURLException {
         final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_PROD_URL);
-        assertEquals("repoInfo.label", "Broad production (new)", repoInfo.getLabel());
+        assertEquals("repoInfo.label", "GenePattern production (new)", repoInfo.getLabel());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class TestRepoUrl {
     @Test
     public void checkGPBetaUrl() throws MalformedURLException {
         final RepositoryInfo repoInfo=checkRepoInfoFromUrl(RepositoryInfo.GP_BETA_URL);
-        assertEquals("repoInfo.label", "Broad beta (new)", repoInfo.getLabel());
+        assertEquals("repoInfo.label", "GenePattern beta", repoInfo.getLabel());
     }
 
     @Test
