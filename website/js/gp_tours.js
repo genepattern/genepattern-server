@@ -113,8 +113,8 @@ $(function()
         //create the steps
         var steps = [
             {
-                intro: '<div class="tour-header"> Release Notes </div> This is a bug fix release. For details '
-                    + ' please see the <a href="http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.10" target="_blank">release notes</a>.'
+                intro: '<div class="tour-header"> Release Notes </div> This is a developer and bug fix release. For details '
+                    + ' please see the <a href="https://github.com/genepattern/genepattern-server/releases/latest" target="_blank">release notes</a>.'
             }
         ];
 
