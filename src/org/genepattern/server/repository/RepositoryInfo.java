@@ -18,6 +18,7 @@ public class RepositoryInfo {
     
     final static public String GP_PROD_URL="https://modulerepository.genepattern.org/gpModuleRepository/";
     final static public String GP_DEV_URL="https://modulerepository.genepattern.org/gpModuleRepository?env=dev";
+    final static public String GP_BETA_URL="https://modulerepository.genepattern.org/betaModuleRepository/"
     //internal path to gparc, http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository
     final static public String GPARC_URL="https://modulerepository.genepattern.org/gparcModuleRepository";
     
