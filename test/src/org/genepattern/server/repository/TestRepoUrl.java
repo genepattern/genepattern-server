@@ -39,7 +39,7 @@ public class TestRepoUrl {
         
         //RepositoryInfo beta=map.get("https://modulerepository.genepattern.org/gpModuleRepository/");
         assertEquals("GenePattern production", 
-                map.get(RepositoryInfo.BROAD_PROD_URL).getLabel());
+                map.get(RepositoryInfo.GP_PROD_URL).getLabel());
         assertEquals("GParc (GenePattern Archive)", 
                 map.get(RepositoryInfo.GPARC_URL).getLabel());
     }

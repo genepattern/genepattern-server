@@ -69,7 +69,7 @@ public class LsidSourceInfoLoader implements SourceInfoLoader {
             }
             if (!isBeta) {
                 RepositoryInfo prod=
-                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.BROAD_PROD_URL);
+                        RepositoryInfo.getRepositoryInfoLoader(serverContext).getRepository(RepositoryInfo.GP_PROD_URL);
                 return new FromRepo(prod);
             }
             else {
