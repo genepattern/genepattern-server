@@ -32,7 +32,7 @@ public class ZipCatalogUpload {
     public static final String PROD = "prod";
     public static final String MODULE = "module";
     public static final String PATCH = "patch";
-    public static final String BROAD_URL = "http://software.broadinstitute.org/webservices/gpModuleRepository";
+    public static final String BROAD_URL = "https://modulerepository.genepattern.org/gpModuleRepository/";
 
     @Test
     public void testUploadToDev() throws Exception {

@@ -131,16 +131,16 @@ public class PluginManagerLegacy {
     /**
      * If necessary, change the given requiredPatchUrl from the manifest to the newer Broad 
      * module repository url, 
-     *     from 'http://www.broadinstitute.org/...' 
-     *     to   'http://software.broadinstitute.org/...'.
+     *     from 'http://software.broadinstitute.org/webservice...' 
+     *     to   'https://modulerepository.genepattern.org/...'.
      * This is required because the patch downloader does not follow the redirect.
      * 
      * @param requiredPatchUrl the original value from the manifest file
      * @return
      */
     protected static String updateUrlIfNecessary(final String requiredPatchUrl) {
-        if (requiredPatchUrl != null && requiredPatchUrl.startsWith("http://www.broadinstitute.org/")) {
-            final String updatedUrl=requiredPatchUrl.replaceFirst("http://www.broadinstitute.org/", "http://software.broadinstitute.org/");
+        if (requiredPatchUrl != null && requiredPatchUrl.startsWith("http://software.broadinstitute.org/webservices")) {
+            final String updatedUrl=requiredPatchUrl.replaceFirst("http://software.broadinstitute.org/webservices", "https://modulerepository.genepattern.org/");
             log.warn("The 'www.broadinstitute.org' server is no longer available, updating url to: "+updatedUrl);
             return updatedUrl;
         }

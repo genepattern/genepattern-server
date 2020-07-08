@@ -16,14 +16,13 @@ public class RepositoryInfo {
     final static public String PROP_MODULE_REPOSITORY_URL="ModuleRepositoryURL";
     final static public String PROP_MODULE_REPOSITORY_URLS="ModuleRepositoryURLs";
     
-    final static public String BROAD_PROD_URL="http://software.broadinstitute.org/webservices/gpModuleRepository";
-    final static public String BROAD_BETA_URL="http://software.broadinstitute.org/webservices/betaModuleRepository";
-    final static public String BROAD_DEV_URL="http://software.broadinstitute.org/webservices/gpModuleRepository?env=dev";
+    final static public String BROAD_PROD_URL="https://modulerepository.genepattern.org/gpModuleRepository/";
+    final static public String BROAD_DEV_URL="https://modulerepository.genepattern.org/gpModuleRepository?env=dev";
     //internal path to gparc, http://vgpprod01.broadinstitute.org:4542/gparcModuleRepository
-    final static public String GPARC_URL="http://software.broadinstitute.org/webservices/gparcModuleRepository";
+    final static public String GPARC_URL="https://modulerepository.genepattern.org/gparcModuleRepository";
     
     final static public String DEFAULT_MODULE_REPOSITORY_URLS=
-            BROAD_PROD_URL+","+GPARC_URL+","+BROAD_BETA_URL;
+            BROAD_PROD_URL+","+GPARC_URL+;
     
     /**
      * RepositoryInfoFactory implementation

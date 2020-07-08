@@ -26,7 +26,7 @@ public class ModuleRepositoryReport {
             repoUrlStr=args[0];
         }
         else {
-            repoUrlStr="http://software.broadinstitute.org/webservices/gpModuleRepository/";
+            repoUrlStr="https://modulerepository.genepattern.org/gpModuleRepository/";
         }
         
         final URL repoUrl=new URL(repoUrlStr);

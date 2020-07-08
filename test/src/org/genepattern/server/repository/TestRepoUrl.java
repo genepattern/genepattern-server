@@ -37,11 +37,9 @@ public class TestRepoUrl {
             map.put(repoInfo.getUrl().toExternalForm(), repoInfo);
         }
         
-        //RepositoryInfo beta=map.get("http://software.broadinstitute.org/webservices/gpModuleRepository");
-        assertEquals("Broad production (new)", 
+        //RepositoryInfo beta=map.get("https://modulerepository.genepattern.org/gpModuleRepository/");
+        assertEquals("GenePattern production", 
                 map.get(RepositoryInfo.BROAD_PROD_URL).getLabel());
-        assertEquals("Broad beta (new)", 
-                map.get(RepositoryInfo.BROAD_BETA_URL).getLabel());
         assertEquals("GParc (GenePattern Archive)", 
                 map.get(RepositoryInfo.GPARC_URL).getLabel());
     }
