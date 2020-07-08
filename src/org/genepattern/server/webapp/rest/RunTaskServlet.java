@@ -847,11 +847,11 @@ public class RunTaskServlet extends HttpServlet
                             Map<String,String> allowedChoices = jcpPi.getChoices();
                             if (allowedChoices.size() > 0){
                                 String av = allowedChoices.get(value);
-                                
-                                if (av == null){
+                                Boolean aValidVal = allowedChoices.containsValue(value);
+                                if ((av == null) && !aValidVal) {
                                     // we got here because the user is not an admin, but has somehow submitted a job requesting
                                     // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
-                                    // the job from tunning GP-8347
+                                    // the job from tunning GP-8371
                                     throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
                                 }
                                 
