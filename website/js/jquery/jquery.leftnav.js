@@ -456,15 +456,45 @@ $.widget("gp.modulelist", {
            
    	 		var re = RegExp(filter, "i")
    	 		var hitStrings = re.exec(searchText);
-   	 	
+   	 	    // repeat with the search text collapsed as well
+            searchTextCollapsed = searchText.replace(/[^0-9a-z]/gi, '');	
+            var hitStrings2 = re.exec(searchTextCollapsed);
+            
+            
             if (hitStrings != null){ 
              	listing.show();
             	$(listing).removeHighlight();
                 $(listing).highlight(hitStrings[0]);            
-	        }  else {
+	        }  else if (hitStrings2 != null){ 
+	        	var theHit = hitStrings2[0];
+	        	// note that this may not highlight correctly since its the escaped seartText being
+	        	// searched at not the original so we don't really know if it hit on "single cell" or
+	        	// "singlecell" or "single-cell" or even "s ingle-c-e-ll" and trying to find the exact hit
+	        	// isn't worth it at the moment
+	        	if (rawFilter.toLowerCase() === filter.toLowerCase()){
+	        		// we know the filter did not have special chars so the text being searched did
+	        		// we can brute-force by inserting ".?" between each pair in the filter until we get a match
+	        		// and then use that as the highlight
+	        		for (var j=1; j<rawFilter.length; j++){
+	        			var newFilt = rawFilter.substring(0,j) + ".?" + rawFilter.substring(j);
+	        			console.log(newFilt);
+	        			var re2 = RegExp(newFilt, "i")
+	           	 		var hitStrings3 = re2.exec(searchText);
+	        			if (hitStrings3 != null){ 
+	        				theHit = hitStrings3[0];
+	        			}
+	        		}
+	        	}
+	        	
+	            listing.show();
+	            $(listing).removeHighlight();
+	            $(listing).highlight(theHit);            
+		    } else {
 	        	listing.hide();
 	        	numberHidden++;
 	        }
+        
+            
             
             // end of for loop
         }
