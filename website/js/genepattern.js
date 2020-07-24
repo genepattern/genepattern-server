@@ -469,7 +469,8 @@ function updateJobResultsDisplay(){
 // if a job launched from this browser session completes or errors use the JS desktop notification API to tell the user
 // this is inefficient as we are getting status again every time but no time for a major rewrite right now
 function notifyDesktopOfJobCompletion(){
-	if (sessionStorage.jobStatusNotificationlist == null) return;
+	var jobList = sessionStorage.getItem("jobStatusNotificationList")
+	if (jobList == null) return;
 	try {
 		jobList = JSON.parse(sessionStorage.getItem("jobStatusNotificationList"));
 	} catch (e){
