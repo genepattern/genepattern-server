@@ -711,9 +711,10 @@ public class JobsResource {
         final JSONArray statuses = new JSONArray();
         
         for (String jobId: jobList){
-            System.out.println("getting status for " + jobId);
-            final GpContext jobContext=Util.getJobContext(request, jobId);
+            System.out.println("getting status for " + jobId + " in list " + jobList);
             try {
+                final GpContext jobContext=Util.getJobContext(request, jobId);
+                
                 final String gpUrl=UrlUtil.getBaseGpHref(request);
                 final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
     
@@ -724,9 +725,11 @@ public class JobsResource {
             catch (Throwable t) {
                 String errorMessage="Error getting status.json for jobId="+jobId;
                 log.error(errorMessage, t);
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(errorMessage)
-                        .build();
+                //return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                //        .entity(errorMessage)
+                //        .build();
+                
+                // keep going at get status on the rest and let the client figure out the problem
             }
         }
         try {
