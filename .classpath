@@ -167,5 +167,6 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/gson-2.3.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>

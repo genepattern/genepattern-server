@@ -3089,20 +3089,21 @@ function submitTask() {
                     openVisualizers = "&openVisualizers=false";
                     window.open("/gp/pages/jsViewer.jsf?jobNumber=" + response.jobId);
                 } else {
-                	if (sessionStorage.getItem("jobStatusNotificationList") == null){
+                	if (localStorage.getItem("jobStatusNotificationList") == null){
                 		jobs = [];
                 	} else {
                 		try {
-                			jobs = JSON.parse(sessionStorage.getItem("jobStatusNotificationList"));
+                			jobs = JSON.parse(localStorage.getItem("jobStatusNotificationList"));
                 		} catch (e){
                 			jobs = [];
                 		}
                 	}
+                	jobObj = {"jobId": response.jobId, "moduleName": run_task_info.name};
                 	
-                	jobs.push(response.jobId);
-                	sessionStorage.setItem("jobStatusNotificationList", JSON.stringify(jobs));
+                	jobs.push(jobObj);
+                	localStorage.setItem("jobStatusNotificationList", JSON.stringify(jobs));
                 	var moduleName = $("div.module-name")[0].innerText;
-                	sessionStorage.setItem("job-"+response.jobId, run_task_info.name); 
+                	
                 }
 
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + openVisualizers);

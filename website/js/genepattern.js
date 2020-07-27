@@ -469,10 +469,10 @@ function updateJobResultsDisplay(){
 // if a job launched from this browser session completes or errors use the JS desktop notification API to tell the user
 // this is inefficient as we are getting status again every time but no time for a major rewrite right now
 function notifyDesktopOfJobCompletion(){
-	var jobList = sessionStorage.getItem("jobStatusNotificationList")
+	var jobList = localStorage.getItem("jobStatusNotificationList")
 	if (jobList == null) return;
 	try {
-		jobList = JSON.parse(sessionStorage.getItem("jobStatusNotificationList"));
+		jobList = JSON.parse(localStorage.getItem("jobStatusNotificationList"));
 	} catch (e){
 		jobList = [];
 	}
@@ -480,10 +480,13 @@ function notifyDesktopOfJobCompletion(){
 	
 	if (jobList.length == 0) return;
 	
-	var qstr = ""
+	var qstr = "";
+	jobMap = {};
 	for (var i=0; i < jobList.length; i++){
 		if (i != 0) qstr += "&";
-		qstr +="jobId="+jobList[i];
+		var aJob = jobList[i];
+		jobMap[aJob["jobId"]] = aJob;
+		qstr +="jobId="+aJob["jobId"];
 	}
 	
 
@@ -498,16 +501,16 @@ function notifyDesktopOfJobCompletion(){
 	        		job = data[i];
 	        		if (job.isFinished){
 	        			
-	        			var moduleName = sessionStorage.getItem("job-"+job.extJobId); 
+	        			var moduleName = jobMap[aJob["jobId"]]["moduleName"];
 	        			notifyDesktop("GenePattern", moduleName + " job "+ job.extJobId + " " + job.statusFlag + " \n" + job.statusMessage);
-	        			sessionStorage.removeItem("job-"+job.extJobId);
+	        			
 	        			
 	        		} else {
-	        			remainingJobs.push(job.extJobId);
+	        			remainingJobs.push(jobMap[job.extJobId]);
 	        		}
 	        		
 	        	} 
-	        	sessionStorage.setItem("jobStatusNotificationList", JSON.stringify(remainingJobs));
+	        	localStorage.setItem("jobStatusNotificationList", JSON.stringify(remainingJobs));
 	        },
 	        failure: function(err){
 	        	
