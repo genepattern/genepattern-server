@@ -2439,6 +2439,13 @@ public class GenePatternAnalysisTask {
                 // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
                 replacement = new File(replacement).getAbsolutePath();
             }
+            // special case - make sure GenepatternURL ends with a '/'
+            if (varName.equals("GenePatternURL")) {
+                // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
+                if (!replacement.endsWith("/"))
+                    replacement = replacement + "/";
+            }
+            
             if (replacement.length() == 0) {
                 log.debug("GPAT.substitute: replaced " + varName + " with empty string");
             }
