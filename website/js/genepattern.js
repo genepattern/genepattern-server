@@ -483,10 +483,14 @@ function notifyDesktopOfJobCompletion(){
 	var qstr = "";
 	jobMap = {};
 	for (var i=0; i < jobList.length; i++){
-		if (i != 0) qstr += "&";
-		var aJob = jobList[i];
-		jobMap[aJob["jobId"]] = aJob;
-		qstr +="jobId="+aJob["jobId"];
+		try {
+			if (i != 0) qstr += "&";
+			var aJob = jobList[i];
+			jobMap[aJob["jobId"]] = aJob;
+			qstr +="jobId="+aJob["jobId"];
+		} catch(e){
+			// swallow bad data
+		}
 	}
 	
 
@@ -498,15 +502,15 @@ function notifyDesktopOfJobCompletion(){
 	        success: function(data) {
 	        	remainingJobs = [];
 	        	for (var i=0; i< data.length; i++){
-	        		job = data[i];
-	        		if (job.isFinished){
+	        		jobStatus = data[i];
+	        		if (jobStatus.isFinished){
 	        			
-	        			var moduleName = jobMap[aJob["jobId"]]["moduleName"];
-	        			notifyDesktop("GenePattern", moduleName + " job "+ job.extJobId + " " + job.statusFlag + " \n" + job.statusMessage);
+	        			var moduleName = jobMap[jobStatus["gpJobNo"]]["moduleName"];
+	        			notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
 	        			
 	        			
 	        		} else {
-	        			remainingJobs.push(jobMap[job.extJobId]);
+	        			remainingJobs.push(jobMap[jobStatus.gpJobNo]);
 	        		}
 	        		
 	        	} 

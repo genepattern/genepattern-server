@@ -719,6 +719,8 @@ public class JobsResource {
                 final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
     
                 final JSONObject jsonObj = status.toJsonObj();
+                //inexplicably the job status object does not include the job number
+                jsonObj.putOpt("gpJobNo", jobId);
                 statuses.put(jsonObj);
                 System.out.println("got " + jsonObj);
             }
