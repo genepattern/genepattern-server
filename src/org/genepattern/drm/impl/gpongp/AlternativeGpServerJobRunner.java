@@ -81,6 +81,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         String pass = config.getGPProperty(jobContext, "remote.password");
         String gpurl = config.getGPProperty(jobContext, "remote.genepattern.url");
         try {
+            System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
             GPClient gpClient = new GPClient(gpurl, user, pass);
             List<String> localFilePaths = jobContext.getLocalFilePaths();
             JobInfo ji = jobSubmission.getJobInfo();
@@ -88,24 +89,27 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             ArrayList<Parameter> remoteParamList = new ArrayList<Parameter>();
             for (int i=0; i < pis.length; i++){
                 String val = pis[i].getValue();
+                Parameter P = null;
                 if (val.indexOf("<GenePatternURL>") >= 0){
                     // turn these back into file path references
-                    int idx = val.indexOf("<GenePatternURL>")+ 16;
                     String fileName = val.substring(val.lastIndexOf("/")+1);
                     for ( String filePath: localFilePaths){
                         if (filePath.endsWith(fileName)){
                             val = filePath;
+                            P = new Parameter(pis[i].getName(), new File(val));
                             break;
                         }
                     }   
-                }  
-                Parameter P = new Parameter(pis[i].getName(), val);
+                }  else {
+                    P = new Parameter(pis[i].getName(), val);
+                } 
                 remoteParamList.add(P);               
             }
             externalJobId = gpClient.runAnalysisNoWait(ji.getTaskLSID(), 
                     remoteParamList.toArray(new Parameter[0])); 
         
         } catch (Exception e) {
+            System.out.println("--------------- --- -- - Failed to start remote job");
             e.printStackTrace();
         }
         
