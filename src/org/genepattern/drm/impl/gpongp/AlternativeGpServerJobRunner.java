@@ -1,6 +1,7 @@
 package org.genepattern.drm.impl.gpongp;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.genepattern.server.dm.jobresult.JobResult;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
+import org.genepattern.server.rest.client.GenePatternRestApiV1Client;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.client.GPClient;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
@@ -39,6 +41,9 @@ import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
@@ -83,31 +88,48 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         try {
             System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
             GPClient gpClient = new GPClient(gpurl, user, pass);
+            
+            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
+            
+            
             List<String> localFilePaths = jobContext.getLocalFilePaths();
             JobInfo ji = jobSubmission.getJobInfo();
             ParameterInfo[] pis = ji.getParameterInfoArray();
-            ArrayList<Parameter> remoteParamList = new ArrayList<Parameter>();
+
+            final JsonArray paramsJsonArray=new JsonArray();
+            
             for (int i=0; i < pis.length; i++){
-                String val = pis[i].getValue();
-                Parameter P = null;
-                if (val.indexOf("<GenePatternURL>") >= 0){
-                    // turn these back into file path references
-                    String fileName = val.substring(val.lastIndexOf("/")+1);
-                    for ( String filePath: localFilePaths){
-                        if (filePath.endsWith(fileName)){
-                            val = filePath;
-                            P = new Parameter(pis[i].getName(), new File(val));
-                            break;
-                        }
-                    }   
-                }  else {
-                    P = new Parameter(pis[i].getName(), val);
-                } 
-                remoteParamList.add(P);               
-            }
-            externalJobId = gpClient.runAnalysisNoWait(ji.getTaskLSID(), 
-                    remoteParamList.toArray(new Parameter[0])); 
-        
+              String val = pis[i].getValue();
+              JsonObject P = null;
+              if (val.indexOf("<GenePatternURL>") >= 0){
+                  // turn these back into file path references
+                  String fileName = val.substring(val.lastIndexOf("/")+1);
+                  for ( String filePath: localFilePaths){
+                      if (filePath.endsWith(fileName)){
+                          val = filePath;
+                          //P = new Parameter(pis[i].getName(), new File(val));
+                          Object value2 = gpRestClient.uploadFileIfNecessary(true, val);
+                          P = gpRestClient.createParameterJsonObject("input.filename", value2);
+                          break;
+                      }
+                  }   
+              }  else {
+                  P = gpRestClient.createParameterJsonObject(pis[i].getName(), val);
+              } 
+              paramsJsonArray.add(P);               
+           }
+            
+           
+           final JsonObject jobJsonObj=new JsonObject();
+           jobJsonObj.addProperty("lsid", ji.getTaskLSID()); 
+           jobJsonObj.add("params", paramsJsonArray);
+           URI JobStatusUri = gpRestClient.submitJob(jobJsonObj);
+           String uriStr = JobStatusUri.getRawPath();
+           
+           externalJobId = new Integer(uriStr.substring(uriStr.lastIndexOf('/')+1));
+           
+           System.out.println("Launched remote job ID: "+ externalJobId);
+           
         } catch (Exception e) {
             System.out.println("--------------- --- -- - Failed to start remote job");
             e.printStackTrace();
@@ -122,7 +144,18 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     //public static String ERROR = "Error";
     
     DrmJobState jobInfoStatusToDrmJobState(String jiStatus){
-        
+        try {
+            // we confuse this server if we report the job state as being queued when it has been dispat hed to the other
+            // server.  From the POV of this server its running even if its queued on the other side
+            DrmJobState state = DrmJobState.valueOf(jiStatus);
+            if (state.is(DrmJobState.IS_QUEUED)){
+                return DrmJobState.RUNNING;
+            } else {
+                return state;
+            }
+        } catch(Exception e){
+            // If only the various parts of GP were consistent
+        }
         if (jiStatus.equalsIgnoreCase(JobStatus.NOT_STARTED)){
             return DrmJobState.IS_QUEUED;
         } else if (jiStatus.equalsIgnoreCase(JobStatus.PROCESSING)){
@@ -162,37 +195,44 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String pass = config.getGPProperty(context, "remote.password");
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
-            analysisProxy.setTimeout(Integer.MAX_VALUE);
-            JobInfo ji = analysisProxy.checkStatus(new Integer(drmJobId));
+            //AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
+            //analysisProxy.setTimeout(Integer.MAX_VALUE);
+            //JobInfo ji = analysisProxy.checkStatus(new Integer(drmJobId));
             
-            String status = ji.getStatus();
+            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId );
+            
+            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
+            JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
+            String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
+            
+            
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
             DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId,state).build();
-            if (drmJobStatus.getJobState().is(DrmJobState.TERMINATED)){
+            if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 System.out.println("JOB IS DONE " + status) ;
-                String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
-                for (int i=0; i < resultFiles.length;i++){
+                //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
+                JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
+                File dir = drmJobRecord.getWorkingDir();
+                for (int i=0; i < outputFiles.size();i++){
+                    String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
                     
-                    File dir = drmJobRecord.getWorkingDir();
-                    int idx = resultFiles[i].indexOf(".att_");
-                    String name = resultFiles[i].substring(idx+5);
+                    String name = outFileUrl.substring(outFileUrl.lastIndexOf('/'));
                     
                     // avoid stomping on the special files
                     if (getSpecialRemoteFileNames().keySet().contains(name)){
                         name = getSpecialRemoteFileNames().get(name);
                     }
-                    File newFile = new File(dir, name);
-                    //System.out.println("Moving output file to "+ newFile.getAbsolutePath());
-                    File origFile = new File(resultFiles[i]);
-                    boolean fileMoveSuccess = origFile.renameTo(newFile);
+                    gpRestClient.getOutputFile(outFileUrl, dir, name);
+                    
+                    
                 }
                 Boolean delRemote = new Boolean(delete);
                 try {
                     if (delRemote) {
-                        analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
-                        analysisProxy.deleteJob(new Integer(drmJobId));  
+                        //analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
+                        //analysisProxy.deleteJob(new Integer(drmJobId));  
+                        gpRestClient.deleteJob(drmJobId);
                     }
                     
                 } catch (Exception e){
@@ -237,13 +277,13 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             Boolean delete = config.getGPBooleanProperty(context, "delete.on.remote.on.completion");
      
        
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, true);
-            analysisProxy.setTimeout(Integer.MAX_VALUE);
-            analysisProxy.terminateJob(jobId);
+            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
+            gpRestClient.terminateJob(drmJobId);
+            
             
             try {
                 System.out.println("Deleting remote " + drmJobId);
-                if (delete) analysisProxy.deleteJob(new Integer(drmJobId));
+                if (delete) gpRestClient.terminateJob(drmJobId);
             } catch (Exception e){
                 log.error(e);
             }
