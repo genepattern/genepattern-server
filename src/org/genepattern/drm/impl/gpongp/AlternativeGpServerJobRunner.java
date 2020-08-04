@@ -1,7 +1,9 @@
 package org.genepattern.drm.impl.gpongp;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.drm.impl.local.LocalJobRunner;
+import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobInfoWrapper.InputFile;
@@ -28,12 +31,17 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResult;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.rest.client.GenePatternRestApiV1Client;
+import org.genepattern.server.rest.client.TaskObj;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.client.GPClient;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;
@@ -41,6 +49,7 @@ import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -48,9 +57,10 @@ import com.google.gson.JsonObject;
 public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
     GpConfig config;
+    HashMap<Integer,Integer> outputFileRetryCount;
     
     public AlternativeGpServerJobRunner(){
-    
+        outputFileRetryCount = new HashMap<Integer,Integer>();
 
     
     }
@@ -64,15 +74,14 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     }
 
     public JobInfoWrapper getJobInfoWrapper(int jobNumber) {
-        GpContext context = GpContext.getContextForUser(UIBeanHelper.getUserId());
-        if (!ServerConfigurationFactory.instance().getGPBooleanProperty(context, "display.input.results", false)) { return null; }
-
         String userId = UIBeanHelper.getUserId();
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        String contextPath = request.getContextPath();
-        String cookie = request.getHeader("Cookie");
-        JobInfoManager jobInfoManager = new JobInfoManager();
-        return jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
+        String contextPath = config.getGpPath();
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        String cookie = "";
+        JobInfoManager m = new JobInfoManager();
+        return m.getJobInfo(cookie, contextPath, userId, jobNumber);
     }
     
     
@@ -92,8 +101,23 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             
             
+            
+            
             List<String> localFilePaths = jobContext.getLocalFilePaths();
             JobInfo ji = jobSubmission.getJobInfo();
+            
+            // verify the module exists on the remote GP server
+            try {
+                TaskObj to = gpRestClient.getTaskObj(ji.getTaskLSID());
+            } catch (Exception e){ 
+                
+                throw new CommandExecutorException("Module "+ ji.getTaskName() + " with LSID: "+ 
+                            ji.getTaskLSID()+" does not exist on the remote system designated to execute it."+
+                            "  Please contact your GenePattern administrator to inform them of this mis-configuration.");
+            }
+            
+            
+            
             ParameterInfo[] pis = ji.getParameterInfoArray();
 
             final JsonArray paramsJsonArray=new JsonArray();
@@ -102,17 +126,17 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               String val = pis[i].getValue();
               JsonObject P = null;
               if (val.indexOf("<GenePatternURL>") >= 0){
-                  // turn these back into file path references
-                  String fileName = val.substring(val.lastIndexOf("/")+1);
-                  for ( String filePath: localFilePaths){
-                      if (filePath.endsWith(fileName)){
-                          val = filePath;
-                          //P = new Parameter(pis[i].getName(), new File(val));
-                          Object value2 = gpRestClient.uploadFileIfNecessary(true, val);
-                          P = gpRestClient.createParameterJsonObject("input.filename", value2);
-                          break;
-                      }
-                  }   
+                  File serverFile = null;
+                  try {
+                      GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
+                      serverFile = gpfp.getServerFile();
+                  } catch (Exception e){
+                      serverFile = this.getFileForUrl(val, jobContext);
+                  }
+                  
+                  Object value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                  P = gpRestClient.createParameterJsonObject("input.filename", value2);
+             
               }  else {
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), val);
               } 
@@ -133,10 +157,138 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         } catch (Exception e) {
             System.out.println("--------------- --- -- - Failed to start remote job");
             e.printStackTrace();
+            throw new CommandExecutorException(e.getMessage());
         }
         
         return ""+externalJobId;
     }
+        
+        
+        
+        // get a file for a url that starts as getFile.jsp?task=***&file=***
+        // copied from GenePatternAnalysisTask.localInputUrlToFile()
+        private File getFileForUrl(String urlPath, GpContext jobContext){
+            int lastIdx = urlPath.lastIndexOf("?");
+            
+            // request parameters are: task=lsid & job=<job_number> & file=filename
+            String params = urlPath.substring(lastIdx + 1);
+            int idx1 = params.indexOf("task=");
+            int endIdx1 = params.indexOf('&', idx1);
+            if (endIdx1 == -1) {
+                endIdx1 = params.length();
+            }
+            int idx2 = params.indexOf("file=");
+            int endIdx2 = params.indexOf('&', idx2);
+            if (endIdx2 == -1) {
+                endIdx2 = params.length();
+            }
+            String lsid = params.substring(idx1 + 5, endIdx1);
+            try {
+                lsid = URLDecoder.decode(lsid, "UTF-8");
+            } 
+            catch (UnsupportedEncodingException e) {
+                log.error("Error", e);
+            }
+            String filename = params.substring(idx2 + 5, endIdx2);
+            if (filename == null) {
+                return null;
+            }
+            try {
+                filename = URLDecoder.decode(filename, "UTF-8");
+            } 
+            catch (UnsupportedEncodingException e) {
+                log.error("Error", e);
+            }
+            int jobNumber = -1;
+            int idx3 = params.indexOf("job=");
+            if (idx3 >= 0) {
+                int endIdx3 = params.indexOf('&', idx3);
+                if (endIdx3 == -1) {
+                    endIdx3 = params.length();
+                }
+                String jobNumberParam = params.substring(idx3 + 4, endIdx3);
+                if (jobNumberParam != null) {
+                    try {
+                        jobNumber = Integer.parseInt(jobNumberParam);
+                    }
+                    catch (NumberFormatException e) {
+                        log.error("Invalid request parameter, job="+jobNumberParam, e);
+                    }
+                }
+            }
+            if (lsid == null || lsid.trim().equals("")) { 
+                // input file look in temp for pipelines run without saving
+                File parentTempdir = ServerConfigurationFactory.instance().getTempDir(jobContext);
+                File in = new File(parentTempdir, filename);
+                if (in.exists() && jobNumber >= 0) {
+                    // check whether the current user has access to the job
+                    if (jobContext.canReadJob()) {
+                        return in;
+                    }
+                    throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
+                }
+                else if (in.exists()) {
+                    InputFilePermissionsHelper perm = new InputFilePermissionsHelper(jobContext.getUserId(), filename);
+                    if (perm.isCanRead()) return in;
+                }                      
+
+                //special case: look for file among the user uploaded files
+                try {
+                    File userUploadDir = config.getUserUploadDir(jobContext);
+                    in = new File(userUploadDir, filename);
+                    boolean foundUserUpload = in.canRead();
+                    if (foundUserUpload) {
+                        return in;
+                    }
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected error getting useruploadDir", t);
+                }
+
+                //special case: Axis
+                in = new File(ServerConfigurationFactory.instance().getSoapAttDir(jobContext), filename);
+                if (in.exists()) {
+                    //TODO: permissions check for SOAP upload, see *similar* code in getFile.jsp
+                    return in;
+                }
+                return null;
+            }
+            // check that user can access requested module
+            TaskInfo taskInfo = null;
+            try {
+                LocalAdminClient adminClient = new LocalAdminClient(jobContext.getUserId());
+                taskInfo = adminClient.getTask(lsid);
+            }
+            catch (WebServiceException e) {
+                String errorMessage = "Unable to find file: "+filename+ " ("+urlPath+"). Because of a database connection error: "+e.getLocalizedMessage();
+                log.error(errorMessage, e);
+                throw new IllegalArgumentException(errorMessage,e);
+            } 
+            if (taskInfo == null) {
+                String errorMessage = "You are not permitted to access the requested file: "+filename+ " ("+urlPath+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+            File file = null;
+            String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+            if (taskLibDir == null) {
+                String errorMessage = "You are not permitted to access the requested file: "+filename+ " ("+urlPath+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+            file = new File(taskLibDir, filename);
+            if (file.exists()) {
+                return file;
+            }
+            else {
+                //new code circa 3.6.0 release (just before 3.6.1)
+                String errorMessage = "Requested file does not exist: "+filename+ " ("+urlPath+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+        
+        }
+        
 
     //public static String NOT_STARTED = "Pending";
     //public static String PROCESSING = "Processing";
@@ -195,25 +347,43 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String pass = config.getGPProperty(context, "remote.password");
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
-            //AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
-            //analysisProxy.setTimeout(Integer.MAX_VALUE);
-            //JobInfo ji = analysisProxy.checkStatus(new Integer(drmJobId));
-            
             System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId );
             
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
             String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
+            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + " -- " + status);
             
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
             DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId,state).build();
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
-                System.out.println("JOB IS DONE " + status) ;
+                System.out.println("JOB IS DONE " + status + "  " + localJobId) ;
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
+                System.out.println("Job output files are " + outputFiles.toString());
                 File dir = drmJobRecord.getWorkingDir();
+                
+                if (outputFiles.size() == 0){
+                    // We get a race condition sometimes when the job is done but the files have not yet been registered
+                    // remotely.  Lets just punt once here and say its still running and check when it comes back
+                    System.out.println("NO OUTPUT FILES ");
+                    
+                    Integer prevTries = outputFileRetryCount.get(localJobId);
+                    if (prevTries == null) prevTries = 1;
+                    else prevTries++;
+                    outputFileRetryCount.put(localJobId, prevTries);
+                    if (prevTries < 5){
+                        drmJobStatus=new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING).build();
+                        return drmJobStatus;
+                    } else {
+                        // clear the dictionary and report it as finished with no files
+                        outputFileRetryCount.remove(localJobId);
+                    }
+                }
+                
+                
                 for (int i=0; i < outputFiles.size();i++){
                     String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
                     
@@ -223,6 +393,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     if (getSpecialRemoteFileNames().keySet().contains(name)){
                         name = getSpecialRemoteFileNames().get(name);
                     }
+                    System.out.println("Saving remote result file " + name + " to " + dir.getAbsolutePath());
                     gpRestClient.getOutputFile(outFileUrl, dir, name);
                     
                     
@@ -240,6 +411,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     log.error(e);
                 }
             }
+            System.out.println(" returning " + drmJobStatus);
+            
             return drmJobStatus;
         }
         catch (NumberFormatException e1) {

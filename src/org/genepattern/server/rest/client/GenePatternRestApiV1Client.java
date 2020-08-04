@@ -107,8 +107,8 @@ public class GenePatternRestApiV1Client {
     public static void main(String[] args) throws Exception {
         
         System.out.println("Starting");
-        //GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("https://beta.genepattern.org/","ted","qw");
-        GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("https://gp.indiana.edu/","ted","iuncg4spass");
+        // enter your own username and password for testing.  I won't be checking that part in... ;)
+        GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("https://gp.indiana.edu/","","");
         
         JsonObject job = inst.exampleJobInputJsonObject();
         URI JobStatusUri = inst.submitJob(job);
@@ -288,7 +288,7 @@ public class GenePatternRestApiV1Client {
        
         JsonParser parser = new JsonParser();
         JsonObject jobStatusObj = parser.parse(new InputStreamReader(response.getEntity().getContent())).getAsJsonObject();
-        System.out.println("Status json: " + jobStatusObj.toString());
+        //System.out.println("Status json: " + jobStatusObj.toString());
         return jobStatusObj;
     }
     
@@ -526,7 +526,7 @@ public class GenePatternRestApiV1Client {
     
 
     
-    private TaskObj getTaskObj(final String taskNameOrLsid) throws Exception {
+    public TaskObj getTaskObj(final String taskNameOrLsid) throws Exception {
         final String urlStr= getTaskUrl.toExternalForm()+"/"+taskNameOrLsid;
         URI taskUri;
         try {
@@ -563,7 +563,7 @@ public class GenePatternRestApiV1Client {
    
     public <T extends HttpMessage> T setAuthHeaders(final T message) {
         //for basic auth, use a header like this
-        //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+        //Authorization: Basic sdfgsdfgsdfgsdfgsdfg
        
         message.setHeader("Authorization", basicAuth);
         message.setHeader("User-Agent", "GenePatternRest");
@@ -573,7 +573,7 @@ public class GenePatternRestApiV1Client {
     
     public <T extends HttpMessage> T setJsonHeaders(final T message) {
         //for basic auth, use a header like this
-        //Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+        //Authorization: Basic sgsgsfgsdfgsdfgsfgsfd
        
         message.setHeader("Content-type", "application/json");
         message.setHeader("Accept", "application/json");

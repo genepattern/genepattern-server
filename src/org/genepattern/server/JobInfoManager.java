@@ -168,7 +168,13 @@ public class JobInfoManager {
         AnalysisDAO analysisDao = new AnalysisDAO(mgr);
         UserDAO userDao = new UserDAO(mgr);
         boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
-        String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+        String visualizerJavaFlags = null;
+        try {
+            visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+        } catch (Exception e){
+            e.printStackTrace();
+            // XXX JTL 08/03/2020  swallow as we don't care sometimes
+        }
 
         AdminDAO adminDao = new AdminDAO(mgr);
 
