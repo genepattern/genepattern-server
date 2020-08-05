@@ -13,14 +13,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -37,6 +40,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import org.apache.http.message.BasicNameValuePair;
+
 
 public class GenePatternRestApiV1Client {
     public URL jobsUrl;
@@ -108,19 +113,23 @@ public class GenePatternRestApiV1Client {
         
         System.out.println("Starting");
         // enter your own username and password for testing.  I won't be checking that part in... ;)
-        GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("https://gp.indiana.edu/","","");
+        //GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("https://gp.indiana.edu/","","");
+        GenePatternRestApiV1Client inst = new GenePatternRestApiV1Client("http://127.0.0.1:8180/","","");
         
-        JsonObject job = inst.exampleJobInputJsonObject();
-        URI JobStatusUri = inst.submitJob(job);
-        System.out.println("Job submitted");
-        
-        JsonObject status = inst.waitForCompletion(JobStatusUri);
-        System.out.println("Job finished " + status);
-        
-        File dir = new File("/Users/liefeld/Desktop/tmp/");
-        System.out.println("Getting files now");
-        inst.getAllOutputFiles(status, dir);
-          //inst.getJobStatus(467);
+//        JsonObject job = inst.exampleJobInputJsonObject();
+//        URI JobStatusUri = inst.submitJob(job);
+//        System.out.println("Job submitted");
+//        
+//        JsonObject status = inst.waitForCompletion(JobStatusUri);
+//        System.out.println("Job finished " + status);
+//        
+//        File dir = new File("/Users/liefeld/Desktop/tmp/");
+//        System.out.println("Getting files now");
+//        inst.getAllOutputFiles(status, dir);
+        System.out.println("get status");
+        inst.getJobStatus(559);
+        System.out.println("adding comment");
+          inst.addComment(559, "Test from api");
         
           //inst.getOutputFile("http://127.0.0.1:8180/gp/jobResults/467/all_aml_train.preprocessed.gct", dir, "rest_download.txt");
     }
@@ -262,7 +271,7 @@ public class GenePatternRestApiV1Client {
         HttpResponse response;
         try {
             response = client.execute(get);
-            System.out.println(response.toString());
+           
         }
         catch (ClientProtocolException e) {
             throw new Exception("Error executing HTTP request, GET "+jobsUrl, e);
@@ -358,13 +367,65 @@ public class GenePatternRestApiV1Client {
         }
         
     }
-    
+
+    public JsonObject addComment(String jobNo, String comment) throws Exception{
+        return addComment(Integer.parseInt(jobNo), comment);
+    }
+
+    public JsonObject addComment(int jobNo, String comment) throws Exception{
+        final HttpClient client = HttpClients.createDefault();
+        
+        URI commentUri = new URI(this.jobsUrl + "/" + jobNo + "/comments/add");
+        HttpPost post = new HttpPost(commentUri);
+        // for this call it cannot set the user-agent to GenePatternAPI since its meant to be used from the js web browser
+        post.setHeader("Authorization", basicAuth);
+      
+        ArrayList<BasicNameValuePair> form = new ArrayList<>();
+        form.add(new BasicNameValuePair("text", comment));
+        UrlEncodedFormEntity entity = new UrlEncodedFormEntity(form, Consts.UTF_8);
+
+      
+        post.setEntity(entity);
+            
+        
+        HttpResponse response;
+        try {
+            response = client.execute(post);
+            System.out.println("RESPONSE WAS: " + response.toString());
+        }
+        catch (ClientProtocolException e) {
+            throw new Exception("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        catch (IOException e) {
+            throw new Exception("Error executing HTTP request, POST "+jobsUrl, e);
+        }
+        final int statusCode=response.getStatusLine().getStatusCode();
+        final JsonObject success;
+        //when adding a job, expecting a status code of ...
+        //   200, OK
+        //   201, created
+        //   202, accepted
+        if (statusCode >= 200 && statusCode < 300) {
+            System.out.println("Successs");
+           
+            JsonParser parser = new JsonParser();
+            success = parser.parse(new InputStreamReader(response.getEntity().getContent())).getAsJsonObject();
+           
+        }
+        else {
+            success=null;
+        }
+        if (success == null) {
+            
+            String message="POST addComment failed! "+statusCode+": "+response.getStatusLine().getReasonPhrase();
+            System.out.println(message);
+            throw new Exception(message);
+        }
+        return success;
+    }
     
     
     public URI submitJob(JsonObject job) throws Exception {
-       
-        
-        
         final HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(jobsUrl.toExternalForm());
         post = this.setAuthHeaders(post);

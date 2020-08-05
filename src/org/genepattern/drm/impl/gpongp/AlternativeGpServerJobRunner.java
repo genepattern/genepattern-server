@@ -153,6 +153,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            externalJobId = new Integer(uriStr.substring(uriStr.lastIndexOf('/')+1));
            
            System.out.println("Launched remote job ID: "+ externalJobId);
+           gpRestClient.addComment(externalJobId, "Launched from " + config.getGpUrl() + " for user " + ji.getUserId());
+           
            
         } catch (Exception e) {
             System.out.println("--------------- --- -- - Failed to start remote job");
