@@ -32,8 +32,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.genepattern.RestClientExample;
+
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
