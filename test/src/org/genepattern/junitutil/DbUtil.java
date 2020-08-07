@@ -3,11 +3,15 @@
  *******************************************************************************/
 package org.genepattern.junitutil;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -97,6 +101,73 @@ public class DbUtil {
         return mgr;
     }
     
+    /**
+     * Utility test which runs all of the ddl scripts in the ./website/WEB-INF/schema directory.
+     */
+    public static void assertDbUpdateSchema(final GpConfig gpConfig, final HibernateSessionManager mgr) throws DbException {
+        // from empty string to null means run all DDL scripts
+        final String fromVersion=""; 
+        final String toVersion=null;
+        
+        final String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
+        assertEquals("before update", fromVersion, dbSchemaVersion);
+        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(mgr, "props"));
+        assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
+
+        SchemaUpdater.updateSchema(gpConfig, mgr, toVersion);
+    }
+
+    public static ResultSet executeSqlQuery(final HibernateSessionManager mgr, final String sqlQuery) 
+    throws DbException
+    { 
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            if (!isInTransaction) {
+                mgr.beginTransaction();
+            } 
+            final Statement statement = mgr.getSession().connection().createStatement();
+            return statement.executeQuery(sqlQuery);
+        }
+        catch (SQLException e) {
+            throw new DbException("Unexpected SQLException executing sqlQuery='"+sqlQuery+"': "+e.getLocalizedMessage(), e);
+        }
+        catch (Throwable t) {
+            throw new DbException("Unexpected error executing sqlQuery='"+sqlQuery+"': "+t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+    
+    /**
+     * custom assertion, assert that the ANALYSIS_JOB_TOTAL_VIEW exists
+     */
+    public static void assertAnalysisJobTotalView(final HibernateSessionManager mgr) throws DbException, SQLException {
+        try {
+            final ResultSet rs=executeSqlQuery(mgr, "SELECT * from ANALYSIS_JOB_TOTAL");
+            int columnCount=rs.getMetaData().getColumnCount();
+            assertEquals("columnCount", 14, columnCount);
+            assertEquals("columnName[1]", "JOB_NO", rs.getMetaData().getColumnName(1));
+            // ...
+            // ...
+            assertEquals("columnName[14]", "DELETED", rs.getMetaData().getColumnName(14));
+        }
+        catch (DbException e) {
+            throw e;
+        }
+        catch (SQLException e) {
+            throw e;
+        }
+        catch (Throwable t) {
+            throw t;
+        }
+        finally {
+            mgr.closeCurrentSession();
+        }
+    }
+
 
     /**
      * Add a new user to the database, or ignore if there is already a user with the given userId

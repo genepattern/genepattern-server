@@ -3,6 +3,9 @@
  *******************************************************************************/
 package org.genepattern.server.config;
 
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE;
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE_DEFAULT;
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE_LOOKUP;
 import static org.genepattern.drm.JobRunner.PROP_JOB_COMMAND_PREFIX;
 
 import java.io.File;
@@ -28,6 +31,7 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.executor.CommandExecutorMapper;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.repository.RepositoryInfo;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 
 import com.google.common.base.Strings;
@@ -213,6 +217,12 @@ public class GpConfig {
      *   Default: show.terms.of.service=false
      */
     public static final String PROP_SHOW_TERMS_OF_SERVICE="show.terms.of.service";
+
+    /**
+     * Set 'terms.of.service.link' to use an external link for the terms of service.
+     *   Default: terms.of.service.link=
+     */
+    public static final String PROP_TERMS_OF_SERVICE_LINK="terms.of.service.link";
 
     /**
      * Set 'create.account.allowed' to true to allow users to create
@@ -847,7 +857,7 @@ public class GpConfig {
         return getGPTrueProperty(serverContext, PROP_CREATE_ACCOUNT_ALLOWED, true);
     }
 
-    public Value getValue(final GpContext context, final String key) {
+    protected Value getValueFromConfig(final GpContext context, final String key) {
         Value value=null;
         if (yamlProperties != null) {
             value=yamlProperties.getValue(context, key);
@@ -855,11 +865,23 @@ public class GpConfig {
         if (value==null && serverProperties != null) {
             value=serverProperties.getValue(context, key);
         }
-        if (value==null) {
-            String substitutionValue=this.substitutionParams.get(key);
-            if (substitutionValue!=null) {
-                value=new Value(substitutionValue);
-            }
+
+        return value;
+    }
+
+    public Value getValue(final GpContext context, final String key) {
+        Value value=getValueFromConfig(context, key);
+        if (value != null) {
+            return value;
+        }
+        // special-case for built-in substitution parameters
+        final String substitutionValue=this.substitutionParams.get(key);
+        if (substitutionValue!=null) {
+            return new Value(substitutionValue);
+        }
+        // special-case for 'job.docker.image'
+        if (value==null && JobRunner.PROP_DOCKER_IMAGE.equals(key)) {
+            value=GpConfig.lookupJobDockerImageValue(this, context);
         }
         return value;
     }
@@ -1080,6 +1102,113 @@ public class GpConfig {
             log.error("Error parsing memory value for property, "+key+"="+val, t);
             return defaultValue;
         }
+    }
+    
+    /** 
+     * Get the 'job.docker.image' substitution for a job based on the following conditions.
+     * <ul>
+     *   <li>the 'job.docker.image' in the manifest file</li>
+     *   <li>the 'job.docker.image' in the config_yaml file</li>
+     *   <li>the 'job.docker.image.default' in the config_yaml file</li>
+     *   <li>the 'job.docker.image.lookup' in the config_yaml file</li>
+     *   <li>the hard-coded default value, if not set anywhere else</li>
+     * </ul>
+     * 
+     * <h3>Default</h3>
+     * <p>By default use the 'job.docker.image' declared in the manifest file.</p>
+     * 
+     * <h3>Special case: No image in manifest</h3>
+     * <p>There are two ways to set the docker image when there is no value in the manifest.</p>
+     * <ol>
+     *   <li>use the 'job.docker.image.lookup' table</li>
+     *   <li>set the 'job.docker.image.default' property</li>
+     * </ol>
+     * <p>When there is no value in the manifest, set the 'job.default.docker.image' in the manifest
+     *    file.
+     * </p>
+     * <p>The 'job.docker.image.lookup' can be used for older GenePattern modules which do not set the
+     * docker image in the manfest file. Example:
+     * </p>
+     * <pre>
+        job.docker.image.lookup: {
+          # {taskName_no_version} : {dockerImage}
+          "ExampleLookup": "genepattern/docker-example:1-lookup-name-no-version",
+
+          # {taskName:version}    : {dockerImage}
+          "ExampleLookup:1" : "genepattern/docker-example:1",
+          
+          # ExampleLookup
+          # {lsid}                : {dockerImage}
+          "urn:lsid:example.com:example.module.analysis:00003:2": "genepattern/docker-example:2",
+
+          # ExampleLookup    
+          # {lsid_no_version}     : {dockerImage}
+          "urn:lsid:example.com:example.module.analysis:00003": "genepattern/docker-example:3",
+          
+          # Example 
+          "Example:3.1": "genepattern/docker-example:3.1-from-lookup"
+        }
+     * </pre>
+     * 
+     * <h3>Special case: Override the value from the manifest</h3>
+     * <p>If you need to use a different value than that which is set in the manifest file, 
+     *    set the 'job.docker.image' in the config_yaml file. This will override the value,
+     *    if any, that is set in the manifest file.
+     * </p>
+     * 
+     * <h3>Precedence rules</h3>
+     * <p>The 'job.docker.image' param takes precedence over 'job.docker.image.default'
+     *    which takes precedence over 'job.docker.image.lookup'.
+     * </p>
+     * <p>In all cases the normal precedence rules for the config_yaml file apply. For example
+     *    a custom value per user will override the default value.
+     * </p>
+     */
+    public String getJobDockerImage(final GpContext gpContext) {
+        return getGPProperty(gpContext, PROP_DOCKER_IMAGE);
+    }
+
+    public static final Value lookupJobDockerImageValue(final GpConfig gpConfig, final GpContext jobContext) {
+        final Value lookup=gpConfig.getValue(jobContext, PROP_DOCKER_IMAGE_LOOKUP);
+        if (lookup != null) {
+            if (!lookup.isMap()) {
+                log.error("ignoring '"+PROP_DOCKER_IMAGE_LOOKUP+"', expecting a value of type Map");
+            }
+            else {
+                final Map<?,?> map=lookup.getMap();
+                final String lsid=jobContext.getLsid();
+                final String taskName=jobContext.getTaskName();
+                String lsidNoVersion=null;
+                String taskNameVersion=null;
+
+                try {
+                    LSID lsidObj=new LSID(lsid);
+                    lsidNoVersion=lsidObj.toStringNoVersion();
+                    if (lsidObj.hasVersion()) {
+                        taskNameVersion=taskName+":"+lsidObj.getVersion();
+                    }
+                }
+                catch (Throwable t) {
+                    log.error(t);
+                }
+                if (map.containsKey(lsid)) {
+                    return new Value(map.get(lsid).toString());
+                }
+                else if (taskNameVersion != null && map.containsKey(taskNameVersion)) {
+                    return new Value(map.get(taskNameVersion).toString());
+                    
+                }
+                else if (lsidNoVersion != null && map.containsKey(lsidNoVersion)) {
+                    return new Value(map.get(lsidNoVersion).toString());
+                }
+                else if (map.containsKey(taskName)) {
+                    return new Value(map.get(taskName).toString());
+                } 
+            }
+        }
+        log.warn("no match in '"+PROP_DOCKER_IMAGE_LOOKUP+"', trying '"+PROP_DOCKER_IMAGE_DEFAULT+"'");
+        final String dockerImageDefault=gpConfig.getGPProperty(jobContext, PROP_DOCKER_IMAGE_DEFAULT, "genepattern/docker-java17:0.12");
+        return new Value(dockerImageDefault);
     }
 
     /**

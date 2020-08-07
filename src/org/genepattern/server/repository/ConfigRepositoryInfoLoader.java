@@ -37,10 +37,10 @@ import org.yaml.snakeyaml.Yaml;
  * module repository if an about.yaml file is present.
  * <pre>
  *     <repoUrl>/about/about.yaml
- * e.g. for the Broad production repository,
- *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/about.yaml
- * e.g. for the Broad dev repository,
- *     http://software.broadinstitute.org/webservices/gpModuleRepository/about/dev/about.yaml
+ * e.g. for the production repository,
+ *    https://modulerepository.genepattern.org/gpModuleRepository/about/about.yaml
+ * e.g. for the dev repository,
+ *     https://modulerepository.genepattern.org/gpModuleRepository/about/dev/about.yaml
  * </pre>
  * 
  * If an about.yaml file is not present in the repository, 
@@ -260,7 +260,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
     }
     
     final private GpContext userContext; 
-    private String currentRepository=RepositoryInfo.BROAD_PROD_URL;
+    private String currentRepository=RepositoryInfo.GP_PROD_URL;
 
     public ConfigRepositoryInfoLoader(final GpContext userContext) {
         if (userContext==null) {
@@ -276,7 +276,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
                 boolean inTransaction=HibernateUtil.isInTransaction();
                 try {
                     UserDAO userDao=new UserDAO();
-                    this.currentRepository=userDao.getPropertyValue(userContext.getUserId(), RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.BROAD_PROD_URL);
+                    this.currentRepository=userDao.getPropertyValue(userContext.getUserId(), RepositoryInfo.PROP_MODULE_REPOSITORY_URL, RepositoryInfo.GP_PROD_URL);
                 }
                 finally {
                     if (!inTransaction) {
@@ -323,7 +323,7 @@ public class ConfigRepositoryInfoLoader implements RepositoryInfoLoader {
             return info;
         }
         log.error("Error initializing repository info for current repository: "+currentRepository);
-        return getRepository(RepositoryInfo.BROAD_PROD_URL);
+        return getRepository(RepositoryInfo.GP_PROD_URL);
     }
 
     @Override

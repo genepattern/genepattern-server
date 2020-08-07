@@ -118,6 +118,35 @@ function handleDiskQuotaMsg(diskInfo)
         quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
         $("#paramsListingDiv").before(quotaExceededMsg);
     }
+    else if (diskInfo != null && (diskInfo.numProcessingJobs >= diskInfo.maxSimultaneousJobs)) { 
+    	// Note we do not use the DiskInfo aboveMaxSimultaneousjobs because here we want at or above.  On the server it has to be above
+    	// since it checks multiple times including after the jobs starts processing so on the server the equality would leave off one job
+    	
+    	
+    	$("button.Run").attr("disabled", "disabled");
+        $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
+
+        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessageBig'>Max simultaneous processing jobs exceeded.&nbsp; </div>");
+        quotaExceededMsg.prepend("<img class='elemSpacing' src='/gp/images/exclamation.png' width='20' height='17' />");
+        quotaExceededMsg.append("Jobs Processing: " +  diskInfo.numProcessingJobs + ".   Max at one time: " + diskInfo.maxSimultaneousJobs + ".");
+        quotaExceededMsg.append("<p>Job submission has been disabled. Please wait for jobs to complete or cancel some jobs before submitting new ones.</p>");
+        $("#paramsListingDiv").before(quotaExceededMsg);
+        var taskName = $('#task_name').html();
+        	
+        $.ajax({
+            type: "POST",
+            url: "/gp/rest/v1/disk/notifyMaxJobsExceeded?taskName="+taskName,
+            cache: false,
+            success: function (response) {
+                console.log(response);            
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log("Response from server: status=" + xhr.status + " text=" + xhr.responseText);
+                console.log(thrownError);
+            },
+            dataType: "json"
+        });
+    }
     else
     {
         //enable the job submit button
@@ -778,6 +807,7 @@ function loadModuleInfo(module) {
     $(".properties-license").text(module["eula"] ? "License Acceptance Required" : "None");
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
+    $(".properties-dockerimage").text(module["job.docker.image"]);
     $(".properties-commandline").text(module["commandLine"]);
     $(".properties-tasktype").text(module["taskType"]);
     $(".properties-categories").text(module["categories"]);
@@ -901,7 +931,7 @@ function setParamFieldType(parameterInfo) {
         }
 
         if (!isFile && !isChoice) {
-            if (parameterInfo.type === "PASSWORD") {
+            if (parameterInfo.type.toUpperCase() === "PASSWORD") {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
             else if(parameterInfo.minRange !== undefined || parameterInfo.maxRange !== undefined)
@@ -1195,7 +1225,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
 
                 run_task_info.params[paramName].allowMultiple = true;
 
-                parent.find(".batchBox").append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+                parent.find(".batchBox").append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
             }
             else
             {
@@ -1218,7 +1248,7 @@ function createNumericDiv(parameterName, groupId, enableBatch, initialValuesList
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         numericDiv.append(batchBox);
 
@@ -1372,6 +1402,10 @@ function createNumericInput(parameterName, groupId, container, allowDelete, valu
         nField.spinner( "option","max", paramDetails.maxRange);
     }
 
+    if (!(value != undefined && value != null) ){
+    	value = nField.val();
+    }
+    
     if(value != undefined && value != null)
     {
         var valueList = getValuesForGroup(groupId, parameterName);
@@ -1476,7 +1510,7 @@ function createTextDiv(parameterName, groupId, enableBatch, initialValuesList) {
         batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
         //batchCheck.button();
         batchBox.tooltip();
-        batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+        batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
         textDiv.append(batchBox);
 
@@ -2230,7 +2264,7 @@ function populateContentDiv(parameterName, contentDiv, groupId, initialValues, e
             batchBox.append("<label for='batchCheck" + parameterName + "'>Batch</label>");
             //batchCheck.button();
             batchBox.tooltip();
-            batchBox.append("<a class='batchHelp' href='http://software.broadinstitute.org/cancer/software/genepattern/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
+            batchBox.append("<a class='batchHelp' href='https://www.genepattern.org/how-batching-works-in-genepattern' target='_blank'><img src='/gp/images/help_small.gif' width='12' height='12'/></a>");
 
 
             //if this is a batch parameter then pre-select the batch checkbox
@@ -2443,6 +2477,13 @@ function createParamTable(parameterNames, initialValues) {
 
         if (initialValues !== null && initialValues !== undefined) {
             initialValuesList = initialValues[parameterName];
+        } else {
+        	//initialValuesList = run_task_info.params[parameterName].initialValues
+        	var x = run_task_info.params[parameterName].default_value;
+        	if (x != null){
+        		initialValueList = {groupid:"", values: [x]}
+        	}
+        	
         }
         run_task_info.params[parameterName].initialValues = initialValuesList;
 
@@ -2737,7 +2778,7 @@ function loadRunTaskForm(lsid, reloadJob, sendFromKind, sendFromUrl)
                     else {
                         $("#viewCodeDiv").append("<pre style='overflow: auto;'>" + htmlEncode(response["code"]) + "</pre>");
                         //add a link to the appropriate programmers guide
-                        $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
+                        $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                             "Using GenePattern from " + language + "</a></span>");
                     }
                 },
@@ -3047,6 +3088,22 @@ function submitTask() {
                 {
                     openVisualizers = "&openVisualizers=false";
                     window.open("/gp/pages/jsViewer.jsf?jobNumber=" + response.jobId);
+                } else {
+                	if (localStorage.getItem("jobStatusNotificationList") == null){
+                		jobs = [];
+                	} else {
+                		try {
+                			jobs = JSON.parse(localStorage.getItem("jobStatusNotificationList"));
+                		} catch (e){
+                			jobs = [];
+                		}
+                	}
+                	jobObj = {"jobId": response.jobId, "moduleName": run_task_info.name};
+                	
+                	jobs.push(jobObj);
+                	localStorage.setItem("jobStatusNotificationList", JSON.stringify(jobs));
+                	var moduleName = $("div.module-name")[0].innerText;
+                	
                 }
 
                 window.location.replace("/gp/pages/index.jsf?jobid=" + response.jobId + openVisualizers);
@@ -3327,8 +3384,7 @@ function checkFileSizes(files) {
             errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
                 " to upload these files.</p>");
             errorMessageDiv.append("<p> More information about using large files can be found in our " +
-                "<a href='http://software.broadinstitute.org/cancer/software/genepattern/user-guide" +
-                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide</a>.</p>");
+                "<a href='https://www.genepattern.org/user-guide#running-modules-and-pipelines-uploading-files' target='_blank'>User Guide</a>.</p>");
             errorMessageDiv.dialog({
                 title: "Max File Upload Size Exceeded",
                 resizable: true,

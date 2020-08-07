@@ -4,7 +4,7 @@
   <groupId>org.genepattern.jobrunner</groupId>
   <artifactId>gp-awsbatch</artifactId>
   <packaging>jar</packaging>
-  <version>0.4.1-snapshot</version>
+  <version>0.4.5-snapshot</version>
 
   <!-- dummy scm required for buildnumber-maven-plugin --> 
   <scm>
@@ -160,13 +160,13 @@
          mvn deploy:deploy-file \
            -Durl=file:///Broad/dev/maven-repo/ \
            -DgroupId=org.genepattern -DartifactId=gp-full -Dpackaging=jar \
-           -Dversion=3.9.11-pre.11-b199 \
-           -Dfile=gp-full-3.9.11-pre.11-b199.jar 
+           -Dversion=3.9.11-pre.12-b206 \
+           -Dfile=build/gp-full-3.9.11-pre.12-b206.jar 
     -->
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-pre.11-b199</version>
+      <version>3.9.11-pre.12-b206</version>
       <!-- scope>runtime,test</scope -->
     </dependency>
 

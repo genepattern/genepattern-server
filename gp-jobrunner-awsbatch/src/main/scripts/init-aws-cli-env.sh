@@ -19,9 +19,16 @@
 #  aws-cmd=<run-with-env> -u miniconda2/4.3.13 -u aws-cli/1.11.87 aws
 
 # -u miniconda2/4.3.13
+CONDA_PATH_BACKUP=/Applications/OpenCRAVAT.app/Contents/Resources/launchers:/Users/liefeld/.sdkman/candidates/grails/current/bin:/Users/liefeld/ana_conda_4/anaconda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/liefeld/tools/ant/apache-ant-1.10.1/bin
+CONDA_PREFIX=/Users/liefeld/ana_conda_4/anaconda/envs/awscli
+CONDA_DEFAULT_ENV=awscli
+CONDA_PS1_BACKUP="\h:\W \u\$ "
+
 # these 2 lines are for Peter Carr's laptop only
-MINICONDA2_HOME=/Broad/Applications/miniconda2
-export PATH="${PATH}:${MINICONDA2_HOME}/bin"
+MINICONDA2_HOME=/Users/liefeld/ana_conda_4/anaconda/bin
+export PATH="${PATH}:${MINICONDA2_HOME}/bin:/Users/liefeld/ana_conda_4/anaconda/envs/awscli/bin/"
+# export PATH=$PATH:/Users/liefeld/ana_conda_4/anaconda/envs/awscli/bin:/Applications/OpenCRAVAT.app/Contents/Resources/launchers:/Users/liefeld/.sdkman/candidates/grails/current/bin:/Users/liefeld/ana_conda_4/anaconda/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/liefeld/tools/ant/apache-ant-1.10.1/bin
+
 
 # -u  aws-cli/1.11.87
 source activate awscli

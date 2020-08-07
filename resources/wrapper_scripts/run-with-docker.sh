@@ -80,6 +80,8 @@ function run_with_docker() {
   # note: this default is ignored by the check for 'job.docker.image' above
   local docker_img="${GP_JOB_DOCKER_IMAGE:-genepattern/docker-java17:0.12}";
   local workdir="${GP_JOB_WORKING_DIR:-`pwd`}";
+  # set '--memory' flag
+  local job_memory="${GP_JOB_MEMORY:-2147483648}";
   
   ## check for 'docker' executable
   #    use the 'command -v' idiom to check the docker_cmd
@@ -106,13 +108,18 @@ default.properties:
     \"docker\": \"/usr/local/bin/docker\"
 " >&2; exit 127; 
   }
-  
+  # get the job number from the run directory name
+  JOB_NO=${PWD##*/} 
   # with '--mount'
-  $DRY_RUN "${docker_cmd}" run \
+  $DRY_RUN "${docker_cmd}" run --name gp_job_${JOB_NO} \
     --workdir "${workdir}" \
     --mount "type=bind,src=${bind_src},dst=${bind_dst}" \
+    --memory "${job_memory}" \
     "${docker_img}" \
     "${__gp_module_cmd[@]}";
+
+   # remove the container to avoid wasting space
+   $DRY_RUN "${docker_cmd}" rm gp_job_${JOB_NO}
 }
 
 run_with_docker "${@}"

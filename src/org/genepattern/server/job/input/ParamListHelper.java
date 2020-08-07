@@ -29,10 +29,6 @@ import org.genepattern.server.dm.GpFilePathException;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.executor.JobDispatchException;
-import org.genepattern.server.genomespace.GenomeSpaceClient;
-import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.cache.CachedFile;
 import org.genepattern.server.job.input.cache.FileCache;
 import org.genepattern.server.job.input.collection.ParamGroupHelper;
@@ -663,7 +659,7 @@ public class ParamListHelper {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void updatePinfoValue() throws ParamListException, GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException { //throws Exception {
+    public void updatePinfoValue() throws ParamListException, GpFilePathException, IOException, DbException, JobDispatchException { //throws Exception {
         final int numValues=actualValues.getNumValues();
         final boolean createFilelist=isCreateFilelist();
         final boolean createGroupFile=isCreateGroupFile();
@@ -886,7 +882,7 @@ public class ParamListHelper {
      * @throws Exception
      */
     public static List<GpFilePath> getListOfValues(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput, final ParameterInfo formalParam, final Param actualValues, final boolean downloadExternalUrl) 
-    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
+    throws GpFilePathException, IOException, DbException, JobDispatchException 
     {
         final List<ParamListValue> tmpList=new ArrayList<ParamListValue>();
         for(ParamValue pval : actualValues.getValues()) {
@@ -909,25 +905,15 @@ public class ParamListHelper {
     }
 
     protected static void downloadFromRecord(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final ParamListValue rec) 
-    throws GpFilePathException, GenomeSpaceException, IOException, DbException, JobDispatchException 
+    throws GpFilePathException, IOException, DbException, JobDispatchException 
     {
-        // Handle GenomeSpace URLs
-        if (rec.type.equals(ParamListValue.Type.GENOMESPACE_URL)) {
-            fileListGenomeSpaceToUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
-        }
-
         // Handle external URLs
         if (rec.type.equals(ParamListValue.Type.EXTERNAL_URL)) {
             if (rec.isCached) {
                 final GpFilePath cached=FileCache.downloadCachedFile(mgr, gpConfig, jobContext, rec.url.toExternalForm());
                 rec.setGpFilePath(cached);
             }
-            // for GP-6767
-            else if (GenomeSpaceFileHelper.isGenomeSpaceFile(rec.url)) {
-                final String message="GenomeSpace file not allowed in file group with pass-by-reference; We are working on a fix (GP-6767).";
-                log.debug(message+", url="+rec.url);
-                throw new GenomeSpaceException(message);
-            } 
+           
             else {
                 forFileListCopyExternalUrlToUserUploads(mgr, gpConfig, jobContext, rec.getGpFilePath(), rec.url);
             }
@@ -961,12 +947,6 @@ public class ParamListHelper {
                 ParamListValue record=new ParamListValue(ParamListValue.Type.EXTERNAL_URL, cachedFile.getLocalPath(), externalUrl);
                 record.isCached=isCached;
                 record.isPassByReference=isPassByReference;
-                return record;
-            }
-            else if (GenomeSpaceFileHelper.isGenomeSpaceFile(externalUrl)) {
-                // special-case: GenomeSpace input
-                GpFilePath gpPath = JobInputFileUtil.getDistinctPathForExternalUrl(gpConfig, jobContext, externalUrl);
-                ParamListValue record=new ParamListValue(ParamListValue.Type.GENOMESPACE_URL, gpPath, externalUrl);
                 return record;
             }
             else {
@@ -1049,7 +1029,7 @@ public class ParamListHelper {
      * 
      */
     protected static void forFileListCopyExternalUrlToUserUploads(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final GpFilePath gpPath, final URL url) 
-    throws GenomeSpaceException, GpFilePathException, IOException, DbException 
+    throws GpFilePathException, IOException, DbException 
     {
         final File parentDir=gpPath.getServerFile().getParentFile();
         if (!parentDir.exists()) {
@@ -1075,124 +1055,6 @@ public class ParamListHelper {
         }
     }
 
-    /**
-     * Copy a GenomeSpace file to be an upload file for file list processing
-     *
-     * @param jobContext
-     * @param gpPath
-     * @param url
-     * @throws GenomeSpaceException 
-     * @throws IOException 
-     * @throws DbException 
-     * @throws Exception
-     */
-    protected static void fileListGenomeSpaceToUploads(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final GpFilePath gpPath, URL url) 
-    throws GpFilePathException, GenomeSpaceException, IOException, DbException 
-    {
-        if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-            // Make sure the user is logged into GenomeSpace
-            GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
-
-            final File parentDir = gpPath.getServerFile().getParentFile();
-            if (!parentDir.exists()) {
-                boolean success = parentDir.mkdirs();
-                if (!success) {
-                    String message = "Error creating upload directory for GenomeSpace url: dir=" + parentDir.getPath() + ", url=" + url.toExternalForm();
-                    log.error(message);
-                    throw new GpFilePathException(message);
-                }
-            }
-            final File dataFile = gpPath.getServerFile();
-            if (dataFile.exists()) {
-                // Do nothing, assume the file has already been transferred
-                log.debug("Downloaded GenomeSpace already exists: " + dataFile.getPath());
-            }
-            else {
-                InputStream is = gsClient.getInputStream(jobContext.getUserId(), url);
-                OutputStream os = new FileOutputStream(dataFile);
-
-                IOUtils.copy(is, os);
-
-                //add a record of the file to the DB, so that a link will appear in the Uploads tab
-                JobInputFileUtil jobInputFileUtil=new JobInputFileUtil(gpConfig, jobContext);
-                jobInputFileUtil.updateUploadsDb(mgr, gpPath);
-            }
-        }
-        else {
-            log.warn("GenomeSpace file added when GenomeSpace is not enabled: " + url.toString());
-            throw new GenomeSpaceException("GenomeSpace not enabled. Need to enable GenomeSpace to download GenomeSpace files:" + url.toString());
-        }
-    }
-
-//    /**
-//     * Compare last modified with cached versions for FTP files
-//     * @param realPath
-//     * @param url
-//     * @return
-//     * @throws Exception
-//     */
-//    private static boolean needToRedownloadFTP(GpFilePath realPath, URL url) throws Exception {
-//        FTPClient ftp = new FTPClient();
-//        ftp.connect(url.getHost(), url.getPort() > 0 ? url.getPort() : 21);
-//        ftp.login("anonymous", "");
-//        String filename = FilenameUtils.getName(url.getFile());
-//        String filepath = FilenameUtils.getPath(url.getFile());
-//        boolean success = ftp.changeWorkingDirectory(filepath);
-//        String lastModifiedString = ftp.getModificationTime(filename);
-//        
-//        // Trouble changing directory or last modified not supported by FTP server, assume cache is good
-//        if (!success || lastModifiedString == null) {
-//            return false;
-//        }
-//        
-//        Date lastModified = new SimpleDateFormat("yyyyMMddhhmmss", Locale.ENGLISH).parse(lastModifiedString.substring(lastModifiedString.indexOf(" ")));
-//        return lastModified.after(realPath.getLastModified());
-//    }
-    
-//    /**
-//     * Compare last modified with cached versions for HTTP files
-//     * @param realPath
-//     * @param url
-//     * @return
-//     * @throws Exception
-//     */
-//    private static boolean needToRedownloadHTTP(GpFilePath realPath, URL url) throws Exception {
-//        HttpClient client = new HttpClient();
-//        HttpMethod method = new HeadMethod(url.toString());
-//        client.executeMethod(method);
-//        Header lastModifiedHeader = method.getResponseHeader("Last-Modified");
-//        String lastModifiedString = lastModifiedHeader.getValue();
-//        // Example format: Mon, 05 Aug 2013 18:02:28 GMT
-//        Date lastModified = new SimpleDateFormat("EEEE, dd MMMM yyyy kk:mm:ss zzzz", Locale.ENGLISH).parse(lastModifiedString);
-//        return lastModified.after(realPath.getLastModified());
-//    }
-    
-//    /**
-//     * Do an HTTP HEAD or FTP Modification Time on the URL and see if it is out of date
-//     * @param realPath
-//     * @param url
-//     * @return
-//     */
-//    private static boolean needToRedownload(GpFilePath realPath, URL url) throws Exception {
-//        // If the last modified isn't set for this path, assume it's not out of date
-//        realPath.initMetadata();
-//        if (realPath.getLastModified() == null) {
-//            log.debug("Last modified not set for: " + realPath.getName());
-//            return false;
-//        }
-//        
-//        String protocol = url.getProtocol().toLowerCase();   
-//        if (protocol.equals("http") || protocol.equals("https")) {
-//            return needToRedownloadHTTP(realPath, url);
-//        }
-//        else if (protocol.equals("ftp")) {
-//            return needToRedownloadFTP(realPath, url);
-//        }
-//        else {
-//            // The protocol is unknown, assume it's not out of date 
-//            log.debug("Unknown protocol in URL passed into needToRedownload(): " + protocol);
-//            return false;
-//        }
-//    }
+   
     
 }

@@ -14,6 +14,8 @@ import org.genepattern.server.JobPermissionsFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
+import org.genepattern.server.executor.drm.dao.JobRunnerJobDao;
 import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.dao.JobInputValueRecorder;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -81,7 +83,17 @@ public class GpContext {
                 log.debug("taskName=" + taskName);
             }
             taskLibDir=libdirStrategy.getLibdir(taskInfo.getLsid());
-            return createContextForJob(currentUser, jobInfo, taskInfo, taskLibDir, jobInput, initFromDb);
+            
+            // JTL 03/19/2020  Add in the values set for cpu and memory
+            JobRunnerJobDao jobrunnerjobdao = new JobRunnerJobDao();
+            JobRunnerJob jobRunnerJob = null;
+            try { 
+                jobRunnerJob =jobrunnerjobdao.selectJobRunnerJob(jobNumber);
+            } catch (Exception e){
+                jobRunnerJob = null;
+            }
+            
+            return createContextForJob(currentUser, jobInfo, taskInfo, taskLibDir, jobInput, initFromDb, jobRunnerJob);
         }
         finally {
             if (!isInTransaction) {
@@ -90,7 +102,7 @@ public class GpContext {
         }
     }
 
-    private static GpContext createContextForJob(final String currentUser, final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput, final boolean initFromDb) {        
+    private static GpContext createContextForJob(final String currentUser, final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput, final boolean initFromDb, final JobRunnerJob jobRunnerJob) {        
         Builder builder=new Builder();
         if (jobInfo != null) {
             builder=builder.jobInfo(jobInfo);
@@ -104,7 +116,10 @@ public class GpContext {
         if (jobInput != null) {
             builder=builder.jobInput(jobInput);
         }
-
+        if (jobRunnerJob != null) {
+            builder = builder.jobRunnerJob(jobRunnerJob);
+        }
+        
         final String userId;
         if (currentUser==null && jobInfo!=null) {
             userId=jobInfo.getUserId();
@@ -193,6 +208,7 @@ public class GpContext {
     private JobInput jobInput = null;
     private boolean isAdmin=false;
     private JobPermissions jobPermissions=null;
+    private JobRunnerJob jobRunnerJob = null;
     
     private List<String> localFilePaths=null;
 
@@ -295,6 +311,12 @@ public class GpContext {
     public JobPermissions getJobPermissions() {
         return this.jobPermissions;
     }
+    void setJobRunnerJob(final JobRunnerJob jobRunnerJob) {
+        this.jobRunnerJob=jobRunnerJob;
+    }
+    public JobRunnerJob getJobRunnerJob() {
+        return this.jobRunnerJob;
+    }
     
     public boolean canReadJob() {
         if (jobPermissions==null) {
@@ -346,6 +368,7 @@ public class GpContext {
         private File taskLibDir=null;
         private JobInput jobInput=null;
         private JobPermissions jobPermissions=null;
+        private JobRunnerJob jobRunnerJob = null;
 
         public Builder userId(final String userId) {
             this.userId=userId;
@@ -379,6 +402,11 @@ public class GpContext {
             this.jobPermissions=jobPermissions;
             return this;
         }
+        
+        public Builder jobRunnerJob(final JobRunnerJob jrj){
+            this.jobRunnerJob = jrj;
+            return this;
+        }
 
         public GpContext build() {
             GpContext gpContext=new GpContext();
@@ -403,6 +431,9 @@ public class GpContext {
             }
             if (jobPermissions!=null) {
                 gpContext.setJobPermissions(jobPermissions);
+            }
+            if (jobRunnerJob != null){
+                gpContext.setJobRunnerJob(jobRunnerJob);
             }
             return gpContext;
         }

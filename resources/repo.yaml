@@ -30,38 +30,38 @@
 #    Except with only one entry
 #
 #
---- # Details for the Broad production repository
+--- # Details for the GenePattern production repository
 {
-"url": "http://software.broadinstitute.org/webservices/gpModuleRepository",
-"label": "Broad production",
+"url": "https://modulerepository.genepattern.org/gpModuleRepository/",
+"label": "GenePattern production",
 "icon": "/gp/images/broad-symbol.gif",
 "brief": "A repository of GenePattern modules curated by the GenePattern team.",
 "full": 
-    "The GenePattern production repository contains curated modules which 
-    have been fully tested by the Broad Institute's GenePattern team."
+    "The GenePattern production repository contains curated modules which
+    have been fully tested by the GenePattern team."
 }
 --- # Details for the GParc repository
 {
-"url": "http://software.broadinstitute.org/webservices/gparcModuleRepository",
+"url": "https://modulerepository.genepattern.org/gparcModuleRepository/",
 "label": "GParc (GenePattern Archive)",
 "icon": "/gp/images/gparc_logo.png",
 "brief": "A GenePattern module repository whose content is contributed by members of the GenePattern community.  These modules are not curated by the GenePattern team.",
 "full": "GParc, short for GenePattern Archive, is both a GenePattern module repository and a web-based community.  
     The repository contains GenePattern modules contributed by members of the GenePattern community, for use by 
     that community. The GenePattern team does not curate GParc modules.  Community members can go to 
-    the <a href=\"http://software.broadinstitute.org/software/gparc/\">GParc website</a> to share, browse, 
+    the <a href=\"http://gparc.org\">GParc website</a> to share, browse, 
     discuss and rate the modules. The GParc website also provides resources to assist in the
     authoring and testing of GenePattern modules."
 }
 --- # Details for the Broad beta repository
-{
-"url": "http://software.broadinstitute.org/webservices/betaModuleRepository",
-"label": "Broad beta",
-"icon": "/gp/images/broad_beta.png",
-"brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
-"full": 
-    "The GenePattern beta repository contains modules which have have undergone limited testing by the Broad Institute's 
-GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
-expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
-accompanies beta modules is likely to be incomplete."
+#{
+#"url": "https://modulerepository.genepattern.org/betaModuleRepository/",
+#"label": "GenePattern beta",
+#"icon": "/gp/images/broad_beta.png",
+#"brief": "A GenePattern module repository containing beta releases of GenePattern modules.",
+#"full": 
+#    "The GenePattern beta repository contains modules which have have undergone limited testing by the 
+#GenePattern team and are not yet ready for the Production repository. Testing is sufficient to show that they perform as
+#expected under typical usage scenarios, but their exact behavior and interface is subject to change.  The documentation that
+#accompanies beta modules is likely to be incomplete."
 }

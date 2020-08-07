@@ -1,0 +1,68 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Trigger_docker_build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch.  For this one it needs a tag with a leading lowercase 'v'
+# as we normally use for releases
+on:
+  push:
+    tags: 
+      - v*
+
+env:
+  # TODO: Change variable to your image's name.
+  IMAGE_NAME: genepattern/genepattern-server
+ 
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "send_dispatch_event"
+  send_dispatch_event:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    # not needed yet, but leaving in as its part of the template
+    - uses: actions/checkout@v2
+
+    # Runs a single command using the runners shell, just as an example
+    - name: Run a one-line script
+      run: echo Hello, world!
+
+    # multi-line scripts need the '|' on the first line
+    # the ${{ github.ref }} in the payload will be the tag like so 'refs/tags/v0.23'
+    # which the other side will use to look for an installer at 
+    # https://github.com/genepattern/github-actions-testing/releases/download/v0.23/GPserver.bin
+    # so it will strip the refs/tags at the destination 
+    - name: sendEvent 
+      run: |
+        curl -XPOST -H "Accept: application/vnd.github.everest-preview+json" \
+         --header 'authorization: Bearer ${{ secrets.teds_token }}' \
+        -H "Content-Type: application/json" \
+        https://api.github.com/repos/genepattern/github-actions-testing/dispatches \
+        --data '{"event_type": "my-event", "client_payload": { "ref": "${{ github.ref }}", "ref2": "TED_DID_THIS" }}'
+         
+  build_and_push:
+    # Ensure test job passes before pushing image.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run:   |
+          REF_IN=${{ github.ref }}
+          # REF_IN=release/tags/v3.9.11-rc.5-b250
+        
+          echo TAG IS $REF_IN
+          
+          VERSION=${REF_IN#*/tags/}
+          INSTALLER_URL=https://github.com/genepattern/genepattern-server/releases/download/${VERSION}/GPserver.bin
+          echo Image name is ${IMAGE_NAME}:${VERSION}
+          docker build --build-arg GP_INSTALLER=${INSTALLER_URL} -t ${IMAGE_NAME}:${VERSION}  docker
+          
+          # TBD PUSH THE IMAGE INTO DOCKERHUB
+          docker login -u liefeld -p ${{ secrets.teds_dockerhub_token }}
+          docker push ${IMAGE_NAME}:${VERSION}
+          echo DONE

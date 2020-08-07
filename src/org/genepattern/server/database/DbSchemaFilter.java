@@ -40,10 +40,12 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
     final String schemaPrefix;
     // (a..b] = {schemaVersion | a < schemaVersion <= b}
     final Range<String> schemaRange;
+    final Range<LsidVersion> schemaRangeLsidVersion;
         
     private DbSchemaFilter(final Builder in) {
         this.schemaPrefix=in.schemaPrefix;
         this.schemaRange=initRange(in.dbSchemaVersion, in.maxSchemaVersion);
+        this.schemaRangeLsidVersion=initRangeLsidVersion(in.dbSchemaVersion, in.maxSchemaVersion);
     }
     
     /**
@@ -76,6 +78,31 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
             else {
                 // min >= max, construct an empty range (v..v]
                 return Range.openClosed(maxSchemaVersion.toLowerCase(), maxSchemaVersion.toLowerCase());
+            }
+        }
+    } 
+        protected static Range<LsidVersion> initRangeLsidVersion(final String dbSchemaVersion, final String maxSchemaVersion) {
+        if (dbSchemaVersion==null && maxSchemaVersion==null) {
+            return Range.all();
+        }
+        else if (dbSchemaVersion==null) {
+            // (-INF..b]
+            return Range.atMost(LsidVersion.fromString(maxSchemaVersion));
+        }
+        else if (maxSchemaVersion==null) {
+            // (a..+INF)
+            return Range.greaterThan(LsidVersion.fromString(dbSchemaVersion));
+        }
+        else {
+            final LsidVersion min=LsidVersion.fromString(dbSchemaVersion);
+            final LsidVersion max=LsidVersion.fromString(maxSchemaVersion);
+            int c=min.compareTo(max);
+            if (c<0) {
+                return Range.openClosed(min, max);
+            }
+            else {
+                // min >= max, construct an empty range (v..v]
+                return Range.openClosed(max, max);
             }
         }
     } 
@@ -154,7 +181,13 @@ public final class DbSchemaFilter implements FilenameFilter, Comparator<File> {
      * @return
      */
     protected boolean acceptSchemaVersion(final String schemaVersion) { 
-        return schemaRange.contains(schemaVersion.toLowerCase());
+        try {
+            LsidVersion lsidVersion=LsidVersion.fromString(schemaVersion);
+            return schemaRangeLsidVersion.contains(lsidVersion);
+        }
+        catch (Throwable t) {
+            return schemaRange.contains(schemaVersion.toLowerCase());
+        }
     }
     
     public static final class Builder {

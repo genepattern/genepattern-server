@@ -216,6 +216,22 @@ public class AwsBatchUtil {
 //        inputFiles.addAll(getAwsBatchWrapperScripts(gpJob));
         return Collections.unmodifiableSet(inputFiles);
     }
+    
+    protected static Set<File> getInputFileParentDirectories(final DrmJobSubmission gpJob) { 
+        final Set<File> inputFileParents = new LinkedHashSet<File>();
+        Set<File> inputFiles = getInputFiles(gpJob);
+        for (File infile: inputFiles){
+            File parent = infile.getParentFile().getAbsoluteFile();
+            if (parent.isDirectory() && parent.exists()){
+                inputFileParents.add(parent);
+            }
+        }
+        return Collections.unmodifiableSet(inputFileParents);
+    }
+    
+    
+    
+    
 
     protected static Set<File> getJobInputFiles(final DrmJobSubmission gpJob) {
         if (log.isDebugEnabled()) {

@@ -76,7 +76,7 @@ public abstract class SourceInfo {
         public FromRepo(final RepositoryInfo repositoryInfo) {
             super(InstallInfo.Type.REPOSITORY, repositoryInfo.getLabel(), repositoryInfo.getIconImgSrc());
             this.repositoryInfo=repositoryInfo;
-            if (RepositoryInfo.isBroadProdUrl(""+repositoryInfo.getUrl())) {
+            if (RepositoryInfo.isGPProdUrl(""+repositoryInfo.getUrl())) {
                 this.showSourceInfo=false;                
             }
             // if there is no icon for the repository, show a blank image

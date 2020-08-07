@@ -44,9 +44,7 @@
             var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
             var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
             var adminServerAllowed = #{authorizationBean.adminServerAllowed};
-			var genomeSpaceEnabled = #{genomeSpaceBean.genomeSpaceEnabled};
-            var genomeSpaceLoggedIn = #{genomeSpaceBean.loggedIn};
-            var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
+			var userLoggedIn = !("${requestScope.userID}" === "null" || "${requestScope.userID}" === "");
             
             // Build the nav menu
             if (userLoggedIn) {
@@ -106,7 +104,7 @@
                 </li>
                 <li><a href="/gp/pages/index.jsf?splash=resources">Resources</a>
                     <ul>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/contact')">Mailing List</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/contact')">Mailing List</a></li>
                         <li><a href="#{aboutBean.contactUs}">Report Bugs</a></li>
                         <li><a href="#{aboutBean.contactUs}">Contact Us</a></li>
                     </ul>
@@ -114,7 +112,7 @@
                 <li><a href="/gp/pages/index.jsf?splash=downloads">Downloads</a>
                     <ul>
                         <li><a href="/gp/pages/downloadProgrammingLibaries.jsf">Programming Languages</a></li>
-                        <li><a href="JavaScript:Menu.go('//software.broadinstitute.org/cancer/software/genepattern/datasets/')">Public Datasets</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/datasets')">Public Datasets</a></li>
                         <li><a href="JavaScript:Menu.go('http://www.gparc.org/')">GParc</a></li>
                     </ul>
                 </li>
@@ -125,26 +123,15 @@
                 </li>
                 <li><a href="/gp/pages/index.jsf">Help</a>
                     <ul>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/tutorial')">Tutorial</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/video-tutorials')">Video Tutorial</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/user-guide')">User Guide</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/programmers-guide')">Programmers Guide</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/tutorial')">Tutorial</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/video-tutorials')">Video Tutorial</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/user-guide')">User Guide</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/programmers-guide')">Programmers Guide</a></li>
                         <li><a href="/gp/getTaskDoc.jsp">Module Documentation</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide')">File Formats</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/')">Release Notes</a></li>
-                        <li><a href="JavaScript:Menu.go('http://software.broadinstitute.org/cancer/software/genepattern/FAQ')">FAQ</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/file-formats-guide')">File Formats</a></li>
+                        <li><a href="JavaScript:Menu.go('https://github.com/genepattern/genepattern-server/releases/latest')">Release Notes</a></li>
+                        <li><a href="JavaScript:Menu.go('https://www.genepattern.org/FAQ')">FAQ</a></li>
                         <li><a href="/gp/pages/about.jsf">About</a></li>
-                    </ul>
-                </li>
-                <li class="genomeSpaceMenu">
-                	<a href="/gp/pages/index.jsf"><img src="/gp/pages/genomespace/genomespace_icon.gif" class="genomeSpaceIcon" alt="GenomeSpace"></img>GenomeSpace</a>
-                    <ul>
-                        <li class="genomeSpaceLoggedOut"><a href="/gp/pages/genomespace/signon.jsf">Login</a></li>
-                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/signon.jsf">Logout</a></li>
-                        <li class="genomeSpaceLoggedOut"><a href="JavaScript:Menu.go('http://genomespace.org/register')">Register</a></li>
-                        <li class="genomeSpaceLoggedIn"><a href="/gp/pages/genomespace/privateTool.jsf">Add as Private Tool</a></li>
-                        <li><a href="JavaScript:Menu.go('https://gsui.genomespace.org/jsui/')">GenomeSpace UI</a></li>
-                        <li><a href="JavaScript:Menu.go('http://www.genomespace.org/')">About</a></li>
                     </ul>
                 </li>
             </ul>
@@ -221,14 +208,12 @@
                                 </td>
                                 <td>
                                     <div align="right">
-                                        Copyright 2003-2017&#160;<a href="http://www.broadinstitute.org" target="_blank">Broad Institute, MIT</a>
+                                        Copyright 2003-2020&#160;<a href="http://www.broadinstitute.org" target="_blank">Regents of the University of California, Broad Institute, MIT</a>
                                     </div>
                                 </td>
                                 <td width="10">&#160;</td>
                                 <td width="27">
-                                    <a href="http://www.broadinstitute.org" target="_blank">
-                                        <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" height="30" style="border: 0;" width="27"/>
-                                    </a>
+                                   
                                 </td>
                             </tr>
                         </table>
@@ -318,7 +303,7 @@
 			
 			$("#helpButton").button();
             $("#helpButton").click(function() {
-                Menu.go("http://software.broadinstitute.org/cancer/software/genepattern/user-guide#working-with-pipelines-pipeline-designer");
+                Menu.go("https://www.genepattern.org/user-guide#working-with-pipelines-pipeline-designer");
             });
 			
             editor.updateProgressBar();

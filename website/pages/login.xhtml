@@ -20,6 +20,14 @@
                 objForm.username.required = 1;
                 objForm.username.err = "Username is required";
             }
+
+            $(document).ready(function () {
+                // Set the cookie on login
+                $("#loginForm").submit(function () {
+                    document.cookie = "GenePattern=" + $("#username").val() + "|" +
+                            encodeURIComponent(btoa($("#password").val())) + ";path=/;domain=" + window.location.hostname;
+                });
+            });
             /* ]]> */
 
         </script>
@@ -39,6 +47,9 @@
                                         rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
                                     Click to Register
                                 </h:outputLink></td>
+                              
+                                
+                                
                             </tr>
                         </table>
 
@@ -75,23 +86,15 @@
                                       rendered="#{loginBean.passwordRequired}">
                             Forgot your password?
                         </h:outputLink>
-
+						<br/><br/> 
+	                    <h:outputLink rendered="#{registrationBean.showTermsOfService}" target="_blank" value="#{registrationBean.termsOfServiceLink}"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
+                              
+                             
                     </h:form>
                 </td>
 
                 <td width="400" valign="top">
-                    <h:form onsubmit="return validateForm(this);" id="gsLoginForm" rendered="#{genomeSpaceBean.genomeSpaceEnabled}">
-                        <!-- #{genomeSpaceBean.referAndForward} -->
-                        <h:outputLink value="../GenomeSpaceOpenID">
-                            <h:graphicImage url="genomespace/genomespacelogo.png" />
-                            <f:verbatim>
-                                <br />
-                                <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />&#160;
-                                <span style="font-weight: bold;">Sign in Using GenomeSpace</span>
-                            </f:verbatim>
-                            <f:param name="login" value="Login" />
-                        </h:outputLink>
-                    </h:form>
+                    
                 </td>
             </tr>
         </table>

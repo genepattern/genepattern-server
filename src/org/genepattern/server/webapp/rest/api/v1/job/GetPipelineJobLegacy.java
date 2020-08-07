@@ -6,12 +6,15 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -25,6 +28,7 @@ import org.genepattern.server.job.tag.JobTag;
 import org.genepattern.server.job.tag.JobTagManager;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobInfoUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
@@ -115,17 +119,17 @@ public class GetPipelineJobLegacy implements GetJob {
         return getJob(userContext, jobInfo, includeChildren, includeOutputFiles, includePermissions, includeComments, includeTags);
     }
 
-    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
-                             final boolean includeOutputFiles, final boolean includePermissions,
-                             final boolean includeComments, final boolean includeTags) throws GetJobException {
-        //manually create a JSONObject representing the job
-        final JSONObject job;
+    protected static JSONObject _getJob(final String gpUrl, final String jobsResourcePath, final JobInfo jobInfo, final boolean includeChildren,
+            final boolean includeOutputFiles,
+            final boolean includeComments, final boolean includeTags) throws GetJobException {
+        
+        JSONObject job=null;
         if (!includeChildren) {
             job = initJsonObject(gpUrl, jobInfo, includeOutputFiles, includeComments, includeTags);
         }
         else {
             try {
-                InitPipelineJson walker=new InitPipelineJson(userContext, gpUrl, jobsResourcePath, jobInfo,
+                InitPipelineJson walker=new InitPipelineJson(gpUrl, jobsResourcePath, jobInfo,
                         includeOutputFiles, includeComments, includeTags);
                 walker.prepareJsonObject();
                 job=walker.getJsonObject();
@@ -136,19 +140,55 @@ public class GetPipelineJobLegacy implements GetJob {
                 throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
             }
         }
-        if (includePermissions && job!=null) {
-            //only include permissions for the top-level job
-            try {
-            JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
-            if (permissions!=null) {
-                job.put("permissions", permissions);
+       return job;
+    }
+    
+    public JSONObject getJob(final GpContext userContext, final JobInfo jobInfo, final boolean includeChildren,
+                             final boolean includeOutputFiles, final boolean includePermissions,
+                             final boolean includeComments, final boolean includeTags) throws GetJobException {
+        //manually create a JSONObject representing the job
+        
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        JSONObject job = null;
+        try {
+            // this call returns the JSON representation
+            final Callable<JSONObject> f = new Callable<JSONObject>() {
+                @Override
+                public JSONObject call() throws GetJobException {
+                    return _getJob(gpUrl, jobsResourcePath, jobInfo, includeChildren, includeOutputFiles, includeComments, includeTags);
+                }
+            };
+            if (JobObjectCache.isCacheEnabled(gpConfig, userContext) && JobInfoUtil.isFinished(jobInfo)) {
+                // with the cache
+                final String composite_key = JobObjectCache.initCompositeKey(jobInfo.getJobNumber(), includeChildren, includeOutputFiles, includeComments, includeTags);
+                job = JobObjectCache.getJobJson(composite_key, f);
             }
+            else {
+                // without the cache
+                job = f.call();
             }
-            catch (Throwable t) {
-                final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
-                log.error(errorMessage, t);
-                throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
-            }
+            if (includePermissions && job!=null) {
+                //only include permissions for the top-level job
+                try {
+                    JSONObject permissions=initPermissionsFromJob(userContext, jobInfo);
+                    if (permissions!=null) {
+                        job.put("permissions", permissions);
+                    }
+                }
+                catch (Throwable t) {
+                    final String errorMessage="Error initializing permissions for jobId="+jobInfo.getJobNumber();
+                    log.error(errorMessage, t);
+                    throw new GetJobException(errorMessage + ": "+t.getLocalizedMessage());
+                }
+            } 
+        } 
+        catch (GetJobException e) {
+            throw e;
+        }
+        catch (Throwable e) {
+            final String errorMessage="Error getting JSON representation for jobId="+jobInfo.getJobNumber();
+            log.error(errorMessage, e);
+            throw new GetJobException(errorMessage);
         }
         return job;
     }
@@ -158,6 +198,7 @@ public class GetPipelineJobLegacy implements GetJob {
         try {
             // constructor starts a new DB transaction
             final PermissionsHelper ph=new PermissionsHelper(
+                    HibernateUtil.instance(),
                     userContext.isAdmin(), //final boolean _isAdmin, 
                     userContext.getUserId(), // final String _userId, 
                     jobInfo.getJobNumber(), // final int _jobNo, 

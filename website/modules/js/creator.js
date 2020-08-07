@@ -45,6 +45,15 @@ if (!window.console)
     window.console = { time:function(){}, timeEnd:function(){}, group:function(){}, groupEnd:function(){}, log:function(){} };
 }
 
+function forceLowerCategory(strInput) 
+{
+	if (strInput.value != strInput.value.toLowerCase()){
+		$('#forceLowerCategoryWarning').show();
+	}
+	
+    strInput.value=strInput.value.toLowerCase();
+}
+
 function trim(s)
 {
     var l=0; var r=s.length -1;
@@ -295,7 +304,15 @@ function saveModule()
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
     var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
-
+    var dockerImage = $('input[name="dockerImage"]').val();
+    if(dockerImage == undefined || dockerImage == null || dockerImage.length < 1)
+    {
+        saveError("A docker image must be specified");
+        return;
+    }
+    
+    
+    
     var filesToDelete = module_editor.filesToDelete;
 
     var json = {};
@@ -303,6 +320,7 @@ function saveModule()
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
+        "job.docker.image": dockerImage,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
@@ -1778,7 +1796,7 @@ function updatemodulecategories()
                 alert(error);
             }
             else {
-                var categories = response["categories"];
+                var categories = response["categories"].toLowerCase();
                 categories = categories.substring(1, categories.length-1);
 
                 var result = categories.split(", ");
@@ -2008,6 +2026,11 @@ function loadModuleInfo(module)
     {
         $('input[name="comment"]').val(module["version"]);
     }
+    
+    if(module["job.docker.image"] !== undefined)
+    {
+        $('input[name="dockerImage"]').val(module["job.docker.image"]);
+    }
 
     if(module["language"] !== undefined)
     {
@@ -2141,6 +2164,7 @@ function loadModuleInfo(module)
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
+            && keyName != "job.docker.image"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {
@@ -2927,14 +2951,16 @@ jQuery(document).ready(function() {
         }
     });
 
-
+    // start with the warning hidden
+    $('#forceLowerCategoryWarning').hide();
     $( "#addmodcategorydialog" ).dialog({
         autoOpen: false,
         height: 210,
         width: 330,
         buttons: {
             "OK": function() {
-                var category = $("#newcategoryname").val();
+            	$('#forceLowerCategoryWarning').hide();
+                var category = $("#newcategoryname").val().toLowerCase;
                 var newcategory = $("<option>" +category + "</option>");
 
                 var duplicate = false;
@@ -2969,6 +2995,7 @@ jQuery(document).ready(function() {
                 }
             },
             "Cancel": function() {
+            	$('#forceLowerCategoryWarning').hide();
                 $( this ).dialog( "close" );
             }
         },

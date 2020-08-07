@@ -66,9 +66,7 @@ var Menu = {
 	    if (!createPublicSuiteAllowed) this.jquery(".createPublicSuiteAllowed").hide();
 	    if (!createPrivateSuiteAllowed) this.jquery(".createPrivateSuiteAllowed").hide();
 	    if (!adminServerAllowed) this.jquery(".adminServerAllowed").hide();
-	    if (!genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedIn").hide();
-	    if (genomeSpaceLoggedIn) this.jquery(".genomeSpaceLoggedOut").hide();
-	    if (!genomeSpaceEnabled) this.jquery(".genomeSpaceMenu").hide();
+	    
 	    
 	    this.jquery("#navband1").show();
 	    this.jquery("#navband1 ul li ul").css("top", "23px");

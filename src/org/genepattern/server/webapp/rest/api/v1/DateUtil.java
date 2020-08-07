@@ -9,8 +9,10 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.ISOPeriodFormat;
 
 public class DateUtil {
@@ -70,6 +72,46 @@ public class DateUtil {
         return ISOPeriodFormat.standard().print(new Duration(durationInMillis).toPeriod());
     }
     
+    public static final String dateFormatSpec="yyyy[-MM[-dd[THH[:mm[:ss]]]]]";
+    
+    /**
+     * Parse the date string in IS0 8601 format.
+     * 
+     * @param dateStr, the input date in ISO 8601 format  
+     */
+    public static Date parseDate(final String dateStr) {
+        try {
+            return ISODateTimeFormat.dateTimeParser()
+                .parseDateTime(dateStr)
+            .toDate();
+        }
+        catch (Throwable t) {
+            throw new IllegalArgumentException(t.getMessage()+" (format is '"+dateFormatSpec+"')");
+        }
+    }
+
+    /**
+     * Parse the date string in ISO 8601 format. This example method has special handling
+     * for the time zone.
+     * 
+     * @param dateStr, the input date in ISO 8601 format
+     * @param tz, the time zone to use when the input date string does not specifiy one.
+     */
+    protected static Date parseDate(final String dateStr, final DateTimeZone tz) {
+       try {
+            return ISODateTimeFormat.dateTimeParser()
+                // '--withChronology' to set a different default timezone for the parser
+                .withChronology(ISOChronology.getInstance(tz))
+                // '--withOffsetParsed' to use the parsed timezone
+                .withOffsetParsed()
+                .parseDateTime(dateStr)
+            .toDate();
+        }
+        catch (Throwable t) {
+            throw new IllegalArgumentException(t.getMessage()+" (format is '"+DateUtil.dateFormatSpec+"')");
+        }
+    }
+
     /**
      * Custom date formatter for the <a href="http://henyana.github.io/jquery-comment/">jquery-comment plugin</a>, 
      * which uses the <a href="http://timeago.yarp.com/">timeago</a> plugin for jQuery. Convert the given date

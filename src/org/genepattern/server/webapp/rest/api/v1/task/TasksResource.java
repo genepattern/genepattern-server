@@ -283,7 +283,15 @@ public class TasksResource {
             final @Context HttpServletRequest request,
             final @Context HttpServletResponse response) {
         final GpConfig gpConfig = ServerConfigurationFactory.instance();
-        final GpContext userContext = Util.getUserContext(request);
+        GpContext userContext = null;
+        try {
+            // Handle authenticated users
+            userContext = Util.getUserContext(request);
+        }
+        catch(WebApplicationException e) {
+            // Handle unauthenticated users
+            userContext = GpContext.getContextForUser("", true);
+        }
         final String userId = userContext.getUserId();
 
         // Check the etag and return a 304 if they match
@@ -427,9 +435,11 @@ public class TasksResource {
                 String arg0tl = arg0.toLowerCase();
                 String arg1tl = arg1.toLowerCase();
                 int rval = arg0tl.compareTo(arg1tl);
-                if (rval == 0) {
-                    rval = arg0.compareTo(arg1);
-                }
+                // JTL 02/03/2020 - don't add case-insensitive matches
+                //                  just keep one copy
+                //if (rval == 0) {
+               //     rval = arg0.compareTo(arg1);
+               // }
                 return rval;
             }
         });
@@ -455,7 +465,8 @@ public class TasksResource {
      */
     public static JSONObject getCategoryJson(final String category) throws JSONException {
         JSONObject jsonObj = new JSONObject();
-        jsonObj.put("name", category);
+        // JTL added toLowerCase XXX 02/07/2020
+        jsonObj.put("name", category.toLowerCase());
         jsonObj.put("description", ""); // Description reserved for future use
         jsonObj.put("tags", new JSONArray());
         return jsonObj;

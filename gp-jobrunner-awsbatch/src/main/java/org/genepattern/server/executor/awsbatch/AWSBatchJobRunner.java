@@ -25,7 +25,6 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.log4j.Logger;
-import org.genepattern.drm.DockerImage;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -271,6 +270,10 @@ public class AWSBatchJobRunner implements JobRunner {
 
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
+        if (log.isTraceEnabled()) {
+            log.trace("getStatus for jobRecord.gpJobNo="+jobRecord.getGpJobNo());
+            log.trace("    jobRecord.extJobId="+jobRecord.getExtJobId());
+        }
         final String awsId=jobRecord.getExtJobId();
         if (awsId == null) {
             // special-case: job was terminated in a previous GP instance
@@ -341,6 +344,9 @@ public class AWSBatchJobRunner implements JobRunner {
                     log.debug("jobs[0].status: "+awsStatusCode);
                     log.debug("jobs[0].statusReason: "+awsStatusReason);
                 } 
+
+                final Date startTime=getOrDefaultDate(awsJob, "startedAt", null);
+                final Date submitTime=getOrDefaultDate(awsJob, "createdAt", null);
                 
                 final DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 final DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
@@ -348,16 +354,16 @@ public class AWSBatchJobRunner implements JobRunner {
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
                 }
-                
+                b.startTime( startTime  );
+                b.submitTime( submitTime );
                 if (jobState.is(DrmJobState.TERMINATED)) {
                     // job cleanup, TERMINATED covers SUCCEEDED and FAILED
                     if (log.isDebugEnabled()) {
                         log.debug("job finished with awsStatusCode="+awsStatusCode+", drmJobState="+jobState);
                         log.debug("    jobs[0].statusReason: "+awsStatusReason);
                     }
-                    b.startTime(  getOrDefaultDate(awsJob, "startedAt", null) );
-                    b.submitTime( getOrDefaultDate(awsJob, "createdAt", null) );
-                    b.endTime(    getOrDefaultDate(awsJob, "stoppedAt", new Date()) );
+                    final Date endTime=getOrDefaultDate(awsJob, "stoppedAt", new Date());
+                    b.endTime( endTime );
                     final File metadataDir=getMetadataDir(jobRecord);
                     try {
                         refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
@@ -382,11 +388,13 @@ public class AWSBatchJobRunner implements JobRunner {
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
                         }
+                        getAdditionalErrorLogs(jobRecord, metadataDir);
                     }
                     else {
                         log.error("Error getting exitCode for job="+jobRecord.getGpJobNo());
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
+                            getAdditionalErrorLogs(jobRecord, metadataDir);
                         }
                     }
                 }
@@ -455,10 +463,11 @@ public class AWSBatchJobRunner implements JobRunner {
      * Get environment variables for the aws batch submit-job command line.
      * @return a Map<String,String> of environment variables
      */
-    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob) {
+    protected final Map<String,String> initAwsCmdEnv(final DrmJobSubmission gpJob, final Set<File> inputParentDirs) {
         final Map<String,String> cmdEnv=initAwsCliEnv(gpJob.getGpConfig(), gpJob.getJobContext());
 
         cmdEnv.put("GP_JOB_ID", ""+gpJob.getGpJobNo());
+        cmdEnv.put("GP_USER_ID", ""+ gpJob.getJobContext().getUserId());
         cmdEnv.put("GP_JOB_WORKING_DIR", gpJob.getWorkingDir().getAbsolutePath());
         final File metadataDir=getMetadataDir(gpJob.getWorkingDir());
         if (metadataDir != null) {
@@ -474,9 +483,24 @@ public class AWSBatchJobRunner implements JobRunner {
                 "GP_JOB_DOCKER_BIND_MOUNTS",
                 Joiner.on(":").skipNulls().join(bindMounts.getValues())
             );
+        } else if (inputParentDirs != null ){
+            // ALTERNATE BIND - bind to parent dirs of any inputs only and not higher level root dirs
+            // to make it harder to have a malicious container see things it ought not to
+            // but exempt the jobdir itself which causes a error for binding the same mount twice
+            List<String> inputParentDirList = new ArrayList<String>();
+            String parent = gpJob.getWorkingDir().getAbsolutePath();
+            for (File f: inputParentDirs){
+                String dirPath = f.getAbsolutePath();
+                if (!parent.equals(dirPath)) inputParentDirList.add(dirPath);
+            }
+            inputParentDirList.add(gpJob.getWorkingDir().getAbsolutePath());
+            cmdEnv.put(
+                    "GP_JOB_DOCKER_BIND_MOUNTS",
+                    Joiner.on(":").skipNulls().join(inputParentDirList)
+                );
         }
 
-        final String dockerImage=DockerImage.getJobDockerImage(gpJob.getGpConfig(), gpJob.getJobContext());
+        final String dockerImage=gpJob.getGpConfig().getJobDockerImage(gpJob.getJobContext());
         if (log.isDebugEnabled()) {
             log.debug("+"+PROP_DOCKER_IMAGE+"'="+dockerImage);
         }
@@ -593,6 +617,23 @@ public class AWSBatchJobRunner implements JobRunner {
         }
     }
 
+    // in the case of a AWS error, there may also be a dockererr.log file in the metadata dir
+    // we will copy it to the working dir so that it can be seen
+    private void  getAdditionalErrorLogs(final DrmJobRecord jobRecord, final File  metadataDir){
+        File dockerErr = new File(metadataDir, "dockererr.log");
+        System.out.println("Looking for dockererr.log =============");
+        if (dockerErr.exists()){
+            System.out.println("moved dockererr.log to =============" + jobRecord.getWorkingDir().getAbsolutePath());
+            File visibleDockerErr = new File(jobRecord.getWorkingDir(), "dockererr.log");
+            boolean moved = dockerErr.renameTo(visibleDockerErr);
+            System.out.println("Moved");
+        } else {
+            System.out.println("Did NOT find dockererr.log =============" + dockerErr.getAbsolutePath());  
+        }
+    }
+    
+    
+    
     protected void copyFileContents(File source, File destination){
         FileReader fr = null;
         FileWriter fw = null;
@@ -728,7 +769,8 @@ public class AWSBatchJobRunner implements JobRunner {
         }
         
         final File awsBatchScript=getAwsBatchScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
-        if (log.isDebugEnabled()) {
+        //if (log.isDebugEnabled()) {  // JTL XXX 02/102020
+        {
             log.debug("job "+gpJob.getGpJobNo());
             log.debug("           aws-batch-script='"+awsBatchScript+"'");
             log.debug("    aws-batch-script.fqPath='"+awsBatchScript.getAbsolutePath()+"'");
@@ -918,7 +960,11 @@ public class AWSBatchJobRunner implements JobRunner {
         final File awsCli=getAwsBatchScriptFile(gpJob, PROP_AWS_CLI, DEFAULT_AWS_CLI);
         final String s3_root=gpJob.getProperty(PROP_AWS_S3_ROOT);
         final Set<File> inputFiles = AwsBatchUtil.getInputFiles(gpJob);
-        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob);
+        
+        final Set<File> inputDirectories = AwsBatchUtil.getInputFileParentDirectories(gpJob);
+        
+        final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob, inputDirectories);
+        
         final AwsS3Filter awsS3Filter=AwsS3Filter.initAwsS3Filter(gpJob.getGpConfig(), gpJob.getJobContext());
         copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter);
 

@@ -41,8 +41,17 @@
       ANALYSIS_JOB.JOB_NO = BATCH_ANALYSIS.ANALYSIS_JOB where
         BATCH_ANALYSIS.BATCH_JOB = :batchId and analysis_job.deleted = :deleted						 
   </sql-query>
-   
    <sql-query name="countJobsInBatch">
+   select count(1) from (
+      select job_no from analysis_job a where 
+          a.job_no != :jobId
+          and
+          a.job_no in
+              ( select analysis_job from batch_analysis where batch_job = :batchId )
+   ) as s
+   </sql-query>
+   
+   <sql-query name="countJobsInBatc_old">
    select count(1) from (
       select job_no from analysis_job a where 
           a.job_no != :jobId

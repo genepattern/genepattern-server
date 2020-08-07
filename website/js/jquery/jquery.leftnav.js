@@ -89,12 +89,13 @@ $.widget("gp.module", {
 
         this.description = $('<div>', {
             'class': 'module-description',
-            'text': this._protect(this.options.data.description, "")
+            'html': this._protect(this.options.data.description, "")
         }).appendTo(this.element);
         $(this.description).jTruncate({
             length: 90,
             moreTest: ""
         });
+        $(this.description).children('img').css('max-height', "20px").css("width","auto")
 
         this.tags = $('<div>', {
             'class': 'module-html'
@@ -336,6 +337,7 @@ $.widget("gp.modulelist", {
         droppable: false,
         draggable: true,
         click: function() {},
+        tagclick: null,
         add: function(event, ui) {},
         remove: function(event, ui) {},
         reposition: function(event, ui) {}
@@ -359,11 +361,14 @@ $.widget("gp.modulelist", {
 
         this.listings = [];
         for (var id in this.options.data) {
-            this.listings.push($('<div>').module({
+            var options = {
                 data: this.options.data[id],
                 click: this.options.click,
                 draggable: this.options.draggable
-            }).appendTo(this.element));
+            };
+            if (this.options.tagclick) options['tagclick'] = this.options.tagclick;
+
+            this.listings.push($('<div>').module(options).appendTo(this.element));
         }        
 
         if (this.options.droppable) {
@@ -441,20 +446,57 @@ $.widget("gp.modulelist", {
         }
     },
 
-    filter: function(filter) {
+    filter: function(rawFilter) {
+    	//var filter1 = rawFilter.toLowerCase();
+    	var filter = rawFilter.replace(/[^0-9a-z]/gi, '.?');	
         var numberHidden = 0;
         for (var i = 0; i < this.listings.length; i++) {
             var listing = this.listings[i];
             var searchText = listing.find(".module-name, .module-description, .module-tag").text();
-            if (searchText.toLowerCase().indexOf(filter.toLowerCase()) < 0) {
-                listing.hide();
-                numberHidden++;
-            }
-            else {
-                listing.show();
-                $(listing).removeHighlight();
-                $(listing).highlight(filter);
-            }
+           
+   	 		var re = RegExp(filter, "i")
+   	 		var hitStrings = re.exec(searchText);
+   	 	    // repeat with the search text collapsed as well
+            searchTextCollapsed = searchText.replace(/[^0-9a-z]/gi, '');	
+            var hitStrings2 = re.exec(searchTextCollapsed);
+            
+            
+            if (hitStrings != null){ 
+             	listing.show();
+            	$(listing).removeHighlight();
+                $(listing).highlight(hitStrings[0]);            
+	        }  else if (hitStrings2 != null){ 
+	        	var theHit = hitStrings2[0];
+	        	// note that this may not highlight correctly since its the escaped seartText being
+	        	// searched at not the original so we don't really know if it hit on "single cell" or
+	        	// "singlecell" or "single-cell" or even "s ingle-c-e-ll" and trying to find the exact hit
+	        	// isn't worth it at the moment
+	        	if (rawFilter.toLowerCase() === filter.toLowerCase()){
+	        		// we know the filter did not have special chars so the text being searched did
+	        		// we can brute-force by inserting ".?" between each pair in the filter until we get a match
+	        		// and then use that as the highlight
+	        		for (var j=1; j<rawFilter.length; j++){
+	        			var newFilt = rawFilter.substring(0,j) + ".?" + rawFilter.substring(j);
+	        			console.log(newFilt);
+	        			var re2 = RegExp(newFilt, "i")
+	           	 		var hitStrings3 = re2.exec(searchText);
+	        			if (hitStrings3 != null){ 
+	        				theHit = hitStrings3[0];
+	        			}
+	        		}
+	        	}
+	        	
+	            listing.show();
+	            $(listing).removeHighlight();
+	            $(listing).highlight(theHit);            
+		    } else {
+	        	listing.hide();
+	        	numberHidden++;
+	        }
+        
+            
+            
+            // end of for loop
         }
         if (numberHidden >= this.listings.length) {
             // All hidden, hide title as well

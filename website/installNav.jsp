@@ -21,6 +21,6 @@
             <li><a href="pages/login.jsf?referrer=index.jsp" target="_parent">Login and begin using GenePattern</a></li>
         </ol>
 
-        Problems? Questions? Suggestions? <a href="mailto:gp-help@broadinstitute.org">Contact us</a>.
+        Problems? Questions? Suggestions? <a href="https://groups.google.com/g/genepattern-help/">Contact us</a>.
     </body>
 </html>

@@ -13,10 +13,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.Memory;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -26,8 +28,10 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.eula.GetTaskStrategy;
 import org.genepattern.server.eula.GetTaskStrategyDefault;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.JobInfoLoader;
 import org.genepattern.server.job.JobInfoLoaderDefault;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -746,6 +750,90 @@ public class LoadModuleHelper {
                 }
             }
         }
+    }
+    
+    private static  JSONArray _memJobOptionAsJson(Long val, JobConfigParams jobConfigParams) throws JSONException{
+        JSONArray outer = new JSONArray();
+        JSONObject jobOpt = new JSONObject();
+        JSONArray memValues = new JSONArray();
+        
+        Memory memobj = Memory.fromSizeInBytes(val);
+        
+        if (jobConfigParams == null){
+            memValues.put(memobj.getDisplayValue());
+        } else {
+            // try to make sure the formatting matches
+            boolean isSet = false;
+            ParameterInfo memParam = jobConfigParams.getParam("job.memory");
+            Set<String> allowedVals =  memParam.getChoices().keySet();
+            for (String aVal: allowedVals){
+                try {
+                    Memory okMem =  Memory.fromString(aVal);
+                    if (okMem.equals(memobj)){
+                        memValues.put(aVal);
+                        isSet = true;
+                        break;
+                    }
+                } catch (Exception e){
+                    // do nothing
+                    // e.printStackTrace();
+                }
+            }
+            if (! isSet) memValues.put(memobj.getDisplayValue());  
+        }
+        
+        jobOpt.put("groupid", "Job Options");
+        jobOpt.put("values", memValues);
+        outer.put(jobOpt);
+        return outer;
+    }
+    
+    private static  JSONArray _jobOptionAsJson(Integer val) throws JSONException{
+        JSONArray outer = new JSONArray();
+        JSONObject jobOpt = new JSONObject();
+        JSONArray memValues = new JSONArray();
+        
+        memValues.put(val.toString());
+       
+        jobOpt.put("groupid", "Job Options");
+        jobOpt.put("values", memValues);
+        outer.put(jobOpt);
+        return outer;
+    }
+
+    private static  JSONArray _jobOptionAsJson(String val) throws JSONException{
+        JSONArray outer = new JSONArray();
+        JSONObject jobOpt = new JSONObject();
+        JSONArray memValues = new JSONArray();
+        memValues.put(val.toString());
+        jobOpt.put("groupid", "Job Options");
+        jobOpt.put("values", memValues);
+        outer.put(jobOpt);
+        return outer;
+    }
+    
+   
+    
+    public static JSONObject asJsonV2(JobRunnerJob reloadJobRunnerSettings, JSONObject holder,  JobConfigParams jobConfigParams) throws JSONException {
+        final JSONObject jsonObj=new JSONObject();
+        
+        Long reqMem = reloadJobRunnerSettings.getRequestedMemory();
+        if (reqMem != null)
+            holder.put("job.memory", _memJobOptionAsJson(reqMem, jobConfigParams));
+        
+        Integer numCpu = reloadJobRunnerSettings.getRequestedCpuCount();
+        if (numCpu != null)
+            holder.put("job.cpuCount", _jobOptionAsJson(numCpu));
+        
+        String queue = reloadJobRunnerSettings.getRequestedQueue();
+        if (queue != null)
+            holder.put("job.queue", _jobOptionAsJson(queue));
+        String walltime = reloadJobRunnerSettings.getRequestedWalltime();
+        if (walltime != null)
+            holder.put("job.walltime", _jobOptionAsJson(walltime));
+        
+        
+        return jsonObj;
     }
 
 }

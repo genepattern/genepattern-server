@@ -7,28 +7,8 @@
  <!-- JSPC servlet mappings start -->
 
     <servlet>
-        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.addTask_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.createReport_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.footer_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.getFile_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.getTaskDoc_jsp</servlet-class>
+        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.navbarHead_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -37,23 +17,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.getTaskDocError_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.index_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.installFrame_jsp</servlet-name>
         <servlet-class>org.apache.jsp.installFrame_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.installLog_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -62,38 +27,23 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getTaskDocError_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.footer_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.makePipeline_jsp</servlet-name>
         <servlet-class>org.apache.jsp.makePipeline_jsp</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.makeZip_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.navbar_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.navbarHead_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.requestReport_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.saveTask_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.sql_jsp</servlet-class>
+        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.addTask_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -102,8 +52,58 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.createReport_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getTaskDoc_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.makeZip_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.getFile_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.navbar_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.index_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.requestReport_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.sql_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.saveTask_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.viewReports_jsp</servlet-name>
         <servlet-class>org.apache.jsp.viewReports_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.installLog_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -112,38 +112,13 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.pages.genomespace.error_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.modules.createhelp_jsp</servlet-name>
         <servlet-class>org.apache.jsp.modules.createhelp_jsp</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
-        <url-pattern>/addTask.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
-        <url-pattern>/createReport.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
-        <url-pattern>/footer.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
-        <url-pattern>/getFile.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
-        <url-pattern>/getTaskDoc.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
+        <url-pattern>/navbarHead.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -152,23 +127,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
-        <url-pattern>/getTaskDocError.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
-        <url-pattern>/index.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.installFrame_jsp</servlet-name>
         <url-pattern>/installFrame.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
-        <url-pattern>/installLog.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -177,38 +137,23 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>org.apache.jsp.getTaskDocError_jsp</servlet-name>
+        <url-pattern>/getTaskDocError.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.footer_jsp</servlet-name>
+        <url-pattern>/footer.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>org.apache.jsp.makePipeline_jsp</servlet-name>
         <url-pattern>/makePipeline.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
-        <url-pattern>/makeZip.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
-        <url-pattern>/navbar.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.navbarHead_jsp</servlet-name>
-        <url-pattern>/navbarHead.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
-        <url-pattern>/requestReport.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
-        <url-pattern>/saveTask.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
-        <url-pattern>/sql.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.addTask_jsp</servlet-name>
+        <url-pattern>/addTask.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -217,18 +162,63 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>org.apache.jsp.createReport_jsp</servlet-name>
+        <url-pattern>/createReport.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getTaskDoc_jsp</servlet-name>
+        <url-pattern>/getTaskDoc.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.makeZip_jsp</servlet-name>
+        <url-pattern>/makeZip.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.getFile_jsp</servlet-name>
+        <url-pattern>/getFile.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.navbar_jsp</servlet-name>
+        <url-pattern>/navbar.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.index_jsp</servlet-name>
+        <url-pattern>/index.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.requestReport_jsp</servlet-name>
+        <url-pattern>/requestReport.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.sql_jsp</servlet-name>
+        <url-pattern>/sql.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.saveTask_jsp</servlet-name>
+        <url-pattern>/saveTask.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>org.apache.jsp.viewReports_jsp</servlet-name>
         <url-pattern>/viewReports.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.pages.index_jsp</servlet-name>
-        <url-pattern>/pages/index.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.installLog_jsp</servlet-name>
+        <url-pattern>/installLog.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.pages.genomespace.error_jsp</servlet-name>
-        <url-pattern>/pages/genomespace/error.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.pages.index_jsp</servlet-name>
+        <url-pattern>/pages/index.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -329,7 +319,7 @@
   <init-param>
   <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
-   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf,GenomeSpaceOpenID, pages/genomespace/error.jsp, /pages/genomespace/associateAccount.jsf</param-value>
+   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf, systemMessage.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>home.page</param-name>
@@ -664,16 +654,6 @@
         <url-pattern>/AJAXUpload</url-pattern>
     </servlet-mapping>
  
-  <servlet>
-    <display-name>GenomeSpace OpenID Servlet</display-name>
-    <servlet-name>GenomeSpaceOpenID</servlet-name>
-    <servlet-class>org.genepattern.server.genomespace.GenomeSpaceOpenID</servlet-class>    
- </servlet>
- <servlet-mapping>
-  <servlet-name>GenomeSpaceOpenID</servlet-name>
-  <url-pattern>/GenomeSpaceOpenID</url-pattern>
- </servlet-mapping>
- 
  <servlet>
     <display-name>Pipeline Designer Servlet</display-name>
     <servlet-name>PipelineDesigner</servlet-name>
@@ -704,17 +684,7 @@
   <url-pattern>/ServerFileBrowser/*</url-pattern>
  </servlet-mapping>
  
- <servlet>
-    <display-name>GenomeSpace Servlet</display-name>
-    <servlet-name>GenomeSpace</servlet-name>
-    <servlet-class>org.genepattern.server.genomespace.GenomeSpaceServlet</servlet-class>    
- </servlet>
- <servlet-mapping>
-  <servlet-name>GenomeSpace</servlet-name>
-  <url-pattern>/GenomeSpace/*</url-pattern>
- </servlet-mapping>
-
-<filter>
+ <filter>
   <filter-name>RestApiFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.rest.RestApiFilter</filter-class>
 </filter>

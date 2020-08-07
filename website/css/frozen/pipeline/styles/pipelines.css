@@ -804,7 +804,7 @@ SEARCH SLIDER STUFF
 }
 
 #module-list-allnsuite .module-listing:hover {
-    background-image: url(../images/sidebar-topBG.png);
+    background-image: url(../../images/sidebar-topBG.png);
     background-repeat: repeat-x;
 }
 

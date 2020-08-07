@@ -407,6 +407,7 @@ public class StartupServlet extends HttpServlet {
             TaskInfoCache.instance();
         }
         catch (Throwable t) {
+            t.printStackTrace();
             getLog().error("error initializing taskInfo cache", t);
         }
 

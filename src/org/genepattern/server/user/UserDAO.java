@@ -6,7 +6,6 @@ package org.genepattern.server.user;
 
 // Generated Sep 21, 2006 12:36:06 PM by Hibernate Tools 3.1.0.beta5
 
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
@@ -60,16 +60,13 @@ public class UserDAO extends BaseDAO {
         return null;
     }
 
-    public List<User> getNewUsers(Date startDate, Date endDate) {
-        SimpleDateFormat queryFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String startStr = queryFormat.format(startDate);
-        String endStr = queryFormat.format(endDate);
-
-        String query = "from org.genepattern.server.user.User where registrationDate >= to_timestamp('" + startStr + "', 'YYYY-MM-DD HH24:MI:SS') and registrationDate <= to_timestamp('" + endStr + "', 'YYYY-MM-DD HH24:MI:SS') order by registrationDate";
-        log.error(query);
-
+    public List<User> getNewUsers(final Date startDate, final Date endDate) {
+        final String hql = "from org.genepattern.server.user.User where registrationDate >= :startDate and registrationDate <= :endDate order by registrationDate";
+        final Query query = this.mgr.getSession().createQuery(hql);
+        query.setDate("startDate", startDate);
+        query.setDate("endDate", endDate);
         @SuppressWarnings("unchecked")
-        List<User> users = this.mgr.getSession().createQuery(query).list();
+        final List<User> users = query.list();
         return users;
     }
     

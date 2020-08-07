@@ -171,11 +171,13 @@ if in_range "${GP_JOB_CPU_COUNT:-x}" "1" "256"; then
 fi
 
 # environment override
+: ${GP_USER_ID=test}
 : ${GP_LOCAL_PREFIX=/local}
 __env_arg="environment=[\
   {name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
   {name=STDERR_FILENAME,value=${GP_JOB_METADATA_DIR}/stderr.txt}, \
   {name=GP_JOB_ID,value=${GP_JOB_ID}}, \
+  {name=GP_USER_ID,value=${GP_USER_ID}}, \
   {name=GP_JOB_WORKING_DIR,value=${GP_JOB_WORKING_DIR}}, \
   {name=GP_WORKING_DIR,value=${GP_JOB_WORKING_DIR}}, \
   {name=GP_JOB_METADATA_DIR,value=${GP_JOB_METADATA_DIR}}, \
@@ -196,8 +198,9 @@ __env_arg="environment=[\
   {name=GP_JOB_WALLTIME_SEC,value=${GP_JOB_WALLTIME_SEC}}
 ]";
 
+CLEAN_MODULE_NAME="$(echo $GP_MODULE_NAME | sed 's/[^A-Z ^a-z ^0-9]//g')"
 __args=( \
-  "--job-name" "$JOB_ID" \
+  "--job-name" "${JOB_ID}_${CLEAN_MODULE_NAME}" \
   "--job-queue" "$JOB_QUEUE" \
   "--timeout" "attemptDurationSeconds=${GP_JOB_WALLTIME_SEC}" \
   "--job-definition" "$JOB_DEFINITION_NAME" \

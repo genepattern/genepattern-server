@@ -183,6 +183,8 @@ public class JobManager {
      * @return the list of jobNumbers that were deleted
      */
     static public List<Integer> deleteJob(boolean isAdmin, String currentUser, int jobId) throws WebServiceException {
+        
+        
         canDeleteJob(isAdmin, currentUser, jobId);
         try {
             //first terminate the job including child jobs
@@ -245,6 +247,7 @@ public class JobManager {
      */
     static private void deleteJobNoCheck(List<Integer> deletedJobIds, AnalysisDAO dao, int jobNumber) {
         JobInfo[] children = dao.getChildren(jobNumber);
+         
         for(JobInfo child : children) {
             deleteJobNoCheck(deletedJobIds, dao, child.getJobNumber());
         }

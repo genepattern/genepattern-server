@@ -1,7 +1,9 @@
 // Implicit variables declared elsewhere
-var genomeSpaceEnabled, genomeSpaceLoggedIn, username, jq, currentJobNumber, userLoggedIn,
+var  username, jq, currentJobNumber, userLoggedIn,
     openUploadDirectoryDialog, uploadDirectorySelected, openSaveDialog, adminServerAllowed,
     parameter_and_val_groups, run_task_info, fileURL;
+
+
 
 
 // used to make sure that a jquery id selector is escaped properly
@@ -455,6 +457,105 @@ function updateJobStatusPage() {
     }
 }
 
+function updateJobResultsDisplay(){
+	var isJobResultsOpen =  $("#jobTable").length > 0 && $("#jobTable:visible").length > 0;
+    if (isJobResultsOpen) {
+    	 var filter = getJobFilter();
+         if (!filter) filter = true;
+         loadJobResults(filter);
+    }
+}
+
+// if a job launched from this browser session completes or errors use the JS desktop notification API to tell the user
+// this is inefficient as we are getting status again every time but no time for a major rewrite right now
+function notifyDesktopOfJobCompletion(){
+	var jobList = localStorage.getItem("jobStatusNotificationList")
+	if (jobList == null) return;
+	try {
+		jobList = JSON.parse(localStorage.getItem("jobStatusNotificationList"));
+	} catch (e){
+		jobList = [];
+	}
+	
+	
+	if (jobList.length == 0) return;
+	
+	var qstr = "";
+	jobMap = {};
+	for (var i=0; i < jobList.length; i++){
+		try {
+			if (i != 0) qstr += "&";
+			var aJob = jobList[i];
+			jobMap[aJob["jobId"]] = aJob;
+			qstr +="jobId="+aJob["jobId"];
+		} catch(e){
+			// swallow bad data
+		}
+	}
+	
+
+	 $.ajax({
+	        cache: false,
+	        type: "GET",
+	        url: "/gp/rest/v1/jobs/jobstatus.json?"+qstr,
+	        dataType: "json",
+	        success: function(data) {
+	        	remainingJobs = [];
+	        	for (var i=0; i< data.length; i++){
+	        		jobStatus = data[i];
+	        		if (jobStatus.isFinished){
+	        			
+	        			var moduleName = jobMap[jobStatus["gpJobNo"]]["moduleName"];
+	        			notifyDesktop("GenePattern", moduleName + " job "+ jobStatus.gpJobNo + " " + jobStatus.statusFlag + " \n" + jobStatus.statusMessage);
+	        			
+	        			
+	        		} else {
+	        			remainingJobs.push(jobMap[jobStatus.gpJobNo]);
+	        		}
+	        		
+	        	} 
+	        	localStorage.setItem("jobStatusNotificationList", JSON.stringify(remainingJobs));
+	        },
+	        failure: function(err){
+	        	
+	        	console.error(err);
+	        }});
+	
+}
+
+function notifyDesktop(title, message) {
+    if (!window.Notification) {
+        console.log('Browser does not support notifications.');
+    } else {
+        // check if permission is already granted
+        if (Notification.permission === 'granted') {
+            // show notification here
+            var notify = new Notification(title, {
+                body: message,
+               
+            });
+        } else {
+            // request permission from user
+            Notification.requestPermission().then(function (p) {
+                if (p === 'granted') {
+                    // show notification here
+                    var notify = new Notification(title, {
+                        body: message,
+                        
+                    });
+                } else {
+                    console.log('User blocked notifications.');
+                }
+            }).catch(function (err) {
+                console.error(err);
+            });
+        }
+    }
+}
+
+
+
+
 function jobStatusPoll() {
     var _jobStatusPoll = function() {
         var continuePolling = $.data($(".current-job-status")[0], "continuePolling");
@@ -465,6 +566,14 @@ function jobStatusPoll() {
         // Update the job status page, if open and running
         updateJobStatusPage();
 
+        // update the job results page if open
+        updateJobResultsDisplay();
+       
+        
+        // put up a desktop notification if one of this session's jobs has just completed or errored
+        notifyDesktopOfJobCompletion()
+        
+        
         if (continuePolling) {
             setTimeout(function() {
                 _jobStatusPoll();
@@ -545,19 +654,28 @@ function ajaxFileTabUpload(file, directory, done, index) {
         reader.onerror = errorFunc;
 
         var start = nextChunk * size;
+        console.log("Reading "+index+" from " + start + " to " + (start + size) + "  " +reader.readyState);
         var blob = file.slice(start, start + size);
+        
         reader.readAsArrayBuffer(blob);
     };
 
     // Init the file reader
-    var reader = new FileReader();
+    
 
     var path = directory + encodeURIComponent(file.name); // The full url of the uploaded file
-    var step = 1024*1024*100;                           // The chunk size
+//    var step = 1024*1024*100;                           // The chunk size - 100MB
+    var step = 1024*1024*100;                           // XXXX  MUST RESET-low value for testing The chunk size - 1MB
     var total = file.size;                              // The total file size
     var totalChunks = Math.ceil(total / step);          // Total number of chunks in file
     var nextChunk = 0;                                  // Index of the next chunk
     var eventQueue = [];                                // The queue of events to execute
+    
+    var runningEvents = [];                             // the N currently running events
+    var completedEvents = [];                           // the list of events that are finished
+    var maxParallelEvents = 3;                          // The max parallel events
+    var completedEvents2 = Object();
+    
     var eventComplete = true ;                          // Flag for if the current event is complete
     var eventError = null;                              // Flag for if the event has encountered an error
     var token = null;                                   // The token for this upload resource
@@ -568,6 +686,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     // Set the cancel button functionality
     uploadToasterFile.find(".upload-toaster-file-cancel")
         .click(function() {
+        	r.cancel();
             // Set the progressbar cancel message
             progressbar.progressbar("value", 100);
             progressbar
@@ -589,8 +708,10 @@ function ajaxFileTabUpload(file, directory, done, index) {
     // Populate the event queue
 
     // Read the first chunk - Done now so we can detect error states early
-    eventQueue.push(function() {
-        _readChunk(reader, file, nextChunk, step,
+    var reader1 = new FileReader();
+    
+    var readChunk1 = function() {
+    	_readChunk(reader1, file, nextChunk, step,
             function() {
                 eventComplete = true;
                 _setPercentComplete();
@@ -599,7 +720,10 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = "Read Error: This could be because your connection closed during the " +
                     "upload or it could be because you were trying to upload a directory. Aborting upload.";
             });
-    });
+    }
+    readChunk1.gpeventName = 'readChunk1';
+    readChunk1.gpdoParallel= false;	
+    eventQueue.push(readChunk1);
 
     function createUploadPath()
     {
@@ -610,6 +734,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventComplete = true;
                 token = data['token'];
                 _setPercentComplete();
+                completedEvents2[checkQuota.gpeventName] = true;
             },
             error: function(data) {
                 eventError = data;
@@ -618,7 +743,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
     }
 
     // Create the upload resource
-    eventQueue.push(function() {
+    var checkQuota = function() {
         checkDiskQuota(function(diskInfo)
         {
             var validateObj = validateDiskQuota(diskInfo, file.size);
@@ -631,11 +756,16 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = validateObj.message;
             }
         });
-    });
+       
+    }
+    checkQuota.gpdoParallel=false;
+    checkQuota.gpeventName="check quota";
+    completedEvents2[checkQuota.gpeventName] = false;
+    eventQueue.push(checkQuota);
 
     // Add the first PUT (since we have already read it in)
-    eventQueue.push(function() {
-        var uploadPayload = new Uint8Array(reader.result);
+    var pushChunk1 = function() {
+        var uploadPayload = new Uint8Array(reader1.result);
         $.ajax({
             type: "PUT",
             dataType: "arraybuffer",
@@ -644,55 +774,78 @@ function ajaxFileTabUpload(file, directory, done, index) {
             data: uploadPayload,
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
             success: function() {
-                eventComplete = true;
                 nextChunk++;
                 _setPercentComplete();
+                completedEvents2[pushChunk1.gpeventName] = true;
             },
             error: function(data) {
                 eventError = data;
             }
         });
-    });
+        
+    }
+    pushChunk1.gpeventName = 'pushChunk1';
+    pushChunk1.gpdoParallel= true;	
+    completedEvents2[pushChunk1.gpeventName] = false;
+    eventQueue.push(pushChunk1);
+    
+    
 
     // Add the remaining reads then PUTs
     for (var i = 1; i < totalChunks; i++) {
-
-        // Read the next chunk
-        eventQueue.push(function() {
-            _readChunk(reader, file, nextChunk, step,
-                function() {
-                    eventComplete = true;
-                    _setPercentComplete();
-                },
-                function() {
-                    eventError = "Uploading directories is not supported. Aborting upload.";
-                });
-        });
-
+    	x = i;
+    	console.log(x);
+    	
         // Then upload it
-        eventQueue.push(function() {
-            var uploadPayload = new Uint8Array(reader.result);
-            $.ajax({
-                type: "PUT",
-                dataType: "arraybuffer",
-                processData: false,
-                contentType: false,
-                data: uploadPayload,
-                url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + nextChunk + "&parts=" + totalChunks,
-                success: function() {
-                    eventComplete = true;
-                    nextChunk++;
-                    _setPercentComplete();
-                },
-                error: function(data) {
-                    eventError = data;
-                }
-            });
-        });
+        var pushChunk = function() {
+        	chunkindex = arguments.callee.gpindex;
+        	console.log("Pushing " + chunkindex);
+        	var reader = new FileReader();
+        	 reader.onloadend = function() {
+        	      console.log("ready with " + chunkindex);
+        	      var uploadPayload = new Uint8Array(reader.result);
+        	      
+                $.ajax({
+                    type: "PUT",
+                    dataType: "arraybuffer",
+                    processData: false,
+                    contentType: false,
+                    data: uploadPayload,
+                    url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&index=" + chunkindex + "&parts=" + totalChunks,
+                    success: function() {
+                         
+                        _setPercentComplete();
+                        completedEvents2['pushChunk'+chunkindex] = true;
+                    },
+                    error: function(data) {
+                        eventError = data;
+                    }
+                });
+                  
+        	      
+        	    };
+        	reader.onerror = function() {
+        	        console.log(reader.error.message);
+        	      };
+        	_readChunk(reader, file, chunkindex, step,
+                    function() {
+                        //eventComplete = true;
+                        _setPercentComplete();
+                    },
+                    function() {
+                        eventError = "Uploading directories is not supported. Aborting upload.";
+                    });
+        	
+        }
+        pushChunk.gpindex = i;
+        pushChunk.gpeventName = 'pushChunk'+i;
+        pushChunk.gpdoParallel= true;	
+        completedEvents2['pushChunk'+i] = false;
+        eventQueue.push(pushChunk)
     }
 
     // Add the check to make sure everything is uploaded
-    eventQueue.push(function() {
+    var finalCheck = function() {
         $.ajax({
             type: "GET",
             url: "/gp/rest/v1/upload/multipart/?path=" + encodeURIComponent(path) + "&token=" + encodeURIComponent(token) + "&parts=" + totalChunks,
@@ -704,16 +857,21 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 else {
                     eventComplete = true;
                     _setPercentComplete();
+                    completedEvents2['finalCheck'] = true;
                 }
             },
             error: function(data) {
                 eventError = data;
             }
         });
-    });
+    }
+    finalCheck.gpeventName='finalCheck';
+    finalCheck.gpdoParallel=false;
+    completedEvents2['finalCheck'] = false;
+    eventQueue.push(finalCheck);
 
     // Add the command to assemble the file
-    eventQueue.push(function() {
+    var assemble = function() {
         progressbar
             .find(".upload-toaster-file-progress-label")
             .text("Assembling File...");
@@ -725,7 +883,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
             success: function(data) {
                 eventComplete = true;
                 token = data['token'];
-
+                completedEvents2['assemble'] = true;
                 //update the disk usage
                 initStatusBox();
             },
@@ -733,16 +891,24 @@ function ajaxFileTabUpload(file, directory, done, index) {
                 eventError = data;
             }
         });
-    });
+    }
+    assemble.gpeventName="assemble";
+    assemble.gpdoParallel = false	;
+    completedEvents2['assemble'] = false;
+    eventQueue.push(assemble);
 
     // Add the event to mark this upload as done
-    eventQueue.push(function() {
+    var finishUI = function() {
         progressbar.progressbar("value", 100);
         done[index] = true;
         eventComplete = true;
-    });
-
-
+        completedEvents2['finishUI'] = true;
+    }
+    finishUI.gpeventName="finishUI";
+    finishUI.gpdoParallel = false;
+    eventQueue.push(finishUI)
+    completedEvents2['finishUI'] = false;
+    
     // Execute the event queue
     var _checkEventQueue = function() {
         if (eventError !== null) {                  // OH SHIT - There's an error
@@ -767,22 +933,283 @@ function ajaxFileTabUpload(file, directory, done, index) {
             return;
         }
 
-        if (eventComplete) {
-            eventComplete = false;                  // Next event is not complete
-            var event = eventQueue.shift();         // Get the next event
-            if (event !== null && event !== undefined) {
-                event();                            // Execute it
-                setTimeout(_checkEventQueue, 1000); // Check the event queue again in a bit
+        
+     
+        // remove any that have completed from the running list
+        for (var i = 0; i < runningEvents.length; i++) {
+        	event = runningEvents[i];
+        	
+        	if ( completedEvents2[event.gpeventName] == true )	{}
+        		console.log("Event completed "+ event.gpeventName)
+	        	runningEvents = runningEvents.filter( function( el ) {
+	        			 return (el != event);
+	        	} );   		
+        		completedEvents.push(event);
+        	}
+    
+        
+        // if the next event says doParallel is OK
+        // then start the next event
+       
+        var event = eventQueue.shift();         // Get the next event
+        
+       
+        if (event !== null && event !== undefined) {
+        	singleOK = (event.gpdoParallel == false) && (runningEvents.length == 0);
+        	anotherParallel = (event.gpdoParallel ==true ) && (runningEvents.length < maxParallelEvents)
+        	launchAnotherEvent =  singleOK || anotherParallel;
+        
+        	if (launchAnotherEvent){
+        		runningEvents.push(event);
+        		
+            	event();  
+        	} else {
+        		// put the event back until later
+        		eventQueue.unshift(event)
+        	}
+        	
             }
-        }
-        else {
+       
+        	
+       
+        	
+        if ((eventQueue.length > 0) || (runningEvents.length > 0)) {
             setTimeout(_checkEventQueue, 1000);     // Check the event queue again in a bit
         }
+        
+        
     };
 
     totalQueue = eventQueue.length;
     _checkEventQueue();
 }
+
+function resumableUploadStart(r, file, directory){
+	var fileName = file.fileName;
+	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	
+	
+	if (($('#upload-toaster').dialog('isOpen') === true)){
+		
+		appendToUploadToaster(file);
+	} else {
+		console.log("Should be zero: " + resumableloadsInProgress);
+		var filelist = [file];
+		initUploadToaster(filelist, directory);
+	}
+	
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	// pass in the target directory for the final destination
+	r.opts.query.target = directory;
+	r.opts.query.relativePath = 'foofoo';
+	 
+	
+	 uploadToasterFile.find(".upload-toaster-file-cancel")
+     .click(function() {
+         
+      	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+    	 
+    	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	     progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	     $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+         //progressbar.progressbar("value", 100);
+         progressbar
+             .find(".ui-progressbar-value")
+             .css("background", "#FCF1F3");
+         progressbar
+             .find(".upload-toaster-file-progress-label")
+             .text("Canceled!");
+         // GP-8168 Remove the file, otherwise we cannot re-upload the same file again without a page reload
+         r.removeFile(file);
+         
+         $('.resumable-drop').show();
+         $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+         
+         cleanUploadToaster(); // JTL 02/06/20
+     });
+	
+	
+	
+    // Actually start the upload
+    r.upload();
+    $('.resumable-drop').show(); 
+}
+
+
+function resumableMultipleUploadStart(r, filearray, directory){
+	var len = filearray.length;
+	
+	for (var i=0; i < len; i++){
+		resumableUploadStart(r,filearray[i],directory);
+	}
+}
+
+
+function hasSpecialChars_resumable(file) {
+    var regex = new RegExp("[^A-Za-z0-9_.]");
+    
+    if (regex.test(file.name)) {
+        return true;
+    }
+    return false;
+}
+
+function warnSpecialChars_resumable(r, file) {
+    showDialog("Special Characters!",
+            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!<br/><br/>" +
+            "Some older GenePattern modules do not handle special characters well. " +
+            "Are you sure you want to continue?", {
+            "Yes": function() {
+                $(this).dialog("close");
+                onFileAdded_resumable(r, file)
+            },
+            "No": function() {
+                $(this).dialog("close");
+            }
+        });
+}
+
+currentFileList = [];
+function onFileAdded_resumable(r, file){
+	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
+    var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    r.currentFile = file.fileName;
+    alreadyOpen = $('#uploadDirectoryDialog').dialog('isOpen');
+    currentFileList.push(file);
+    
+    // pick the destination directory
+    if (alreadyOpen){
+    	// do nothing but add the file to the list
+    	
+    } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
+        openUploadDirectoryDialog(currentFileList, function() {    
+        	var directory = $(uploadDirectorySelected).attr("href");
+        	resumableMultipleUploadStart(r, currentFileList, directory);
+        	currentFileList = []; // empty 
+     	 });
+    } else {
+    	resumableMultipleUploadStart(r, currentFileList, directory);
+    	currentFileList = []; // empty 
+    }
+}; 
+
+var resumableUploader;
+var resumableloadsInProgress = 0;
+
+function initReusableJSUploads(file, directory, done, index){
+	//function ajaxFileTabUpload(file, directory, done, index) {
+	
+	var uploadToasterFile;
+	var progressbar;
+	
+	
+	var r = new Resumable({
+         target:'/gp/rest/v1/upload/resumable/',
+         chunkSize:50*1024*1024,
+         simultaneousUploads:4,
+         testChunks: true,
+         throttleProgressCallbacks:1,
+         method: "octet",
+		 query: {'target':'abcd', 'relativePath':'abcd'}
+       });
+     
+	resumableUploader = r;
+	
+     if(!r.support) $('.resumable-error').show();
+     else {
+    	 // the dropzone at bottom right
+         r.assignDrop($('.resumable-drop')[0]);
+         r.assignBrowse($('.resumable-browse')[0]);
+         // drops on the file tree
+         r.assignDrop($('#uploadTree li.jstree-open, li.jstree-closed'));
+         
+         var resumableDrop = $('.resumable-drop')[0];
+         resumableDrop.addEventListener("dragenter", uploadEnter, true);
+         resumableDrop.addEventListener("dragleave", uploadLeave, true);
+         resumableDrop.addEventListener("dragexit", uploadExit, false);
+         resumableDrop.addEventListener("dragover", uploadOver, false);
+         
+         $('.resumable-drop').show();
+         
+
+         
+         r.on('fileAdded', function(file){
+        	 var regex = new RegExp("[^A-Za-z0-9_.]");
+        	 if (regex.test(file.fileName)) {
+        		 warnSpecialChars_resumable(r, file);
+        	 } else {
+        		 onFileAdded_resumable(r, file);
+        	 } 	    
+        	 
+         });
+         
+
+         
+         r.on('pause', function(file){
+             // Show resume, hide pause
+             $('.resumable-progress .progress-resume-link').show();
+             $('.resumable-progress .progress-pause-link').hide();
+           });
+         r.on('complete', function(file){
+        	
+             cleanUploadToaster();
+             r.currentFile = null;
+             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+           });
+         r.on('fileSuccess', function(file,message){
+        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+        	 
+             $('.resumable-drop').show();
+             var fileName = file.fileName;
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+        	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             progressbar.progressbar("value", 100);
+             //cleanUploadToaster();
+             // Remove the file, otherwise we cannot re-upload the same file again without a page reload
+             r.removeFile(file);
+           });
+         r.on('fileError', function(file, message){
+        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+             // Reflect that the file upload has resulted in error
+          //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+          // Set the top error message
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             
+        	 showErrorMessage(message);
+
+             // Set the progressbar error message
+             progressbar.progressbar("value", 100);
+             progressbar
+                 .find(".ui-progressbar-value")
+                 .css("background", "#FCF1F3");
+             progressbar
+                 .find(".upload-toaster-file-progress-label")
+                 .text("Error!");
+             
+             $('.resumable-drop').show();
+             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+             
+           });
+         r.on('fileProgress', function(file){
+             // Handle progress for both the file and the overall upload
+             //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
+             //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+        	 
+        	 // On a cancellation, this will get called after but we don't want to reset the progressbar to 0 so bail
+        	 if (!(r.files.includes(file))) return;
+        	 
+        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+             progressbar.progressbar("value", Math.floor(r.progress()*100));
+           });
+         
+     }
+	
+}
+
+
 
 function hasSpecialChars(filelist) {
     var regex = new RegExp("[^A-Za-z0-9_.]");
@@ -820,12 +1247,73 @@ function dirPromptIfNecessary (filelist, directory) {
     }
 }
 
+// resumable js gets drop events one at a time so we need to add to the existing dialog
+function appendToUploadToaster(file){
+	
+	
+	
+	
+	
+    // var toaster = $("<div></div>").addClass("upload-toaster-list");
+    var toaster = $("#upload-toaster")[0];
+    // after a cancel it might already be there
+    existing = $(".upload-toaster-file[name='" + escapeJquerySelector(file.name) + "']");
+  	if (existing.length > 0 ) return;
+    
+    
+    $("<div></div>")
+        .addClass("upload-toaster-file")
+        .attr("name", file.name)
+        .append(
+        $("<span></span>")
+            .addClass("upload-toaster-file-name")
+            .text(file.name)
+    )
+        .append(
+        $("<div></div>")
+            .addClass("upload-toaster-file-progress")
+            .progressbar({
+                change: function() {
+                    $(this).find(".upload-toaster-file-progress-label").text($(this).progressbar("value") + "%");
+                },
+                complete: function() {
+                    $(this).find(".upload-toaster-file-progress-label").text("Complete!");
+                    $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+                }
+            })
+            .append(
+            $("<div></div>")
+                .addClass("upload-toaster-file-progress-label")
+                .text("Pending")
+        )
+    )
+        .append(
+        $("<button></button>")
+            .addClass("upload-toaster-file-cancel")
+            .text("Cancel")
+            .button()
+    )
+        .appendTo(toaster);
+	
+}
+
+
 function initUploadToaster(filelist) {
     // Hide the dropzone
     $("#upload-dropzone-wrapper").hide("slide", { direction: "down" }, 200);
 
     // Create the dialog contents
-    var toaster = $("<div></div>").addClass("upload-toaster-list");
+    
+    var toaster = $('#upload-toaster');
+    if (toaster.length == 0){
+    	
+    	toaster = $("<div></div>").addClass("upload-toaster-list").attr("id", "upload-toaster");
+    } else {
+    	//empty out the old stuff
+    	toaster.empty();
+    	// toaster.empty();
+    }
+    // toaster = $("<div></div>").addClass("upload-toaster-list").attr("id", "upload-toaster");
     for (var i = 0; i < filelist.length; i++) {
         var file = filelist[i];
         $("<div></div>")
@@ -865,7 +1353,6 @@ function initUploadToaster(filelist) {
 
     // Create the dialog
     toaster
-        .attr("id", "upload-toaster")
         .dialog({
             "title" : "GenePattern Uploads",
             "width": 585,
@@ -939,6 +1426,7 @@ function uploadAfterDialog(filelist, directory) {
                 // Upload the file
                 var file = filelist[i];
                 ajaxFileTabUpload(file, directory, done, i);
+       
             }
 
             // Finish all uploads, cycling until done
@@ -982,6 +1470,8 @@ function uploadOver(evt) {
 }
 
 function uploadDrop(event) {
+	alert('OLD DROP UPLOAD CALLED');
+	
     this.classList.remove('leftnav-highlight');
     event.stopPropagation();
     event.preventDefault();
@@ -1090,8 +1580,13 @@ function initUploadTreeDND() {
         folder[0].addEventListener("dragleave", uploadLeave, true);
         folder[0].addEventListener("dragexit", uploadExit, false);
         folder[0].addEventListener("dragover", uploadOver, false);
-        folder[0].addEventListener("drop", uploadDrop, false);
-
+      
+        // JTL RESUMABLEJS comment out the old dropzone
+        //folder[0].addEventListener("drop", uploadDrop, false);
+        // JTL RESUMABLEJS END comment out the old dropzone
+        resumableUploader.assignDrop(element);
+        
+        
         // Add to list to prevent repeats
         eventsAttached.push(folder[0]);
 
@@ -1147,323 +1642,6 @@ function showSuccessMessage(message) {
     infoDiv.show();
 }
 
-function createGenomeSpaceWidget(linkElement, appendTo) {
-    var _isGenomeSpaceRoot = function(url) {
-        var parts = url.split("dm.genomespace.org/datamanager/");
-        var path = parts[parts.length-1];
-        var pieces = path.split("/");
-        return pieces.length <= 4;
-    };
-
-    var _constructGenomeSpaceMenuData = function(isRoot, isDirectory) {
-        var data = [];
-
-        if (!isRoot || !isDirectory) {
-            data.push({
-                "lsid": "",
-                "name": "Delete " + (isDirectory ? "Directory" : "File"),
-                "description": (isDirectory ? "Permanently delete this directory and all child files." : "Permanently delete this file."),
-                "version": "<span class='glyphicon glyphicon-remove' ></span>",
-                "documentation": "", "categories": [], "suites": [], "tags": []
-            });
-        }
-
-        if (isDirectory) {
-            data.push({
-                "lsid": "",
-                "name": "Create Subdirectory",
-                "description": "Create a subdirectory in this directory.",
-                "version": "<span class='glyphicon glyphicon-folder-open' ></span>",
-                "documentation": "", "categories": [], "suites": [], "tags": []
-            });
-        }
-
-        else if (!isDirectory) {
-            data.push({
-                "lsid": "",
-                "name": "Save File",
-                "description": "Save a copy of this file to your local computer.",
-                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>",
-                "documentation": "", "categories": [], "suites": [], "tags": []
-            });
-        }
-
-        return data;
-    };
-
-    var _parseList = function(listString) {
-        if (listString === null || listString === undefined) {
-            return [];
-        }
-        else {
-            return JSON.parse(listString);
-        }
-    };
-
-    var _createGenomeSpaceWidgetInner = function(linkElement, appendTo) {
-        var link = $(linkElement);
-        var url = link.attr("href");
-        var name = $(linkElement).text();
-        var isDirectory = link.attr("data-directory") === "true";
-        var isRoot = _isGenomeSpaceRoot(url);
-
-        var kind = _parseList(linkElement.attr("data-kind"));
-        var clients = _parseList(linkElement.attr("data-clients"));
-        var convertUrls = _parseList(linkElement.attr("data-converturls"));
-        var listList = [];
-
-        var data = _constructGenomeSpaceMenuData(isRoot, isDirectory);
-        var actionList = $("<div></div>")
-            .attr("class", "file-widget-actions")
-            .modulelist({
-                title: name,
-                data: data,
-                droppable: false,
-                draggable: false,
-                click: function(event) {
-                    var saveAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Save File") === 0;
-                    var deleteAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Delete") === 0;
-                    var subdirAction = $(event.target).closest(".module-listing").find(".module-name").text().trim().indexOf("Create Subdirectory") === 0;
-
-                    var listObject = $(event.target).closest(".search-widget");
-                    var url = listObject.attr("name");
-
-                    if (saveAction) {
-                        window.location.href = url;
-                        $(".search-widget:visible").searchslider("hide");
-                    }
-
-                    else if (deleteAction) {
-                        if (confirm('Are you sure you want to delete the selected file or directory?')) {
-                            $.ajax({
-                                type: "DELETE",
-                                url: "/gp/rest/v1/genomespace/delete?url=" + encodeURIComponent(url),
-                                success: function(data) {
-                                    showSuccessMessage(data);
-
-                                    refreshGenomeSpaceTree();
-                                },
-                                error: function(data) {
-                                    if (typeof data === 'object') {
-                                        data = data.responseText;
-                                    }
-
-                                    showErrorMessage(data);
-                                }
-                            });
-
-                            $(".search-widget:visible").searchslider("hide");
-                        }
-                    }
-
-                    else if (subdirAction) {
-                        showDialog("Name the Subdirectory", "What name would you like to give the subdirectory?" +
-                            "<input type='text' class='dialog-subdirectory-name' style='width: 98%;' />", {
-                            "Create": function() {
-                                var subdirName = $(".dialog-subdirectory-name").val();
-
-                                var _createSubdirectory = function() {
-                                    $.ajax({
-                                        type: "PUT",
-                                        url: "/gp/rest/v1/genomespace/createDirectory?url=" + encodeURIComponent(url) + "&name=" + encodeURIComponent(subdirName),
-                                        success: function(data) {
-                                            showSuccessMessage(data);
-
-                                            refreshGenomeSpaceTree();
-                                        },
-                                        error: function(data) {
-                                            if (typeof data === 'object') {
-                                                data = data.responseText;
-                                            }
-
-                                            showErrorMessage(data);
-                                        }
-                                    });
-                                };
-
-                                // Check for special characters
-                                var regex = new RegExp("[^A-Za-z0-9_.]");
-                                var specialCharacters = regex.test(subdirName);
-                                if(specialCharacters) {
-                                    var outerDialog = $(this);
-                                    showDialog("Special Characters!",
-                                            "The name you selected contains special characters!<br/><br/>" +
-                                            "Some older GenePattern modules do not handle special characters well. " +
-                                            "Are you sure you want to continue?", {
-                                            "Yes": function() {
-                                                _createSubdirectory();
-                                                //update the disk usage
-                                                initStatusBox();
-                                                $(this).dialog("close");
-                                                $(outerDialog).dialog("close");
-                                            },
-                                            "No": function() {
-                                                $(this).dialog("close");
-                                            }
-                                        });
-                                }
-                                else {
-                                    _createSubdirectory();
-                                    $(this).dialog("close");
-                                }
-                            },
-                            "Cancel": function() {
-                                $(this).dialog("close");
-                            }
-                        });
-                        $(".ui-dialog-buttonset:visible button:first").button("disable");
-                        $(".dialog-subdirectory-name").keyup(function(event) {
-                            if ($(event.target).val() === "") {
-                                $(".ui-dialog-buttonset:visible button:first").button("disable");
-                            }
-                            else {
-                                $(".ui-dialog-buttonset:visible button:first").button("enable");
-                            }
-                        });
-
-                        $(".search-widget:visible").searchslider("hide");
-                    }
-
-                    else {
-                        console.log("ERROR: Executing click function for " + url);
-                        $(".search-widget:visible").searchslider("hide");
-                    }
-                }
-            });
-        listList.push(actionList);
-
-        // Create send to tool lists
-        var toolData = [];
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < clients.length; i++) {
-            var tool = clients[i];
-            toolData.push({
-                "lsid": tool,
-                "name": "Send to " + tool,
-                "description": "Send this file from GenePattern to " + tool + " using GenomeSpace.",
-                "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>",
-                "documentation": "http://genomespace.org", "categories": [], "suites": [], "tags": []
-            });
-        }
-
-        var toolList = $("<div></div>")
-            .attr("class", "file-widget-actions send-to-tool-list")
-            .attr("data-kind", aKind)
-            .attr("data-url", convertUrl)
-            .modulelist({
-                title: "Send to GenomeSpace Tool",
-                data: toolData,
-                droppable: false,
-                draggable: false,
-                click: function(event) {
-                    var tool = $(event.target).closest(".module-listing").find(".module-lsid").text();
-                    window.open("/gp/rest/v1/genomespace/tool?tool=" + encodeURIComponent(tool) + "&url=" + encodeURIComponent(url));
-                    $(".search-widget:visible").searchslider("hide");
-                }
-            });
-        listList.push(toolList);
-
-        // Create send to parameter lists
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < kind.length; i++) {
-            //noinspection JSDuplicatedDeclaration
-            var aKind = kind[i];
-            //noinspection JSDuplicatedDeclaration
-            var convertUrl = convertUrls[aKind];
-
-            var paramList = $("<div></div>")
-                .attr("class", "send-to-param-list")
-                .attr("data-kind", aKind)
-                .attr("data-url", convertUrl)
-                .modulelist({
-                    title: "Send to  Parameter as " + aKind,
-                    data: [],
-                    droppable: false,
-                    draggable: false,
-                    click: function(event) {}
-                });
-            listList.push(paramList);
-        }
-
-        // Create send to module lists
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < kind.length; i++) {
-            //noinspection JSDuplicatedDeclaration
-            var aKind = kind[i];
-            //noinspection JSDuplicatedDeclaration
-            var convertUrl = convertUrls[aKind];
-
-            var lsidList = kindToModules[aKind];
-            if (lsidList === null || lsidList === undefined) lsidList = [];
-            var sendToList = lsidsToModules(lsidList).sort(function (a, b) {
-                if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
-                if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
-                return 0;
-            });
-
-            var moduleList = $("<div></div>")
-                .attr("class", "send-to-module-list")
-                .attr("data-kind", aKind)
-                .attr("data-url", convertUrl)
-                .modulelist({
-                    title: "Send to Module as " + aKind,
-                    data: sendToList,
-                    droppable: false,
-                    draggable: true,
-                    click: function(event) {
-                        var lsid = this.data.lsid;
-                        var listObject = $(event.target).closest(".send-to-module-list");
-                        var kind = listObject.attr("data-kind");
-                        var url = listObject.attr("data-url");
-
-                        loadRunTaskForm(lsid, false, kind, url);
-
-                        var checkForRunTaskLoaded = function() {
-                            if (run_task_info.lsid === lsid) {
-                                sendToByKind(url, kind);
-                            }
-                            else {
-                                setTimeout(function() {
-                                    checkForRunTaskLoaded();
-                                }, 100);
-                            }
-                        };
-
-                        checkForRunTaskLoaded();
-                    }
-                });
-            listList.push(moduleList);
-        }
-
-        //noinspection JSDuplicatedDeclaration
-        for (var i = 0; i < listList.length; i++) {
-            var aList = listList[i];
-            if (aList.find(".module-listing").length < 1) {
-                aList.hide();
-            }
-        }
-
-        var widget = $("<div></div>")
-            .attr("name", link.attr("href"))
-            .attr("class", "search-widget file-widget")
-            .searchslider({lists: listList});
-
-        $(appendTo).append(widget);
-
-        // Init the initial send to parameters
-        var sendToParamList = widget.find(".send-to-param-list");
-        sendToParamForMenu(sendToParamList);
-    };
-
-    if (all_modules_map !== null) {
-        _createGenomeSpaceWidgetInner(linkElement, appendTo);
-    }
-    else {
-        setTimeout(function() {
-            createGenomeSpaceWidget(linkElement, appendTo);
-        }, 100);
-    }
-}
 
 function createInputFileWidget(linkElement, appendTo) {
     var _constructFileMenuData = function() {
@@ -1528,11 +1706,13 @@ function createInputFileWidget(linkElement, appendTo) {
 }
 
 function refreshUploadTree() {
+	$("#uploadTree").jstree('save_cookie');
+	$("#uploadDirectoryTree").jstree('save_cookie');
+    
     var uploadTree = $("#uploadTree");
     uploadTree.data("dndReady", {});
     uploadTree.jstree("refresh");
-
-    $("#uploadDirectoryTree").jstree("refresh");
+    // $("#uploadDirectoryTree").jstree("refresh");
 }
 
 function refreshGenomeSpaceTree() {
@@ -1586,14 +1766,7 @@ function createFileWidget(linkElement, appendTo) {
                 "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
             });
 
-            if (genomeSpaceEnabled && genomeSpaceLoggedIn) {
-                data.push({
-                    "lsid": "",
-                    "name": "Save to Genomespace",
-                    "description": "Save a copy of this file to your GenomeSpace account.",
-                    "version": "<img src='/gp/pages/genomespace/genomespace_icon.png' class='module-list-icon'>", "documentation": "", "categories": [], "suites": [], "tags": []
-                });
-            }
+           
 
             data.push({
                 "lsid": "",
@@ -1894,7 +2067,20 @@ function createFileWidget(linkElement, appendTo) {
                                     }
                                     if (isJobFile) {
                                         initRecentJobs();
-                                    }
+                                        
+                                        // Handle the case where we delete a file in the current open job on the job status page
+                                        // if so we must refresh the job status view to get rid of the deleted file
+                                        var isJobStatusOpen = $(".on-job-status-page").length > 0 && $("#jobResults:visible").length > 0;
+                                        if (isJobStatusOpen && currentJobNumber !== undefined && currentJobNumber !== null) {
+	                                        if (path.startsWith("/jobResults/"+currentJobNumber)){
+	                                        	loadJobStatus(currentJobNumber);         	
+	                                        }
+                                        }
+                                        
+                                        
+                                        updateJobResultsDisplay();
+                                        initRecentJobs();
+                                        }
 
                                     //check the disk quota
                                     checkDiskQuota();
@@ -2161,15 +2347,12 @@ function makePipelineNameValid(string) {
 
 function openFileWidget(link, context) {
     var url = $(link).attr("href");
-    var genomeSpace = context === "#menus-genomespace";
+    
     var inputFile = context === "#menus-inputs";
 
     // Create the menu widget
     var widgetFound = $(context).find("[name='" + escapeJquerySelector(url) + "']").length > 0;
-    if (!widgetFound && genomeSpace) {
-        createGenomeSpaceWidget($(link), context);
-    }
-    else if (!widgetFound && inputFile) {
+    if (!widgetFound && inputFile) {
         createInputFileWidget($(link), context);
     }
     else if (!widgetFound) {
@@ -2307,6 +2490,7 @@ function createJobWidget(job) {
                             success: function(data) {
                                 showSuccessMessage(data);
                                 initRecentJobs();
+                                updateJobResultsDisplay()
                             },
                             error: function(data) {
                                 if (typeof data === 'object') {
@@ -2482,11 +2666,13 @@ function initRecentJobs() {
                     $(ui).text(" " + jobsProcessing + " Jobs Processing");
                     $(ui).prepend("<img src='/gp/images/spin.gif' alt='Jobs Currently Processing' />");
                     $.data($(ui).parent()[0], "continuePolling", true);
+                    updateJobResultsDisplay()
                 }
                 else {
                     $(ui).text(" No Jobs Processing");
                     $(ui).prepend("<img src='/gp/images/complete.gif' alt='No Jobs Processing' />");
                     $.data($(ui).parent()[0], "continuePolling", false);
+                    updateJobResultsDisplay()
                 }
             });
         },
@@ -3357,12 +3543,14 @@ function buildJobResultsPage() {
                                              var filter = getJobFilter();
                                              if (!filter) filter = true;
                                              loadJobResults(filter);
+                                             initRecentJobs();
                                              showSuccessMessage(data);
                                          },
                                          error: function (data) {
                                              var filter = getJobFilter();
                                              if (!filter) filter = true;
                                              loadJobResults(filter);
+                                             initRecentJobs();
                                              showErrorMessage(data);
                                          }
                                      });
@@ -3708,8 +3896,7 @@ function initStatusBox()
         url: "/gp/rest/v1/disk",
         cache: false,
         success: function (response) {
-            console.log(response);
-
+           
             if (response !== null) {
                 updateDiskUsageBox(response);
             }

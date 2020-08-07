@@ -80,7 +80,8 @@
                         </h:outputText>
                     </t:dataList>
                     <span id="runVisualizerLink_#{jobInfo.jobNumber}" style="display: #{jobStatusBean.jobInfo.finished ? 'visible' : 'none'};">
-			    	<a href="#" onclick="runVisualizer(#{jobInfo.jobNumber})"><img src="/gp/images/visualizer.gif" border="0" /> Open Visualizer</a>
+                    <img src="/gp/images/visualizer.gif" border="0" /><em>(Java Applet Visualizer)</em> Go to the <a 
+                    href="https://genepattern.github.io/VisualizerLauncher/" target="_blank">VisualizerLauncher page</a> for details.
                     </span>
                 </p>
             </h:outputText>
@@ -92,7 +93,7 @@
                         </h:outputText>
                     </t:dataList>
                     <span id="runJavascriptLink_#{jobInfo.jobNumber}" style="display: #{jobStatusBean.jobInfo.finished ? 'visible' : 'none'};">
-			    	    <a href='#{jobInfo.launchUrl}' target="_blank">
+                        <a href='#{jobInfo.launchUrl}' target="_blank">
                         <img src="/gp/images/visualizer.gif" border="0" alt="indent spacer"/> Open Visualization</a>
                         <script type="text/javascript">
                             openJavascript('#{jobInfo.jobNumber}', '#{jobInfo.taskName}', '#{jobInfo.taskLSID}', '#{jobInfo.launchUrl}');

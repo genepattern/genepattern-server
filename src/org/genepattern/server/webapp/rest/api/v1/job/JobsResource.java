@@ -5,7 +5,9 @@ package org.genepattern.server.webapp.rest.api.v1.job;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +41,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.genepattern.CommandLineParser;
@@ -46,6 +49,7 @@ import org.genepattern.server.job.input.JobInput;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamValue;
+import org.genepattern.server.job.input.configparam.JobConfigParams;
 import org.genepattern.server.job.status.JobStatusLoaderFromDb;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.job.tag.JobTagManager;
@@ -56,6 +60,9 @@ import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.util.EmailNotificationManager;
+import org.genepattern.server.util.HttpNotificationManager;
+import org.genepattern.server.util.MailSender;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.server.webapp.rest.api.v1.job.comment.JobCommentsResource;
 import org.genepattern.server.webapp.rest.api.v1.job.search.JobSearch;
@@ -68,6 +75,7 @@ import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -153,7 +161,7 @@ public class JobsResource {
     {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         final GpContext jobContext=Util.getUserContext(request);
-
+        
         try
         {
             //check if the user is above their disk quota
@@ -161,10 +169,18 @@ public class JobsResource {
             DiskInfo diskInfo = DiskInfo.createDiskInfo(gpConfig, jobContext);
 
             if(diskInfo.isAboveQuota())
-            {
+            {             
                 //disk usage exceeded so do not allow user to run a job
+                 
                 return Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build();
             }
+            if (diskInfo.isAboveMaxSimultaneousJobs()){
+                
+                diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, jobContext.getTaskName());
+                return Response.status(Response.Status.FORBIDDEN).entity("Max simultaneous jobs exceeded.").build();
+                
+            }
+            
         }
         catch(DbException db)
         {
@@ -180,6 +196,9 @@ public class JobsResource {
             //TODO: add support for batch jobs to REST API
             final JobInput jobInput= JobInputValues.parseJobInput(jobInputValues);
 
+            
+            if (! jobContext.isAdmin()) validateJobConfigParamValues(gpConfig, jobContext, jobInput);
+            
             final boolean initDefault=true;
             final JobInputApiImplV2 impl= new JobInputApiImplV2(initDefault);
             final String jobId = impl.postJob(jobContext, jobInput);
@@ -231,6 +250,32 @@ public class JobsResource {
                             .entity(t.getMessage())
                             .build()
             );
+        }
+    }
+
+    private void validateJobConfigParamValues(final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput) throws GpServerException {
+        JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  jobContext);
+        // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
+        // using the parameterInfo from the jobConfigParams but admins get a pass
+       
+        for (ParameterInfo jcpPi: jcp.getParams()){
+            Map<String,String> allowedChoices = jcpPi.getChoices();
+            if (allowedChoices.size() > 0){
+                Param p = jobInput.getParam(jcpPi.getName());
+                if (p != null){
+                    for (ParamValue v: p.getValues()) {
+                        String av = allowedChoices.get(v.getValue());
+                        Boolean isAGoodValue = allowedChoices.containsValue(v.getValue());
+                        if ((av == null) && !isAGoodValue ){
+                            // we got here because the user is not an admin, but has somehow submitted a job requesting
+                            // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+                            // the job from tunning GP-8347
+                            throw new GpServerException("Job config parameter '" + jcpPi.getName() +"' was requested with a value of " + v.getValue() + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 
@@ -651,6 +696,61 @@ public class JobsResource {
     }
 
     /**
+     * GET status.json for the given jobId.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/jobstatus.json")
+    public Response getMultipleStatus(
+            final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request,
+            @QueryParam("jobId") final List<String> jobList
+    ) {
+
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        final JSONArray statuses = new JSONArray();
+        
+        for (String jobId: jobList){
+            System.out.println("getting status for " + jobId + " in list " + jobList);
+            try {
+                final GpContext jobContext=Util.getJobContext(request, jobId);
+                
+                final String gpUrl=UrlUtil.getBaseGpHref(request);
+                final Status status = new JobStatusLoaderFromDb(mgr, gpUrl).loadJobStatus(jobContext);
+    
+                final JSONObject jsonObj = status.toJsonObj();
+                //inexplicably the job status object does not include the job number
+                jsonObj.putOpt("gpJobNo", jobId);
+                statuses.put(jsonObj);
+                System.out.println("got " + jsonObj);
+            }
+            catch (Throwable t) {
+                String errorMessage="Error getting status.json for jobId="+jobId;
+                log.error(errorMessage, t);
+                //return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                //        .entity(errorMessage)
+                //        .build();
+                
+                // keep going at get status on the rest and let the client figure out the problem
+            }
+        }
+        try {
+            final String jsonStr = statuses.toString(2);
+            return Response.ok()
+                    .entity(jsonStr)
+                    .build();
+        } catch (Throwable t){
+            String errorMessage="Error writing status.json for jobId in " + jobList.toString();
+            log.error(errorMessage, t);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(errorMessage)
+                    .build();
+            
+        }
+    }
+    
+    
+    /**
      * Terminate the specified job
      * @param request
      * @param jobId
@@ -1034,6 +1134,79 @@ public class JobsResource {
         return res.editComment(multivaluedMap, id, jobNo, request);
     }
 
+    
+    @POST
+    @Path("/{jobNo}/setNotificationCallback")
+    public Response setNotificationCallback(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        final GpContext userContext = Util.getUserContext(request);
+        String notificationUrl = multivaluedMap.getFirst("notificationUrl");
+        try {
+            URL obj = new URL(notificationUrl);
+        }
+        catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Error setting notification callback for  job " + jobNo, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+        
+        int jobNumber = Integer.parseInt(jobNo);
+        String key = null;
+        if (jobNumber >= 0 && userContext.getUserId() != null && notificationUrl != null) {
+            key = UserProp.getHttpNotificationPropKey(jobNumber);
+        }
+        if (key == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Can't send http notification: jobNumber=" + jobNo + ", user=" + userContext.getUserId()).build();
+        }
+        UserDAO userDao = new UserDAO();
+        String oldUrl = userDao.getProperty(userContext.getUserId(), key).getValue();
+        if (oldUrl != null){
+            //  kill the old thread if it exists as we only allow one callback per job to avoid this becoming a DNS target
+            HttpNotificationManager.getInstance().removeWaitingUser(oldUrl, userContext.getUserId(), jobNo);
+        }
+        // save state
+        HibernateUtil.beginTransaction();
+        String value = String.valueOf(notificationUrl);
+        userDao.setProperty(userContext.getUserId(), key, value);
+        HibernateUtil.commitTransaction();
+        
+        
+        
+        HttpNotificationManager.getInstance().addWaitingUser(notificationUrl, userContext.getUserId(), jobNo);
+        return Response.ok().build();
+    }
+    
+    @POST
+    @Path("/{jobNo}/removeNotificationCallback")
+    public Response removeNotificationCallback(
+            MultivaluedMap<String,String> multivaluedMap,
+            @PathParam("jobNo") String jobNo,
+            @Context HttpServletRequest request)
+    {
+        System.out.println(" =================  JobsResource removeNotificationCallback ======================= " + multivaluedMap);
+        final GpContext userContext = Util.getUserContext(request);
+        String notificationUrl = multivaluedMap.getFirst("notificationUrl");
+        try {
+            URL obj = new URL(notificationUrl);
+        }
+        catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Error setting notification callback for  job " + jobNo, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+        }
+        
+        
+        HttpNotificationManager.getInstance().removeWaitingUser(notificationUrl, userContext.getUserId(), jobNo);
+        
+        return Response.ok().build();
+    }
+    
+    
     @POST
     @Path("/{jobNo}/comments/delete")
     public Response deleteComment(

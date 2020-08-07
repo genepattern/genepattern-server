@@ -56,6 +56,11 @@ public class JobPurger02 {
         final GpContext serverContext=GpContext.getServerContext();
         final String purgeTime=ServerConfigurationFactory.instance().getGPProperty(serverContext, Purger.PROP_PURGE_TIME, Purger.PURGE_TIME_DEFAULT);
         final Date nextPurgeTime=JobPurgerUtil.getNextPurgeTime(now, purgeTime);
+        
+        log.info("starting JobPurger02 to purge jobs at " + purgeTime);
+        log.info("now is " + now + "  next purge at " + nextPurgeTime);
+        
+        
         final long MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000;
         final Purger02 purger02 = new Purger02();
         timer.scheduleAtFixedRate(purger02, nextPurgeTime, MILLISECONDS_IN_A_DAY);

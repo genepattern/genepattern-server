@@ -21,7 +21,7 @@ import org.json.JSONObject;
 @Table(name="job_tag")
 public class JobTag
 {
-    private static final Logger log = Logger.getLogger(JobTag.class);
+    //private static final Logger log = Logger.getLogger(JobTag.class);
 
     @Id
     @GeneratedValue
@@ -33,7 +33,7 @@ public class JobTag
     private Tag tagObj;
 
     //this is a foreign key to the analysis_job table
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gp_job_no", nullable=false)
     private AnalysisJob analysisJob;
 

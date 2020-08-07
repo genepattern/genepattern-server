@@ -87,11 +87,11 @@ public class JobInfoZipFileWriter {
             zos.closeEntry();
         }
         catch (FileNotFoundException e) {
-            log.error("FileNotFoundException thrown for file: "+attachment.getPath(), e);
+            log.error("FileNotFoundException thrown for file: "+attachment.getPath()  + "  job:" +jobId + "  output file: " + outputFile.getName(), e);
             return;
         }
         catch (IOException e) {
-            log.error("Error in addFileToZip: "+e.getLocalizedMessage(), e);
+            log.error("Error in addFileToZip: "+e.getLocalizedMessage() + "  job:" +jobId + "  output file: " + outputFile.getName() , e);
         }
         finally {
             if (is != null) {

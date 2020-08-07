@@ -22,8 +22,6 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.recaptcha.ReCaptchaSession;
 import org.genepattern.server.webapp.LoginManager;
 
@@ -56,7 +54,9 @@ public class RegistrationBean {
         "The hosted GenePattern server is provided free of charge.\n"+
         "We make no guarantees whatsoever.";
     private ReCaptchaSession recaptcha = null;
-
+    private String termsOfServiceLink = null;
+    
+    
     public RegistrationBean() {
         this.gpConfig=ServerConfigurationFactory.instance();
         final GpContext serverContext=GpContext.getServerContext();
@@ -73,6 +73,10 @@ public class RegistrationBean {
 
         //show reCAPTCHA?
         this.recaptcha=ReCaptchaSession.init(gpConfig, serverContext);
+        
+        // override termsOfService link with an external page
+        this.termsOfServiceLink=gpConfig.getGPProperty(serverContext, GpConfig.PROP_TERMS_OF_SERVICE_LINK, "/gp/pages/terms.jsf");
+
     }
 
     public String getEmail() {
@@ -152,41 +156,15 @@ public class RegistrationBean {
         }
     }
 
-    private void registerUserSSO(ActionEvent event) {
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        try {
-            GenomeSpaceLoginManager.registerUser(request, username, password, email);
-        }
-        catch (GenomeSpaceException e) {
-            UIBeanHelper.setErrorMessage("Invalid username or email.");
-            return;
-        }
-
-        try {
-            // Create the user
-            //UserAccountManager.instance().createUser(username, password, email);
-            //LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
-
-            // Handle the mailing list
-            if (this.isJoinMailingList()){
-                sendJoinMailingListRequest();
-            }
-
-            // Email confirmation message
-            UIBeanHelper.setInfoMessage("A confirmation email has been sent to your email address. Please confirm your email and then log in.");
-
-            // Redirect to main page
-            HttpServletResponse response = UIBeanHelper.getResponse();
-            response.sendRedirect("/gp/pages/login.jsf?emailConfirm=true");
-        }
-        catch (Exception e) {
-            log.error(e);
-            UIBeanHelper.setErrorMessage("");
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void registerUserDefault(final ActionEvent event) {
+    /**
+     * Register a new user. For now this uses an action listener since we are redirecting to a page outside of the JSF
+     * framework. This should be changed to an action to use jsf navigation in the future.
+     * 
+     * @param event --
+     *                ignored
+     */
+    
+    public void registerUser(final ActionEvent event) {
         try {
             verifyReCaptcha(UIBeanHelper.getRequest());
             UserAccountManager.createUser(
@@ -205,24 +183,6 @@ public class RegistrationBean {
         catch (Exception e) {
             log.error(e);
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Register a new user. For now this uses an action listener since we are redirecting to a page outside of the JSF
-     * framework. This should be changed to an action to use jsf navigation in the future.
-     * 
-     * @param event --
-     *                ignored
-     */
-    public void registerUser(ActionEvent event) {
-        GpContext context = UIBeanHelper.getUserContext();
-        boolean genepatternSSO = gpConfig.getGPBooleanProperty(context, "ssoAuthentication", false);
-        if (genepatternSSO) {
-            registerUserSSO(event);
-        }
-        else {
-            registerUserDefault(event);
         }
     }
 
@@ -259,6 +219,10 @@ public class RegistrationBean {
     this.email = email;
     }
 
+    public void setTermsOfServiceLink(String link) {
+        this.termsOfServiceLink = link;
+    }
+    
     public void setEmailConfirm(String emailConfirm) {
     this.emailConfirm = emailConfirm;
     }
@@ -326,6 +290,11 @@ public class RegistrationBean {
     public String getTermsOfService() {
         return this.termsOfService;
     }
+    
+    public String getTermsOfServiceLink(){
+        return this.termsOfServiceLink;
+    }
+    
     
     public boolean isRecaptchaEnabled() {
         if (recaptcha != null) {

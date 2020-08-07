@@ -66,6 +66,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -137,10 +138,6 @@ import org.genepattern.server.executor.events.GpJobRecordedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.genomespace.GenomeSpaceClient;
-import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
-import org.genepattern.server.genomespace.GenomeSpaceException;
-import org.genepattern.server.genomespace.GenomeSpaceFileHelper;
 import org.genepattern.server.job.input.NumValues;
 import org.genepattern.server.job.input.Param;
 import org.genepattern.server.job.input.ParamId;
@@ -158,8 +155,10 @@ import org.genepattern.server.taskinstall.InstallInfo;
 import org.genepattern.server.taskinstall.InstallInfo.Type;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
+import org.genepattern.server.util.MailSender;
 import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.util.UrlPrefixFilter;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -612,7 +611,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        checkDiskQuota(mgr, gpConfig, jobContext);
+        checkDiskQuota(mgr, gpConfig, jobContext, taskInfo.getName());
 
         File rootJobDir = null;
         try {
@@ -1077,29 +1076,6 @@ public class GenePatternAnalysisTask {
                                     }
                                 }
                                 
-                                // Handle getting the InputStream for GenomeSpace
-                                if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.instance();
-                                    if (GenomeSpaceFileHelper.isGenomeSpaceFile(url)) {
-                                        try {
-                                            is = gsClient.getInputStream(jobInfo.getUserId(), url);
-                                            name = getGSDownloadFileName(url.openConnection(), url);
-                                        }
-                                        catch (GenomeSpaceException e) {
-                                            vProblems.add(e.getLocalizedMessage());
-                                            log.error(e);
-                                            downloadUrl = false;
-                                        }
-                                        catch (Throwable t) {
-                                            final String message="Error getting GenomeSpace input file: "+t.getLocalizedMessage()+
-                                                ", gpUserId='"+jobInfo.getUserId()+"' "+url;
-                                            vProblems.add(message);
-                                            log.error(message, t);
-                                            downloadUrl = false;
-                                        }
-                                    } 
-                                } 
-
                                 // TODO: check for previously cached version of the file
                                 // TODO: if necessary cache the file
                                 
@@ -1179,6 +1155,19 @@ public class GenePatternAnalysisTask {
         final List<String> inputFiles=listInputFiles(mgr, gpConfig, jobContext, paramsCopy, paramInfoMap);
         for(final String inputFile : inputFiles) {
             jobContext.addLocalFilePath(inputFile);
+            
+            
+            // #### JTL XXX TESTING
+            System.out.println("Input File: " + inputFile);
+            try {
+                File f = new File(inputFile);
+                f.setLastModified(System.currentTimeMillis());
+             } catch (Exception e){
+                System.out.println("  PROBLEM WITH setting last modified on Input File: " + inputFile);
+                e.printStackTrace();
+            }
+            
+         // #### END JTL XXX TESTING
         }
 
         // build the command line, replacing <variableName> with the same name from the properties
@@ -1500,7 +1489,7 @@ public class GenePatternAnalysisTask {
      * @param jobContext
      * @throws JobDispatchException
      */
-    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext) throws JobDispatchException {
+    private void checkDiskQuota(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext jobContext, final String taskName) throws JobDispatchException {
         //is disk space available
         final boolean allowNewJob = gpConfig.getGPBooleanProperty(jobContext, "allow.new.job", true);
         if (!allowNewJob) {
@@ -1522,6 +1511,19 @@ public class GenePatternAnalysisTask {
                 //disk usage exceeded so do not allow user to run a job
                 throw new JobDispatchException(errorMessage);
             }
+            
+            if(diskInfo.isAboveMaxSimultaneousJobs())
+            {
+                String errorMessage = "Job did not run because maximum simultaneous processing jobs exceeded." +
+                        "Processing: " + diskInfo.getNumProcessingJobs()
+                        + ". Max simultaneous: " + diskInfo.getMaxSimultaneousJobs();
+                //  max simultaneous jobs exceeded so do not allow user to run a job
+                final GpContext gpContext=GpContext.getServerContext();
+                diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, taskName);
+                
+                throw new JobDispatchException(errorMessage);
+            }
+            
         }
         catch(DbException db)
         {
@@ -2437,6 +2439,13 @@ public class GenePatternAnalysisTask {
                 // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
                 replacement = new File(replacement).getAbsolutePath();
             }
+            // special case - make sure GenepatternURL ends with a '/'
+            if (varName.equals("GenePatternURL")) {
+                // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
+                if (!replacement.endsWith("/"))
+                    replacement = replacement + "/";
+            }
+            
             if (replacement.length() == 0) {
                 log.debug("GPAT.substitute: replaced " + varName + " with empty string");
             }
@@ -3313,12 +3322,6 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    /** @deprecated pass in versionIncrement */
-    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
-    throws OmnigeneException, RemoteException, TaskInstallationException {
-        return installNewTask(name, description, params, taskInfoAttributes, username, access_id, LsidVersion.Increment.next, taskIntegrator, installInfo);
-    }
-    
     public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, final LsidVersion.Increment versionIncrement, org.genepattern.server.webservice.server.Status taskIntegrator, InstallInfo installInfo)
     throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;

@@ -11,6 +11,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -24,6 +28,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
@@ -31,10 +36,13 @@ import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.quota.DiskInfo;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.util.LSID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -58,7 +66,7 @@ public class UploadResource {
     private GpFilePath getUploadFile(final GpConfig gpConfig, final GpContext userContext, final String uploadPath) throws FileUploadException {
         try {
             //special-case, block 'tmp'
-            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath);
+            GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath, (LSID)null);
             if (DataManager.isTmpDir(uploadFilePath)) {
                 throw new FileUploadException("Can't save file with reserved filename: " + uploadPath);
             }
@@ -163,6 +171,7 @@ public class UploadResource {
             }
         }
         catch (Throwable t) {
+            t.printStackTrace();
             log.error("Something thrown while writing file chunk: " + t.getLocalizedMessage(), t);
         }
         finally {
@@ -245,6 +254,7 @@ public class UploadResource {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
 
+            
             // Get the file we will be uploading to
             if (log.isDebugEnabled()) {
                 log.debug("token="+token);
@@ -263,21 +273,32 @@ public class UploadResource {
 
             // Check to see if it already exists and throw an error if it does
             if (toWrite.exists()) {
-                throw new FileUploadException("File chunk already exists: " + token + " path: " + path + " index: " + index);
+                //throw new FileUploadException("File chunk already exists: " + token + " path: " + path + " index: " + index);
+                
+                // JTL try just ignoring duplicates
+                // JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
+                // System.out.println("returning after quota");
+                // return Response.ok().entity(toReturn.toString()).build();
+                System.out.println("IGNORING -- File chunk already exists: " + token + " path: " + path + " index: " + index);
             }
 
             // Write the file
             InputStream is = request.getInputStream();
             appendPartition(is, toWrite);
 
+            System.out.println("======= finished  " + toWrite.getTotalSpace());
+            
+           
             checkDiskQuota(gpConfig, userContext, toWrite.length());
 
             // Return the status object
             JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
-
+            System.out.println("returning after quota");
             return Response.ok().entity(toReturn.toString()).build();
+           
         }
         catch (Throwable t) {
+            t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
@@ -346,6 +367,13 @@ public class UploadResource {
                 log.debug("path="+path);
                 log.debug("parts="+parts);
             }
+            
+            System.out.println("===================== ASSEMBLE MULTIPART ");
+            System.out.println("token="+token);
+            System.out.println("path="+path);
+            System.out.println("parts="+parts);
+      
+            
             GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setNumParts(parts);
 
@@ -375,6 +403,7 @@ public class UploadResource {
             for (File myfile : fileList) {
                 if(myfile != null)
                 {
+                    System.out.println("assemble 1: "+ myfile.getAbsolutePath()+ " -- " + myfile.length());
                     totalSize += myfile.length();
                 }
             }
@@ -382,6 +411,7 @@ public class UploadResource {
 
             // Write the file
             for (File i : fileList) {
+                System.out.println("assemble 2 : "+ i.getAbsolutePath()+ " -- " + i.length());
                 FileInputStream fileIS = new FileInputStream(i);
                 appendPartition(fileIS, file.getServerFile());
             }
@@ -398,6 +428,7 @@ public class UploadResource {
             return Response.ok().entity(status.toString()).build();
         }
         catch (Throwable t) {
+            t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }
@@ -487,4 +518,164 @@ public class UploadResource {
         }
 
     }
+    
+    
+    /* ================ additions below to support resumablejs =====================*/
+    /**
+     * Creates a multipart user upload resource fore resumablejs
+     *
+     * 
+     *
+     * @param request
+     * @return
+     */
+    @POST
+    @Path("resumable/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response resumable(
+            @Context HttpServletRequest request) {
+        try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);
+            
+            String path = request.getParameter("target");
+            ResumableInfo info = getResumableInfo(request, gpConfig);
+            
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);      
+            
+            checkDiskQuota(gpConfig, userContext, info.resumableTotalSize);
+        
+            int resumableChunkNumber        = getResumableChunkNumber(request);
+           
+            RandomAccessFile raf = new RandomAccessFile(info.resumableFilePath, "rw");
+            
+            //Seek to position
+            raf.seek((resumableChunkNumber - 1) * (long)info.resumableChunkSize);
+
+            //Save to file
+            InputStream is = request.getInputStream();
+            long readed = 0;
+            long content_length = request.getContentLength();
+            byte[] bytes = new byte[1024 * 100];
+            while(readed < content_length) {
+                int r = is.read(bytes);
+                if (r < 0)  {
+                    break;
+                }
+                raf.write(bytes, 0, r);
+                readed += r;
+            }
+            raf.close();
+
+
+            //Mark as uploaded.
+            info.uploadedChunks.add(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber));
+           
+            // pass in the files final location
+            if (info.checkIfUploadFinished()) { //Check if all chunks uploaded, and change filename
+                ResumableInfoStorage.getInstance().remove(info);
+                
+                // GpFilePath finalFile = getUploadFile(gpConfig, userContext, info.destinationTargetPath + info.resumableFilename);      
+                
+                String uploadRelPath = getUploadRelativePath(info.destinationFilePath, userContext.getUserId());
+
+               
+                
+                File serverFile = new File(info.destinationFilePath+File.separator + info.resumableFilename);
+                UserUploadFile finalFile = GpFileObjFactory.getUploadedFilePath(userContext, info, uploadRelPath, serverFile);
+                
+                
+                finalFile.setName(info.resumableFilename);
+                
+                // Update the database - lengths are 1 since resumable already assembled it
+                final HibernateSessionManager mgr=HibernateUtil.instance();
+                UserUploadManager.createUploadFile(mgr, userContext, finalFile, 1, true);
+                UserUploadManager.updateUploadFile(mgr, userContext, finalFile, 1, 1);
+                
+                return Response.ok().entity("All finished.").build();
+            } else {
+                //response.getWriter().print("Upload");
+                return  Response.ok().entity("Upload.").build();
+                
+            }
+            
+            
+        } catch (Throwable t){
+            t.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
+
+    
+    private String getUploadRelativePath(String destPath, String username){
+        String root = "/users/" + username + "/uploads";
+        int idx = destPath.indexOf(root);
+        String path =  destPath.substring(idx + root.length());
+        if (path.length() ==0)  return  ".";
+        else return path.substring(1);
+    }
+
+    
+    
+    @GET
+    @Path("resumable/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response resumableGet( @Context HttpServletRequest request) throws Exception{
+        int resumableChunkNumber        = getResumableChunkNumber(request);
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        ResumableInfo info = getResumableInfo(request, gpConfig);
+
+        if (info.uploadedChunks.contains(new ResumableInfo.ResumableChunkNumber(resumableChunkNumber))) {
+            // response.getWriter().print("Uploaded."); //This Chunk has been Uploaded.
+            return  Response.ok().entity("Uploaded.").build();
+        } else {
+            //response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        
+        
+    }
+    
+    private ResumableInfo getResumableInfo(HttpServletRequest request, final GpConfig gpConfig) throws Exception {
+        GpContext userContext = Util.getUserContext(request);
+        
+        File fileTempDir = gpConfig.getTemporaryUploadDir(userContext);
+        String base_dir =  fileTempDir.getAbsolutePath();
+        
+        int resumableChunkSize          = ResumableHttpUtils.toInt(request.getParameter("resumableChunkSize"), -1);
+        long resumableTotalSize         = ResumableHttpUtils.toLong(request.getParameter("resumableTotalSize"), -1);
+        String resumableIdentifier      = request.getParameter("resumableIdentifier");
+        String resumableFilename        = request.getParameter("resumableFilename");
+        String resumableRelativePath    = request.getParameter("resumableRelativePath");
+        
+        String path              = request.getParameter("target");
+        GpFilePath file = getUploadFile(gpConfig, userContext, path);      
+        
+        
+        //Here we add a ".temp" to every upload file to indicate NON-FINISHED
+        new File(base_dir).mkdir();
+        String resumableFilePath        = new File(base_dir, resumableFilename).getAbsolutePath() + ".temp";
+
+        ResumableInfoStorage storage = ResumableInfoStorage.getInstance();
+
+        ResumableInfo info = storage.get(resumableChunkSize, resumableTotalSize, 
+                            resumableIdentifier, resumableFilename, resumableRelativePath, 
+                            resumableFilePath, file.getServerFile().getAbsolutePath(), path);
+        
+       
+        
+        if (!info.vaild())         {
+            storage.remove(info);
+            throw new Exception("Invalid request params.");
+        }
+        return info;
+    }    
+
+    private int getResumableChunkNumber(HttpServletRequest request) {
+        return ResumableHttpUtils.toInt(request.getParameter("resumableChunkNumber"), -1);
+    }
+    
 }

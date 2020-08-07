@@ -11,6 +11,7 @@ import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
+import org.genepattern.server.webapp.rest.api.v1.job.JobObjectCache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -110,9 +111,11 @@ public class JobCommentsResource
                 jobComment = JobCommentManager.addJobComment(jobComment);
 
                 jobCommentsResult = jobCommentJson(jobComment);
+                JobObjectCache.removeJobFromCache(gpJobNo);
+                
                 success = true;
             }
-
+            
             jobCommentsResult.put("success", success);
 
             return Response.ok().entity(jobCommentsResult.toString()).build();
@@ -154,6 +157,8 @@ public class JobCommentsResource
 
                 jobComment.setComment(commentText);
                 success = JobCommentManager.updateJobComment(jobComment);
+                JobObjectCache.removeJobFromCache(gpJobNo);
+                
                 if(success)
                 {
                     result.put("text", commentText);
@@ -179,7 +184,8 @@ public class JobCommentsResource
         {
             JSONObject result = new JSONObject();
             boolean success = false;
-
+            int gpJobNo = Integer.parseInt(jobNo);
+            
             if( multivaluedMap != null && multivaluedMap.getFirst("comment_id") != null
                     && multivaluedMap.getFirst("comment_id").length() > 0
                     && jobNo != null && jobNo.length() > 0)
@@ -187,15 +193,16 @@ public class JobCommentsResource
                 int id = Integer.parseInt(multivaluedMap.getFirst("comment_id"));
 
                 success = JobCommentManager.deleteJobComment(id);
-
+                JobObjectCache.removeJobFromCache(gpJobNo);
                 if(success)
                 {
-                    int gpJobNo = Integer.parseInt(jobNo);
+                    
                     List<JobComment> jobCommentList = JobCommentManager.selectAllJobComments(gpJobNo);
                     result.put("total_comment", jobCommentList.size());
                 }
             }
-
+            
+            
             result.put("success", success);
             return Response.ok().entity(result.toString()).build();
         }

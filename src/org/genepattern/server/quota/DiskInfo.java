@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.quota;
 
+import java.util.HashMap;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.log4j.Logger;
@@ -12,7 +14,12 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.MailSender;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
  * Created by nazaire on 7/10/14.
@@ -27,6 +34,10 @@ public class DiskInfo
     private Memory diskUsageTmp;
     private Memory diskUsageFilesTab;
     private Memory diskQuota;
+    private int numProcessingJobs;
+    private int maxSimultaneousJobs;
+    private String aboveMaxSimultaneousJobsNotificationEmail;
+    final static public HashMap<String, Long> userNotifications = new HashMap<String, Long>(); 
 
     public DiskInfo(final String userId) {
         this.userId=userId;
@@ -34,6 +45,22 @@ public class DiskInfo
     
     public String getUserId() {
         return userId;
+    }
+
+    public int getNumProcessingJobs() {
+        return numProcessingJobs;
+    }
+
+    public void setNumProcessingJobs(int numProcessingJobs) {
+        this.numProcessingJobs = numProcessingJobs;
+    }
+
+    public int getMaxSimultaneousJobs() {
+        return maxSimultaneousJobs;
+    }
+
+    public void setMaxSimultaneousJobs(int maxSimultaneousJobs) {
+        this.maxSimultaneousJobs = maxSimultaneousJobs;
     }
 
     public void setDiskUsageTotal(Memory diskUsageTotal)
@@ -89,6 +116,9 @@ public class DiskInfo
     public static DiskInfo createDiskInfo(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext context) throws DbException {
         final String userId=context.getUserId();
         final Memory diskQuota=gpConfig.getGPMemoryProperty(context, "quota");
+        // default to 100 simultaneous jobs per user
+        final int maxSimultaneousJobs = gpConfig.getGPIntegerProperty(context, "max_simultaneous_jobs", 100);
+        final String maxJobNotificationEmail = gpConfig.getGPProperty(context, "max_simultaneous_jobs_notification_email");
         final DiskInfo diskInfo = new DiskInfo(userId);
         final boolean isInTransaction= mgr.isInTransaction();
         try
@@ -114,6 +144,17 @@ public class DiskInfo
             diskInfo.setDiskUsageFilesTab(diskUsageFilesTab);
             diskInfo.setDiskUsageTmp(diskUsageTmp);
             diskInfo.setDiskQuota(diskQuota);
+            
+            AnalysisDAO dao = new AnalysisDAO(mgr);
+            int numProcessingJobs=dao.getNumProcessingJobsByUser(context.getUserId());
+            
+            //if (numProcessingJobs > maxSimultaneousJobs){
+            //    diskInfo.
+            //    
+            //}
+            diskInfo.setNumProcessingJobs(numProcessingJobs);
+            diskInfo.setMaxSimultaneousJobs(maxSimultaneousJobs);
+            diskInfo.setAboveMaxSimultaneousJobsNotificationEmail(maxJobNotificationEmail);
         }
         catch (Throwable t)
         {
@@ -152,4 +193,99 @@ public class DiskInfo
 
         return diskUsagePlus > diskQuota.getNumBytes();
     }
+    
+    
+    public boolean isAboveMaxSimultaneousJobs(){
+        return this.numProcessingJobs > this.maxSimultaneousJobs;
+    }
+
+
+    public String getAboveMaxSimultaneousJobsNotificationEmail() {
+        return aboveMaxSimultaneousJobsNotificationEmail;
+    }
+
+    public void setAboveMaxSimultaneousJobsNotificationEmail(String aboveMaxSimultaneousJobsNotificationEmail) {
+        this.aboveMaxSimultaneousJobsNotificationEmail = aboveMaxSimultaneousJobsNotificationEmail;
+    }
+    
+    
+    /**
+     * Send an email to the designated address if a user has bumped into the throttle limit on this server.  Since this is 
+     * normally going to be a result of a script that might keep going, we use a cool down to prevent too many messages being sent 
+     * close together, defaulting at 2 minutes
+     * 
+     * @param gpContext
+     * @param gpConfig
+     */
+    
+    public void notifyMaxJobsExceeded(final GpContext gpContext, final GpConfig gpConfig, final String taskName){
+        String username = gpContext.getUserId();
+        
+        Long notificationCoolDown = gpConfig.getGPLongProperty(gpContext, "max_simultaneous_jobs_notification_cooldown", 120000L);
+        Long lastNotificationForUser = userNotifications.get(username);
+        Long now = System.currentTimeMillis();
+        userNotifications.put(username, now);
+        
+        if ((lastNotificationForUser == null) || ((now - lastNotificationForUser ) > notificationCoolDown)){
+
+        
+            if (this.getAboveMaxSimultaneousJobsNotificationEmail() != null) {               
+                User badUser = getUser(username);
+                final String notificationEmail = this.getAboveMaxSimultaneousJobsNotificationEmail();
+                
+                String email = "email unavailable";
+                try {
+                    email = badUser.getEmail();
+                } catch (Exception e){
+                    // swallow quietly
+                }
+                
+                
+                final MailSender m=new MailSender.Builder(gpConfig, gpContext)
+                    // set from
+                    .from("liefeld@broadinstitute.org")
+                    // set to
+                    .to(notificationEmail)
+                    // set subject
+                    .subject("MaxSimultaneousJobs exceeded on server " + gpConfig.getGenePatternURL() + "  by " + gpContext.getUserId())
+                    // set message
+                    .message("Max Simultaneous jobs (Throttle) exceeded on server " + gpConfig.getGenePatternURL() + "  by user " + username + " ("+ email + ") running " + taskName)
+                .build();
+                try {
+                    m.sendMessage();
+             
+                }
+                catch (Exception e) {
+                    // write mail send error to log but don't bother the user about it
+                    log.error(e);
+                    e.printStackTrace();
+                }          
+            }
+        }
+        
+    }
+    
+    
+    private User getUser(final String userId) {
+        //this method requires active local DB, with valid users 
+        HibernateSessionManager mgr = HibernateUtil.instance();
+        final boolean inTransaction=mgr.isInTransaction();
+        try {
+            UserDAO dao=new UserDAO(mgr);
+            User user=dao.findById(userId);
+            return user;
+        }
+        catch (Throwable t) {
+            log.error("Error getting User instance for userId="+userId, t);
+        }
+        finally {
+            if (!inTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+        
+        return null;
+    }
+ 
+    
 }

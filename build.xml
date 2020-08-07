@@ -14,7 +14,7 @@
     <property name="java.visualizer.source" value="1.7" /> 
     <property location="lib" name="lib_compile" />
     <property location="website/WEB-INF/lib" name="lib" />
-
+ 
     <property location="src" name="src" />
     <property location="build" name="build" />
     <property name="junit.report.dir" location="${build}/junit/reports" />
@@ -213,6 +213,8 @@
                 <fileset dir="test/src">
                     <exclude name="org/genepattern/junitutil/*.java" />
                     <exclude name="**/RecordEulaStub.java" />
+                    <!-- skip the FTP integration tests -->
+                    <exclude name="org/genepattern/server/job/input/TestFileDownloader.java" />
                     <include name="**/*.java" />
                 </fileset>
             </batchtest>
@@ -441,7 +443,7 @@
         <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers" />
     </target>
 
-    <target name="build-visualizer-applet" depends="sign-visualizer-applet" />
+    <target name="build-visualizer-applet" depends="jar-visualizer-applet" />
     <target name="compile-visualizer-applet" depends="init">
         <mkdir dir="applet-build" />
         <javac debug="true" 
@@ -472,6 +474,7 @@
 
     <macrodef name="signjar" uri="http://genepattern.org/gp">
         <attribute name="jarfile" />
+        <element name="sysproperties" />
         <sequential>
             <echo>signing @{jarfile} with keystore=${signjar.keystore}</echo>
             <signjar jar="@{jarfile}"
@@ -529,7 +532,11 @@
         description="Sign the visualizer applet jar files"
         xmlns:gp="http://genepattern.org/gp"
     >
-        <gp:signjar jarfile="${genepattern.build}/${runVisualizer-jarname}" />
+        <gp:signjar jarfile="${genepattern.build}/${runVisualizer-jarname}">
+		<sysproperties>
+			<sysproperty key="https.protocols" value="TLSv1.2" />
+		</sysproperties>
+        </gp:signjar>
         <gp:signjar jarfile="external-src/commons-httpclient-3.0.1/dist/commons-httpclient.jar" />
         <gp:signjar jarfile="website/WEB-INF/lib/commons-codec-1.6.jar" />
     </target>

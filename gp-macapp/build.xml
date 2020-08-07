@@ -148,7 +148,7 @@
         </jar>
     </target>
 
-    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-runr-classes, copy-visualizer-jar, update-properties, jar, make-executable">
+    <target name="dist" depends="clean-all, init, copy-base, copy-tomcat, copy-resources, copy-website, create-empty-dirs, copy-gp-full, copy-runr-classes, copy-visualizer-jar,  update-properties, jar, make-executable">
         <!-- Should call: ant dist -Dbuild=YYY -->
         <zip basedir="dist" destfile="dist/GenePattern.app.zip">
             <zipfileset filemode="755" dir="dist" includes="GenePattern.app/**/*" />

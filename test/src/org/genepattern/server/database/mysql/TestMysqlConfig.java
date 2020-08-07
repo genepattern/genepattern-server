@@ -13,14 +13,20 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.genepattern.junitutil.ConfigUtil;
+import org.genepattern.junitutil.DbUtil;
 import org.genepattern.server.DbException;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.SchemaUpdater;
 import org.genepattern.server.domain.PropsTable;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -164,17 +170,8 @@ public class TestMysqlConfig {
      * @throws Throwable
      */
     @Test
-    public void _02_initDbSchemaMysql() throws DbException, FileNotFoundException, IOException {
-        // from empty string to null means run all DDL scripts
-        final String fromVersion=""; 
-        final String toVersion=null;
-        
-        String dbSchemaVersion=SchemaUpdater.getDbSchemaVersion(mgr);
-        assertEquals("before update", fromVersion, dbSchemaVersion);
-        assertEquals("before update, 'props' table exists", !"".equals(fromVersion), SchemaUpdater.tableExists(mgr, "props"));
-        assertEquals("before update, 'PROPS' table exists", false, SchemaUpdater.tableExists(mgr, "PROPS"));
-
-        SchemaUpdater.updateSchema(gpConfig, mgr, toVersion);
+    public void _02_initDbSchemaMysql() throws DbException {
+        DbUtil.assertDbUpdateSchema(gpConfig, mgr);
     }
     
     @Test
@@ -234,6 +231,21 @@ public class TestMysqlConfig {
                 conn.close();
             }
         }
+    }
+    
+    @Test
+    public void _07_getNewUsers() {
+        UserDAO userDao = new UserDAO(mgr);
+        final Date startDate=DateUtil.timeAgoUtc.parseDateTime("2018-01-01 00:00:00").toDate();
+        final Date endDate=new Date();
+        List<User> newUsers = userDao.getNewUsers(startDate, endDate);
+        assertNotNull(newUsers);
+        assertEquals("newUsers", 0, newUsers.size());
+    }
+    
+    @Test
+    public void _08_check_analysis_job_total_view() throws DbException, SQLException {
+        DbUtil.assertAnalysisJobTotalView(mgr);
     }
 
 }

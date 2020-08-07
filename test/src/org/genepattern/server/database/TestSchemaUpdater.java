@@ -25,7 +25,6 @@ import com.google.common.collect.Range;
 public class TestSchemaUpdater {
     private final File schemaDir=new File("website/WEB-INF/schema");
     private final String schemaPrefix="analysis_hypersonic-";
-    private final int numSchemaFiles=27;
     private final int numSchemaFiles_3_9_3=24;  // re-wrote history in 3.9.8 release, deleted *-3.3.2.sql
 
     @Test
@@ -117,14 +116,15 @@ public class TestSchemaUpdater {
     public void listSchemaFiles_update_expectedSchemaVersionNotSet() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, "3.9.1");
-        assertEquals("num schema files, updating from 3.9.1 to latest", 5, schemaFiles.size());
+        assertEquals("num schema files, updating from 3.9.1 to latest", 6, schemaFiles.size());
     }
 
     @Test
     public void listSchemaFiles_default() {
         final String schemaPrefix="analysis_hypersonic-";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, null, null);
-        assertEquals("num schema files, latest version", numSchemaFiles, schemaFiles.size());
+        final int expectedNumSchemaFiles=28;
+        assertEquals("num schema files, latest version", expectedNumSchemaFiles, schemaFiles.size());
     }
     
     @Test
@@ -206,7 +206,7 @@ public class TestSchemaUpdater {
     @Test
     public void isUpToDate() {
         final String expectedSchemaVersion=null;
-        final String dbSchemaVersion="3.9.9";
+        final String dbSchemaVersion="3.9.11";
         List<File> schemaFiles = SchemaUpdater.listSchemaFiles(schemaDir, schemaPrefix, expectedSchemaVersion, dbSchemaVersion);
         
         boolean upToDate=SchemaUpdater.isUpToDate(schemaFiles);
@@ -284,7 +284,7 @@ public class TestSchemaUpdater {
         final File schemaFile=new File("website/WEB-INF/schema/analysis_mysql-3.9.11.sql");
         assertTrue("schemaFile.exists: "+schemaFile, schemaFile.exists());
         List<String> sqlStatements=SchemaUpdater.extractSqlStatements(schemaFile);
-        assertEquals("sqlStatements.size", 5, sqlStatements.size());
+        assertEquals("sqlStatements.size", 6, sqlStatements.size());
     }
 
 }

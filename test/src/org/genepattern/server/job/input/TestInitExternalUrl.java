@@ -4,7 +4,6 @@
 package org.genepattern.server.job.input;
 
 import static org.genepattern.junitutil.Demo.dataFtpDir;
-import static org.genepattern.junitutil.Demo.dataGsDir;
 import static org.genepattern.junitutil.Demo.gpHref;
 import static org.genepattern.junitutil.Demo.gpUrl;
 import static org.genepattern.junitutil.Demo.jobResultFile;
@@ -144,13 +143,7 @@ public class TestInitExternalUrl {
                 ""+JobInputHelper.initExternalUrl(gpConfig, jobInput, urlSpec));
     }
 
-    @Test
-    public void externalGenomeSpace() {
-        final String urlSpec=dataGsDir+"all_aml_test.cls";
-        assertEquals("initExternalUrl('"+urlSpec+"')", 
-                urlSpec, 
-                ""+JobInputHelper.initExternalUrl(gpConfig, jobInput, urlSpec));
-    }
+  
     
     /*
      * Legacy mode, some code paths may not initialize the JobInput or the JobInput#baseGpHref;

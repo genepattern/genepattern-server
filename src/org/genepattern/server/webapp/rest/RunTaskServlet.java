@@ -3,6 +3,8 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest;
 
+import static org.genepattern.drm.JobRunner.PROP_DOCKER_IMAGE;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,6 +56,7 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.tasklib.TasklibPath;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
+import org.genepattern.server.executor.drm.dao.JobRunnerJob;
 import org.genepattern.server.job.comment.JobComment;
 import org.genepattern.server.job.comment.JobCommentManager;
 import org.genepattern.server.job.input.GroupId;
@@ -137,10 +140,14 @@ public class RunTaskServlet extends HttpServlet
             final GpContext userContext = GpContext.getContextForUser(userId, initIsAdmin);
 
             JobInput reloadJobInput = null;
+            JobRunnerJob reloadJobRunnerSettings = null;
+            
             if (reloadJobId != null && !reloadJobId.equals("")) {
                 //This is a reloaded job
                 final GpContext reloadJobContext=GpContext.createContextForJob(Integer.parseInt(reloadJobId));
                 reloadJobInput = reloadJobContext.getJobInput();
+                reloadJobRunnerSettings = reloadJobContext.getJobRunnerJob();
+                
                 final String reloadedLsidString = reloadJobInput.getLsid();
 
                 //check if taskNameOrLsid is null
@@ -350,6 +357,7 @@ public class RunTaskServlet extends HttpServlet
             final JSONObject initialValuesJson=LoadModuleHelper.asJsonV2(initialValues);
             responseObject.put("initialValues", initialValuesJson);
 
+           
             //check if there are any batch parameters
             Set<Param> batchParams = initialValues.getBatchParams();
             Set<String> batchParamNames = new HashSet<String>();
@@ -381,6 +389,11 @@ public class RunTaskServlet extends HttpServlet
                 }
             }
 
+            if (reloadJobRunnerSettings != null){
+                LoadModuleHelper.asJsonV2(reloadJobRunnerSettings, initialValuesJson, jobConfigParams);
+            }
+   
+            
             // Add children
             if (includeChildren) {
                 TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
@@ -547,6 +560,22 @@ public class RunTaskServlet extends HttpServlet
             throw new WebApplicationException(
                     Response.status(Response.Status.FORBIDDEN).entity("Disk usage exceeded.").build());
         }
+        if (checkMaxSimultaneousJobs(taskContext)){
+            try {
+            final GpContext gpContext=GpContext.getServerContext();
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), taskContext);
+            
+            diskInfo.notifyMaxJobsExceeded( gpContext, gpConfig, taskContext.getTaskInfo().getName());
+            } catch (Exception e){
+                // don't bother users if it can't notify
+                log.error(e);
+            }
+            throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity("Maximum simultaneous processing jobs exceeded.").build());
+        }
+        
+        
+        
         return taskContext;
     }
     
@@ -720,6 +749,8 @@ public class RunTaskServlet extends HttpServlet
                 //disk usage exceeded so do not allow user to run a job
                 return true;
             }
+            
+            
         }
         catch(DbException db)
         {
@@ -732,6 +763,31 @@ public class RunTaskServlet extends HttpServlet
         return false;
     }
 
+    
+    private boolean checkMaxSimultaneousJobs(GpContext userContext) {
+        try
+        {
+            //check if the user is above their disk quota
+            //first check if the disk quota is or will be exceeded
+            DiskInfo diskInfo = DiskInfo.createDiskInfo(ServerConfigurationFactory.instance(), userContext);
+            
+            if (diskInfo.isAboveMaxSimultaneousJobs())
+            {
+                return true;
+            }
+            
+        }
+        catch(DbException db)
+        {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(db.getMessage())
+                            .build()
+            );
+        }
+        return false;
+    }
+    
     /**
      * Added this in 3.8.1 release to enable additional job configuration input parameters.
      * @param jobSubmitInfo
@@ -742,7 +798,14 @@ public class RunTaskServlet extends HttpServlet
         try {
             final JobInputHelper jobInputHelper = new JobInputHelper(mgr, gpConfig, userContext, request);
             final JSONObject parameters = new JSONObject(jobSubmitInfo.getParameters());
-
+            final TaskInfo taskInfo = getTaskInfo(jobSubmitInfo.getLsid(), userContext.getUserId());
+          
+            userContext.setTaskInfo(taskInfo);
+            
+            
+            JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  userContext);
+            
+            
             for (final Iterator<?> iter = parameters.keys(); iter.hasNext(); ) {
                 final String parameterName = (String) iter.next();
                 boolean isBatch = isBatchParam(jobSubmitInfo, parameterName);
@@ -763,6 +826,14 @@ public class RunTaskServlet extends HttpServlet
                     } else {
                         valueList = new JSONArray((String) parameters.get(parameterName));
                     }
+                    
+                    // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
+                    // using the parameterInfo from the jobConfigParams but admins get a pass
+                    
+                    ParameterInfo jcpPi = null;
+                    //if (!userContext.isAdmin()) jcpPi = jcp.getParam(parameterName);
+                    jcpPi = jcp.getParam(parameterName);
+                    
                     for (int v = 0; v < valueList.length(); v++) {
                         final String value = valueList.getString(v);
                         if (isBatch) {
@@ -771,6 +842,23 @@ public class RunTaskServlet extends HttpServlet
                         } else {
                             jobInputHelper.addValue(parameterName, value, groupId);
                         }
+                        
+                        if (jcpPi != null){
+                            Map<String,String> allowedChoices = jcpPi.getChoices();
+                            if (allowedChoices.size() > 0){
+                                String av = allowedChoices.get(value);
+                                Boolean aValidVal = allowedChoices.containsValue(value);
+                                if ((av == null) && !aValidVal) {
+                                    // we got here because the user is not an admin, but has somehow submitted a job requesting
+                                    // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+                                    // the job from tunning GP-8371
+                                    throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+                                }
+                                
+                                
+                            }
+                        }
+                        
                     }
                 }
             }

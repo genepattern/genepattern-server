@@ -34,11 +34,11 @@ public class JobStatus {
 
 	public static String ERROR = "Error";
 
-   /** an unmodifiable map that maps a string representation of the status to the numberic representation */
-	public static final Map STATUS_MAP;
+   /** an unmodifiable map that maps a string representation of the status to the numeric representation */
+	public static final Map<String,Integer> STATUS_MAP;
    
 	static {
-      Map statusHash = new HashMap();
+      Map<String, Integer> statusHash = new HashMap<String, Integer>();
 		statusHash.put(NOT_STARTED, new Integer(JOB_NOT_STARTED));
 		statusHash.put(PROCESSING, new Integer(JOB_PROCESSING));
 		statusHash.put(FINISHED, new Integer(JOB_FINISHED));

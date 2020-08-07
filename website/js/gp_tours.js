@@ -36,12 +36,7 @@ $(function()
                 element: '#left-nav-files-tab',
                 intro: '<div class="tour-header"> Files Tab</div> The Files tab lists uploaded files on the GenePattern server. You can also copy job result files to the Files Tab.',
                 position: 'right'
-            },
-            {
-                element: '#left-nav-genomespace-tour-created',
-                intro: '<div class="tour-header"> GenomeSpace Tab</div> If you sign-in using your GenomeSpace account, access via tab that appears here.',
-                position: 'right'
-        }];
+            }];
 
         if($("#protocols").is(":visible"))
         {
@@ -84,27 +79,8 @@ $(function()
             {
                 $( "#left-nav" ).tabs( "option", "active", 1 );
             }
+            
             else if(intro._currentStep == 4)
-            {
-                $( "#left-nav" ).tabs( "option", "active", 2 );
-
-                //add the genome space tab
-                if($("#left-nav-genomespace-tour-created").length == 0)
-                {
-                    $("#left-nav-files-tab").after('<li id="left-nav-genomespace-tour-created">' +
-                        '<a href="#left-nav-genomespace">GenomeSpace</a> </li>');
-
-                    $("#left-nav-genomespace-tour-created").parent().after(
-                        '<div id="left-nav-genomespace" class="left-nav-tab">' +
-                        '<div class="left-nav-top">' +
-                        '<button id="left-nav-genomespace-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>' +
-                        '<a href="http://gsui.genomespace.org" target="_blank"><img id="left-nav-genomespace-logo" src="/gp/pages/genomespace/genomespacelogo.png" /></a>' +
-                        '</div>' +
-                        '</div>');
-                    $("#left-nav").tabs("refresh");
-                }
-            }
-            else if(intro._currentStep == 5)
             {
                 $( "#left-nav" ).tabs( "option", "active", 3 );
             }
@@ -137,8 +113,8 @@ $(function()
         //create the steps
         var steps = [
             {
-                intro: '<div class="tour-header"> Release Notes </div> This is a bug fix release. For details '
-                    + ' please see the <a href="http://software.broadinstitute.org/cancer/software/genepattern/doc/relnotes/3.9.10" target="_blank">release notes</a>.'
+                intro: '<div class="tour-header"> Release Notes </div> This is a developer and bug fix release. For details '
+                    + ' please see the <a href="https://github.com/genepattern/genepattern-server/releases/latest" target="_blank">release notes</a>.'
             }
         ];
 
@@ -177,6 +153,6 @@ function introTourCleanup()
     //set tab back to original selection
     $( "#left-nav" ).tabs( "option", "active", $(this).data("last-left-nav-tab"));
 
-    $("#left-nav-genomespace-tour-created").remove();
+    
     $("#left-nav").tabs("refresh");
 }

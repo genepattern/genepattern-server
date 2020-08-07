@@ -569,7 +569,7 @@ function setParamFieldType(parameterInfo)
 
         if(!isFile && !isChoice)
         {
-            if(parameterInfo.type == "PASSWORD")
+            if(parameterInfo.type.toUpperCase() == "PASSWORD")
             {
                 run_task_info.params[parameterInfo.name].type.push(field_types.PASSWORD);
             }
@@ -1862,7 +1862,7 @@ function loadRunTaskForm(lsid, reloadJob) {
                 {
                     $("#viewCodeDiv").append("<p>" + htmlEncode(response["code"]) + "</p>");
                     //add a link to the appropriate programmers guide
-                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='http://software.broadinstitute.org/cancer/software/genepattern/gp_guides/programmers/sections/gp_" + language.toLowerCase()+"'> " +
+                    $("#viewCodeDiv").append("<span><hr/>For more details go to the Programmer's Guide section: <a href='https://www.genepattern.org/programmers-guide#_Using_GenePattern_from_" + language + "'> " +
                         "Using GenePattern from " + language + "</a></span>");
                 }
             },
@@ -2350,8 +2350,7 @@ function checkFileSizes(files)
             errorMessageDiv.append("<p> Please use the 'Uploads' tab on the right (located next to the Recent Jobs tab)" +
                 " to upload these files.</p>");
             errorMessageDiv.append("<p> More information about using large files can be found in our " +
-                "<a href='http://software.broadinstitute.org/cancer/software/genepattern/user-guide" +
-                "/sections/running-modules#_Uploading_Files' target='_blank'>User Guide</a>.</p>");
+                "<a href='https://www.genepattern.org/user-guide#running-modules-and-pipelines-uploading-files' target='_blank'>User Guide</a>.</p>");
             errorMessageDiv.dialog({
                 title: "Max File Upload Size Exceeded",
                 resizable: true,
