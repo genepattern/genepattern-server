@@ -6,14 +6,14 @@
 	margin-left: 10px;
 }
 
-.protocols {
+.splashpage {
 	background-color: #F1F2F2;
 	padding: 5px 20px 20px;
 	border: 1px solid #A3B1DD;
     border-radius: 5px;
 }
 
-.protocols h1 {
+.splashpage h1 {
 	font-size: 18px;
 	color: #333366;
 	font-weight: bold;
@@ -21,7 +21,7 @@
 	padding: 10px 0px 20px;
 }
 
-.protocol_list {
+.splashpage_list {
 	/* margin-left: 40px; */
     margin-top: 0px;
 	margin-bottom: 0px;
@@ -30,25 +30,25 @@
 	padding-bottom: 0px;
 }
 
-.protocol_list_item {
+.splashpage_list_item {
 	clear: both;
     min-height: 50px;
 }
 
-.protocol_list_img {
+.splashpage_list_img {
 	float: left;
 	padding-right: 12px;
 	padding-bottom: 12px;
 }
 
-.protocol_list_block {
+.splashpage_list_block {
 	/* aligns text to the right of the image, in case there is a lot of text. */
 	padding-left: 72px;
 	padding-bottom: 12px;
 }
 
 /* places the new-win-icon.gif to the right of the link */
-.protocol_list a {
+.splashpage_list a {
 	font-weight: bold;
 	font-size: 12px;
     background-image: url(../images/new-win-icon.gif);
@@ -57,7 +57,7 @@
     padding-right: 14px;
 }
 
-.protocol_table {
+.splashpage_table {
 	margin: 0px 
 	auto;
 }
@@ -66,7 +66,7 @@
 	font-size: 12px;
 }
 
-.protocol_with_bg {
+.splashpage_with_bg {
 	padding: 10px 20px 20px;
 	border: 1px solid #A3B1DD;
     border-radius: 5px;
@@ -85,19 +85,19 @@
 	margin-left: 100px;
 }
 
-.protocol_with_bg a {
+.splashpage_with_bg a {
 	font-size: 12px;
 	color: #ACC6EF;
 	text-align: left;
 }
 
-.protocol_with_bg p {
+.splashpage_with_bg p {
 	font-size: 12px;
 	color: white;
 	text-align: left;
 }
 
-.protocol_with_bg h1 {
+.splashpage_with_bg h1 {
 	color: white;
 	text-align: center;
 }
