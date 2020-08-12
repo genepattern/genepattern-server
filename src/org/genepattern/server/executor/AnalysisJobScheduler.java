@@ -178,44 +178,86 @@ public class AnalysisJobScheduler implements Runnable {
             while (true) {
                 // Load input data to input queue
                 synchronized (jobQueueWaitObject) {
+                    
                     if (!suspended && pendingJobQueue.isEmpty()) {
                         List<Integer> waitingJobs = null;
+                        boolean deferredJobs = false;
+                        
+                        HibernateSessionManager mgr=HibernateUtil.instance();
+                        boolean inTransaction = false;
                         try {
-                            final HibernateSessionManager mgr=HibernateUtil.instance();
-                            final List<JobQueue> records = JobQueueUtil.getPendingJobs(mgr,batchSize);
+                            inTransaction = mgr.isInTransaction();
+                            
+                            final List<JobQueue> records;
+                            try {
+                                records = JobQueueUtil.getPendingJobs(mgr,batchSize);
+                            } finally {
+                                if (!inTransaction) mgr.closeCurrentSession();
+                            }
                             waitingJobs = new ArrayList<Integer>();
                             if (records != null) {
                                 for(JobQueue record : records) {
                                     waitingJobs.add( record.getJobNo() );
                                 }
                             }
-                        }
-                        catch (Exception e) {
-                            log.error(e);
-                        }
-                        if (waitingJobs != null && !waitingJobs.isEmpty()) {
-                            if (waitingJobs != null) {
-                                for(Integer jobId : waitingJobs) { 
-                                    if (pendingJobQueue.contains(jobId)) {
-                                        log.error("duplicate entry in pending jobs queue: "+jobId);
-                                    }
-                                    else {
-                                        try {
-                                            JobQueueUtil.setJobStatus(jobId, JobQueue.Status.DISPATCHING);
-                                            pendingJobQueue.put(jobId);
+                            if (waitingJobs != null && !waitingJobs.isEmpty()) {
+
+                                if (waitingJobs != null) {
+                                    inTransaction = mgr.isInTransaction();
+                                    
+                                    for(Integer jobId : waitingJobs) { 
+
+                                        if (pendingJobQueue.contains(jobId)) {
+                                            log.error("duplicate entry in pending jobs queue: "+jobId);
+                                        }  else {
+                                            try {
+                                                // check if this user is running too many already
+                                                mgr=HibernateUtil.instance();
+                                                inTransaction = mgr.isInTransaction();
+                                                
+                                                boolean okToStart = true;
+                                                try {
+                                                    okToStart = JobQueueUtil.canStartJob(mgr, jobId);
+                                                    //System.out.println("Job: "+ jobId + "   ok2start: "+ okToStart);
+                                                } finally {
+                                                    if (!inTransaction) mgr.closeCurrentSession();
+                                                }
+                                                if (okToStart){
+                                                    JobQueueUtil.setJobStatus(jobId, JobQueue.Status.DISPATCHING);
+                                                    pendingJobQueue.put(jobId);
+                                                    
+                                                } else {
+                                                    deferredJobs = true;
+                                                }
+                                            } catch (Throwable t) {
+                                                log.error(t);
+                                            }
                                         }
-                                        catch (Throwable t) {
-                                            log.error(t);
-                                        }
                                     }
-                                }
+                                } 
+
                             }
+                        } catch (Exception e){
+                            log.error(e);
+                        } finally {
+                            
+                            if (!inTransaction) mgr.closeCurrentSession();
                         }
-                        else {
-                            //insurance against deadlock, poll for new PENDING jobs every 5 minutes, regardless of whether notify has been called
-                            final long timeout = 300000;
+                        
+                        
+                        if (waitingJobs == null || waitingJobs.isEmpty() || deferredJobs==true) {  // waiting jobs is empty
+                            //insurance against deadlock, poll for new PENDING jobs every 2 minutes, regardless of whether notify has been called
+                            mgr=HibernateUtil.instance();
+                            inTransaction = mgr.isInTransaction();
+                            
+                            if (!inTransaction) mgr.closeCurrentSession();
+                            
+                            final long timeout = 20000;
                             jobQueueWaitObject.wait(timeout);
                         }
+                        
+                        
+                        
                     }
                 }
             }

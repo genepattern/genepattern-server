@@ -1519,9 +1519,12 @@ public class GenePatternAnalysisTask {
                         + ". Max simultaneous: " + diskInfo.getMaxSimultaneousJobs();
                 //  max simultaneous jobs exceeded so do not allow user to run a job
                 final GpContext gpContext=GpContext.getServerContext();
-                diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, taskName);
-                
-                throw new JobDispatchException(errorMessage);
+                boolean throwException = diskInfo.notifyMaxJobsExceeded( jobContext, gpConfig, taskName);
+                //
+                // Sometimes we want warning but will allow jobs to go on to pending state.  They will be delayed 
+                // from running by the AnalysisJobScheduler until the max simultaneous is not exceeded
+                //
+                if (throwException)  throw new JobDispatchException(errorMessage);
             }
             
         }

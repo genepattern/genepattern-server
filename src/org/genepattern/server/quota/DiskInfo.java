@@ -196,7 +196,8 @@ public class DiskInfo
     
     
     public boolean isAboveMaxSimultaneousJobs(){
-        return this.numProcessingJobs > this.maxSimultaneousJobs;
+        //return this.numProcessingJobs > this.maxSimultaneousJobs;
+        return false;
     }
 
 
@@ -212,15 +213,18 @@ public class DiskInfo
     /**
      * Send an email to the designated address if a user has bumped into the throttle limit on this server.  Since this is 
      * normally going to be a result of a script that might keep going, we use a cool down to prevent too many messages being sent 
-     * close together, defaulting at 2 minutes
+     * close together, defaulting at 2 minutes.
+     * 
+     * Return a boolean indicating if an exception should be thrown to prevent the job from queuing up for later
+     * or not
      * 
      * @param gpContext
      * @param gpConfig
      */
     
-    public void notifyMaxJobsExceeded(final GpContext gpContext, final GpConfig gpConfig, final String taskName){
+    public boolean notifyMaxJobsExceeded(final GpContext gpContext, final GpConfig gpConfig, final String taskName){
         String username = gpContext.getUserId();
-        
+        Boolean throwException = gpConfig.getGPBooleanProperty(gpContext, "max_simultaneous_jobs_exceeded_throw_exception", false);
         Long notificationCoolDown = gpConfig.getGPLongProperty(gpContext, "max_simultaneous_jobs_notification_cooldown", 120000L);
         Long lastNotificationForUser = userNotifications.get(username);
         Long now = System.currentTimeMillis();
@@ -258,11 +262,11 @@ public class DiskInfo
                 catch (Exception e) {
                     // write mail send error to log but don't bother the user about it
                     log.error(e);
-                    e.printStackTrace();
                 }          
             }
+            
         }
-        
+        return throwException;
     }
     
     

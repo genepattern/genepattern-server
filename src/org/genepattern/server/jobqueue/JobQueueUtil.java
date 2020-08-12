@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.events.GpJobAddedEvent;
 import org.genepattern.server.executor.events.JobEventBus;
@@ -14,6 +16,7 @@ import org.genepattern.server.job.status.Status;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import java.math.BigInteger;
 
 /**
  * Helper class for managing internal job status.
@@ -69,7 +72,7 @@ public class JobQueueUtil {
     static public List<JobQueue> getPendingJobs(final HibernateSessionManager mgr, int maxJobCount) 
     throws Exception
     {
-        boolean inTransaction = mgr.isInTransaction();
+      
         try {
             String hql = "from "+JobQueue.class.getName()+" where status = :status order by dateSubmitted ";
             mgr.beginTransaction();
@@ -81,18 +84,69 @@ public class JobQueueUtil {
             query.setString("status", JobQueue.Status.PENDING.toString());
             @SuppressWarnings("unchecked")
             List<JobQueue> records = query.list();
+           
             return records;
         }
         catch (Throwable t) {
             log.error("Error getting list of pending jobs from queue", t);
             return new ArrayList<JobQueue>();
         }
-        finally {
-            if (!inTransaction) {
-                mgr.closeCurrentSession();
-            }
-        }
+        
     }
+    
+
+    static public String getJobOwner(Session session, int jobNo) {
+        String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
+        
+        Query query = session.createQuery(hql);
+        query.setInteger("jobNo", jobNo);
+        @SuppressWarnings("unchecked")
+        List<String> rval = query.list();
+        
+        if (rval.size() != 1) {
+            log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
+            log.debug("", new Exception());
+            return "";
+        }
+        return rval.get(0);
+    }
+    
+    
+   
+    
+     
+    static public Boolean canStartJob(final HibernateSessionManager mgr, int jobNo) 
+            throws Exception   {
+        try {
+            
+            // get the user & # of currently running jobs for users with jobs in the pending queue
+             boolean inTransaction = mgr.isInTransaction();
+            
+            if (!inTransaction)  mgr.beginTransaction();
+            Session session = mgr.getSession();
+            
+            String owner = getJobOwner(session, jobNo);
+            GpContext serverContext = GpContext.createContextForUser(owner);
+            int maxSimultaneousJobs = ServerConfigurationFactory.instance().getGPIntegerProperty(serverContext, "max_simultaneous_jobs",20);
+           
+            String hql2 = "select job_no from analysis_job where user_id = '"+owner+"' and (job_no in (select job_no from job_queue where status = 'DISPATCHING') )or (status_id in (2,5)) ";
+            Query query2 = session.createSQLQuery(hql2);
+            List<Integer> runJobs = query2.list();
+            int  running = runJobs.size();
+            
+            if (!inTransaction) mgr.closeCurrentSession();
+            return running <  maxSimultaneousJobs;
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+            log.error("Error getting list of non-startable jobs from queue", t);
+            return true;
+        }
+
+    }
+    
+    
+    
     
     /** @deprecated pass in a Hibernate session */
     static public void setJobStatus(int jobNo, JobQueue.Status status) throws Exception {
@@ -104,6 +158,7 @@ public class JobQueueUtil {
     throws Exception
     {
         boolean inTransaction = mgr.isInTransaction();
+       
         try {
             String hql = "from " + JobQueue.class.getName() + " where jobNo = :jobNo";
 
@@ -122,10 +177,12 @@ public class JobQueueUtil {
             }
         }
         catch (Throwable t) {
+            
             mgr.rollbackTransaction();
             throw new Exception("Error setting job status to "+status+" for jobNo="+jobNo+": "+t.getLocalizedMessage());
         }
         finally {
+           
             if (!inTransaction) {
                 mgr.closeCurrentSession();
             }

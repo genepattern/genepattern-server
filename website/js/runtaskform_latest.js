@@ -118,18 +118,18 @@ function handleDiskQuotaMsg(diskInfo)
         quotaExceededMsg.append("<p>Job submission has been disabled. Please delete some files from the Files tab.</p>");
         $("#paramsListingDiv").before(quotaExceededMsg);
     }
-    else if (diskInfo != null && (diskInfo.numProcessingJobs >= diskInfo.maxSimultaneousJobs)) { 
+    else if (diskInfo != null && (diskInfo.numProcessingJobs >= diskInfo.maxSimultaneousJobs )) { 
     	// Note we do not use the DiskInfo aboveMaxSimultaneousjobs because here we want at or above.  On the server it has to be above
     	// since it checks multiple times including after the jobs starts processing so on the server the equality would leave off one job
     	
     	
-    	$("button.Run").attr("disabled", "disabled");
-        $("button.Run").removeClass("ui-state-default").addClass("whiteBg");
+    	//$("button.Run").attr("disabled", "disabled");
+        //$("button.Run").removeClass("ui-state-default").addClass("whiteBg");
 
-        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessageBig'>Max simultaneous processing jobs exceeded.&nbsp; </div>");
+        var quotaExceededMsg = $("<div id='diskQuotaMessage' class='errorMessage'>Max simultaneous processing jobs exceeded.&nbsp; </div>");
         quotaExceededMsg.prepend("<img class='elemSpacing' src='/gp/images/exclamation.png' width='20' height='17' />");
         quotaExceededMsg.append("Jobs Processing: " +  diskInfo.numProcessingJobs + ".   Max at one time: " + diskInfo.maxSimultaneousJobs + ".");
-        quotaExceededMsg.append("<p>Job submission has been disabled. Please wait for jobs to complete or cancel some jobs before submitting new ones.</p>");
+        quotaExceededMsg.append("<p>New job submissions will remain queued and started as your running jobs complete. </p>");
         $("#paramsListingDiv").before(quotaExceededMsg);
         var taskName = $('#task_name').html();
         	
