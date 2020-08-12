@@ -146,7 +146,9 @@ public class LoginManager {
 
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
-        user.setLastLoginIP(request.getRemoteAddr());
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if ((forwarded == null) || (forwarded.length() == 0)) forwarded = request.getRemoteAddr();
+        user.setLastLoginIP(forwarded);
     }
     
     public String getUserIdFromSession(HttpServletRequest request) {
