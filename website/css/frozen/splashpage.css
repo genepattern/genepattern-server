@@ -106,4 +106,20 @@
 	text-align: center;
 }
 
+.notebookdiv div {
+    background-image:url(/gp/images/gpnb_banner.jpg); 
+    text-align:center;
+    padding:20px;
+    border-radius:10px; 
+    background-repeat: no-repeat; 
+    background-color: #2f4982;
+    background-position: center;
+    font: normal 18px/1.48 "Source Sans Pro", sans-serif; 
+    color: white;
+    align: center;
+}
+
+.notebookdiv a {
+    color: #ACC6EF;
+}
 
