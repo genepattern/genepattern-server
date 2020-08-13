@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.rest.client.GenePatternRestApiV1Client;
 import org.genepattern.server.rest.client.TaskObj;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.JobInfo;
@@ -321,7 +324,19 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         return specialRemoteFileNameMap;
     }
     
-    
+    //   "2020-08-13T11:33:47-07:00"
+    static SimpleDateFormat format = new SimpleDateFormat("MMMM d, yyyy");
+
+    private java.util.Date getDate(String dateStr){
+        try {
+            return DateUtil.parseDate(dateStr);
+        } catch (Exception e){
+            // we  expect it to be called with a null at the beginning of every job
+            // e.printStackTrace();
+            return null;
+        }
+        
+    }
     
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
@@ -335,17 +350,31 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String pass = config.getGPProperty(context, "remote.password");
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
-            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId );
             
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
             String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
-            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + " -- " + status);
+            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + "  -> " + status);
             
+            
+            String startTime = null;
+            try {
+                startTime = statusJsonObj.getAsJsonObject("status").get("startTime").getAsString();
+            } catch (Exception e){}
+            
+            String submitTime = null;
+            try {
+                submitTime = statusJsonObj.getAsJsonObject("status").get("submitTime").getAsString();
+            } catch (Exception e){}
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
-            DrmJobStatus drmJobStatus=new DrmJobStatus.Builder(drmJobId,state).build();
+            DrmJobStatus.Builder statusBuilder = new DrmJobStatus.Builder(drmJobId,state); 
+            System.out.println("  remote job state is " + state);
+            statusBuilder.startTime(getDate(startTime));
+            statusBuilder.submitTime(getDate(submitTime));
+            
+            
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 System.out.println("JOB IS DONE " + status + "  " + localJobId) ;
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
@@ -363,8 +392,9 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     else prevTries++;
                     outputFileRetryCount.put(localJobId, prevTries);
                     if (prevTries < 5){
-                        drmJobStatus=new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING).build();
-                        return drmJobStatus;
+                        System.out.println("  ---  fake return as RUNNING to wait for files ==== ");
+                        return new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING).build();
+                       
                     } else {
                         // clear the dictionary and report it as finished with no files
                         outputFileRetryCount.remove(localJobId);
@@ -399,9 +429,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     log.error(e);
                 }
             }
-            System.out.println(" returning " + drmJobStatus);
             
-            return drmJobStatus;
+            return statusBuilder.build();
         }
         catch (NumberFormatException e1) {
             // TODO Auto-generated catch block
