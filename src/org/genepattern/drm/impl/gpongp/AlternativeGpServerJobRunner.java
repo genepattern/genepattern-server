@@ -4,16 +4,9 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.drm.DrmJobRecord;
@@ -21,32 +14,23 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
-import org.genepattern.drm.impl.local.LocalJobRunner;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
-import org.genepattern.server.JobInfoWrapper.InputFile;
-import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.jobresult.JobResult;
 import org.genepattern.server.executor.CommandExecutorException;
-import org.genepattern.server.job.input.JobInput;
-import org.genepattern.server.job.input.Param;
 import org.genepattern.server.rest.client.GenePatternRestApiV1Client;
 import org.genepattern.server.rest.client.TaskObj;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.client.GPClient;
-import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
-import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -96,24 +80,25 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         String gpurl = config.getGPProperty(jobContext, "remote.genepattern.url");
         try {
             System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
-            GPClient gpClient = new GPClient(gpurl, user, pass);
-            
+             
             GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             
             
             
             
-            List<String> localFilePaths = jobContext.getLocalFilePaths();
-            JobInfo ji = jobSubmission.getJobInfo();
+             JobInfo ji = jobSubmission.getJobInfo();
             
             // verify the module exists on the remote GP server
             try {
+                System.out.println(" -- validating LSID on remote " + ji.getTaskLSID());
                 TaskObj to = gpRestClient.getTaskObj(ji.getTaskLSID());
+                System.out.println("Found Task obj " + to);
             } catch (Exception e){ 
-                
+                log.error(e);
+                e.printStackTrace();
                 throw new CommandExecutorException("Module "+ ji.getTaskName() + " with LSID: "+ 
-                            ji.getTaskLSID()+" does not exist on the remote system designated to execute it."+
-                            "  Please contact your GenePattern administrator to inform them of this mis-configuration.");
+                            ji.getTaskLSID()+" is not on the remote system designated to execute it."+
+                            "  Contact your admin to inform them.");
             }
             
             
@@ -158,6 +143,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            
         } catch (Exception e) {
             System.out.println("--------------- --- -- - Failed to start remote job");
+            log.error(e);
             e.printStackTrace();
             throw new CommandExecutorException(e.getMessage());
         }
