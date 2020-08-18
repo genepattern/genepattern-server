@@ -106,6 +106,7 @@
 	text-align: center;
 }
 
+/* for notebook ad on frontpage - remove when ad is removed */
 .notebookdiv div {
     background-image:url(/gp/images/gpnb_banner.jpg); 
     text-align:center;
