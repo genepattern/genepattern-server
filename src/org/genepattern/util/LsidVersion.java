@@ -43,6 +43,12 @@ public class LsidVersion implements Comparable<LsidVersion> {
             public String nextVersion(LSID lsid) {
                 return fromLsid(lsid).nextPatch().toString();
             } 
+        },
+        noincrement("-") { // next patch
+            @Override
+            public String nextVersion(LSID lsid) {
+                return LsidVersion.fromString(lsid.getVersion()).toString();
+            } 
         }
         ;
         

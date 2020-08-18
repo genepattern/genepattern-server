@@ -359,7 +359,8 @@ var InitGpUtil = function(customGpContext) {
             { "value": "default", "name": "" },
             { "value": "major", "name": "major (X)" },
             { "value": "minor", "name": "minor (X.Y)" },
-            { "value": "patch", "name": "patch (X.Y.Z)" }
+            { "value": "patch", "name": "patch (X.Y.Z)" },
+            { "value": "noincrement", "name": "no change (overwrite existing)" }
         ];
         
         if (this.isNew) {
@@ -368,6 +369,7 @@ var InitGpUtil = function(customGpContext) {
                 { value: "major", name: "New major version (v1)" },
                 { value: "minor", name: "New minor version (v0.1)" },
                 { value: "patch", name: "New patch version (v0.0.1)" },
+                { value: "noincrement", name: "no change (overwrite existing)" }
             ];
         }
         else if (this.isLatest) {
@@ -376,6 +378,7 @@ var InitGpUtil = function(customGpContext) {
                 { value: "major", name: "Next major version (X)" },
                 { value: "minor", name: "Next minor version (X.Y)" },
                 { value: "patch", name: "Next patch version (X.Y.Z)" },
+                { value: "noincrement", name: "no change (overwrite existing)" }
             ];
         }
         else {

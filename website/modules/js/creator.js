@@ -495,6 +495,7 @@ function editModule()
     }
 }
 
+var addParamLiveEventsInstalled = false;
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
@@ -538,45 +539,48 @@ function addparameter()
         }
     });
 
-    $("select[name='p_type']").live("change", function(event)
-    {
-        var tSelect = $(this);
+    if (!addParamLiveEventsInstalled){
+	    $("select[name='p_type']").live("change", function(event)
+	    {
+	        var tSelect = $(this);
+	
+	        var choicelist = tSelect.parents(".parameter").find("input[name='choicelist']").val();
+	        if(choicelist != undefined && choicelist != null && choicelist.length != 0)
+	        {
+	            var numItems = choicelist.split(";");
+	            var confirmed = confirm("You have a drop down list containing " +
+	                numItems.length + " items. Changing parameter types" +
+	                " will cause this drop down list to be lost. Do you want to continue?");
+	            if(!confirmed)
+	            {
+	                element.find("option:not(:selected)").click();
+	                return;
+	            }
+	        }
+	
+	        changeParameterType(tSelect);
+	    });
 
-        var choicelist = tSelect.parents(".parameter").find("input[name='choicelist']").val();
-        if(choicelist != undefined && choicelist != null && choicelist.length != 0)
-        {
-            var numItems = choicelist.split(";");
-            var confirmed = confirm("You have a drop down list containing " +
-                numItems.length + " items. Changing parameter types" +
-                " will cause this drop down list to be lost. Do you want to continue?");
-            if(!confirmed)
-            {
-                element.find("option:not(:selected)").click();
-                return;
-            }
-        }
-
-        changeParameterType(tSelect);
-    });
-
-    $("input[name='p_optional']").live("click", function()
-    {
-        //if parameter is not optional then minimum number of files should be at least 1
-        var minNumValues = $(this).parents(".parameter").find("input[name='minNumValues']");
-        if(minNumValues.length > 0) {
-            if ($(this).is(":checked"))
-            {
-                minNumValues.spinner("value", 0);
-            }
-            else
-            {
-                if (minNumValues.val() < 1)
-                {
-                    minNumValues.spinner("value", 1);
-                }
-            }
-        }
-    });
+	    $("input[name='p_optional']").live("click", function()
+	    {
+	        //if parameter is not optional then minimum number of files should be at least 1
+	        var minNumValues = $(this).parents(".parameter").find("input[name='minNumValues']");
+	        if(minNumValues.length > 0) {
+	            if ($(this).is(":checked"))
+	            {
+	                minNumValues.spinner("value", 0);
+	            }
+	            else
+	            {
+	                if (minNumValues.val() < 1)
+	                {
+	                    minNumValues.spinner("value", 1);
+	                }
+	            }
+	        }
+	    });
+	    addParamLiveEventsInstalled = true;
+    }
 
     $('#parameters').append(paramDiv);
 

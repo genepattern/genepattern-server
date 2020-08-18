@@ -355,7 +355,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
             String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
-            System.out.println("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + "  -> " + status);
+            log.debug("Gettin status for local: " + localJobId + " and remote: "+ drmJobId + "  -> " + status);
             
             
             String startTime = null;
@@ -370,29 +370,29 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
             DrmJobStatus.Builder statusBuilder = new DrmJobStatus.Builder(drmJobId,state); 
-            System.out.println("  remote job state is " + state);
+            log.debug("  remote job state is " + state);
             statusBuilder.startTime(getDate(startTime));
             statusBuilder.submitTime(getDate(submitTime));
             
             
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
-                System.out.println("JOB IS DONE " + status + "  " + localJobId) ;
+                log.debug("JOB IS DONE " + status + "  " + localJobId) ;
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
-                System.out.println("Job output files are " + outputFiles.toString());
+                log.debug("Job output files are " + outputFiles.toString());
                 File dir = drmJobRecord.getWorkingDir();
                 
                 if (outputFiles.size() == 0){
                     // We get a race condition sometimes when the job is done but the files have not yet been registered
                     // remotely.  Lets just punt once here and say its still running and check when it comes back
-                    System.out.println("NO OUTPUT FILES ");
+                    log.debug("NO OUTPUT FILES ");
                     
                     Integer prevTries = outputFileRetryCount.get(localJobId);
                     if (prevTries == null) prevTries = 1;
                     else prevTries++;
                     outputFileRetryCount.put(localJobId, prevTries);
                     if (prevTries < 5){
-                        System.out.println("  ---  fake return as RUNNING to wait for files ==== ");
+                        log.debug("  ---  fake return as RUNNING to wait for files ==== ");
                         return new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING).build();
                        
                     } else {
@@ -411,7 +411,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     if (getSpecialRemoteFileNames().keySet().contains(name)){
                         name = getSpecialRemoteFileNames().get(name);
                     }
-                    System.out.println("Saving remote result file " + name + " to " + dir.getAbsolutePath());
+                    log.debug("Saving remote result file " + name + " to " + dir.getAbsolutePath());
                     gpRestClient.getOutputFile(outFileUrl, dir, name);
                     
                     
@@ -435,14 +435,17 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         catch (NumberFormatException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
+            log.error(e1);
         }
         catch (Exception e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
+            log.error(e1);
         }
         catch (Throwable e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
+            log.error(e1);
         }
           
         return new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();

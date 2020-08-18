@@ -1356,7 +1356,7 @@ public class AnalysisDAO extends BaseDAO {
             nextLsid.setVersion(requestedNextVersion);
 
             final int count = this.getLsidCount(nextLsid);
-            if (count <= 0) {
+            if ((count <= 0)  || (versionIncrement == LsidVersion.Increment.noincrement)) {
                 if (log.isDebugEnabled()) {
                     log.debug("from '"+existingLsid.getVersion()+"' to '"+nextLsid.getVersion()+"' is available");
                 }
