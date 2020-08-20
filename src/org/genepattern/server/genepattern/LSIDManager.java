@@ -89,7 +89,8 @@ public class LSIDManager {
             if (taskLSID == null) {
                 taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
             } 
-            else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
+            //else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
+            else if (LSIDUtil.isAuthorityMine(requestedLSID)) {
                 taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
             } 
             else {
