@@ -1150,6 +1150,10 @@ public class TaskIntegrator {
 
     /**
      * If an LSID is set, make sure that it is for the current authority, not the task's source, since it is now modified.
+     * The exception is if its got a negative version in it that matches our unique negative version for this server.  Then
+     * we assume its been locally modified but the old authority is kept to preserve old versions.  Its a bit dodgy as the
+     * authority in the LSID is no longer the real authority, but at least we should not have version collisions with modifications
+     * from the original auth or other GP servers
      * 
      * @param taskAttributes
      * @param lsid
@@ -1169,12 +1173,15 @@ public class TaskIntegrator {
                 }
                 return;
             }
-            final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            final GpContext gpContext=GpContext.getServerContext();
-            final String authority=gpConfig.getLsidAuthority(gpContext);
-            if (!l.getAuthority().equals(authority)) {
+            //final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            //final GpContext gpContext=GpContext.getServerContext();
+            //final String authority=gpConfig.getLsidAuthority(gpContext);
+            
+            boolean authorityToEdit = LSIDUtil.isAuthorityMine(lsid);
+            
+            if (! authorityToEdit) {
                 if (log.isDebugEnabled()) {
-                    log.debug("lsid.authority does not match, requested='" + l.getAuthority() + "', server='" + authority + "'");
+                    log.debug("lsid.authority does not match, requested='" + l.getAuthority() + "', server='" + LSIDUtil.AUTHORITY_MINE + "'");
                     log.debug("setting taskAttributes.LSID from '" + lsid + "' to " + "''");
                 }
                 // reset lsid to empty string
