@@ -5,6 +5,8 @@
 package org.genepattern.modules;
 
 import java.io.BufferedOutputStream;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,6 +16,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -812,8 +815,11 @@ public class ModuleQueryServlet extends HttpServlet {
 
             //check if user is allowed to edit the module
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
-            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username)
-                    && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+            boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username);
+            // && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+
+            boolean isLocalLsid = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+            
 
             if(!editable)
             {
@@ -853,10 +859,26 @@ public class ModuleQueryServlet extends HttpServlet {
 
                 allFiles = supportFiles.toArray(new File[0]);
             }
+            
+            
 
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
-
+            
+            // Modifying a non-local module.  Add a version with a unique identifier for this server to the LSID
+            // and let the user create a new local branch
+            // JTL 08/18/2020
+            if (!(LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid()) )){
+                String strMac;
+                strMac = LSIDUtil.getLocalUniqueNegativeVersionID();
+                
+                LSID localLsidVersion = new LSID(taskInfo.getLsid());
+                
+                String oldVer = localLsidVersion.getVersion();
+                localLsidVersion.setVersion(oldVer + "." + strMac + ".0");
+                moduleObject.setLsid(localLsidVersion.toString());
+            }
+            // END non-local module
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());
@@ -884,6 +906,7 @@ public class ModuleQueryServlet extends HttpServlet {
         }
 	}
 
+  
     private TaskInfo getTaskInfo(String taskLSID) throws Exception
     {
         TaskInfo taskInfo = null;
