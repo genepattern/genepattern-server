@@ -300,7 +300,15 @@ function saveModule()
         licenseFile = "";
     }
 
-    var lsid = module_editor.lsid;
+    var theLsid
+    if (adminServerAllowed){
+    	theLsid = "urn:lsid:"+ $('#lsidAuthority').val()+":" + $('#lsidNamespace').val()+":"+ $('#lsidId').val()+":"+ $('#lsidVersion').val();
+        	
+    } else {
+    	theLsid= module_editor.lsid;
+    }
+    
+    var lsid = theLsid;
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
     var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
@@ -423,7 +431,9 @@ function saveModulePost(moduleJson)
             // Update the LSID upon successful save
             if (newLsid !== undefined && newLsid !== null)
             {
-                $("#lsid").empty().append("LSID: " + newLsid);
+                //$("#lsid").empty().append("LSID: " + newLsid);
+                setLsidDisplay(newLsid)
+                
                 var vindex = newLsid.lastIndexOf(":");
                 if(vindex != -1)
                 {
@@ -1948,11 +1958,28 @@ function htmlEncode(value)
     return $('<div/>').text(value).html();
 }
 
+function setLsidDisplay(lsid){
+	lsidParts = lsid.split(":");
+    $('#lsidAuthority').val(lsidParts[2]);
+    $('#lsidNamespace').val(lsidParts[3]);
+    $('#lsidId').val(lsidParts[4]);
+    $('#lsidVersion').val(lsidParts[5]);
+    if (!adminServerAllowed){
+    	$('#lsidAuthority').prop('disabled', true);
+    	$('#lsidNamespace').prop('disabled', true);
+    	$('#lsidId').prop('disabled', true);
+    	$('#lsidVersion').prop('disabled', true);
+    }
+    
+}
+
 function loadModuleInfo(module)
 {
     module_editor.lsid = module["LSID"];
-    $("#lsid").empty().append("LSID: " + module_editor.lsid);
-
+    //$("#lsid").empty().append("LSID: " + module_editor.lsid);
+    setLsidDisplay(module_editor.lsid)
+    
+    
     if(module["name"] !== undefined)
     {
         $('#modtitle').val(module["name"]);
