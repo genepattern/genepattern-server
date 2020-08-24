@@ -477,6 +477,12 @@ public class ModuleQueryServlet extends HttpServlet {
                     tia.put(key, moduleObject.get(key));
                 }
             }
+            // these 4 are no longer used (cause Docker) so we leave them out of the UI and just
+            // stuff the most general values in here
+            tia.put("os", "any");
+            tia.put("language", "any");
+            tia.put("JVMLevel", "");
+            tia.put("cpuType", "any");
 
             tia.put(GPConstants.FILE_FORMAT, moduleObject.getFileFormats());
 
@@ -819,8 +825,19 @@ public class ModuleQueryServlet extends HttpServlet {
             // && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 
             boolean isLocalLsid = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
-            
-
+            if (!isLocalLsid){
+                // if the LSID is not locally created, it can still be editted if the user is an admin
+                // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
+                // in a config file
+                final GpConfig gpConfig=ServerConfigurationFactory.instance();
+                boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
+                if (adminOverrideAllowed && AuthorizationHelper.adminServer(username)) {
+                    editable = true;
+                } else {
+                    editable = false;
+                }
+            }
+                
             if(!editable)
             {
                 sendError(response, "Module is not editable");
@@ -865,20 +882,7 @@ public class ModuleQueryServlet extends HttpServlet {
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
             
-            // Modifying a non-local module.  Add a version with a unique identifier for this server to the LSID
-            // and let the user create a new local branch
-            // JTL 08/18/2020
-            if (!(LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid()) )){
-                String strMac;
-                strMac = LSIDUtil.getLocalUniqueNegativeVersionID();
-                
-                LSID localLsidVersion = new LSID(taskInfo.getLsid());
-                
-                String oldVer = localLsidVersion.getVersion();
-                localLsidVersion.setVersion(oldVer + "." + strMac + ".0");
-                moduleObject.setLsid(localLsidVersion.toString());
-            }
-            // END non-local module
+            
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());

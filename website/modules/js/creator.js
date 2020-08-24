@@ -495,38 +495,42 @@ function editModule()
     }
 }
 
+
 var addParamLiveEventsInstalled = false;
 function addparameter()
 {
-    var paramDiv = $("<div class='parameter'>  \
-        <table class='deloptions'>\
-        <tr> <td class='dragIndicator'><div class='dragSquare'></div>\
-        <div class='dragSquare'></div><div class='dragSquare'></div></td>\
-        <td class='btntd'>\
-        <button class='delparam'>x Delete</button></td><td>\
-        <p>Name*: <br/>\
-        <input type='text' name='p_name' size='28'/>\
-        </p><p>\
-        <input type='checkbox' name='p_optional' size='25'/>Make this parameter optional.</p>\
-        <p>Description:<br/>\
-        <textarea cols='60' name='p_description' rows='2'></textarea></p>\
-        </td><td >\
-        <table class='pmoptions'>\
-        <tr><td>Flag:<br/><input type='text' name='p_flag' size='7'/>\
-        <input type='checkbox' name='p_prefix' size='7' disabled='disabled'/> prefix when specified \
-        </td> \
-        </tr>\
-        <tr><td>Type of field to display*:<br/>\
-                <select name='p_type' class='m_select'>\
-                        <option value='text'>Text Field</option> \
-                        <option value='Input File'>File Field</option>\
-                </select>\
-        </td></tr></table>\
-        </td></tr>\
-        </table>\
-        <div class='editChoicesDialog'/> \
-        <div class='editFileGroupDialog'/> \
-    </div>");
+	 var paramDiv = $("<div class='parameter'>  \
+		        \
+		        <table class='param_outer_table'>  \
+		        <tr> <td class='dragIndicator'><div class='dragSquare'></div></div></td> \
+		        <td><table class='deloptions'> \
+		         <tr > <td colspan=5> <span class='param_name'>Name*: <input type='text' name='p_name' size='28'/> </span> <span class='parameter_minimized'>-</span> </td></tr>		\
+		        <tr class='delOptionsCollapsible'> \
+		        <td class='btntd'>\
+		        <button class='delparam'>x Delete</button></td><td>\
+		        <p>\
+		        <input type='checkbox' name='p_optional' size='25'/>Make this parameter optional.</p>\
+		        <p>Description:<br/>\
+		        <textarea cols='60' name='p_description' rows='2'></textarea></p>\
+		        </td><td >\
+		        <table class='pmoptions'>\
+		        <tr><td>Flag:<br/><input type='text' name='p_flag' size='7'/>\
+		        <input type='checkbox' name='p_prefix' size='7' disabled='disabled'/> prefix when specified \
+		        </td> \
+		        </tr>\
+		        <tr><td>Type of field to display*:<br/>\
+		                <select name='p_type' class='m_select'>\
+		                        <option value='text'>Text Field</option> \
+		                        <option value='Input File'>File Field</option>\
+		                </select>\
+		        </td></tr></table>\
+		        </td>   \
+		        </td></tr></table> \
+		        </tr>\
+		        </table>\
+		        <div class='editChoicesDialog'/> \
+		        <div class='editFileGroupDialog'/> \
+		    </div>");
 
     paramDiv.find("select[name='p_type']").multiselect({
         multiple: false,
@@ -583,7 +587,19 @@ function addparameter()
     }
 
     $('#parameters').append(paramDiv);
-
+    paramDiv.find(".parameter_minimized").button().click(function() {
+    	var oldIcon= paramDiv.find(".parameter_minimized").find(".ui-button-text").text();
+    	if (oldIcon.indexOf("-") >= 0){
+    		paramDiv.find(".delOptionsCollapsible").hide();
+        	paramDiv.find(".parameter_minimized").find(".ui-button-text").text(" + ")
+    	} else {
+    		paramDiv.find(".delOptionsCollapsible").show();
+        	paramDiv.find(".parameter_minimized").find(".ui-button-text").text(" - ")
+    	}
+    	
+    	
+    });
+    
     paramDiv.find(".delparam").button().click(function()
     {
         //first remove the parameter from the commandline
@@ -605,6 +621,10 @@ function addparameter()
         setDirty(true);
     });
 
+    // set in the default initial param name
+    var paramCount = $("div.parameter").length;
+    paramDiv.find("input[name='p_name']").val("p_"+ paramCount);
+   
     paramDiv.find("select[name='p_type']").trigger("change");
 
     return paramDiv;
@@ -700,10 +720,11 @@ function updateparameter(parameter, updateCmdLine)
     if(typeof(updateCmdLine)==='undefined') updateCmdLine = true;
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
-
+    
+    
     var pelementval = pelement.val().replace(/ /g, ".");
     pelement.val(pelementval);
-
+   
     var pname_newval = pelement.val();
     var pflag_newval = felement.val();
     if(parameter.find("input[name='p_prefix']").attr('checked'))
@@ -864,7 +885,7 @@ function changeParameterType(element) {
     var helpImgSrc = $(".helpbutton").first().attr("src");
     var defaultValueRow = $("<tr/>");
     var defaultValue = $("<input type='text' name='p_defaultvalue' class='defaultValue' size='40'/>");
-    $("<td/>").append("Default value:<br/>").append(defaultValue).append("<a href='createhelp.jsp#paramDefault' target='help'> " +
+    $("<td/>").append("Default value: ").append(defaultValue).append("<a href='createhelp.jsp#paramDefault' target='help'> " +
         " <img src='" + helpImgSrc + "' width='12' height='12' alt='help' class='buttonIcon' />"
         + "</a>").appendTo(defaultValueRow);
     typeDetailsTable.append(defaultValueRow);
@@ -1402,7 +1423,7 @@ function changeParameterType(element) {
     //add row to allow setting of number of allowed values
     var specifyMinValuesRow = $("<tr class='minValues'/>");
     var specifyMinValuesTd = $("<td/>");
-    specifyMinValuesTd.append('Minimum number of values:<br/>');
+    specifyMinValuesTd.append('Minimum # of values: ');
     var minNumValues = $('<input name="minNumValues" value="0"/>');
     specifyMinValuesTd.append(minNumValues);
     minNumValues.spinner({
@@ -1433,7 +1454,7 @@ function changeParameterType(element) {
 
     var specifyMaxValuesRow = $("<tr class='maxValues'/>");
     var specifyMaValuesTd = $("<td/>");
-    specifyMaValuesTd.append('Maximum number of values:<br/>');
+    specifyMaValuesTd.append('Maximum # of values: ');
     var maxValues = $('<input name="maxNumValues" value="1"/>');
 
    var spinchange = function maxValChange(element)
@@ -1680,7 +1701,7 @@ function changeParameterType(element) {
         var listModeRow = $("<tr class='listMode'/>");
         var listModeTd = $("<td/>");
         listModeRow.append(listModeTd);
-        listModeTd.append("List mode: <br/>");
+        listModeTd.append("List mode: ");
         var listMode = $("<select name='p_list_mode'>\
                 <option value='cmd'>List</option>\
                 <option value='cmd_opt'>Get-opt style list</option>\
@@ -2865,7 +2886,9 @@ jQuery(document).ready(function() {
 
     $("#addone").button().click(function()
     {
-        addparameter();
+        var paramDiv = addparameter();
+        // for new param, add its default name to the command line
+        paramDiv.find("input[name='p_name']").trigger("keyup");
     });
 
     $("#addparamnum").val("1");
@@ -2885,7 +2908,9 @@ jQuery(document).ready(function() {
         for(var i=0;i<numparams;i++)
         {
             var parameterDiv = addparameter();
-
+           
+            // for new param, add its default name to the command line
+            parameterDiv.find("input[name='p_name']").trigger("keyup");
             if(i==0)
             {
                 firstParameterDiv = parameterDiv;
@@ -2901,6 +2926,21 @@ jQuery(document).ready(function() {
 
     });
 
+    $("#collapse_all_params").button().click(function()
+    	    {
+    	$(".delOptionsCollapsible").hide()
+    	$(".parameter_minimized").find(".ui-button-text").html("+");
+    	
+    	$(".editChoicesDialog").hide();
+    	$(".editFileGroupDialog").hide();
+    	    });
+    $("#expand_all_params").button().click(function()
+    	    {
+    	$(".delOptionsCollapsible").show()
+    	$(".parameter_minimized").find(".ui-button-text").html("-");
+    	
+    	    });
+    
 
     $("input[name='p_flag']").live("keyup", function()
     {

@@ -365,72 +365,8 @@
                         </a>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        CPU type:
-                    </td>
-                    <td>
-                        <select name="cpu">
-                            <option value="any">any</option>
-                            <option value="Alpha">Alpha</option>
-                            <option value="Intel">Intel</option>
-                            <option value="PowerPC">PowerPC</option>
-                            <option value="Sparc">Sparc</option>
-                        </select>
-                        <a href='createhelp.jsp#cpu' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
-                        </a>
-                    </td>
-                    <td>
-                        Operating System:
-                    </td>
-                    <td>
-                        <input type="radio" name="os" value="any" id="os" checked="checked"/>
-                        <label for="os">Any</label>
-
-                        <input type="radio" name="os" value="linux" id="os1"/>
-                        <label for="os1">Linux</label>
-
-                        <input type="radio" name="os" value="mac" id="os2"/>
-                        <label for="os2">MacOS</label>
-
-                        <input type="radio" name="os" value="windows" id="os3"/>
-                        <label for="os3">Windows</label>
-
-                        <a href='createhelp.jsp#os' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
-                        </a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Language:
-                    </td>
-                    <td>
-                        <select name="language">
-                            <option value="any">any</option>
-                            <option value="C">C</option>
-                            <option value="C++">C++</option>
-                            <option value="Java">Java</option>
-                            <option value="MATLAB">MATLAB</option>
-                            <option value="Perl">Perl</option>
-                            <option value="Python">Python</option>
-                            <option value="R">R</option>
-                        </select>
-                        <a href='createhelp.jsp#Language' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
-                        </a>
-                    </td>
-                    <td>
-                        <b> min. language version: </b>
-                    </td>
-                    <td>
-                        <input type="text" name="lang_version" size="20"/>
-                        <a href='createhelp.jsp#MinLanguage' target='help'>
-                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
-                        </a>
-                    </td>
-                </tr>
+                
+                
                 <tr>
                     <td>
                         Output File Formats:</td>
@@ -523,6 +459,11 @@
                 <a href='createhelp.jsp#inputParameters' target='help'>
                     <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                 </a>
+                <span class="collapsecontrols" style="float:right">
+                	
+                	<button id="expand_all_params">Expand all</button>&nbsp;&nbsp;
+                	<button id="collapse_all_params">Collapse all</button>&nbsp;&nbsp;
+                </span>
             </div>
             <div id="parameters"></div>
         </div>

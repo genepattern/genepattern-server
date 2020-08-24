@@ -17,6 +17,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -37,23 +38,28 @@ public class LSIDManager {
 
     /** @deprecated pass in a HibernateSession */
     public static LSID getNextTaskLsid(final String requestedLSID)  throws java.rmi.RemoteException {
-        return getNextTaskLsid(requestedLSID, LsidVersion.Increment.next);
+        return getNextTaskLsid(requestedLSID, LsidVersion.Increment.next, null);
     }
 
-    public static LSID getNextTaskLsid(final String requestedLSID, final LsidVersion.Increment versionIncrement)  throws java.rmi.RemoteException {
+    public static LSID getNextTaskLsid(final String requestedLSID, final LsidVersion.Increment versionIncrement, String username)  throws java.rmi.RemoteException {
         final HibernateSessionManager mgr=HibernateUtil.instance();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        final GpContext gpContext=GpContext.getServerContext();
-        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, versionIncrement);
+        final GpContext gpContext;
+        if (username != null){
+            gpContext=GpContext.getContextForUser(username);
+        } else {
+            gpContext=GpContext.getServerContext();
+        }
+        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, versionIncrement, username);
     }
 
     /** @deprecated pass in an increment */
     public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID) 
     throws java.rmi.RemoteException {
-        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, LsidVersion.Increment.next);
+        return getNextTaskLsid(mgr, gpConfig, gpContext, requestedLSID, LsidVersion.Increment.next, null);
     }
     
-    public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID, final LsidVersion.Increment versionIncrement) 
+    public static LSID getNextTaskLsid(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String requestedLSID, final LsidVersion.Increment versionIncrement, String username) 
     throws java.rmi.RemoteException {
         return getNextLsid(mgr, gpConfig, gpContext, TASK_NAMESPACE, requestedLSID, versionIncrement);
     }
@@ -90,7 +96,14 @@ public class LSIDManager {
                 taskLSID = createNewID(mgr, gpConfig, gpContext, namespace, versionIncrement.initialVersion());
             } 
             //else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
-            else if (LSIDUtil.isAuthorityMine(requestedLSID)) {
+            boolean lsidIsMine = LSIDUtil.isAuthorityMine(requestedLSID);
+            boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(gpContext, "allowAdminEditNonLocalModules", false);
+            boolean adminEditAllowed = false;
+            if (adminOverrideAllowed && AuthorizationHelper.adminServer(gpContext.getUserId())) {
+                adminEditAllowed = true;
+            }
+            
+            if (lsidIsMine || adminEditAllowed) {
                 taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
             } 
             else {

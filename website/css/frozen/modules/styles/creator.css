@@ -538,6 +538,8 @@ p.heading {
 	font-weight: normal;
 }
 
+
+
 div.ui-layout-center table td {
 	padding: 5px 15px 5px 5px;
 	white-space:nowrap;
@@ -545,6 +547,16 @@ div.ui-layout-center table td {
 	width: 100px;
 }
 
+div.ui-layout-center table.param_outer_table  td {
+	padding: 0px 0px 0px 0px;
+}
+
+
+
+div.ui-layout-center table.param_outer_table td.dragIndicator {
+	
+}
+	
 div.ui-layout-center table td button {
 	margin-top:-1px;
 	margin-bottom: 0px;
@@ -552,6 +564,8 @@ div.ui-layout-center table td button {
 
 div.ui-layout-center table td select {
 }
+
+
 
 table.no-border {
 	margin: -2px 0 -4px -2px ;
@@ -657,14 +671,32 @@ img.buttonIcon {
 
 .parameter
 {
-	margin:5px 0 0 -5px;
+	margin:10px 0 0 -5px;
 	padding:0;
 	width:100%;
-	border-bottom: solid #3386c2 2px;
+	/*border-bottom: solid #3386c2 2px; */
 	border-top: solid #fff 4px;
 }
 
+span.param_name {
+	padding-left: 5px;
+	padding-top:5px;
+	padding-bottom: 5px;
+}
+
+div.parameter input[type='text']{
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border: 1px grey solid;
+}
+
+span.parameter_minimized {
+	float:right;
+	padding: 2px 2px 2px 2px;
+}
+
 .parameter table {
+	margin: 0 0 0 0;
 	width: 100%;
     margin-right: 3px;
 }
@@ -716,7 +748,7 @@ table.pmoptions td {
 table.deloptions
 {
 	border: solid 1px #aaa;
-	margin-bottom: 10px;
+	/* margin-bottom: 10px; */
 }
 
 .helpbutton {
@@ -795,7 +827,7 @@ table.deloptions
 {
     background-color: #E6E6B2;
     background-size: 20px 320px;
-    padding: 90px 0 0 0;
+    padding: 75px 0 0 0;
     margin: 0;
     width: 0.8%;
     height: 100%;

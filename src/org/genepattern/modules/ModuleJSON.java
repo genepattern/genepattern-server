@@ -32,10 +32,10 @@ public class ModuleJSON extends JSONObject {
     public static final String LSID = "LSID";
     public static final String TASK_TYPE = "taskType";
     public static final String CATEGORIES = "categories";
-    public static final String LANGUAGE = "language";
-    public static final String JVM_LEVEL = "JVMLevel";        
-    public static final String CPU = "cpuType";
-    public static final String OS = "os";
+    //public static final String LANGUAGE = "language";
+    //public static final String JVM_LEVEL = "JVMLevel";        
+    //public static final String CPU = "cpuType";
+    //public static final String OS = "os";
     public static final String COMMAND_LINE = "commandLine";
     public static final String FILEFORMAT = "fileFormat";    
     public static final String SUPPORTFILES = "supportFiles";
@@ -63,10 +63,10 @@ public class ModuleJSON extends JSONObject {
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(TASK_TYPE, object.get(TASK_TYPE));
             this.put(QUALITY, object.get(QUALITY));
-            this.put(LANGUAGE, object.get(LANGUAGE));
-            this.put(JVM_LEVEL, object.get(JVM_LEVEL));
-            this.put(CPU, object.get(CPU));
-            this.put(OS, object.get(OS));
+            //this.put(LANGUAGE, object.get(LANGUAGE));
+            //this.put(JVM_LEVEL, object.get(JVM_LEVEL));
+            //this.put(CPU, object.get(CPU));
+            //this.put(OS, object.get(OS));
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
             this.put(LSID, object.get(LSID));
             this.put(SUPPORTFILES, object.get(SUPPORTFILES));
@@ -103,10 +103,10 @@ public class ModuleJSON extends JSONObject {
             this.put(TASK_TYPE, tia.get(GPConstants.TASK_TYPE));
             this.put(CATEGORIES, tia.get(GPConstants.CATEGORIES));
             this.put(QUALITY, tia.get(GPConstants.QUALITY));
-            this.put(LANGUAGE, tia.get(GPConstants.LANGUAGE));
+            //this.put(LANGUAGE, tia.get(GPConstants.LANGUAGE));
             this.put(FILEFORMAT, tia.get(GPConstants.FILE_FORMAT));
-            this.put(CPU, tia.get(GPConstants.CPU_TYPE));
-            this.put(OS, tia.get(GPConstants.OS));
+            //this.put(CPU, tia.get(GPConstants.CPU_TYPE));
+            //this.put(OS, tia.get(GPConstants.OS));
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
 

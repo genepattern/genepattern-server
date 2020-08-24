@@ -3329,7 +3329,7 @@ public class GenePatternAnalysisTask {
     throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
-        taskLSID = LSIDManager.getNextTaskLsid(requestedLSID, versionIncrement);
+        taskLSID = LSIDManager.getNextTaskLsid(requestedLSID, versionIncrement,username);
         taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator, installInfo);
         if ((probs != null) && (probs.size() > 0)) {

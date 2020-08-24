@@ -1156,6 +1156,17 @@ public class RunTaskServlet extends HttpServlet
             log.error("userContext.userId not set");
             return false;
         }
+        
+        // if the LSID is not locally created, it can still be editted if the user is an admin
+        // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
+        // in a config file
+
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(userContext, "allowAdminEditNonLocalModules", false);
+        if (adminOverrideAllowed && AuthorizationHelper.adminServer(userContext.getUserId())) {
+            return true;
+        }
+        
         //can only edit your own task
         final boolean isMine=taskInfo.getUserId().equals(userContext.getUserId());
         if (!isMine) {
