@@ -3495,12 +3495,46 @@ function updateParamFileTable(paramName, fileDiv, groupId) {
             var fileRow = $("<tr/>");
             var fileTData = $("<td class='pfileAction'/>");
 
+            ////////////////////// JTL 082520 
+            var fileBits = (files[i].name).split(".");
+            var fileType = fileBits[fileBits.length -1];
+            var okParamsForThisFile = run_task_info.sendTo[fileType];
+            var indicateMismatch = false;
+            // if file types are specified and they do not contain this parameterName
+            // then there is a mismatch
+            if (okParamsForThisFile != null) {
+          		indicateMismatch = ! run_task_info.sendTo[fileType].includes(paramName);
+            } 
+            var fileTypesForParam = []
+            // but now we have to check if there were types specified for this parameter, reversing the sendTo
+            for (var aFileType in run_task_info.sendTo) {
+                // check if the property/key is defined in the object itself, not in parent
+                if (run_task_info.sendTo.hasOwnProperty(aFileType)) {           
+                	if (run_task_info.sendTo[aFileType].includes(paramName)){
+                		fileTypesForParam.push(aFileType);
+                	}
+                }
+            }
+            if (fileTypesForParam.length > 0){
+            	indicateMismatch =  ! (fileTypesForParam.includes(fileType));
+            }
+            
+            var mismatchDisplay="";
+            var tdTitle="";
+            if (indicateMismatch){
+            	mismatchDisplay="<img src='../images/exclamation.png' height=10px />&nbsp;";
+                tdTitle="title='The file extension is not one of the expected types "+fileTypesForParam.toString() +".'";
+            }
+            
+            ///////////////////// END JTL 082520
+            
+            
             //determine if this is a  url
             if (files[i].name.indexOf("://") !== -1) {
-                fileRow.append("<td><a href='" + files[i].name + "'> " + decodeURIComponent(files[i].name) + "</a></td>");
+                fileRow.append("<td "+tdTitle+">"+mismatchDisplay+"<a href='" + files[i].name + "'> " + decodeURIComponent(files[i].name) + "</a></td>");
             }
             else {
-                fileRow.append("<td>" + files[i].name + "</td>");
+                fileRow.append("<td "+tdTitle+">" +mismatchDisplay+ files[i].name + "</td>");
             }
             var delButton = $("<img class='images delBtn' src='/gp/images/delete-blue.png'/>");
             delButton.data("pfile", files[i].name);
