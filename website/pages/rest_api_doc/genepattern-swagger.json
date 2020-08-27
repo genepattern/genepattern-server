@@ -1,0 +1,2752 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "GenePattern API",
+    "description": "REST-ful API for the GenePattern server at https://cloud.genepattern.org. This can be used by programming language clients but it was originally created to back the javascript of the web application and some idiosyncrasies  of this API reflect that genesis.",
+    "contact": {
+      "name": "The GenePattern Team",
+      "url": "http://www.genepattern.org/help"
+    }
+  },
+  "host": "example.com",
+  "basePath": "/",
+  "securityDefinitions": {
+    "auth": {
+      "type": "basic"
+    }
+  },
+  "schemes": [],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/jobs/{jobNo}/tags/add": {
+      "post": {
+        "description": "Add a tag to a job",
+        "summary": "addTag",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "addTag",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "tagText",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/comments/add": {
+      "post": {
+        "description": "",
+        "summary": "addComment",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "addComment",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/RunTask/viewCode": {
+      "get": {
+        "description": "",
+        "summary": "viewCode",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "viewCode",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "lsid",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "reloadJob",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "_file",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}": {
+      "get": {
+        "description": "",
+        "summary": "getJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includePermissions",
+            "in": "query",
+            "required": false,
+            "default": false,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeChildren",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeOutputFiles",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{   \"jobId\": \"269734\",   \"taskName\": \"ConvertLineEndings\",   \"taskLsid\": \"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2\",   \"datetime\": \"2020-08-21 11:55:02.0\",   \"dateSubmitted\": \"2020-08-21T11:55:02+00:00\",   \"dateCompleted\": \"2020-08-21T11:56:05+00:00\",   \"userId\": \"ted\",   \"numOutputFiles\": 1,   \"outputFiles\": [{     \"link\": {       \"href\": \"https://cloud.genepattern.org/gp/jobResults/269734/GDS4551mod.cvt.gct\",       \"name\": \"GDS4551mod.cvt.gct\",       \"rel\": \"gp_outputFile\"     },     \"fileLength\": 3924258,     \"lastModified\": \"2020-08-21T11:56:01+00:00\",     \"path\": \"GDS4551mod.cvt.gct\",     \"kind\": [\"gct\"]   }],   \"logFiles\": [{     \"link\": {       \"href\": \"https://cloud.genepattern.org/gp/jobResults/269734/gp_execution_log.txt\",       \"name\": \"gp_execution_log.txt\",       \"rel\": \"gp_logFile\"     },     \"fileLength\": 447,     \"lastModified\": \"2020-08-21T11:56:05+00:00\",     \"path\": \"gp_execution_log.txt\",     \"kind\": [\"txt\"]   }],   \"status\": {     \"isFinished\": true,     \"hasError\": false,     \"isPending\": false,     \"executionLogLocation\": \"https://cloud.genepattern.org/gp/jobResults/269734/gp_execution_log.txt\",     \"statusFlag\": \"DONE\",     \"statusMessage\": \"The job finished without an error\",     \"statusDate\": \"2020-08-21T11:56:05+00:00\",     \"addedToGp\": \"2020-08-21T11:55:02+00:00\",     \"submitTime\": \"2020-08-21T11:55:07+00:00\",     \"startTime\": \"2020-08-21T11:55:16+00:00\",     \"endTime\": \"2020-08-21T11:56:02+00:00\",     \"completedInGp\": \"2020-08-21T11:56:05+00:00\",     \"cpuTimeMillis\": 0,     \"cpuTime\": \"0 milliseconds\",     \"queueId\": \"arn:aws:batch:us-east-1:718039241689:job-queue/gp-cloud-default\",     \"extJobId\": \"6a46eec8-204c-4f18-abd6-bcc8336e22cd\\n\",     \"eventLog\": [       {         \"event\": \"Added to GenePattern\",         \"time\": \"2020-08-21T11:55:02+00:00\"       },       {         \"event\": \"Submitted to queue\",         \"time\": \"2020-08-21T11:55:07+00:00\"       },       {         \"event\": \"Started running\",         \"time\": \"2020-08-21T11:55:16+00:00\"       },       {         \"event\": \"Finished running\",         \"time\": \"2020-08-21T11:56:02+00:00\"       },       {         \"event\": \"Completed in GenePattern\",         \"time\": \"2020-08-21T11:56:05+00:00\"       }     ],     \"resourceRequirements\": [       {         \"key\": \"job.memory\",         \"keyName\": \"job.memory\",         \"value\": \"2 GB\",         \"displayValue\": \"2 GB\"       },       {         \"key\": \"job.cpuCount\",         \"keyName\": \"job.cpuCount\",         \"value\": \"1\",         \"displayValue\": \"1\"       },       {         \"key\": \"job.walltime\",         \"keyName\": \"job.walltime\",         \"value\": \"02:00:00\",         \"displayValue\": \"02:00:00\"       },       {         \"key\": \"job.queue\",         \"keyName\": \"job.queue\",         \"value\": \"gp-cloud-default\",         \"displayValue\": \"gp-cloud-default\"       }     ]   },   \"comments\": {     \"comments\": [],     \"user\": {       \"user_id\": \"ted\",       \"fullname\": \"ted\",       \"is_logged_in\": true,       \"is_add_allowed\": true,       \"is_edit_allowed\": true     },     \"total_comment\": 0   },   \"tags\": [],   \"self\": \"https://cloud.genepattern.org/gp/rest/v1/jobs/269734\" }"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/delete/{path}": {
+      "delete": {
+        "description": "",
+        "summary": "deleteFile",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "deleteFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/user": {
+      "get": {
+        "description": "Get the current user ID",
+        "summary": "getUser",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "getUser",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{\"result\":\"ted\"}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs": {
+      "post": {
+        "description": "Create a new job",
+        "summary": "addJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "addJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/addJobRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "summary": "getJobSearchResults",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJobSearchResults",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "batchId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "comment",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "default": 1,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "orderFilesBy",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "includeChildren",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeOutputFiles",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includePermissions",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{   \"items\": [     {       \"jobId\": \"271198\",       \"taskName\": \"DESeq2\",       \"taskLsid\": \"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00362:1\",       \"datetime\": \"2020-08-26 20:35:10.0\",       \"dateSubmitted\": \"2020-08-26T20:35:10+00:00\",       \"userId\": \"N_PA\",       \"numOutputFiles\": 0,       \"outputFiles\": [],       \"logFiles\": [],       \"status\": {         \"isFinished\": false,         \"hasError\": false,         \"isPending\": false,         \"statusFlag\": \"RUNNING\",         \"statusMessage\": \"The job is running on an execution host\",         \"statusDate\": \"2020-08-26T20:40:44+00:00\",         \"addedToGp\": \"2020-08-26T20:35:10+00:00\",         \"cpuTimeMillis\": 0,         \"cpuTime\": \"0 milliseconds\",         \"queueId\": \"arn:aws:batch:us-east-1:718039241689:job-queue/gp-cloud-default\",         \"extJobId\": \"c433379e-9912-48db-b296-92fcfc8ad9a0\\n\",         \"eventLog\": [           {             \"event\": \"Added to GenePattern\",             \"time\": \"2020-08-26T20:35:10+00:00\"           },           {             \"event\": \"Submitted to queue\",             \"time\": \"\"           },           {             \"event\": \"Started running\",             \"time\": \"\"           },           {             \"event\": \"Finished running\",             \"time\": \"\"           },           {             \"event\": \"Completed in GenePattern\",             \"time\": \"\"           }         ],         \"resourceRequirements\": [           {             \"key\": \"job.memory\",             \"keyName\": \"job.memory\",             \"value\": \"2 GB\",             \"displayValue\": \"2 GB\"           },           {             \"key\": \"job.cpuCount\",             \"keyName\": \"job.cpuCount\",             \"value\": \"1\",             \"displayValue\": \"1\"           },           {             \"key\": \"job.walltime\",             \"keyName\": \"job.walltime\",             \"value\": \"02:00:00\",             \"displayValue\": \"02:00:00\"           },           {             \"key\": \"job.queue\",             \"keyName\": \"job.queue\",             \"value\": \"gp-cloud-default\",             \"displayValue\": \"gp-cloud-default\"           }         ]       },       \"comments\": {         \"comments\": [],         \"user\": {           \"user_id\": \"N_PA\",           \"fullname\": \"N_PA\",           \"is_logged_in\": true,           \"is_add_allowed\": true,           \"is_edit_allowed\": true         },         \"total_comment\": 0       },       \"tags\": [],       \"permissions\": {         \"currentUser\": \"ted\",         \"canRead\": true,         \"canWrite\": true,         \"canSetPermissions\": false,         \"isPublic\": false,         \"isShared\": false,         \"groups\": [           {             \"id\": \"*\",             \"read\": false,             \"write\": false           },           {             \"id\": \"administrators\",             \"read\": false,             \"write\": false           }         ]       },       \"self\": \"https://cloud.genepattern.org/gp/rest/v1/jobs/271198\"     }]}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/upload/resumable/": {
+      "get": {
+        "description": "For Resumable.js use from the UI",
+        "summary": "resumableGet",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "resumableGet",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "description": "For resumable.js multipart uploads from the UI",
+        "summary": "resumable",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "resumable",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/RunTask/addJob": {
+      "post": {
+        "description": "",
+        "summary": "addJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "PostaddJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/addJobRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/upload/whole": {
+      "post": {
+        "description": "",
+        "summary": "writeUpload",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "writeUpload",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/RunTask/upload": {
+      "post": {
+        "description": "",
+        "summary": "uploadFile",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "uploadFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uploadFileRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/copy": {
+      "post": {
+        "description": "",
+        "summary": "copyFile",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "copyFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/{taskNameOrLsid}/code": {
+      "get": {
+        "description": "",
+        "summary": "jobCode",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "jobCode",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "taskNameOrLsid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/system-message": {
+      "get": {
+        "description": "Returns the current system message.",
+        "summary": "getSystemMessage",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "getSystemMessage",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "The main GenePattern server (cloud.genepattern.org) has a 1 hour maintenance window on the first Monday of each month from 2pm - 3pm PDT (UTC-7)  The next update will be Monday, September 7, 2020    Follow the GenePattern team on Twitter, Instagram or Facebook to keep up with the latest news and events or join the conversation in our forum!"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "description": "Must be an admin to set the system message.",
+        "summary": "setSystemMessage",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "setSystemMessage",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/suites/all.json": {
+      "get": {
+        "description": "",
+        "summary": "getAllSuites",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "getAllSuites",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/jobstatus.json": {
+      "get": {
+        "description": "Get the status for multiple jobs at once",
+        "summary": "getMultipleStatus",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getMultipleStatus",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/incomplete": {
+      "get": {
+        "description": "",
+        "summary": "isJobRunning",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "isJobRunning",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "[]"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/comments": {
+      "get": {
+        "description": "",
+        "summary": "loadComments",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "loadComments",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/tags": {
+      "get": {
+        "description": "",
+        "summary": "loadTags",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "loadTags",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/log/info": {
+      "post": {
+        "description": "",
+        "summary": "writeInfo",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "writeInfo",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/upload/job_input_form": {
+      "post": {
+        "description": "",
+        "summary": "handlePostJobInputMultipartForm",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "handlePostJobInputMultipartForm",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Length",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/handlePostJobInputMultipartFormRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/download": {
+      "get": {
+        "description": "",
+        "summary": "download",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "download",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/tags/delete": {
+      "post": {
+        "description": "",
+        "summary": "deleteTag",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "deleteTag",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobTagId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/delete": {
+      "delete": {
+        "description": "",
+        "summary": "deleteJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "deleteJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/usagestats/user_summary/{startDate}/{endDate}": {
+      "get": {
+        "description": "",
+        "summary": "userSummary",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "userSummary",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "endDate",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "startDate",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/gp-url": {
+      "get": {
+        "description": "",
+        "summary": "getGenePatternURL",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "getGenePatternURL",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{\"result\":\"https://cloud.genepattern.org/gp/\"}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/is-admin": {
+      "get": {
+        "description": "200 OK: User 'ted' is an administrator.",
+        "summary": "checkIsAdmin",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "checkIsAdmin",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/code": {
+      "get": {
+        "description": "",
+        "summary": "jobCode",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "GetjobCode",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/visualizerInputFiles": {
+      "get": {
+        "description": "",
+        "summary": "substitute",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "substitute",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/delete": {
+      "delete": {
+        "description": "",
+        "summary": "deleteJobs",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "deleteJobs",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobs",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/upload/multipart/assemble/": {
+      "post": {
+        "description": "",
+        "summary": "assembleMultipartUpload",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "assembleMultipartUpload",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "parts",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/move": {
+      "put": {
+        "description": "",
+        "summary": "moveFile",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "moveFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/comments/add/{id}": {
+      "post": {
+        "description": "Edit a comment attached to a job.",
+        "summary": "editComment",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "editComment",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/status.json": {
+      "get": {
+        "description": "",
+        "summary": "getStatus",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getStatus",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/recent": {
+      "get": {
+        "description": "",
+        "summary": "getRecentJobs",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getRecentJobs",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includeChildren",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeOutputFiles",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/upload/job_input": {
+      "post": {
+        "description": "",
+        "summary": "handlePostJobInputInBody",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "handlePostJobInputInBody",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Length",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/upload/{path}": {
+      "put": {
+        "description": "",
+        "summary": "putFile",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "putFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Length",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "replace",
+            "in": "query",
+            "required": false,
+            "default": false,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/admin": {
+      "get": {
+        "description": "",
+        "summary": "isAdmin",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "isAdmin",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{\"result\":true}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/comments/delete": {
+      "post": {
+        "description": "",
+        "summary": "deleteComment",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "deleteComment",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/removeNotificationCallback": {
+      "post": {
+        "description": "",
+        "summary": "removeNotificationCallback",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "removeNotificationCallback",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/terminate": {
+      "delete": {
+        "description": "",
+        "summary": "terminateJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "terminateJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/upload/multipart/": {
+      "put": {
+        "description": "",
+        "summary": "updateMultipartUpload",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "updateMultipartUpload",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "index",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "parts",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "summary": "getMultipartStatus",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "getMultipartStatus",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "parts",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "summary": "startMultipartUpload",
+        "tags": [
+          "Upload"
+        ],
+        "operationId": "startMultipartUpload",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "parts",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "fileSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/createPipeline/{path}": {
+      "put": {
+        "description": "",
+        "summary": "createPipeline",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "createPipeline",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/createDirectory/{path}": {
+      "put": {
+        "description": "",
+        "summary": "createDirectoryV1",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "createDirectoryV1",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/children": {
+      "get": {
+        "description": "Get the child jobs.  Applies to batch jobs or pipelines.",
+        "summary": "getChildren",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getChildren",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includeOutputFiles",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/gp-version": {
+      "get": {
+        "description": "Version of the GenePattern server.",
+        "summary": "getGenePatternVersion",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "getGenePatternVersion",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{\"result\":\"3.9.11\"}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/permissions": {
+      "get": {
+        "description": "Get job permissions for sharing.",
+        "summary": "getJobPermissions",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJobPermissions",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "summary": "setJobPermissions",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "setJobPermissions",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/users/new": {
+      "get": {
+        "description": "Used to write an error into the GenePattern server logs.",
+        "summary": "writeError",
+        "tags": [
+          "User"
+        ],
+        "operationId": "writeError",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/RunTask/launchJsViewer": {
+      "post": {
+        "description": "",
+        "summary": "launchJsViewer",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "launchJsViewer",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/visualizerCmdLine": {
+      "get": {
+        "description": "",
+        "summary": "substitute",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "Getsubstitute",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "commandline",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/download": {
+      "get": {
+        "description": "",
+        "summary": "downloadJob",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "downloadJob",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/log/debug": {
+      "post": {
+        "description": "",
+        "summary": "writeDebug",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "writeDebug",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/log/warn": {
+      "post": {
+        "description": "",
+        "summary": "writeWarning",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "writeWarning",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/log/error": {
+      "post": {
+        "description": "",
+        "summary": "writeError",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "PostwriteError",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/data/rename": {
+      "put": {
+        "description": "",
+        "summary": "renameFile",
+        "tags": [
+          "Server Files"
+        ],
+        "operationId": "renameFile",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/config/property/{prop}": {
+      "get": {
+        "description": "Gets an individual Genepattern configuration property",
+        "summary": "getProperty",
+        "tags": [
+          "Config"
+        ],
+        "operationId": "getProperty",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "prop",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "examples": {
+              "text/plain": "{\"result\":\"/opt/gpbeta/gp_home/patches/SAMTools/0.1.19\"}"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/jobs/{jobNo}/setNotificationCallback": {
+      "post": {
+        "description": "Provide a URL that will be called whenever job state changes.",
+        "summary": "setNotificationCallback",
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "setNotificationCallback",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "jobNo",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/RunTask/load": {
+      "get": {
+        "description": "",
+        "summary": "loadModule",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "loadModule",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "lsid",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "reloadJob",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "_file",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeChildren",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/{taskNameOrLsid}/{pname}/choiceInfo.json": {
+      "get": {
+        "description": "",
+        "summary": "getChoiceInfo",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "getChoiceInfo",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskNameOrLsid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "pname",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tags/pin": {
+      "post": {
+        "description": "",
+        "summary": "pinModule",
+        "tags": [
+          "User"
+        ],
+        "operationId": "pinModule",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/all.json": {
+      "get": {
+        "description": "",
+        "summary": "getAllTasks",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "getAllTasks",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includeHidden",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/{taskNameOrLsid}": {
+      "get": {
+        "description": "",
+        "summary": "getTask",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "getTask",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includeProperties",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeChildren",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeEula",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeSupportFiles",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeParamGroups",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "includeMemorySettings",
+            "in": "query",
+            "required": false,
+            "default": true,
+            "type": "boolean",
+            "description": ""
+          },
+          {
+            "name": "taskNameOrLsid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/oauth2/forgot-password": {
+      "put": {
+        "description": "",
+        "summary": "forgotPassword",
+        "tags": [
+          "User"
+        ],
+        "operationId": "forgotPassword",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/oauth2/token": {
+      "post": {
+        "description": "",
+        "summary": "requestToken",
+        "tags": [
+          "User"
+        ],
+        "operationId": "requestToken",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/oauth2/auth": {
+      "get": {
+        "description": "",
+        "summary": "authorize",
+        "tags": [
+          "User"
+        ],
+        "operationId": "authorize",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tags/unpin": {
+      "delete": {
+        "description": "",
+        "summary": "unpinModule",
+        "tags": [
+          "User"
+        ],
+        "operationId": "unpinModule",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/oauth2/register": {
+      "post": {
+        "description": "",
+        "summary": "register",
+        "tags": [
+          "User"
+        ],
+        "operationId": "register",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tags/repin": {
+      "put": {
+        "description": "",
+        "summary": "repinModule",
+        "tags": [
+          "User"
+        ],
+        "operationId": "repinModule",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/{taskNameOrLsid}/eulaAccept": {
+      "put": {
+        "description": "",
+        "summary": "acceptEula",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "acceptEula",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "taskNameOrLsid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tasks/{taskNameOrLsid}/eulaInfo.json": {
+      "get": {
+        "description": "",
+        "summary": "getEulaInfo",
+        "tags": [
+          "Modules, Suites, Pipelines (Tasks)"
+        ],
+        "operationId": "getEulaInfo",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "all",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "pending",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "taskNameOrLsid",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/disk": {
+      "get": {
+        "description": "Gets status of user disk quota.",
+        "summary": "getDiskInfo",
+        "tags": [
+          "User"
+        ],
+        "operationId": "getDiskInfo",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/tags": {
+      "get": {
+        "description": "",
+        "summary": "getTags",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "getTags",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/v1/disk/notifyMaxJobsExceeded": {
+      "post": {
+        "description": "",
+        "summary": "maxSimultaneousJobsExceeded",
+        "tags": [
+          "WebApp Specific"
+        ],
+        "operationId": "maxSimultaneousJobsExceeded",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "uploadFileRequest": {
+      "title": "uploadFileRequest",
+      "description": "",
+      "type": "object"
+    },
+    "addJobRequest": {
+      "title": "addJobRequest",
+      "description": "",
+      "type": "object"
+    },
+    "handlePostJobInputMultipartFormRequest": {
+      "title": "handlePostJobInputMultipartFormRequest",
+      "description": "",
+      "type": "object"
+    }
+  },
+  "security": [
+    {
+      "auth": []
+    }
+  ],
+  "tags": []
+}

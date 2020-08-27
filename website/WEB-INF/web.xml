@@ -702,7 +702,7 @@
           separated by commas -->
     <init-param>
          <param-name>jersey.config.server.provider.packages</param-name>
-         <param-value>org.genepattern.server.webapp.rest</param-value>
+         <param-value>io.swagger.jaxrs.listing,org.genepattern.server.webapp.rest</param-value>
      </init-param>
     <init-param>
         <param-name>javax.ws.rs.Application</param-name>
@@ -719,6 +719,21 @@
   <servlet-name>RestService</servlet-name>
   <url-pattern>/rest/*</url-pattern>
  </servlet-mapping>
+
+  <servlet>
+        <servlet-name>Jersey2Config</servlet-name>
+        <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
+        <init-param>
+            <param-name>api.version</param-name>
+            <param-value>1.0.0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>swagger.api.basepath</param-name>
+            <param-value>http://localhost:8080/gp/rest</param-value>
+        </init-param>
+        <load-on-startup>15</load-on-startup>
+    </servlet>
+
 
  <servlet>
   <display-name>Module Creator Servlet</display-name>
@@ -739,6 +754,9 @@
   <servlet-name>JobConfigurationServlet</servlet-name>
   <url-pattern>/rest/JobConfiguration</url-pattern>
  </servlet-mapping>
+ 
+ 
+ 
  
  <!-- support for GenePattern API -->
  <filter>
