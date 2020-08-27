@@ -24,65 +24,10 @@
         <div class="barhead-other" style="width:100%;">Welcome to GenePattern</div>
 
         <div id="homeIndent">
-            <br>
 
-            <div class="splashpage" style="line-height: 2;font-size: 16px">
-                <br>
-                <h2>Getting Started</h2>
-
-                <table class="splashpage_table">
-                    <tr>
-                        <th>
-                            <div class="splashpage_list_img">
-                                <a class="gp_tours" href="#"><img src="/gp/images/QuickTour.png" alt="GenePattern Web Tour" align="middle" style="border:0px;" /> </a>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_item">
-                                 <b><a class="gp_tours" href="#">Introductory tour of GenePattern</a></b>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_img">
-                                <a href="https://www.genepattern.org/quick-start">
-                                    <img src="/gp/images/QuickStart_blue.png" alt="GenePattern Quick Start" align="middle" style="border:0px;" /></a>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_item">
-                                <b><a href="https://www.genepattern.org/quick-start">10 Minute Quick Start Tutorial</a></b>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_img">
-                                <a href="https://www.genepattern.org/user-guide">
-                                    <img src="/gp/images/UserGuide_60px.png" alt="GenePattern User Guide" align="middle" style="border:0px;" /></a>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_item">
-                                <b><a href="https://www.genepattern.org/user-guide">GenePattern User Guide</a></b>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_img">
-                                <a href="https://notebook.genepattern.org/">
-                                    <img src="/gp/images/NB_circle.png" alt="GenePattern Notebook Website" align="middle" style="border:0px;" /></a>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="splashpage_list_item">
-                                 <b><a href="https://notebook.genepattern.org">GenePattern Notebook</a></b>
-                            </div>
-                        </th>
-                    </tr>
-                </table>
-            </div>    
-            <br />
-
-             <!-- leaving this in here for now because it's not getting picked up from splashpage.css -->
-             <style>
-             .notebookdiv div, #notebookdiv {
+           
+            <style>
+            .notebookdiv div, #notebookdiv {
                 background-image:url(/gp/images/gpnb_banner.jpg); 
                 text-align:center;
                 padding:20px;
@@ -94,36 +39,47 @@
                 color: white;
                 align: center;
             }
-
+            
             .notebookdiv a {
                 color: #ACC6EF;
             }
             </style>
-            <br />
+            <p/>
             <div class="notebookdiv" id="notebookdiv">
                 <a href="https://notebook.genepattern.org/hub/login"><img src="/gp/images/gpnb_logo.png" style="border:0px; max-width: 350px; "  align="middle"/></a><br/>
                 <font size="3">Did you know that you can also use GenePattern in a Jupyter Notebook environment?<br/>
                 Now available on the "Notebook" tab to the left or you can<br/>
                 <a href="https://notebook.genepattern.org/hub/login" target="_blank" >Try out the notebook server!</a>
-                <a href="https://notebook.genepattern.org/" style="padding-left:50px" target="_blank" >Learn more</a></font>
+                <a href="http://www.genepattern-notebook.org/" style="padding-left:50px" target="_blank" >Learn more</a></font>
             </div>
-            <br />
-            <div class="splashpage">
-                <h2>Analyzing genomic data with GenePattern</h2>
+            
+            <h2>Getting Started</h2>
+            <p />
+            
+            <div class="protocols" style="margin-bottom:20px;line-height: 2;font-size: 12px">
+            <h2 style="color:orange">New! Web tours </h2>
+            <ul>
+                <li>Click here for a tour of <b><a class="gp_new" href="#">what's new in GenePattern.</a></b></li>
+                <li>Click here for an <b><a class="gp_tours" href="#">introductory tour of GenePattern.</a></b></li>
+            </ul>
+        </div>
+
+            <div class="protocols">
+                <h2>Analyzing genomic data in GenePattern</h2>
                 <ul>
-                    <li>Select a <b><a href="https://notebook.genepattern.org", target="_blank">notebook</a></b> below for a step by step guide to run an analysis.</li>
-                    <li>Click here to <b><a href="https://notebook.genepattern.org", target="_blank">learn more</a></b> about GenePattern Notebook.</li>
+                    <li>Select a <b>protocol</b> below for a step by step guide to run an analysis.</li>
+                    <li>Click here for a <b><a href="https://www.genepattern.org/quick-start">Quick Start</a></b> tutorial on how to run any module in GenePattern.</li>
                 </ul>
                 <h3>Protocols for running common analyses in GenePattern:</h3>
 
 
-                <div class="splashpage_list_item">
-                    <div class="splashpage_list_img">
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
                         <a href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);"
                                 ><img src="/gp/images/RunAnalysis.jpg" alt="" style="border:0px;" />
                         </a>
                     </div>
-                    <div class="splashpage_list_block">
+                    <div class="protocol_list_block">
                         <a class="protocolLink" href="/gp/pages/protocols/RunAnalysis.html" onclick="return openProtocolWindow(this, event);"
                                 ><b>Run an Analysis in GenePattern</b></a>
                         <br />
@@ -132,39 +88,39 @@
                     </div>
                 </div>
 
-                <div class="splashpage_list_item">
-                    <div class="splashpage_list_img">
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
                         <a href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
                                 ><img src="/gp/images/DiffExp.jpg" alt="" style="border:0px;" />
                         </a>
                     </div>
-                    <div class="splashpage_list_block">
+                    <div class="protocol_list_block">
                         <a class="protocolLink" href="/gp/pages/protocols/DiffExp.html" onclick="return openProtocolWindow(this, event);"
                                 ><b>Differential Expression Analysis</b></a>
                         <br />
                         Find genes that are significantly differentially expressed between classes of samples.
                     </div>
                 </div>
-                <div class="splashpage_list_item">
-                    <div class="splashpage_list_img">
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
                         <a href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);"
                                 ><img src="/gp/images/Cluster.jpg" style="border:0px;" />
                         </a>
                     </div>
-                    <div class="splashpage_list_block">
+                    <div class="protocol_list_block">
                         <a class="protocolLink" href="/gp/pages/protocols/ClassDiscovery.html" onclick="return openProtocolWindow(this, event);"
                                 ><b>Clustering</b></a>
                         <br />
                         Group genes and/or samples by similar expression profiles.
                     </div>
                 </div>
-                <div class="splashpage_list_item">
-                    <div class="splashpage_list_img">
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
                         <a href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);"
                                 ><img src="/gp/images/Prediction.jpg" style="border:0px;" />
                         </a>
                     </div>
-                    <div class="splashpage_list_block">
+                    <div class="protocol_list_block">
                         <a class="protocolLink" href="/gp/pages/protocols/Prediction.html" onclick="return openProtocolWindow(this, event);"
                                 ><b>Prediction</b></a>
                         <br />
@@ -172,22 +128,32 @@
                         correctly classifies unlabeled samples into known classes.
                     </div>
                 </div>
-                <div class="splashpage_list_item">
-                    <div class="splashpage_list_img">
+                <div class="protocol_list_item">
+                    <div class="protocol_list_img">
                         <a href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);"
                                 ><img src="/gp/images/CopyNumber.jpg" style="border:0px;" />
                         </a>
                     </div>
-                    <div class="splashpage_list_block">
-                        <a class="protocolLink" href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);"><b>SNP Copy Number and Loss of Heterozygosity Estimation</b></a>
+                    <div class="protocol_list_block">
+                        <a class="protocolLink" href="/gp/pages/protocols/SnpCN.html" onclick="return openProtocolWindow(this, event);"
+                                ><b>SNP Copy Number and Loss of Heterozygosity Estimation</b></a>
                         <br />
                         Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on
                         Affymetrix SNP chip data for paired target/normal samples.
                     </div>
                 </div>
+                <div id="seealso">
+                    <h4>See also:</h4>
+                    <ul>
+                        <li>Tutorial
+                            <a href="https://www.genepattern.org/tutorial"><strong>HTML</strong></a> &ndash; Hands-on introduction to GenePattern.
+                        </li>
+                        <li><a href="https://www.genepattern.org/user-guide"><strong>GenePattern User Guide</strong></a> &ndash; Full description of this web application.</li>
+                    </ul>
+                </div>
             </div>
 
-            <div id="cite-gp" class="splashpage" style="margin: 20px 0px 20px 0px;">
+            <div id="cite-gp" class="protocols" style="margin: 20px 0px 20px 0px;">
                 <h4>Cite GenePattern</h4>
                 <p>Reich M, Liefeld T, Gould J, Lerner J, Tamayo P, Mesirov JP.
                     <a href="http://www.nature.com/ng/journal/v38/n5/full/ng0506-500.html">GenePattern 2.0</a>
