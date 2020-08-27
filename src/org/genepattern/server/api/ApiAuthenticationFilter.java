@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.webapp.AuthenticationUtil;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 /**
@@ -54,6 +55,9 @@ public class ApiAuthenticationFilter implements Filter {
             log.error("Expecting an AuthenticationException to be thrown");
             AuthenticationUtil.requestBasicAuth(req, resp);
             return;
+        }
+        else {
+            LoginManager.instance().attachAccessCookie(resp, gpUserId);
         }
         //2) authorize
         final boolean isAdmin = AuthorizationHelper.adminServer(gpUserId);
