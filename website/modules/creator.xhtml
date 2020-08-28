@@ -12,8 +12,7 @@
     <link href="#{facesContext.externalContext.requestContextPath}/skin/favicon.ico" rel="shortcut icon" />
 
     <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/frozen/layout-default-1.4.0.css" />
-    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css" />
-
+  
     <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/jquery-ui-1.9.2.css" type="text/css" rel="stylesheet" />
     <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/themes/base/jquery.ui.theme.css" rel="stylesheet" type="text/css" media="screen" /> -->
 
@@ -24,6 +23,10 @@
 
 
     <link href="#{facesContext.externalContext.requestContextPath}/css/frozen/menu.css" type="text/css" rel="stylesheet" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.css" />
+ <link  type="text/css" rel="stylesheet" media="screen" href="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/jquery.multiselect.filter.css" />
+ 
+
 
     <!-- Must load the skin CSS file last -->
     <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/#{uiBean.skin}.css?version=#{aboutBean.buildTag}" />
@@ -34,6 +37,7 @@
     <script src="js/creator.js" type="text/javascript" ></script>
     <script src="js/combobox.js" type="text/javascript" ></script>
     <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.js" type="text/javascript" ></script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/jquery/jquery.multiselect.filter.js" type="text/javascript" ></script>
 
     <script src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" type="text/javascript" />
     <script src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js" type="text/javascript" />
@@ -370,12 +374,13 @@
                 
                 <tr>
                     <td>
-                        Output File Formats:</td>
+                        Output File Formats: 
+      </td>
                     <td>
                         <table class="no-border">
                             <tr>
                                 <td colspan="3">
-                                     <select multiple="multiple" name="mod_fileformat"></select>
+                                     <select multiple="multiple" name="mod_fileformat" id="mod_fileformat"></select>
                                 </td>
                                 <td>
                                     <button id="addfileformat">New</button>

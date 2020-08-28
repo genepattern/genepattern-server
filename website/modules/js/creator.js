@@ -822,14 +822,14 @@ function changeParameterType(element) {
         fieldDetailsTd.append(fileFormatButton);
 
         fileFormatList.multiselect({
-            header: false,
+            header: true,
             noneSelectedText: "Specify input file formats",
             selectedList: 4, // 0-based index
             position: {
                 my: 'left bottom',
                 at: 'left top'
             }
-        });
+        }).multiselectfilter();
     }
     else
     {
@@ -1910,7 +1910,8 @@ function updatefileformats()
                     mcat.val(mcat.data("values"));
                 }
                 mcat.multiselect('refresh');
-
+                $('#mod_fileformat').multiselectfilter();
+                
                 $("select[name='fileformat']").each(function()
                 {
                     console.log("Adding loaded file formats to parameters");
@@ -1925,7 +1926,7 @@ function updatefileformats()
                         fileformat.val(fileformat.data("fileformats"));
                     }
 
-                    fileformat.multiselect("refresh");
+                    fileformat.multiselect("refresh").multiselectfilter();
                 });
             }
         },
@@ -2166,6 +2167,7 @@ function loadModuleInfo(module)
         $("select[name='mod_fileformat']").data("values", fileformats);
         $("select[name='mod_fileformat']").val(fileformats);
         $("select[name='mod_fileformat']").multiselect("refresh");
+        $("#mod_fileformat").multiselectfilter();
     }
 
     if(module["license"] !== undefined && module["license"] !== "")
@@ -2211,7 +2213,7 @@ function loadModuleInfo(module)
 
     //store remaining task info attributes
     $.each(module, function(keyName, value) {
-        console.log("\nkeys: " + keyName);
+        //console.log("\nkeys: " + keyName);
         if(keyName != "fileFormat" && keyName != "commandLine" && keyName != "description"
             && keyName != "os" && keyName != "name" && keyName != "author" && keyName != "JVMLevel"
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
@@ -3118,6 +3120,7 @@ jQuery(document).ready(function() {
                     var modnewfileformat = $("<option value='" + fileformat + "'>" + fileformat + "</option>");
                     $("select[name='mod_fileformat']").append(modnewfileformat);
                     $("select[name='mod_fileformat']").multiselect("refresh");
+                    $("#mod_fileformat").multiselectfilter();
                 }
                 $( this ).dialog( "close" );
             },
@@ -3350,11 +3353,14 @@ jQuery(document).ready(function() {
     });
 
     $("select[name='mod_fileformat']").multiselect({
-        header: false,
+        header: true,
         noneSelectedText: "Specify output file formats",
         selectedList: 4 // 0-based index
-    });
+    }).multiselectfilter();
 
+   
+    //$("#mod_fileformat").multiselect().multiselectfilter();
+    
     $("select[name='category']").multiselect({
         header: false,
         selectedList: 1
@@ -3367,9 +3373,10 @@ jQuery(document).ready(function() {
         selectedList: 1
     });
 
-    $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
-        this.buttonlabel.html( value );
-    };
+ //   $( "select[name='category']" ).multiselect().data( "multiselect" )._setButtonValue = function( value ) {
+    	
+ //   	this.buttonlabel.html( value );
+ //   };
 
     $("#helpbtn").button().click(function()
     {
