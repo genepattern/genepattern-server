@@ -7,11 +7,16 @@ import java.io.IOException;
 import java.util.Date;
 
 import javax.faces.context.FacesContext;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.apache.oltu.oauth2.as.issuer.MD5Generator;
+import org.apache.oltu.oauth2.as.issuer.OAuthIssuer;
+import org.apache.oltu.oauth2.as.issuer.OAuthIssuerImpl;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpContext;
@@ -20,6 +25,8 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
+
+import static org.genepattern.server.webapp.rest.api.v1.oauth.AuthResource.TOKEN_EXPIRY_TIME;
 
 /**
  * User login and logout for the web application session.
@@ -94,13 +101,27 @@ public class LoginManager {
         }
 
         addUserIdToSession(request, gp_username);
+        attachAccessCookie(response, gp_username);
        
         if (redirect) {
             redirect(request, response);
         }
     }
 
-       
+    public void attachAccessCookie(HttpServletResponse response, String username) {
+        try {
+            OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
+            String token = oauthIssuerImpl.accessToken();
+            OAuthManager.instance().createTokenSession(username, token, "GenePatternServer", OAuthManager.calcExpiry(TOKEN_EXPIRY_TIME));
+            Cookie cookie = new Cookie("GenePatternAccess", token);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+        }
+        catch (OAuthSystemException e) {
+            // Something went wrong, don't attach the cookie
+            log.error("Something went wrong generating access cookie token: " + e);
+        }
+    }
     
     
     public void addUserIdToSession(HttpServletRequest request, String gp_username) {

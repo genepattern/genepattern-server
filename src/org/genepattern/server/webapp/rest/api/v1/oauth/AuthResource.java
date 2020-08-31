@@ -36,10 +36,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -338,7 +341,13 @@ public class AuthResource {
         // Build and return the token response
         OAuthResponse response = OAuthASResponse.tokenResponse(HttpServletResponse.SC_OK).setAccessToken(token)
                 .setExpiresIn(String.valueOf(TOKEN_EXPIRY_TIME)).buildJSONMessage();
-        return Response.status(response.getResponseStatus()).entity(response.getBody()).build();
+        NewCookie accessCookie = generateAccessCookie(token);
+        Response actualResponse = Response.status(response.getResponseStatus()).entity(response.getBody()).cookie(accessCookie).build();
+        return actualResponse;
+    }
+
+    private NewCookie generateAccessCookie(String token) {
+        return new NewCookie(new Cookie("GenePatternAccess", token, "/", null));
     }
 
     @PUT
