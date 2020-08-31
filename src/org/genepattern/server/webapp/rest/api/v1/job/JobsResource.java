@@ -255,10 +255,13 @@ public class JobsResource {
 
     private void validateJobConfigParamValues(final GpConfig gpConfig, final GpContext jobContext, final JobInput jobInput) throws GpServerException {
         JobConfigParams jcp = JobConfigParams.initJobConfigParams( gpConfig,  jobContext);
+
+        // If jcp is null, no job config params were specified, therefore everything is default and should be OK
+        if (jcp == null) return;
+
         // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
         // using the parameterInfo from the jobConfigParams but admins get a pass
-       
-        for (ParameterInfo jcpPi: jcp.getParams()){
+        for (ParameterInfo jcpPi: jcp.getParams()) {
             Map<String,String> allowedChoices = jcpPi.getChoices();
             if (allowedChoices.size() > 0){
                 Param p = jobInput.getParam(jcpPi.getName());
