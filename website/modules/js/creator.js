@@ -643,12 +643,18 @@ function addparameter()
 function addtocommandline(flag, name, prevflag, prevname)
 {
     var text = "";
-
+    var nameBracketed = "&lt;" + name + "&gt;";
+    var nameBracketedAlt = "<" + name + ">";
+    
     if (flag == "" && name == "" && prevflag ==undefined && prevname == undefined)
     {
         return;
     }
-
+    
+    if (flag == prevflag && name == prevname){
+    	return;
+    }
+    
     //construct new parameter value
     if(name !== "")
     {
@@ -664,26 +670,75 @@ function addtocommandline(flag, name, prevflag, prevname)
 
     //construct prev parameter value
     var  prevtext = "";
+    var prevNameBracketed = "&lt;" + prevname + "&gt;";
+    var prevNameBracketedAlt = "<" + prevname + ">";
+    var prevNameAndFlag = prevflag + prevNameBracketed;
+    var prevNameSpaceAndFlag = prevflag + " " + prevtext;
+    	    	
     if(prevname !== "")
     {
-        prevtext = "&lt;" + prevname + "&gt;";
+        prevtext = prevNameBracketed;
     }
 
+    var paramMatchStrings = new Array();
     if(prevflag !== "")
     {
-        prevtext = prevflag + prevtext;
+        prevtext = prevNameAndFlag;
     }
+    
+    //if no change (exact) in value do nothing
+    if(prevtext == text) return;
 
-    //if no change in value do nothing
-    if(prevtext == text)
-    {
-        return;
-    }
-
+    // JTL 083120
+    // the previous check only works if the keyup is how the flag was added.  Frequently you see a few other conditions
+    // where we do not want to edit the command line or want to change it to match what is there for this param
+    //
+    // 1. The user inserted a space between the flag and the name in the command line editor and not in the param editor
+    // 2. The flag is not in the command line at all  so it was added as a flag that would be inserted
+    //
+    if (text == prevNameAndFlag) return;
+    if (text == prevNameSpaceAndFlag) return;
+    
+    
     //look for child with matching old parameter value and replace with new parameter value
+    var cmdline= $("#commandtextarea textarea").val();
+
+    // look for a match on the current command line
+    var cmdTokens = cmdline.split(" ");
+    for (i=0; i < cmdTokens.length; i++){
+    	if ((cmdTokens[i] == prevNameBracketed) || (cmdTokens[i] == prevNameBracketedAlt)) {
+    		// we found the param name token .  Now look at the previous token to see if its the old flag
+    		// if it is, update both tokens
+    		// if not, just update the param name in case its changed
+    		if (i > 0) {
+    			if (cmdTokens[i -1] == prevflag){
+    				cmdTokens[i -1] = flag;
+    				cmdTokens[i] = nameBracketedAlt;
+    				
+    			} else {
+    				// it was on the command line without the flag there explicitly.  This is allowed
+    				// so just update this name tag
+    				cmdTokens[i] = nameBracketedAlt;
+    			}
+    			
+    		}
+    		
+    	} else if (cmdTokens[i] == prevNameAndFlag) {
+    		// replace prevNameAndFlag with new name and flag with no space
+    		cmdTokens[i] = flag + nameBracketed;
+    	}
+    	
+    	
+    }
+    var newCommandLine = cmdTokens.join(" ");
+    $("#commandtextarea textarea").val(newCommandLine);
+    if (true) return;
+    
+    
+    // below is from the commandList dialog - may want to delete it...
     var found = false;
 
-    var cmdline= $("#commandtextarea textarea").val();
+
     var decodedPrevText = $('<div/>').html(prevtext).text();
 
     var decodedText = $('<div/>').html(text).text();
@@ -708,6 +763,8 @@ function addtocommandline(flag, name, prevflag, prevname)
         }
     });
 
+    
+    
     // if old parameter value was not found then this must be a new parameter so
     // insert it into parameter list
     if(text !== "")
@@ -3151,6 +3208,9 @@ jQuery(document).ready(function() {
 
         $( "#clistdialog" ).dialog("open");
     });
+    // JTL 083120 hide as its broken and prob unused
+    $("#viewparameter").hide();
+    
 
     $( "#clistdialog" ).dialog({
         autoOpen: false,
