@@ -332,6 +332,14 @@ function saveModule()
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
         "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
 
+    var useEditor = $("input[name='param_groups_editor_ok']:checked").val();
+    if (useEditor && ($("#param_groups_editor").val().length > 0)){
+    	var isValid = validateParamGroupsEditor();
+    	json["paramGroupsJson"] = $("#param_groups_editor").val();
+    	if (!isValid) return;
+    }
+    
+    
     if(categories.length > 0)
     {
         json.module["categories"] = categories;
@@ -639,6 +647,58 @@ function addparameter()
 
     return paramDiv;
 }
+
+function addGroup()
+{
+	 var groupDiv = $("<div class='parameterGroup'>  \
+		        \
+		        <table class='param_outer_table'>  \
+		        <tr> <td class='dragIndicator'><div class='dragSquare'></div></div></td> \
+		        <td><table class='deloptions'> \
+		         <tr > <td colspan=5> </td></tr>		\
+		        <tr class='delOptionsCollapsible'> \
+		        <td class='btntd'>\
+		        <button class='delparam'>x Delete Group</button></td><td>\
+		        <span class='paramGroup_name'>Group Name*: <br/><input type='text' name='g_name' size='28'/> </span>    \
+		        </td><td>Group Description: <br/> \
+		        <textarea cols='60' name='g_description' rows='2'></textarea>\
+		        </td><td>Initially Closed:  <input type='checkbox' name='g_hidden'/>  \
+		        </td> \
+		        </td></tr></table> \
+		        </tr>\
+		        </table>\
+		    </div>");
+
+    $('#parameters').prepend(groupDiv);
+    
+    
+    groupDiv.find(".delparam").button().click(function()
+    {
+        //first remove the parameter from the commandline
+        var pelement = $(this).parent().parent().find("input[name='g_name']");
+
+        if(!confirm("Are you sure you want to delete this group?"))
+        {
+            return;
+        }
+
+        var felement = $(this).parent().parent().find("input[name='g_flag']");
+        pelement.val("");
+        felement.val("");
+
+        updateparameter($(this).parent().parent());
+
+        $(this).parents("div:first").remove();
+
+        setDirty(true);
+    });
+
+
+    return groupDiv;
+}
+
+
+
 
 function addtocommandline(flag, name, prevflag, prevname)
 {
@@ -1877,6 +1937,68 @@ function changeParameterType(element) {
     }
 }
 
+function validateParamGroupsEditor(){
+	var valid = true;
+	try {
+		var errorString = "";
+		var jsonString = $("#param_groups_editor").val();
+		// first make sure its valid json
+		var jsonArr = JSON.parse(jsonString);
+		var allMentionedParams = new Array();
+		// next make sure each group has a name and parameters appear only once
+		for (var i=0; i < jsonArr.length; i++){
+			var aGroup = jsonArr[i];
+			var aGroupName = aGroup["name"];
+			if (aGroupName == null) errorString += "Group " + i + " does not define a group name (empty string is allowed).\r\n ";
+			
+			var paramList = aGroup["parameters"];
+			for  (var j=0; j < paramList.length; j++){
+				var duplicate = $.inArray(paramList[j], allMentionedParams) > -1;
+				if (duplicate) {
+					errorString += "<br/> " + paramList[j] +" appears in more than 1 group. ";
+				} else {
+					allMentionedParams.push(paramList[j]);
+				}
+			}
+			
+		} 
+		// finally make sure there are no parameters mentioned that are missing
+		// from the module or in the module but missing from the paramGroups file.
+		var missingFromModuleParams = allMentionedParams;
+		$(".parameter").each(function()   {
+			var pname = $(this).find("input[name='p_name']").val();
+			var present = $.inArray(pname, allMentionedParams) > -1;
+			if (present) {
+				// remove it so we have unmentioned left at the end
+				missingFromModuleParams = missingFromModuleParams.filter(e => e !== pname);
+				
+			} else {
+				errorString += "Parameter " + pname + " is not included in any group.\r\n ";
+			}
+		});
+		if (missingFromModuleParams.length > 0){
+			for (var i=0; i < missingFromModuleParams.length; i++){
+				errorString += "Parameter " + missingFromModuleParams[i] + " is not defined in the module.\r\n ";
+			}
+		}
+		
+		
+		if (errorString.length > 1) {
+			alert(errorString);
+			return false;
+		}
+		return true;
+		
+	} catch (err) {
+		alert(err);
+		valid = false;
+	}
+	return valid;
+}
+
+	
+
+
 function updatemodulecategories()
 {
     $.ajax({
@@ -2566,12 +2688,53 @@ function loadModule(taskId)
 
             loadModuleInfo(response["module"]);
             loadParameterInfo(response["parameters"]);
+            loadParameterGroups(response["ParamGroupsJson"]);
             setDirty(false);
             $(this).resize();
         },
         dataType: "json"
     });
 }
+
+function loadParameterGroups(jsonArray){
+	if (jsonArray != null){
+		$("#param_groups_editor").data('oldVal', JSON.stringify(jsonArray, null, 4))
+		$("#param_groups_editor").val(JSON.stringify(jsonArray, null, 4));
+	} else {
+		$("#param_groups_example_link").show();
+		$("#param_groups_example_link").click(function(){
+			var pnames = new Array();	
+			$(".parameter").each(function()   {
+				var pname = $(this).find("input[name='p_name']").val();
+				pnames.push(pname);	});
+			var example = new Array();
+			var group1 = new Object();
+			group1["name"]= "Group One";
+			group1["description"] = "Group one description.";
+			group1["hidden"] = false;
+			example.push(group1);
+			
+			if (pnames.length > 1){
+				var pn2 = pnames.splice(pnames.length/2);
+			
+				group1["parameters"] = pnames;
+			
+				var group2 = new Object();
+				group2["name"]="Group Two";
+				group2["description"]= "Group two description.";
+				group2["hidden"]=false;
+				group2["parameters"]= pn2;
+				
+				example.push(group2);
+			} else {
+				group1["parameters"] = pnames;
+			}
+			
+			loadParameterGroups(example);
+	});
+	}
+}
+
 
 function getParametersJSON()
 {
@@ -3011,6 +3174,49 @@ jQuery(document).ready(function() {
         },2000);
 
     });
+    
+    $("#editgroups").button().click(function(){
+    	
+    	$('#groupEditorDialog').dialog({
+    		title: "Edit Parameter Groups",
+            autoOpen: true,
+            height: 470,
+            width: 450,
+            buttons: {
+            	"Validate": function(){
+            		var isOK = validateParamGroupsEditor();
+            		if (isOK){
+            			alert("paramgroups.json appears to be valid.");
+            		}
+            	},
+            
+                "Save": function() {
+                	
+                	var isOK = validateParamGroupsEditor();
+                	// error alert happens in the validate method
+                	if (isOK){
+                		// Save this as the new backstop
+                		var prev = $("#param_groups_editor").data('oldVal');
+                		
+                		if (! prev == $("#param_groups_editor").val()){
+                			$("#param_groups_editor").data('oldVal', $("#param_groups_editor").val());
+                			setDirty(true);
+                		}
+                    	$( this ).dialog( "close" );
+                	}
+                   
+                },
+                "Cancel": function() {
+                	var resetToOldVal = $("#param_groups_editor").data('oldVal');
+                	$("#param_groups_editor").val(resetToOldVal);
+                	
+                    $( this ).dialog( "close" );
+                }
+            },
+            resizable: true
+        });
+    });
+    
 
     $("#collapse_all_params").button().click(function()
     	    {

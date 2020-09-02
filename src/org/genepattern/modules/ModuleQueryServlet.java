@@ -7,12 +7,19 @@ package org.genepattern.modules;
 import java.io.BufferedOutputStream;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +44,8 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpVersion;
 import org.apache.commons.httpclient.methods.MultipartPostMethod;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskLSIDNotFoundException;
@@ -457,6 +466,14 @@ public class ModuleQueryServlet extends HttpServlet {
             if (log.isDebugEnabled()) {
                 log.debug("versionIncrement: "+versionIncrement);
             }
+            String paramGroupsJSONString;
+            try {
+                paramGroupsJSONString = moduleJSON.getString("paramGroupsJson");
+            } catch (Exception e){
+                // its OK if its not there
+                paramGroupsJSONString = null;
+            }
+            
             
             ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
 
@@ -626,14 +643,39 @@ public class ModuleQueryServlet extends HttpServlet {
                 pInfo[i] = parameter;
             }
 
+            // override the paramGroups json file with json from the editor if present
+            // if present and the file does not already exist, create it
+            
+            String[] moduleSupportFiles = moduleObject.getSupportFiles();
+            
+            if (paramGroupsJSONString != null){
+                boolean updateExistingParamGroups = false;
+                // so do we use the paramGroupsJSONString from  the editor
+                // or the one in the file? I think we will start with the editor trumping the file
+                for (String filePath : moduleSupportFiles) {
+                    File file = new File(filePath);
+                    if(file.getName().equals("paramgroups.json")) {
+                        FileUtils.writeStringToFile(file, paramGroupsJSONString);
+                    }
+                }
+                if (!updateExistingParamGroups){
+                    File fileTempDir = ServerConfigurationFactory.instance().getTemporaryUploadDir(userContext);
+                    File file = new File(fileTempDir, "paramgroups.json");
+                    FileUtils.writeStringToFile(file, paramGroupsJSONString);
+                    moduleObject.addSupportFile(file);
+                }
+                
+            }
+           
+            
+            
             //check that the paramgroups.json file, which defines advanced parameters,
             //if provided is valid
-            String[] moduleSupportFiles = moduleObject.getSupportFiles();
+            
             for (String filePath : moduleSupportFiles) {
                 File file = new File(filePath);
                 if(file.getName().equals("paramgroups.json")) {
                     final LoadModuleHelper loadModuleHelper = new LoadModuleHelper(userContext);
-
                     try {
                         JSONArray paramGroupsJson = loadModuleHelper.getParameterGroupsJson(pInfo, file);
                     } catch (Exception e) {
@@ -863,6 +905,8 @@ public class ModuleQueryServlet extends HttpServlet {
             if (eulas!=null && eulas.size()>0) {
                 licenseFileName=eulas.get(0).getLicense();
             }
+            JSONArray paramGroupsJson = null;
+            
             if (licenseFileName != null || taskDoc != null) {
                 ArrayList<File> supportFiles = new ArrayList<File>();
                 for(File file : allFiles)
@@ -872,8 +916,21 @@ public class ModuleQueryServlet extends HttpServlet {
                     {
                         supportFiles.add(file);
                     }
+                    if (file.getName().equals("paramgroups.json")){
+                        // we will need this to allow this file to be editted in 
+                        // the module integrator
+                        try {
+                        InputStream is = new FileInputStream(file);
+                        String jsonTxt = IOUtils.toString(is, "UTF-8");
+                        System.out.println(jsonTxt);
+                        paramGroupsJson = new JSONArray(jsonTxt);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    
+                    }
                 }
-
+                
                 allFiles = supportFiles.toArray(new File[0]);
             }
             
@@ -884,6 +941,10 @@ public class ModuleQueryServlet extends HttpServlet {
             
             
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
+            if (paramGroupsJson != null){
+                responseObject.addChild("ParamGroupsJson", paramGroupsJson);
+            }
+            
 
             JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());
             responseObject.addChild(ParametersJSON.KEY, parametersObject);

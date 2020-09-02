@@ -669,7 +669,7 @@ img.buttonIcon {
 	vertical-align:top;
 }
 
-.parameter
+.parameter, .parameterGroup
 {
 	margin:10px 0 0 -5px;
 	padding:0;
@@ -678,7 +678,7 @@ img.buttonIcon {
 	border-top: solid #fff 4px;
 }
 
-span.param_name {
+span.param_name, span.group_name {
 	padding-left: 5px;
 	padding-top:5px;
 	padding-bottom: 5px;
@@ -690,24 +690,30 @@ div.parameter input[type='text']{
 	border: 1px grey solid;
 }
 
+div.parameterGroup input[type='text']{
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border: 1px grey solid;
+}
+
 span.parameter_minimized {
 	float:right;
 	padding: 2px 2px 2px 2px;
 }
 
-.parameter table {
+.parameter table, .parameterGroup.table {
 	margin: 0 0 0 0;
 	width: 100%;
     margin-right: 3px;
 }
 
-.parameter table td {
+.parameter table td, .parameterGroup table td {
 	border-right: solid 1px #ddd;
 	width: auto;
 	padding:0;
 }
 
-.parameter table td.lasttd {
+.parameter table td.lasttd, .parameterGroup table td.lasttd {
 	border-right: solid 0px;
     width: 400px;
 }
@@ -723,7 +729,7 @@ table.pmoptions td {
     width: 100%;
 }
 
-.parameter table td.btntd {
+.parameter table td.btntd, .parameterGroup table td.btntd {
 	text-align:center;
 	padding:0 3px 0 0;
 	vertical-align:middle;
@@ -731,7 +737,7 @@ table.pmoptions td {
     min-width: 70px;
 }
 
-.parameter table p
+.parameter table p, .parameterGroup table p 
 {
     font-size: 11px;
 }
@@ -748,6 +754,12 @@ table.pmoptions td {
 table.deloptions
 {
 	border: solid 1px #aaa;
+	/* margin-bottom: 10px; */
+}
+
+.parameterGroup table.deloptions
+{
+	background-color: #ddd9ec;
 	/* margin-bottom: 10px; */
 }
 
@@ -823,7 +835,7 @@ table.deloptions
     margin-right: 3px;
 }
 
-.parameter table td.dragIndicator
+.parameter table td.dragIndicator, .parameterGroup table td.dragIndicator
 {
     background-color: #E6E6B2;
     background-size: 20px 320px;
@@ -863,7 +875,7 @@ table.deloptions
     display: inline;
 }
 
-.parameter table td.dragIndicator:hover
+.parameter table td.dragIndicator:hover, .parameterGroup table td.dragIndicator:hover
 {
     cursor: move;
 }
