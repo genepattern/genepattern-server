@@ -268,4 +268,14 @@ public class ModuleJSON extends JSONObject {
 
         return supportFiles;
     }
+
+    public void addSupportFile(File file) {
+        // TODO Auto-generated method stub
+        String[] newSupportFiles = new String[supportFiles.length + 1];
+        for(int i=0; i < supportFiles.length;i++)  {
+            newSupportFiles[i] = supportFiles[i];
+        }
+        newSupportFiles[supportFiles.length] = file.getAbsolutePath();
+        supportFiles = newSupportFiles;
+    }
 }
