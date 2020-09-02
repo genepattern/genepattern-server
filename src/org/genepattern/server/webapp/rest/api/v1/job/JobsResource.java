@@ -268,7 +268,13 @@ public class JobsResource {
                 if (p != null){
                     for (ParamValue v: p.getValues()) {
                         String av = allowedChoices.get(v.getValue());
-                        Boolean isAGoodValue = allowedChoices.containsValue(v.getValue());
+                        Boolean isAGoodValue = false;
+                        for (String value : allowedChoices.values()) {
+                            if (v.getValue().replaceAll("\\s+","").equalsIgnoreCase(value.replaceAll("\\s+",""))) {
+                                isAGoodValue = true;
+                                break;
+                            }
+                        }
                         if ((av == null) && !isAGoodValue ){
                             // we got here because the user is not an admin, but has somehow submitted a job requesting
                             // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
