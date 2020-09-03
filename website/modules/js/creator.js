@@ -513,6 +513,46 @@ function editModule()
     }
 }
 
+function reorderParametersToMatchParamGroupsJson(collapse){
+	var jsonString = $("#param_groups_editor").val();
+	var jsonArr = JSON.parse(jsonString);
+	
+	// get the parameter div objects we will reorder
+	var paramDivs =  $('#parameters').find("div.parameter");
+	
+	// collapse them all
+	if (collapse) $("#collapse_all_params").trigger("click");
+	
+	// collect and remove them
+	pdivDict = {};
+	for (var i=0; i < paramDivs.length; i++){
+		var nameControl = $(paramDivs[i]).find("input[name='p_name']");
+		var name = nameControl.val();
+		pdivDict[name] = paramDivs[i];
+		$(paramDivs[i]).remove();
+	} 
+	 
+	// now put them back in order
+	for (var i=0; i < jsonArr.length; i++){
+		var group = jsonArr[i];
+		var groupParams = group["parameters"];
+		for (var j=0; j < groupParams.length; j++){
+			var pName = groupParams[j];
+			var pDiv = pdivDict[pName];
+			$('#parameters').append(pDiv);
+			
+			var nameControl = $(pDiv).find("input[name='p_name']");
+			$(nameControl).parent().find(".pgroupLabel").remove();
+			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+			
+		}
+	}
+	
+	
+	
+}
+
+
 
 var addParamLiveEventsInstalled = false;
 function addparameter()
@@ -605,6 +645,7 @@ function addparameter()
     }
 
     $('#parameters').append(paramDiv);
+    
     paramDiv.find(".parameter_minimized").button().click(function() {
     	var oldIcon= paramDiv.find(".parameter_minimized").find(".ui-button-text").text();
     	if (oldIcon.indexOf("-") >= 0){
@@ -621,18 +662,18 @@ function addparameter()
     paramDiv.find(".delparam").button().click(function()
     {
         //first remove the parameter from the commandline
-        var pelement = $(this).parent().parent().find("input[name='p_name']");
+        var pelement = $(this).parent().parent().parent().find("input[name='p_name']");
 
-        if(!confirm("Are you sure you want to delete this parameter?"))
+        if(!confirm("Are you sure you want to delete the parameter '"+  pelement.val() + "' ?"))
         {
             return;
         }
 
-        var felement = $(this).parent().parent().find("input[name='p_flag']");
+        var felement = $(this).parent().parent().parent().find("input[name='p_flag']");
         pelement.val("");
         felement.val("");
 
-        updateparameter($(this).parent().parent());
+        updateparameter($(this).parent().parent().parent());
 
         $(this).parents("div:first").remove();
 
@@ -705,6 +746,11 @@ function addtocommandline(flag, name, prevflag, prevname)
     var text = "";
     var nameBracketed = "&lt;" + name + "&gt;";
     var nameBracketedAlt = "<" + name + ">";
+    // special case for erasing a deleted param so we don't just get empty brackets.
+    if (name.length == 0){
+    	nameBracketed = "";
+    	nameBracketedAlt = "";
+    }
     
     if (flag == "" && name == "" && prevflag ==undefined && prevname == undefined)
     {
@@ -792,6 +838,22 @@ function addtocommandline(flag, name, prevflag, prevname)
     }
     var newCommandLine = cmdTokens.join(" ");
     $("#commandtextarea textarea").val(newCommandLine);
+    
+    
+    // if old parameter value was not found then this must be a new parameter so
+    // insert it into parameter list
+    if(nameBracketedAlt !== "")
+    {
+        //if argument is already in command which will occur if this is
+        // a module edit
+        if(newCommandLine.indexOf(nameBracketedAlt) == -1)
+        {
+        	newCommandLine += " " + nameBracketedAlt;
+            $("#commandtextarea textarea").val(newCommandLine);
+        }
+    }
+    
+    
     if (true) return;
     
     
@@ -824,21 +886,7 @@ function addtocommandline(flag, name, prevflag, prevname)
     });
 
     
-    
-    // if old parameter value was not found then this must be a new parameter so
-    // insert it into parameter list
-    if(text !== "")
-    {
-        $('#commandlist').append(item);
-
-        //if argument is already in command which will occur if this is
-        // a module edit
-        if(cmdline.indexOf(decodedText) == -1)
-        {
-            cmdline += " " + decodedText;
-            $("#commandtextarea textarea").val(cmdline);
-        }
-    }
+  
 }
 
 //update the specific parameter div
@@ -1987,6 +2035,7 @@ function validateParamGroupsEditor(){
 			alert(errorString);
 			return false;
 		}
+		
 		return true;
 		
 	} catch (err) {
@@ -2698,8 +2747,12 @@ function loadModule(taskId)
 
 function loadParameterGroups(jsonArray){
 	if (jsonArray != null){
+		$("#param_groups_example_link").hide();
 		$("#param_groups_editor").data('oldVal', JSON.stringify(jsonArray, null, 4))
 		$("#param_groups_editor").val(JSON.stringify(jsonArray, null, 4));
+		// display any added/missing params
+		validateParamGroupsEditor();
+		reorderParametersToMatchParamGroupsJson(false);
 	} else {
 		$("#param_groups_example_link").show();
 		$("#param_groups_example_link").click(function(){
@@ -3189,7 +3242,6 @@ jQuery(document).ready(function() {
             			alert("paramgroups.json appears to be valid.");
             		}
             	},
-            
                 "Save": function() {
                 	
                 	var isOK = validateParamGroupsEditor();
@@ -3197,7 +3249,7 @@ jQuery(document).ready(function() {
                 	if (isOK){
                 		// Save this as the new backstop
                 		var prev = $("#param_groups_editor").data('oldVal');
-                		
+                		reorderParametersToMatchParamGroupsJson(false);
                 		if (! prev == $("#param_groups_editor").val()){
                 			$("#param_groups_editor").data('oldVal', $("#param_groups_editor").val());
                 			setDirty(true);
