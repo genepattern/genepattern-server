@@ -15,11 +15,13 @@ import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.OAuthResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.apache.oltu.oauth2.common.message.types.ParameterStyle;
 import org.apache.oltu.oauth2.common.message.types.ResponseType;
 import org.apache.oltu.oauth2.common.utils.OAuthUtils;
 import org.apache.oltu.oauth2.ext.dynamicreg.server.request.JSONHttpServletRequestWrapper;
 import org.apache.oltu.oauth2.ext.dynamicreg.server.request.OAuthServerRegistrationRequest;
 import org.apache.oltu.oauth2.ext.dynamicreg.server.response.OAuthServerRegistrationResponse;
+import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpConfig;
@@ -39,6 +41,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -57,6 +60,42 @@ public class AuthResource {
     final static public long TOKEN_EXPIRY_TIME = 86400l; // Default is 1 day
     final static public long CODE_EXPIRY_TIME = 300l; // Default is 5 minutes
     final static public String OAUTH_EMAIL = "email";
+
+    /**
+     * Invalidates the current authentication token and forces a logout
+     *
+     * @param request
+     * @return
+     */
+    @GET
+    @Path("/logout")
+    public Response authorize(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+        // Get the access token
+        javax.servlet.http.Cookie[] cookies = request.getCookies();
+        String token = null;
+        if (cookies != null) {
+            for (javax.servlet.http.Cookie cookie : cookies) {
+                if (cookie.getName().equals("GenePatternAccess")) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+
+        // Invalidate token
+        if (token != null) OAuthManager.instance().invalidateToken(token);
+
+        // Invalidate the access cookie
+        javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie("GenePatternAccess", "");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        // Logout
+        LoginManager.instance().logout(request, response, false);
+
+        // Return the response
+        return Response.status(200).entity("{'result': true}").build();
+    }
 
     /**
      * This endpoint is for an OAuth Client (ex: GenePattern Notebook) to request

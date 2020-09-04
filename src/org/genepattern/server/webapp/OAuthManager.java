@@ -214,6 +214,17 @@ public class OAuthManager {
     }
 
     /**
+     * Removes an auth token from the token map
+     * Returns true if a code was successfully removed, false otherwise
+     *
+     * @param token
+     * @return
+     */
+    public boolean invalidateToken(String token) {
+        return tokenSessionMap.remove(token) == null;
+    }
+
+    /**
      * Create a token session and add it to the session map
      *
      * @param user
