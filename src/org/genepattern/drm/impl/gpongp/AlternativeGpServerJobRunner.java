@@ -84,12 +84,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         try {
             System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
              
-            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
-            
-            
-            
-            
-             JobInfo ji = jobSubmission.getJobInfo();
+            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);           
+            JobInfo ji = jobSubmission.getJobInfo();
             
             // verify the module exists on the remote GP server
             try {
@@ -123,7 +119,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                   }
                   
                   Object value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
-                  P = gpRestClient.createParameterJsonObject("input.filename", value2);
+                  P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
              
               }  else {
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), val);
@@ -141,7 +137,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
            externalJobId = new Integer(uriStr.substring(uriStr.lastIndexOf('/')+1));
            
            System.out.println("Launched remote job ID: "+ externalJobId);
-           gpRestClient.addComment(externalJobId, "Launched from " + config.getGpUrl() + " for user " + ji.getUserId());
+           gpRestClient.addComment(externalJobId, "Launched from " + config.getGpUrl() + " for user " + ji.getUserId()+ " original job id:  " + ji.getJobNumber());
            
            
         } catch (Exception e) {
@@ -453,8 +449,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
 
     @Override
     public boolean cancelJob(DrmJobRecord jobRecord) throws Exception {
-        // final Future<DrmJobStatus> task=runningTasks.get(jobRecord.getExtJobId());
-        log.error("AlternativeGpServerJobRunner CANCEL NOT IMPLEMENTED XXX");
+       
         final String drmJobId=jobRecord.getExtJobId();
         try {
             final HibernateSessionManager mgr=org.genepattern.server.database.HibernateUtil.instance(); 
