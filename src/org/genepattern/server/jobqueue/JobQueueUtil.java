@@ -134,6 +134,23 @@ public class JobQueueUtil {
             List<Integer> runJobs = query2.list();
             int  running = runJobs.size();
             
+            // if we are over, check if its the special case of pipelines.  A pipeline will start a pending job
+            // for itself and each of its children so if there are > maxSimultaneous steps in a pipeline, it will never
+            // be able to start.  So we check again now to see if the provided jobNo is a pipeline or in a pipeline and then
+            // remove the other pipeline jobs from the running count and test again
+            // the +2 is to allow the pipeline and children to count as 1 and not zero 
+            if (running >= maxSimultaneousJobs) {
+                String hql3 = "select job_no from analysis_job where (parent != -1) and (parent in (select parent_job_no from job_queue where job_no = "+jobNo+"))  and (job_no in (select job_no from job_queue where status = 'DISPATCHING') )or (status_id in (2,5)) ";
+                Query query3 = session.createSQLQuery(hql2);
+                int relatedJobs = query3.list().size();
+                if (relatedJobs >= 2 ){
+                    running = running -relatedJobs +1;
+                }
+                
+            }
+            
+            
+            
             if (!inTransaction) mgr.closeCurrentSession();
             return running <  maxSimultaneousJobs;
         }
