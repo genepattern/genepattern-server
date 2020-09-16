@@ -10,6 +10,7 @@
 	padding: 5px 20px 20px;
 	border: 1px solid #A3B1DD;
     border-radius: 5px;
+    font-size: 16px;
 }
 
 .splashpage h1 {
@@ -20,14 +21,43 @@
 	padding: 10px 0px 20px;
 }
 
-.splashpage_inline_block {
-	display: inline-block;
-    width: 400px;
-    font-size: 16px;
-    text-align: center;
+.splashpage_flex_container {
+    align-items: center;
+    border-radius: 5px;
+    border: 1px solid #A3B1DD;
+    box-sizing: border-box;
+    display: flex;
+    flex-basis: 100%;
+    flex-flow: row wrap;
+    justify-content: center;
     margin: auto;
-    padding: 5px;
+    max-width: 100%;
+    min-height: 100%;
+}
+
+.splashpage_flex_intro {
+	background-color: #FFFFFF;
+	font-size: 16px;
     font-weight: bold;
+    /*padding: 10px 5px 5px 5px;*/
+    text-align: center;
+    /*width: 400px;*/
+}
+
+.splashpage_flex_intro img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    /*width: 50%;*/
+}
+
+.splashpage_flex_notebooks{
+	background-color: #FFFFFF;
+	font-size: 16px;
+    font-weight: bold;
+    /*padding: 10px 5px 5px 5px;*/
+    text-align: center;
+    /*width: 400px;*/
 }
 
 .splashpage_list {
