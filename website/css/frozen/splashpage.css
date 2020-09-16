@@ -26,13 +26,15 @@
     border-radius: 5px;
     border: 1px solid #A3B1DD;
     box-sizing: border-box;
-    display: flex;
+    display: inline-flex;
     flex-basis: 100%;
     flex-flow: row wrap;
     justify-content: center;
     margin: auto;
     max-width: 100%;
     min-height: 100%;
+    padding: 10px 10px 10px 10px;
+    width: 300px;
 }
 
 .splashpage_flex_intro {
