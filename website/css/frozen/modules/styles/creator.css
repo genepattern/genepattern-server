@@ -540,14 +540,14 @@ p.heading {
 
 
 
-div.ui-layout-center table td {
+div.ui-layout-center table td, div.save-dialog table td {
 	padding: 5px 15px 5px 5px;
 	white-space:nowrap;
 	font-size: 11px;
 	width: 100px;
 }
 
-div.ui-layout-center table.param_outer_table  td {
+div.ui-layout-center table.param_outer_table  td, div.save-dialog table.param_outer_table  td {
 	padding: 0px 0px 0px 0px;
 }
 

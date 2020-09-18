@@ -160,26 +160,43 @@ function saveError(errorMessage)
  * @param lsidMenu, a gpUtil.LsidMenu object
  */
 function updateVersionIncrement(lsidMenu) {
+	var theLsid
+    if (adminServerAllowed){
+    	theLsid = "urn:lsid:"+ $('#lsidAuthority').val()+":" + $('#lsidNamespace').val()+":"+ $('#lsidId').val()+":"+ $('#lsidVersion').val();
+        	
+    } else {
+    	theLsid= module_editor.lsid;
+    }
+	
+	
     if (!lsidMenu) {
         // default menu
-        lsidMenu=new gpUtil.LsidMenu();
+        lsidMenu=new gpUtil.LsidMenu(theLsid);
     }
+    var next  = lsidMenu.getNextVersionValue() ;
     var menu=$('select[name="versionIncrement"]');
     menu.children().remove();
     var opts=lsidMenu.getNextVersionOptions();
     if (opts && opts.length > 0) {
         for(var i=0; i<opts.length; i++) {
-            menu.append(
-                "<option value=\""+opts[i].value+"\">"+opts[i].name+"</option>");
+        	var option = $("<option value=\""+opts[i].value+"\">"+opts[i].name+"</option>");
+            menu.append(option );
+            if (next == opts[i].value){
+            	option.attr("selected",true);
+            }
         }
     }
-    menu.multiselect({
-        multiple: false,
-        header: false,
-        selectedList: 1
-    })
-    .val( lsidMenu.getNextVersionValue() )
-    .multiselect( lsidMenu.isNextVersionEnabled() ? 'enable' : 'disable');
+    
+   
+    
+    
+//    menu.multiselect({
+//        multiple: false,
+//        header: false,
+//        selectedList: 1
+//    })
+//    .val( lsidMenu.getNextVersionValue() )
+//    .multiselect( lsidMenu.isNextVersionEnabled() ? 'enable' : 'disable');
 }
 
 /**
@@ -509,7 +526,7 @@ function editModule()
         loadModule(lsid);
     }
     else {
-        updateVersionIncrement();
+        //updateVersionIncrement();
     }
 }
 
@@ -2219,7 +2236,7 @@ function loadModuleInfo(module)
     {
         updateModuleVersions(lsidMenu);
     }
-    updateVersionIncrement(lsidMenu);
+    //updateVersionIncrement(lsidMenu);
     
     if(module["description"] !== undefined)
     {
@@ -2745,46 +2762,19 @@ function loadModule(taskId)
     });
 }
 
-function loadParameterGroups(jsonArray){
+function loadParameterGroups(jsonArray, skipValidation){
+	
 	if (jsonArray != null){
 		$("#param_groups_example_link").hide();
 		$("#param_groups_editor").data('oldVal', JSON.stringify(jsonArray, null, 4))
 		$("#param_groups_editor").val(JSON.stringify(jsonArray, null, 4));
 		// display any added/missing params
-		validateParamGroupsEditor();
+		if (skipValidation != true)
+			validateParamGroupsEditor();
 		reorderParametersToMatchParamGroupsJson(false);
 	} else {
 		$("#param_groups_example_link").show();
-		$("#param_groups_example_link").click(function(){
-			var pnames = new Array();	
-			$(".parameter").each(function()   {
-				var pname = $(this).find("input[name='p_name']").val();
-				pnames.push(pname);	});
-			var example = new Array();
-			var group1 = new Object();
-			group1["name"]= "Group One";
-			group1["description"] = "Group one description.";
-			group1["hidden"] = false;
-			example.push(group1);
-			
-			if (pnames.length > 1){
-				var pn2 = pnames.splice(pnames.length/2);
-			
-				group1["parameters"] = pnames;
-			
-				var group2 = new Object();
-				group2["name"]="Group Two";
-				group2["description"]= "Group two description.";
-				group2["hidden"]=false;
-				group2["parameters"]= pn2;
-				
-				example.push(group2);
-			} else {
-				group1["parameters"] = pnames;
-			}
-			
-			loadParameterGroups(example);
-	});
+
 	}
 }
 
@@ -3228,6 +3218,47 @@ jQuery(document).ready(function() {
 
     });
     
+    $("#param_groups_example_link").click(function(){
+		var pnames = new Array();	
+		var skipValidation = false;
+		
+		$(".parameter").each(function()   {
+			var pname = $(this).find("input[name='p_name']").val();
+			pnames.push(pname);	});
+		if (pnames.length == 0){
+			pnames = ["p_1","p_2"];
+			
+			// if there are 0 parameters and they want example json, show them sone but do not 
+			// alert the warning errors unless they try to save it later
+			skipValidation = true;
+		}
+		var example = new Array();
+		var group1 = new Object();
+		group1["name"]= "Group One";
+		group1["description"] = "Group one description.";
+		group1["hidden"] = false;
+		example.push(group1);
+		
+		if (pnames.length > 1){
+			var pn2 = pnames.splice(pnames.length/2);
+		
+			group1["parameters"] = pnames;
+		
+			var group2 = new Object();
+			group2["name"]="Group Two";
+			group2["description"]= "Group two description.";
+			group2["hidden"]=false;
+			group2["parameters"]= pn2;
+			
+			example.push(group2);
+		} else {
+			group1["parameters"] = pnames;
+		}
+		
+		loadParameterGroups(example, skipValidation);
+    });
+    
+    
     $("#editgroups").button().click(function(){
     	
     	$('#groupEditorDialog').dialog({
@@ -3508,7 +3539,58 @@ jQuery(document).ready(function() {
         resizable: true
     });
 
-    $('#savebtn').button().click(function()
+    $('#savedialogbtn').button().click(function()
+    {
+    	 $('#saveDialog').dialog({
+    	        title: "Save Module",
+    	        modal: true,
+    	        width:862,
+    	        height: 280,
+    	        open: function(event, ui) { 
+    	        	$('#lsidVersionComment').focus(); 
+    	        	updateVersionIncrement(); 
+    	        	//var defaultOption = $("#lsidVersionIncrement").find("option")[0];
+    	        	//$(defaultOption).attr("value") = "DEFAULT";
+    	        	//document.getElementsByName('versionIncrement')[0].options[0].innerHTML = "Water";
+    	        },
+    	        buttons: {
+    	            "Save": function()
+    	            {
+    	            	 if(!isDirty())
+    	                 {
+    	                     alert("No changes to save");
+    	                 }
+    	                 else
+    	                 {
+    	                     saveAndUpload(false);
+    	                 }
+    	            },
+    	            "Save & Run": function()
+    	            {
+    	            	 //no changes detected so skip to run step
+    	                if(!isDirty() && module_editor.lsid != "")
+    	                {
+    	                    runModule(module_editor.lsid);
+    	                }
+    	                else
+    	                {
+    	                    // save and then run the module
+    	                    saveAndUpload(true);
+    	                }
+    	            },
+    	            "Submit to GParc": function(){
+    	                window.open("http://gparc.org");
+    	                if (module_editor.lsid !== null && module_editor.lsid.length > 0) {
+    	                    window.location.href = "/gp/makeZip.jsp?name=" + encodeURIComponent(module_editor.lsid);
+    	                }
+    	            },
+    	            "Cancel": function(){$(this).dialog("close")}
+    	        }
+    	    });
+    	 
+    });
+    
+  /*  $('#savebtn').button().click(function()
     {
         if(!isDirty())
         {
@@ -3532,7 +3614,7 @@ jQuery(document).ready(function() {
             // save and then run the module
             saveAndUpload(true);
         }
-    });
+    }); */
 
     $('#publishGParc').button().click(function() {
         window.open("http://gparc.org");
@@ -3682,10 +3764,10 @@ jQuery(document).ready(function() {
     $("select[name='category']").multiselect({
         header: false,
         selectedList: 1
-    });
+    }).multiselectfilter();
 
     $("select[name='privacy'], select[name='quality'], " +
-        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion'], select[name='versionIncrement']").multiselect({
+        "select[name='c_type'], select[name='cpu'], select[name='language'], select[name='modversion']").multiselect({
         multiple: false,
         header: false,
         selectedList: 1

@@ -387,6 +387,21 @@ var InitGpUtil = function(customGpContext) {
             ];
         }
         
+        
+        var numVersionElements = (this.currentLsid.getVersion().match(/\./g) || []).length;
+        switch(numVersionElements) {
+	        case 0:
+	        	this.nextVersion_value="major";
+	        	// code block
+	        	break;
+	        case 1:
+	        	this.nextVersion_value="minor";
+	        	break;
+	        default:
+	        	this.nextVersion_value="patch";
+        }
+
+        
         /**
          * get the currentLsid as an Lsid object
          */

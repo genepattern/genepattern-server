@@ -198,9 +198,11 @@
                 <br /><a id="whatIsGparc" href="#">What is GParc?</a>
             </div>
             <span id="modcontrols">
+                <button id="savedialogbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save (dialog)</button>
                 <button id="helpbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help.gif" width="16" height="16" alt="help" class="buttonIcon"/>Help</button>
-                <button id="savebtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
+              <!--   <button id="savebtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save.gif" width="16" height="16" alt="save" class="buttonIcon" />Save</button>
                 <button id="saveRunbtn"><img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/save_run.gif" width="16" height="16" alt="save and run" class="buttonIcon" />Save &amp; Run</button>
+            -->
             </span>
         </div>
     </div>
@@ -208,19 +210,23 @@
     <div class="ui-layout-center">
         <p class="heading">Details</p>
         <div class ="hcontent">
+            <div id="saveDialog" style="display:none;" class="save-dialog">
             <table border="0" cellspacing="0" cellpadding="0">
+                <tr><td/><td text-align="bottom" style="display:inline-block;padding-bottom: 0px;margin-bottom: -4px;"><div style="display:inline;"> <i>      <span style="padding-left:93px;padding-right:53px">domain</span> <span style="padding-left:124px;padding-right:124px">namespace</span> <span style="padding-left:30px;padding-right:20px">ID</span> <span style="padding-left:20px;padding-right:20px">version</span> </i> </div></td> </tr>
                 <tr>
                     <td>LSID:</td>
                     <td id="lsid" colspan="2">
-						urn:lsid:<input type="text" size="20"  id="lsidAuthority"/>:<input type="text" size="45"  id="lsidNamespace"/>:<input type="text" size="7"  id="lsidId"/>:<input type="text" size="7"  id="lsidVersion"/>
-                    </td>
+						urn:lsid:<input type="text" size="20"  id="lsidAuthority" title="Authority for this LSID.  Typically the URL of the GenePattern server a module is authored on."/>:<input type="text" size="45"  id="lsidNamespace" title="Namespace of the LSID as defined by the authority. Default is 'genepatternmodules'"/>:<input type="text" size="7"  id="lsidId" title="A numeric identifier that is unique for a given domain and namespace."/>:<input type="text" size="7"  id="lsidVersion" title="The version of the LSID.  This should be numeric and use '.' to seperate major and minor version parts if present (e.g. 1 or 1.0)."/>
+                    <a href='createhelp.jsp#LSID' target='help'>
+                            <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
+                        </a></td>
                 </tr>
                  <tr>
                     <td>
                         Version Increment:
                     </td>
                     <td colspan="3">
-                        <select name="versionIncrement">
+                        <select name="versionIncrement" >
                             <option value="" selected="selected">default</option>
                             <option value="major">major (X)</option>
                             <option value="minor">minor (X.Y)</option>
@@ -237,12 +243,17 @@
                         Version Comment:
                     </td>
                     <td colspan="3">
-                        <input type="text" name="comment" size="100"/>
+                        <input type="text" name="comment" id="lsidVersionComment" size="100"/>
                         <a href='createhelp.jsp#VersionComment' target='help'>
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
                 </tr>
+                </table>
+                </div>
+                
+                
+                <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
                     <td>
                         Description:
@@ -356,7 +367,7 @@
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>
                     </td>
-                    <td>
+                    <td align="right">
                          Quality Level:
                     </td>
                     <td>
@@ -464,7 +475,7 @@
                     <button id="editgroups">Edit Parameter Groups</button>
                     <div id="groupEditorDialog" style="display:none">
                     The parameter groups are defined in the parametegroups.json file. This allows you to control grouping and layout of the parameters
-                    when running the module<a id="param_groups_example_link" style="color:blue;">(example json)</a>:<br/>
+                    when running the module (<a id="param_groups_example_link" style="color:blue;">create example json</a>):<br/>
                     <input type="radio" id="param_groups_editor_ok" name="param_groups_editor_ok" value="editor" checked="true"><label for="param_groups_editor_ok">Use this editor's contents</label></input>
                     <input type="radio" id="param_groups_file_ok" name="param_groups_editor_ok" value="file"><label for="param_groups_file_ok">Use uploaded file</label></input>
                     <textarea cols='60' id='param_groups_editor' rows='20' ></textarea>
