@@ -3762,7 +3762,7 @@ jQuery(document).ready(function() {
     //$("#mod_fileformat").multiselect().multiselectfilter();
     
     $("select[name='category']").multiselect({
-        header: false,
+        header: true,
         selectedList: 1
     }).multiselectfilter();
 
