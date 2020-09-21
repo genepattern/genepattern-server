@@ -212,11 +212,16 @@
         <div class ="hcontent">
             <div id="saveDialog" style="display:none;" class="save-dialog">
             <table border="0" cellspacing="0" cellpadding="0">
-                <tr><td/><td text-align="bottom" style="display:inline-block;padding-bottom: 0px;margin-bottom: -4px;"><div style="display:inline;"> <i>      <span style="padding-left:93px;padding-right:53px">domain</span> <span style="padding-left:124px;padding-right:124px">namespace</span> <span style="padding-left:30px;padding-right:20px">ID</span> <span style="padding-left:20px;padding-right:20px">version</span> </i> </div></td> </tr>
+                <tr><td/><td text-align="bottom" style="display:inline-block;padding-bottom: 0px;margin-bottom: -4px;"><div style="display:inline;"> <i> 
+                     <span style="padding-left:20px;padding-right:53px">authority</span> 
+                     <span style="padding-left:124px;padding-right:124px">namespace</span> 
+                     <span style="padding-left:70px;padding-right:20px">ID</span> 
+                     <span style="padding-left:10px;padding-right:20px">version</span> 
+                     </i> </div></td> </tr>
                 <tr>
                     <td>LSID:</td>
                     <td id="lsid" colspan="2">
-						urn:lsid:<input type="text" size="20"  id="lsidAuthority" title="Authority for this LSID.  Typically the URL of the GenePattern server a module is authored on."/>:<input type="text" size="45"  id="lsidNamespace" title="Namespace of the LSID as defined by the authority. Default is 'genepatternmodules'"/>:<input type="text" size="7"  id="lsidId" title="A numeric identifier that is unique for a given domain and namespace."/>:<input type="text" size="7"  id="lsidVersion" title="The version of the LSID.  This should be numeric and use '.' to seperate major and minor version parts if present (e.g. 1 or 1.0)."/>
+						urn:lsid:<input type="text" size="25"  id="lsidAuthority" title="Authority for this LSID.  Typically the URL of the GenePattern server a module is authored on."/>:<input type="text" size="40"  id="lsidNamespace" title="Namespace of the LSID as defined by the authority. Default is 'genepatternmodules'"/>:<input type="text" size="7"  id="lsidId" title="A numeric identifier that is unique for a given domain and namespace."/>:<input type="text" size="7"  id="lsidVersion" title="The version of the LSID.  This should be numeric and use '.' to seperate major and minor version parts if present (e.g. 1 or 1.0)."/>
                     <a href='createhelp.jsp#LSID' target='help'>
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a></td>
@@ -249,6 +254,11 @@
                         </a>
                     </td>
                 </tr>
+                <tr><td colspan="2" >
+                <div id="saveDialogWarningLabel" class="saveDialogWarningLabel">Warnings:</div>
+                <span id="saveDialogWarningSpan" class="saveDialogWarningSpan">Save dialog warning here.</span>
+                
+                </td></tr>
                 </table>
                 </div>
                 
@@ -327,7 +337,18 @@
                         Docker Image*:
                     </td>
                     <td colspan="3">
-                        <input type="text" name="dockerImage" size="100"/>
+                        <input type="search" name="dockerImage" list="dockerImageDefaults" size="100"/>
+                        
+                        <datalist id="dockerImageDefaults">
+						  <option value="genepattern/docker-java17:0.12"/>
+						  <option value="genepattern/docker-java18:0.1"/>
+						  <option value="genepattern/docker-python36:0.5"/>
+						  <option value="genepattern/docker-python37:0.1"/>
+						  <option value="genepattern/docker-r-3-2:0.1"/>
+						  <option value="genepattern/docker-perl52:0.1"/>
+						</datalist>
+                        
+                        
                         <a href='createhelp.jsp#DockerImage' target='help'>
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a>

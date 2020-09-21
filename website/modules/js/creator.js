@@ -699,7 +699,30 @@ function addparameter()
 
     // set in the default initial param name
     var paramCount = $("div.parameter").length;
-    paramDiv.find("input[name='p_name']").val("p_"+ paramCount);
+    var nameAvailable = false;
+    
+    
+    while (!nameAvailable){
+    	var paramExists = false;
+	    pname_newval = "p_"+ paramCount;
+	    $('#parameters').find("input[name='p_name']").each(function() {
+    	        if(!paramExists && $(this).val() != "" && $(this).val() == pname_newval) {
+    	            paramExists = true;
+    	        } 
+    	});
+	    if (paramExists){
+	    	paramCount++;
+	    
+	    } else {
+	    	nameAvailable = true;
+	    }
+	    
+    }
+    
+    
+    
+    
+    paramDiv.find("input[name='p_name']").val(pname_newval);
    
     paramDiv.find("select[name='p_type']").trigger("change");
 
@@ -2002,11 +2025,12 @@ function changeParameterType(element) {
     }
 }
 
-function validateParamGroupsEditor(){
+function validateParamGroupsEditor(silent){
 	var valid = true;
 	try {
 		var errorString = "";
 		var jsonString = $("#param_groups_editor").val();
+		if (jsonString.length == 0) return true;
 		// first make sure its valid json
 		var jsonArr = JSON.parse(jsonString);
 		var allMentionedParams = new Array();
@@ -2049,7 +2073,9 @@ function validateParamGroupsEditor(){
 		
 		
 		if (errorString.length > 1) {
-			alert(errorString);
+			if (!(silent == true)){
+				alert(errorString);
+			}
 			return false;
 		}
 		
@@ -2211,10 +2237,10 @@ function setLsidDisplay(lsid){
     $('#lsidId').val(lsidParts[4]);
     $('#lsidVersion').val(lsidParts[5]);
     if (!adminServerAllowed){
-    	$('#lsidAuthority').prop('disabled', true);
-    	$('#lsidNamespace').prop('disabled', true);
-    	$('#lsidId').prop('disabled', true);
-    	$('#lsidVersion').prop('disabled', true);
+    	$('#lsidAuthority').prop('disabled', true).addClass("disabledLsid");
+    	$('#lsidNamespace').prop('disabled', true).addClass("disabledLsid");
+    	$('#lsidId').prop('disabled', true).addClass("disabledLsid");
+    	$('#lsidVersion').prop('disabled', true).addClass("disabledLsid");
     }
     
 }
@@ -3549,9 +3575,31 @@ jQuery(document).ready(function() {
     	        open: function(event, ui) { 
     	        	$('#lsidVersionComment').focus(); 
     	        	updateVersionIncrement(); 
-    	        	//var defaultOption = $("#lsidVersionIncrement").find("option")[0];
-    	        	//$(defaultOption).attr("value") = "DEFAULT";
-    	        	//document.getElementsByName('versionIncrement')[0].options[0].innerHTML = "Water";
+    	        	$('#saveDialogWarningSpan').html("");
+    	        	$('#saveDialogWarningLabel').hide();
+    	        	// validate paramgroups, presence of docker container, files to be overwritten
+    	        	// and display
+    	        	if (! (validateParamGroupsEditor(true))){
+    	        		var pg = $("<div>There is a problem with the parameterGroups json.</div>");
+    	        		$('#saveDialogWarningSpan').append(pg);
+    	        		$('#saveDialogWarningLabel').show();
+    	        	}
+    	        	var dockerImage = $('input[name="dockerImage"]').val();
+    	            if (dockerImage == undefined || dockerImage == null || dockerImage.length < 1) {
+    	            	var dd = $("<div>No docker image specified. The module will be run on the default genepattern/java-1.7 image.</div>");
+    	        		$('#saveDialogWarningSpan').append(dd);
+    	        		$('#saveDialogWarningLabel').show();
+    	            }
+    	            for(i=0;i<module_editor.filestoupload.length;i++) {
+    	                var upLoadFileName = module_editor.filestoupload[i].name;
+    	                if (module_editor.currentUploadedFiles.indexOf(upLoadFileName) >= 0){
+    	                	var ff = $("<div>"+upLoadFileName+" will be overwritten.</div>");
+        	        		$('#saveDialogWarningSpan').append(ff);
+        	        		$('#saveDialogWarningLabel').show();
+    	                }
+    	            }
+    	            
+    	            
     	        },
     	        buttons: {
     	            "Save": function()
@@ -3563,6 +3611,7 @@ jQuery(document).ready(function() {
     	                 else
     	                 {
     	                     saveAndUpload(false);
+    	                    
     	                 }
     	            },
     	            "Save & Run": function()
@@ -3576,6 +3625,7 @@ jQuery(document).ready(function() {
     	                {
     	                    // save and then run the module
     	                    saveAndUpload(true);
+    	                    
     	                }
     	            },
     	            "Submit to GParc": function(){
@@ -3584,7 +3634,10 @@ jQuery(document).ready(function() {
     	                    window.location.href = "/gp/makeZip.jsp?name=" + encodeURIComponent(module_editor.lsid);
     	                }
     	            },
-    	            "Cancel": function(){$(this).dialog("close")}
+    	            "Cancel": function(){
+    	            	$(this).dialog("close");  
+    	            	
+    	            }
     	        }
     	    });
     	 
@@ -3894,10 +3947,12 @@ function addFileToUpload(file)
             var index = jQuery.inArray(file.name, module_editor.filesToDelete);
             if(index == -1)
             {
-                alert("ERROR: The file" + file.name + " already exists in the module. " +
+                var isOk = confirm("Warning: The file " + file.name + " already exists in the module. " +
+                    "The existing file will be overwritten.");
+                if (!isOk) {                
+                	throw("ERROR: The file" + file.name + " already exists in the module. " +
                     "Please remove the file first.");
-                throw("ERROR: The file" + file.name + " already exists in the module. " +
-                    "Please remove the file first.");
+                }
             }
         }
     }

@@ -565,6 +565,14 @@ div.ui-layout-center table td button {
 div.ui-layout-center table td select {
 }
 
+div.saveDialogWarningLabel {
+	font-weight:bold;
+	margin-bottom: 10px;
+}
+
+span.saveDialogWarningSpan div {
+	margin-left: 35px;
+}
 
 
 table.no-border {
@@ -653,6 +661,13 @@ textarea {
 }
 input[type="text"] {
 	background-color: #eee;
+}
+input[type="search"] {
+	background-color: #eee;
+}
+input[type="text"].disabledLsid {
+	background-color: #fff;
+	border: 0px;
 }
 
 .commandtype_table {
