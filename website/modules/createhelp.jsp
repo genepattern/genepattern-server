@@ -24,6 +24,8 @@ MessageUtils messages = new MessageUtils();
 </head>
 
 <body>
+
+
 <a name="propertiesHelp"></a>
 <h2>Module Properties</h2>
 A person creates a module to share an algorithm or utility with other <%=messages.get("ApplicationName")%> users.
@@ -100,6 +102,11 @@ Lists the module parameters, including the file formats of any input files requi
 <hr>
 
 <a name="editingPropertiesHelp"></a><h2>Creating and Editing Modules</h2>
+
+The primary documentation for creating a GenePattern module is part of the <a href="https://www.genepattern.org/programmers-guide#_Writing_Modules_for_GenePattern">GenePattern Programmer's Guide</a>.
+An example module that demonstrates the relationship between a GenePattern command line and the corresponding shell (terminal) command line using a simple function (written in Perl) is available on github at <a href="https://github.com/genepattern/ABasicModule">genepattern/ABasicModule</a>.  
+Source code for many other GenePattern  modules is also available under <a href="https://github.com/genepattern/">github.com/genepattern</a>.
+
 
 <strong>Note:</strong> Only the <%=messages.get("ApplicationName")%> team can create, edit or install modules on the <%=messages.get("ApplicationName")%> public server.
 Therefore, to create a module, you must have a local <%=messages.get("ApplicationName")%> server installed.<br><br>
@@ -178,10 +185,23 @@ If you want to edit an earlier version, select that version from the drop-down l
 <a name="details"></a><h3>Details</h3>
 
 <a name="LSID"></a><h4>LSID</h4>
-The Life Science Identifier (LSID) used to uniquely identify a GenePattern module.
-You cannot create or edit LSIDS. They are created automatically by the GenePattern server when a module is saved.<br><br>
+The <a href="http://www.lsid.info/">Life Science Identifier (LSID)</a> used to uniquely identify a GenePattern module.
+Most users cannot create or edit LSIDS although GenePattern administrators may enable this for themselves by setting the property "allowAdminEditNonLocalModules: true".
+LSIDs are created or versioned automatically by the GenePattern server when a module is saved.<br><br>
 
-ConsensusClustering example: <span class="example">urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:5 </span>
+ConsensusClustering example: <span class="example">urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:5.2 </span>
+
+An LSID consists of five parts, e.g. urn:lsid  :  authority  :  namespace  :  id  :  version.
+<ul>
+<li><i>urn:lsid</i> -- a prefix indicating that this is an LSID which is a type of an <a href="https://en.wikipedia.org/wiki/Uniform_Resource_Name">URN</a>.</li>
+<li><i>authority</i> -- The name of an entity asserting and managing the identifier.  Usually an internet domain name or server address. e.g. broad.mit.edu</li>
+<li><i>namespace</i> -- The namespace scoping the identifier.  This is arbitrary text defined by the authority.  e.g. "cancer.software.genepattern.module.analysis"</li>
+<li><i>id</i> -- An identifier for an entity that is unique within the scope of the authority and namespace.  In GenePattern the ID is always an integer. e.g. 00030.  
+Identifiers can (and frequently are) repeated in different namespaces and/or authorities.</li>
+<li><i>version</i> -- An optional version for the identifier.  In GenePattern this is always integers with dots (".") to indicate sub versions.  e.g. 5.2 </li>
+
+</ul>
+
 
 <a name="Description"></a><h4>Description</h4>
 The description is where to explain what your module does, and why someone would want to use it.
@@ -453,7 +473,19 @@ launch the module, including substitutions for settings that will be specified d
 In the command line field, you will provide a combination of the fixed text and the dynamically-changed
 text which together constitute the command line for an invocation of the module.<br><br>
 
-Perhaps the trickiest thing about specifying a command line is making it truly platform-independent.  Sure, it works fine
+For example, if at a terminal (shell) you would run a piece of code like this;  <br/>
+<code>/usr/bin/perl /path/to/source/log_transform.pl /path/to/input/myInputFile.gct /path/to/output/transformed.gct</code><br/>
+  then the corresponding GenePattern command line would look like this: <br/>
+  &lt;code&gt; &lt;perl&gt; &lt;libdir&gt;log_transform.pl &lt;input.filename&gt; &lt;output.file&gt;</code>
+<br/>
+<br/>
+The changes are so that GenePattern knows how to localize your command to a given server where the paths to the module code, input and output files may be different. 
+When you are using a dedicated docker container, then you can give the exact paths to the executable and source, but the input and output parameters and options will still need to 
+be changed into \<tokens\> that the  GenePattern server can provide based on the specifics of the job.
+
+
+<br/><br/>
+Historically the trickiest thing about specifying a command line is making it truly platform-independent.  Sure, it works fine
 for your computer, right now.  But if you zip it and send it to an associate, are they running a Mac?  Windows?  Unix?
 You may not know, and you shouldn't need to care.  By carefully describing the command line using substitution variables,
 you can pretty well ensure that your module will run anywhere.<br><br>

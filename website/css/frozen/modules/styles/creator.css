@@ -161,6 +161,7 @@ div.ui-layout-north
     height: 470px;
     margin: 3px;
 	width: auto;
+	min-width: 1203px;
 }
 
 #commandpreview button
@@ -332,6 +333,7 @@ div.editChoicesDialog
     padding: 3px 2px;
     margin-left: 15px;
 	margin-top:5px;
+	min-width: 1250px;
 }
 
 .hcontent table td {
@@ -536,6 +538,7 @@ p.heading {
 	color: #333;
 	font-size: 11px;
 	font-weight: normal;
+	min-width:1250px;
 }
 
 
@@ -697,6 +700,12 @@ span.param_name, span.group_name {
 	padding-left: 5px;
 	padding-top:5px;
 	padding-bottom: 5px;
+}
+
+
+
+div.parameter {
+	min-width: 1202px;
 }
 
 div.parameter input[type='text']{

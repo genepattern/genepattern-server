@@ -852,6 +852,9 @@ function addtocommandline(flag, name, prevflag, prevname)
     // look for a match on the current command line
     var cmdTokens = cmdline.split(" ");
     for (i=0; i < cmdTokens.length; i++){
+    	var tok = cmdTokens[i];
+    	console.log((cmdTokens[i] == prevflag));
+    	
     	if ((cmdTokens[i] == prevNameBracketed) || (cmdTokens[i] == prevNameBracketedAlt)) {
     		// we found the param name token .  Now look at the previous token to see if its the old flag
     		// if it is, update both tokens
@@ -872,8 +875,11 @@ function addtocommandline(flag, name, prevflag, prevname)
     	} else if (cmdTokens[i] == prevNameAndFlag) {
     		// replace prevNameAndFlag with new name and flag with no space
     		cmdTokens[i] = flag + nameBracketed;
+    	} else if ((cmdTokens[i] == prevflag) && (prevflag !== "")) {
+    		cmdTokens[i] = flag;
+    	} else if ((cmdTokens[i].trim() == prevflag.trim()) && (prevflag !== "")) {
+    		cmdTokens[i] = flag;
     	}
-    	
     	
     }
     var newCommandLine = cmdTokens.join(" ");
