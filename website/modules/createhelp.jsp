@@ -103,9 +103,13 @@ Lists the module parameters, including the file formats of any input files requi
 
 <a name="editingPropertiesHelp"></a><h2>Creating and Editing Modules</h2>
 
-The primary documentation for creating a GenePattern module is part of the <a href="https://www.genepattern.org/programmers-guide#_Writing_Modules_for_GenePattern">GenePattern Programmer's Guide</a>.
-An example module that demonstrates the relationship between a GenePattern command line and the corresponding shell (terminal) command line using a simple function (written in Perl) is available on github at <a href="https://github.com/genepattern/ABasicModule">genepattern/ABasicModule</a>.  
+The primary documentation for creating a GenePattern module is part of the 
+<a href="https://www.genepattern.org/programmers-guide#_Writing_Modules_for_GenePattern">GenePattern Programmer's Guide</a>.
+<br/><br/>
+An example module that demonstrates the relationship between a GenePattern command line and the corresponding shell (terminal)
+ command line using a simple function (written in Perl) is available on github at <a href="https://github.com/genepattern/ABasicModule">genepattern/ABasicModule</a>.  
 Source code for many other GenePattern  modules is also available under <a href="https://github.com/genepattern/">github.com/genepattern</a>.
+<br/><br/>
 
 
 <strong>Note:</strong> Only the <%=messages.get("ApplicationName")%> team can create, edit or install modules on the <%=messages.get("ApplicationName")%> public server.
@@ -119,7 +123,9 @@ a <%=messages.get("ApplicationName")%> module.
 If you are writing the program, you can use any programming language;
 for example, you can use a compiled language, such as C, to create an
 executable or use a scripting language, such as Perl, to create a script
-that is run by an interpreter.</li>
+that is run by an interpreter. To use methods written in R, you should make a R wrapper that can be run with Rscript, which
+can take arguments from a command line, load datasets as needed, and then call the desired R function 
+(< href="https://github.com/genepattern/VoomNormalize/blob/master/src/run_gp_preprocess_read_counts.R">VoomNormalize example</a>).  </li>
 <li>Use <%=messages.get("ApplicationName")%> to create a module that invokes
 the program that you have written.
 It takes just a few minutes to enter the necessary information in the module integrator.
@@ -474,21 +480,20 @@ In the command line field, you will provide a combination of the fixed text and 
 text which together constitute the command line for an invocation of the module.<br><br>
 
 For example, if at a terminal (shell) you would run a piece of code like this;  <br/>
-<code>/usr/bin/perl /path/to/source/log_transform.pl /path/to/input/myInputFile.gct /path/to/output/transformed.gct</code><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<code>/usr/bin/perl /path/to/source/log_transform.pl /path/to/input/myInputFile.gct /path/to/output/transformed.gct</code><br/>
   then the corresponding GenePattern command line would look like this: <br/>
-  &lt;code&gt; &lt;perl&gt; &lt;libdir&gt;log_transform.pl &lt;input.filename&gt; &lt;output.file&gt;</code>
+  &nbsp;&nbsp;&nbsp;&nbsp;<code> &lt;perl&gt; &lt;libdir&gt;log_transform.pl &lt;input.filename&gt; &lt;output.file&gt;</code>
 <br/>
 <br/>
-The changes are so that GenePattern knows how to localize your command to a given server where the paths to the module code, input and output files may be different. 
-When you are using a dedicated docker container, then you can give the exact paths to the executable and source, but the input and output parameters and options will still need to 
-be changed into \<tokens\> that the  GenePattern server can provide based on the specifics of the job.
-
+The changes to &lt;tokens&gt;'s are so that GenePattern knows how to substutute parameters to the command line in a way the module
+code will recognize, and provide full paths for input and output files. 
+In the past, before using a docker container with the module executables inside was standard, tokens can also be used to
+localize your command giving it paths to executables like java, python or Rscript which could differ between GenePattern servers.  
+When you are using a dedicated docker container, then you can give the exact paths to the executable and source,
+ but the parameters will still need to be changed into &lt;tokens&gt; that the  GenePattern server 
+ can provide based on the specifics of the job.
 
 <br/><br/>
-Historically the trickiest thing about specifying a command line is making it truly platform-independent.  Sure, it works fine
-for your computer, right now.  But if you zip it and send it to an associate, are they running a Mac?  Windows?  Unix?
-You may not know, and you shouldn't need to care.  By carefully describing the command line using substitution variables,
-you can pretty well ensure that your module will run anywhere.<br><br>
 
 <strong>Parameters:</strong> Parameters that require substitution should be enclosed in brackets (ie. &lt;filename&gt;).
 Every parameter listed in the parameters section must be mentioned in the command line
@@ -526,10 +531,13 @@ the public <%=messages.get("ApplicationName")%> website.  Useful substitution pr
 <tr><td valign="top"><span class="example">&lt;user.home&gt;</span></td><td>user's home directory</td></tr>
 </table>
 <br>
+When using a docker container with your executables built into it, , you may use the paths to executables within 
+the container directly.  However if you are using a generic container (e.g. <a href="https://hub.docker.com/_/python">Python</a>) 
+you may still need to provide paths to your source files.  These will be injected into the container and mounted at a location
+defined by the token &lt;libdir&gt;.
 
-Rather than having to customize your module's command line for the exact location of the language runtime
-on each computer, you can use the substitution properties. For example,<br><br>
-<span class="example">&lt;java&gt; -cp &lt;libdir&gt;mymodule.jar com.foo.MyModule &lt;arg1&gt;</span><br><br>
+For example,<br><br>
+<span class="example">/usr/bin/java -cp &lt;libdir&gt;mymodule.jar com.foo.MyModule &lt;arg1&gt;</span><br><br>
 <%=messages.get("ApplicationName")%> will then take care of locating the Java runtime,
 asking it to begin execution at the <span class="example">MyModule</span> class using code from the uploaded file
  <span class="example">mymodule.jar</span>.<br><br>
@@ -548,7 +556,7 @@ the standard output stream:
 <br><br>
 
 <strong>ConsensusClustering example</strong> (actually all on one line): <br>
-<span class="example">&lt;java&gt; &lt;java_flags&gt; -DR_HOME=&lt;R_HOME&gt; -cp &lt;libdir&gt;geneweaver.jar edu.mit.wi.genome.geneweaver.clustering.ConsensusClustering &lt;input.filename&gt; &lt;kmax&gt; &lt;niter&gt; &lt;normalize.type&gt; -N &lt;norm.iter&gt; -S &lt;resample&gt; -t &lt;algo&gt; -L &lt;merge.type&gt; -i &lt;descent.iter&gt; -o &lt;out.stub&gt; -s -d &lt;create.heat.map&gt; -z &lt;heat.map.size&gt; -l1 -v</span>
+<span class="example">java &lt;java_flags&gt; -DR_HOME=&lt;R_HOME&gt; -cp &lt;libdir&gt;geneweaver.jar edu.mit.wi.genome.geneweaver.clustering.ConsensusClustering &lt;input.filename&gt; &lt;kmax&gt; &lt;niter&gt; &lt;normalize.type&gt; -N &lt;norm.iter&gt; -S &lt;resample&gt; -t &lt;algo&gt; -L &lt;merge.type&gt; -i &lt;descent.iter&gt; -o &lt;out.stub&gt; -s -d &lt;create.heat.map&gt; -z &lt;heat.map.size&gt; -l1 -v</span>
 
 <br><br><hr>
 <a name="inputParameters"></a><h3>Parameters</h3>
