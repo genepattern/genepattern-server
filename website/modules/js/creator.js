@@ -534,6 +534,8 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 	var jsonString = $("#param_groups_editor").val();
 	var jsonArr = JSON.parse(jsonString);
 	
+	//if (true) return;
+	
 	// get the parameter div objects we will reorder
 	var paramDivs =  $('#parameters').find("div.parameter");
 	
@@ -546,17 +548,28 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 		var nameControl = $(paramDivs[i]).find("input[name='p_name']");
 		var name = nameControl.val();
 		pdivDict[name] = paramDivs[i];
-		$(paramDivs[i]).remove();
+	//	$(paramDivs[i]).remove();
 	} 
 	 
+	var lastParam = null;
 	// now put them back in order
 	for (var i=0; i < jsonArr.length; i++){
 		var group = jsonArr[i];
 		var groupParams = group["parameters"];
-		for (var j=0; j < groupParams.length; j++){
+		if (i == 0) {
+			lastParam = pdivDict[groupParams[0]]; // first param in first group
+		} else {
+			var firstInGroup = pdivDict[groupParams[0]];
+			$(pDiv).insertAfter($(lastParam));
+		}
+		
+		for (var j=1; j < groupParams.length; j++){
 			var pName = groupParams[j];
+			
 			var pDiv = pdivDict[pName];
-			$('#parameters').append(pDiv);
+			var prevDiv = pdivDict[groupParams[j-1]];
+			$(pDiv).insertAfter($(prevDiv));
+			lastParam = pDiv;
 			
 			var nameControl = $(pDiv).find("input[name='p_name']");
 			$(nameControl).parent().find(".pgroupLabel").remove();
@@ -564,7 +577,7 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 			
 		}
 	}
-	
+	$('#parameters').sortable();
 	
 	
 }
@@ -2203,7 +2216,8 @@ function updatefileformats()
                         fileformat.val(fileformat.data("fileformats"));
                     }
 
-                    fileformat.multiselect("refresh").multiselectfilter();
+                    // extra multiselect() call due to race condition
+                    fileformat.multiselect().multiselect("refresh").multiselectfilter();
                 });
             }
         },
