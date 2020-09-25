@@ -192,8 +192,11 @@ If you want to edit an earlier version, select that version from the drop-down l
 
 <a name="LSID"></a><h4>LSID</h4>
 The <a href="http://www.lsid.info/">Life Science Identifier (LSID)</a> used to uniquely identify a GenePattern module.
-Most users cannot create or edit LSIDS although GenePattern administrators may enable this for themselves by setting the property "allowAdminEditNonLocalModules: true".
-LSIDs are created or versioned automatically by the GenePattern server when a module is saved.<br><br>
+LSIDs are created or versioned automatically by the GenePattern server when a module is saved.  
+To be able to edit a 
+LSID you must be a GenePattern administrator and the server configuration must set the property 
+<code>allowAdminEditNonLocalModules: true</code>.
+<br><br>
 
 ConsensusClustering example: <span class="example">urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:5.2 </span>
 
@@ -480,9 +483,9 @@ In the command line field, you will provide a combination of the fixed text and 
 text which together constitute the command line for an invocation of the module.<br><br>
 
 For example, if at a terminal (shell) you would run a piece of code like this;  <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<code>/usr/bin/perl /path/to/source/log_transform.pl /path/to/input/myInputFile.gct /path/to/output/transformed.gct</code><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<code>/usr/bin/python /path/to/source/log_transform.py /path/to/input/myInputFile.gct /path/to/output/transformed.gct</code><br/>
   then the corresponding GenePattern command line would look like this: <br/>
-  &nbsp;&nbsp;&nbsp;&nbsp;<code> &lt;perl&gt; &lt;libdir&gt;log_transform.pl &lt;input.filename&gt; &lt;output.file&gt;</code>
+  &nbsp;&nbsp;&nbsp;&nbsp;<code>/usr/bin/python &lt;libdir&gt;log_transform.py &lt;input.filename&gt; &lt;output.file&gt;</code>
 <br/>
 <br/>
 The changes to &lt;tokens&gt;'s are so that GenePattern knows how to substutute parameters to the command line in a way the module
@@ -509,16 +512,13 @@ by editing the text of the command line.<br><br>
 <strong>Substitution properties:</strong> In addition to parameter names, you may also use environment variables,
 <a href="http://java.sun.com/docs/books/tutorial/essential/system/properties.html" target="_blank" style="white-space: nowrap;">Java system properties</a>,
 and any properties defined in the %<%=messages.get("ApplicationName")%>InstallDir%/resources/genepattern.properties file.
-In particular, there are predefined values for &lt;java&gt;, &lt;perl&gt;, and
-&lt;R&gt;, three languages that are used within various modules that may be downloaded from the module catalog at
-the public <%=messages.get("ApplicationName")%> website.  Useful substitution properties include:<br><br>
+ Useful substitution properties include:<br><br>
 
 <table>
 <tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
 <tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with <%=messages.get("ApplicationName")%> server on Windows, otherwise the one already installed on your system</td></tr>
 <tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with <%=messages.get("ApplicationName")%>server on Windows and MacOS</td></tr>
 <tr><td valign="top"><span class="example">&lt;java_flags&gt;</span></td><td>memory size and other Java JVM settings from the <%=messages.get("ApplicationName")%>/resources/genepattern.properties file</td></tr>
-<tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>directory where the module's support files are stored</td></tr>
 <tr><td valign="top"><span class="example">&lt;job_id&gt;</span></td><td>job number</td></tr>
 <tr><td valign="top"><span class="example">&lt;name&gt;</span></td><td>name of the module being run</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_basename&gt;</span></td><td>for each input file parameter, the filename without extension or directory</td></tr>
@@ -531,6 +531,20 @@ the public <%=messages.get("ApplicationName")%> website.  Useful substitution pr
 <tr><td valign="top"><span class="example">&lt;user.home&gt;</span></td><td>user's home directory</td></tr>
 </table>
 <br>
+In addition, for older, pre-docker, modules there are predefined values for &lt;java&gt;, &lt;python&gt;, and
+&lt;R&gt;, three languages that are used within various modules that may be downloaded from the module catalog at
+the public <%=messages.get("ApplicationName")%> website. These older modules were built before docker was used to encapsulate 
+module runtimes and could be used to localize paths for any given GenePattern server.  Their use is deprecated and they are listed here only 
+as documentation for said older modules.<br/><br/>
+<table>
+<tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
+<tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with <%=messages.get("ApplicationName")%> server on Windows, otherwise the one already installed on your system</td></tr>
+<tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with <%=messages.get("ApplicationName")%>server on Windows and MacOS</td></tr>
+<tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>Used if a module needs the path to the directory where the module's support files are stored</td></tr>
+</table>
+
+
+<br/><br/>
 When using a docker container with your executables built into it, , you may use the paths to executables within 
 the container directly.  However if you are using a generic container (e.g. <a href="https://hub.docker.com/_/python">Python</a>) 
 you may still need to provide paths to your source files.  These will be injected into the container and mounted at a location
@@ -551,7 +565,7 @@ text \&gt; or \\&gt;&amp; followed by the name of the output file. In the follow
 the LogTransform module reads its input from the standard input stream and writes its output to
 the standard output stream:
 <br><br>
-    <span class="brcode">&lt;perl&gt; &lt;libdir&gt;log_transform.pl \&lt; &lt;input.filename&gt; \&gt; &lt;output.file&gt;</span>
+    <span class="brcode">python &lt;libdir&gt;log_transform.py \&lt; &lt;input.filename&gt; \&gt; &lt;output.file&gt;</span>
 
 <br><br>
 

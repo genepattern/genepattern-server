@@ -187,6 +187,9 @@ div.ui-layout-north
 }
 
 
+
+
+
 #commandinfo
 {
     float: none;
@@ -999,5 +1002,15 @@ p.editChoicesHeading {
     margin: 1px auto 2px auto;
 }
 
-
-
+#saveDialogLsid td.lsidParts {
+	padding-left:0px;
+	padding-right:0px;
+	padding-top:2px;
+	padding-bottom:2px;
+	vertical-align: middle;
+	text-align:center;
+}
+#saveDialogLsid td.lsidLabel {
+	font-size: 80%;
+	font-style: italic;
+}

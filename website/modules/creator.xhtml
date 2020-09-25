@@ -212,19 +212,30 @@
         <div class ="hcontent">
             <div id="saveDialog" style="display:none;" class="save-dialog">
             <table border="0" cellspacing="0" cellpadding="0">
-                <tr><td/><td text-align="bottom" style="display:inline-block;padding-bottom: 0px;margin-bottom: -4px;"><div style="display:inline;"> <i> 
-                     <span style="padding-left:20px;padding-right:53px">authority</span> 
-                     <span style="padding-left:124px;padding-right:124px">namespace</span> 
-                     <span style="padding-left:70px;padding-right:20px">ID</span> 
-                     <span style="padding-left:10px;padding-right:20px">version</span> 
-                     </i> </div></td> </tr>
-                <tr>
-                    <td>LSID:</td>
-                    <td id="lsid" colspan="2">
-						urn:lsid:<input type="text" size="25"  id="lsidAuthority" title="Authority for this LSID.  Typically the URL of the GenePattern server a module is authored on."/>:<input type="text" size="40"  id="lsidNamespace" title="Namespace of the LSID as defined by the authority. Default is 'genepatternmodules'"/>:<input type="text" size="7"  id="lsidId" title="A numeric identifier that is unique for a given domain and namespace."/>:<input type="text" size="7"  id="lsidVersion" title="The version of the LSID.  This should be numeric and use '.' to seperate major and minor version parts if present (e.g. 1 or 1.0)."/>
+                
+                <tr id="saveDialogLsid">
+                    <td style="vertical-align:bottom;padding-bottom:10px;">LSID:</td>
+                    <td id="lsid" colspan="2" style="vertical-align:bottom;">
+                    <table>
+                    	<tr class="lsidParts">
+                    	<td class="lsidParts"></td>
+                    	<td class="lsidParts lsidLabel">Authority</td><td class="lsidParts"></td>
+                    	<td class="lsidParts lsidLabel">Namespace</td><td class="lsidParts"></td>
+                    	<td class="lsidParts lsidLabel">ID</td><td class="lsidParts"></td>
+                    	<td class="lsidParts lsidLabel" style="padding-right:20px">Version</td>
+                    	</tr>
+                    	<tr>
+						<td class="lsidParts">urn:lsid:</td>
+						<td class="lsidParts"><input type="text" size="25"  id="lsidAuthority" title="Authority for this LSID.  Typically the URL of the GenePattern server a module is authored on."/></td><td class="lsidParts">:</td>
+						<td class="lsidParts"><input type="text" size="40"  id="lsidNamespace" title="Namespace of the LSID as defined by the authority. Default is 'genepatternmodules'"/></td><td class="lsidParts">:</td>
+						<td class="lsidParts"><input type="text" size="7"  id="lsidId" title="A numeric identifier that is unique for a given domain and namespace."/></td><td class="lsidParts">:</td>
+						<td class="lsidParts"><input type="text" size="7"  id="lsidVersion" title="The version of the LSID.  This should be numeric and use '.' to seperate major and minor version parts if present (e.g. 1 or 1.0)."/>
                     <a href='createhelp.jsp#LSID' target='help'>
                             <img src="#{facesContext.externalContext.requestContextPath}/css/frozen/modules/styles/images/help_small.gif" width="12" height="12" alt="help" class="helpbutton" />
                         </a></td>
+                       </tr> 
+                      </table>  
+                    </td>
                 </tr>
                  <tr>
                     <td>

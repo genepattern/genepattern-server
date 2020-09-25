@@ -330,11 +330,11 @@ function saveModule()
     var version = $('input[name="comment"]').val();
     var versionIncrement = $('select[name="versionIncrement"] option:selected').val();
     var dockerImage = $('input[name="dockerImage"]').val();
-    if(dockerImage == undefined || dockerImage == null || dockerImage.length < 1)
-    {
-        saveError("A docker image must be specified");
-        return;
-    }
+    //if(dockerImage == undefined || dockerImage == null || dockerImage.length < 1)
+    //{
+    //    saveError("A docker image must be specified");
+    //    return;
+    //}
     
     
     
