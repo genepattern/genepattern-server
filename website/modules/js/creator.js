@@ -568,7 +568,8 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 			lastParam = pdivDict[groupParams[0]]; // first param in first group
 		} else {
 			var firstInGroup = pdivDict[groupParams[0]];
-			$(pDiv).insertAfter($(lastParam));
+			$(firstInGroup).insertAfter($(lastParam));
+			lastParam=pDiv;
 		}
 		
 		for (var j=1; j < groupParams.length; j++){
