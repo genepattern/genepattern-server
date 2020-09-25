@@ -39,6 +39,7 @@ import org.genepattern.server.job.input.choice.ChoiceInfo;
 import org.genepattern.server.job.input.choice.ChoiceInfoHelper;
 import org.genepattern.server.job.input.choice.ChoiceInfoParser;
 import org.genepattern.server.job.input.configparam.JobConfigParams;
+import org.genepattern.server.process.ZipTask;
 import org.genepattern.server.rest.ParameterInfoRecord;
 import org.genepattern.server.tags.TagManager;
 import org.genepattern.server.tags.TagManager.Tag;
@@ -48,6 +49,7 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.KeySortedProperties;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
 import org.json.JSONArray;
@@ -1118,4 +1120,46 @@ public class TasksResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
         }
     }
+    
+    
+    /**
+     * Get code for the specified task
+     *
+     * http://127.0.0.1:8080/gp/rest/v1/tasks/HierarchicalClustering/manifest
+     *
+     * @param request
+     * @param response
+     * @param taskNameOrLsid
+     * @return
+     */
+    @GET
+    @Path("/{taskNameOrLsid}/manifest")
+    public Response getManifest(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("taskNameOrLsid") String taskNameOrLsid) {
+        GpContext userContext = Util.getUserContext(request);
+
+        try {
+            // reuse the zip task class so that this is exactly the same as a manifest created by
+            // exporting the whole module
+            ZipTask zipTask = new ZipTask();
+            
+            TaskInfo taskInfo = this.getTaskInfo(taskNameOrLsid, userContext.getUserId());
+            
+            Properties manifestAsProps = zipTask.getManifestProps(taskInfo.getName(), taskInfo);
+            
+            KeySortedProperties sortedProps = new KeySortedProperties();
+            sortedProps.putAll(manifestAsProps);
+            
+            OutputStream os = response.getOutputStream();
+            sortedProps.store(os, " " + taskInfo.getName() + "  " + taskInfo.getLsid());
+            os.flush();
+            os.close();
+
+            return Response.ok().build();
+        } catch (Exception e){
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build();
+            
+        }
+
+    }
+    
 }

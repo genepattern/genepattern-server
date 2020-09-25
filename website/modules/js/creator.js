@@ -472,7 +472,15 @@ function saveModulePost(moduleJson)
                         height:130,
                         modal: true,
                         title: "Module Saved",
+                        open: function () {
+                            $(this).parent().find('button:nth-child(2)').focus();
+                        },
                         buttons: {
+                            "View Manifest": function(){
+                            	var url = "/gp/rest/v1/tasks/"+newLsid+"/manifest";
+                            	window.open(url, "_blank");
+                            },	
+                        
                             OK: function() {
                                 $( this ).dialog( "close" );
                                 module_editor.lsid = newLsid;
