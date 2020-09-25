@@ -353,7 +353,9 @@ function saveModule()
     if (useEditor && ($("#param_groups_editor").val().length > 0)){
     	var isValid = validateParamGroupsEditor();
     	json["paramGroupsJson"] = $("#param_groups_editor").val();
-    	if (!isValid) return;
+    	// do not fail since we want to be able to save in-process modules
+    	// even if they may not be runnable
+    	//if (!isValid) saveError("There is a problem with your paramGroups.json file");
     }
     
     
