@@ -103,7 +103,7 @@ public class LSIDManager {
                 adminEditAllowed = true;
             }
             
-            if (lsidIsMine || adminEditAllowed) {
+            if (lsidIsMine || (adminEditAllowed && (requestedLSID.length() > 0) )  ) {
                 taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
             } 
             else {

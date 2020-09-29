@@ -1368,6 +1368,7 @@ public class AnalysisDAO extends BaseDAO {
             return getNextTaskLSIDVersion(existingLsid);
         } 
         catch (final Exception e) {
+            e.printStackTrace();
             log.error(e);
             throw new OmnigeneException(e);
         }
