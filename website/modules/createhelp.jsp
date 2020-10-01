@@ -515,9 +515,6 @@ and any properties defined in the %<%=messages.get("ApplicationName")%>InstallDi
  Useful substitution properties include:<br><br>
 
 <table>
-<tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
-<tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with <%=messages.get("ApplicationName")%> server on Windows, otherwise the one already installed on your system</td></tr>
-<tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with <%=messages.get("ApplicationName")%>server on Windows and MacOS</td></tr>
 <tr><td valign="top"><span class="example">&lt;java_flags&gt;</span></td><td>memory size and other Java JVM settings from the <%=messages.get("ApplicationName")%>/resources/genepattern.properties file</td></tr>
 <tr><td valign="top"><span class="example">&lt;job_id&gt;</span></td><td>job number</td></tr>
 <tr><td valign="top"><span class="example">&lt;name&gt;</span></td><td>name of the module being run</td></tr>
@@ -537,7 +534,7 @@ the public <%=messages.get("ApplicationName")%> website. These older modules wer
 module runtimes and could be used to localize paths for any given GenePattern server.  Their use is deprecated and they are listed here only 
 as documentation for said older modules.<br/><br/>
 <table>
-<tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
+<tr><td valign="top"><span class="example">&lt;java&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
 <tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with <%=messages.get("ApplicationName")%> server on Windows, otherwise the one already installed on your system</td></tr>
 <tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with <%=messages.get("ApplicationName")%>server on Windows and MacOS</td></tr>
 <tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>Used if a module needs the path to the directory where the module's support files are stored</td></tr>
