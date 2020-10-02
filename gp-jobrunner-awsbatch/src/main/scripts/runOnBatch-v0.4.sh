@@ -195,7 +195,8 @@ __env_arg="environment=[\
   {name=GP_DOCKER_MOUNT_POINTS,value=${GP_JOB_DOCKER_BIND_MOUNTS}}, \
   {name=GP_JOB_DOCKER_IMAGE,value=${GP_JOB_DOCKER_IMAGE}}, \
   {name=GP_DOCKER_CONTAINER,value=${GP_JOB_DOCKER_IMAGE}}, \
-  {name=GP_JOB_WALLTIME_SEC,value=${GP_JOB_WALLTIME_SEC}}
+  {name=GP_JOB_WALLTIME_SEC,value=${GP_JOB_WALLTIME_SEC}}, \
+  {name=GP_CONTAINER_CANT_RUN_AS_ROOT,value=${GP_CONTAINER_CANT_RUN_AS_ROOT}}
 ]";
 
 CLEAN_MODULE_NAME="$(echo $GP_MODULE_NAME | sed 's/[^A-Z ^a-z ^0-9]//g')"

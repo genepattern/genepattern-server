@@ -511,6 +511,10 @@ public class AWSBatchJobRunner implements JobRunner {
             cmdEnv.put("GP_JOB_DOCKER_IMAGE", dockerImage);
         }
         
+        // switch to turn off execution of module containers that run as root within the container
+        final boolean rootContainerNotAllowed=gpJob.getGpConfig().getGPBooleanProperty(gpJob.getJobContext(), "dockerCantRunContainersAsRoot", false);
+        cmdEnv.put("GP_CONTAINER_CANT_RUN_AS_ROOT", ""+rootContainerNotAllowed);
+        
         // set GP_AWS_SYNC_SCRIPT_NAME, default=aws-sync-from-s3.sh
         final String syncFromScriptName=gpJob.getGpConfig().
             getGPProperty(gpJob.getJobContext(), "job.awsbatch.sync-from-s3-script", "aws-sync-from-s3.sh");
