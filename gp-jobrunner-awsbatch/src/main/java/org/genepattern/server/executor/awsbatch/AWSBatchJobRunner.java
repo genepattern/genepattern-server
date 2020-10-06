@@ -515,6 +515,10 @@ public class AWSBatchJobRunner implements JobRunner {
         final boolean rootContainerNotAllowed=gpJob.getGpConfig().getGPBooleanProperty(gpJob.getJobContext(), "dockerCantRunContainersAsRoot", false);
         cmdEnv.put("GP_CONTAINER_CANT_RUN_AS_ROOT", ""+rootContainerNotAllowed);
         
+        final boolean readonlyBindMounts=gpJob.getGpConfig().getGPBooleanProperty(gpJob.getJobContext(), "dockerReadOnlyBindMounts", false);
+        cmdEnv.put("GP_READONLY_BIND_MOUNTS", ""+readonlyBindMounts);
+ 
+        
         // set GP_AWS_SYNC_SCRIPT_NAME, default=aws-sync-from-s3.sh
         final String syncFromScriptName=gpJob.getGpConfig().
             getGPProperty(gpJob.getJobContext(), "job.awsbatch.sync-from-s3-script", "aws-sync-from-s3.sh");
