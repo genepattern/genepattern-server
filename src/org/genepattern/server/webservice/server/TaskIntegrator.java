@@ -1107,8 +1107,12 @@ public class TaskIntegrator {
                 File newFile = new File(dir, fileNames[i]);
                 if (!f.getParentFile().getParent().equals(dir.getParent())) {
                     f.renameTo(newFile);
-                }
-                else {
+                } else if (f.getAbsolutePath().equals(newFile.getAbsolutePath())) {
+                    // don't try to copy from and to the same file location so do nothing
+                    // this happens if a module is being saved with no increment to the LSID 
+                    // for any unchanged files
+                    
+                }  else {
                     // copy file, leaving original intact
                     Util.copyFile(f, newFile);
                 }

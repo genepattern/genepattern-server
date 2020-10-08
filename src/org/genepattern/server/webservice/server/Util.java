@@ -87,6 +87,10 @@ public class Util {
     }
 
     public static void copyFile(File source, File dest) {
+        // null case of copying back to the same filename
+        if (source.getAbsolutePath().equals(dest.getAbsolutePath())) return;
+        
+        
         byte[] buf = new byte[100000];
         int j;
         FileOutputStream os = null;
