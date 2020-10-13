@@ -83,6 +83,13 @@ function run_with_singularity() {
   #   $ echo $?
   # See:
   #   http://pubs.opengroup.org/onlinepubs/9699919799/utilities/command.html
+  command -v "$singularity_cmd"
+  echo SING CHECK $?
+  echo hostname $HOSTNAME 
+  echo "$singularity_cmd"
+  echo ls -alrt /usr/local/bin
+  env
+
   command -v "$singularity_cmd" >/dev/null || { 
     echo "\
 Command not found: '${singularity_cmd}'

@@ -829,37 +829,40 @@ public class RunTaskServlet extends HttpServlet
                     
                     // verify that its not asking for an invalid job config (e.g. too much memory, wrong queue, too many CPU)
                     // using the parameterInfo from the jobConfigParams but admins get a pass
-                    
-                    ParameterInfo jcpPi = null;
-                    //if (!userContext.isAdmin()) jcpPi = jcp.getParam(parameterName);
-                    jcpPi = jcp.getParam(parameterName);
-                    
-                    for (int v = 0; v < valueList.length(); v++) {
-                        final String value = valueList.getString(v);
-                        if (isBatch) {
-                            //TODO: implement support for groupId with batch values
-                            jobInputHelper.addBatchValue(parameterName, value);
-                        } else {
-                            jobInputHelper.addValue(parameterName, value, groupId);
-                        }
+                    if (jcp != null){
+                        ParameterInfo jcpPi = null;
+                        //if (!userContext.isAdmin()) jcpPi = jcp.getParam(parameterName);
+                        jcpPi = jcp.getParam(parameterName);
                         
-                        if (jcpPi != null){
-                            Map<String,String> allowedChoices = jcpPi.getChoices();
-                            if (allowedChoices.size() > 0){
-                                String av = allowedChoices.get(value);
-                                Boolean aValidVal = allowedChoices.containsValue(value);
-                                if ((av == null) && !aValidVal) {
-                                    // we got here because the user is not an admin, but has somehow submitted a job requesting
-                                    // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
-                                    // the job from tunning GP-8371
-                                    throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
-                                }
-                                
-                                
+                        for (int v = 0; v < valueList.length(); v++) {
+                            final String value = valueList.getString(v);
+                            if (isBatch) {
+                                //TODO: implement support for groupId with batch values
+                                jobInputHelper.addBatchValue(parameterName, value);
+                            } else {
+                                jobInputHelper.addValue(parameterName, value, groupId);
                             }
+                            
+                            if (jcpPi != null){
+                                Map<String,String> allowedChoices = jcpPi.getChoices();
+                                if (allowedChoices.size() > 0){
+                                    String av = allowedChoices.get(value);
+                                    Boolean aValidVal = allowedChoices.containsValue(value);
+                                    if ((av == null) && !aValidVal) {
+                                        // we got here because the user is not an admin, but has somehow submitted a job requesting
+                                        // a job config param (like memory, cpu) that is not one of the allowed values.  We need to throw an error and prevent
+                                        // the job from tunning GP-8371
+                                        throw new GpServerException("Job config parameter '" + parameterName +"' was requested with a value of " + value + " which is not one of the allowed values '"+ allowedChoices.toString() +"'");
+                                    }
+                                    
+                                    
+                                }
+                            }
+                            
                         }
-                        
+                    // end job config params
                     }
+                    
                 }
             }
 
