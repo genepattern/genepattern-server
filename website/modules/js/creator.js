@@ -568,10 +568,18 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 		var groupParams = group["parameters"];
 		if (i == 0) {
 			lastParam = pdivDict[groupParams[0]]; // first param in first group
+			var nameControl = $(lastParam).find("input[name='p_name']");
+			$(nameControl).parent().find(".pgroupLabel").remove();
+			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+
 		} else {
 			var firstInGroup = pdivDict[groupParams[0]];
 			$(firstInGroup).insertAfter($(lastParam));
 			lastParam=pDiv;
+			var nameControl = $(firstInGroup).find("input[name='p_name']");
+			$(nameControl).parent().find(".pgroupLabel").remove();
+			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+
 		}
 		
 		for (var j=1; j < groupParams.length; j++){
