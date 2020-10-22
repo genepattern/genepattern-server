@@ -149,7 +149,7 @@ public abstract class DBLoader {
 
         String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
         try {
-            ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
+            ds.updateTask(taskID, this._name, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
             log.info("Task (taskId="+taskID+") " + this._name + " updated.");
         }
         catch (Exception e) {

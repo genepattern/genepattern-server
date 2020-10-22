@@ -1551,18 +1551,22 @@ public class AnalysisDAO extends BaseDAO {
             throw new OmnigeneException(e);
         }
     }
-
+    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes, String user_id, int access_id) 
+            throws OmnigeneException {
+        return updateTask(taskId, null, taskDescription, parameter_info, taskInfoAttributes, user_id, access_id);
+    }
     /**
      * Updates task description and parameters
      * 
      * @param taskID, task ID
+     * @param taskName, null or a task name
      * @param description, task description
      * @param parameter_info, parameters as a xml string
      * @return No. of updated records
      * @throws OmnigeneException
      * @throws RemoteException
      */
-    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes, String user_id, int access_id) 
+    public int updateTask(int taskId, String taskName, String taskDescription, String parameter_info, String taskInfoAttributes, String user_id, int access_id) 
     throws OmnigeneException {
         try {
             TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
@@ -1572,6 +1576,12 @@ public class AnalysisDAO extends BaseDAO {
             task.setTaskinfoattributes(taskInfoAttributes);
             task.setUserId(user_id);
             task.setAccessId(access_id);
+            
+            // JTL 10/22/2020  GP-8500
+            // add taskName override now that we can do updates without changing the LSID version
+            if ((taskName != null) && (!taskName.trim().isEmpty())){
+                task.setTaskName(taskName);
+            }
 
             TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
             String sLSID = null;
