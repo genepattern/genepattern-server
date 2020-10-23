@@ -2126,8 +2126,35 @@ function validateParamGroupsEditor(silent){
 	return valid;
 }
 
-	
-
+function updatedefaultcontainers()
+{
+    $.ajax({
+        type: "POST",
+        url: "/gp/ModuleCreator/containers",
+        success: function(response) {
+            var error = response["ERROR"];
+            if (error !== undefined) {
+                alert(error);
+            }  else {
+            	var containers =  $.parseJSON( response["containers"]);
+            	
+            	$("#dockerImageDefaults").empty();
+            	for (var i in containers) {
+            		if (containers[i].length > 0){
+            			$("<option/>").html(containers[i]).appendTo("#dockerImageDefaults");
+            		}
+                    
+                 }
+            	
+            	
+            	
+            }
+        },
+        dataType: "json"});
+    
+}
+    
+    
 
 function updatemodulecategories()
 {
@@ -3170,6 +3197,7 @@ jQuery(document).ready(function() {
     addsectioncollapseimages();
     updatemodulecategories();
     updatefileformats();
+    updatedefaultcontainers();
 
     //check if this is a request to edit an existing module
     editModule();
