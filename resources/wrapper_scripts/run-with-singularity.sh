@@ -108,7 +108,7 @@ default.properties:
 " >&2; exit 127; 
   }
 
-  echo "${singularity_cmd}" exec  -B ${bind_src}[${bind_dst}[rw]]  "${docker_img}" "${__gp_module_cmd[@]}" > ${workdir}/sing_exec.txt
+  echo "${singularity_cmd}" exec  -B ${bind_src}[${bind_dst}[rw]]  "docker://${docker_img}" "${__gp_module_cmd[@]}" > ${workdir}/sing_exec.txt
   
   cd ${workdir} 
   $DRY_RUN "${singularity_cmd}" run \
