@@ -21,7 +21,6 @@
 #     arg.list: [ "4", "3.14", "1.32e6", "true", "false" ] 
 # The following example will cause a parse error:
 #     arg.list.error: [ 4, 3.14, 1.32e6, true, false ] 
-# 
 
 # apply these properties to all jobs
 default.properties:
@@ -53,6 +52,14 @@ default.properties:
     #   Display the terms of service on the registration page
     # Default:
     #   show.terms.of.service: false
+
+    ##############################################################
+    # "terms.of.service.link"
+    #   Override the terms of service on the registration page with an
+    #   external link.
+    # 
+    # No default.
+    #   terms.of.service.link: http://www.yahoo.com
 
     ##############################################################
     # "create.account.allowed"
@@ -182,6 +189,44 @@ default.properties:
     # Default:
     #   group.membership.file: "userGroups.xml"
 
+    ##############################################################
+    # AWS and Docker options.
+    #
+    #  The following 2 options apply to docker containers run via AWS Batch but not to containers
+    #  run on a local docker daemon using the run-with-docker.sh script.
+    #
+    #  When true, module containers that run as the root user or group internally are rejected to prevent
+    #  docker exploits against the host system 
+    #       dockerCantRunContainersAsRoot: false
+    #
+    #  When true, directories bound into the module docker container are read-only with the exception of the tasklib, job dir and metadata dirs
+    #       dockerReadOnlyBindMounts: true
+    #
+
+    ##############################################################
+    # moduleIntegratorDefaultContainers 
+    #     Sets the default list of containers in the dropdown to elect a docker container in the ModuleIntegrator
+    #       
+    #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  jupyter/datascience-notebook:r-3.6.2     
+
+    ###########################################################
+    #
+    # User-based throttle settings to prevent a single user from overloading the server with too many simultaneous jobs
+    #
+    # Default: unlimited.  The maximum number of jobs a user can have in pending/running state at one time.  When there are this
+    # many jobs additional submitted jobs are queued but not run until after currently runnng jobs complete.
+    #    max_simultaneous_jobs: <20>
+    #
+    # If set, sends an email to this address when a users exceeds the max_simultaneous_jobs setting to notify the administrator
+    # that this event has occurred and the name of the offending user.
+    #    max_simultaneous_jobs_notification_email: <email address>
+    #
+    # Default: 60 seconds.  After sending an email due to a user exceeding the throttle (see the 2 properties above) how long before 
+    # additional emails are set.  Meant to prevent sending hundreds of emails seconds apart in response to a script submitting many
+    # more jobs then the max allowed.
+    #    max_simultaneous_jobs_notification_cooldown: 60000
+
+
 
     # when set to true, delete empty stdout files from the job results directory
     job.deleteEmptyStdout: false
@@ -235,7 +280,7 @@ default.properties:
     # the mail server for sending messages from the GenePattern server      
     smtp.server: smtp.broadinstitute.org
     # the email recipient of help requests sent via the 'contact us' link
-    # contact.us.email: "gp-help@broadinstitute.org" <-- this email is deprecated - contact us goes to a forum
+    contact.us.email: "gp-help@broadinstitute.org"
     # the from email address for messages sent to end users, such as from the 'forgot password' link  
     smtp.from.email: "no-reply@genepattern.org"
     # (optional), workaround for 'Helo command rejected: need fully-qualified hostname'
@@ -434,7 +479,6 @@ default.properties:
         NMFConsensus: "genepattern/docker-r-2-5:0.1",
         PreprocessDataset: "genepattern/docker-java17:0.12",
         "PreprocessReadCounts:0.6": "genepattern/docker-r-3-13:0.1",
-        "RankNormalize": "genepattern/docker-r-2-15:0.1",
         SNPFileCreator: "genepattern/docker-java17:0.12",
         
         # ssGSEAProjection (>= v9.0.10), must set in manifest
