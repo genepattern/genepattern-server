@@ -209,6 +209,15 @@ default.properties:
     #       
     #     moduleIntegratorDefaultContainers: genepattern/docker-perl52:0.1  jupyter/datascience-notebook:r-3.6.2     
 
+    ##############################################################
+    # allowAdminEditNonLocalModules
+    #    Default: false
+    # When true, a member of the GenePattern admin group may directly edit all modules on the server no matter where
+    # they originated (e.g. genepattern team modules, modules from other servers etc can be editted)
+    #      
+    #     allowAdminEditNonLocalModules: true
+
+
     ###########################################################
     #
     # User-based throttle settings to prevent a single user from overloading the server with too many simultaneous jobs
