@@ -318,12 +318,13 @@ function saveModule()
     }
 
     var theLsid
-    if (adminServerAllowed){
+    //if (adminServerAllowed){
+    // Now any user can explicitly set the version number 
     	theLsid = "urn:lsid:"+ $('#lsidAuthority').val()+":" + $('#lsidNamespace').val()+":"+ $('#lsidId').val()+":"+ $('#lsidVersion').val();
         	
-    } else {
-    	theLsid= module_editor.lsid;
-    }
+    //} else {
+    //	theLsid= module_editor.lsid;
+    //}
     
     var lsid = theLsid;
     var supportFiles = module_editor.uploadedfiles;
@@ -2296,18 +2297,52 @@ function htmlEncode(value)
     return $('<div/>').text(value).html();
 }
 
+
+//permissions.put("isAdmin", taskContext.isAdmin());
+//permissions.put("isLocalLSID", LSIDUtil.isAuthorityMine(lsid));
+//permissions.put("allowUserEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowUserEditNonLocalModules", false));
+//permissions.put("allowAdminEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false));
+
+
 function setLsidDisplay(lsid){
+	// all disabled by default
+	$('#lsidAuthority').prop('disabled', true).addClass("disabledLsid");
+	$('#lsidNamespace').prop('disabled', true).addClass("disabledLsid");
+	$('#lsidId').prop('disabled', true).addClass("disabledLsid");
+	$('#lsidVersion').prop('disabled', true).addClass("disabledLsid");
+	
+	// fill in the values
 	lsidParts = lsid.split(":");
     $('#lsidAuthority').val(lsidParts[2]);
     $('#lsidNamespace').val(lsidParts[3]);
     $('#lsidId').val(lsidParts[4]);
     $('#lsidVersion').val(lsidParts[5]);
-    if (!adminServerAllowed){
-    	$('#lsidAuthority').prop('disabled', true).addClass("disabledLsid");
-    	$('#lsidNamespace').prop('disabled', true).addClass("disabledLsid");
-    	$('#lsidId').prop('disabled', true).addClass("disabledLsid");
-    	$('#lsidVersion').prop('disabled', true).addClass("disabledLsid");
+    
+    // enable the full LSID in the save dialog to be editable if the user is an admin and (allowAdminEditNonLocalModules=true or isLocalLSID)
+    // otherwise only enable the version
+    
+    if ((moduleCreatorPermissions.isAdmin) && ((moduleCreatorPermissions.isLocalLSID) || (moduleCreatorPermissions.allowAdminEditNonLocalModules))){
+    	$('#lsidAuthority').prop('disabled', false).removeClass("disabledLsid");
+    	$('#lsidNamespace').prop('disabled', false).removeClass("disabledLsid");
+    	$('#lsidId').prop('disabled', false).removeClass("disabledLsid");
+    	$('#lsidVersion').prop('disabled', false).removeClass("disabledLsid");
+    } else if (moduleCreatorPermissions.allowUserEditNonLocalModules){
+    	// do we do anything different here?
     }
+    // always allow an editor to override the module version
+    $('#lsidVersion').prop('disabled', false).removeClass("disabledLsid");
+    
+    // now set the behavior so that if the LSID text fields are manually edited it changes
+    // the LSID indicator to "no increment" since its unlikely a user would explicitly set the LSID
+    // to a pre-incremental value and then save it
+    function lsidKeyupFunction(){ 
+    	$('select[name ="versionIncrement"]').val("noincrement"); 
+    //	$("#versionIncrement").val("noincrement"); 
+    }
+    
+    $('#lsidVersion').keyup(lsidKeyupFunction);
+    
+  
     
 }
 
@@ -2843,16 +2878,31 @@ function loadModule(taskId)
             {
                 module_editor.docFileNames = response["docFileNames"];
             }
-
+            // loadPermissions before loadModuleInfo !
+            loadPermissions(response["Permissions"]);
             loadModuleInfo(response["module"]);
             loadParameterInfo(response["parameters"]);
             loadParameterGroups(response["ParamGroupsJson"]);
+           
+            
             setDirty(false);
             $(this).resize();
         },
         dataType: "json"
     });
 }
+
+
+/**
+ * Cache user permissions and server configuration to address UI features to enable/disable
+ */
+var moduleCreatorPermissions = null;
+function loadPermissions(permissionsObject){
+	moduleCreatorPermissions = permissionsObject;
+	
+}
+
+
 
 function loadParameterGroups(jsonArray, skipValidation){
 	

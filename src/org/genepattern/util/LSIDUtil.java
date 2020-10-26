@@ -5,11 +5,14 @@
 package org.genepattern.util;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 /**
  * @author Liefeld
@@ -144,6 +147,74 @@ public class LSIDUtil {
         try {
             lsidObj = new LSID(lsid);
             return isAuthorityMine(gpConfig, gpContext, lsidObj);
+        } 
+        catch (MalformedURLException e) {
+            log.error(e);
+            return false;
+        }
+    }
+    
+    public static boolean isEditableForUser(final GpConfig gpConfig, final GpContext gpContext, final String lsid, String username){
+        boolean authorityToEdit = false;
+        boolean isAuthorityMine =  LSIDUtil.isAuthorityMine(lsid);
+        if (isAuthorityMine){
+            authorityToEdit = true;
+        } else {
+            boolean userOverrideAllowed = gpConfig.getGPBooleanProperty(gpContext, "allowUserEditNonLocalModules", false);
+            boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(gpContext, "allowAdminEditNonLocalModules", false);
+            boolean isAdmin = AuthorizationHelper.adminServer(username);
+            
+            if (adminOverrideAllowed && isAdmin) {
+                authorityToEdit = true;
+            } else if (userOverrideAllowed){
+                boolean authorityIsProtected = LSIDUtil.getInstance().isAuthorityProtected(gpConfig, gpContext, lsid);
+                authorityToEdit = !authorityIsProtected;
+            } else {
+                authorityToEdit =  false;
+            }
+        }
+        return authorityToEdit;
+    }
+    
+    
+    
+    
+    ////      broad.mit.edu
+    //      genepattern.org
+    //      pathseq.broadinstitute.org
+    public static final String[] protectedAuthorities = {"broad.mit.edu","genepattern.org","pathseq.broadInstitute.org"};
+    protected static ArrayList<String> protectedAuths = null;
+    
+    protected static  ArrayList<String> getProtectedAuthorities(final GpConfig gpConfig, final GpContext gpContext){
+        if (protectedAuths == null){
+            protectedAuths = new ArrayList<String>();
+            protectedAuths.addAll(Arrays.asList(protectedAuthorities));
+            String additionalProtectedAuthorities = gpConfig.getGPProperty(gpContext, "additionalProtectedLSIDAuthorities", null);
+            
+            if (additionalProtectedAuthorities != null){
+                String auths[] = additionalProtectedAuthorities.split(",");
+                for (int i=0; i< auths.length; i++){
+                    protectedAuths.add(auths[i].trim());
+                }
+            }
+        }
+        return protectedAuths;
+    }
+    
+    
+    public static boolean isAuthorityProtected(final GpConfig gpConfig, final GpContext gpContext, final String lsid) {
+        LSID lsidObj;
+        try {
+            lsidObj = new LSID(lsid);
+            final String authType = getAuthorityType(gpConfig, gpContext, lsidObj);
+            ArrayList<String> protectedAuthorities = getProtectedAuthorities(gpConfig,gpContext);
+            for (int i=0; i< protectedAuthorities.size(); i++){
+                String anAuth = protectedAuthorities.get(i);
+                if (anAuth.equalsIgnoreCase(authType)) return true;
+            }
+            
+            return false;
+            
         } 
         catch (MalformedURLException e) {
             log.error(e);

@@ -1158,7 +1158,7 @@ public class RunTaskServlet extends HttpServlet
             return false;
         }
         
-        // if the LSID is not locally created, it can still be editted if the user is an admin
+        // if the LSID is not locally created, it can still be edited if the user is an admin
         // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
         // in a config file
 
@@ -1173,10 +1173,25 @@ public class RunTaskServlet extends HttpServlet
         if (!isMine) {
             return false;
         }
-        //can only edit modules or pipelines created on this gp server
-        final boolean isAuthorityMine = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+        // GP-8504 can only edit modules or pipelines created on this gp server 
+        // or from other servers if the "allowUserEditNonLocalModules" property 
+        // has been defined and set to true in the config file and it is NOT one of
+        // our special protected LSID domains 
+        //      broad.mit.edu:cancer.software.genepattern.module.analysis
+        //      broad.mit.edu:cancer.software.genepattern.module.pipeline
+        //      broad.mit.edu:cancer.software.genepattern.module.test.analysis
+        //      genepattern.org:module.analysis
+        //      pathseq.broadinstitute.org:pathseq.analysis
+
+        boolean isAuthorityMine = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
         if (!isAuthorityMine) {
-            return false;
+            boolean userOverrideAllowed = gpConfig.getGPBooleanProperty(userContext, "allowUserEditNonLocalModules", false);
+            if (userOverrideAllowed){
+                boolean isAuthorityProtected = LSIDUtil.getInstance().isAuthorityProtected(gpConfig, userContext, taskInfo.getLsid());
+                isAuthorityMine = !isAuthorityProtected;
+            } else {
+                return false;
+            }
         }
         final boolean isPipeline=taskInfo.isPipeline();
         if (!isPipeline) {

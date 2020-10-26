@@ -885,6 +885,8 @@ public class ModuleQueryServlet extends HttpServlet {
 	        return;
 	    }
 
+	    final GpConfig gpConfig=ServerConfigurationFactory.instance();
+//      
         try
         {
             TaskInfo taskInfo = getTaskInfo(lsid);
@@ -900,13 +902,21 @@ public class ModuleQueryServlet extends HttpServlet {
                 // if the LSID is not locally created, it can still be editted if the user is an admin
                 // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
                 // in a config file
-                final GpConfig gpConfig=ServerConfigurationFactory.instance();
-                boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
-                if (adminOverrideAllowed && AuthorizationHelper.adminServer(username)) {
-                    editable = true;
-                } else {
-                    editable = false;
-                }
+                  boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
+//                
+//                
+//                boolean userOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowUserEditNonLocalModules", false);
+//                if (userOverrideAllowed){
+//                    boolean isAuthorityProtected = LSIDUtil.getInstance().isAuthorityProtected(gpConfig, taskContext, taskInfo.getLsid());
+//                    editable = !isAuthorityProtected;
+//                } else {
+//                    editable = false;
+//                }
+//            
+//                if (!editable && adminOverrideAllowed && AuthorizationHelper.adminServer(username)) {
+//                    editable = true;
+//                } 
+                editable = LSIDUtil.isEditableForUser(gpConfig, taskContext, lsid, username);
             }
                 
             if(!editable)
@@ -974,6 +984,14 @@ public class ModuleQueryServlet extends HttpServlet {
                 responseObject.addChild("ParamGroupsJson", paramGroupsJson);
             }
             
+            // provide some permissions details so we can enable/disable LSID editting in whole or in part in the UI
+            JSONObject permissions = new JSONObject();
+            permissions.put("isAdmin", taskContext.isAdmin());
+            permissions.put("isLocalLSID", LSIDUtil.isAuthorityMine(lsid));
+            permissions.put("allowUserEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowUserEditNonLocalModules", false));
+            permissions.put("allowAdminEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false));
+            
+            responseObject.addChild("Permissions", permissions);
 
             JSONArray parametersObject = getParameterList(taskInfo, taskInfo.getParameterInfoArray());
             responseObject.addChild(ParametersJSON.KEY, parametersObject);

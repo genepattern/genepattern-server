@@ -1177,25 +1177,16 @@ public class TaskIntegrator {
                 }
                 return;
             }
-            //final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            //final GpContext gpContext=GpContext.getServerContext();
-            //final String authority=gpConfig.getLsidAuthority(gpContext);
+           
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            final GpContext gpContext=GpContext.getServerContext();
             
-            boolean authorityToEdit = LSIDUtil.isAuthorityMine(lsid);
-            
-            
-            if (!authorityToEdit){
-                // if the LSID is not locally created, it can still be editted if the user is an admin
-                // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
-                // in a config file
-                final GpConfig gpConfig=ServerConfigurationFactory.instance();
-                final GpContext gpContext=GpContext.getServerContext();
-                boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(gpContext, "allowAdminEditNonLocalModules", false);
-                if (adminOverrideAllowed && AuthorizationHelper.adminServer(username)) {
-                    authorityToEdit = true;
-                } else {
-                    authorityToEdit = false;
-                }
+            boolean authorityToEdit = false;
+            boolean isAuthorityMine =  LSIDUtil.isAuthorityMine(lsid);
+            if (isAuthorityMine){
+                authorityToEdit = true;
+            } else {
+              authorityToEdit = LSIDUtil.isEditableForUser(gpConfig, gpContext, lsid, username);
             }
             
             

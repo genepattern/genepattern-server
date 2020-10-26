@@ -97,13 +97,10 @@ public class LSIDManager {
             } 
             //else if (lsidAuthority.equalsIgnoreCase(taskLSID.getAuthority())) {
             boolean lsidIsMine = LSIDUtil.isAuthorityMine(requestedLSID);
-            boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(gpContext, "allowAdminEditNonLocalModules", false);
-            boolean adminEditAllowed = false;
-            if (adminOverrideAllowed && AuthorizationHelper.adminServer(gpContext.getUserId())) {
-                adminEditAllowed = true;
-            }
+            boolean userEditAllowed = LSIDUtil.isEditableForUser(gpConfig, gpContext, requestedLSID, gpContext.getUserId());
             
-            if (lsidIsMine || (adminEditAllowed && (requestedLSID.length() > 0) )  ) {
+            
+            if (lsidIsMine || (userEditAllowed && (requestedLSID.length() > 0) )  ) {
                 taskLSID = getNextIDVersion(mgr, requestedLSID, versionIncrement);
             } 
             else {
