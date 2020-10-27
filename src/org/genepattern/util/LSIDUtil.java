@@ -207,10 +207,13 @@ public class LSIDUtil {
         try {
             lsidObj = new LSID(lsid);
             final String authType = getAuthorityType(gpConfig, gpContext, lsidObj);
+            if (authType.equalsIgnoreCase(AUTHORITY_BROAD)) return true;  // broad stuff is protected by default
+            
+            final String thisAuthority = lsidObj.getAuthority();
             ArrayList<String> protectedAuthorities = getProtectedAuthorities(gpConfig,gpContext);
             for (int i=0; i< protectedAuthorities.size(); i++){
                 String anAuth = protectedAuthorities.get(i);
-                if (anAuth.equalsIgnoreCase(authType)) return true;
+                if (anAuth.equalsIgnoreCase(thisAuthority)) return true;
             }
             
             return false;
