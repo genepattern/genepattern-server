@@ -988,7 +988,11 @@ function updateparameter(parameter, updateCmdLine)
 
     var pname_oldval = pelement.data('oldVal');
     var pflag_oldval = felement.data('oldVal');
-
+    if (pname_oldval == null) pname_oldval = "";
+    if (pflag_oldval == null) pflag_oldval = "";
+    
+    
+    
     pelement.data('oldVal',  pname_newval );
     felement.data('oldVal',  pflag_newval );
 
@@ -2321,13 +2325,15 @@ function setLsidDisplay(lsid){
     // enable the full LSID in the save dialog to be editable if the user is an admin and (allowAdminEditNonLocalModules=true or isLocalLSID)
     // otherwise only enable the version
     
-    if ((moduleCreatorPermissions.isAdmin) && ((moduleCreatorPermissions.isLocalLSID) || (moduleCreatorPermissions.allowAdminEditNonLocalModules))){
-    	$('#lsidAuthority').prop('disabled', false).removeClass("disabledLsid");
-    	$('#lsidNamespace').prop('disabled', false).removeClass("disabledLsid");
-    	$('#lsidId').prop('disabled', false).removeClass("disabledLsid");
-    	$('#lsidVersion').prop('disabled', false).removeClass("disabledLsid");
-    } else if (moduleCreatorPermissions.allowUserEditNonLocalModules){
-    	// do we do anything different here?
+    if (moduleCreatorPermissions != null){
+	    if ((moduleCreatorPermissions.isAdmin) && ((moduleCreatorPermissions.isLocalLSID) || (moduleCreatorPermissions.allowAdminEditNonLocalModules))){
+	    	$('#lsidAuthority').prop('disabled', false).removeClass("disabledLsid");
+	    	$('#lsidNamespace').prop('disabled', false).removeClass("disabledLsid");
+	    	$('#lsidId').prop('disabled', false).removeClass("disabledLsid");
+	    	$('#lsidVersion').prop('disabled', false).removeClass("disabledLsid");
+	    } else if (moduleCreatorPermissions.allowUserEditNonLocalModules){
+	    	// do we do anything different here?
+	    }
     }
     // always allow an editor to override the module version
     $('#lsidVersion').prop('disabled', false).removeClass("disabledLsid");
@@ -2489,16 +2495,16 @@ function loadModuleInfo(module)
 
     if(module["categories"] !== undefined && module["categories"].length > 0)
     {
-        module_editor.moduleCategories = module["categories"].split(";");
+        module_editor.moduleCategories = module["categories"].toLowerCase().split(";");
 
-        $("select[name='category']").val(module_editor.moduleCategories);
+        $("select[name='category']").val(module_editor.moduleCategories.toLowerCase());
         $("select[name='category']").multiselect("refresh");
     }
     else if(module["taskType"] !== undefined)
     {
-        module_editor.moduleCategories = module["taskType"];
+        module_editor.moduleCategories = module["taskType"].toLowerCase();
 
-        $("select[name='category']").val(module["taskType"]);
+        $("select[name='category']").val(module["taskType"].toLowerCase());
         $("select[name='category']").multiselect("refresh");
     }
 

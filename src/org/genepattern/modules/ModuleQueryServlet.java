@@ -716,7 +716,14 @@ public class ModuleQueryServlet extends HttpServlet {
 
             final LsidVersion.Increment versionIncrementValue=LsidVersion.Increment.fromString(versionIncrement);
             String newLsid = null;
-            if (moduleObject.getLsid() == null || moduleObject.getLsid().equals("")) {
+            
+            // if an lsid is provided but its missing any sections, pretend it is absent and assign a new one
+            String spacelessLsid = moduleObject.getLsid().replaceAll("\\s+", "");
+            boolean lsidIsMissingSomething = (spacelessLsid.indexOf("::")) >= 0;
+            
+            if (moduleObject.getLsid() == null || moduleObject.getLsid().equals("") || lsidIsMissingSomething) {
+                moduleObject.setLsid(null);
+                tia.replace("LSID",null);
                 newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
                         versionIncrementValue,
                         new Status() {
@@ -899,7 +906,7 @@ public class ModuleQueryServlet extends HttpServlet {
 
             boolean isLocalLsid = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             if (!isLocalLsid){
-                // if the LSID is not locally created, it can still be editted if the user is an admin
+                // if the LSID is not locally created, it can still be edited if the user is an admin
                 // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
                 // in a config file
                   boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
@@ -986,7 +993,7 @@ public class ModuleQueryServlet extends HttpServlet {
             
             // provide some permissions details so we can enable/disable LSID editting in whole or in part in the UI
             JSONObject permissions = new JSONObject();
-            permissions.put("isAdmin", taskContext.isAdmin());
+            permissions.put("isAdmin", AuthorizationHelper.adminServer(username));
             permissions.put("isLocalLSID", LSIDUtil.isAuthorityMine(lsid));
             permissions.put("allowUserEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowUserEditNonLocalModules", false));
             permissions.put("allowAdminEditNonLocalModules", gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false));
