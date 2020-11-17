@@ -723,7 +723,7 @@ public class ModuleQueryServlet extends HttpServlet {
             
             if (moduleObject.getLsid() == null || moduleObject.getLsid().equals("") || lsidIsMissingSomething) {
                 moduleObject.setLsid(null);
-                tia.replace("LSID",(String)null);
+                tia.put("LSID",(String)null);
                 newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
                         versionIncrementValue,
                         new Status() {
