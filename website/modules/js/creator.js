@@ -2497,7 +2497,7 @@ function loadModuleInfo(module)
     {
         module_editor.moduleCategories = module["categories"].toLowerCase().split(";");
 
-        $("select[name='category']").val(module_editor.moduleCategories.toLowerCase());
+        $("select[name='category']").val(module_editor.moduleCategories);
         $("select[name='category']").multiselect("refresh");
     }
     else if(module["taskType"] !== undefined)
