@@ -2504,7 +2504,7 @@ function loadModuleInfo(module)
     {
         module_editor.moduleCategories = module["taskType"].toLowerCase();
 
-        $("select[name='category']").val(module["taskType"].toLowerCase());
+        $("select[name='category']").val(module["taskType"]);
         $("select[name='category']").multiselect("refresh");
     }
 
