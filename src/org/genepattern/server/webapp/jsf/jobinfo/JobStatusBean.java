@@ -340,4 +340,13 @@ public class JobStatusBean {
             return CongestionManager.prettyRuntime(congestion.getQueuetime());
         }
     }
+    
+    
+    public String getCongestionQueueSize() {
+        String queue = this.getJobStatus().getQueueId();
+        Congestion congestion = CongestionManager.getCongestion(queue);
+
+        return ""+  CongestionManager.getJobsWaiting(congestion);      
+    }
+    
 }

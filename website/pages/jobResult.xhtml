@@ -347,6 +347,7 @@
                 	$("body").tooltip();
                 	gpUtil.initToggleDiv("statusDetailsDiv"+ #{jobStatusBean.jobInfo.jobNumber}, 'Hide', 'Show');
                 	gpUtil.initToggleDiv("inputParamsDiv"+ #{jobStatusBean.jobInfo.jobNumber},   'Hide', 'Show');
+                	
                 });
 
                 $.ajax({
@@ -387,10 +388,23 @@
                                         title: "Jobs Queue Status"
                                     }).show();
                                 });
+                        
+                       
+                        //  JTL to display the congestion ticket on page load
+                        // but it sometimes repeats when a job is running and the page refreshes
+                        //window.setTimeout(function() {
+                        //	$(".congestion").trigger("mouseenter");
+                        //}, 1000);
+                        //window.setTimeout(function() {
+                        //	$(".congestion").trigger("mouseleave");
+                        //}, 4000);
                     });
                 }
 
                 initPendingStatus();
+              
+                
+                
                 /* ]]> */
             </script>
 
@@ -498,6 +512,10 @@
 
                                         <td width="30px">
                                             <h:outputText rendered="#{jobStatusBean.jobStatus.isPending and not jobStatusBean.jobStatus.hasError}">
+                                                <script type="text/javascript">
+                                                
+                                                </script>
+                                                
                                                 <div id="status-congestion-light" class="congestion-light congestion #{jobStatusBean.congestionClass}">
                                                     <span class="congestion-icon">&#9679;</span><br/>
                                                     Pending
@@ -505,13 +523,13 @@
                                                 <div id="congestion-tooltip" style="display: none;">
                                                     <strong>Job Queue Status</strong><br/>
                                                     <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-green'}">
-                                                        The job queue is experiencing light or no wait times for this job.
+                                                        ${jobStatusBean.congestionQueueSize} jobs ahead in queue. Light or no wait times expected for this job.
                                                     </h:outputText>
                                                     <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-yellow'}">
-                                                        The job queue is experiencing moderate wait times for this job. Pending times of several hours are possible.
+                                                        ${jobStatusBean.congestionQueueSize} jobs ahead in queue. Moderate wait times expected for this job. Pending times of several hours are possible.
                                                     </h:outputText>
                                                     <h:outputText rendered="#{jobStatusBean.congestionClass == 'congestion-red'}">
-                                                        The job queue is experiencing severe wait times for this job. Pending times of several days are possible.
+                                                        ${jobStatusBean.congestionQueueSize} jobs ahead in queue. The job queue is experiencing severe wait times for this job. Pending times of several days are possible.
                                                     </h:outputText>
                                                     <h:outputText rendered="#{jobStatusBean.showEstimatedQueuetime}" escape="false">
                                                         <br/><br/>

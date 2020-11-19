@@ -196,8 +196,7 @@ public class DiskInfo
     
     
     public boolean isAboveMaxSimultaneousJobs(){
-        //return this.numProcessingJobs > this.maxSimultaneousJobs;
-        return false;
+        return this.numProcessingJobs > this.maxSimultaneousJobs;
     }
 
 

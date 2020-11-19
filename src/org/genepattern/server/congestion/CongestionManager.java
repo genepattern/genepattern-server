@@ -183,6 +183,7 @@ public class CongestionManager {
         if (count <= 1) return 0;
         else return queuetime;
     }
+ 
 
     /**
      * Look up the queue for the specific congestion object, compare to the color thresholds and return the color status
@@ -214,7 +215,7 @@ public class CongestionManager {
      * @param congestion
      * @return
      */
-    static private int getJobsWaiting(Congestion congestion) {
+    static public int getJobsWaiting(Congestion congestion) {
         boolean inTransaction = HibernateUtil.isInTransaction();
 
         CongestionDao dao = new CongestionDao();
