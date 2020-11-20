@@ -2055,7 +2055,10 @@ function createFileWidget(linkElement, appendTo) {
                     }
 
                     else if (deleteAction) {
-                        if (confirm('Are you sure you want to delete the selected file or directory?')) {
+                    	var deleteMessage = 'Are you sure you want to delete \"'+name.trim()+'\"?'
+                    	if (isDirectory)  deleteMessage = 'Are you sure you want to delete the directory \"'+name.trim()+'\" and its contents?'
+                    	
+                        if (confirm(deleteMessage)) {
                             $.ajax({
                                 type: "DELETE",
                                 url: "/gp/rest/v1/data/delete/" + path,

@@ -359,7 +359,7 @@ public class DataManager {
             }
         }
         //2) remove the record from the DB, even if it doesn't exist in the file system
-        if (!file.exists()) {
+        if (!file.exists() ) {
             //if we are in a transaction, don't commit and close
             boolean inTransaction = mgr.isInTransaction();
             try {

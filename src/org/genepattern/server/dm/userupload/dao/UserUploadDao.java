@@ -154,7 +154,10 @@ public class UserUploadDao extends BaseDAO {
         Query query = mgr.getSession().createQuery( hql );
         numDeleted += query.executeUpdate();
 
-
+        // handle the case where paths sometimes start with "./"
+        String hql2 = "delete from " + UserUpload.class.getName() + " where user_id = '" + userId + "' and path like './" + relativePath + "/%'"; //delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path like :path";
+        Query query2 = mgr.getSession().createQuery( hql2 );
+        numDeleted += query2.executeUpdate();
 
         return numDeleted;
     }
@@ -175,10 +178,12 @@ public class UserUploadDao extends BaseDAO {
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {
         String relativePath = gpFileObj.getRelativePath();
 
-        String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path = :path";
+        String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and (uu.path = :path  or uu.path = :path2   ) ";
         Query query = mgr.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setString("path", relativePath);
+        query.setString("path2", "./"+relativePath);
+        
         int numDeleted = query.executeUpdate();
         return numDeleted;
     }
