@@ -1116,7 +1116,7 @@ function initReusableJSUploads(file, directory, done, index){
 	var r = new Resumable({
          target:'/gp/rest/v1/upload/resumable/',
          chunkSize:50*1024*1024,
-         simultaneousUploads:4,
+         simultaneousUploads:1,
          testChunks: true,
          throttleProgressCallbacks:1,
          method: "octet",
