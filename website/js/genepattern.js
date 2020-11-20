@@ -1097,6 +1097,15 @@ function onFileAdded_resumable(r, file){
 var resumableUploader;
 var resumableloadsInProgress = 0;
 
+window.onbeforeunload = function() {
+	   if (resumableloadsInProgress > 0) {
+	       return "File uploads in progress will stop if you leave the page before they complete.  Leave anyway?";
+	   } else {
+	      return;
+	   }
+	};
+
+
 function initReusableJSUploads(file, directory, done, index){
 	//function ajaxFileTabUpload(file, directory, done, index) {
 	
