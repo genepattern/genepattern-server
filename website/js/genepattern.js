@@ -1185,9 +1185,9 @@ function initReusableJSUploads(file, directory, done, index){
           // Set the top error message
         	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
  	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             
+             console.log("ResumableJS ERROR: " + message);
         	 showErrorMessage(message);
-
+        	 
              // Set the progressbar error message
              progressbar.progressbar("value", 100);
              progressbar
