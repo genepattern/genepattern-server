@@ -3296,7 +3296,8 @@ public class GenePatternAnalysisTask {
                 final String existingUserId=existingTask.getUserId();
                 final boolean diffAccessId=existingAccessId != requestedAccessId;
                 final boolean diffUserId=!requestedTaskOwner.equals(existingUserId);
-                if (diffAccessId) {
+                // allow the access id to be changed as long as the owner does not change
+                if (diffAccessId && diffUserId) {
                     log.debug("Ignoring request to change the 'access_id' for an existing module from "+existingAccessId+" to "+requestedAccessId);
                     accessId=existingAccessId;
                 }
@@ -3306,8 +3307,13 @@ public class GenePatternAnalysisTask {
                 }
                 
                 //preserve task owner and access permissions
-                taskInfoAttributes.put(PRIVACY, existingAccessId == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
-                taskInfoAttributes.put(USERID, existingUserId);
+                // taskInfoAttributes.put(PRIVACY, existingAccessId == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+                // taskInfoAttributes.put(USERID, existingUserId);
+                taskInfoAttributes.put(PRIVACY, accessId == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+                taskInfoAttributes.put(USERID, taskOwner);
+                
+                
+                
             }
             catch (TaskIDNotFoundException e) {
                 log.debug("taskIDNotFound: "+formerID);
