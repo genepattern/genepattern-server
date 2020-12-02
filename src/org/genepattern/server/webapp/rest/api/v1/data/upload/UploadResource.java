@@ -4,12 +4,15 @@
 package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.URI;
@@ -677,5 +680,114 @@ public class UploadResource {
     private int getResumableChunkNumber(HttpServletRequest request) {
         return ResumableHttpUtils.toInt(request.getParameter("resumableChunkNumber"), -1);
     }
+    
+    // *******************  below additions for direct S3 uploads ***********************
+    @GET
+    @Path("getS3UploadUrl/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getS3UploadUrl(
+            @Context HttpServletRequest request, 
+            @QueryParam("path") String path, 
+            @QueryParam("fileType") String mimeType
+    )
+    {
+        try {
+        
+            /**
+             * TODO:  get the S3 profile from config
+             *        runtime exec "aws s3 presign s3://gp-temp-test-bucket/test2.txt --profile genepattern" and grab the output
+             *        make GP think its got a local file when really it is only in S3
+             */
+            // we want a temp file name but the file itself will block
+            File tmp = File.createTempFile("lambda", ".json");
+            String filename = tmp.getName();
+            tmp.delete();
+            
+            // need to get the bucket from the config file entries
+            //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
+            //     upload.aws.s3.bucket.root: tedslaptop
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);
+            String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", "gp-temp-test-bucket");
+            String bucketRoot = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", "tedslaptop");
+            String profile = gpConfig.getGPProperty(userContext, "upload.aws.s3.profile", "");
+            String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script", "/Users/liefeld/GenePattern/gp_dev/aws/presign.sh");
+            
+            
+            
+            // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
+            StringBuffer execBuff = new StringBuffer();
+            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
+            execBuff.append(signingScript);
+            execBuff.append(" ");
+            execBuff.append(bucketRoot+path);
+            execBuff.append(" ");
+            execBuff.append(mimeType);
+            // bucket
+            execBuff.append(" ");
+            execBuff.append(bucket);
+            execBuff.append(" ");
+            execBuff.append(filename);
+            if (profile.length() > 0){
+                execBuff.append(" ");
+                execBuff.append(profile);
+            }
+            
+            System.out.println(execBuff.toString());
+            
+            Process proc = Runtime.getRuntime().exec(execBuff.toString());
+            proc.waitFor();
+            
+            BufferedReader stdInput = new BufferedReader(new 
+                    InputStreamReader(proc.getInputStream()));
+
+               BufferedReader stdError = new BufferedReader(new 
+                    InputStreamReader(proc.getErrorStream()));
+
+               // Read the output from the command
+               System.out.println("Here is the standard output of the command:\n");
+               String s = null;
+               while ((s = stdInput.readLine()) != null) {
+                   System.out.println(s);
+               }
+
+               // Read any errors from the attempted command
+               System.out.println("Here is the standard error of the command (if any):\n");
+               while ((s = stdError.readLine()) != null) {
+                   System.out.println(s);
+               }
+               System.out.println("=========");
+            
+            
+            //BufferedReader reader = new BufferedReader(new FileReader ("/Users/liefeld/Desktop/response.json"));
+            BufferedReader reader = new BufferedReader(new FileReader (filename));
+            String         line = null;
+            StringBuilder  stringBuilder = new StringBuilder();
+            String         ls = System.getProperty("line.separator");
+            String resp;
+            try {
+                while((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                    stringBuilder.append(ls);
+                }
+
+                resp =  stringBuilder.toString();
+            } finally {
+                reader.close();
+            }
+            System.out.println(resp);
+            return Response.ok().entity(resp).build();
+            
+        } catch (Exception e){
+            e.printStackTrace();
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        
+    }
+    
+    
+    
     
 }
