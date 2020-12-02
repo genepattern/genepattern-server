@@ -1046,6 +1046,69 @@ function resumableMultipleUploadStart(r, filearray, directory){
 }
 
 
+function s3DirectUploadStart(currentFileList, directory) {
+	var len = currentFileList.length;
+	
+	for (var i=0; i < len; i++){
+		// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
+		var file=currentFileList[i];
+		fType = file.file.type;
+		if ((fType == null) || (fType.length == 0)){
+			// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
+			fType="BLANK";
+		}
+		var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
+		var url = "/gp/rest/v1/upload/getS3UploadUrl/?fileType="+fType+"&path=" +path;
+		
+      $.ajax({
+            type: "GET",
+            url: url,
+            success: function(data) {
+               
+               var s3presignedUrl = data.url;
+               
+               $.ajax({
+                   url : s3presignedUrl,
+                   type : "PUT",
+                   data : file.file,
+                   cache : false,
+                   contentType : fType,
+                   processData : false,
+                   crossdomain: true,
+                   success: function() {
+                	   alert("done");
+                       console.info('YEAH', s3presignedUrl.split('?')[0].substr(6));
+                   },
+                   failure: function(){
+                	   alert("FAIL");
+                       console.error('damn...');
+                   } ,
+                   error: function(a,b,c,d,e){
+                	   alert("Error  a:" + a + "  b:" + b + "  c:" + c + "  d:" + d);
+                   }
+               });
+               
+              
+               
+               
+            },
+            error: function(data) {
+                if (typeof data === 'object') {
+                    data = data.responseText;
+                }
+
+                $(".search-widget:visible").searchslider("hide");
+                showErrorMessage(data);
+            }
+        });
+		
+		
+	}
+}
+
+
+
+
 function hasSpecialChars_resumable(file) {
     var regex = new RegExp("[^A-Za-z0-9_.]");
     
@@ -1085,7 +1148,18 @@ function onFileAdded_resumable(r, file){
     } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
         openUploadDirectoryDialog(currentFileList, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	resumableMultipleUploadStart(r, currentFileList, directory);
+        	// JTL XXX this is for prototyping direct to S3 uploads
+        	// var s3yes=confirm("Upload direct to S3?"); 
+        	var s3yes = false;
+        	
+        	if (s3yes){
+        		s3DirectUploadStart(currentFileList, $(uploadDirectorySelected)[0].pathname);
+        	} else {
+        		resumableMultipleUploadStart(r, currentFileList, directory);
+        	}
+        	
+        	
+        	
         	currentFileList = []; // empty 
      	 });
     } else {
