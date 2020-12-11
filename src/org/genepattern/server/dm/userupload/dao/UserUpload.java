@@ -30,7 +30,20 @@ public class UserUpload {
         
         uf.numPartsRecd = 0;
         uf.setPath(fileObj.getRelativePath());
-        uf.init(fileObj.getServerFile());
+        if (fileObj.getServerFile().exists()){
+            uf.init(fileObj.getServerFile());
+        } else {
+            // its an external file (eg on S3) and not on the local disk
+            uf.name = fileObj.getName();
+            int idx = uf.name.lastIndexOf('.');
+            if (idx > 0 && idx < uf.name.length() - 1) {
+                uf.setExtension(uf.name.substring(idx+1));
+            }
+            uf.setLastModified(fileObj.getLastModified());
+            uf.setFileLength(fileObj.getFileLength());
+            uf.setExtension(SemanticUtil.getExtension(fileObj.getServerFile()));
+            uf.setKind(SemanticUtil.getKind(fileObj.getServerFile()));
+        }
         return uf;
     }
     
@@ -81,8 +94,11 @@ public class UserUpload {
             if (file.isDirectory()) {
                 setKind("directory");
             }
-        }
+        } 
     }
+    
+    
+    
     
     public long getId() {
         return id;

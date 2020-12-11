@@ -250,12 +250,36 @@ public class AwsBatchUtil {
                     jobInputFiles.add(file);
                 }
                 else {
+                    // if the file is missing its normally an error.  However we do make an exception 
+                    // if we are allowing direct S3 uploads.  In that case we need to make sure the 
+                    // file is in the appropriate S3 directory even if not on the local disk
+                    String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
+                    if (directUploadBucket != null){
+                        boolean isPresentInS3 = s3FileExists(gpJob, localFilePath);
+                        if (isPresentInS3){
+                            jobInputFiles.add(file);
+                        }
+                    }
+                    
+                    
                     log.error("gpJobNo="+gpJob.getGpJobNo()+", file doesn't exist for localFilePath='"+localFilePath+"'");
                 }
             }
         }
         return Collections.unmodifiableSet(jobInputFiles);
     }
+    
+    public static boolean s3FileExists(final DrmJobSubmission gpJob, final String localFilePath){
+        // JTL XXX need to implement checking into S3 for the actual presence
+        String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
+        String bucketRoot = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket.root", null);
+        String awsProfile = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.profile", null);
+        
+        
+        return true;
+    }
+    
+    
 
     /**
      * Get the File referenced by the configuration property, e.g.

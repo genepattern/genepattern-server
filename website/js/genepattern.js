@@ -968,11 +968,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         		eventQueue.unshift(event)
         	}
         	
-            }
-       
-        	
-       
-        	
+            }        	
         if ((eventQueue.length > 0) || (runningEvents.length > 0)) {
             setTimeout(_checkEventQueue, 1000);     // Check the event queue again in a bit
         }
@@ -1045,64 +1041,136 @@ function resumableMultipleUploadStart(r, filearray, directory){
 	}
 }
 
-
-function s3DirectUploadStart(currentFileList, directory) {
-	var len = currentFileList.length;
+function s3DirectUploadStartFile(r, file, directory){
 	
+	var fileName = file.fileName;
+	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	
+	if (($('#upload-toaster').dialog('isOpen') === true)){
+		appendToUploadToaster(file);
+	} else {
+		console.log("Should be zero: " + resumableloadsInProgress);
+		var filelist = [file];
+		initUploadToaster(filelist, directory);
+	}
+	
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	
+	 uploadToasterFile.find(".upload-toaster-file-cancel")
+     .click(function() {
+         
+      	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+    	 
+    	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	     progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	     $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+         //progressbar.progressbar("value", 100);
+         progressbar
+             .find(".ui-progressbar-value")
+             .css("background", "#FCF1F3");
+         progressbar
+             .find(".upload-toaster-file-progress-label")
+             .text("Canceled!");
+         // GP-8168 Remove the file, otherwise we cannot re-upload the same file again without a page reload
+         r.removeFile(file);
+         
+         $('.resumable-drop').show();
+         $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+         
+         cleanUploadToaster(); // JTL 02/06/20
+     });
+	
+    // show the drop target again
+    $('.resumable-drop').show(); 
+	
+	
+	fType = file.file.type;
+	if ((fType == null) || (fType.length == 0)){
+		// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
+		fType="BLANK";
+	}
+	var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
+	var url = "/gp/rest/v1/upload/getS3UploadUrl/?fileType="+fType+"&path=" +path;
+	
+	$.ajax({
+        type: "GET",
+        xhr: function(){
+  	        // get the native XmlHttpRequest object
+  	        var xhr = $.ajaxSettings.xhr() ;
+  	        console.log("GET new xhr");
+  	        return xhr ;
+  	    },   
+        url: url,
+        success: function(data) {
+           var s3presignedUrl = data.url;
+           var xhr = new XMLHttpRequest();
+           xhr.open('PUT', s3presignedUrl, true);
+           xhr.onload = () => {
+             if (xhr.status === 200) {
+                 var registerUrl = "/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size;
+            	 $.ajax({
+            		 xhr: function(){
+            			 // get the native XmlHttpRequest object
+            			 var xhr = $.ajaxSettings.xhr() ;
+            			 return xhr ;
+            		 },   
+            		 type: "POST",
+            		 url: registerUrl,
+            		 success: function(data) {
+            			 fileUploadSuccess(r, file);
+            			 cleanUploadToaster();
+                         r.currentFile = null;
+                         $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+            		 },
+            		 failure: function(err){
+            			 fileUploadError(r, file, err);
+            		 },
+            		 error: function(err){
+            			 fileUploadError(r, file, err);
+            		 }
+            	 });
+             }
+           };
+           xhr.onerror = () => {
+             // error...
+        	   fileUploadError(r, file, err);
+           };
+           xhr.upload.addEventListener("progress", function (evt) {
+               if (evt.lengthComputable) {
+                   if (evt.lengthComputable) {
+                       var percentComplete = evt.loaded / evt.total;
+                       fileUploadProgress(r, file, percentComplete);
+                   }
+               }
+           }, false);
+
+           xhr.addEventListener("progress", function (evt) {
+               if (evt.lengthComputable) {
+                   var percentComplete = evt.loaded / evt.total;
+                   fileUploadProgress(r, file, percentComplete);
+               }
+           }, false);
+           xhr.send(file.file); 
+        },
+        error: function(data) {
+        	fileUploadError(r, file, err);
+        	
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+            $(".search-widget:visible").searchslider("hide");
+            showErrorMessage(data);
+        }
+    });
+}
+
+function s3DirectUploadStart(r, currentFileList, directory) {
+	var len = currentFileList.length;
 	for (var i=0; i < len; i++){
 		// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
 		var file=currentFileList[i];
-		fType = file.file.type;
-		if ((fType == null) || (fType.length == 0)){
-			// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
-			fType="BLANK";
-		}
-		var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
-		var url = "/gp/rest/v1/upload/getS3UploadUrl/?fileType="+fType+"&path=" +path;
-		
-      $.ajax({
-            type: "GET",
-            url: url,
-            success: function(data) {
-               
-               var s3presignedUrl = data.url;
-               
-               $.ajax({
-                   url : s3presignedUrl,
-                   type : "PUT",
-                   data : file.file,
-                   cache : false,
-                   contentType : fType,
-                   processData : false,
-                   crossdomain: true,
-                   success: function() {
-                	   alert("done");
-                       console.info('YEAH', s3presignedUrl.split('?')[0].substr(6));
-                   },
-                   failure: function(){
-                	   alert("FAIL");
-                       console.error('damn...');
-                   } ,
-                   error: function(a,b,c,d,e){
-                	   alert("Error  a:" + a + "  b:" + b + "  c:" + c + "  d:" + d);
-                   }
-               });
-               
-              
-               
-               
-            },
-            error: function(data) {
-                if (typeof data === 'object') {
-                    data = data.responseText;
-                }
-
-                $(".search-widget:visible").searchslider("hide");
-                showErrorMessage(data);
-            }
-        });
-		
-		
+		s3DirectUploadStartFile(r, file, directory)
 	}
 }
 
@@ -1149,11 +1217,11 @@ function onFileAdded_resumable(r, file){
         openUploadDirectoryDialog(currentFileList, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
         	// JTL XXX this is for prototyping direct to S3 uploads
-        	// var s3yes=confirm("Upload direct to S3?"); 
-        	var s3yes = false;
+        	var s3yes=confirm("Upload direct to S3?"); 
+        	//var s3yes = false;
         	
         	if (s3yes){
-        		s3DirectUploadStart(currentFileList, $(uploadDirectorySelected)[0].pathname);
+        		s3DirectUploadStart(r, currentFileList, $(uploadDirectorySelected)[0].pathname);
         	} else {
         		resumableMultipleUploadStart(r, currentFileList, directory);
         	}
@@ -1177,9 +1245,24 @@ window.onbeforeunload = function() {
 	   } else {
 	      return;
 	   }
-	};
+};
 
-
+function fileUploadSuccess(r, file){
+	resumableloadsInProgress =  resumableloadsInProgress - 1;
+	 
+    $('.resumable-drop').show();
+    var fileName = file.fileName;
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+    progressbar.progressbar("value", 100);
+    //cleanUploadToaster();
+    // Remove the file, otherwise we cannot re-upload the same file again without a page reload
+    r.removeFile(file);
+}
+	
+	
+	
+	
 function initReusableJSUploads(file, directory, done, index){
 	//function ajaxFileTabUpload(file, directory, done, index) {
 	
@@ -1241,57 +1324,50 @@ function initReusableJSUploads(file, directory, done, index){
              $('.resumable-drop')[0].classList.remove('leftnav-highlight');
            });
          r.on('fileSuccess', function(file,message){
-        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
-        	 
-             $('.resumable-drop').show();
-             var fileName = file.fileName;
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-        	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             progressbar.progressbar("value", 100);
-             //cleanUploadToaster();
-             // Remove the file, otherwise we cannot re-upload the same file again without a page reload
-             r.removeFile(file);
+        	 fileUploadSuccess(r, file);
            });
          r.on('fileError', function(file, message){
-        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
-             // Reflect that the file upload has resulted in error
-          //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
-          // Set the top error message
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             console.log("ResumableJS ERROR: " + message);
-        	 showErrorMessage(message);
-        	 
-             // Set the progressbar error message
-             progressbar.progressbar("value", 100);
-             progressbar
-                 .find(".ui-progressbar-value")
-                 .css("background", "#FCF1F3");
-             progressbar
-                 .find(".upload-toaster-file-progress-label")
-                 .text("Error!");
-             
-             $('.resumable-drop').show();
-             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+        	 fileUploadError(r, file, message);
              
            });
          r.on('fileProgress', function(file){
-             // Handle progress for both the file and the overall upload
-             //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
-             //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
-        	 
-        	 // On a cancellation, this will get called after but we don't want to reset the progressbar to 0 so bail
-        	 if (!(r.files.includes(file))) return;
-        	 
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             progressbar.progressbar("value", Math.floor(r.progress()*100));
+        	 fileUploadProgress(r,file, r.progress());
            });
          
      }
 	
 }
 
+function fileUploadProgress(r, file, percent){
+	 if (!(r.files.includes(file))) return;
+	 
+	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+     progressbar.progressbar("value", Math.floor(percent*100));
+}
+
+function fileUploadError(r, file, message){
+	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+     // Reflect that the file upload has resulted in error
+  //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+  // Set the top error message
+	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+     console.log("ResumableJS ERROR: " + message);
+	 showErrorMessage(message);
+	 
+     // Set the progressbar error message
+     progressbar.progressbar("value", 100);
+     progressbar
+         .find(".ui-progressbar-value")
+         .css("background", "#FCF1F3");
+     progressbar
+         .find(".upload-toaster-file-progress-label")
+         .text("Error!");
+     
+     $('.resumable-drop').show();
+     $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+}
 
 
 function hasSpecialChars(filelist) {

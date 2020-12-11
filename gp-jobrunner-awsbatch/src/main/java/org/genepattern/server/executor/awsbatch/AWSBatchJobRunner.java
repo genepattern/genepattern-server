@@ -829,7 +829,7 @@ public class AWSBatchJobRunner implements JobRunner {
         
         // optionally skip the push to s3 step
         for(final File inputFile : inputFiles) {
-            if (awsS3Filter.skipS3Upload(inputFile)) {
+            if (awsS3Filter.skipS3Upload(inputFile, s3Cmd)) {
                 log.debug("skipping s3 push: "+inputFile);
             }
             else {
@@ -863,6 +863,7 @@ public class AWSBatchJobRunner implements JobRunner {
             log.error("Error in createNewFile, script="+script, e);
             return;
         }
+        System.out.println(script.getAbsolutePath());
         
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(script))) {
             bw.write("#!/usr/bin/env bash"); bw.newLine();

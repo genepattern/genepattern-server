@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -691,6 +692,7 @@ public class UploadResource {
             @QueryParam("fileType") String mimeType
     )
     {
+        File tmp = null;
         try {
         
             /**
@@ -699,7 +701,7 @@ public class UploadResource {
              *        make GP think its got a local file when really it is only in S3
              */
             // we want a temp file name but the file itself will block
-            File tmp = File.createTempFile("lambda", ".json");
+            tmp = File.createTempFile("lambda", ".json");
             String filename = tmp.getName();
             tmp.delete();
             
@@ -709,19 +711,24 @@ public class UploadResource {
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
-            String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", "gp-temp-test-bucket");
-            String bucketRoot = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", "tedslaptop");
+            String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket");
+            String bucketRoot = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root");
             String profile = gpConfig.getGPProperty(userContext, "upload.aws.s3.profile", "");
-            String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script", "/Users/liefeld/GenePattern/gp_dev/aws/presign.sh");
+            String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
+            String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
             
-            
+            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
             
             // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
             // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
+            execBuff.append(awsScriptDir);
             execBuff.append(signingScript);
             execBuff.append(" ");
-            execBuff.append(bucketRoot+path);
+            // need to include the path used for the real user dir
+            
+            execBuff.append(bucketRoot);
+            execBuff.append(gpFile.getServerFile().getAbsolutePath());
             execBuff.append(" ");
             execBuff.append(mimeType);
             // bucket
@@ -782,11 +789,67 @@ public class UploadResource {
         } catch (Exception e){
             e.printStackTrace();
             return Response.status(Response.Status.NOT_FOUND).build();
+        } finally {
+            try {
+                if (tmp != null)
+                    tmp.delete();
+            } catch (Exception e){}
         }
 
         
     }
     
+    
+    //================= additions for S3 direct uploads
+    /**
+     * Post a file to the upload resource
+     * @param request - The HttpServletRequest
+     * @param path
+     * @return
+     */
+    @POST
+    @Path("/registerExternalUpload")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registerExternalUpload(
+            @QueryParam("path") String path,
+            @QueryParam("length") String fileLength,
+            @Context HttpServletRequest request)
+    {
+        try {
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);
+
+            // Get the file we will be uploading to
+            if (log.isDebugEnabled()) {
+                log.debug("path="+path);
+            }
+
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
+            file.setFileLength(new Long(fileLength));
+            file.setLastModified(new Date());
+           
+            if (file.getServerFile() != null && file.getServerFile().exists())
+            {
+                // should I throw an exception or overwrite it? (delete since the new file is external)
+                // throw new FileUploadException("File already exists: " + file.getServerFile().getName());
+            }
+
+           
+            //update the user uploads database
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
+            fileUtil.updateUploadsDb(HibernateUtil.instance(), file);
+           
+            JSONObject toReturn = new JSONObject();
+            toReturn.append("success", true);
+            // Return the status object
+            return Response.ok().entity(toReturn.toString()).build();
+        }
+        catch (Throwable t) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        }
+    }
+
     
     
     

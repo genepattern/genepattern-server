@@ -10,10 +10,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
+import org.genepattern.server.dm.ExternalFileDownloader;
+import org.genepattern.server.executor.awsbatch.AWSS3ExternalFileDownloader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -22,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.JobRunner;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -86,8 +90,35 @@ public class FileDownloader {
         
         // Check if file actually exists in filesystem.
         if (file == null || !file.exists()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            // Check if external file uploads are enabled.  If so check if the file exists
+            // in an external location and redirect to its special download handler
+            String userId = UIBeanHelper.getUserId();
+            GpContext userContext = GpContext.getContextForUser(userId);
+            String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", null);
+            if (downloaderClass != null) {
+                try {
+                     
+                    final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                    final Class<?> svcClass = Class.forName(downloaderClass, false, classLoader);
+                    if (!ExternalFileDownloader.class.isAssignableFrom(svcClass)) {
+                        log.error(""+svcClass.getCanonicalName()+" does not implement "+ExternalFileDownloader.class.getCanonicalName());
+                    }
+                    final ExternalFileDownloader externalDownloader = (ExternalFileDownloader) svcClass.newInstance();
+                    
+                    externalDownloader.downloadFile(userContext, request, response, file);
+                    return;
+                } catch(IOException ioe){
+                    log.error("Failed to download using external downloader class: " + downloaderClass, ioe);
+                    throw ioe;
+                } catch(Exception e){
+                    log.error("Failed to instantiate external downloader class: " + downloaderClass, e);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                } 
+                
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
         }
 
         // Prepare some variables. 
