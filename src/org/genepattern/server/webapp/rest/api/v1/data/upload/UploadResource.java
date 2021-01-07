@@ -5,10 +5,12 @@ package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -689,7 +691,8 @@ public class UploadResource {
     public Response getS3UploadUrl(
             @Context HttpServletRequest request, 
             @QueryParam("path") String path, 
-            @QueryParam("fileType") String mimeType
+            @QueryParam("fileType") String mimeType,
+            @QueryParam("numParts") int numParts
     )
     {
         File tmp = null;
@@ -727,18 +730,22 @@ public class UploadResource {
             execBuff.append(" ");
             // need to include the path used for the real user dir
             
-            execBuff.append(bucketRoot);
+            execBuff.append(bucketRoot);   // $1
             execBuff.append(gpFile.getServerFile().getAbsolutePath());
             execBuff.append(" ");
-            execBuff.append(mimeType);
+            execBuff.append(mimeType);  // $2
             // bucket
             execBuff.append(" ");
-            execBuff.append(bucket);
+            execBuff.append(bucket);    // $3
+            // 
             execBuff.append(" ");
-            execBuff.append(filename);
+            execBuff.append(""+numParts);  // $4
+            
+            execBuff.append(" ");
+            execBuff.append(filename);   //$5
             if (profile.length() > 0){
                 execBuff.append(" ");
-                execBuff.append(profile);
+                execBuff.append(profile);  // $6
             }
             
             System.out.println(execBuff.toString());
@@ -810,9 +817,12 @@ public class UploadResource {
     @POST
     @Path("/registerExternalUpload")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     public Response registerExternalUpload(
+            String jsonPayload,
             @QueryParam("path") String path,
             @QueryParam("length") String fileLength,
+            @QueryParam("uploadId") String uploadId,
             @Context HttpServletRequest request)
     {
         try {
@@ -824,11 +834,68 @@ public class UploadResource {
             if (log.isDebugEnabled()) {
                 log.debug("path="+path);
             }
-
+            
             GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setFileLength(new Long(fileLength));
             file.setLastModified(new Date());
-           
+
+          
+            String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket");
+            String fileName = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root") + file.getServerFile().getAbsolutePath();
+            System.out.println("Filename is " + fileName);
+            
+            JSONObject multipartCompletion = new JSONObject();
+            multipartCompletion.put("UploadId", uploadId);
+            multipartCompletion.put("Key", fileName);       
+            multipartCompletion.put("Bucket", bucket);
+            JSONArray parts = new JSONArray(jsonPayload);
+            JSONObject uploadObj = new JSONObject();
+            uploadObj.put("Parts", parts);
+            multipartCompletion.put("MultipartUpload", uploadObj);
+            
+            File tmp = File.createTempFile("completeUpload", ".json");
+            
+            BufferedWriter writer = new BufferedWriter(new FileWriter (tmp));
+            writer.append(multipartCompletion.toString());
+            writer.close();
+            String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
+             
+            // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
+            StringBuffer execBuff = new StringBuffer();
+            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
+            execBuff.append(awsScriptDir);
+            execBuff.append("completeUpload.sh  ");
+            execBuff.append(" file://");
+            execBuff.append(tmp.getAbsolutePath());
+            
+            System.out.println("COMPLETION -- " + execBuff.toString());
+            
+            Process proc = Runtime.getRuntime().exec(execBuff.toString());
+            proc.waitFor();
+            
+            BufferedReader stdInput = new BufferedReader(new 
+                    InputStreamReader(proc.getInputStream()));
+
+               BufferedReader stdError = new BufferedReader(new 
+                    InputStreamReader(proc.getErrorStream()));
+
+               // Read the output from the command
+               System.out.println("Here is the standard output of the command:\n");
+               String s = null;
+               while ((s = stdInput.readLine()) != null) {
+                   System.out.println(s);
+               }
+
+               // Read any errors from the attempted command
+               System.out.println("Here is the standard error of the command (if any):\n");
+               while ((s = stdError.readLine()) != null) {
+                   System.out.println(s);
+               }
+               System.out.println("=========");
+             //=============================  END complete multipart upload ====================
+               
+            
+            
             if (file.getServerFile() != null && file.getServerFile().exists())
             {
                 // should I throw an exception or overwrite it? (delete since the new file is external)
