@@ -1043,6 +1043,7 @@ function resumableMultipleUploadStart(r, filearray, directory){
 
 function range1(i){return i?range1(i-1).concat(i):[]}
 
+var s3uploadStart = window.performance.now();
 function s3DirectUploadStartFile(r, file, directory){
 	
 	var fileName = file.fileName;
@@ -1094,7 +1095,7 @@ function s3DirectUploadStartFile(r, file, directory){
 	}
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
-	var partSize = 5 * 1024 * 1024; // 10 MB
+	var partSize = 100 * 1024 * 1024; // 75 MB
 	
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
@@ -1112,24 +1113,27 @@ function s3DirectUploadStartFile(r, file, directory){
   	    },   
         url: url,
         success: function(multipartPostData) {
+        	s3uploadStart = window.performance.now();
         	multipartPostData.complete = [];
         	var partNums =  range1(numParts); // create an array of the part numbers
-
+        	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
+        	
         	aCallback = function(){
         		if (partNums.length > 0){
         			var nextPartNum = partNums.pop();
-        			s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback);
+        			s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
         		}
         		
         	}
         	
         	// TODO limit how many are going at once to some reasonable number
-        	var maxSimultaneousPartUploads = 2;
-        	
+        	var maxSimultaneousPartUploads = 5;
+        	console.log("maxSimultaneousPartUploads:  " + maxSimultaneousPartUploads);
+        	console.log(JSON.stringify(multipartPostData));
         	var simulUploadCount = Math.min(maxSimultaneousPartUploads, multipartPostData.presignedUrls.length);
         	for (var ii =0; ii < simulUploadCount; ii++){
         		var nextPartNum = partNums.pop();
-        		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback);
+        		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
         	}
         },
         error: function(data) {
@@ -1149,12 +1153,22 @@ function countNonEmpty(array) {
 	  return array.filter(Boolean).length;
 }
 
-function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback){
+function sumIgnoreNull(array){
+	var sum = 0;
+	for (var i=0; i < array.length; i++){
+		if (array[i] != null) sum += array[i];
+	}
+	
+	return sum;
+}
+
+function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress){
 
 	var xhr = new XMLHttpRequest();
     xhr.open('PUT', multipartPostData.presignedUrls[partNum-1], true);
     xhr.gpPartNumber = partNum;// partNumber should start at 1
-    var runningPartTotal = 0;
+    var runningPartTotal = 0;  // define here so they are kept in the context for the callback
+    var prevPartTotal = 0;
     
     xhr.onload = (e) => {
       if (e.target.status === 200) {
@@ -1165,6 +1179,9 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
           // check if all parts done and complete if so finish.  If things complete out of order we
           // can have a full length array with null placeholders so need to check for that
      	  if (countNonEmpty(multipartPostData.complete) == countNonEmpty(multipartPostData.presignedUrls)){
+     		  
+     		 var end = window.performance.now();
+     		  
     		  var registerUrl = "/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId;
     		  $.ajax({
          		 type: "POST",
@@ -1176,6 +1193,9 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
          			 cleanUploadToaster();
                       r.currentFile = null;
                       $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+                      var duration = ((end - s3uploadStart)/1000)/60; // minutes
+                      var sizeInMB = file.size / (1024*1024);
+                      alert("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
          		 },
          		 failure: function(err){
          			 fileUploadError(r, file, err);
@@ -1198,11 +1218,9 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
         	// the completed bytes
         	if (evt.lengthComputable) {
             	var whichPart = partNum; 
-            	var prevTotal = getFileUploadProgress(r, file);
-            	prevPartTotal = runningPartTotal;
-            	if (prevTotal == null) prevTotal = 0;
-            	runningPartTotal = ((evt.loaded / evt.total)/numParts);
-            	var percentComplete = (prevTotal/100) - prevPartTotal +  runningPartTotal;
+            	runningProgress[partNum] =  ((evt.loaded / evt.total)/numParts);
+            	
+            	var percentComplete = sumIgnoreNull(runningProgress);
                 fileUploadProgress(r, file, percentComplete);
             }
         }

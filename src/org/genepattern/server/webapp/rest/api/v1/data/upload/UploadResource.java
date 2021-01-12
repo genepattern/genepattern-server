@@ -725,28 +725,52 @@ public class UploadResource {
             // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
             // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
-            execBuff.append(awsScriptDir);
-            execBuff.append(signingScript);
-            execBuff.append(" ");
-            // need to include the path used for the real user dir
+//            execBuff.append(awsScriptDir);
+//            execBuff.append(signingScript);
+//            execBuff.append(" ");
+//            // need to include the path used for the real user dir
+//            
+//            execBuff.append(bucketRoot);   // $1
+//            execBuff.append(gpFile.getServerFile().getAbsolutePath());
+//            execBuff.append(" ");
+//            execBuff.append(mimeType);  // $2
+//            // bucket
+//            execBuff.append(" ");
+//            execBuff.append(bucket);    // $3
+//            // 
+//            execBuff.append(" ");
+//            execBuff.append(""+numParts);  // $4
+//            
+//            execBuff.append(" ");
+//            execBuff.append(filename);   //$5
+//            if (profile.length() > 0){
+//                execBuff.append(" ");
+//                execBuff.append(profile);  // $6
+//            }
             
-            execBuff.append(bucketRoot);   // $1
-            execBuff.append(gpFile.getServerFile().getAbsolutePath());
-            execBuff.append(" ");
-            execBuff.append(mimeType);  // $2
-            // bucket
-            execBuff.append(" ");
-            execBuff.append(bucket);    // $3
-            // 
-            execBuff.append(" ");
-            execBuff.append(""+numParts);  // $4
+            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
+          execBuff.append("python " );
+          execBuff.append(awsScriptDir);
+          execBuff.append("presignUpload.py ");
+          // need to include the path used for the real user dir
+          execBuff.append("-k " +bucketRoot);   // $1
+          execBuff.append(gpFile.getServerFile().getAbsolutePath());
+          execBuff.append(" -c ");
+          execBuff.append(mimeType);  // $2
+          // bucket
+          execBuff.append(" -b ");
+          execBuff.append(bucket);    // $3
+          // 
+          execBuff.append(" -n ");
+          execBuff.append(""+numParts);  // $4
+          
+          execBuff.append(" -f ");
+          execBuff.append(filename);   //$5
+          if (profile.length() > 0){
+              execBuff.append(" -p ");
+              execBuff.append(profile);  // $6
+          }
             
-            execBuff.append(" ");
-            execBuff.append(filename);   //$5
-            if (profile.length() > 0){
-                execBuff.append(" ");
-                execBuff.append(profile);  // $6
-            }
             
             System.out.println(execBuff.toString());
             
