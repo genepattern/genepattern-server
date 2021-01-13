@@ -75,7 +75,7 @@ def main(argv):
 	  	      "Bucket": AWS_S3_BUCKET,
 	  	      "Key": FILE_PATH_AND_NAME,
 	  	      "UploadId": upload_id,
-	  	      "PartNumber": i,
+	  	      "PartNumber": i+1,
 	  	  },
 	  	  ExpiresIn=3600,  # 1h
 	  	  HttpMethod="PUT",
