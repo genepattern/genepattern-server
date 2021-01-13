@@ -84,6 +84,8 @@ def main(argv):
 		upload["presignedUrls"].append(presigned_url)
 	
 	print(json.dumps(upload, default=json_serial))
+	with open(FILENAME, 'w') as outfile:
+		outfile.write(json.dumps(upload, default=json_serial))
 
 
 if __name__ == "__main__":

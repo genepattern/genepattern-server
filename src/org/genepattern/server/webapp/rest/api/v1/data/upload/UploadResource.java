@@ -749,9 +749,9 @@ public class UploadResource {
 //            }
             
             // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
-          execBuff.append("python " );
           execBuff.append(awsScriptDir);
-          execBuff.append("presignUpload.py ");
+          execBuff.append(signingScript);
+          execBuff.append(" ");
           // need to include the path used for the real user dir
           execBuff.append("-k " +bucketRoot);   // $1
           execBuff.append(gpFile.getServerFile().getAbsolutePath());
