@@ -169,6 +169,11 @@ $.widget("gp.module", {
             	}
             }
         });
+        
+        if (this.options.data.callAfterItemCreation) {
+        	this.options.data.callAfterItemCreation( this.element);
+        }
+        
     },
 
     _makeTags: function() {

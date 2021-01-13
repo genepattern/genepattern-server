@@ -21,6 +21,7 @@ public class DiskInfoBean {
     private final String quota;
     private final boolean isAboveQuota;
     private final boolean isAboveMaxSimultaneousJobs;
+    private final int directExternalUploadTriggerSize;
     private final String aboveMaxSimultaneousJobsNotificationEmail;
     
     public DiskInfoBean(final DiskInfo diskInfo) {
@@ -40,6 +41,8 @@ public class DiskInfoBean {
         this.isAboveQuota=diskInfo.isAboveQuota();
         this.isAboveMaxSimultaneousJobs=diskInfo.isAboveMaxSimultaneousJobs();
         this.aboveMaxSimultaneousJobsNotificationEmail=diskInfo.getAboveMaxSimultaneousJobsNotificationEmail();
+        this.directExternalUploadTriggerSize=diskInfo.getDirectExternalUploadTriggerSize();
+        
     }
     
     public String getUserId() {
@@ -64,4 +67,9 @@ public class DiskInfoBean {
     public String aboveMaxSimultaneousJobsNotificationEmail(){
         return aboveMaxSimultaneousJobsNotificationEmail;
     }
+    
+    public int getDirectExternalUploadTriggerSize(){
+        return directExternalUploadTriggerSize;
+    }
+    
 }

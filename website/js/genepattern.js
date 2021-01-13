@@ -1,7 +1,7 @@
 // Implicit variables declared elsewhere
 var  username, jq, currentJobNumber, userLoggedIn,
     openUploadDirectoryDialog, uploadDirectorySelected, openSaveDialog, adminServerAllowed,
-    parameter_and_val_groups, run_task_info, fileURL;
+    parameter_and_val_groups, run_task_info, fileURL, directExternalUploadTriggerSize;
 
 
 
@@ -1043,7 +1043,7 @@ function resumableMultipleUploadStart(r, filearray, directory){
 
 function range1(i){return i?range1(i-1).concat(i):[]}
 
-var s3uploadStart = window.performance.now();
+// var s3uploadStart = window.performance.now();
 function s3DirectUploadStartFile(r, file, directory){
 	
 	var fileName = file.fileName;
@@ -1062,7 +1062,8 @@ function s3DirectUploadStartFile(r, file, directory){
 	
 	 uploadToasterFile.find(".upload-toaster-file-cancel")
      .click(function() {
-         
+         // I don't think we care too much about canceling the uploads with S3 since we use a rule there to 
+    	 // clean them up every week.  Given the limited developer time we have we will let that be the AWS side cleanup for now 
       	 resumableloadsInProgress =  resumableloadsInProgress - 1;
     	 
     	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
@@ -1095,13 +1096,13 @@ function s3DirectUploadStartFile(r, file, directory){
 	}
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
-	var partSize = 100 * 1024 * 1024; // 75 MB
+	var partSize = 100 * 1024 * 1024; // 100 MB
 	
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
 	
 	var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
-	var url = "/gp/rest/v1/upload/getS3UploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
+	var url = "/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
 	
 	$.ajax({
         type: "GET",
@@ -1113,7 +1114,7 @@ function s3DirectUploadStartFile(r, file, directory){
   	    },   
         url: url,
         success: function(multipartPostData) {
-        	s3uploadStart = window.performance.now();
+        	// s3uploadStart = window.performance.now();
         	multipartPostData.complete = [];
         	var partNums =  range1(numParts); // create an array of the part numbers
         	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
@@ -1193,9 +1194,9 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
          			 cleanUploadToaster();
                       r.currentFile = null;
                       $('.resumable-drop')[0].classList.remove('leftnav-highlight');
-                      var duration = ((end - s3uploadStart)/1000)/60; // minutes
-                      var sizeInMB = file.size / (1024*1024);
-                      alert("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
+                      //var duration = ((end - s3uploadStart)/1000)/60; // minutes
+                      //var sizeInMB = file.size / (1024*1024);
+                      //alert("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
          		 },
          		 failure: function(err){
          			 fileUploadError(r, file, err);
@@ -1225,10 +1226,18 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
             }
         }
     }, false);
+    xhr.onerror = function(e) {
+    	fileUploadError(r, file, e);
+    	
+        if (typeof e === 'object') {
+            e = e.responseText;
+        }
+        $(".search-widget:visible").searchslider("hide");
+        showErrorMessage(e);
+    }
     
-    
-    from_byte = (partNum) * partSize;  
-    to_byte = (partNum + 1) * partSize;
+    from_byte = (partNum-1) * partSize;  
+    to_byte = (partNum ) * partSize;
     blob = file.file.slice(from_byte,  to_byte);
     xhr.send(blob); 
 }
@@ -1274,10 +1283,23 @@ function warnSpecialChars_resumable(r, file) {
 currentFileList = [];
 function onFileAdded_resumable(r, file){
 	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
+	 
+	 // see if its a drop on a directory in the tree
     var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    if (directory == null){
+    	// for the upload from the slider we hang the directory target here
+    	var sliderClickDirTarget = resumableUploader._gpFileTarget;
+    	if (sliderClickDirTarget != null) directory = sliderClickDirTarget;
+    	resumableUploader._gpFileTarget = null;
+    }
+    
+    
     r.currentFile = file.fileName;
     alreadyOpen = $('#uploadDirectoryDialog').dialog('isOpen');
     currentFileList.push(file);
+    
+    
+    
     
     // pick the destination directory
     if (alreadyOpen){
@@ -1286,15 +1308,28 @@ function onFileAdded_resumable(r, file){
     } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
         openUploadDirectoryDialog(currentFileList, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	// JTL XXX this is for prototyping direct to S3 uploads
-        	var s3yes=confirm("Upload direct to S3?"); 
-        	//var s3yes = false;
         	
-        	if (s3yes){
+        	
+        	var smallFileList = [];
+        	var bigFileList = [];
+        	
+        	if (directExternalUploadTriggerSize > 0){
+        		// check if its big enough we want to do a direct upload to an external site
+        		// if -1 then always upload directly to the GP server
+        		for (var i=0; i < currentFileList.length; i++){
+        			var aFile = currentFileList[i];
+        			if (aFile.file.size > directExternalUploadTriggerSize){
+        				bigFileList.push(aFile);
+        			} else {
+        				smallFileList.push(aFile);
+        			}
+        		}
         		s3DirectUploadStart(r, currentFileList, $(uploadDirectorySelected)[0].pathname);
         	} else {
-        		resumableMultipleUploadStart(r, currentFileList, directory);
+        		smallFileList = currentFileList;
         	}
+        	resumableMultipleUploadStart(r, smallFileList, directory);
+        	
         	
         	
         	
@@ -1487,10 +1522,6 @@ function dirPromptIfNecessary (filelist, directory) {
 
 // resumable js gets drop events one at a time so we need to add to the existing dialog
 function appendToUploadToaster(file){
-	
-	
-	
-	
 	
     // var toaster = $("<div></div>").addClass("upload-toaster-list");
     var toaster = $("#upload-toaster")[0];
@@ -1953,13 +1984,6 @@ function refreshUploadTree() {
     // $("#uploadDirectoryTree").jstree("refresh");
 }
 
-function refreshGenomeSpaceTree() {
-    var gsTree = $("#genomeSpaceFileTree");
-    gsTree.data("dndReady", {});
-    gsTree.jstree("refresh");
-
-    $("#saveTree").jstree("refresh");
-}
 
 function createFileWidget(linkElement, appendTo) {
     var _constructFileMenuData = function(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
@@ -1986,7 +2010,12 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Upload Files",
                 "description": "Upload files to this directory.",
-                "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "callAfterItemCreation": function(item){
+                	// open the file dialog when clicked
+                	resumableUploader.assignBrowse(item);
+                }
+
             });
 
             data.push({
@@ -2410,12 +2439,15 @@ function createFileWidget(linkElement, appendTo) {
                     else if (uploadAction) {
                         //close the slider menu
                         $(".search-widget:visible").searchslider("hide");
-
-                        var directory = $(event.target).closest(".file-widget").attr("name");
-
-                        var dropzoneInput = $("#upload-dropzone-input");
-                        dropzoneInput.data("origin", directory);
-                        dropzoneInput.trigger("click");
+                        var wid = $(event.target).closest(".file-widget");
+                        
+                        var directory = wid.attr("name");
+                        resumableUploader._gpFileTarget = directory;
+                        // resumableUploader.assignBrowse(wid[0], true);
+                        
+                        //var dropzoneInput = $("#resumable-browse");
+                        //dropzoneInput.data("origin", directory);
+                        //dropzoneInput.trigger("click");
                     }
 
                     else if (pipelineAction) {
@@ -4126,6 +4158,8 @@ function updateDiskUsageBox(diskInfo)
                     title: title
                 }).show();
             });
+            
+            directExternalUploadTriggerSize = diskInfo.directExternalUploadTriggerSize;
         });
     }
 }

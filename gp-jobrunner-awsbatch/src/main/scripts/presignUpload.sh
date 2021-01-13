@@ -6,7 +6,8 @@ echo "Using Python"
 source /Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/activate base
 python ${DIR}/presignUpload.py $@
 
-#bash ${DIR}/presignUpload.sh.sh $@
+#echo "Using lambda" 
+#source  ${DIR}/presignUpload.sh.sh $@
 
 
 

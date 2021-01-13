@@ -37,6 +37,7 @@ public class DiskInfo
     private int numProcessingJobs;
     private int maxSimultaneousJobs;
     private String aboveMaxSimultaneousJobsNotificationEmail;
+    private int directExternalUploadTriggerSize;
     final static public HashMap<String, Long> userNotifications = new HashMap<String, Long>(); 
 
     public DiskInfo(final String userId) {
@@ -63,6 +64,14 @@ public class DiskInfo
         this.maxSimultaneousJobs = maxSimultaneousJobs;
     }
 
+    public int getDirectExternalUploadTriggerSize() {
+        return directExternalUploadTriggerSize;
+    }
+
+    public void setDirectExternalUploadTriggerSize(int directExternalUploadTriggerSize) {
+        this.directExternalUploadTriggerSize = directExternalUploadTriggerSize;
+    }
+    
     public void setDiskUsageTotal(Memory diskUsageTotal)
     {
         this.diskUsageTotal = diskUsageTotal;
@@ -118,6 +127,8 @@ public class DiskInfo
         final Memory diskQuota=gpConfig.getGPMemoryProperty(context, "quota");
         // default to 100 simultaneous jobs per user
         final int maxSimultaneousJobs = gpConfig.getGPIntegerProperty(context, "max_simultaneous_jobs", 100);
+        final int directExternalUploadTriggerSize = gpConfig.getGPIntegerProperty(context, "direct_external_upload_trigger_size", -1);
+        
         final String maxJobNotificationEmail = gpConfig.getGPProperty(context, "max_simultaneous_jobs_notification_email");
         final DiskInfo diskInfo = new DiskInfo(userId);
         final boolean isInTransaction= mgr.isInTransaction();
@@ -154,6 +165,7 @@ public class DiskInfo
             //}
             diskInfo.setNumProcessingJobs(numProcessingJobs);
             diskInfo.setMaxSimultaneousJobs(maxSimultaneousJobs);
+            diskInfo.setDirectExternalUploadTriggerSize(directExternalUploadTriggerSize);
             diskInfo.setAboveMaxSimultaneousJobsNotificationEmail(maxJobNotificationEmail);
         }
         catch (Throwable t)

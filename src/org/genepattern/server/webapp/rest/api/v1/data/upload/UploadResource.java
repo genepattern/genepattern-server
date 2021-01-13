@@ -684,9 +684,11 @@ public class UploadResource {
         return ResumableHttpUtils.toInt(request.getParameter("resumableChunkNumber"), -1);
     }
     
-    // *******************  below additions for direct S3 uploads ***********************
+    // *******************  below additions for direct to external (e.g. S3) uploads ***********************
+    //  currently this is a bit S3 centric but it can be updated and generalized if/when we start
+    //  trying to deploy to the Google Cloud Platform (GCP)
     @GET
-    @Path("getS3UploadUrl/")
+    @Path("getExternalUploadUrl/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getS3UploadUrl(
             @Context HttpServletRequest request, 
@@ -722,33 +724,8 @@ public class UploadResource {
             
             GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
             
-            // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
+            // NO BLANK SPACES IN THE PAYLOAD since it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
-            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
-//            execBuff.append(awsScriptDir);
-//            execBuff.append(signingScript);
-//            execBuff.append(" ");
-//            // need to include the path used for the real user dir
-//            
-//            execBuff.append(bucketRoot);   // $1
-//            execBuff.append(gpFile.getServerFile().getAbsolutePath());
-//            execBuff.append(" ");
-//            execBuff.append(mimeType);  // $2
-//            // bucket
-//            execBuff.append(" ");
-//            execBuff.append(bucket);    // $3
-//            // 
-//            execBuff.append(" ");
-//            execBuff.append(""+numParts);  // $4
-//            
-//            execBuff.append(" ");
-//            execBuff.append(filename);   //$5
-//            if (profile.length() > 0){
-//                execBuff.append(" ");
-//                execBuff.append(profile);  // $6
-//            }
-            
-            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
           execBuff.append(awsScriptDir);
           execBuff.append(signingScript);
           execBuff.append(" ");
@@ -771,11 +748,10 @@ public class UploadResource {
               execBuff.append(profile);  // $6
           }
             
-            
-            System.out.println(execBuff.toString());
-            
             Process proc = Runtime.getRuntime().exec(execBuff.toString());
+            
             proc.waitFor();
+            
             
             BufferedReader stdInput = new BufferedReader(new 
                     InputStreamReader(proc.getInputStream()));
@@ -795,10 +771,7 @@ public class UploadResource {
                while ((s = stdError.readLine()) != null) {
                    System.out.println(s);
                }
-               System.out.println("=========");
             
-            
-            //BufferedReader reader = new BufferedReader(new FileReader ("/Users/liefeld/Desktop/response.json"));
             BufferedReader reader = new BufferedReader(new FileReader (filename));
             String         line = null;
             StringBuilder  stringBuilder = new StringBuilder();
@@ -831,7 +804,7 @@ public class UploadResource {
     }
     
     
-    //================= additions for S3 direct uploads
+    //================= additions for S3 multipart uploads
     /**
      * Post a file to the upload resource
      * @param request - The HttpServletRequest
