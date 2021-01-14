@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -692,14 +693,16 @@ public class UploadResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getS3UploadUrl(
             @Context HttpServletRequest request, 
-            @QueryParam("path") String path, 
+            @QueryParam("path") String rawPath, 
             @QueryParam("fileType") String mimeType,
             @QueryParam("numParts") int numParts
     )
     {
         File tmp = null;
         try {
-        
+            String path = URIUtil.encodePath(rawPath);
+            //String path = rawPath;
+            
             /**
              * TODO:  get the S3 profile from config
              *        runtime exec "aws s3 presign s3://gp-temp-test-bucket/test2.txt --profile genepattern" and grab the output
@@ -722,7 +725,21 @@ public class UploadResource {
             String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
             String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
             
-            GpFilePath gpFile = getUploadFile(gpConfig, userContext, URLEncoder.encode(path, "utf-8"));  
+            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
+            String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
+            
+            JSONObject json = new JSONObject();
+            json.put("bucket", bucket);
+            json.put("path", fullPath);
+            json.put("contentType", mimeType);
+            json.put("numParts", numParts);
+            
+            File tmpInput = File.createTempFile("beginUpload", ".json");
+            
+            BufferedWriter writer = new BufferedWriter(new FileWriter (tmpInput));
+            writer.append(json.toString());
+            writer.close();
+            
             
             // NO BLANK SPACES IN THE PAYLOAD since it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
@@ -730,16 +747,21 @@ public class UploadResource {
           execBuff.append(signingScript);
           execBuff.append(" ");
           // need to include the path used for the real user dir
-          execBuff.append("-k " +bucketRoot);   // $1
-          execBuff.append(gpFile.getServerFile().getAbsolutePath());
-          execBuff.append(" -c ");
-          execBuff.append(mimeType);  // $2
-          // bucket
-          execBuff.append(" -b ");
-          execBuff.append(bucket);    // $3
-          // 
-          execBuff.append(" -n ");
-          execBuff.append(""+numParts);  // $4
+//          execBuff.append("-k \"");   // $1
+//          // execBuff.append(URIUtil.encodePath(gpFile.getServerFile().getAbsolutePath()));
+//          execBuff.append(fullPath);
+//          execBuff.append("\" -c ");
+//          execBuff.append(mimeType);  // $2
+//          // bucket
+//          execBuff.append(" -b ");
+//          execBuff.append(bucket);    // $3
+//          // 
+//          execBuff.append(" -n ");
+//          execBuff.append(""+numParts);  // $4
+   
+          execBuff.append(" -i ");
+          execBuff.append(tmpInput.getAbsolutePath());  // $4
+  
           
           execBuff.append(" -f ");
           execBuff.append(filename);   //$5
@@ -817,12 +839,15 @@ public class UploadResource {
     @Consumes(MediaType.TEXT_PLAIN)
     public Response registerExternalUpload(
             String jsonPayload,
-            @QueryParam("path") String path,
+            @QueryParam("path") String rawPath,
             @QueryParam("length") String fileLength,
             @QueryParam("uploadId") String uploadId,
             @Context HttpServletRequest request)
     {
         try {
+            String path = URIUtil.encodePath(rawPath);
+            // String path = rawPath;
+            
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
             GpContext userContext = Util.getUserContext(request);
@@ -832,7 +857,7 @@ public class UploadResource {
                 log.debug("path="+path);
             }
             
-            GpFilePath file = getUploadFile(gpConfig, userContext, URLEncoder.encode(path, "utf-8"));
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
             file.setFileLength(new Long(fileLength));
             file.setLastModified(new Date());
 
@@ -843,7 +868,10 @@ public class UploadResource {
             
             JSONObject multipartCompletion = new JSONObject();
             multipartCompletion.put("UploadId", uploadId);
+            
+            // multipartCompletion.put("Key", URIUtil.encodePath(fileName));       
             multipartCompletion.put("Key", fileName);       
+            
             multipartCompletion.put("Bucket", bucket);
             JSONArray parts = new JSONArray(jsonPayload);
             JSONObject uploadObj = new JSONObject();
@@ -857,7 +885,7 @@ public class UploadResource {
             writer.close();
             String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
              
-            // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
+            // NO BLANK SPACES IN THE PAYLOAD since it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
             // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
             execBuff.append(awsScriptDir);

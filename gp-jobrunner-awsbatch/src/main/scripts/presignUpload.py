@@ -33,7 +33,7 @@ def main(argv):
 	######### end defaults ##########
 
 	try:
-		opts, args = getopt.getopt(argv, "b:p:k:c:f:n:") 
+		opts, args = getopt.getopt(argv, "b:p:k:c:f:n:i:") 
 		 
 	except: 
 		print("Error") 
@@ -52,6 +52,14 @@ def main(argv):
 			FILENAME = arg
 		elif opt in ['-n', '--num-parts']:  
 			NUMPARTS = int(arg)
+		elif opt in ['-i', '--input-json']:
+			with open(arg) as f:
+				data = json.load(f)
+			FILE_PATH_AND_NAME=data['path']
+			KEY = data['path']
+			CONTENT_TYPE = data['contentType']
+			NUMPARTS = data['numParts']
+			AWS_S3_BUCKET = data['bucket']
 
 	if PROFILE is not None:
 		session = boto3.session.Session(profile_name=PROFILE)
@@ -60,6 +68,7 @@ def main(argv):
  
 	s3 = session.client('s3')
 
+	print("Create upload for key: " + FILE_PATH_AND_NAME)
 	upload = s3.create_multipart_upload(
 	    Bucket=AWS_S3_BUCKET,
 	    Key=FILE_PATH_AND_NAME,

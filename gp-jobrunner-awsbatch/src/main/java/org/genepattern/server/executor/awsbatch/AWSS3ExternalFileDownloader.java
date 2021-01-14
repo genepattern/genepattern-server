@@ -47,19 +47,29 @@ public class AWSS3ExternalFileDownloader extends ExternalFileDownloader {
         StringBuffer execBuff = new StringBuffer();
         // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
         execBuff.append(awsfilepath+awsfilename);
-        execBuff.append(" s3 presign s3://");
+        execBuff.append(" s3 presign \\\"s3://");
         execBuff.append(bucket);
         execBuff.append("/");
         execBuff.append(bucketRoot);
         execBuff.append(file.getAbsolutePath());
+        execBuff.append("\\\"");
+        
+       
+        System.out.println(execBuff.toString());
+        String execArgs[];
         if (profile.length() > 0){
-            execBuff.append(" --profile ");
-            execBuff.append(profile);
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath(), "--profile", profile};
+            
+             System.out.println("A");
+        } else {
+            execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
+            
+            System.out.println("B");
         }
         
-        System.out.println(execBuff.toString());
         
-        Process proc = Runtime.getRuntime().exec(execBuff.toString());
+        
+        Process proc = Runtime.getRuntime().exec(execArgs);
         try {
             proc.waitFor();
         
