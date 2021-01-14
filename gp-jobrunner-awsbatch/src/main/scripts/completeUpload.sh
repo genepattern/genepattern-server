@@ -1,4 +1,6 @@
 #!/bin/bash
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
+source "${script_dir}/init-aws-cli-env.sh"
 
 echo "Complete upload: $@ "
 
@@ -10,7 +12,7 @@ else
    PROFILE=""
 fi
 
-/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws s3api complete-multipart-upload --cli-input-json ${1}   --profile genepattern
+aws s3api complete-multipart-upload --cli-input-json ${1}   --profile genepattern
 
 echo /Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws s3api complete-multipart-upload --cli-input-json ${1}   --profile genepattern
 

@@ -35,7 +35,7 @@ echo $PATH > ~/path.txt
 # -u  aws-cli/1.11.87
 #source activate awscli
 # accidentally named the conda env "ame" with -name instead of --name
-source activate ame
+source activate base
 
 
 # set AWS_PROFILE if not already set

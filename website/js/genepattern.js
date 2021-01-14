@@ -76,7 +76,7 @@ function ajaxEmailResponse(req) {
 }
 
 // Requires jQuery & jQuery UI
-function showDialog(title, message, button) {
+function showDialog(title, message, button, zIndex) {
     "use strict";
     var alert = document.createElement("div");
 
@@ -1271,7 +1271,7 @@ function hasSpecialChars_resumable(file) {
 }
 
 function warnSpecialChars_resumable(r, file) {
-    showDialog("Special Characters!",
+    var dlg = showDialog("Special Characters!",
             "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!. <br/>" +
             "Some older GenePattern modules do not handle special characters well. " +
             "Are you sure you want to continue?", {
@@ -1283,6 +1283,7 @@ function warnSpecialChars_resumable(r, file) {
                 $(this).dialog("close");
             }
         });
+    $(dlg).css("z-index", 11000);
 }
 
 

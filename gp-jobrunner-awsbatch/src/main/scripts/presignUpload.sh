@@ -1,10 +1,13 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
+source "${script_dir}/init-aws-cli-env.sh"
+
+
 
 echo "Using Python --> $@"
-source /Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/activate base
-python ${DIR}/presignUpload.py $@
+#source /Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/activate base
+python ${script_dir}/presignUpload.py $@
 
 #echo "Using lambda" 
 #source  ${DIR}/presignUpload.sh.sh $@
