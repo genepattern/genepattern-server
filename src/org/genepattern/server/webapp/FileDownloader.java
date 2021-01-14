@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 import org.genepattern.server.dm.ExternalFileDownloader;
-import org.genepattern.server.executor.awsbatch.AWSS3ExternalFileDownloader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
