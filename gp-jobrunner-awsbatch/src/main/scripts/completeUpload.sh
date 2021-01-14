@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Complete upload: $@ "
+
 # add an AWS profile statement if needed
 if [ "$2" ]; then
    PROFILE=" --profile $2 "

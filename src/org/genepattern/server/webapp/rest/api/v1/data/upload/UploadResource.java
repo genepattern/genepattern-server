@@ -722,7 +722,7 @@ public class UploadResource {
             String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
             String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
             
-            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
+            GpFilePath gpFile = getUploadFile(gpConfig, userContext, URLEncoder.encode(path, "utf-8"));  
             
             // NO BLANK SPACES IN THE PAYLOAD since it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
@@ -832,7 +832,7 @@ public class UploadResource {
                 log.debug("path="+path);
             }
             
-            GpFilePath file = getUploadFile(gpConfig, userContext, path);
+            GpFilePath file = getUploadFile(gpConfig, userContext, URLEncoder.encode(path, "utf-8"));
             file.setFileLength(new Long(fileLength));
             file.setLastModified(new Date());
 
@@ -910,6 +910,7 @@ public class UploadResource {
             return Response.ok().entity(toReturn.toString()).build();
         }
         catch (Throwable t) {
+            t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
     }

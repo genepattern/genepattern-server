@@ -44,7 +44,7 @@ def main(argv):
 		elif opt in ['-p', '--profile']: 
 			PROFILE = arg
 		elif opt in ['-k', '--key']:  
-			FILE_PATH_AND_NAME = arg
+			FILE_PATH_AND_NAME = arg.strip('\"')
 			KEY = arg
 		elif opt in ['-c', '--content-type']:  
 			CONTENT_TYPE = arg

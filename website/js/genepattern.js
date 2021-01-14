@@ -1044,7 +1044,9 @@ function resumableMultipleUploadStart(r, filearray, directory){
 function range1(i){return i?range1(i-1).concat(i):[]}
 
 // var s3uploadStart = window.performance.now();
-function s3DirectUploadStartFile(r, file, directory){
+function s3DirectUploadStartFile(r, file, directoryUrl){
+	var split = window.location.origin.length;
+	var directory = directoryUrl.substring(split);
 	
 	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
@@ -1101,8 +1103,11 @@ function s3DirectUploadStartFile(r, file, directory){
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
 	
-	var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
-	var url = "/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
+	//var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
+	//var url = "/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
+	
+	var path =  directory.trim() + file.fileName.trim();
+	var url = encodeURI("/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts);
 	
 	$.ajax({
         type: "GET",
@@ -1183,7 +1188,7 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
      		  
      		 var end = window.performance.now();
      		  
-    		  var registerUrl = "/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId;
+    		  var registerUrl = encodeURI("/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId);
     		  $.ajax({
          		 type: "POST",
          		 data:  JSON.stringify(multipartPostData.complete),
@@ -1267,7 +1272,7 @@ function hasSpecialChars_resumable(file) {
 
 function warnSpecialChars_resumable(r, file) {
     showDialog("Special Characters!",
-            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!<br/><br/>" +
+            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!. <br/>" +
             "Some older GenePattern modules do not handle special characters well. " +
             "Are you sure you want to continue?", {
             "Yes": function() {
@@ -1280,7 +1285,10 @@ function warnSpecialChars_resumable(r, file) {
         });
 }
 
-currentFileList = [];
+
+var smallFileList = [];
+var bigFileList = [];
+
 function onFileAdded_resumable(r, file){
 	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
 	 
@@ -1296,48 +1304,42 @@ function onFileAdded_resumable(r, file){
     
     r.currentFile = file.fileName;
     alreadyOpen = $('#uploadDirectoryDialog').dialog('isOpen');
-    currentFileList.push(file);
     
-    
-    
+    if (directExternalUploadTriggerSize > 0){
+		// check if its big enough we want to do a direct upload to an external site
+		// if -1 then always upload directly to the GP server
+		if (file.file.size > directExternalUploadTriggerSize){
+			bigFileList.push(file);
+			
+		} else {
+			smallFileList.push(file);
+		}
+	} else {
+		smallFileList.push(file);
+	}
+    // make sure it does not get the big files
+    resumableUploader.files = smallFileList;
     
     // pick the destination directory
     if (alreadyOpen){
     	// do nothing but add the file to the list
     	
     } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
-        openUploadDirectoryDialog(currentFileList, function() {    
+    	//openUploadDirectoryDialog(currentFileList, function() {    
+        openUploadDirectoryDialog(null, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	
-        	
-        	var smallFileList = [];
-        	var bigFileList = [];
-        	
-        	if (directExternalUploadTriggerSize > 0){
-        		// check if its big enough we want to do a direct upload to an external site
-        		// if -1 then always upload directly to the GP server
-        		for (var i=0; i < currentFileList.length; i++){
-        			var aFile = currentFileList[i];
-        			if (aFile.file.size > directExternalUploadTriggerSize){
-        				bigFileList.push(aFile);
-        			} else {
-        				smallFileList.push(aFile);
-        			}
-        		}
-        		s3DirectUploadStart(r, currentFileList, $(uploadDirectorySelected)[0].pathname);
-        	} else {
-        		smallFileList = currentFileList;
-        	}
+        	s3DirectUploadStart(r, bigFileList, directory);
         	resumableMultipleUploadStart(r, smallFileList, directory);
-        	
-        	
-        	
-        	
-        	currentFileList = []; // empty 
+        	bigFileList = []; // empty 
+        	smallFileList = []; // empty 
+           	
      	 });
     } else {
-    	resumableMultipleUploadStart(r, currentFileList, directory);
-    	currentFileList = []; // empty 
+       	s3DirectUploadStart(r, bigFileList, directory);
+    	resumableMultipleUploadStart(r, smallFileList, directory);
+
+    	bigFileList = []; // empty 
+    	smallFileList = []; // empty 
     }
 }; 
 
@@ -1444,19 +1446,26 @@ function initReusableJSUploads(file, directory, done, index){
 }
 
 function fileUploadProgress(r, file, percent){
-	 if (!(r.files.includes(file))) return;
-	 
-	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
- 	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-     progressbar.progressbar("value", Math.floor(percent*100));
+	 //if (!(r.files.includes(file))) return;
+	 try {
+		 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+		 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+		 progressbar.progressbar("value", Math.floor(percent*100));
+	 } catch (err){
+		 console.log("fileUploadProgress error "+err);
+	 }
 }
 
 function getFileUploadProgress(r, file){
-	 if (!(r.files.includes(file))) return 0;
-	 
-	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
-	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-    return progressbar.progressbar("value");
+	 //if (!(r.files.includes(file))) return 0;
+	 try {
+		 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+		 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+		 return progressbar.progressbar("value");
+	 } catch (err){
+		 console.log("getFileUploadProgress error "+err);
+		 return 0;
+	 }
 }
 
 
