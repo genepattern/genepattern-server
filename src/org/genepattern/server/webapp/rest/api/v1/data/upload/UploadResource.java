@@ -56,7 +56,7 @@ import org.json.JSONObject;
 /**
  * RESTful implementation of the /upload resource.
  *
- * @author Thorin Tabor
+ * @author Thorin Tabor, modified by Ted Liefeld
  */
 @Path("/v1/upload")
 public class UploadResource {
