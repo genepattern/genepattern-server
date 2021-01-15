@@ -166,9 +166,17 @@
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-pre.12-b206</version>
+      <version>3.9.11-pre.b309</version>
       <!-- scope>runtime,test</scope -->
     </dependency>
+
+    <dependency>
+      <groupId>org.genepattern</groupId>
+      <artifactId>javax-servlet</artifactId>
+      <version>1.0</version>
+      <!-- scope>runtime,test</scope -->
+    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
     <!--   needed to parse the GpConfig file from the junit tests -->
