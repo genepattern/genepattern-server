@@ -814,7 +814,8 @@ public class UploadResource {
             
         } catch (Exception e){
             e.printStackTrace();
-            return Response.status(Response.Status.NOT_FOUND).build();
+            log.error(e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
             try {
                 if (tmp != null)
@@ -938,6 +939,7 @@ public class UploadResource {
             return Response.ok().entity(toReturn.toString()).build();
         }
         catch (Throwable t) {
+            log.error(t.getMessage(), t);
             t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
         }
