@@ -221,8 +221,12 @@ public class CongestionManager {
         CongestionDao dao = new CongestionDao();
 
         try {
-            int waiting = dao.getQueueCount(congestion.getQueue());
-
+            int waiting = 0;
+            if ((dao != null) & (congestion != null)){
+                if (congestion.getQueue() != null)
+                    waiting = dao.getQueueCount(congestion.getQueue());
+            }
+            
             if (!inTransaction) {
                 HibernateUtil.commitTransaction();
             }
