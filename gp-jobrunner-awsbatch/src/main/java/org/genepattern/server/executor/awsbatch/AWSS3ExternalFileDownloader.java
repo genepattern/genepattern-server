@@ -35,39 +35,16 @@ public class AWSS3ExternalFileDownloader extends ExternalFileDownloader {
         String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", "gp-temp-test-bucket");
         String bucketRoot = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", "tedslaptop");
         String profile = gpConfig.getGPProperty(userContext, "upload.aws.s3.profile", "");
-        String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
-        String signingScript = gpConfig.getGPProperty(userContext, "download.aws.s3.presigning.script");
         
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
-        List<String> args=Arrays.asList(awsfilepath+awsfilename,  "s3", "presign",
-                "s3://" + bucketRoot+file.getAbsolutePath());
-        
-        StringBuffer execBuff = new StringBuffer();
-        // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
-        execBuff.append(awsfilepath+awsfilename);
-        execBuff.append(" s3 presign \\\"s3://");
-        execBuff.append(bucket);
-        execBuff.append("/");
-        execBuff.append(bucketRoot);
-        execBuff.append(file.getAbsolutePath());
-        execBuff.append("\\\"");
-        
-       
-        System.out.println(execBuff.toString());
         String execArgs[];
         if (profile.length() > 0){
             execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath(), "--profile", profile};
-            
-             System.out.println("A");
         } else {
             execArgs = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
-            
-            System.out.println("B");
         }
-        
-        
         
         Process proc = Runtime.getRuntime().exec(execArgs);
         try {

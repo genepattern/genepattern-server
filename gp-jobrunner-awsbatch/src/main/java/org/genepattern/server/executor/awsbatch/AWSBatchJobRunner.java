@@ -1,5 +1,6 @@
 package org.genepattern.server.executor.awsbatch;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -7,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -134,7 +138,10 @@ public class AWSBatchJobRunner implements JobRunner {
     public static final Value DEFAULT_SYNCH_SCRIPT=new Value("awsSyncDirectory.sh");
     public static final String PROP_CANCEL_SCRIPT="aws-batch-cancel-job-script";
     public static final Value DEFAULT_CANCEL_SCRIPT=new Value("awsCancelJob.sh");
-
+    
+    
+    
+    
     /** generic implementation of getOrDefault, for use in Java 1.7 */
     public static final <K,V> V getOrDefault(final Map<K,V> map, K key, V defaultValue) {
         V value=map.get(key);
@@ -221,6 +228,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final File checkStatusScript=getAwsBatchScriptFile(jobRecord, PROP_STATUS_SCRIPT, DEFAULT_STATUS_SCRIPT);
         return ""+checkStatusScript;
     }
+    
     
     protected static Date getOrDefaultDate(final JSONObject awsJob, final String prop, final Date default_value) {
         try {
@@ -604,13 +612,121 @@ public class AWSBatchJobRunner implements JobRunner {
             log.error(e);
         }
     }
+    
+    
+    private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(5,endIdx);
+    }
+    private String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(endIdx+1);
+    }
+    
+    /**
+     * When we want to leave the files on S3 instead of copying them to local, we still need to fake out
+     * GenePattern into seeing the files.  So first attempt we will create 0-length files 
+     * @param jobRecord
+     * @param filepath
+     * @param cmdEnv
+     */
+    protected void awsFakeSyncDirectory(final DrmJobRecord jobRecord, final File filepath, final Map<String,String> cmdEnv) {
+        // call out to a script to refresh the directory path to pull files from S3
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+        GpConfig gpConfig =  ServerConfigurationFactory.instance();
+        
+        String awsfilepath = gpConfig.getGPProperty(jobContext,"aws-batch-script-dir");
+        String awsfilename = gpConfig.getGPProperty(jobContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+        String bucket = getBucketName(gpConfig, jobContext);
+        String bucketRoot = getBucketRoot(gpConfig, jobContext);
+        
+        String execArgs[];
+        String s3filepath = filepath.getAbsolutePath();
+        // make sure it ends with a slash to avoid collecting the meta dir as well
+        if (!s3filepath.endsWith("/")) s3filepath += "/";
+        
+        execArgs = new String[] {awsfilepath+awsfilename, "s3", "ls", bucket+ "/"+bucketRoot+s3filepath, "--recursive"};
+        
+        
+        try {
+            String envp[] = new String[cmdEnv.size()];
+            int i=0;
+            for (String key: cmdEnv.keySet()){
+                String val = cmdEnv.get(key);
+                envp[i++] = key + "="+val;
+            }
+            Process proc = Runtime.getRuntime().exec(execArgs, envp);
+            
+            proc.waitFor();
+        
+            BufferedReader stdInput = new BufferedReader(new     InputStreamReader(proc.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new  InputStreamReader(proc.getErrorStream()));
+    
+           // Read the output from the command
+           String s = null;
+           
+           // each line will look like 
+           //         2020-12-01 13:19:01    4931101 tedslaptop/Users/liefeld/gp/users/739701.jpg
+           // we want to get the filenames, sizes dates and times and stick them into a json file
+           // that GenePatternAnalysisTask will find and then use to register the (non-local) output files
+           //  .non.retrieved.output.files.json
+           JSONArray outFilesJSON = new JSONArray();
+           while ((s = stdInput.readLine()) != null) {
+               System.out.println(s);
+               String[] lineParts = s.split("\\s+");
+               // strip out the bucketroot which is not wanted for the local file
+               try {
+                   String outFilePath = lineParts[3].substring(bucketRoot.length());
+                   // date time size <filepath>/filename
+                   //File f = new File(outFilePath);
+                   //f.createNewFile();
+                   JSONObject oneFileJSON = new JSONObject();
+                   oneFileJSON.put("filename", outFilePath);
+                   oneFileJSON.put("size", lineParts[2]);
+                   oneFileJSON.put("date", lineParts[0]);
+                   oneFileJSON.put("time", lineParts[1]);
+                   
+                   outFilesJSON.put(oneFileJSON);
+                   
+               } catch (Exception e){
+                   // ignore
+               }
+           }
+           File outListFile = new File(s3filepath+".non.retrieved.output.files.json");
+           BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
+           writer.append(outFilesJSON.toString());
+           writer.close();
+           
+           // Read any errors from the attempted command
+           System.out.println("Here is the standard error of the command (if any):\n");
+           while ((s = stdError.readLine()) != null) {
+               System.out.println(s);
+           }    
+           
+        } catch (Exception e){
+            e.printStackTrace();
+            
+        }
+    }
+    
 
     private void refreshWorkingDirFromS3(final DrmJobRecord jobRecord, final File metadataDir, final Map<String, String> cmdEnv) {
         // pull the job.metaDir from s3
         awsSyncDirectory(jobRecord, metadataDir, cmdEnv);
+        
         // pull the job.workingDir from s3
-        awsSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
-
+        // unless an external downloader has been configured in which case we can skip this and let
+        // them be directly downloaded from S3
+        if (isSkipWorkingDirDownload(jobRecord)) {
+            awsFakeSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
+        } else {
+            awsSyncDirectory(jobRecord, jobRecord.getWorkingDir(), cmdEnv);
+        }
+        
         // Now we have synch'd set the jobs stderr and stdout to the ones we got back from AWS
         // since I can't change the DRMJobSubmission objects pointers we'll copy the contents over for now
         if (metadataDir.isDirectory()){
@@ -755,6 +871,14 @@ public class AWSBatchJobRunner implements JobRunner {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         return getAwsBatchScriptFile(ServerConfigurationFactory.instance(), jobContext, key, defaultValue);
     }
+    
+    protected static boolean isSkipWorkingDirDownload(final DrmJobRecord jobRecord) {
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
+        GpConfig jobConfig = ServerConfigurationFactory.instance();
+        String downloaderClass = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
+        return (downloaderClass != null);
+    }
+    
     
     protected static String getAwsJobName(final DrmJobSubmission gpJob) {
         final String prefix=AwsBatchUtil.getProperty(gpJob, "aws-job-name-prefix", "GP_Job_");

@@ -2687,7 +2687,7 @@ function createJobWidget(job) {
         "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
-    if (job.status.isFinished) {
+    if ((job.status.isFinished) && (diskInfo.externalDirectDownloadsEnabled != true )){
         actionData.push({
             "lsid": "",
             "name": "Download Job",
@@ -2754,6 +2754,11 @@ function createJobWidget(job) {
                 }
 
                 else if (downloadAction) {
+                	if (diskInfo.externalDirectDownloadsEnabled == true){
+                		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
+                		return;
+                	}
+                	
                     $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
 
                     $(".search-widget:visible").searchslider("hide");
@@ -3842,6 +3847,10 @@ function buildJobResultsPage() {
                 ).append(
                     $("<button id='downloadJobs' style='margin-left: 6px'>Download</button>")
                         .click(function(){
+                        	if (diskInfo.externalDirectDownloadsEnabled == true){
+                        		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
+                        		return;
+                        	}
                             // Gather the jobs to download
                             var jobsDownload = [];
                             $(".job-select-checkbox:checked").each(function(index, element) {
@@ -3958,10 +3967,19 @@ function buildJobResultsPage() {
         )
     ).appendTo(container);
 
+    
     // Build the table body
     var tbody = $("<tbody></tbody>")
         .appendTo(jobTable);
 
+    if ((diskInfo != null) && (diskInfo.externalDirectDownloadsEnabled == true)){
+    	// if external downloads are enabled, the output files are not on
+    	// disk to be zipped up together so this feature is disabled
+    	// JTL 01222021
+    	 $("#downloadJobs").prop("disabled",true);
+    	 $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+    }
+    
     // Init data tables
     jobTable.dataTable({
         serverSide: true,
@@ -4072,8 +4090,11 @@ function loadJobResults(jobResults) {
     buildJobResultsPage();
 }
 
+
+
 function updateDiskUsageBox(diskInfo)
 {
+	
     // Hard-coded values until we hook this into server-side calls
     var diskQuotaDisplay = null;
     var diskUsedDisplay = null;
@@ -4171,8 +4192,28 @@ function updateDiskUsageBox(diskInfo)
             
             directExternalUploadTriggerSize = diskInfo.directExternalUploadTriggerSize;
         });
+        
+        if (diskInfo.externalDirectDownloadsEnabled == true){
+        	// if external downloads are enabled, the output files are not on
+        	// disk to be zipped up together so this feature is disabled
+        	// JTL 01222021
+        	function disableDownloadJob() {
+        		$("#downloadJobs").prop("disabled",true);
+           	 $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+
+        	};
+        	
+        	if ($("#downloadJobs").length == 0) {
+        		setTimeout(disableDownloadJob, 2000);
+        	} else {
+        		disableDownloadJob();
+        	}
+        }
     }
 }
+
+
+var diskInfo;  // save as global as its needed in many places now 
 
 function initStatusBox()
 {
@@ -4183,7 +4224,9 @@ function initStatusBox()
         success: function (response) {
            
             if (response !== null) {
-                updateDiskUsageBox(response);
+                diskInfo = response;
+            	updateDiskUsageBox(response);
+                
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

@@ -36,6 +36,11 @@ public class JobResultsFilenameFilter implements FilenameFilter {
         exactMatches.add(filename);
     }
     
+    public Set<String> getExactMatches() {
+        return exactMatches;
+    }
+    
+    
     public void clearExactMatches() {
         exactMatches.clear();
     }

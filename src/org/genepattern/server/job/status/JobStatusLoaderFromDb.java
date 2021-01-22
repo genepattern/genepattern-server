@@ -104,18 +104,6 @@ public class JobStatusLoaderFromDb implements JobStatusLoader {
                 b.executionLogLocation(executionLogLocation);
             }
             
-            // TODO: special-case for job.* inputs
-            final boolean debug=false;
-            if (debug && jobContext.getJobInput() != null) {
-                for(final Entry<ParamId, Param> entry : jobContext.getJobInput().getParams().entrySet()) {
-                    final String pname = entry.getKey().getFqName();
-                    if (pname.startsWith("job.")) {
-                        final String pvalue=formatParam(entry.getValue());
-                        b.addResourceRequirement(pname, pvalue);
-                    }
-                }
-            }
-            
             final Status status=b.build();
             return status;
         }
