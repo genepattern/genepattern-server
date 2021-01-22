@@ -5,21 +5,17 @@ package org.genepattern.server.job.output;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.genepattern.server.DbException;
-import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -41,7 +37,6 @@ public class JobOutputRecorder {
     public static List<JobOutputFile> getAllNonRetrievedExternalOutputFiles(final GpConfig gpConfig, final GpContext jobContext, 
             final File jobDir,  List<JobOutputFile> allFiles, JSONArray externalFileList){
         List<JobOutputFile> externalFiles=new ArrayList<JobOutputFile>();
-        String jobDirPath = jobDir.getAbsolutePath();
         HashSet<String> existingFileNames = new HashSet<String>(); 
         for (JobOutputFile f : allFiles) {
             existingFileNames.add(f.getPath());
@@ -96,8 +91,6 @@ public class JobOutputRecorder {
                 log.error(ee);
             }
         }
-
-        
         return externalFiles;
     }
     
