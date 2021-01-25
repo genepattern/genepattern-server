@@ -3972,6 +3972,15 @@ function buildJobResultsPage() {
     var tbody = $("<tbody></tbody>")
         .appendTo(jobTable);
 
+    function disableDownloadJob() {
+    	if ((diskInfo != null) && (diskInfo.externalDirectDownloadsEnabled == true)){
+    		$("#downloadJobs").prop("disabled",true);
+    		$("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+    	}
+	};
+	setTimeout(disableDownloadJob, 2000);
+	
+    
     if ((diskInfo != null) && (diskInfo.externalDirectDownloadsEnabled == true)){
     	// if external downloads are enabled, the output files are not on
     	// disk to be zipped up together so this feature is disabled
@@ -4199,7 +4208,7 @@ function updateDiskUsageBox(diskInfo)
         	// JTL 01222021
         	function disableDownloadJob() {
         		$("#downloadJobs").prop("disabled",true);
-           	 $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+           	    $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
 
         	};
         	
