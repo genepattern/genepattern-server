@@ -69,12 +69,20 @@ public class FileDownloader {
         }
     }
 
-    public static long downloadFile(final File toFile, final URL fromUrl, final Status statusMonitor)
+    public static long downloadFile(final File toFile, final URL fromUrl, final Status statusMonitor) throws IOException {
+        
+        return downloadFile( toFile,   fromUrl,   statusMonitor,  0);
+    }
+    
+    
+    public static long downloadFile(final File toFile, final URL fromUrl, final Status statusMonitor, Integer redirectDepth)
             throws IOException {
         long downloadedBytes = 0;
         log.debug("downloading file from url='"+fromUrl+"'");
         final FileOutputStream os = new FileOutputStream(toFile);
         final URLConnection uc = fromUrl.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) uc;
+        
         log.debug("opened connection");
         final long downloadSize = getContentLength(uc);
         if ((statusMonitor != null) && (downloadSize != -1)) {
@@ -84,6 +92,26 @@ public class FileDownloader {
             statusMonitor.beginProgress("download");
         }
         InputStream is = uc.getInputStream();
+        try {
+            //&& (fromUrl.getProtocol().equalsIgnoreCase("http")
+            if ((redirectDepth < 10) && (conn.getResponseCode() == 301) || (conn.getResponseCode() == 302)){
+                // can't follow redirects from http to https, and things these days should be https, so if we
+                // get a moved permanently (301) 
+                String newUrl = conn.getHeaderField("Location");
+                if ((newUrl != null) && (newUrl.length() > 10)){
+                    statusMonitor.statusMessage("Redirecting to: " + newUrl); 
+                    try {
+                        return downloadFile(toFile, new URL(newUrl), statusMonitor, (redirectDepth+1) );
+                    } finally {
+                        try  {is.close();} catch(Exception ise){};
+                        try  {os.close();} catch(Exception ose){};
+                    }
+                }
+            }
+        } catch (Exception e){
+            log.error(e);
+        } 
+        
         byte[] buf = new byte[100000];
         int i;
         long lastPercent = 0;
