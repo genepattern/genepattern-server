@@ -804,7 +804,14 @@ function loadModuleInfo(module) {
     $(".properties-description").text(module["description"]);
     $(".properties-author").text(module["author"]);
     $(".properties-privacy").text(module["privacy"]);
-    $(".properties-license").text(module["eula"] ? "License Acceptance Required" : "None");
+    // GP-5890 show either license accepted is required, a link to the license or None
+    var license = "None";
+    if (module["license"] != null){
+    	if (module["eula"])license = "License Acceptance Required (<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "'>"+module["license"]+"</a>)";
+     	else  license = "<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "'>"+module["license"]+"</a>";
+    }
+    $(".properties-license").html(license);
+    
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
     $(".properties-dockerimage").text(module["job.docker.image"]);
