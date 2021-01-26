@@ -807,8 +807,8 @@ function loadModuleInfo(module) {
     // GP-5890 show either license accepted is required, a link to the license or None
     var license = "None";
     if (module["license"] != null){
-    	if (module["eula"])license = "License Acceptance Required (<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "'>"+module["license"]+"</a>)";
-     	else  license = "<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "'>"+module["license"]+"</a>";
+    	if (module["eula"])license = "License Acceptance Required (<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "' target='blank'>"+module["license"]+"</a>)";
+     	else  license = "<a href='/gp/getFile.jsp?task="+encodeURIComponent(module["LSID"]) +"&file=" + module["license"] + "'  target='blank'>"+module["license"]+"</a>";
     }
     $(".properties-license").html(license);
     
