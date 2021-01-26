@@ -879,6 +879,16 @@ public class AWSBatchJobRunner implements JobRunner {
         return (downloaderClass != null);
     }
     
+    protected static boolean isSkipWorkingDirDownload(final DrmJobSubmission jobSubmission) {
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobSubmission);
+        GpConfig jobConfig = ServerConfigurationFactory.instance();
+        String downloaderClass = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
+        return (downloaderClass != null);
+    }
+    
+   
+    
+    
     
     protected static String getAwsJobName(final DrmJobSubmission gpJob) {
         final String prefix=AwsBatchUtil.getProperty(gpJob, "aws-job-name-prefix", "GP_Job_");
