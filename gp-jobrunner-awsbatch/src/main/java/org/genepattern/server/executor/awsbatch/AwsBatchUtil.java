@@ -155,6 +155,42 @@ public class AwsBatchUtil {
         return jobContext;
     }
 
+    protected static GpContext initJobContext(final DrmJobSubmission jobSubmission) {
+        JobInfo jobInfo = null;
+        if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
+            try {
+                jobInfo = new AnalysisDAO().getJobInfo(jobSubmission.getGpJobNo());
+            }
+            catch (Throwable t) {
+                log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);
+            }
+        }
+        final GpContext jobContext=new GpContext.Builder()
+            .jobNumber(jobSubmission.getGpJobNo())
+            .jobInfo(jobInfo)
+        .build();
+        return jobContext;
+    }
+
+    /**
+     * isUseS3NonLocalFiles is used to determine if we may be running analyses on files that are in S3 but not on the
+     * local disk of the GP head node. This can be because they
+     * were directly uploaded there, or for jobResults left there but not copied locally.
+     * 
+     * @param jobSubmission
+     * @return
+     */
+    protected static boolean isUseS3NonLocalFiles (final DrmJobSubmission jobSubmission) {
+        final GpContext jobContext=AwsBatchUtil.initJobContext(jobSubmission);
+        GpConfig jobConfig = ServerConfigurationFactory.instance();
+        
+        final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+        
+        return (directDownloadEnabled || directExternalUploadEnabled);
+        
+    }
+    
     /**
      * Get the list of input and support files to be copied into the docker container
      * before running the job
@@ -238,6 +274,8 @@ public class AwsBatchUtil {
             log.debug("gpJobNo="+gpJob.getGpJobNo()+", listing local file paths ...");
         }
 
+        boolean filesMayBeInS3AndNotExistLocally = AwsBatchUtil.isUseS3NonLocalFiles(gpJob);
+        
         // linked hash set preserves insertion order
         final Set<File> jobInputFiles = new LinkedHashSet<File>();
         for(final String localFilePath : gpJob.getJobContext().getLocalFilePaths()) {
@@ -246,16 +284,40 @@ public class AwsBatchUtil {
             }
             else {
                 final File file=new File(localFilePath);
-                if (file != null && file.exists()) {
+                if (file != null && (file.exists() || filesMayBeInS3AndNotExistLocally)) {
                     jobInputFiles.add(file);
                 }
                 else {
+                    // if the file is missing its normally an error.  However we do make an exception 
+                    // if we are allowing direct S3 uploads.  In that case we need to make sure the 
+                    // file is in the appropriate S3 directory even if not on the local disk
+                    String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
+                    if (directUploadBucket != null){
+                        boolean isPresentInS3 = s3FileExists(gpJob, localFilePath);
+                        if (isPresentInS3){
+                            jobInputFiles.add(file);
+                        }
+                    }
+                    
+                    
                     log.error("gpJobNo="+gpJob.getGpJobNo()+", file doesn't exist for localFilePath='"+localFilePath+"'");
                 }
             }
         }
         return Collections.unmodifiableSet(jobInputFiles);
     }
+    
+    public static boolean s3FileExists(final DrmJobSubmission gpJob, final String localFilePath){
+        // JTL XXX need to implement checking into S3 for the actual presence
+        String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
+        String bucketRoot = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket.root", null);
+        String awsProfile = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.profile", null);
+        
+        
+        return true;
+    }
+    
+    
 
     /**
      * Get the File referenced by the configuration property, e.g.

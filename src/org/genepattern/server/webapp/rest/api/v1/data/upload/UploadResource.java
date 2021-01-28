@@ -5,10 +5,12 @@ package org.genepattern.server.webapp.rest.api.v1.data.upload;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -28,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -52,7 +56,7 @@ import org.json.JSONObject;
 /**
  * RESTful implementation of the /upload resource.
  *
- * @author Thorin Tabor
+ * @author Thorin Tabor, modified by Ted Liefeld
  */
 @Path("/v1/upload")
 public class UploadResource {
@@ -681,86 +685,92 @@ public class UploadResource {
         return ResumableHttpUtils.toInt(request.getParameter("resumableChunkNumber"), -1);
     }
     
-    // *******************  below additions for direct S3 uploads ***********************
+    // *******************  below additions for direct to external (e.g. S3) uploads ***********************
+    //  currently this is a bit S3 centric but it can be updated and generalized if/when we start
+    //  trying to deploy to the Google Cloud Platform (GCP)
     @GET
-    @Path("getS3UploadUrl/")
+    @Path("getExternalUploadUrl/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getS3UploadUrl(
             @Context HttpServletRequest request, 
-            @QueryParam("path") String path, 
-            @QueryParam("fileType") String mimeType
+            @QueryParam("path") String rawPath, 
+            @QueryParam("fileType") String mimeType,
+            @QueryParam("numParts") int numParts
     )
     {
+        File tmp = null;
+        Process proc = null;
         try {
-        
-            /**
-             * TODO:  get the S3 profile from config
-             *        runtime exec "aws s3 presign s3://gp-temp-test-bucket/test2.txt --profile genepattern" and grab the output
-             *        make GP think its got a local file when really it is only in S3
-             */
+            String path = URIUtil.encodePath(rawPath);
+            //String path = rawPath;
+
             // we want a temp file name but the file itself will block
-            File tmp = File.createTempFile("lambda", ".json");
+            tmp = File.createTempFile("lambda", ".json");
             String filename = tmp.getName();
             tmp.delete();
-            
+
             // need to get the bucket from the config file entries
             //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
             //     upload.aws.s3.bucket.root: tedslaptop
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
-            GpContext userContext = Util.getUserContext(request);
-            String bucket = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", "gp-temp-test-bucket");
-            String bucketRoot = gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", "tedslaptop");
-            String profile = gpConfig.getGPProperty(userContext, "upload.aws.s3.profile", "");
-            String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script", "/Users/liefeld/GenePattern/gp_dev/aws/presign.sh");
-            
-            
-            
-            // NO BLANK SPACES IN THE PAYLOAD si it messes up the arg parsing
+            GpContext userContext = Util.getUserContext(request);            
+            String bucket = getBucketName(gpConfig, userContext);
+            String bucketRoot = getBucketRoot(gpConfig, userContext);
+
+            String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
+            String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
+
+            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
+            String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
+
+            JSONObject json = new JSONObject();
+            json.put("bucket", bucket);
+            json.put("path", fullPath);
+            json.put("contentType", mimeType);
+            json.put("numParts", numParts);
+
+            File tmpInput = File.createTempFile("beginUpload", ".json");
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter (tmpInput));
+            writer.append(json.toString());
+            writer.close();
+
+
+            // NO BLANK SPACES IN THE PAYLOAD since it messes up the arg parsing
             StringBuffer execBuff = new StringBuffer();
-            // "/Users/liefeld/AnacondaProjects/CondaInstall/anaconda3/bin/aws lambda invoke --function-name createPresignedPost --payload '{\"input\": { \"name\":\""+path+"\", \"fileType\": \""+mimeType+"\"}}' response.json --profile genepattern";
+            execBuff.append(awsScriptDir);
             execBuff.append(signingScript);
             execBuff.append(" ");
-            execBuff.append(bucketRoot+path);
-            execBuff.append(" ");
-            execBuff.append(mimeType);
-            // bucket
-            execBuff.append(" ");
-            execBuff.append(bucket);
-            execBuff.append(" ");
-            execBuff.append(filename);
-            if (profile.length() > 0){
-                execBuff.append(" ");
-                execBuff.append(profile);
-            }
-            
-            System.out.println(execBuff.toString());
-            
-            Process proc = Runtime.getRuntime().exec(execBuff.toString());
+            execBuff.append(" -i ");
+            execBuff.append(tmpInput.getAbsolutePath());  // $4
+            execBuff.append(" -f ");
+            execBuff.append(filename);   //$5
+
+            proc = Runtime.getRuntime().exec(execBuff.toString());
+
             proc.waitFor();
-            
+
+
             BufferedReader stdInput = new BufferedReader(new 
                     InputStreamReader(proc.getInputStream()));
 
-               BufferedReader stdError = new BufferedReader(new 
+            BufferedReader stdError = new BufferedReader(new 
                     InputStreamReader(proc.getErrorStream()));
 
-               // Read the output from the command
-               System.out.println("Here is the standard output of the command:\n");
-               String s = null;
-               while ((s = stdInput.readLine()) != null) {
-                   System.out.println(s);
-               }
+            // Read the output from the command
+            System.out.println("Here is the standard output of the command:\n");
+            String s = null;
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
+            }
 
-               // Read any errors from the attempted command
-               System.out.println("Here is the standard error of the command (if any):\n");
-               while ((s = stdError.readLine()) != null) {
-                   System.out.println(s);
-               }
-               System.out.println("=========");
-            
-            
-            //BufferedReader reader = new BufferedReader(new FileReader ("/Users/liefeld/Desktop/response.json"));
+            // Read any errors from the attempted command
+            System.out.println("Here is the standard error of the command (if any):\n");
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
+
             BufferedReader reader = new BufferedReader(new FileReader (filename));
             String         line = null;
             StringBuilder  stringBuilder = new StringBuilder();
@@ -778,15 +788,163 @@ public class UploadResource {
             }
             System.out.println(resp);
             return Response.ok().entity(resp).build();
-            
+
         } catch (Exception e){
             e.printStackTrace();
-            return Response.status(Response.Status.NOT_FOUND).build();
+            log.error(e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            if (proc != null) displayProcessStdOutAndErr(proc);
+            try {
+                if (tmp != null)
+                    tmp.delete();
+            } catch (Exception e){}
         }
 
-        
+
+    }
+
+    private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(5,endIdx);
+    }
+    private String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(endIdx+1);
     }
     
+    
+    
+ 
+    
+    
+    //================= additions for S3 multipart uploads
+    /**
+     * Post a file to the upload resource
+     * @param request - The HttpServletRequest
+     * @param path
+     * @return
+     */
+    @POST
+    @Path("/registerExternalUpload")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Response registerExternalUpload(
+            String jsonPayload,
+            @QueryParam("path") String rawPath,
+            @QueryParam("length") String fileLength,
+            @QueryParam("uploadId") String uploadId,
+            @Context HttpServletRequest request)
+    {
+        Process proc = null;
+        try {
+            String path = URIUtil.encodePath(rawPath);
+            // String path = rawPath;
+
+            final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);
+
+            // Get the file we will be uploading to
+            if (log.isDebugEnabled()) {
+                log.debug("path="+path);
+            }
+
+            GpFilePath file = getUploadFile(gpConfig, userContext, path);
+            file.setFileLength(new Long(fileLength));
+            file.setLastModified(new Date());
+
+            String bucket = getBucketName(gpConfig, userContext);
+            String bucketRoot = getBucketRoot(gpConfig, userContext);
+            String fileName = bucketRoot + file.getServerFile().getAbsolutePath();
+            System.out.println("Filename is " + fileName);
+
+            JSONObject multipartCompletion = new JSONObject();
+            multipartCompletion.put("UploadId", uploadId);
+
+            // multipartCompletion.put("Key", URIUtil.encodePath(fileName));       
+            multipartCompletion.put("Key", fileName);       
+
+            multipartCompletion.put("Bucket", bucket);
+            JSONArray parts = new JSONArray(jsonPayload);
+            JSONObject uploadObj = new JSONObject();
+            uploadObj.put("Parts", parts);
+            multipartCompletion.put("MultipartUpload", uploadObj);
+
+            File tmp = File.createTempFile("completeUpload", ".json");
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter (tmp));
+            writer.append(multipartCompletion.toString());
+            writer.close();
+            String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
+
+            StringBuffer execBuff = new StringBuffer();
+            execBuff.append(awsScriptDir);
+            execBuff.append("completeUpload.sh  ");
+            execBuff.append(" file://");
+            execBuff.append(tmp.getAbsolutePath());
+
+            log.debug("COMPLETION -- " + execBuff.toString());
+
+            proc = Runtime.getRuntime().exec(execBuff.toString());
+            proc.waitFor();
+            if (file.getServerFile() != null && file.getServerFile().exists())
+            {
+                // should I throw an exception or overwrite it? (delete since the new file is external)
+                // throw new FileUploadException("File already exists: " + file.getServerFile().getName());
+            }
+
+
+            //update the user uploads database
+            JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
+            fileUtil.updateUploadsDb(HibernateUtil.instance(), file);
+
+            JSONObject toReturn = new JSONObject();
+            toReturn.append("success", true);
+            // Return the status object
+            return Response.ok().entity(toReturn.toString()).build();
+        }
+        catch (Throwable t) {
+            log.error(t.getMessage(), t);
+            t.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
+        } finally {
+            // for debugging
+            if (proc != null) displayProcessStdOutAndErr(proc);
+
+        }
+    }
+
+    private void displayProcessStdOutAndErr(Process proc) {
+        try {
+            BufferedReader stdInput = new BufferedReader(new 
+                    InputStreamReader(proc.getInputStream()));
+   
+            BufferedReader stdError = new BufferedReader(new 
+                    InputStreamReader(proc.getErrorStream()));
+   
+            // Read the output from the command
+            System.out.println("Here is the standard output of the command:\n");
+            String s = null;
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
+            }
+   
+            // Read any errors from the attempted command
+            System.out.println("Here is the standard error of the command (if any):\n");
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
+            
+        } catch (Exception e){
+            log.error(e);
+        }
+    }
+
     
     
     

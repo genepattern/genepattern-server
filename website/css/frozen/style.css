@@ -1217,3 +1217,5 @@ strong.filtered-number {
 .jsViewerDiv.ui-tabs-panel {
     margin-top: 25px;
 }
+
+.zindex10000 { z-index: 10000 !important ;}

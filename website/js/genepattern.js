@@ -1,7 +1,7 @@
 // Implicit variables declared elsewhere
 var  username, jq, currentJobNumber, userLoggedIn,
     openUploadDirectoryDialog, uploadDirectorySelected, openSaveDialog, adminServerAllowed,
-    parameter_and_val_groups, run_task_info, fileURL;
+    parameter_and_val_groups, run_task_info, fileURL, directExternalUploadTriggerSize;
 
 
 
@@ -76,7 +76,7 @@ function ajaxEmailResponse(req) {
 }
 
 // Requires jQuery & jQuery UI
-function showDialog(title, message, button) {
+function showDialog(title, message, button, zIndex) {
     "use strict";
     var alert = document.createElement("div");
 
@@ -968,11 +968,7 @@ function ajaxFileTabUpload(file, directory, done, index) {
         		eventQueue.unshift(event)
         	}
         	
-            }
-       
-        	
-       
-        	
+            }        	
         if ((eventQueue.length > 0) || (runningEvents.length > 0)) {
             setTimeout(_checkEventQueue, 1000);     // Check the event queue again in a bit
         }
@@ -1045,64 +1041,220 @@ function resumableMultipleUploadStart(r, filearray, directory){
 	}
 }
 
+function range1(i){return i?range1(i-1).concat(i):[]}
 
-function s3DirectUploadStart(currentFileList, directory) {
-	var len = currentFileList.length;
+// var s3uploadStart = window.performance.now();
+function s3DirectUploadStartFile(r, file, directoryUrl){
+	var split = window.location.origin.length;
+	var directory = directoryUrl.substring(split);
 	
+	var fileName = file.fileName;
+	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	
+	if (($('#upload-toaster').dialog('isOpen') === true)){
+		appendToUploadToaster(file);
+	} else {
+		console.log("Should be zero: " + resumableloadsInProgress);
+		var filelist = [file];
+		initUploadToaster(filelist, directory);
+	}
+	
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	
+	 uploadToasterFile.find(".upload-toaster-file-cancel")
+     .click(function() {
+         // I don't think we care too much about canceling the uploads with S3 since we use a rule there to 
+    	 // clean them up every week.  Given the limited developer time we have we will let that be the AWS side cleanup for now 
+      	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+    	 
+    	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	     progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+	     $(this).parent().find(".upload-toaster-file-cancel").button("disable");
+         //progressbar.progressbar("value", 100);
+         progressbar
+             .find(".ui-progressbar-value")
+             .css("background", "#FCF1F3");
+         progressbar
+             .find(".upload-toaster-file-progress-label")
+             .text("Canceled!");
+         // GP-8168 Remove the file, otherwise we cannot re-upload the same file again without a page reload
+         r.removeFile(file);
+         
+         $('.resumable-drop').show();
+         $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+         
+         cleanUploadToaster(); // JTL 02/06/20
+     });
+	
+    // show the drop target again
+    $('.resumable-drop').show(); 
+	
+	
+	fType = file.file.type;
+	if ((fType == null) || (fType.length == 0)){
+		// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
+		fType="BLANK";
+	}
+	
+	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
+	var partSize = 100 * 1024 * 1024; // 100 MB
+	
+	var numParts = Math.ceil(file.file.size / partSize) || 1;
+    var totalBytes = file.file.size;
+	
+	//var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
+	//var url = "/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
+	
+	var path =  directory.trim() + file.fileName.trim();
+	var url = encodeURI("/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts);
+	
+	$.ajax({
+        type: "GET",
+        xhr: function(){
+  	        // get the native XmlHttpRequest object
+  	        var xhr = $.ajaxSettings.xhr() ;
+  	        console.log("GET new xhr");
+  	        return xhr ;
+  	    },   
+        url: url,
+        success: function(multipartPostData) {
+        	// s3uploadStart = window.performance.now();
+        	multipartPostData.complete = [];
+        	var partNums =  range1(numParts); // create an array of the part numbers
+        	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
+        	
+        	aCallback = function(){
+        		if (partNums.length > 0){
+        			var nextPartNum = partNums.pop();
+        			s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
+        		}
+        		
+        	}
+        	
+        	// TODO limit how many are going at once to some reasonable number
+        	var maxSimultaneousPartUploads = 5;
+        	console.log("maxSimultaneousPartUploads:  " + maxSimultaneousPartUploads);
+        	console.log(JSON.stringify(multipartPostData));
+        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, multipartPostData.presignedUrls.length);
+        	for (var ii =0; ii < simulUploadCount; ii++){
+        		var nextPartNum = partNums.pop();
+        		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
+        	}
+        },
+        error: function(data) {
+        	fileUploadError(r, file, data);
+        	
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+            $(".search-widget:visible").searchslider("hide");
+            showErrorMessage(data);
+        }
+    });
+}
+
+// count the non-null elements in an array
+function countNonEmpty(array) {
+	  return array.filter(Boolean).length;
+}
+
+function sumIgnoreNull(array){
+	var sum = 0;
+	for (var i=0; i < array.length; i++){
+		if (array[i] != null) sum += array[i];
+	}
+	
+	return sum;
+}
+
+function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress){
+
+	var xhr = new XMLHttpRequest();
+    xhr.open('PUT', multipartPostData.presignedUrls[partNum-1], true);
+    xhr.gpPartNumber = partNum;// partNumber should start at 1
+    var runningPartTotal = 0;  // define here so they are kept in the context for the callback
+    var prevPartTotal = 0;
+    
+    xhr.onload = (e) => {
+      if (e.target.status === 200) {
+    	  // save the etag for later multipart completion call 
+    	  var etag = e.target.getResponseHeader("ETag");
+    	  var whichPart = e.target.gpPartNumber; // part numbers start at 1
+          multipartPostData.complete[whichPart-1]={"PartNumber": whichPart, "ETag": etag};
+          // check if all parts done and complete if so finish.  If things complete out of order we
+          // can have a full length array with null placeholders so need to check for that
+     	  if (countNonEmpty(multipartPostData.complete) == countNonEmpty(multipartPostData.presignedUrls)){
+     		  
+     		 var end = window.performance.now();
+     		  
+    		  var registerUrl = encodeURI("/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId);
+    		  $.ajax({
+         		 type: "POST",
+         		 data:  JSON.stringify(multipartPostData.complete),
+         		 contentType: "text/plain",
+         		 url: registerUrl,
+         		 success: function(data) {
+         			 fileUploadSuccess(r, file);
+         			 cleanUploadToaster();
+                      r.currentFile = null;
+                      $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+                      //var duration = ((end - s3uploadStart)/1000)/60; // minutes
+                      //var sizeInMB = file.size / (1024*1024);
+                      //alert("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
+         		 },
+         		 failure: function(err){
+         			 fileUploadError(r, file, err);
+         		 },
+         		 error: function(err){
+         			 fileUploadError(r, file, err);
+         		 }
+         	 });
+    		  
+    		  
+    	  } else {
+    		  aCallback();
+    	  }
+      }
+    };
+    xhr.upload.addEventListener("progress", function (evt) {
+        if (evt.lengthComputable) {
+        	// we get the % of this upload, not the total multipart so we have to keep
+        	// track of what this part's % was last time and remove it so we don't docule-add
+        	// the completed bytes
+        	if (evt.lengthComputable) {
+            	var whichPart = partNum; 
+            	runningProgress[partNum] =  ((evt.loaded / evt.total)/numParts);
+            	
+            	var percentComplete = sumIgnoreNull(runningProgress);
+                fileUploadProgress(r, file, percentComplete);
+            }
+        }
+    }, false);
+    xhr.onerror = function(e) {
+    	fileUploadError(r, file, e);
+    	
+        if (typeof e === 'object') {
+            e = e.responseText;
+        }
+        $(".search-widget:visible").searchslider("hide");
+        showErrorMessage(e);
+    }
+    
+    from_byte = (partNum-1) * partSize;  
+    to_byte = (partNum ) * partSize;
+    blob = file.file.slice(from_byte,  to_byte);
+    xhr.send(blob); 
+}
+
+
+
+function s3DirectUploadStart(r, currentFileList, directory) {
+	var len = currentFileList.length;
 	for (var i=0; i < len; i++){
 		// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
 		var file=currentFileList[i];
-		fType = file.file.type;
-		if ((fType == null) || (fType.length == 0)){
-			// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
-			fType="BLANK";
-		}
-		var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
-		var url = "/gp/rest/v1/upload/getS3UploadUrl/?fileType="+fType+"&path=" +path;
-		
-      $.ajax({
-            type: "GET",
-            url: url,
-            success: function(data) {
-               
-               var s3presignedUrl = data.url;
-               
-               $.ajax({
-                   url : s3presignedUrl,
-                   type : "PUT",
-                   data : file.file,
-                   cache : false,
-                   contentType : fType,
-                   processData : false,
-                   crossdomain: true,
-                   success: function() {
-                	   alert("done");
-                       console.info('YEAH', s3presignedUrl.split('?')[0].substr(6));
-                   },
-                   failure: function(){
-                	   alert("FAIL");
-                       console.error('damn...');
-                   } ,
-                   error: function(a,b,c,d,e){
-                	   alert("Error  a:" + a + "  b:" + b + "  c:" + c + "  d:" + d);
-                   }
-               });
-               
-              
-               
-               
-            },
-            error: function(data) {
-                if (typeof data === 'object') {
-                    data = data.responseText;
-                }
-
-                $(".search-widget:visible").searchslider("hide");
-                showErrorMessage(data);
-            }
-        });
-		
-		
+		s3DirectUploadStartFile(r, file, directory)
 	}
 }
 
@@ -1119,8 +1271,8 @@ function hasSpecialChars_resumable(file) {
 }
 
 function warnSpecialChars_resumable(r, file) {
-    showDialog("Special Characters!",
-            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!<br/><br/>" +
+    var dlg = showDialog("Special Characters!",
+            "The file \'"+file.fileName +"\' being uploaded has a name containing special characters!. <br/>" +
             "Some older GenePattern modules do not handle special characters well. " +
             "Are you sure you want to continue?", {
             "Yes": function() {
@@ -1131,40 +1283,64 @@ function warnSpecialChars_resumable(r, file) {
                 $(this).dialog("close");
             }
         });
+    $(dlg).css("z-index", 11000);
 }
 
-currentFileList = [];
+
+var smallFileList = [];
+var bigFileList = [];
+
 function onFileAdded_resumable(r, file){
 	 resumableloadsInProgress =  resumableloadsInProgress + 1; 
+	 
+	 // see if its a drop on a directory in the tree
     var directory = $(file.container).closest(".jstree-closed, .jstree-open").find("a:first").attr("href");
+    if (directory == null){
+    	// for the upload from the slider we hang the directory target here
+    	var sliderClickDirTarget = resumableUploader._gpFileTarget;
+    	if (sliderClickDirTarget != null) directory = sliderClickDirTarget;
+    	resumableUploader._gpFileTarget = null;
+    }
+    
+    
     r.currentFile = file.fileName;
     alreadyOpen = $('#uploadDirectoryDialog').dialog('isOpen');
-    currentFileList.push(file);
+    
+    if (directExternalUploadTriggerSize > 0){
+		// check if its big enough we want to do a direct upload to an external site
+		// if -1 then always upload directly to the GP server
+		if (file.file.size > directExternalUploadTriggerSize){
+			bigFileList.push(file);
+			
+		} else {
+			smallFileList.push(file);
+		}
+	} else {
+		smallFileList.push(file);
+	}
+    // make sure it does not get the big files
+    resumableUploader.files = smallFileList;
     
     // pick the destination directory
     if (alreadyOpen){
     	// do nothing but add the file to the list
     	
     } else if ((directory === undefined || directory === null || directory.length === 0) && ! alreadyOpen) {
-        openUploadDirectoryDialog(currentFileList, function() {    
+    	//openUploadDirectoryDialog(currentFileList, function() {    
+        openUploadDirectoryDialog(null, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	// JTL XXX this is for prototyping direct to S3 uploads
-        	// var s3yes=confirm("Upload direct to S3?"); 
-        	var s3yes = false;
-        	
-        	if (s3yes){
-        		s3DirectUploadStart(currentFileList, $(uploadDirectorySelected)[0].pathname);
-        	} else {
-        		resumableMultipleUploadStart(r, currentFileList, directory);
-        	}
-        	
-        	
-        	
-        	currentFileList = []; // empty 
+        	s3DirectUploadStart(r, bigFileList, directory);
+        	resumableMultipleUploadStart(r, smallFileList, directory);
+        	bigFileList = []; // empty 
+        	smallFileList = []; // empty 
+           	
      	 });
     } else {
-    	resumableMultipleUploadStart(r, currentFileList, directory);
-    	currentFileList = []; // empty 
+       	s3DirectUploadStart(r, bigFileList, directory);
+    	resumableMultipleUploadStart(r, smallFileList, directory);
+
+    	bigFileList = []; // empty 
+    	smallFileList = []; // empty 
     }
 }; 
 
@@ -1177,9 +1353,24 @@ window.onbeforeunload = function() {
 	   } else {
 	      return;
 	   }
-	};
+};
 
-
+function fileUploadSuccess(r, file){
+	resumableloadsInProgress =  resumableloadsInProgress - 1;
+	 
+    $('.resumable-drop').show();
+    var fileName = file.fileName;
+	uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
+	progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+    progressbar.progressbar("value", 100);
+    //cleanUploadToaster();
+    // Remove the file, otherwise we cannot re-upload the same file again without a page reload
+    r.removeFile(file);
+}
+	
+	
+	
+	
 function initReusableJSUploads(file, directory, done, index){
 	//function ajaxFileTabUpload(file, directory, done, index) {
 	
@@ -1241,57 +1432,66 @@ function initReusableJSUploads(file, directory, done, index){
              $('.resumable-drop')[0].classList.remove('leftnav-highlight');
            });
          r.on('fileSuccess', function(file,message){
-        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
-        	 
-             $('.resumable-drop').show();
-             var fileName = file.fileName;
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(fileName) + "']");
-        	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             progressbar.progressbar("value", 100);
-             //cleanUploadToaster();
-             // Remove the file, otherwise we cannot re-upload the same file again without a page reload
-             r.removeFile(file);
+        	 fileUploadSuccess(r, file);
            });
          r.on('fileError', function(file, message){
-        	 resumableloadsInProgress =  resumableloadsInProgress - 1;
-             // Reflect that the file upload has resulted in error
-          //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
-          // Set the top error message
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             console.log("ResumableJS ERROR: " + message);
-        	 showErrorMessage(message);
-        	 
-             // Set the progressbar error message
-             progressbar.progressbar("value", 100);
-             progressbar
-                 .find(".ui-progressbar-value")
-                 .css("background", "#FCF1F3");
-             progressbar
-                 .find(".upload-toaster-file-progress-label")
-                 .text("Error!");
-             
-             $('.resumable-drop').show();
-             $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+        	 fileUploadError(r, file, message);
              
            });
          r.on('fileProgress', function(file){
-             // Handle progress for both the file and the overall upload
-             //$('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html(Math.floor(file.progress()*100) + '%');
-             //$('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
-        	 
-        	 // On a cancellation, this will get called after but we don't want to reset the progressbar to 0 so bail
-        	 if (!(r.files.includes(file))) return;
-        	 
-        	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
- 	    	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
-             progressbar.progressbar("value", Math.floor(r.progress()*100));
+        	 fileUploadProgress(r,file, r.progress());
            });
          
      }
 	
 }
 
+function fileUploadProgress(r, file, percent){
+	 //if (!(r.files.includes(file))) return;
+	 try {
+		 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+		 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+		 progressbar.progressbar("value", Math.floor(percent*100));
+	 } catch (err){
+		 console.log("fileUploadProgress error "+err);
+	 }
+}
+
+function getFileUploadProgress(r, file){
+	 //if (!(r.files.includes(file))) return 0;
+	 try {
+		 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+		 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+		 return progressbar.progressbar("value");
+	 } catch (err){
+		 console.log("getFileUploadProgress error "+err);
+		 return 0;
+	 }
+}
+
+
+function fileUploadError(r, file, message){
+	 resumableloadsInProgress =  resumableloadsInProgress - 1;
+     // Reflect that the file upload has resulted in error
+  //   $('.resumable-file-'+file.uniqueIdentifier+' .resumable-file-progress').html('(file could not be uploaded: '+message+')');
+  // Set the top error message
+	 uploadToasterFile = $(".upload-toaster-file[name='" + escapeJquerySelector(file.fileName) + "']");
+ 	 progressbar = uploadToasterFile.find(".upload-toaster-file-progress");
+     console.log("ResumableJS ERROR: " + message);
+	 showErrorMessage(message);
+	 
+     // Set the progressbar error message
+     progressbar.progressbar("value", 100);
+     progressbar
+         .find(".ui-progressbar-value")
+         .css("background", "#FCF1F3");
+     progressbar
+         .find(".upload-toaster-file-progress-label")
+         .text("Error!");
+     
+     $('.resumable-drop').show();
+     $('.resumable-drop')[0].classList.remove('leftnav-highlight');
+}
 
 
 function hasSpecialChars(filelist) {
@@ -1332,10 +1532,6 @@ function dirPromptIfNecessary (filelist, directory) {
 
 // resumable js gets drop events one at a time so we need to add to the existing dialog
 function appendToUploadToaster(file){
-	
-	
-	
-	
 	
     // var toaster = $("<div></div>").addClass("upload-toaster-list");
     var toaster = $("#upload-toaster")[0];
@@ -1798,13 +1994,6 @@ function refreshUploadTree() {
     // $("#uploadDirectoryTree").jstree("refresh");
 }
 
-function refreshGenomeSpaceTree() {
-    var gsTree = $("#genomeSpaceFileTree");
-    gsTree.data("dndReady", {});
-    gsTree.jstree("refresh");
-
-    $("#saveTree").jstree("refresh");
-}
 
 function createFileWidget(linkElement, appendTo) {
     var _constructFileMenuData = function(isRoot, isDirectory, isUpload, isJobFile, isPartialFile) {
@@ -1831,7 +2020,12 @@ function createFileWidget(linkElement, appendTo) {
                 "lsid": "",
                 "name": "Upload Files",
                 "description": "Upload files to this directory.",
-                "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+                "version": "<span class='glyphicon glyphicon-cloud-upload' ></span>", "documentation": "", "categories": [], "suites": [], "tags": [],
+                "callAfterItemCreation": function(item){
+                	// open the file dialog when clicked
+                	resumableUploader.assignBrowse(item);
+                }
+
             });
 
             data.push({
@@ -2255,12 +2449,15 @@ function createFileWidget(linkElement, appendTo) {
                     else if (uploadAction) {
                         //close the slider menu
                         $(".search-widget:visible").searchslider("hide");
-
-                        var directory = $(event.target).closest(".file-widget").attr("name");
-
-                        var dropzoneInput = $("#upload-dropzone-input");
-                        dropzoneInput.data("origin", directory);
-                        dropzoneInput.trigger("click");
+                        var wid = $(event.target).closest(".file-widget");
+                        
+                        var directory = wid.attr("name");
+                        resumableUploader._gpFileTarget = directory;
+                        // resumableUploader.assignBrowse(wid[0], true);
+                        
+                        //var dropzoneInput = $("#resumable-browse");
+                        //dropzoneInput.data("origin", directory);
+                        //dropzoneInput.trigger("click");
                     }
 
                     else if (pipelineAction) {
@@ -2490,7 +2687,7 @@ function createJobWidget(job) {
         "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
-    if (job.status.isFinished) {
+    if ((job.status.isFinished) && (diskInfo.externalDirectDownloadsEnabled != true )){
         actionData.push({
             "lsid": "",
             "name": "Download Job",
@@ -2557,6 +2754,11 @@ function createJobWidget(job) {
                 }
 
                 else if (downloadAction) {
+                	if (diskInfo.externalDirectDownloadsEnabled == true){
+                		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
+                		return;
+                	}
+                	
                     $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
 
                     $(".search-widget:visible").searchslider("hide");
@@ -3645,6 +3847,10 @@ function buildJobResultsPage() {
                 ).append(
                     $("<button id='downloadJobs' style='margin-left: 6px'>Download</button>")
                         .click(function(){
+                        	if (diskInfo.externalDirectDownloadsEnabled == true){
+                        		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
+                        		return;
+                        	}
                             // Gather the jobs to download
                             var jobsDownload = [];
                             $(".job-select-checkbox:checked").each(function(index, element) {
@@ -3761,10 +3967,28 @@ function buildJobResultsPage() {
         )
     ).appendTo(container);
 
+    
     // Build the table body
     var tbody = $("<tbody></tbody>")
         .appendTo(jobTable);
 
+    function disableDownloadJob() {
+    	if ((diskInfo != null) && (diskInfo.externalDirectDownloadsEnabled == true)){
+    		$("#downloadJobs").prop("disabled",true);
+    		$("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+    	}
+	};
+	setTimeout(disableDownloadJob, 2000);
+	
+    
+    if ((diskInfo != null) && (diskInfo.externalDirectDownloadsEnabled == true)){
+    	// if external downloads are enabled, the output files are not on
+    	// disk to be zipped up together so this feature is disabled
+    	// JTL 01222021
+    	 $("#downloadJobs").prop("disabled",true);
+    	 $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+    }
+    
     // Init data tables
     jobTable.dataTable({
         serverSide: true,
@@ -3875,8 +4099,11 @@ function loadJobResults(jobResults) {
     buildJobResultsPage();
 }
 
+
+
 function updateDiskUsageBox(diskInfo)
 {
+	
     // Hard-coded values until we hook this into server-side calls
     var diskQuotaDisplay = null;
     var diskUsedDisplay = null;
@@ -3971,9 +4198,31 @@ function updateDiskUsageBox(diskInfo)
                     title: title
                 }).show();
             });
+            
+            directExternalUploadTriggerSize = diskInfo.directExternalUploadTriggerSize;
         });
+        
+        if (diskInfo.externalDirectDownloadsEnabled == true){
+        	// if external downloads are enabled, the output files are not on
+        	// disk to be zipped up together so this feature is disabled
+        	// JTL 01222021
+        	function disableDownloadJob() {
+        		$("#downloadJobs").prop("disabled",true);
+           	    $("#downloadJobs").attr('title', 'Zipped job downloads are disabled.  Please contact your GenePattern administrator if you need this feature.');
+
+        	};
+        	
+        	if ($("#downloadJobs").length == 0) {
+        		setTimeout(disableDownloadJob, 2000);
+        	} else {
+        		disableDownloadJob();
+        	}
+        }
     }
 }
+
+
+var diskInfo;  // save as global as its needed in many places now 
 
 function initStatusBox()
 {
@@ -3984,7 +4233,9 @@ function initStatusBox()
         success: function (response) {
            
             if (response !== null) {
-                updateDiskUsageBox(response);
+                diskInfo = response;
+            	updateDiskUsageBox(response);
+                
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {

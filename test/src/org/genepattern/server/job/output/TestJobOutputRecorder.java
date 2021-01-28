@@ -43,7 +43,7 @@ public class TestJobOutputRecorder {
 
     @Test
     public void onJobCompletion() throws Exception {
-        JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, gpContext, jobDir);
+        JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, gpContext, jobDir, null);
 
         List<JobOutputFile> results;
         boolean includeHidden=true;

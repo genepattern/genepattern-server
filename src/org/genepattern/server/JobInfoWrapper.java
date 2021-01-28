@@ -16,6 +16,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +32,8 @@ import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.job.input.choice.ChoiceInfo;
+import org.genepattern.server.job.output.JobOutputFile;
+import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.job.status.Status;
 import org.genepattern.server.process.JobPurgerUtil;
 import org.genepattern.server.repository.SourceInfo;
@@ -343,21 +347,31 @@ public class JobInfoWrapper implements Serializable {
 
         OutputFile(File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
-
+            // JTL 01222021 - add JobOutputFile stuff here so we can get length and date of
+            //                outfiles created but not synched back to the local disk from S3
+            
+            JobOutputDao dao = new JobOutputDao();
+            List<JobOutputFile> outFiles = dao.selectOutputFiles(jobInfo.getJobNumber());
+            HashMap<String, JobOutputFile> outFilesByName = new HashMap<String, JobOutputFile>();
+            for (JobOutputFile f: outFiles){
+                outFilesByName.put(f.getPath(), f);
+            }
+            
             boolean exists = false;
 
             
             if (outputDir != null) {
                 this.outputFile = new File(outputDir.getParent(), parameterInfo.getValue());
                 exists = outputFile.exists();
-                if (exists) {
-                    File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
-                    if (relativePath != null) {
-                        this.isChildJobResult = true;
-                    }
+                
+                File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
+                if (relativePath != null) {
+                    this.isChildJobResult = true;
                 }
+                
             }
             if (!exists) {
+                
                 this.outputFile = new File(outputDir, parameterInfo.getName());
                 exists = outputFile.exists();
             }
@@ -372,6 +386,13 @@ public class JobInfoWrapper implements Serializable {
                     setLastModified(cal.getTime());
                 }
                 else {
+                    JobOutputFile jof = outFilesByName.get(this.outputFile.getName());
+                    if (jof != null){
+                        setSize(jof.getFileLength());
+                        setLastModified(jof.getLastModified());
+                        
+                    }
+                    
                     String errorMessage="Outputfile not found on server: "+outputFile.getAbsolutePath();
                     log.warn(new Exception(errorMessage));
                 }

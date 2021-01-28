@@ -59,11 +59,20 @@ public class AwsS3Filter {
      * @param inputFile a local file path
      * @return true to skip the s3 upload step for the given file
      */
-    public boolean skipS3Upload(final File inputFile) {
+    public boolean skipS3Upload(final File inputFile, AwsS3Cmd s3Cmd) {
         if (s3UploadFilter != null) {
             if (s3UploadFilter.accept(inputFile)) {
                 return true;
             }
+        }
+        if (!inputFile.exists() && (s3Cmd != null)){
+            // see if a missing file is already in S3.  This can happen with direct S3 uploads
+            // this returns 0 if the check for existence does not error
+            int itExists = s3Cmd.existsFileOnS3(inputFile);
+            if (itExists == 0){
+                return true;
+            }
+            
         }
         return false;
     }

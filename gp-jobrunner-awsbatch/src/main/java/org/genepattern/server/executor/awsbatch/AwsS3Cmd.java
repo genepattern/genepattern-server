@@ -64,7 +64,8 @@ public class AwsS3Cmd {
         for(final String arg : args) {
             cl.addArgument(arg, AWSBatchJobRunner.handleQuoting);
         }
-
+        System.out.println(cl.toString());
+        
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         DefaultExecutor exec=new DefaultExecutor();
         exec.setStreamHandler(new PumpStreamHandler(outputStream));
@@ -217,6 +218,46 @@ public class AwsS3Cmd {
         runCmd(cmdEnv, awsCmd, args); 
     }
     
+    String[] parsedBucketname(){
+        String[] parts =  new String[2];
+        // expect s3://<bucketname>/<rootpath>     
+        int endIdx = s3_bucket.indexOf("/", 5);
+        String bucket = s3_bucket.substring(5, endIdx);
+        String path = s3_bucket.substring(endIdx+1);
+        parts[0] = bucket;
+        parts[1] = path;
+        return parts;
+    }
+    
+    
+    /**
+     * Check if the file exists on S3 by doing a get-object-tagging call.  Looking for the metadata
+     * is a cheap fast call to test for existence
+     * 
+     * @param localFile
+     */
+    public int existsFileOnS3(final File localFile) {
+        // aws s3api get-object-tagging --bucket <bucketname> --key <s3path>
+        
+        String[] bucketParts = parsedBucketname();
+        
+        
+        List<String> args=Arrays.asList( "s3api", "get-object-tagging",
+                "--bucket",
+                bucketParts[0],
+                "--key",
+                bucketParts[1] + localFile.getParent()+"/" + localFile.getName() 
+        );
+        if (!Strings.isNullOrEmpty(profile)) {
+            args.add("--profile");
+            args.add(profile);
+        }
+
+        return runCmd(cmdEnv, awsCmd, args);
+    }
+    
+    
+    
     /**
      * get the 'aws s3 sync' command line args to copy the file from 
      * a source s3 bucket into a destination path on the local file system
@@ -236,7 +277,15 @@ public class AwsS3Cmd {
         List<String> args=new ArrayList<String>();
         args.add("s3");
         args.add("sync");
-        if (localFile.isFile()) {
+        if (localFile.isDirectory()) {
+            // from s3Uri
+            args.add(s3_bucket+""+localFile.getPath());
+            // to container local path
+            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getPath());
+        } else  {
+            // do this for File or if there is a file that is not locally present.  Some files will be in S3 but not
+            // in the local file system.  Don't want to forget these ones.
+            
             // from s3Uri
             args.add(s3_bucket+""+localFile.getParent());
             // to container local path
@@ -247,12 +296,7 @@ public class AwsS3Cmd {
             args.add("--include");
             args.add(localFile.getName());
         }
-        else if (localFile.isDirectory()) {
-            // from s3Uri
-            args.add(s3_bucket+""+localFile.getPath());
-            // to container local path
-            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getPath());
-        }
+        
         if (!Strings.isNullOrEmpty(profile)) {
             args.add("--profile");
             args.add(profile);

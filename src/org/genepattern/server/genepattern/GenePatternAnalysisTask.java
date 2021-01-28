@@ -65,6 +65,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -100,6 +102,9 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
+import org.codehaus.jackson.impl.JsonParserBase;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.drm.JobRunner;
@@ -1842,7 +1847,30 @@ public class GenePatternAnalysisTask {
         }
 
         String jobDirPath = jobDir.getAbsolutePath();
-        for (File f : outputFiles) {
+        File ef = new File(jobDirPath + "/" + ".non.retrieved.output.files.json");
+        JSONArray externalFileList = null;
+        
+        if (ef.exists()){
+            // we have output files that are external and not on the local disk.
+            // add them as outputs as if they were present JTL 01/19/2021
+            // see AWSBatchJobRunner>>awsFakeSyncDirectory()
+           try {
+               String externalFileJson = new String(Files.readAllBytes(ef.toPath()));
+               externalFileList = new JSONArray(externalFileJson);
+               for (int i=0; i<externalFileList.length(); i++){
+                   JSONObject obj = externalFileList.getJSONObject(i);
+                   String fileName = obj.getString("filename");
+                   File aFile = new File(fileName); // need the relative name only, XXX update for sub directories
+                   if (filenameFilter.accept(jobDir, aFile.getName()))
+                       addFileToOutputParameters(jobInfo, aFile.getName(), aFile.getName(), null);
+               }
+               
+           } catch (Exception ee){
+               log.error(ee);
+           }
+        }
+            
+       for (File f : outputFiles) {
             log.debug("adding output file to output parameters " + f.getName() + " from " + jobDirPath);
             //get the file path relative to the outputDir
             String fPath = f.getAbsolutePath();
@@ -1891,7 +1919,7 @@ public class GenePatternAnalysisTask {
         
         // new api, in a new transaction, just in case of errors
         try {
-            JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, jobContext, jobDir);
+            JobOutputRecorder.recordOutputFilesToDb(mgr, gpConfig, jobContext, jobDir, externalFileList);
         }
         catch (DbException e) {
             //ignore, error is already logged

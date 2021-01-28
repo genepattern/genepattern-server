@@ -53,7 +53,7 @@ public class TestAwsS3Filter {
     protected static void assertSkipUpload(final boolean expected, final AwsS3Filter awsS3filter, final File file) {
         assertEquals("skipS3Upload('"+file+"')",
             expected, 
-            awsS3filter.skipS3Upload(file));
+            awsS3filter.skipS3Upload(file, null));
     }
 
     /** testing AwsS3Filter with example custom configuration */
