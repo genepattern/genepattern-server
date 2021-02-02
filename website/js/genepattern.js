@@ -1100,30 +1100,26 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
-	
 	s3DirectUploadAddToToaster(r,file,directoryUrl);
 	
-	fType = file.file.type;
-	if ((fType == null) || (fType.length == 0)){
-		// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
-		fType="BLANK";
-	}
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
 	var partSize = 100 * 1024 * 1024; // 100 MB
-	
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
 		
 	var path =  directory.trim() + file.fileName.trim();
-	var url = encodeURI("/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts);
+	var url = encodeURI("/gp/rest/v1/upload/startS3MultipartUpload/?path="+path);
 	
 	$.ajax({
         type: "GET", 
         url: url,
         success: function(multipartPostData) {
         	s3uploadStart = window.performance.now();
+        	
         	multipartPostData.complete = [];
+        	multipartPostData.numParts = numParts;
+        	
         	var partNums =  range1(numParts); // create an array of the part numbers
         	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
         	
@@ -1137,9 +1133,9 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
         	
         	// TODO limit how many are going at once to some reasonable number
         	var maxSimultaneousPartUploads = 5;
-        	console.log("maxSimultaneousPartUploads:  " + maxSimultaneousPartUploads);
         	console.log(JSON.stringify(multipartPostData));
-        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, multipartPostData.presignedUrls.length);
+        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, numParts);
+        
         	for (var ii =0; ii < simulUploadCount; ii++){
         		var nextPartNum = partNums.pop();
         		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress, directoryUrl);
@@ -1172,9 +1168,37 @@ function sumIgnoreNull(array){
 }
 
 function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory){
+	// var presignedUrl = multipartPostData.presignedUrls[partNum-1]
+	var url = encodeURI("/gp/rest/v1/upload/gettS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
+	// first get a presigned URL for this one part
+	$.ajax({
+        type: "GET", 
+        url: url,
+        success: function(presignedUrl) {
+        	// next go and PUT that part to S3
+        	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, presignedUrl);
+        	
+        },
+        error: function(data) {
+        	fileUploadError(r, file, data);
+        	
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+            $(".search-widget:visible").searchslider("hide");
+            showErrorMessage(data);
+        }
+    });
+	
+	
+}
+
+
+
+function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, presignedUrl){
 
 	var xhr = new XMLHttpRequest();
-    xhr.open('PUT', multipartPostData.presignedUrls[partNum-1], true);
+    xhr.open('PUT', presignedUrl, true);
     xhr.gpPartNumber = partNum;// partNumber should start at 1
     var runningPartTotal = 0;  // define here so they are kept in the context for the callback
     var prevPartTotal = 0;

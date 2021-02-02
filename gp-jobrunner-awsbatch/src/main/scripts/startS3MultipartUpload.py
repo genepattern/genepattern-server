@@ -29,7 +29,7 @@ def main(argv):
 	######### end defaults ##########
 
 	try:
-		opts, args = getopt.getopt(argv, "b:k:c:f:i:") 
+		opts, args = getopt.getopt(argv, "b:k:c:f:i:o:") 
 		 
 	except: 
 		print("Error") 
@@ -51,7 +51,7 @@ def main(argv):
 			KEY = data['path']
 			AWS_S3_BUCKET = data['bucket']
 
- 
+	session = boto3.session.Session() 
 	s3 = session.client('s3')
 
 	print("Create upload for key: " + FILE_PATH_AND_NAME)

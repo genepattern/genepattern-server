@@ -43,12 +43,12 @@ def main(argv):
 			KEY = arg
 		elif opt in ['-o', '--outfilename']:  
 			OUTFILENAME = arg
-                elif opt in ['-u', '--upload-id']:  
+		elif opt in ['-u', '--upload-id']:  
                         UPLOAD_ID = arg
 		elif opt in ['-n', '--part-num']:  
 			PART_NUM = int(arg)
-                elif opt in ['-e', '--expiration']:
-                        EXPIRATION_DURATION = int(arg)
+		elif opt in ['-e', '--expiration']:
+			EXPIRATION_DURATION = int(arg)
 		elif opt in ['-i', '--input-json']:
 			with open(arg) as f:
 				data = json.load(f)
@@ -56,8 +56,9 @@ def main(argv):
 			PART_NUM = data['partNum']
 			AWS_S3_BUCKET = data['bucket']
 			EXPIRATION_DURATION = data['expiration']
-			UPLOAD_ID = data['uploadId"]
+			UPLOAD_ID = data['uploadId']
 
+	session = boto3.session.Session()
 	s3 = session.client('s3')
 
 	presigned_url = s3.generate_presigned_url(
@@ -73,8 +74,8 @@ def main(argv):
 	)	
 		
 	print(presigned_url)
-        with open(OUTFILENAME, 'w') as outfile:
-                outfile.write(presigned_url)
+	with open(OUTFILENAME, 'w') as outfile:
+		outfile.write(presigned_url)
 	
 
 
