@@ -19,11 +19,15 @@ import org.genepattern.server.config.GpContext;
  */
 
 
-public abstract class ExternalFileDownloader {
+public abstract class ExternalFileManager {
 
-    public ExternalFileDownloader(   ){
+    public ExternalFileManager(   ){
         
     }
     
     public abstract void downloadFile( GpContext context, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException;
+
+    public abstract boolean MoveFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    
+        
 }
