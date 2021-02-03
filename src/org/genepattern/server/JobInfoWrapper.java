@@ -386,7 +386,8 @@ public class JobInfoWrapper implements Serializable {
                     setLastModified(cal.getTime());
                 }
                 else {
-                    JobOutputFile jof = outFilesByName.get(this.outputFile.getName());
+                    File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
+                    JobOutputFile jof = outFilesByName.get(relativePath.getPath());
                     if (jof != null){
                         setSize(jof.getFileLength());
                         setLastModified(jof.getLastModified());

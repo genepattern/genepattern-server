@@ -1861,8 +1861,13 @@ public class GenePatternAnalysisTask {
                    JSONObject obj = externalFileList.getJSONObject(i);
                    String fileName = obj.getString("filename");
                    File aFile = new File(fileName); // need the relative name only, XXX update for sub directories
-                   if (filenameFilter.accept(jobDir, aFile.getName()))
-                       addFileToOutputParameters(jobInfo, aFile.getName(), aFile.getName(), null);
+                   if (filenameFilter.accept(jobDir, aFile.getName())){
+                       String fPath = aFile.getAbsolutePath();
+                       if (fPath.startsWith(jobDirPath)) {
+                           fPath = fPath.substring(jobDirPath.length() + 1); //skip the file separator character
+                       }
+                       addFileToOutputParameters(jobInfo, fPath, fPath, null);
+                   }
                }
                
            } catch (Exception ee){

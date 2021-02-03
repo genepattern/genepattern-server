@@ -81,7 +81,7 @@ public class AWSS3ExternalFileDownloader extends ExternalFileDownloader {
            }
         
            // Read any errors from the attempted command
-           System.out.println("Here is the standard error of the command (if any):\n");
+           log.debug("Here is the standard error of getting list of files from S3 (if any):\n");
            while ((s = stdError.readLine()) != null) {
                log.debug(s);
            }    

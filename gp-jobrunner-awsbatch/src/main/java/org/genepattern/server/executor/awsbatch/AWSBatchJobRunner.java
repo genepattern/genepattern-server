@@ -702,11 +702,12 @@ public class AWSBatchJobRunner implements JobRunner {
            writer.close();
            
            // Read any errors from the attempted command
-           System.out.println("Here is the standard error of the command (if any):\n");
-           while ((s = stdError.readLine()) != null) {
-               System.out.println(s);
-           }    
-           
+           if (log.isDebugEnabled()){
+               log.debug("Here is the standard error of retrieving details of files left on S3 (if any):\n");
+               while ((s = stdError.readLine()) != null) {
+                   log.debug(s);
+               }     
+           }
         } catch (Exception e){
             e.printStackTrace();
             

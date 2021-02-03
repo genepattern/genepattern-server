@@ -1104,7 +1104,7 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
-	var partSize = 100 * 1024 * 1024; // 100 MB
+	var partSize = 10 * 1024 * 1024; // 100 MB
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
 		
@@ -1169,14 +1169,14 @@ function sumIgnoreNull(array){
 
 function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory){
 	// var presignedUrl = multipartPostData.presignedUrls[partNum-1]
-	var url = encodeURI("/gp/rest/v1/upload/gettS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
+	var url = encodeURI("/gp/rest/v1/upload/getS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
 	// first get a presigned URL for this one part
 	$.ajax({
         type: "GET", 
         url: url,
-        success: function(presignedUrl) {
+        success: function(data) {
         	// next go and PUT that part to S3
-        	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, presignedUrl);
+        	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, data.presignedUrl);
         	
         },
         error: function(data) {
@@ -1211,7 +1211,7 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
           multipartPostData.complete[whichPart-1]={"PartNumber": whichPart, "ETag": etag};
           // check if all parts done and complete if so finish.  If things complete out of order we
           // can have a full length array with null placeholders so need to check for that
-     	  if (countNonEmpty(multipartPostData.complete) == countNonEmpty(multipartPostData.presignedUrls)){
+     	  if (countNonEmpty(multipartPostData.complete) == multipartPostData.numParts){
      		  s3DirectUploadStart(r, directory);
      		  var end = window.performance.now();
               var duration = ((end - s3uploadStart)/1000)/60; // minutes
@@ -1290,8 +1290,8 @@ function s3DirectUploadStart(r, directory) {
 	// go one at a time
 	for (var i=0; i < len; i++){
 	//	// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
-		var file=currentFileList[i];
-		s3DirectUploadAddToToaster(r,file,directory);
+		var file=bigFileList[i];
+		if (file != null) s3DirectUploadAddToToaster(r,file,directory);
 	}
 }
 

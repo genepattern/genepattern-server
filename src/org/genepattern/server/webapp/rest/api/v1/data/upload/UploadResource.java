@@ -896,7 +896,7 @@ public class UploadResource {
     //  currently this is a bit S3 centric but it can be updated and generalized if/when we start
     //  trying to deploy to the Google Cloud Platform (GCP)
     @GET
-    @Path("gettS3MultipartUploadPresignedUrlOnePart/")
+    @Path("getS3MultipartUploadPresignedUrlOnePart/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getS3MultipartUploadPresignedUrlOnePart(
             @Context HttpServletRequest request, 
@@ -968,8 +968,12 @@ public class UploadResource {
             }
 
             String resp = readOutputFileToString(outfilename);
+            
+            json.put("presignedUrl", resp);
+            
+            
             log.debug(resp);
-            return Response.ok().entity(resp).build();
+            return Response.ok().entity(json.toString()).build();
 
         } catch (Exception e){
             e.printStackTrace();
