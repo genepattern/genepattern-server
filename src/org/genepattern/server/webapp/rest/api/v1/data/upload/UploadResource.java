@@ -865,13 +865,16 @@ public class UploadResource {
             proc = Runtime.getRuntime().exec(execBuff.toString());
 
             // give it some time but not too much
-            if (!proc.waitFor(3, TimeUnit.MINUTES)){
+            try {
+                proc.waitFor();
+            
                 // timeout, kill the process
                 debugProcessStdOutAndErr(proc);
                 proc.destroy();
                 proc = null;
-            } else {
+            } catch (InterruptedException ie) {
                 debugProcessStdOutAndErr(proc);
+                proc.destroy();
             }
 
             String resp = readOutputFileToString(outfilename);
@@ -958,15 +961,17 @@ public class UploadResource {
             proc = Runtime.getRuntime().exec(execBuff.toString());
 
             // give it some time but not too much
-            if (!proc.waitFor(3, TimeUnit.MINUTES)){
+            try {
+                proc.waitFor();
+            
                 // timeout, kill the process
                 debugProcessStdOutAndErr(proc);
                 proc.destroy();
                 proc = null;
-            } else {
+            } catch (InterruptedException ie) {
                 debugProcessStdOutAndErr(proc);
+                proc.destroy();
             }
-
             String resp = readOutputFileToString(outfilename);
             
             json.put("presignedUrl", resp);
@@ -1070,13 +1075,16 @@ public class UploadResource {
 
             proc = Runtime.getRuntime().exec(execBuff.toString());
             // give it some time but not too much
-            if (!proc.waitFor(3, TimeUnit.MINUTES)){
+            try {
+                proc.waitFor();
+            
                 // timeout, kill the process
                 debugProcessStdOutAndErr(proc);
                 proc.destroy();
                 proc = null;
-            } else {
+            } catch (InterruptedException ie) {
                 debugProcessStdOutAndErr(proc);
+                proc.destroy();
             }
             if (file.getServerFile() != null && file.getServerFile().exists())
             {
