@@ -1056,11 +1056,11 @@ public class UploadResource {
                 debugProcessStdOutAndErr(proc, "UploadResource >> registerExternalUpload");
                 proc.waitFor();
             
-                proc = null;
+                
             } catch (InterruptedException ie) {
                log.error(ie);
             } finally {
-                proc.destroy();
+                if (proc != null) proc.destroy();
                 proc = null;
             }
             
