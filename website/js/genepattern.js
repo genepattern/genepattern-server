@@ -1097,6 +1097,13 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	var split = window.location.origin.length;
 	var directory = directoryUrl.substring(split);
 	
+	if (r.s3currentFile != null){
+		alert("Already uploading to S3.  Deferring till current file completes.");
+		bigFileList.push(file);
+		return;
+	}
+	r.s3currentFile = file;
+	
 	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
@@ -1104,7 +1111,7 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
-	var partSize = 10 * 1024 * 1024; // 100 MB
+	var partSize = 100 * 1024 * 1024; // 100 MB
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
 		
@@ -1212,6 +1219,8 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
           // check if all parts done and complete if so finish.  If things complete out of order we
           // can have a full length array with null placeholders so need to check for that
      	  if (countNonEmpty(multipartPostData.complete) == multipartPostData.numParts){
+     		  // set the flag that nothing is being uploaded at the moment
+     		  r.s3currentFile = null;
      		  s3DirectUploadStart(r, directory);
      		  var end = window.performance.now();
               var duration = ((end - s3uploadStart)/1000)/60; // minutes
@@ -1232,10 +1241,16 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
                       
           		 },
          		 failure: function(err){
+         			 r.s3currentFile = null;
          			 fileUploadError(r, file, err);
+         			 // start the next file if there is one
+         			s3DirectUploadStart(r, directory);
          		 },
          		 error: function(err){
-         			 fileUploadError(r, file, err);
+         			r.s3currentFile = null;
+         			fileUploadError(r, file, err);
+         			 // start the next file if there is one
+         			s3DirectUploadStart(r, directory);
          		 }
          	 });
     		 // if there are more waiting S3 uploads kick off the next one now 
@@ -1261,7 +1276,10 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
         }
     }, false);
     xhr.onerror = function(e) {
+    	r.s3currentFile = null;
     	fileUploadError(r, file, e);
+    	// start the next file if there is one
+    	s3DirectUploadStart(r, directory);	
     	
         if (typeof e === 'object') {
             e = e.responseText;
@@ -1282,7 +1300,7 @@ function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, mult
 // until the bigFileList is empty
 function s3DirectUploadStart(r, directory) {
 	var len = bigFileList.length;
-	if (len > 0){
+	if ((len > 0) && (r.s3currentFile == null)){
 		var file=bigFileList.shift();
 		s3DirectUploadStartFile(r, file, directory)
 	}

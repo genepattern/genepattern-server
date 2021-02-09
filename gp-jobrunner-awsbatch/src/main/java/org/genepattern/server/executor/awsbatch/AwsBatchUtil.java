@@ -140,9 +140,11 @@ public class AwsBatchUtil {
 
     protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
         JobInfo jobInfo = null;
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        
         if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
             try {
-                jobInfo = new AnalysisDAO().getJobInfo(jobRecord.getGpJobNo());
+                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobRecord.getGpJobNo());
             }
             catch (Throwable t) {
                 log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
@@ -157,9 +159,11 @@ public class AwsBatchUtil {
 
     protected static GpContext initJobContext(final DrmJobSubmission jobSubmission) {
         JobInfo jobInfo = null;
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        
         if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
             try {
-                jobInfo = new AnalysisDAO().getJobInfo(jobSubmission.getGpJobNo());
+                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobSubmission.getGpJobNo());
             }
             catch (Throwable t) {
                 log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);

@@ -40,6 +40,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.json.JSONArray;
@@ -910,6 +911,7 @@ public class AWSBatchJobRunner implements JobRunner {
         if (gpJob.getCommandLine().size() == 0) {
             throw new IllegalArgumentException("gpJob.commandLine.size==0");
         }
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         
         final File awsBatchScript=getAwsBatchScriptFile(gpJob, PROP_AWS_BATCH_SCRIPT, DEFAULT_AWS_BATCH_SCRIPT);
         //if (log.isDebugEnabled()) {  // JTL XXX 02/102020

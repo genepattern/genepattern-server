@@ -50,6 +50,7 @@ import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.job.input.JobInputFileUtil;
 import org.genepattern.server.quota.DiskInfo;
+import org.genepattern.server.util.ProcReadStream;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.genepattern.util.LSID;
 import org.json.JSONArray;
@@ -750,28 +751,8 @@ public class UploadResource {
             execBuff.append(filename);   //$5
 
             proc = Runtime.getRuntime().exec(execBuff.toString());
-
+            debugProcessStdOutAndErr(proc, "UploadResource>>getExternalUploadUrl");
             proc.waitFor();
-
-
-            BufferedReader stdInput = new BufferedReader(new 
-                    InputStreamReader(proc.getInputStream()));
-
-            BufferedReader stdError = new BufferedReader(new 
-                    InputStreamReader(proc.getErrorStream()));
-
-            // Read the output from the command
-            System.out.println("Here is the standard output of the command:\n");
-            String s = null;
-            while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
-            }
-
-            // Read any errors from the attempted command
-            System.out.println("Here is the standard error of the command (if any):\n");
-            while ((s = stdError.readLine()) != null) {
-                System.out.println(s);
-            }
 
             String resp = readOutputFileToString(filename);
             System.out.println(resp);
@@ -782,7 +763,7 @@ public class UploadResource {
             log.error(e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
-            if (proc != null) debugProcessStdOutAndErr(proc);
+            
             try {
                 if (tmp != null)
                     tmp.delete();
@@ -866,15 +847,15 @@ public class UploadResource {
 
             // give it some time but not too much
             try {
+                debugProcessStdOutAndErr(proc, "UploadResource>>startS3MultipartUpload");
                 proc.waitFor();
             
-                // timeout, kill the process
-                debugProcessStdOutAndErr(proc);
+                
+            } catch (InterruptedException ie) {
+               log.error(ie);
+            } finally {
                 proc.destroy();
                 proc = null;
-            } catch (InterruptedException ie) {
-                debugProcessStdOutAndErr(proc);
-                proc.destroy();
             }
 
             String resp = readOutputFileToString(outfilename);
@@ -886,7 +867,6 @@ public class UploadResource {
             log.error(e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
-            if (proc != null) debugProcessStdOutAndErr(proc);
             try {
                 if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
             } catch (Exception e){}
@@ -962,15 +942,13 @@ public class UploadResource {
 
             // give it some time but not too much
             try {
+                debugProcessStdOutAndErr(proc, "UploadResource>>getS3MultipartUploadOnePart");
                 proc.waitFor();
-            
-                // timeout, kill the process
-                debugProcessStdOutAndErr(proc);
+            } catch (InterruptedException ie) {
+                log.error(ie);
+            } finally {
                 proc.destroy();
                 proc = null;
-            } catch (InterruptedException ie) {
-                debugProcessStdOutAndErr(proc);
-                proc.destroy();
             }
             String resp = readOutputFileToString(outfilename);
             
@@ -985,8 +963,7 @@ public class UploadResource {
             log.error(e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } finally {
-            if (proc != null) debugProcessStdOutAndErr(proc);
-            try {
+             try {
                 if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
             } catch (Exception e){}
             try {
@@ -1076,16 +1053,17 @@ public class UploadResource {
             proc = Runtime.getRuntime().exec(execBuff.toString());
             // give it some time but not too much
             try {
+                debugProcessStdOutAndErr(proc, "UploadResource >> registerExternalUpload");
                 proc.waitFor();
             
-                // timeout, kill the process
-                debugProcessStdOutAndErr(proc);
-                proc.destroy();
                 proc = null;
             } catch (InterruptedException ie) {
-                debugProcessStdOutAndErr(proc);
+               log.error(ie);
+            } finally {
                 proc.destroy();
+                proc = null;
             }
+            
             if (file.getServerFile() != null && file.getServerFile().exists())
             {
                 // should I throw an exception or overwrite it? (delete since the new file is external)
@@ -1106,14 +1084,7 @@ public class UploadResource {
             log.error(t.getMessage(), t);
             t.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(t.getLocalizedMessage()).build();
-        } finally {
-            // for debugging
-            if (proc != null) {
-                debugProcessStdOutAndErr(proc);
-                proc.destroy();
-            }
-
-        }
+        } 
     }
 
     private String readOutputFileToString(String outfilename) throws FileNotFoundException, IOException {
@@ -1138,28 +1109,13 @@ public class UploadResource {
         return resp;
     }
     
-    private void debugProcessStdOutAndErr(Process proc) {
+    private void debugProcessStdOutAndErr(Process proc, String name) {
         try {
-            if (!log.isDebugEnabled()) return;
-            
-            BufferedReader stdInput = new BufferedReader(new 
-                    InputStreamReader(proc.getInputStream()));
-   
-            BufferedReader stdError = new BufferedReader(new 
-                    InputStreamReader(proc.getErrorStream()));
-   
-            // Read the output from the command
-            System.out.println("Here is the standard output of the command:\n");
-            String s = null;
-            while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
-            }
-   
-            // Read any errors from the attempted command
-            System.out.println("Here is the standard error of the command (if any):\n");
-            while ((s = stdError.readLine()) != null) {
-                System.out.println(s);
-            }
+              
+            ProcReadStream s1 = new ProcReadStream(name +" stdin", proc.getInputStream ());
+            ProcReadStream s2 = new ProcReadStream(name + " stderr", proc.getErrorStream ());
+            s1.start ();
+            s2.start ();
             
         } catch (Exception e){
             log.error(e);
