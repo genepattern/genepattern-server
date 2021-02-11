@@ -2082,13 +2082,15 @@ function createFileWidget(linkElement, appendTo) {
                 }
 
             });
-
-            data.push({
-                "lsid": "",
-                "name": "Save Directory",
-                "description": "Save a copy of this directory to your local computer as a zip file.",
-                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
-            });
+            if (diskInfo.externalDirectDownloadsEnabled != true ) {
+            	// not zipping directories left on S3, gotta grab them one by one for now
+	            data.push({
+	                "lsid": "",
+	                "name": "Save Directory",
+	                "description": "Save a copy of this directory to your local computer as a zip file.",
+	                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+	            });
+            }
         }
         else if (!isPartialFile) {
             data.push({

@@ -2,6 +2,7 @@ package org.genepattern.server.dm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +28,16 @@ public abstract class ExternalFileManager {
     
     public abstract void downloadFile( GpContext context, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException;
 
-    public abstract boolean MoveFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    public abstract boolean moveFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    public abstract boolean moveDirectory(GpContext userContext,  File fromFile, File toFile) throws IOException;
+
+    public abstract boolean copyFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    public abstract boolean copyDirectory(GpContext userContext,  File fromFile, File toFile) throws IOException;
     
-        
+    public abstract boolean deleteFile(GpContext userContext,  File file) throws IOException;
+    public abstract boolean deleteDirectory(GpContext userContext,  File file) throws IOException;
+    public abstract boolean createSubDirectory(GpContext userContext,  File file) throws IOException;
+    
+    public abstract ArrayList<GpFilePath> listFiles(GpContext userContext,  File file) throws IOException;
+    
 }
