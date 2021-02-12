@@ -222,7 +222,7 @@ public class DataResource {
                 File toFile = extractUsersPath(userContext, to);
                 GpFilePath toPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, toFile);
 
-                boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
+                boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext, fromPath, toPath);
 
                 if (copied) {
                     return Response.ok().entity("Copied " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();

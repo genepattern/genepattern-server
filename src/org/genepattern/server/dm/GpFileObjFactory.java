@@ -340,7 +340,7 @@ public class GpFileObjFactory {
         return urlStr;
     }
 
-    static private GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final URI uri) throws Exception {
+    static public GpFilePath getRequestedGpFileObj(final GpConfig gpConfig, final URI uri) throws Exception {
         final String[] split = UrlUtil.splitUri(gpConfig.getGpPath(), uri);
         final String servletPath = split[0];
         final String pathInfo = split[1];
@@ -389,6 +389,9 @@ public class GpFileObjFactory {
         //}
         throw new Exception("Invalid servletPath: "+servletPath);
     }
+    
+    
+    
     
     /**
      * Get a JobResultFile, GpFilePath instance, for the given url. 

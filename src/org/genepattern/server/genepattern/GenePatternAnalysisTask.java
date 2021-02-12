@@ -1118,7 +1118,11 @@ public class GenePatternAnalysisTask {
                                 //TODO: mark file for delete from job results directory on handle job completion
                                 attrsCopy.put(ORIGINAL_PATH, originalPath);
                                 pinfo.setValue(outFile.getAbsolutePath());
-
+                                
+                                // JTL for URL download deferral to compute nodes
+                                HashMap pinfoAttrs = pinfo.getAttributes();
+                                pinfoAttrs.put("FILE_PATH", outFile.getAbsolutePath());
+                                pinfoAttrs.put("ORIGINAL_URL", uri);
                                 //attrsActual.put(ORIGINAL_PATH, originalPath);
                                 //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
                                 //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
