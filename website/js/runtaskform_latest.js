@@ -814,7 +814,22 @@ function loadModuleInfo(module) {
     
     $(".properties-quality").text(module["quality"]);
     $(".properties-documentation").html(module["hasDoc"] ? ("<a href='/gp/getTaskDoc.jsp?name=" + module["LSID"] + "'>Click Here</a>") : "None");
-    $(".properties-dockerimage").text(module["job.docker.image"]);
+    
+    if (module["job.docker.image"] != null) {
+		//https://hub.docker.com/r/genepattern/docker-perl52
+		var versionless = module["job.docker.image"];
+		var idx = versionless.indexOf(":");
+		if (idx > 1) versionless = versionless.substring(0, idx);
+		$(".properties-dockerimage").html("<a href='https://hub.docker.com/r/"+versionless+"' target='_blank'>" + module["job.docker.image"]+"</a>");
+    }
+   
+    if ((module["src.repo"] != null)   && (module["src.repo"].length > 4)){
+    	$(".properties-srcrepo").html("<a href='" + module["src.repo"] +"' target='_blank'>" + module["src.repo"]+"</a>");
+    } else {
+    	$(".properties-srcrepo").hide();
+    	$(".properties-srcrepo-label").hide();
+    }
+    
     $(".properties-commandline").text(module["commandLine"]);
     $(".properties-tasktype").text(module["taskType"]);
     $(".properties-categories").text(module["categories"]);

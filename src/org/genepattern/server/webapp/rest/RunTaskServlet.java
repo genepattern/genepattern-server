@@ -193,6 +193,11 @@ public class RunTaskServlet extends HttpServlet
                 lsidVersions.put(moduleLsidVersion.toString());
             }
             moduleObject.put("lsidVersions", lsidVersions);
+            
+            String srcRepo = taskInfo.getTaskInfoAttributes().get("src.repo");
+            if (srcRepo != null){
+                moduleObject.put("src.repo", srcRepo);
+            }
 
             //check if there is a hidden beta version of the module available
             LSID selectedTaskVersionLSID = new LSID(taskInfo.getLsid());
