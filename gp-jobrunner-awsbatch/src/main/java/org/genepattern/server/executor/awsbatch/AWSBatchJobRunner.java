@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.json.JSONArray;
@@ -652,7 +654,27 @@ public class AWSBatchJobRunner implements JobRunner {
         
         execArgs = new String[] {awsfilepath+awsfilename, "s3", "ls", bucket+ "/"+bucketRoot+s3filepath, "--recursive"};
         
-        
+        // check for URLs that were fetched on the compute node but are actually input files
+        File downloadListingFile = new File(jobRecord.getWorkingDir(),ExternalFileManager.downloadListingFileName);
+        HashSet<String> inputUrlDownloadsToIgnore = new HashSet<String>();
+        if (downloadListingFile.exists()){
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(downloadListingFile));
+                String line = null;
+                while (( line = reader.readLine())!= null){
+                    // expect uri \t filenameandpath
+                    String[] lineParts = line.split("\t");
+                    inputUrlDownloadsToIgnore.add(lineParts[1]);
+                }                     
+            } catch (Exception ioe){
+                log.error(ioe);
+            } finally {
+                try {
+                    if (reader != null) reader.close(); 
+                } catch (Exception ee){}
+            }
+        }
         try {
             String envp[] = new String[cmdEnv.size()];
             int i=0;
@@ -685,6 +707,9 @@ public class AWSBatchJobRunner implements JobRunner {
                    // date time size <filepath>/filename
                    //File f = new File(outFilePath);
                    //f.createNewFile();
+                   
+                   // skip files that were downloaded on the compute node as inputs
+                   if (inputUrlDownloadsToIgnore.contains(outFilePath)) continue;
                    JSONObject oneFileJSON = new JSONObject();
                    oneFileJSON.put("filename", outFilePath);
                    oneFileJSON.put("size", lineParts[2]);
@@ -697,7 +722,7 @@ public class AWSBatchJobRunner implements JobRunner {
                    // ignore
                }
            }
-           File outListFile = new File(s3filepath+".non.retrieved.output.files.json");
+           File outListFile = new File(s3filepath+ExternalFileManager.nonRetrievedFilesFileName);
            BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
            writer.append(outFilesJSON.toString());
            writer.close();
@@ -957,7 +982,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return cl;
     }
 
-    protected void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root, final AwsS3Filter awsS3Filter) {
+    protected void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root, final AwsS3Filter awsS3Filter, final File jobDir) {
         final AwsS3Cmd s3Cmd=new AwsS3Cmd.Builder()
             .awsCmd(awsCmd)
             .awsCliEnv(cmdEnv)
@@ -1000,7 +1025,31 @@ public class AWSBatchJobRunner implements JobRunner {
             log.error("Error in createNewFile, script="+script, e);
             return;
         }
-        System.out.println(script.getAbsolutePath());
+        
+        ArrayList<String[]> urlsToFetch = new ArrayList<String[]>();
+        File downloadListingFile = new File(jobDir,ExternalFileManager.downloadListingFileName);
+        if (downloadListingFile.exists()){
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(downloadListingFile));
+                String line = null;
+                while (( line = reader.readLine())!= null){
+                    // expect uri \t filenameandpath
+                    String[] lineParts = line.split("\t");
+                    urlsToFetch.add(lineParts);
+                }
+                
+                
+            } catch (Exception ioe){
+                log.error(ioe);
+            } finally {
+                try {
+                    if (reader != null) reader.close(); 
+                } catch (Exception ee){}
+            }
+        }
+        
+        
         
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(script))) {
             bw.write("#!/usr/bin/env bash"); bw.newLine();
@@ -1022,6 +1071,22 @@ public class AWSBatchJobRunner implements JobRunner {
                     bw.newLine();
                 }
             }
+            for (String[] urlfile: urlsToFetch){
+                bw.write("wget -O ");
+                bw.write(dest_prefix);
+                bw.write(urlfile[1]);
+                bw.write("  ");
+                bw.write(urlfile[0]);
+                bw.write(" >> "+dest_prefix+""+script_dir+"/http_downloads.log");
+                bw.newLine();
+                bw.newLine();
+                // better safe than sorry
+                bw.write("chmod u+rw \""+Strings.nullToEmpty(dest_prefix)+""+urlfile[1]+"\"");
+                bw.newLine();
+                bw.newLine();
+            }
+            
+            
         }
         catch (IOException e) {
             log.error("Error writing to script="+script, e);
@@ -1112,7 +1177,7 @@ public class AWSBatchJobRunner implements JobRunner {
         final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob, inputDirectories);
         
         final AwsS3Filter awsS3Filter=AwsS3Filter.initAwsS3Filter(gpJob.getGpConfig(), gpJob.getJobContext());
-        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter);
+        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter, gpJob.getWorkingDir());
 
         //final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
         final Map<String,String> inputFileMap=Collections.emptyMap();
