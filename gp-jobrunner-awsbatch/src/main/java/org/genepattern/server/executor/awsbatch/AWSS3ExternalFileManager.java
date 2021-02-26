@@ -16,8 +16,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.log4j.Logger;
+import org.apache.log4j.Logger; 
 import org.genepattern.server.DataManager;
 import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.GpConfig;
@@ -370,7 +369,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         return foundFiles;
     }
     
-    private GpFilePath getUploadFile( final GpContext userContext, final File userUploadDir, final File uploadFile) throws FileUploadException {
+    private GpFilePath getUploadFile( final GpContext userContext, final File userUploadDir, final File uploadFile) throws Exception {
         try {
             //special-case, block 'tmp'
             //GpFilePath uploadFilePath = GpFileObjFactory.getRequestedGpFileObj(gpConfig, uploadPath, (LSID)null);
@@ -378,14 +377,14 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, userUploadDir, rel);
             if (DataManager.isTmpDir(uploadFilePath)) {
-                throw new FileUploadException("Can't save file with reserved filename: " + rel.getPath());
+                throw new  Exception("Can't save file with reserved filename: " + rel.getPath());
             }
 
             return uploadFilePath;
         }
         catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new FileUploadException("Error initializing upload file reference for '" + uploadFile.getPath() + "': "+e.getLocalizedMessage());
+            throw new  Exception("Error initializing upload file reference for '" + uploadFile.getPath() + "': "+e.getLocalizedMessage());
         }
     }
    
