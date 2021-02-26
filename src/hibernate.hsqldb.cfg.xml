@@ -9,6 +9,7 @@
     <property name="c3p0.minPoolSize">5</property>
     <property name="c3p0.timeout">1000</property>
     <property name="hibernate.c3p0.max_size">120</property>
+        
     <!-- additional settings are in the c3p0.properties file -->
 
     <!-- HSQL setup (the default).  These values can be overriden in genepattern.properties  -->

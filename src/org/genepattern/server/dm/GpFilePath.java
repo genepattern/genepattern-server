@@ -146,6 +146,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * Same as {@link java.io.File#isDirectory()}.
      */
     public boolean isDirectory() {
+        if ("directory".equals(kind)) return true; // to handle non-local files such as on S3
         final File serverFile=getServerFile();
         if (serverFile==null) {
             log.debug("server file is null");

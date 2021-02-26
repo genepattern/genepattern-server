@@ -1043,8 +1043,8 @@ function resumableMultipleUploadStart(r, filearray, directory){
 
 function range1(i){return i?range1(i-1).concat(i):[]}
 
-// var s3uploadStart = window.performance.now();
-function s3DirectUploadStartFile(r, file, directoryUrl){
+//var s3uploadStart = window.performance.now();
+function s3DirectUploadAddToToaster(r, file, directoryUrl){
 	var split = window.location.origin.length;
 	var directory = directoryUrl.substring(split);
 	
@@ -1054,7 +1054,6 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	if (($('#upload-toaster').dialog('isOpen') === true)){
 		appendToUploadToaster(file);
 	} else {
-		console.log("Should be zero: " + resumableloadsInProgress);
 		var filelist = [file];
 		initUploadToaster(filelist, directory);
 	}
@@ -1089,57 +1088,64 @@ function s3DirectUploadStartFile(r, file, directoryUrl){
 	
     // show the drop target again
     $('.resumable-drop').show(); 
+
+}
+
+
+// var s3uploadStart = window.performance.now();
+function s3DirectUploadStartFile(r, file, directoryUrl){
+	var split = window.location.origin.length;
+	var directory = directoryUrl.substring(split);
 	
-	
-	fType = file.file.type;
-	if ((fType == null) || (fType.length == 0)){
-		// this is to cover that we can't pass in a blank string to the script.  The lambda will recognize this
-		fType="BLANK";
+	if (r.s3currentFile != null){
+		alert("Already uploading to S3.  Deferring till current file completes.");
+		bigFileList.push(file);
+		return;
 	}
+	r.s3currentFile = file;
+	
+	var fileName = file.fileName;
+	file.name = fileName; // done to preserve compatibility with pre-resumablejs
+	
+	s3DirectUploadAddToToaster(r,file,directoryUrl);
+	
 	
 	// NOTE AWS will refuse multi-part uploads smaller than 5MB except for the final part
 	var partSize = 100 * 1024 * 1024; // 100 MB
-	
 	var numParts = Math.ceil(file.file.size / partSize) || 1;
     var totalBytes = file.file.size;
-	
-	//var path =  encodeURIComponent(directory.trim())  + encodeURIComponent(file.fileName.trim())
-	//var url = "/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts;
-	
+		
 	var path =  directory.trim() + file.fileName.trim();
-	var url = encodeURI("/gp/rest/v1/upload/getExternalUploadUrl/?fileType="+fType+"&path="+path+"&numParts="+numParts);
+	var url = encodeURI("/gp/rest/v1/upload/startS3MultipartUpload/?path="+path);
 	
 	$.ajax({
-        type: "GET",
-        xhr: function(){
-  	        // get the native XmlHttpRequest object
-  	        var xhr = $.ajaxSettings.xhr() ;
-  	        console.log("GET new xhr");
-  	        return xhr ;
-  	    },   
+        type: "GET", 
         url: url,
         success: function(multipartPostData) {
-        	// s3uploadStart = window.performance.now();
+        	s3uploadStart = window.performance.now();
+        	
         	multipartPostData.complete = [];
+        	multipartPostData.numParts = numParts;
+        	
         	var partNums =  range1(numParts); // create an array of the part numbers
         	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
         	
         	aCallback = function(){
         		if (partNums.length > 0){
         			var nextPartNum = partNums.pop();
-        			s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
+        			s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress, directoryUrl);
         		}
         		
         	}
         	
         	// TODO limit how many are going at once to some reasonable number
         	var maxSimultaneousPartUploads = 5;
-        	console.log("maxSimultaneousPartUploads:  " + maxSimultaneousPartUploads);
         	console.log(JSON.stringify(multipartPostData));
-        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, multipartPostData.presignedUrls.length);
+        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, numParts);
+        
         	for (var ii =0; ii < simulUploadCount; ii++){
         		var nextPartNum = partNums.pop();
-        		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress);
+        		s3MultipartUploadOnePart(file, path, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress, directoryUrl);
         	}
         },
         error: function(data) {
@@ -1168,10 +1174,38 @@ function sumIgnoreNull(array){
 	return sum;
 }
 
-function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress){
+function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory){
+	// var presignedUrl = multipartPostData.presignedUrls[partNum-1]
+	var url = encodeURI("/gp/rest/v1/upload/getS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
+	// first get a presigned URL for this one part
+	$.ajax({
+        type: "GET", 
+        url: url,
+        success: function(data) {
+        	// next go and PUT that part to S3
+        	_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, data.presignedUrl);
+        	
+        },
+        error: function(data) {
+        	fileUploadError(r, file, data);
+        	
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+            $(".search-widget:visible").searchslider("hide");
+            showErrorMessage(data);
+        }
+    });
+	
+	
+}
+
+
+
+function _s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, r, aCallback, runningProgress, directory, presignedUrl){
 
 	var xhr = new XMLHttpRequest();
-    xhr.open('PUT', multipartPostData.presignedUrls[partNum-1], true);
+    xhr.open('PUT', presignedUrl, true);
     xhr.gpPartNumber = partNum;// partNumber should start at 1
     var runningPartTotal = 0;  // define here so they are kept in the context for the callback
     var prevPartTotal = 0;
@@ -1184,11 +1218,16 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
           multipartPostData.complete[whichPart-1]={"PartNumber": whichPart, "ETag": etag};
           // check if all parts done and complete if so finish.  If things complete out of order we
           // can have a full length array with null placeholders so need to check for that
-     	  if (countNonEmpty(multipartPostData.complete) == countNonEmpty(multipartPostData.presignedUrls)){
-     		  
-     		 var end = window.performance.now();
-     		  
-    		  var registerUrl = encodeURI("/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId);
+     	  if (countNonEmpty(multipartPostData.complete) == multipartPostData.numParts){
+     		  // set the flag that nothing is being uploaded at the moment
+     		  r.s3currentFile = null;
+     		  s3DirectUploadStart(r, directory);
+     		  var end = window.performance.now();
+              var duration = ((end - s3uploadStart)/1000)/60; // minutes
+              var sizeInMB = file.size / (1024*1024);
+              console.log("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
+
+              var registerUrl = encodeURI("/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId);
     		  $.ajax({
          		 type: "POST",
          		 data:  JSON.stringify(multipartPostData.complete),
@@ -1199,17 +1238,22 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
          			 cleanUploadToaster();
                       r.currentFile = null;
                       $('.resumable-drop')[0].classList.remove('leftnav-highlight');
-                      //var duration = ((end - s3uploadStart)/1000)/60; // minutes
-                      //var sizeInMB = file.size / (1024*1024);
-                      //alert("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
-         		 },
+                      
+          		 },
          		 failure: function(err){
+         			 r.s3currentFile = null;
          			 fileUploadError(r, file, err);
+         			 // start the next file if there is one
+         			s3DirectUploadStart(r, directory);
          		 },
          		 error: function(err){
-         			 fileUploadError(r, file, err);
+         			r.s3currentFile = null;
+         			fileUploadError(r, file, err);
+         			 // start the next file if there is one
+         			s3DirectUploadStart(r, directory);
          		 }
          	 });
+    		 // if there are more waiting S3 uploads kick off the next one now 
     		  
     		  
     	  } else {
@@ -1232,7 +1276,10 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
         }
     }, false);
     xhr.onerror = function(e) {
+    	r.s3currentFile = null;
     	fileUploadError(r, file, e);
+    	// start the next file if there is one
+    	s3DirectUploadStart(r, directory);	
     	
         if (typeof e === 'object') {
             e = e.responseText;
@@ -1248,13 +1295,21 @@ function s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multi
 }
 
 
-
-function s3DirectUploadStart(r, currentFileList, directory) {
-	var len = currentFileList.length;
-	for (var i=0; i < len; i++){
-		// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
-		var file=currentFileList[i];
+// 
+// Start the S3 multipart uploads just one at a time.  When one completes the next one will be started
+// until the bigFileList is empty
+function s3DirectUploadStart(r, directory) {
+	var len = bigFileList.length;
+	if ((len > 0) && (r.s3currentFile == null)){
+		var file=bigFileList.shift();
 		s3DirectUploadStartFile(r, file, directory)
+	}
+	// add any other files to the uploadToaster but don't start them since they
+	// go one at a time
+	for (var i=0; i < len; i++){
+	//	// note the file will be of type resumableFile since that system is also present and we are hijacking the drop
+		var file=bigFileList[i];
+		if (file != null) s3DirectUploadAddToToaster(r,file,directory);
 	}
 }
 
@@ -1329,17 +1384,17 @@ function onFileAdded_resumable(r, file){
     	//openUploadDirectoryDialog(currentFileList, function() {    
         openUploadDirectoryDialog(null, function() {    
         	var directory = $(uploadDirectorySelected).attr("href");
-        	s3DirectUploadStart(r, bigFileList, directory);
+        	s3DirectUploadStart(r, directory);
         	resumableMultipleUploadStart(r, smallFileList, directory);
-        	bigFileList = []; // empty 
+        	//bigFileList = []; // empty 
         	smallFileList = []; // empty 
            	
      	 });
     } else {
-       	s3DirectUploadStart(r, bigFileList, directory);
+       	s3DirectUploadStart(r, directory);
     	resumableMultipleUploadStart(r, smallFileList, directory);
 
-    	bigFileList = []; // empty 
+    	//bigFileList = []; // empty 
     	smallFileList = []; // empty 
     }
 }; 
@@ -2027,13 +2082,15 @@ function createFileWidget(linkElement, appendTo) {
                 }
 
             });
-
-            data.push({
-                "lsid": "",
-                "name": "Save Directory",
-                "description": "Save a copy of this directory to your local computer as a zip file.",
-                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
-            });
+            if (diskInfo.externalDirectDownloadsEnabled != true ) {
+            	// not zipping directories left on S3, gotta grab them one by one for now
+	            data.push({
+	                "lsid": "",
+	                "name": "Save Directory",
+	                "description": "Save a copy of this directory to your local computer as a zip file.",
+	                "version": "<span class='glyphicon glyphicon-floppy-save' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
+	            });
+            }
         }
         else if (!isPartialFile) {
             data.push({

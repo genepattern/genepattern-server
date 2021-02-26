@@ -47,6 +47,7 @@ import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -122,6 +123,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -1097,6 +1099,7 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             if (downloadUrl) {
+                                
                                 outFile = new File(outDir, name);
                                 if (outFile.exists()) {
                                     // ensure that 2 file downloads for a job don't have the same name
@@ -1105,24 +1108,39 @@ public class GenePatternAnalysisTask {
                                     }
                                     outFile = File.createTempFile(name, null, outDir);
                                 }
-                                log.debug("job "+jobId+"."+pinfo.getName()+" starting download to "+outFile);
-
-                                os = new FileOutputStream(outFile);
-                                byte[] buf = new byte[1024];
-                                int bytesRead;
-                                while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
-                                    os.write(buf, 0, bytesRead);
+                                GpConfig jobConfig = ServerConfigurationFactory.instance();
+                                
+                                final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
+                                final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+                                if (directExternalUploadEnabled || directDownloadEnabled){
+                                    // Using s3 direct up/downloads so we do not actually grab the file here
+                                    // instead we write the URL and destination filename to a hidden file
+                                    // that will be used to tell the JobRunner what needs to be done
+                                    // It will then setup a script that will be run on the compute node
+                                    // to do the actual download
+                                    // JTL for URL download deferral to compute nodes
+                                    File downloadListingFile = new File(outDir,ExternalFileManager.downloadListingFileName);
+                                    BufferedWriter writer = new BufferedWriter(new FileWriter(downloadListingFile, true));    
+                                    writer.write(uri + "\t" + outFile.getAbsolutePath());
+                                    writer.close();
+                                    System.out.println("CHECK FILE " + downloadListingFile.getAbsolutePath());
+                                    System.out.println(uri + "\t" + outFile.getAbsolutePath());
+                                } else {
+                                    // traditional GenePattern, the headnode does the download
+                                    log.debug("job "+jobId+"."+pinfo.getName()+" starting download to "+outFile);
+    
+                                    os = new FileOutputStream(outFile);
+                                    byte[] buf = new byte[1024];
+                                    int bytesRead;
+                                    while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
+                                        os.write(buf, 0, bytesRead);
+                                    }
+                                    log.debug("job "+jobId+"."+pinfo.getName()+" finished download to "+outFile);
                                 }
-                                log.debug("job "+jobId+"."+pinfo.getName()+" finished download to "+outFile);
-
                                 //TODO: mark file for delete from job results directory on handle job completion
                                 attrsCopy.put(ORIGINAL_PATH, originalPath);
                                 pinfo.setValue(outFile.getAbsolutePath());
-
-                                //attrsActual.put(ORIGINAL_PATH, originalPath);
-                                //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
-                                //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
-                                //attrsActual.put(this.ORIGINAL_LENGTH, ""+outFile.length());
+                 
                             }
                         } 
                         catch (IOException ioe) {
@@ -1456,7 +1474,11 @@ public class GenePatternAnalysisTask {
                     catch (Throwable t) {
                         log.error("Error getting gpFilePaths, job="+jobContext.getJobNumber()+", pname="+formal.getName(), t);
                     }
-                }                
+                }        
+              
+                
+                
+                
             }
         }
         return inputFilePaths;
@@ -1847,7 +1869,7 @@ public class GenePatternAnalysisTask {
         }
 
         String jobDirPath = jobDir.getAbsolutePath();
-        File ef = new File(jobDirPath + "/" + ".non.retrieved.output.files.json");
+        File ef = new File(jobDirPath + "/" + ExternalFileManager.nonRetrievedFilesFileName);
         JSONArray externalFileList = null;
         
         if (ef.exists()){
@@ -1861,8 +1883,13 @@ public class GenePatternAnalysisTask {
                    JSONObject obj = externalFileList.getJSONObject(i);
                    String fileName = obj.getString("filename");
                    File aFile = new File(fileName); // need the relative name only, XXX update for sub directories
-                   if (filenameFilter.accept(jobDir, aFile.getName()))
-                       addFileToOutputParameters(jobInfo, aFile.getName(), aFile.getName(), null);
+                   if (filenameFilter.accept(jobDir, aFile.getName())){
+                       String fPath = aFile.getAbsolutePath();
+                       if (fPath.startsWith(jobDirPath)) {
+                           fPath = fPath.substring(jobDirPath.length() + 1); //skip the file separator character
+                       }
+                       addFileToOutputParameters(jobInfo, fPath, fPath, null);
+                   }
                }
                
            } catch (Exception ee){

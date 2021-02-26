@@ -2072,6 +2072,7 @@ function validateParamGroupsEditor(silent){
 	var valid = true;
 	try {
 		var errorString = "";
+		
 		var jsonString = $("#param_groups_editor").val();
 		if (jsonString.length == 0) return true;
 		// first make sure its valid json
@@ -2084,15 +2085,21 @@ function validateParamGroupsEditor(silent){
 			if (aGroupName == null) errorString += "Group " + i + " does not define a group name (empty string is allowed).\r\n ";
 			
 			var paramList = aGroup["parameters"];
-			for  (var j=0; j < paramList.length; j++){
-				var duplicate = $.inArray(paramList[j], allMentionedParams) > -1;
-				if (duplicate) {
-					errorString += "<br/> " + paramList[j] +" appears in more than 1 group. ";
-				} else {
-					allMentionedParams.push(paramList[j]);
+			if (paramList != null){
+				for  (var j=0; j < paramList.length; j++){
+					var duplicate = $.inArray(paramList[j], allMentionedParams) > -1;
+					if (duplicate) {
+						errorString += "<br/> " + paramList[j] +" appears in more than 1 group. ";
+					} else {
+						allMentionedParams.push(paramList[j]);
+					}
 				}
+			} else {
+				// paramList is null so the group has no parameters
+				//errorString += "Parameter group \"" + aGroupName +"\" does not contain any parameters. ";
+				// we allow empty parameter groups as they can server as headings for 
+				// the following parameter groups
 			}
-			
 		} 
 		// finally make sure there are no parameters mentioned that are missing
 		// from the module or in the module but missing from the paramGroups file.

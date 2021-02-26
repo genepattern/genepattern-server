@@ -62,7 +62,10 @@ public class JobOutputRecorder {
                     JobOutputFile  out = new JobOutputFile();
                     out.setGpJobNo(jobContext.getJobNumber());
                     out.setFileLength(Long.parseLong(length));
-                    out.setPath(filename);
+                    
+                    //get the relative path from the job dir (there might be sub directories)
+                    String relativePath = jobDir.toURI().relativize(externalFile.toURI()).getPath();
+                    out.setPath(relativePath);
                     out.setExtension(JobOutputFile.initExtension(externalFile));
                     GpFileType gpFileType = defaultFileTypeFilter.getGpFileType(jobDir, externalFile, null);
                     if (gpFileType != null){

@@ -186,7 +186,7 @@ $.widget("gp.module", {
         for (var i = 0; i < all_tags.length; i++) {
             all_tags[i] = $("<div>").append($('<a>', {
                 'class': 'tag',
-                'text': all_tags[i],
+                'text': all_tags[i].toLowerCase(),
                 'href': '#'})
                 .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")).html();
         }

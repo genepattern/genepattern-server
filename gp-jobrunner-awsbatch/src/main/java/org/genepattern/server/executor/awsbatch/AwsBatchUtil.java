@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,9 +32,10 @@ import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+//import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+//import org.hibernate.CacheMode;
 
 import com.google.common.base.Strings;
 
@@ -140,34 +142,40 @@ public class AwsBatchUtil {
 
     protected static GpContext initJobContext(final DrmJobRecord jobRecord) {
         JobInfo jobInfo = null;
-        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
-            try {
-                jobInfo = new AnalysisDAO().getJobInfo(jobRecord.getGpJobNo());
-            }
-            catch (Throwable t) {
-                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
-            }
-        }
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        
+//        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
+//            try {
+//                mgr.getSession().setCacheMode(CacheMode.REFRESH);
+//                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobRecord.getGpJobNo());
+//            }
+//            catch (Throwable t) {
+//                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
+//            }
+//        }
         final GpContext jobContext=new GpContext.Builder()
             .jobNumber(jobRecord.getGpJobNo())
-            .jobInfo(jobInfo)
+  //          .jobInfo(jobInfo)
         .build();
         return jobContext;
     }
 
     protected static GpContext initJobContext(final DrmJobSubmission jobSubmission) {
         JobInfo jobInfo = null;
-        if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
-            try {
-                jobInfo = new AnalysisDAO().getJobInfo(jobSubmission.getGpJobNo());
-            }
-            catch (Throwable t) {
-                log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);
-            }
-        }
+        final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
+        
+//        if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
+//            try {
+//                mgr.getSession().setCacheMode(CacheMode.REFRESH);
+//                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobSubmission.getGpJobNo());
+//            }
+//            catch (Throwable t) {
+//                log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);
+//            }
+//        }
         final GpContext jobContext=new GpContext.Builder()
             .jobNumber(jobSubmission.getGpJobNo())
-            .jobInfo(jobInfo)
+     //       .jobInfo(jobInfo)
         .build();
         return jobContext;
     }
@@ -309,12 +317,31 @@ public class AwsBatchUtil {
     
     public static boolean s3FileExists(final DrmJobSubmission gpJob, final String localFilePath){
         // JTL XXX need to implement checking into S3 for the actual presence
-        String directUploadBucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
+        String bucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
         String bucketRoot = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket.root", null);
-        String awsProfile = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.profile", null);
         
+        String awsfilepath = AwsBatchUtil.getProperty(gpJob, "aws-batch-script-dir", null);
+        String awsfilename = AwsBatchUtil.getProperty(gpJob, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+         
+        String execArgs[];
         
-        return true;
+        // the aws s3 ls will return 0 if the key exists and one if not
+        execArgs = new String[] {awsfilepath+awsfilename, "s3", "ls", "s3://"+bucket+ "/"+bucketRoot+localFilePath};   
+        
+        boolean success = false;
+        Process proc = null;
+        try {
+            proc = Runtime.getRuntime().exec(execArgs);
+            proc.waitFor(3, TimeUnit.MINUTES);
+            success = (proc.exitValue() == 0);
+        } catch (Exception e){
+            log.debug(e);
+            return false;
+            
+        } finally {
+            if (proc != null) proc.destroy();
+        }
+        return success;
     }
     
     

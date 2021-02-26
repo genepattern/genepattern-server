@@ -166,7 +166,7 @@
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-pre.b309</version>
+      <version>3.9.11-pre.12-b320</version>
       <!-- scope>runtime,test</scope -->
     </dependency>
 

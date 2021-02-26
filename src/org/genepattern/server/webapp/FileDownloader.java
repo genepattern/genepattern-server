@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
-import org.genepattern.server.dm.ExternalFileDownloader;
+import org.genepattern.server.dm.ExternalFileManager;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -99,10 +99,10 @@ public class FileDownloader {
                      
                     final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
                     final Class<?> svcClass = Class.forName(downloaderClass, false, classLoader);
-                    if (!ExternalFileDownloader.class.isAssignableFrom(svcClass)) {
-                        log.error(""+svcClass.getCanonicalName()+" does not implement "+ExternalFileDownloader.class.getCanonicalName());
+                    if (!ExternalFileManager.class.isAssignableFrom(svcClass)) {
+                        log.error(""+svcClass.getCanonicalName()+" does not implement "+ExternalFileManager.class.getCanonicalName());
                     }
-                    final ExternalFileDownloader externalDownloader = (ExternalFileDownloader) svcClass.newInstance();
+                    final ExternalFileManager externalDownloader = (ExternalFileManager) svcClass.newInstance();
                     
                     externalDownloader.downloadFile(userContext, request, response, file);
                     return;

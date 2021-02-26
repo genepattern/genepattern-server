@@ -5,7 +5,9 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,12 +18,19 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.jobresult.JobResult;
+import org.genepattern.server.dm.jobresult.JobResultDao;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
+import org.genepattern.server.job.output.JobOutputFile;
+import org.genepattern.server.job.output.dao.JobOutputDao;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Utility class for managing data files.
@@ -103,6 +112,9 @@ public class DataManager {
      * @return true if the directory was successfully created
      */
     public static boolean createSubdirectory(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext userContext, final File relativePath) {
+        GpContext gpContext=GpContext.getServerContext();
+        boolean nonLocalFile = isUseS3NonLocalFiles(gpContext);
+        
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
@@ -116,16 +128,24 @@ public class DataManager {
         File dir = subdirRef.getServerFile();
         boolean success = false;
         try {
-            success = dir.mkdir();
-        }
-        catch (Throwable t) {
+            if (nonLocalFile){
+                ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                success = externalFileManager.createSubDirectory(userContext, dir);
+            } else {
+                success = dir.mkdir();
+            }
+        } catch (Throwable t) {
             log.error("system error creating directory: "+subdirRef.getRelativeUri()+": "+t.getLocalizedMessage());
             return false;
         } 
+        
+        
         if (success) {
             //update the DB
             try {
-                UserUploadManager.createUploadFile(mgr, userContext, subdirRef, 1);
+                
+                UserUpload newDir = UserUploadManager.createUploadFile(mgr, userContext, subdirRef, 1);
+                newDir.setKind("directory");
                 UserUploadManager.updateUploadFile(mgr, userContext, subdirRef, 1, 1);
             }
             catch (Throwable t) {
@@ -143,24 +163,65 @@ public class DataManager {
      * @param to
      * @return
      */
-    public static boolean copyToUserUpload(final HibernateSessionManager mgr, final String user, final GpFilePath from, final GpFilePath to) {
+    public static boolean copyToUserUpload(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath from, final GpFilePath to) {
         boolean copied = false;
-
+        try {
         File fromFile = from.getServerFile();
         File toFile = to.getServerFile();
         boolean directory = fromFile.isDirectory();
-
+         GpConfig gpConfig = ServerConfigurationFactory.instance();
+        
+        boolean nonLocalFile = isUseS3NonLocalFiles(userContext);
+        GpFilePath oldObj = null;
+        UserUpload oldUpload = null;
+        
+        File jobRoot = gpConfig.getRootJobDir(userContext);
+        File userRoot = gpConfig.getUserDir(userContext);
+        final UserUploadDao dao = new UserUploadDao(mgr);
+         
+        if (nonLocalFile ){
+            String fromPath = from.getServerFile().getAbsolutePath();
+            
+            
+            // have to get this from the directory if its not local
+            if (fromPath.startsWith(userRoot.getAbsolutePath())){
+                
+                oldUpload = dao.selectUserUpload(userContext.getUserId(), from);
+                directory = UserUpload.isDirectory(oldUpload);
+                from.setFileLength(oldUpload.getFileLength());
+                from.setLastModified(oldUpload.getLastModified());
+            } else if (fromPath.startsWith(jobRoot.getAbsolutePath())){
+                JobResultFile jrf = (JobResultFile) from;
+                final JobOutputDao jrdao = new JobOutputDao(mgr);
+                JobOutputFile jof = jrdao.selectOutputFile(Integer.parseInt(jrf.getJobId()), jrf.getRelativePath());
+                directory = false;
+                from.setFileLength(jof.getFileLength());
+                from.setLastModified(jof.getLastModified());
+            } else {
+                directory = false;
+            }
+            
+        }
+        
         // If the file are legit
-        if (fromFile.exists() && !toFile.exists()) {
+        if ((fromFile.exists() || nonLocalFile) && !toFile.exists()) {
             try {
                 // Do the file system copy
-                if (!directory) {
-                    FileUtils.copyFile(fromFile, toFile);
-                    copied = true;
-                }
-                else {
-                    FileUtils.copyDirectory(fromFile, toFile);
-                    copied = true;
+                if (nonLocalFile) {
+                    ExternalFileManager externalFileManager =  getExternalFileManager(userContext); 
+                    if (!directory){
+                        copied = externalFileManager.copyFile(userContext, fromFile, toFile);
+                    } else {
+                        copied = externalFileManager.copyDirectory(userContext, fromFile, toFile);
+                    }
+                }  else {
+                    if (directory){
+                        FileUtils.copyDirectory(fromFile, toFile);
+                        copied = true;
+                    } else {
+                        FileUtils.copyFile(fromFile, toFile);
+                        copied = true;
+                    }
                 }
             }
             catch (IOException e) {
@@ -172,16 +233,19 @@ public class DataManager {
             try {
                 if (!directory) {
                     // Begin a new transaction
-                    @SuppressWarnings("deprecation")
-                    GpContext context = GpContext.getContextForUser(user);
-                    UserUploadManager.createUploadFile(mgr, context, to, 1);
-                    UserUploadManager.updateUploadFile(mgr, context, to, 1, 1);
+                    
+                    UserUpload uu = UserUploadManager.createUploadFile(mgr, userContext, to, 1);
+                  
+                    uu.setFileLength(from.getFileLength());
+                    uu.setLastModified(from.getLastModified());
+                    uu.setNumPartsRecd(1);
+                    dao.saveOrUpdate(uu);
                     if (!inTransaction) {
                         mgr.commitTransaction();
                     }
                 }
                 else {
-                    syncUploadFiles(mgr, user);
+                    syncUploadFiles(mgr, userContext.getUserId());
                     copied = true;
                 }
             }
@@ -192,7 +256,10 @@ public class DataManager {
                 mgr.rollbackTransaction();
             }
         }
-
+        } catch (Exception e){
+            log.error("Error copying to user upload file record in db, '" + to.getRelativeUri() + "'", e);
+            
+        }
         return copied;
     }
 
@@ -203,29 +270,47 @@ public class DataManager {
      * @param to
      * @return
      */
-    public static boolean moveToUserUpload(HibernateSessionManager mgr, String user, GpFilePath from, GpFilePath to) {
+    public static boolean moveToUserUpload(HibernateSessionManager mgr, String user, GpFilePath from, GpFilePath to, GpContext gpContext) {
         boolean moved = false;
-
+        boolean nonLocalFile = isUseS3NonLocalFiles(gpContext);
+        UserUpload old = null;
         File fromFile = from.getServerFile();
         File toFile = to.getServerFile();
         boolean directory = fromFile.isDirectory();
-
+        if (nonLocalFile ){
+            // have to get this from the directory if its not local
+            final UserUploadDao dao = new UserUploadDao(mgr);
+            old = dao.selectUserUpload(user, from);
+            directory = UserUpload.isDirectory(old);
+        }
+        
+        
         // If the file are legit
-        if (fromFile.exists() && !toFile.exists()) {
+        if ( nonLocalFile || (fromFile.exists() && !toFile.exists())) {
             try {
-                // Do the file system copy
-                if (!directory) {
-                    FileUtils.moveFile(fromFile, toFile);
-                    moved = true;
+                if (nonLocalFile){
+                    ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                    if (!directory){
+                        moved = externalFileManager.moveFile(gpContext, fromFile, toFile);
+                    } else {
+                        moved = externalFileManager.moveDirectory(gpContext, fromFile, toFile);
+                    }
+                    
+                } else {
+                  // Do the file system copy
+                    if (!directory) {
+                        FileUtils.moveFile(fromFile, toFile);
+                        moved = true;
+                    }
+                    else {
+                        FileUtils.moveDirectory(fromFile, toFile);
+                        moved = true;
+                    }
                 }
-                else {
-                    FileUtils.moveDirectory(fromFile, toFile);
-                    moved = true;
-                }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 log.error("Failed to move file from " + fromFile.getAbsolutePath() + " to " + toFile.getAbsolutePath());
             }
+            
 
             // Update the database
             boolean inTransaction = mgr.isInTransaction();
@@ -234,9 +319,19 @@ public class DataManager {
                     // Begin a new transaction
                     @SuppressWarnings("deprecation")
                     GpContext context = GpContext.getContextForUser(user);
+                    
                     UserUploadManager.deleteUploadFile(mgr, from);
-                    UserUploadManager.createUploadFile(mgr, context, to, 1);
-                    UserUploadManager.updateUploadFile(mgr, context, to, 1, 1);
+                    UserUpload newUpload = UserUploadManager.createUploadFile(mgr, context, to, 1);
+                    
+                    if (nonLocalFile){
+                        // for non-local files we can't let it initialize itself from the java.io.File object since it doesn't exist
+                        // reuse the old values to avoid an extra round trip to the external file system
+                        newUpload.setNumPartsRecd(1);
+                        newUpload.setFileLength(old.getFileLength());
+                        newUpload.setLastModified(old.getLastModified());
+                    } else {
+                        UserUploadManager.updateUploadFile(mgr, context, to, 1, 1);
+                    }
                     if (!inTransaction) {
                         mgr.commitTransaction();
                     }
@@ -256,6 +351,25 @@ public class DataManager {
         return moved;
     }
 
+    private static ExternalFileManager getExternalFileManager(GpContext gpContext) {
+        ExternalFileManager externalManager = null;
+        String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, "download.aws.s3.downloader.class", null);
+        
+        try {
+             
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            final Class<?> svcClass = Class.forName(downloaderClass, false, classLoader);
+            if (!ExternalFileManager.class.isAssignableFrom(svcClass)) {
+                log.error(""+svcClass.getCanonicalName()+" does not implement "+ExternalFileManager.class.getCanonicalName());
+            }
+            externalManager = (ExternalFileManager) svcClass.newInstance();
+        } catch(Exception ioe){
+            log.error("Failed to download using external downloader class: " + downloaderClass, ioe);
+            
+        }
+        return externalManager;
+    }
+
     /**
      * Renames a user upload file
      * @param user
@@ -269,7 +383,15 @@ public class DataManager {
         File newFileRelative = new File(filePath.getRelativeFile().getParent(), name);
         boolean renamed = false;
         boolean directory = oldFile.isDirectory();
-
+        GpContext gpContext=GpContext.getServerContext();
+        boolean nonLocalFile = isUseS3NonLocalFiles(gpContext);
+        if (nonLocalFile ){
+            // have to get this from the directory if its not local
+            final UserUploadDao dao = new UserUploadDao(mgr);
+            UserUpload old = dao.selectUserUpload(user, filePath);
+            directory = UserUpload.isDirectory(old);
+        }
+        
         // If the file exists, rename the file on the file system
         if (oldFile.exists()) {
             renamed = oldFile.renameTo(newFileAbsolute);
@@ -279,8 +401,24 @@ public class DataManager {
             }
         }
         else {
-            log.error("File to rename not found: " + oldFile.getAbsolutePath());
-            return renamed;
+            
+            if (nonLocalFile){
+                try {
+                    ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                    if (!directory){
+                        renamed = externalFileManager.moveFile(gpContext, oldFile, newFileAbsolute);
+                    } else {
+                        renamed = externalFileManager.moveDirectory(gpContext, oldFile, newFileAbsolute);
+                    }
+                } catch (IOException e) {
+                    renamed = false;
+                }
+            } 
+            
+            if (renamed == false){
+                log.error("File to rename not found: " + oldFile.getAbsolutePath());
+                return renamed;
+            }
         }
 
         // Change the record in the database
@@ -328,6 +466,8 @@ public class DataManager {
      */
     public static boolean deleteUserUploadFile(final HibernateSessionManager mgr, final String userId, final GpFilePath uploadedFileObj) {
         File file = uploadedFileObj.getServerFile();
+        GpContext gpContext=GpContext.getServerContext();
+        boolean nonLocalFile = isUseS3NonLocalFiles(gpContext);
         
         //1) if it exists, delete the file from the file system
         boolean deleted = false;
@@ -337,6 +477,19 @@ public class DataManager {
             return false;
         }
         if (!file.exists()) {
+            try {
+                if (nonLocalFile){
+                    ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                    if (directory){
+                        externalFileManager.deleteDirectory(gpContext, file);
+                    } else {
+                        externalFileManager.deleteFile(gpContext, file);
+                    }
+                }
+            } catch(IOException e){
+                // swallow it because we don't care
+                log.debug("Failed to delete remote file " + file.getAbsolutePath());
+            }
             //indicate success even if the file doesn't exist
             deleted = true;
         }
@@ -461,15 +614,31 @@ public class DataManager {
             int numDeleted = new UserUploadDao(mgr).deleteAllUserUpload(userId);
             log.debug("deleted "+numDeleted+" entries from DB");
             mgr.commitTransaction();
-
-            // Add new entries to the database
-            String[] relPath = new String[0];
-            Set<String> visitedDirs = new HashSet<String>();
             final UserUploadDao dao = new UserUploadDao(mgr);
-            for (File file : uploadDir.listFiles()) {
-                handleFileSync(dao, visitedDirs, relPath, file, userContext);
-            }
 
+            
+            // uploaded files are NOT local.  Must sync to the external file location when this is turned on
+            if (isUseS3NonLocalFiles(userContext)) {
+                ExternalFileManager externalFileManager =  getExternalFileManager(userContext);
+                ArrayList<GpFilePath> files = externalFileManager.listFiles(userContext, uploadDir);
+                for (GpFilePath file : files) {
+                    // have to act differently when we don't actually have a file
+                    handleNonLocalFileSync(dao, file, uploadDir, userContext);
+                }
+            } else {
+                // Add new entries to the database,
+                
+                String[] relPath = new String[0];
+                Set<String> visitedDirs = new HashSet<String>();
+
+                for (File file : uploadDir.listFiles()) {
+                    handleFileSync(dao, visitedDirs, relPath, file, userContext);
+                } 
+                
+            }
+                
+                
+                
             // Commit
             mgr.commitTransaction();
         }
@@ -564,6 +733,58 @@ public class DataManager {
         }
     }
 
+    
+    /**
+     * Updates the database  with a particular file found when syncing the file system and database.
+     * 
+     * @param dao
+     * @param file
+     * @param userContext
+     * @throws Exception
+     */
+    private static void handleNonLocalFileSync(UserUploadDao dao, GpFilePath file, File uploadDir, GpContext userContext) throws Exception {
+        if (file == null) {
+            throw new IllegalArgumentException("file==null");
+        }
+
+        
+               // Exclude file on exclude list (ex: .DS_Store)
+        if (isExcludedFile(file.getServerFile())) {
+            log.debug("ignoring excluded file="+file);
+            return;
+        }
+
+        //need a valid userId to proceed
+        if (userContext == null) {
+            throw new Exception("Missing required parameter, userContext is null");
+        }
+        if (userContext.getUserId() == null) {
+            throw new Exception("Missing required parameter, userContext.userId is null");
+        }
+        
+        //add this file to the DB
+        final UserUpload uploadFile = new UserUpload();
+        
+        File rel = FileUtil.relativizePath(uploadDir, file.getServerFile());
+        
+        uploadFile.setPath(rel.getPath());
+        uploadFile.setName(rel.getName());
+        uploadFile.setUserId(userContext.getUserId());
+        uploadFile.setNumParts(1);
+        uploadFile.setNumPartsRecd(1);
+        if (file.isDirectory()){
+            uploadFile.setKind("directory");
+        } else {
+            uploadFile.setLastModified(file.getLastModified());
+            uploadFile.setFileLength(file.getFileLength());
+            uploadFile.setExtension(SemanticUtil.getExtension(file.getServerFile()));
+            uploadFile.setKind(SemanticUtil.getKind(file.getServerFile()));
+        }
+        dao.saveOrUpdate(uploadFile); 
+        
+    }
+    
+    
     private static String join(String[] arr, String sep) {
         String rval = "";
         boolean first = true;
@@ -578,5 +799,28 @@ public class DataManager {
         }
         return rval;
     }
+    
+    /**
+     * isUseS3NonLocalFiles is used to determine if we may be running analyses on files that are in S3 but not on the
+     * local disk of the GP head node. This can be because they
+     * were directly uploaded there, or for jobResults left there but not copied locally.
+     * 
+     * @param jobSubmission
+     * @return
+     */
+    protected static boolean isUseS3NonLocalFiles (GpContext gpContext) {
+       
+        GpConfig jobConfig = ServerConfigurationFactory.instance();
+        
+        final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(gpContext, "direct_external_upload_trigger_size", -1) >= 0);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(gpContext, "download.aws.s3.downloader.class", null) != null);
+      
+        return (directDownloadEnabled || directExternalUploadEnabled);
+        
+    }
+    
+    
+    
+    
 
 }

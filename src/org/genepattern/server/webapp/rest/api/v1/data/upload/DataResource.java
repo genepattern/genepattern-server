@@ -222,7 +222,7 @@ public class DataResource {
                 File toFile = extractUsersPath(userContext, to);
                 GpFilePath toPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, toFile);
 
-                boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
+                boolean copied = DataManager.copyToUserUpload(HibernateUtil.instance(), userContext, fromPath, toPath);
 
                 if (copied) {
                     return Response.ok().entity("Copied " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
@@ -391,7 +391,7 @@ public class DataResource {
                 File toFile = extractUsersPath(userContext, to);
                 GpFilePath toPath = GpFileObjFactory.getUserUploadFile(gpConfig, userContext, toFile);
 
-                boolean moved = DataManager.moveToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath);
+                boolean moved = DataManager.moveToUserUpload(HibernateUtil.instance(), userContext.getUserId(), fromPath, toPath, userContext);
 
                 if (moved) {
                     return Response.ok().entity("Moved " + fromPath.getRelativePath() + " to " + toPath.getRelativePath()).build();
