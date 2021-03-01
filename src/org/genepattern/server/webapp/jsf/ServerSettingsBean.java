@@ -62,7 +62,7 @@ public class ServerSettingsBean implements Serializable {
 
         if (modes == null) {
             modes = new TreeMap<String, String[]>();
-            modes.put("Access", new String[] { "gp.allowed.clients" });
+            modes.put("Access", new String[] { "gp.allowed.clients", "gp.blacklisted.clients" });
             modes.put("Command Line Prefix", null);
             modes.put("Disk Quota", new String[] { "gp.allowed.clients" });
             modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
@@ -504,6 +504,16 @@ public class ServerSettingsBean implements Serializable {
         settings.put("SuiteRepositoryURL", defaultSuiteRepositoryURL);
     }
 
+    
+    public void setBlacklist(String blacklist) {
+        settings.put("gp.blacklisted.clients", blacklist);
+    }
+
+    public String getBlacklist() {
+        return settings.getProperty("gp.blacklisted.clients");
+    }
+
+    
     /**
      * @return
      */

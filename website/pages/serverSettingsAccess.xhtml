@@ -94,4 +94,33 @@
         </table>
         <p />
     </h:form>
+    
+       <h:form>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+            <tr>
+                <td>Blacklisted Clients</td>
+            </tr>
+        </table>
+        <p />
+        <table width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr valign="top">
+                <td width="240px">TCP/IP addresses or CIDR patterns:<br/>
+                 (space or newline delimited)</td>
+                <td>
+                    <h:inputTextarea rows="5" cols="60" value="#{serverSettingsBean.blacklist}" />
+                                    
+                </td>
+                <tr valign="top">
+                <td>&#160;</td>
+                <td>
+                    <h:commandButton value="Save" actionListener="#{serverSettingsBean.saveSettings}" />
+                    &#160;
+                    <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}" />
+                </td>
+            </tr>
+            </tr>
+           </table>
+        <p />
+    </h:form>
+    
 </html>

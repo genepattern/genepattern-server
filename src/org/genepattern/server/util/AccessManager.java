@@ -10,22 +10,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.jfree.util.Log;
+
 /**
  * @author Liefeld
  * 
  */
 public class AccessManager {
     protected static String clientList = "";
+    protected static String blacklistedClientList = "";
 
     protected static List<String> allowedClients = null;
-
+    protected static List<BlacklistChecker> blacklistedClients = null;
+    
     /**
      * 
      */
     public static boolean isAllowed(String host, String address) {
-
+        boolean allowed = false;
         List<String> okClients = getAllowedClients();
 
+        // white list of allowed trumps the blacklist so check it first
         if (okClients != null) {
             for (int i = 0; i < okClients.size(); i++) {
                 String validClient = (String) okClients.get(i);
@@ -36,9 +41,64 @@ public class AccessManager {
             }
             return false;
         }
-        return true;
+        // no whitelist specified so now check the blacklist
+        return !isBlacklisted(host, address);
     }
 
+    
+    public static boolean isBlacklisted(String host, String address) {
+
+        List<BlacklistChecker> badClients = getBlacklistedClients();
+
+        if (badClients != null) {
+            for (int i = 0; i < badClients.size(); i++) {
+                BlacklistChecker badClientChecker = (BlacklistChecker) badClients.get(i);
+                 if (badClientChecker.matches(address)) return true;
+             }
+            return false;
+        }
+        return false;
+    }
+    
+    protected static List<BlacklistChecker> getBlacklistedClients() {
+        String badClientList = System.getProperty("gp.blacklisted.clients");
+
+        // refresh on first time through or if something has changed since last
+        // time
+        //
+        boolean refresh = (blacklistedClients == null);
+        if ((blacklistedClientList == null) && (badClientList != null))
+            refresh = true;
+        else if ((blacklistedClientList != null) && (badClientList == null))
+            refresh = true;
+        else {
+
+            if ((blacklistedClientList == null) && (badClientList == null))
+                refresh = true;
+            else if (!(blacklistedClientList.trim().equals(badClientList.trim())))
+                refresh = true;
+        }
+        if (refresh) {
+            blacklistedClientList= System.getProperty("gp.blacklisted.clients");
+            if (blacklistedClientList != null) {
+                blacklistedClients = new ArrayList<BlacklistChecker>();
+                // replace any newlines from the editor with spaces
+                blacklistedClientList = blacklistedClientList.replace("\n", " ").replace("\r", " ");
+                StringTokenizer strtok = new StringTokenizer(blacklistedClientList, " ");
+                while (strtok.hasMoreTokens()) {
+                    String tok = strtok.nextToken();
+                    try {
+                         blacklistedClients.add(new AccessManager.BlacklistChecker(tok));
+                    } catch (Exception e){
+                        Log.error("Could not initalize BlacklistChecker for: " + tok);
+                    }
+                }            
+            }
+        }
+        return blacklistedClients;
+        
+    }
+    
     protected static List<String> getAllowedClients() {
         String allowedClientList = System.getProperty("gp.allowed.clients");
 
@@ -92,5 +152,60 @@ public class AccessManager {
         }
         return allowedClients;
     }
+    
+    static class BlacklistChecker {
+        private final int maskSize;
+        private final InetAddress matchAddress;
+      
+        public BlacklistChecker(String addressToMatch) throws Exception {
+
+            // pull the netmask if present
+            if (addressToMatch.indexOf('/') > 0) {
+                String[] addressAndMask = addressToMatch.split("/");
+                addressToMatch = addressAndMask[0];
+                maskSize = Integer.parseInt(addressAndMask[1]);
+            } else {
+                maskSize = -1;
+            }
+            matchAddress = InetAddress.getByName(addressToMatch);
+            assert  (matchAddress.getAddress().length * 8 >= maskSize) :
+                    String.format("IP address %s is too short for bitmask of length %d",
+                            addressToMatch, maskSize);
+        }
+
+        public boolean matches(String address) {
+            try {
+                InetAddress remoteAddress = InetAddress.getByName(address);
+                byte[] matchAddressBytes = matchAddress.getAddress();
+                   
+                if (maskSize < 0) {
+                    // no mask just a straigh forward string compare
+                    return remoteAddress.equals(matchAddress);
+                }
+                
+                // need to replicate the net mask
+                byte[] remoteAddressBytes = remoteAddress.getAddress();
+                int masksizeInBytes = maskSize / 8;
+                byte finalByte = (byte) (0xFF00 >> (maskSize & 0x07));
+                for (int i = 0; i < masksizeInBytes; i++) {
+                    if (remoteAddressBytes[i] != matchAddressBytes[i]) {
+                        return false;
+                    }
+                }
+                if (finalByte != 0) {
+                    return (remoteAddressBytes[masksizeInBytes] & finalByte) == (matchAddressBytes[masksizeInBytes] & finalByte);
+                }
+                
+            } catch (Exception e){
+                return true;
+            }
+            return true;
+        }
+    }
 
 }
+
+
+
+
+

@@ -9,6 +9,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.webapp.rest.api.v1.DateUtil;
 import org.genepattern.server.webapp.rest.api.v1.Util;
 import org.json.JSONException;
@@ -26,9 +27,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Resource for querying the list of users based on the requested criteria.
@@ -185,5 +188,118 @@ public class UsersResource {
             return parts[parts.length-1];
         }
     }
+    
+    /**
+     * Block a user and the horse he rode in on.
+     * 
+     * In detail, drop his password so he/she cannot login.  Add a prefix to his/her email so they cannot
+     * go through forgot password.  if a blockingMaskDepth is included, also add to the blacklist the client
+     * IP they last logged in from with either a /8 or /16 net mask
+     * 
+     *  http://127.0.0.1:8080/gp/rest/v1/users/blockNaughtyUser?user_id=ted2&emailPrefix=CRYPTOMINER&blockingMaskDepth=8
+     *  
+     * @param request
+     * @param user_id
+     * @param emailPrefix
+     * @param blockingMaskDepth
+     * @return
+     */
+    @GET
+    @Path("/blockNaughtyUser")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response blockNaughtyUser(@Context HttpServletRequest request, @QueryParam("user_id") String user_id,    @QueryParam("email_prefix") String emailPrefix,   @QueryParam("blocking_depth") String blockingMaskDepth) {
+        // Ensure that the user making the query has admin permissions
+        GpContext userContext = Util.getUserContext(request);
+        boolean admin = userContext.isAdmin();
+
+        // If not admin, return an error
+        if (!admin) {
+            return Response.status(401).entity("Only admins can block users!").build();
+        }
+        final JSONObject returnJSON;
+        final String jsonStr;
+        
+        try {
+            returnJSON=_blockNaughtyUser( user_id,  emailPrefix, blockingMaskDepth);
+            int indentFactor=2;
+            jsonStr=returnJSON.toString(indentFactor);
+        } catch (JSONException jse){
+            log.error(jse);
+            return Response.status(400).entity("{'error': 'Error blocking user'}").build();      
+        }
+        
+        
+        return Response.ok()
+                .entity(jsonStr)
+            .build();
+        
+    }
+    // Query the database
+    protected static JSONObject _blockNaughtyUser(final String user_id, final String emailPrefix, final String blockingMaskDepth) {
+        final boolean inTransaction=HibernateUtil.isInTransaction();
+        User badUser = null;
+        JSONObject badUserJson = new JSONObject();
+        try {
+            // Query the database
+            if (!inTransaction) HibernateUtil.beginTransaction();
+            final UserDAO dao = new UserDAO(HibernateUtil.instance());
+            badUser= dao.findById(user_id);
+            
+            badUserJson.append("user_id", user_id);
+           
+            badUserJson.append("email", badUser.getEmail());
+            
+            
+            badUser.setEmail(emailPrefix + badUser.getEmail());
+            badUser.setPassword(new byte[1]);
+            if (!inTransaction) HibernateUtil.commitTransaction();
+            String lastLoginIp = badUser.getLastLoginIP();
+            badUserJson.append("last_login_ip", lastLoginIp);
+            // now convert the last login IP to a netmask of /16
+            // and add it to the blacklist
+            //int idx = badUser.getLastLoginIP().indexOf(".")
+            String lastIp = badUser.getLastLoginIP();
+            String[] st = lastIp.split("\\.");
+            if (st.length != 4)
+                throw new NumberFormatException("Invalid IP address: " + lastIp);
+            
+            // only allow blocking masks of /24 and /16 as there is no good reason to go bigger automatically and since this is a 
+            // rest call its almost certainly called by an automatic crypto-miner detection script 
+            //  https://www.ultratools.com/tools/netMaskResult?ipAddress=172.31.0.0%2F24
+            String blockingMask = st[0]+"."+st[1];
+            if ((blockingMaskDepth == null) || (blockingMaskDepth.length()==0)){
+                // no mask so do no blocking
+                return badUserJson;
+            }else if (blockingMaskDepth.endsWith("16")){
+                blockingMask = blockingMask +".0.0/16";
+            } else {
+                blockingMask = blockingMask +"." +st[2]+".0/24";
+            }
+            badUserJson.append("blockingMask", blockingMask);
+            Properties settings = PropertiesManager_3_2.getGenePatternProperties();
+            String currentBlacklist = settings.getProperty("gp.blacklisted.clients");
+            if (currentBlacklist.indexOf(blockingMask)>=0){
+                // already have it so nothing to add
+                badUserJson.append("message", "IP mask already present: " + blockingMask);
+            } else {
+                settings.setProperty("gp.blacklisted.clients", currentBlacklist + "\r\n"+blockingMask);
+                PropertiesManager_3_2.storeChanges(settings);
+            }
+            
+            
+        } catch (Exception ioe) {
+            log.error(ioe);
+            try {
+                badUserJson.append("errorMessage", ioe.getMessage());
+            } catch (JSONException jse) {}
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        return badUserJson;
+    }
+    
 }
 
