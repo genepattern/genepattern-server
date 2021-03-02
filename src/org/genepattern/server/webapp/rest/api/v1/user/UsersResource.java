@@ -196,7 +196,7 @@ public class UsersResource {
      * go through forgot password.  if a blockingMaskDepth is included, also add to the blacklist the client
      * IP they last logged in from with either a /8 or /16 net mask
      * 
-     *  http://127.0.0.1:8080/gp/rest/v1/users/blockNaughtyUser?user_id=ted2&emailPrefix=CRYPTOMINER&blockingMaskDepth=8
+     *  https://beta.genepattern.org/gp/rest/v1/users/blockNaughtyUser?user_id=ted2&email_prefix=CRYPTOMINER&blocking_depth=32
      *  
      * @param request
      * @param user_id

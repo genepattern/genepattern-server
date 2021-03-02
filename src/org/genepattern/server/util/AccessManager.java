@@ -53,7 +53,13 @@ public class AccessManager {
         if (badClients != null) {
             for (int i = 0; i < badClients.size(); i++) {
                 BlacklistChecker badClientChecker = (BlacklistChecker) badClients.get(i);
-                 if (badClientChecker.matches(address)) return true;
+                
+                 if (badClientChecker.matches(address)) {
+                     Log.info("Blacklist - rejecting connection from " + address + " matches " + badClientChecker.toString());
+                     return true;
+                 } else {
+                     Log.debug("Blacklist - allow connection " + address + " with " + badClientChecker.toString());
+                 }
              }
             return false;
         }
@@ -156,9 +162,10 @@ public class AccessManager {
     static class BlacklistChecker {
         private final int maskSize;
         private final InetAddress matchAddress;
-      
+        private final String matchString;
+        
         public BlacklistChecker(String addressToMatch) throws Exception {
-
+            matchString = addressToMatch;  // just for the to-string method
             // pull the netmask if present
             if (addressToMatch.indexOf('/') > 0) {
                 String[] addressAndMask = addressToMatch.split("/");
@@ -200,6 +207,10 @@ public class AccessManager {
                 return true;
             }
             return true;
+        }
+        
+        public String toString(){
+            return "AccessManager.BlacklistChecker(" + matchString +")";
         }
     }
 

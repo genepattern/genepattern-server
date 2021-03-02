@@ -34,7 +34,17 @@ public class ConnectionFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
 
-        boolean allowed = AccessManager.isAllowed(request.getRemoteHost(), request.getRemoteAddr());
+        
+        String forwarded = request.getRemoteAddr();
+        try {
+            forwarded = ((HttpServletRequest)request).getHeader("X-Forwarded-For");
+            if ((forwarded == null) || (forwarded.length() == 0)) forwarded = request.getRemoteAddr();
+        } catch (Exception e){
+            // can only be a ClassCastException so we ignore it and go with the getRemoteAddr() call
+        }
+        
+        
+        boolean allowed = AccessManager.isAllowed(request.getRemoteHost(), forwarded);
 
         if (allowed) {
             chain.doFilter(request, response);
