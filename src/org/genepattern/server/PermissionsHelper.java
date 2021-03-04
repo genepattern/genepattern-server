@@ -82,7 +82,7 @@ public class PermissionsHelper implements Serializable {
         this.currentUser = _userId;
         this.rootJobOwner = _rootJobOwner;
         this.rootJobNo = _rootJobNo;
-        this.isOwner = this.currentUser != null && this.currentUser.equals(this.rootJobOwner);
+        this.isOwner = this.currentUser != null && this.currentUser.equalsIgnoreCase(this.rootJobOwner);
         this.canSetPermissions = this.isOwner;
         
         if (_isAdmin || isOwner) {
