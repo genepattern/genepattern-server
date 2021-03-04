@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -87,7 +88,9 @@ public class CategoryUtil {
         if (!includeHidden) {
             final Value value=gpConfig.getValue(userContext, PROP_HIDDEN_CATEGORIES);
             if (value != null) {
-                hiddenCategories.addAll(value.getValues());
+                for (String aCat: value.getValues()){
+                    hiddenCategories.add(aCat.toLowerCase());
+                }
             }
         }
 
@@ -98,11 +101,30 @@ public class CategoryUtil {
         if (categories==null) {
             categories=getCategoriesFromManifest(taskInfo);
         }
+        // lower case the categories and then remove duplicates
+        ListIterator<String> iterator = categories.listIterator();
+        while (iterator.hasNext())
+        {
+            iterator.set(iterator.next().toLowerCase());
+        }
+        List<String> list2 = new ArrayList<String>();
+        HashSet<String> lookup = new HashSet<String>();
+        for (String item : categories) {
+            if (lookup.add(item)) {
+                // Set.add returns false if item is already in the set
+                list2.add(item);
+            }
+        }
+        categories = list2;
+        
+        
+        
+        
         //check for '.' categories
         if (!includeHidden) {
             for(final String category : categories) {
                 if (isHidden(category)) {
-                    hiddenCategories.add(category);
+                    hiddenCategories.add(category.toLowerCase());
                 }
             }
             for(final String hidden : hiddenCategories) {
