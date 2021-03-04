@@ -2183,14 +2183,20 @@ function updatemodulecategories()
                 categories = categories.substring(1, categories.length-1);
 
                 var result = categories.split(", ");
+                var catNames = new Set();
+                
+                
                 var mcat = $("select[name='category']");
 
                 for(var i=0;i < result.length;i++)
                 {
-                    if(result[i] !== "" && result[i] !== "Uncategorized")
+                	var cat = result[i];
+                	
+                    if(cat !== "" && cat !== "Uncategorized"  && !(catNames.has(cat)))
                     {
                         mcat.append($("<option value='"  + result[i] + "'>" + escapeHTML(result[i]) + "</option>"));
                     }
+                    catNames.add(cat);
                 }
                 mcat.multiselect("refresh");
 
@@ -2201,6 +2207,10 @@ function updatemodulecategories()
                 }
             }
         },
+        error: function(e){
+        	console.log("Error getting categories");
+        },
+        
         dataType: "json"
     });
 }

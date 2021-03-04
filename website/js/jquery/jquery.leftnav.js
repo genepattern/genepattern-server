@@ -184,9 +184,13 @@ $.widget("gp.module", {
         all_tags.sort(); // Sort
 
         for (var i = 0; i < all_tags.length; i++) {
+        	var txt = all_tags[i];
+        	if (txt == undefined) txt = "undefined";
+        	
+        	
             all_tags[i] = $("<div>").append($('<a>', {
                 'class': 'tag',
-                'text': all_tags[i].toLowerCase(),
+                'text': txt.toLowerCase(),
                 'href': '#'})
                 .attr("onclick", "$(this).closest('.module-listing').module('tagClick', event);")).html();
         }
