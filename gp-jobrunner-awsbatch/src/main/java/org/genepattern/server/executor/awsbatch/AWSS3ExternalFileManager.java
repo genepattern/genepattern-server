@@ -35,31 +35,13 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     private static Logger log = Logger.getLogger(AWSS3ExternalFileManager.class);
     private static String placeholderPrefix = ".hiddenS3placeholder";
     
-    private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
-        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
-        if (aws_s3_root == null){
-            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", null);
-        }
-        // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
-        int endIdx = aws_s3_root.indexOf("/", 5);
-        return aws_s3_root.substring(5,endIdx);
-    }
-    private String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
-        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
-        if (aws_s3_root == null){
-            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", null);
-        }
-        // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
-        int endIdx = aws_s3_root.indexOf("/", 5);
-        return aws_s3_root.substring(endIdx+1);
-    }
-    
+   
     
     public void downloadFile(GpContext userContext, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
@@ -131,8 +113,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     public boolean moveFile(GpContext userContext, File fromFile, File toFile, Boolean recursive) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
@@ -175,8 +157,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     public boolean copyFile(GpContext userContext, File fromFile, File toFile, Boolean recursive) throws IOException {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
@@ -219,8 +201,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
 
     public  boolean deleteFile(GpContext userContext,  File file, Boolean recursive) throws IOException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
@@ -259,8 +241,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
      */
     public boolean createSubDirectory(GpContext userContext,  File subdir) throws IOException{
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          
@@ -299,8 +281,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     public  ArrayList<GpFilePath> listFiles(GpContext userContext,  File rootDir) throws IOException {
         ArrayList<GpFilePath> foundFiles = new ArrayList<GpFilePath>();
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
-        String bucket = getBucketName(gpConfig, userContext);
-        String bucketRoot = getBucketRoot(gpConfig, userContext);
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
          

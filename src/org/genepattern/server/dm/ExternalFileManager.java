@@ -24,6 +24,7 @@ public abstract class ExternalFileManager {
 
     public static String downloadListingFileName = ".download.listing.txt";
     public static String nonRetrievedFilesFileName = ".non.retrieved.output.files.json";
+    public static String classPropertyKey = "external.file.manager.class";
     
     public ExternalFileManager(   ){
         

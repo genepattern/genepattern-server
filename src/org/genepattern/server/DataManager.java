@@ -353,7 +353,8 @@ public class DataManager {
 
     private static ExternalFileManager getExternalFileManager(GpContext gpContext) {
         ExternalFileManager externalManager = null;
-        String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, "download.aws.s3.downloader.class", null);
+        String downloaderClass_obsolete = ServerConfigurationFactory.instance().getGPProperty(gpContext, "download.aws.s3.downloader.class", null);
+        String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, ExternalFileManager.classPropertyKey, downloaderClass_obsolete);
         
         try {
              
@@ -813,9 +814,10 @@ public class DataManager {
         GpConfig jobConfig = ServerConfigurationFactory.instance();
         
         final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(gpContext, "direct_external_upload_trigger_size", -1) >= 0);
-        final boolean directDownloadEnabled = (jobConfig.getGPProperty(gpContext, "download.aws.s3.downloader.class", null) != null);
-      
-        return (directDownloadEnabled || directExternalUploadEnabled);
+        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(gpContext, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(gpContext, ExternalFileManager.classPropertyKey, null) != null);
+        
+        return (directDownloadEnabled || directExternalUploadEnabled || directDownloadEnabled_obsolete);
         
     }
     

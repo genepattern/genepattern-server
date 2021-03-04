@@ -15,6 +15,7 @@ import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -139,7 +140,9 @@ public class DiskInfo
         // default to 100 simultaneous jobs per user
         final int maxSimultaneousJobs = gpConfig.getGPIntegerProperty(context, "max_simultaneous_jobs", 100);
         final int directExternalUploadTriggerSize = gpConfig.getGPIntegerProperty(context, "direct_external_upload_trigger_size", -1);
-        final boolean directDownloadEnabled = (gpConfig.getGPProperty(context, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled_obsolete = (gpConfig.getGPProperty(context, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled_new = (gpConfig.getGPProperty(context, ExternalFileManager.classPropertyKey, null) != null);
+        final boolean directDownloadEnabled = (directDownloadEnabled_obsolete || directDownloadEnabled_new);
         final String maxJobNotificationEmail = gpConfig.getGPProperty(context, "max_simultaneous_jobs_notification_email");
         final DiskInfo diskInfo = new DiskInfo(userId);
         final boolean isInTransaction= mgr.isInTransaction();

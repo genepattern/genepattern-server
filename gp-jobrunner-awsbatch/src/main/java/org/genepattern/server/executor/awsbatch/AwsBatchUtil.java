@@ -24,6 +24,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.config.Value;
 import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.job.input.JobInput;
@@ -73,6 +74,35 @@ public class AwsBatchUtil {
         return gpJob.getGpConfig().getGPProperty(gpJob.getJobContext(), key, defaultValue);
     }
 
+    
+    private static String getBucketName(final DrmJobSubmission gpJob) {
+        return getBucketName(gpJob.getGpConfig(), gpJob.getJobContext());
+    }
+    
+    private static String getBucketRoot( DrmJobSubmission gpJob) {
+        return getBucketRoot(gpJob.getGpConfig(), gpJob.getJobContext());
+        
+    }
+    
+    static String getBucketName(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        if (aws_s3_root == null){
+            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket", null);
+        }
+        // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(5,endIdx);
+    }
+     static String getBucketRoot(final GpConfig gpConfig, GpContext userContext) {
+        String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
+        if (aws_s3_root == null){
+            return gpConfig.getGPProperty(userContext, "upload.aws.s3.bucket.root", null);
+        }
+        // pull the bucket root path out of something like "s3://moduleiotest/gp-dev-ami"
+        int endIdx = aws_s3_root.indexOf("/", 5);
+        return aws_s3_root.substring(endIdx+1);
+    }
+    
 
     /** helper method because String#replaceAll expects a regex */
     protected static String replaceAll_quoted(final String str, final String literal, final String replacement) {
@@ -193,9 +223,12 @@ public class AwsBatchUtil {
         GpConfig jobConfig = ServerConfigurationFactory.instance();
         
         final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
-        final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
         
-        return (directDownloadEnabled || directExternalUploadEnabled);
+        
+        
+        return (directDownloadEnabled || directExternalUploadEnabled || directDownloadEnabled_obsolete);
         
     }
     
@@ -317,8 +350,8 @@ public class AwsBatchUtil {
     
     public static boolean s3FileExists(final DrmJobSubmission gpJob, final String localFilePath){
         // JTL XXX need to implement checking into S3 for the actual presence
-        String bucket = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket", null);
-        String bucketRoot = AwsBatchUtil.getProperty(gpJob, "upload.aws.s3.bucket.root", null);
+        String bucket = getBucketName(gpJob);
+        String bucketRoot = getBucketRoot(gpJob);
         
         String awsfilepath = AwsBatchUtil.getProperty(gpJob, "aws-batch-script-dir", null);
         String awsfilename = AwsBatchUtil.getProperty(gpJob, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
@@ -343,6 +376,7 @@ public class AwsBatchUtil {
         }
         return success;
     }
+    
     
     
 

@@ -902,15 +902,19 @@ public class AWSBatchJobRunner implements JobRunner {
     protected static boolean isSkipWorkingDirDownload(final DrmJobRecord jobRecord) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobRecord);
         GpConfig jobConfig = ServerConfigurationFactory.instance();
-        String downloaderClass = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
-        return (downloaderClass != null);
+        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
+      
+        return (directDownloadEnabled_obsolete || directDownloadEnabled);
     }
     
     protected static boolean isSkipWorkingDirDownload(final DrmJobSubmission jobSubmission) {
         final GpContext jobContext=AwsBatchUtil.initJobContext(jobSubmission);
         GpConfig jobConfig = ServerConfigurationFactory.instance();
-        String downloaderClass = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
-        return (downloaderClass != null);
+        String downloaderClass_obsolete = jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null);
+        String downloaderClass = jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null);
+        
+        return ((downloaderClass != null) || (downloaderClass_obsolete != null));
     }
     
    

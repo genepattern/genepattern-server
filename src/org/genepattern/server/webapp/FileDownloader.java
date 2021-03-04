@@ -93,7 +93,10 @@ public class FileDownloader {
             // in an external location and redirect to its special download handler
             String userId = UIBeanHelper.getUserId();
             GpContext userContext = GpContext.getContextForUser(userId);
-            String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", null);
+            String downloaderClass_obsolete = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", null);
+            String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(userContext, "download.aws.s3.downloader.class", downloaderClass_obsolete);
+
+            
             if (downloaderClass != null) {
                 try {
                      
