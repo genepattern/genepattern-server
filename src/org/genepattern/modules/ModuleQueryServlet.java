@@ -900,33 +900,21 @@ public class ModuleQueryServlet extends HttpServlet {
             taskContext.setTaskInfo(taskInfo);
 
             //check if user is allowed to edit the module
+            boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
+//          
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
             boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username);
             // && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 
             boolean isLocalLsid = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             if (!isLocalLsid){
-                // if the LSID is not locally created, it can still be edited if the user is an admin
-                // and if the "allowAdminEditNonLocalModules" property has been defined and set to true
-                // in a config file
-                  boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
-//                
-//                
-//                boolean userOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowUserEditNonLocalModules", false);
-//                if (userOverrideAllowed){
-//                    boolean isAuthorityProtected = LSIDUtil.getInstance().isAuthorityProtected(gpConfig, taskContext, taskInfo.getLsid());
-//                    editable = !isAuthorityProtected;
-//                } else {
-//                    editable = false;
-//                }
-//            
-//                if (!editable && adminOverrideAllowed && AuthorizationHelper.adminServer(username)) {
-//                    editable = true;
-//                } 
+                
                 editable = LSIDUtil.isEditableForUser(gpConfig, taskContext, lsid, username);
             }
                 
-            if(!editable)
+            boolean adminOverrideInPlay = adminOverrideAllowed && AuthorizationHelper.adminServer(username);
+            
+            if(!(editable || adminOverrideInPlay))
             {
                 sendError(response, "Module is not editable");
                 return;
