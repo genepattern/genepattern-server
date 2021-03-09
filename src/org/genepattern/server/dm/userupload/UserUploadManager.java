@@ -250,6 +250,49 @@ public class UserUploadManager {
     }
 
     /**
+     * Update the record of the user upload file in the database.
+
+     * Iff the current thread is not already in a DB transaction, this method will commit the transaction. 
+     * Otherwise, it is up to the calling method to commit or rollback the transaction.
+     * 
+     * @param userContext
+     * @param gpFilePath
+     * @param partNum, part numbers start with 1, e.g. a single chunk upload would have partNum=1 and totalParts=1.
+     * @param totalParts
+     * @throws Exception, if a part is received out of order.
+     */
+    public static final void updateUploadDirectory(final HibernateSessionManager mgr, final GpContext userContext, final GpFilePath gpFilePath, final int partNum, final int totalParts)
+    throws DbException 
+    {
+        boolean inTransaction = mgr.isInTransaction();
+        try {
+            UserUploadDao dao = new UserUploadDao(mgr);
+            UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFilePath);
+            if (uu.getNumParts() != totalParts) {
+                throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
+            }
+            uu.setNumPartsRecd(partNum);
+            uu.initDirectory(gpFilePath.getServerFile());
+            dao.saveOrUpdate(uu);
+            if (!inTransaction) {
+                mgr.commitTransaction();
+            }
+        }
+        catch (Throwable t) {
+            mgr.rollbackTransaction();
+            throw new DbException("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
+        }
+        finally {
+            if (!inTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    
+    
+    
+    /**
      * Delete the record of the user upload file from the database, only if there is one.
      * 
      * @param gpFilePath

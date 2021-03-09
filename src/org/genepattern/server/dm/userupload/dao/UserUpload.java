@@ -97,7 +97,15 @@ public class UserUpload {
         } 
     }
     
-    
+    // like init, but forces it to be a directory for non-existant files to
+    // support the ExternalFileManager implementations
+    public void initDirectory(File file) {
+        init(file);
+        if (!file.exists()) {
+             setKind("directory");     
+        } 
+       
+    }
     
     
     public long getId() {

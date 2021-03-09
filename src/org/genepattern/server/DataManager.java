@@ -146,7 +146,7 @@ public class DataManager {
                 
                 UserUpload newDir = UserUploadManager.createUploadFile(mgr, userContext, subdirRef, 1);
                 newDir.setKind("directory");
-                UserUploadManager.updateUploadFile(mgr, userContext, subdirRef, 1, 1);
+                UserUploadManager.updateUploadDirectory(mgr, userContext, subdirRef, 1, 1);
             }
             catch (Throwable t) {
                 log.error(t);

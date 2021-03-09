@@ -266,7 +266,7 @@ public class JobInputFileUtil {
             //create a new record for the directory, if necessary
             GpFilePath parent = GpFileObjFactory.getUserUploadFile(gpConfig, context, new File(parentPath));
             UserUploadManager.createUploadFile(mgr, context, parent, 1, true);
-            UserUploadManager.updateUploadFile(mgr, context, parent, 1, 1);
+            UserUploadManager.updateUploadDirectory(mgr, context, parent, 1, 1);
         }
         UserUploadManager.createUploadFile(mgr, context, gpFilePath, 1, true);
         UserUploadManager.updateUploadFile(mgr, context, gpFilePath, 1, 1);
