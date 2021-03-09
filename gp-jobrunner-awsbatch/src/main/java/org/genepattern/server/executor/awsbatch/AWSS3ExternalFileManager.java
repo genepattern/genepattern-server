@@ -236,6 +236,29 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     }
     
     /**
+     * The suspenders in a belt-and-suspenders strategy for external sub directories.  GenePattern has many cases where it looks at 
+     * the local file system and we may not have caught them all, so when we create a subdirectory on the external S3 service, also create
+     * a local empty directory at the same location.  We ignore errors since this is just a backstop for the main changes to look only at 
+     * the remote file system.
+     * 
+     * @param subdir
+     */
+    protected void createLocalSubdirectory(File subdir){
+        String[] execArgs = new String[] {"mkdir", "-p", subdir.getAbsolutePath()};
+        
+        boolean success = false;
+        Process proc = null;
+        try {
+            proc = Runtime.getRuntime().exec(execArgs);
+            proc.waitFor(10, TimeUnit.SECONDS);
+        } catch (Exception e){
+            log.debug(e);
+        } finally {
+            if (proc != null) proc.destroy();
+        }
+    }
+    
+    /**
      * Since directories (and sub directories) don't exist in S3 we will fake it out by uploading a 0-length file
      * to hold the space.  By making it start with a "." GenePattern will igore it as a hidden file
      */
@@ -259,6 +282,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             if (!success){
                 logStdout(proc, "create S3 subdir"); 
                 logStderr(proc, "create S3 subdir"); 
+            } else {
+                createLocalSubdirectory(subdir);
             }
             
         } catch (Exception e){
