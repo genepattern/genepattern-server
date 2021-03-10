@@ -42,7 +42,7 @@ public class TestAwsS3Cmd {
             "s3", "sync", s3_prefix+""+localFile.getParent(), dest_prefix+""+localFile.getParent(), "--exclude", "*", "--include", localFile.getName()
         };
         assertThat("syncFromS3Args", 
-            s3Cmd.getSyncFromS3Args(localFile, dest_prefix), 
+            s3Cmd.getSyncFromS3Args(localFile, dest_prefix, "ignore"), 
             CoreMatchers.is( Arrays.asList(expected) ));
     }
     @Test
@@ -55,7 +55,7 @@ public class TestAwsS3Cmd {
             "s3", "sync", s3_prefix+""+localFile.getParent(), localFile.getParent(), "--exclude", "*", "--include", localFile.getName()
         };
         assertThat("syncFromS3Args", 
-            s3Cmd.getSyncFromS3Args(localFile, dest_prefix), 
+            s3Cmd.getSyncFromS3Args(localFile, dest_prefix, "ignore"), 
             CoreMatchers.is( Arrays.asList(expected) ));
     }
 
@@ -69,7 +69,7 @@ public class TestAwsS3Cmd {
             "s3", "sync", s3_prefix+""+localFile.getParent(), localFile.getParent(), "--exclude", "*", "--include", localFile.getName()
         };
         assertThat("syncFromS3Args", 
-            s3Cmd.getSyncFromS3Args(localFile, dest_prefix), 
+            s3Cmd.getSyncFromS3Args(localFile, dest_prefix, "ignore"), 
             CoreMatchers.is( Arrays.asList(expected) ));
     }
 

@@ -273,21 +273,34 @@ public class AwsS3Cmd {
      * @param destPrefix
      * @return
      */
-    protected List<String> getSyncFromS3Args(final File localFile, final String destPrefix) {
+    protected List<String> getSyncFromS3Args(final File localFile, final String destPrefix, final String userId) {
         List<String> args=new ArrayList<String>();
+        
+        // handle manual replace of '@' in usernames because of the odd way S3 seems to be treatin g it
+        String altId = userId;
+        String s3FilePath = localFile.getPath();
+        String driveFilePath = localFile.getPath();
+        
+        if (userId != null) {
+            if (userId.contains("@")){
+                altId = userId.replace("@", "%40");
+                s3FilePath.replace(userId, altId);
+            }
+        }
+        
         args.add("s3");
         args.add("sync");
         if (localFile.isDirectory()) {
             // from s3Uri
-            args.add(s3_bucket+""+localFile.getPath());
+            args.add(s3_bucket+""+s3FilePath);
             // to container local path
-            args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getPath());
+            args.add(Strings.nullToEmpty(destPrefix)+""+driveFilePath);
         } else  {
             // do this for File or if there is a file that is not locally present.  Some files will be in S3 but not
             // in the local file system.  Don't want to forget these ones.
             
             // from s3Uri
-            args.add(s3_bucket+""+localFile.getParent());
+            args.add(s3_bucket+""+localFile.getParent().replace(userId, altId));
             // to container local path
             args.add(Strings.nullToEmpty(destPrefix)+""+localFile.getParent());
             // filter all but the file

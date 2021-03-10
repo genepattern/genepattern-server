@@ -986,7 +986,7 @@ public class AWSBatchJobRunner implements JobRunner {
         return cl;
     }
 
-    protected void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root, final AwsS3Filter awsS3Filter, final File jobDir) {
+    protected void copyInputFiles(final String awsCmd, final Map<String,String> cmdEnv, final Set<File> inputFiles, final String s3_root, final AwsS3Filter awsS3Filter, final File jobDir, String userId) {
         final AwsS3Cmd s3Cmd=new AwsS3Cmd.Builder()
             .awsCmd(awsCmd)
             .awsCliEnv(cmdEnv)
@@ -1058,7 +1058,7 @@ public class AWSBatchJobRunner implements JobRunner {
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(script))) {
             bw.write("#!/usr/bin/env bash"); bw.newLine();
             for(final File inputFile : inputFiles) {
-                final List<String> args=s3Cmd.getSyncFromS3Args(inputFile, dest_prefix);
+                final List<String> args=s3Cmd.getSyncFromS3Args(inputFile, dest_prefix, userId);
                 bw.write("aws \\"); bw.newLine();
                 for(int i=0; i<args.size(); ++i) {
                     bw.write("    \""+args.get(i)+"\" ");
@@ -1179,9 +1179,9 @@ public class AWSBatchJobRunner implements JobRunner {
         final Set<File> inputDirectories = AwsBatchUtil.getInputFileParentDirectories(gpJob);
         
         final Map<String,String> cmdEnv=initAwsCmdEnv(gpJob, inputDirectories);
-        
+        String userId = gpJob.getJobContext().getUserId();
         final AwsS3Filter awsS3Filter=AwsS3Filter.initAwsS3Filter(gpJob.getGpConfig(), gpJob.getJobContext());
-        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter, gpJob.getWorkingDir());
+        copyInputFiles(awsCli.getPath(), cmdEnv, inputFiles, s3_root, awsS3Filter, gpJob.getWorkingDir(), userId);
 
         //final Map<String, String> inputFileMap=makeSymLinks(inputDir, inputFiles);
         final Map<String,String> inputFileMap=Collections.emptyMap();

@@ -28,6 +28,7 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 
 
+
 public class AWSS3ExternalFileManager extends ExternalFileManager {
     private static Logger log = Logger.getLogger(AWSS3ExternalFileManager.class);
     private static String placeholderPrefix = ".hiddenS3placeholder";
@@ -47,9 +48,11 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         // so we do them explicitly here.  S3 seems to handle these differently if they are in a path (escaped to %40)
         // than in a key (not)
         String userId = userContext.getUserId();
-        if (userId.contains("@")){
-            String altId = userId.replace("@", "%40");
-            thePath = thePath.replace(userId, altId);
+        if (userId != null) {
+            if (userId.contains("@")){
+                String altId = userId.replace("@", "%40");
+                thePath = thePath.replace(userId, altId);
+            }
         }
         String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath};
        // String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};

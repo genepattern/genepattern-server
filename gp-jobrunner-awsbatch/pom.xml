@@ -155,18 +155,18 @@
          # create snapshot build
          cd ../
          ant clean common
-         cp -p build/gp-full.jar build/gp-full-3.9.11-pre.11-b199.jar
+         cp -p build/gp-full.jar build/gp-full-3.9.11-pre.12-b324.jar
          # add to local repository
          mvn deploy:deploy-file \
            -Durl=file:///Broad/dev/maven-repo/ \
            -DgroupId=org.genepattern -DartifactId=gp-full -Dpackaging=jar \
-           -Dversion=3.9.11-pre.12-b206 \
-           -Dfile=build/gp-full-3.9.11-pre.12-b206.jar 
+           -Dversion=3.9.11-pre.12-b324 \
+           -Dfile=build/gp-full-3.9.11-pre.12-b324.jar 
     -->
     <dependency>
       <groupId>org.genepattern</groupId>
       <artifactId>gp-full</artifactId>
-      <version>3.9.11-pre.12-b320</version>
+      <version>3.9.11-pre.12-b324</version>
       <!-- scope>runtime,test</scope -->
     </dependency>
 
