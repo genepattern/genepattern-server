@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.log4j.Logger; 
 import org.genepattern.server.DataManager;
 import org.genepattern.server.FileUtil;
@@ -44,8 +45,18 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
-         
-        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
+        
+        String thePath = URIUtil.encodePath(bucket+ "/"+bucketRoot+file.getAbsolutePath());
+        // GP- there are multiple encodings going on and usernames with '@' in them are not being done properly
+        // so we do them explicitly here.  S3 seems to handle these differently if they are in a path (escaped to %40)
+        // than in a key (not)
+        String userId = userContext.getUserId();
+        if (userId.contains("@")){
+            String altId = userId.replace("@", "%40");
+            thePath = thePath.replace(userId, altId);
+        }
+        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath};
+       // String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
         BufferedReader stdInput = null;
         Process proc = Runtime.getRuntime().exec(execArgs);
         try {
@@ -271,7 +282,15 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
          
         File dummyFile = File.createTempFile(placeholderPrefix, "");
         
-        String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", dummyFile.getAbsolutePath(),"s3://"+bucket+ "/"+bucketRoot+subdir.getAbsolutePath()+"/"+dummyFile.getName()};
+        String thePath = subdir.getAbsolutePath();
+        String userId = userContext.getUserId();
+        if (userId.contains("@")){
+            String altId = userId.replace("@", "%40");
+            thePath = thePath.replace(userId, altId);
+        }
+        
+        
+        String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", dummyFile.getAbsolutePath(),"s3://"+bucket+ "/"+bucketRoot+thePath+"/"+dummyFile.getName()};
         
         boolean success = false;
         Process proc = Runtime.getRuntime().exec(execArgs);
