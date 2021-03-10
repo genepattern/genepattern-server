@@ -10,13 +10,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.util.URIUtil;
+
 import org.apache.log4j.Logger; 
 import org.genepattern.server.DataManager;
 import org.genepattern.server.FileUtil;
@@ -27,10 +26,7 @@ import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.util.LSID;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
 
 public class AWSS3ExternalFileManager extends ExternalFileManager {
     private static Logger log = Logger.getLogger(AWSS3ExternalFileManager.class);
@@ -46,7 +42,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
         
-        String thePath = URIUtil.encodePath(bucket+ "/"+bucketRoot+file.getAbsolutePath());
+        String thePath = bucket+ "/"+bucketRoot+file.getAbsolutePath();
         // GP- there are multiple encodings going on and usernames with '@' in them are not being done properly
         // so we do them explicitly here.  S3 seems to handle these differently if they are in a path (escaped to %40)
         // than in a key (not)
@@ -257,7 +253,6 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     protected void createLocalSubdirectory(File subdir){
         String[] execArgs = new String[] {"mkdir", "-p", subdir.getAbsolutePath()};
         
-        boolean success = false;
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(execArgs);
