@@ -3545,7 +3545,7 @@ jQuery(document).ready(function() {
         buttons: {
             "OK": function() {
             	$('#forceLowerCategoryWarning').hide();
-                var category = $("#newcategoryname").val().toLowerCase;
+                var category = $("#newcategoryname").val().toLowerCase();
                 var newcategory = $("<option>" +category + "</option>");
 
                 var duplicate = false;
