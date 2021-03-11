@@ -281,12 +281,12 @@ public class AwsS3Cmd {
         String s3FilePath = localFile.getPath();
         String driveFilePath = localFile.getPath();
         
-        if (userId != null) {
-            if (userId.contains("@")){
-                altId = userId.replace("@", "%40");
-                s3FilePath.replace(userId, altId);
-            }
-        }
+//        if (userId != null) {
+//            if (userId.contains("@")){
+//                altId = userId.replace("@", "%40");
+//                s3FilePath.replace(userId, altId);
+//            }
+//        }
         
         args.add("s3");
         args.add("sync");

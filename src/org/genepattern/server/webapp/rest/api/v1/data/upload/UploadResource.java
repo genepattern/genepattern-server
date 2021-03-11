@@ -705,7 +705,9 @@ public class UploadResource {
         Process proc = null;
         try {
             String path = URIUtil.encodePath(rawPath);
-            //String path = rawPath;
+            GpContext userContext = Util.getUserContext(request);         
+            path = s3AdjustPath(path, userContext);
+            
 
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
@@ -717,7 +719,8 @@ public class UploadResource {
             //     upload.aws.s3.bucket.root: tedslaptop
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
-            GpContext userContext = Util.getUserContext(request);            
+            
+            
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
@@ -773,6 +776,22 @@ public class UploadResource {
 
     }
 
+    private String s3AdjustPath(String path, GpContext userContext) {
+        String userId=userContext.getUserId();
+        // for users with '@' in their name it will have been escaped in the path but we have
+        // to undo that to match how the local directories are named so that that matches on S3
+        if (userId.contains("@")){
+            String altId = userId.replace( "@", "%40");
+            path = path.replace(altId, userId);
+        }
+        String p2 = "";
+        try {
+            p2 = URIUtil.encodePath(path);
+        } catch(Exception e){}
+        System.out.println("path="+path+"\t\tp2="+p2);
+        return path;
+    }
+
     private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
         String aws_s3_root = gpConfig.getGPProperty(userContext, "aws-s3-root");
         // pull the bucket name out of something like "s3://moduleiotest/gp-dev-ami"
@@ -800,8 +819,11 @@ public class UploadResource {
         File tmpInput = null;
         Process proc = null;
         try {
-            String path = URIUtil.encodePath(rawPath);
+            String path = rawPath;
+            // Get the user context
+            GpContext userContext = Util.getUserContext(request);            
             
+            path = s3AdjustPath(path, userContext);
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
             String outfilename = tmp.getName();
@@ -811,8 +833,6 @@ public class UploadResource {
             //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
             //     upload.aws.s3.bucket.root: tedslaptop
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            // Get the user context
-            GpContext userContext = Util.getUserContext(request);            
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
@@ -893,6 +913,9 @@ public class UploadResource {
         Process proc = null;
         try {
             String path = URIUtil.encodePath(rawPath);
+         // Get the user context
+            GpContext userContext = Util.getUserContext(request);            
+            path = s3AdjustPath(path, userContext);
             
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
@@ -904,7 +927,7 @@ public class UploadResource {
             //     upload.aws.s3.bucket.root: tedslaptop
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             // Get the user context
-            GpContext userContext = Util.getUserContext(request);            
+                     
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
@@ -913,7 +936,8 @@ public class UploadResource {
 
             GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
-
+            // undo escaping of '@' in usernames that is baked in here
+            fullPath = s3AdjustPath(fullPath, userContext);
             // need to pass this into the python behind the shell script.  Shell script just sets the env for the python
             JSONObject json = new JSONObject();
             json.put("bucket", bucket);
@@ -1002,13 +1026,12 @@ public class UploadResource {
     {
         Process proc = null;
         try {
-            String path = URIUtil.encodePath(rawPath);
-            // String path = rawPath;
-
+            String path = rawPath;
+            GpContext userContext = Util.getUserContext(request);         
+            path = s3AdjustPath(path, userContext);
+            
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            // Get the user context
-            GpContext userContext = Util.getUserContext(request);
-
+            
             // Get the file we will be uploading to
             if (log.isDebugEnabled()) {
                 log.debug("path="+path);
@@ -1021,6 +1044,7 @@ public class UploadResource {
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
             String fileName = bucketRoot + file.getServerFile().getAbsolutePath();
+            fileName = s3AdjustPath(fileName, userContext);
             System.out.println("Filename is " + fileName);
 
             JSONObject multipartCompletion = new JSONObject();
