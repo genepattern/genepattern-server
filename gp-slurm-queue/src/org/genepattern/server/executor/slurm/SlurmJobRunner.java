@@ -3,6 +3,7 @@
  *******************************************************************************/
 package org.genepattern.server.executor.slurm;
 
+
 import java.io.*;
 import java.util.*;
 
@@ -27,6 +28,13 @@ import org.genepattern.server.executor.CommandExecutorException;
 public class SlurmJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(SlurmJobRunner.class);
 
+    
+
+    
+    public SlurmJobRunner(){
+        super();
+        System.out.println("Initializing SlurmJobRunner");
+    }
     /**
      * If configured by the server admin, write the command line into a log file
      * in the working directory for the job.
@@ -163,6 +171,7 @@ public class SlurmJobRunner implements JobRunner {
         throw new CommandExecutorException("Cannot extract Slurm ID");
     }
 
+    
     /**
      * Build the shell script necessary to initiate the Slurm job
      *
@@ -175,21 +184,24 @@ public class SlurmJobRunner implements JobRunner {
      * @return - Return the path to the submission script
      * @throws CommandExecutorException
      */
-    String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String queue, String account, String maxTime, String remoteHomeDirectory) throws CommandExecutorException {
+    String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String partition, String account, String maxTime, String remoteHomeDirectory) throws CommandExecutorException {
         File workingDirectory = new File(workDirPath);
         File jobScript = new File(workingDirectory, "launchJob.sh");
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
-                            "#SBATCH -J " + gpJobId + "\n" +
+                            "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
                             "#SBATCH -D " + remoteHomeDirectory + "/jobResults/" + gpJobId + "\n" +
-                            "#SBATCH -o stdout.txt\n" +
-                            "#SBATCH -e stderr.txt\n" +
+                            "#SBATCH --output=stdout.txt\n" +
+                            "#SBATCH --error=stderr.txt\n" +
+                            "#SBATCH --nodes=1\n" +     // no parallel jobs here
+                            "#SBATCH --ntasks-per-node=1\n" +
 
-                            "#SBATCH -t " + maxTime + "\n" +
-                            "#SBATCH -A " + account + "\n" +
+                            "#SBATCH --time=" + maxTime + "\n" +
+                            "#SBATCH --account=" + account + "\n" +
                             "#\n" +
-                            "#SBATCH -p " + queue + " -n 1\n" +
+                            "#SBATCH -partition " + partition + " -n 1\n" +
                             " \n" +
+                            "module load singularitypro/3.5\n\n" +
                             "ibrun " + commandLine + "\n";
 
         // Test working directory before writing
@@ -244,13 +256,14 @@ public class SlurmJobRunner implements JobRunner {
         GpContext context = drmJobSubmission.getJobContext();
 
         // Get necessary configuration variables
-        String queue = drmJobSubmission.getQueue("development");
-        String account =  config.getGPProperty(context, "tacc.account", "TACC-GenePattern");
+        String queue = drmJobSubmission.getQueue("shared");
+        String account =  config.getGPProperty(context, "slurm.account", "WHO_PAYS_FOR_THIS");
         String maxTime = drmJobSubmission.getWalltime("00:01:00").toString();
-        String replacePath =  config.getGPProperty(context, "tacc.rodeo.path", "/home/rodeo/GenePatternServer");
-        String replaceWithPath =  config.getGPProperty(context, "tacc.stampede.path", "/home1/03271/thorin");
+        String replacePath =  config.getGPProperty(context, "path.to.replace", null);
+        String replaceWithPath =  config.getGPProperty(context, "path.replaced.with", null);
 
-        commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
+        if ((replacePath != null )&&(replaceWithPath != null ))
+            commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
 
         // Build the shell script for submitting the slurm job
         String scriptPath = buildSubmissionScript(gpJobId, workDir, commandLine, queue, account, maxTime, replaceWithPath);
@@ -258,11 +271,15 @@ public class SlurmJobRunner implements JobRunner {
         // Substitute file path prefixes with the correct prefixes for the execution server
         scriptPath = scriptPath.replaceAll(replacePath, replaceWithPath);
 
+        // add prefix to ssh to a submit node if needed
+        String remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+        
+        
         // Run the command line through the Slurm shell script
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
         try {
-            output = commandRunner.runCmd(Arrays.asList("sbatch", scriptPath));
+            output = commandRunner.runCmd(Arrays.asList(remotePrefix, "sbatch", scriptPath));
         }
         catch (Throwable e) {
             log.error("Error submitting slurm job: " + e.getMessage());
