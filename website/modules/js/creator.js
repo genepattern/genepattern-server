@@ -564,37 +564,41 @@ function reorderParametersToMatchParamGroupsJson(collapse){
 	 
 	var lastParam = null;
 	// now put them back in order
+	var initialized = false;
 	for (var i=0; i < jsonArr.length; i++){
 		var group = jsonArr[i];
 		var groupParams = group["parameters"];
-		if (i == 0) {
-			lastParam = pdivDict[groupParams[0]]; // first param in first group
-			var nameControl = $(lastParam).find("input[name='p_name']");
-			$(nameControl).parent().find(".pgroupLabel").remove();
-			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
-
-		} else {
-			var firstInGroup = pdivDict[groupParams[0]];
-			$(firstInGroup).insertAfter($(lastParam));
-			lastParam=pDiv;
-			var nameControl = $(firstInGroup).find("input[name='p_name']");
-			$(nameControl).parent().find(".pgroupLabel").remove();
-			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
-
-		}
 		
-		for (var j=1; j < groupParams.length; j++){
-			var pName = groupParams[j];
+		if ((groupParams != null) &&  (groupParams.length > 0)){
+			if (!initialized) {
+				lastParam = pdivDict[groupParams[0]]; // first param in first group
+				var nameControl = $(lastParam).find("input[name='p_name']");
+				$(nameControl).parent().find(".pgroupLabel").remove();
+				$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+				initialized = true;
+			} else {
+				var firstInGroup = pdivDict[groupParams[0]];
+				$(firstInGroup).insertAfter($(lastParam));
+				lastParam=pDiv;
+				var nameControl = $(firstInGroup).find("input[name='p_name']");
+				$(nameControl).parent().find(".pgroupLabel").remove();
+				$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+	
+			}
 			
-			var pDiv = pdivDict[pName];
-			var prevDiv = pdivDict[groupParams[j-1]];
-			$(pDiv).insertAfter($(prevDiv));
-			lastParam = pDiv;
-			
-			var nameControl = $(pDiv).find("input[name='p_name']");
-			$(nameControl).parent().find(".pgroupLabel").remove();
-			$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
-			
+			for (var j=1; j < groupParams.length; j++){
+				var pName = groupParams[j];
+				
+				var pDiv = pdivDict[pName];
+				var prevDiv = pdivDict[groupParams[j-1]];
+				$(pDiv).insertAfter($(prevDiv));
+				lastParam = pDiv;
+				
+				var nameControl = $(pDiv).find("input[name='p_name']");
+				$(nameControl).parent().find(".pgroupLabel").remove();
+				$(nameControl).parent().append("<span class='pgroupLabel'> <i>Param Group: "+group["name"]+"</i></span>");
+				
+			}
 		}
 	}
 	$('#parameters').sortable();
