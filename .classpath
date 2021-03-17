@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="slurm-src"/>
 	<classpathentry kind="src" path="website/WEB-INF/src"/>
 	<classpathentry kind="src" path="gp-jobrunner-awsbatch/src/main/java"/>
 	<classpathentry kind="src" path="test/src"/>
