@@ -239,8 +239,9 @@ public class UserUploadManager {
             }
         }
         catch (Throwable t) {
+            log.error(t);
             mgr.rollbackTransaction();
-            throw new DbException("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
+            throw new DbException("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t, t);
         }
         finally {
             if (!inTransaction) {
