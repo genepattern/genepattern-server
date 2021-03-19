@@ -706,7 +706,7 @@ public class UploadResource {
         try {
             String path = URIUtil.encodePath(rawPath);
             GpContext userContext = Util.getUserContext(request);         
-            path = s3AdjustPath(path, userContext);
+            path = s3AdjustPath(path, userContext, true);
             
 
             // we want a temp file name but the file itself will block
@@ -776,7 +776,7 @@ public class UploadResource {
 
     }
 
-    private String s3AdjustPath(String path, GpContext userContext) {
+    private String s3AdjustPath(String path, GpContext userContext, boolean encodePath) {
         String userId=userContext.getUserId();
         // for users with '@' in their name it will have been escaped in the path but we have
         // to undo that to match how the local directories are named so that that matches on S3
@@ -784,12 +784,14 @@ public class UploadResource {
             String altId = userId.replace( "@", "%40");
             path = path.replace(altId, userId);
         }
-        String p2 = "";
-        try {
-            p2 = URIUtil.encodePath(path);
-        } catch(Exception e){}
-        System.out.println("path="+path+"\t\tp2="+p2);
-        return path;
+        String p2 = path;
+        if (encodePath){
+            try {
+                p2 = URIUtil.encodePath(path);
+            } catch(Exception e){}
+            System.out.println("path="+path+"\t\tp2="+p2);
+        }
+        return p2;
     }
 
     private String getBucketName(final GpConfig gpConfig, GpContext userContext) {
@@ -823,7 +825,7 @@ public class UploadResource {
             // Get the user context
             GpContext userContext = Util.getUserContext(request);            
             
-            path = s3AdjustPath(path, userContext);
+            path = s3AdjustPath(path, userContext, true);
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
             String outfilename = tmp.getName();
@@ -912,10 +914,10 @@ public class UploadResource {
         File tmpInput = null;
         Process proc = null;
         try {
-            String path = URIUtil.encodePath(rawPath);
+            String path = rawPath; //URIUtil.encodePath(rawPath);
          // Get the user context
             GpContext userContext = Util.getUserContext(request);            
-            path = s3AdjustPath(path, userContext);
+            path = s3AdjustPath(path, userContext, true);
             
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
@@ -937,7 +939,7 @@ public class UploadResource {
             GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
             // undo escaping of '@' in usernames that is baked in here
-            fullPath = s3AdjustPath(fullPath, userContext);
+            fullPath = s3AdjustPath(fullPath, userContext,false);
             // need to pass this into the python behind the shell script.  Shell script just sets the env for the python
             JSONObject json = new JSONObject();
             json.put("bucket", bucket);
@@ -1028,7 +1030,7 @@ public class UploadResource {
         try {
             String path = rawPath;
             GpContext userContext = Util.getUserContext(request);         
-            path = s3AdjustPath(path, userContext);
+            path = s3AdjustPath(path, userContext, true);
             
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
             
@@ -1044,7 +1046,7 @@ public class UploadResource {
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
             String fileName = bucketRoot + file.getServerFile().getAbsolutePath();
-            fileName = s3AdjustPath(fileName, userContext);
+            fileName = s3AdjustPath(fileName, userContext, false);
             System.out.println("Filename is " + fileName);
 
             JSONObject multipartCompletion = new JSONObject();
@@ -1073,7 +1075,9 @@ public class UploadResource {
             execBuff.append(tmp.getAbsolutePath());
 
             log.debug("Multipart S3 Upload completed -- " + execBuff.toString());
-
+            // XXX
+            System.out.println(execBuff.toString());
+            
             proc = Runtime.getRuntime().exec(execBuff.toString());
             // give it some time but not too much
             try {

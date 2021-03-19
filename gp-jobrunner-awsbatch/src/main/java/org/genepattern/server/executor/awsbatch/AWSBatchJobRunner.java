@@ -630,6 +630,9 @@ public class AWSBatchJobRunner implements JobRunner {
         return aws_s3_root.substring(endIdx+1);
     }
     
+    
+   
+    
     /**
      * When we want to leave the files on S3 instead of copying them to local, we still need to fake out
      * GenePattern into seeing the files.  So first attempt we will create 0-length files 
@@ -700,7 +703,7 @@ public class AWSBatchJobRunner implements JobRunner {
            JSONArray outFilesJSON = new JSONArray();
            while ((s = stdInput.readLine()) != null) {
                System.out.println(s);
-               String[] lineParts = s.split("\\s+");
+               String[] lineParts = s.split("\\s+",4); // only grab the first 4 bits, any other spaces are part of the filename
                // strip out the bucketroot which is not wanted for the local file
                try {
                    String outFilePath = lineParts[3].substring(bucketRoot.length());
