@@ -289,21 +289,21 @@ public class UploadResource {
                 // JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
                 // System.out.println("returning after quota");
                 // return Response.ok().entity(toReturn.toString()).build();
-                System.out.println("IGNORING -- File chunk already exists: " + token + " path: " + path + " index: " + index);
+                // System.out.println("IGNORING -- File chunk already exists: " + token + " path: " + path + " index: " + index);
             }
 
             // Write the file
             InputStream is = request.getInputStream();
             appendPartition(is, toWrite);
 
-            System.out.println("======= finished  " + toWrite.getTotalSpace());
+           
             
            
             checkDiskQuota(gpConfig, userContext, toWrite.length());
 
             // Return the status object
             JSONObject toReturn =  getStatusObject(userContext, token, path, file, uploadDir);
-            System.out.println("returning after quota");
+            
             return Response.ok().entity(toReturn.toString()).build();
            
         }
@@ -378,10 +378,10 @@ public class UploadResource {
                 log.debug("parts="+parts);
             }
             
-            System.out.println("===================== ASSEMBLE MULTIPART ");
-            System.out.println("token="+token);
-            System.out.println("path="+path);
-            System.out.println("parts="+parts);
+            log.debug("===================== ASSEMBLE MULTIPART ");
+            log.debug("token="+token);
+            log.debug("path="+path);
+            log.debug("parts="+parts);
       
             
             GpFilePath file = getUploadFile(gpConfig, userContext, path);
@@ -413,7 +413,7 @@ public class UploadResource {
             for (File myfile : fileList) {
                 if(myfile != null)
                 {
-                    System.out.println("assemble 1: "+ myfile.getAbsolutePath()+ " -- " + myfile.length());
+                    log.debug("assemble 1: "+ myfile.getAbsolutePath()+ " -- " + myfile.length());
                     totalSize += myfile.length();
                 }
             }
@@ -1047,8 +1047,7 @@ public class UploadResource {
             String bucketRoot = getBucketRoot(gpConfig, userContext);
             String fileName = bucketRoot + file.getServerFile().getAbsolutePath();
             fileName = s3AdjustPath(fileName, userContext, false);
-            System.out.println("Filename is " + fileName);
-
+      
             JSONObject multipartCompletion = new JSONObject();
             multipartCompletion.put("UploadId", uploadId);
 
@@ -1075,16 +1074,12 @@ public class UploadResource {
             execBuff.append(tmp.getAbsolutePath());
 
             log.debug("Multipart S3 Upload completed -- " + execBuff.toString());
-            // XXX
-            System.out.println(execBuff.toString());
             
             proc = Runtime.getRuntime().exec(execBuff.toString());
             // give it some time but not too much
             try {
                 debugProcessStdOutAndErr(proc, "UploadResource >> registerExternalUpload");
                 proc.waitFor();
-            
-                
             } catch (InterruptedException ie) {
                log.error(ie);
             } finally {
