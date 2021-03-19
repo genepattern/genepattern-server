@@ -421,7 +421,7 @@ public class UploadResource {
 
             // Write the file
             for (File i : fileList) {
-                System.out.println("assemble 2 : "+ i.getAbsolutePath()+ " -- " + i.length());
+                log.debug("assemble 2 : "+ i.getAbsolutePath()+ " -- " + i.length());
                 FileInputStream fileIS = new FileInputStream(i);
                 appendPartition(fileIS, file.getServerFile());
             }
@@ -758,7 +758,7 @@ public class UploadResource {
             proc.waitFor();
 
             String resp = readOutputFileToString(filename);
-            System.out.println(resp);
+            log.debug(resp);
             return Response.ok().entity(resp).build();
 
         } catch (Exception e){
@@ -789,7 +789,7 @@ public class UploadResource {
             try {
                 p2 = URIUtil.encodePath(path);
             } catch(Exception e){}
-            System.out.println("path="+path+"\t\tp2="+p2);
+            log.debug("path="+path+"\t\tp2="+p2);
         }
         return p2;
     }
