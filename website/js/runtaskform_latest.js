@@ -831,7 +831,7 @@ function loadModuleInfo(module) {
     }
     
     $(".properties-commandline").text(module["commandLine"]);
-    $(".properties-tasktype").text(module["taskType"]);
+    $(".properties-tasktype").text(module["taskType"].toLowerCase());
     $(".properties-categories").text(module["categories"]);
     $(".properties-cpu").text(module["cpuType"]);
     $(".properties-os").text(module["os"]);
