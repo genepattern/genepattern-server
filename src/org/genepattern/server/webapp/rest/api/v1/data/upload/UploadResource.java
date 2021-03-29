@@ -698,36 +698,49 @@ public class UploadResource {
             @Context HttpServletRequest request, 
             @QueryParam("path") String rawPath, 
             @QueryParam("fileType") String mimeType,
-            @QueryParam("numParts") int numParts
+            @QueryParam("numParts") int numParts,
+            @QueryParam("index") Integer index,
+            @QueryParam("paramName") String paramName
     )
     {
         File tmp = null;
         Process proc = null;
+        String path = null;
+        GpFilePath gpFile = null;
+        GpContext userContext = Util.getUserContext(request);     
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        
         try {
-            String path = URIUtil.encodePath(rawPath);
-            GpContext userContext = Util.getUserContext(request);         
-            path = s3AdjustPath(path, userContext, true);
+            //
+            // handle files on the job page.  For these the path is just the filename
+            // unlike uploads where it is a real path
+            //
+            if ((index != null) && (paramName != null)){
+                JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
+                final String fileName=path;
+                log.debug("fileName="+fileName);
+                gpFile=fileUtil.initUploadFileForInputParam(index, paramName, fileName);
+                
+            } else {
             
+                path = URIUtil.encodePath(rawPath);
+                path = s3AdjustPath(path, userContext, true);
+                gpFile = getUploadFile(gpConfig, userContext, path);  
+            }
 
+
+            //
+            // #####################  setup s3 api call #########################
             // we want a temp file name but the file itself will block
             tmp = File.createTempFile("lambda", ".json");
             String filename = tmp.getName();
             tmp.delete();
-
-            // need to get the bucket from the config file entries
-            //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
-            //     upload.aws.s3.bucket.root: tedslaptop
-            final GpConfig gpConfig=ServerConfigurationFactory.instance();
-            // Get the user context
-            
             
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
-
             String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
             String signingScript = gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
 
-            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
 
             JSONObject json = new JSONObject();
@@ -814,34 +827,49 @@ public class UploadResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response startS3MultipartUpload(
             @Context HttpServletRequest request, 
-            @QueryParam("path") String rawPath
+            @QueryParam("path") String rawPath,
+            @QueryParam("index") Integer index,
+            @QueryParam("paramName") String paramName
     )
     {
         File tmp = null;
         File tmpInput = null;
         Process proc = null;
         try {
-            String path = rawPath;
             // Get the user context
             GpContext userContext = Util.getUserContext(request);            
-            
-            path = s3AdjustPath(path, userContext, true);
-            // we want a temp file name but the file itself will block
-            tmp = File.createTempFile("lambda", ".json");
-            String outfilename = tmp.getName();
-            tmp.delete();
-
-            // need to get the bucket from the config file entries
-            //     upload.aws.s3.bucket: gp-temp-test-bucket/tedslaptop
-            //     upload.aws.s3.bucket.root: tedslaptop
+            String path  = s3AdjustPath(rawPath, userContext, true);
             final GpConfig gpConfig=ServerConfigurationFactory.instance();
+            GpFilePath gpFile = null;  
+            //
+            // handle files on the job page.  For these the path is just the filename
+            // unlike uploads where it is a real path
+            //
+            if ((index != null) && (paramName != null)){
+                JobInputFileUtil fileUtil = new JobInputFileUtil(gpConfig, userContext);
+                final String fileName=path;
+                log.debug("fileName="+fileName);
+                gpFile=fileUtil.initUploadFileForInputParam(index, paramName, fileName);
+                
+            } else {
+            
+                path = URIUtil.encodePath(rawPath);
+                path = s3AdjustPath(path, userContext, true);
+                gpFile = getUploadFile(gpConfig, userContext, path);  
+            }
+            
             String bucket = getBucketName(gpConfig, userContext);
             String bucketRoot = getBucketRoot(gpConfig, userContext);
 
             String awsScriptDir = gpConfig.getGPProperty(userContext, "aws-batch-script-dir");
             String signingScript = "startS3MultipartUpload.sh" ;  // gpConfig.getGPProperty(userContext, "upload.aws.s3.presigning.script");
 
-            GpFilePath gpFile = getUploadFile(gpConfig, userContext, path);  
+            // we want a temp file name but the file itself will block
+            tmp = File.createTempFile("lambda", ".json");
+            String outfilename = tmp.getName();
+            tmp.delete();
+
+            
             String fullPath = bucketRoot + gpFile.getServerFile().getAbsolutePath();
 
             // need to pass this into the python behind the shell script.  Shell script just sets the env for the python
@@ -881,8 +909,12 @@ public class UploadResource {
             }
 
             String resp = readOutputFileToString(outfilename);
+            JSONObject respJson  =new JSONObject(resp);
+            respJson.put("gpUrl", gpFile.getUrl());
+            
+            
             log.debug(resp);
-            return Response.ok().entity(resp).build();
+            return Response.ok().entity(respJson.toString()).build();
 
         } catch (Exception e){
             e.printStackTrace();

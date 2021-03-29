@@ -3698,6 +3698,181 @@ function uploadAllFiles() {
     }
 }
 
+function uploadFileToExternalFileManager(paramName, file, index, fileOrder, groupId){
+	var partSize = 100 * 1024 * 1024; // 100 MB
+	var numParts = Math.ceil(file.size / partSize) || 1;
+    var totalBytes = file.size;
+		
+	var path =  file.name.trim();
+	var url = encodeURI("/gp/rest/v1/upload/startS3MultipartUpload/?path="+path+"&paramName="+ paramName+"&index="+index);
+	
+	$.ajax({
+        type: "GET", 
+        url: url,
+        success: function(multipartPostData) {
+        	s3uploadStart = window.performance.now();
+        	
+        	multipartPostData.complete = [];
+        	multipartPostData.numParts = numParts;
+        	
+        	var partNums =  range1(numParts); // create an array of the part numbers
+        	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
+        	var uploadPath = multipartPostData.gpUrl;
+        	
+        	aCallback = function(){
+        		if (partNums.length > 0){
+        			var nextPartNum = partNums.pop();
+        			RTF_s3MultipartUploadOnePart(file, uploadPath, numParts, nextPartNum, partSize, multipartPostData, r, aCallback, runningProgress, fileOrder, groupId, paramName);
+        		}    		
+        	}
+        	
+        	// TODO limit how many are going at once to some reasonable number
+        	var maxSimultaneousPartUploads = 5;
+        	console.log(JSON.stringify(multipartPostData));
+        	var simulUploadCount = Math.min(maxSimultaneousPartUploads, numParts);
+        
+        	for (var ii =0; ii < simulUploadCount; ii++){
+        		var nextPartNum = partNums.pop();
+        		RTF_s3MultipartUploadOnePart(file, uploadPath, numParts, nextPartNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName);
+        	}
+        },
+        error: function(data) {
+        	fileUploadError(r, file, data);
+        	
+            if (typeof data === 'object') {
+                data = data.responseText;
+            }
+            $(".search-widget:visible").searchslider("hide");
+            showErrorMessage(data);
+        }
+    });
+}
+
+
+
+function RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName){
+	// var presignedUrl = multipartPostData.presignedUrls[partNum-1]
+	var url = encodeURI("/gp/rest/v1/upload/getS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
+	// first get a presigned URL for this one part
+	$.ajax({
+        type: "GET", 
+        url: url,
+        success: function(data) {
+        	// next go and PUT that part to S3
+        	_RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, data.presignedUrl, fileOrder, groupId, paramName);
+        	
+        },
+        error: function(data) {
+        	$("#cancelUpload").trigger("click");
+	        $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
+	        $("#fileUploadDiv").show();
+	        console.log("Error uploading the file " + file.name + " :" + event.statusText);
+        }
+    });
+	
+	
+}
+
+
+
+function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, presignedUrl, fileOrder, groupId, paramName){
+
+	var xhr = new XMLHttpRequest();
+    xhr.open('PUT', presignedUrl, true);
+    xhr.gpPartNumber = partNum;// partNumber should start at 1
+    var runningPartTotal = 0;  // define here so they are kept in the context for the callback
+    var prevPartTotal = 0;
+    
+    xhr.onload = (e) => {
+      if (e.target.status === 200) {
+    	  // save the etag for later multipart completion call 
+    	  var etag = e.target.getResponseHeader("ETag");
+    	  var whichPart = e.target.gpPartNumber; // part numbers start at 1
+          multipartPostData.complete[whichPart-1]={"PartNumber": whichPart, "ETag": etag};
+          // check if all parts done and complete if so finish.  If things complete out of order we
+          // can have a full length array with null placeholders so need to check for that
+     	  if (countNonEmpty(multipartPostData.complete) == multipartPostData.numParts){
+     		  
+     		  var end = window.performance.now();
+              var duration = ((end - s3uploadStart)/1000)/60; // minutes
+              var sizeInMB = file.size / (1024*1024);
+              console.log("Upload took " + duration + " minutes for "  + sizeInMB + " numParts: "+ numParts + " part size (mb)" + (partSize/(1024*1024)));
+
+              var registerUrl = encodeURI("/gp/rest/v1/upload/registerExternalUpload/?path=" +path + "&length="+file.size+"&uploadId="+ multipartPostData.UploadId);
+    		  $.ajax({
+         		 type: "POST",
+         		 data:  JSON.stringify(multipartPostData.complete),
+         		 contentType: "text/plain",
+         		 url: registerUrl,
+         		 success: function(data) {
+                    var uploadedUrl = multipartPostData.gpUrl;
+                    var groupFileInfo = getFilesForGroup(groupId, paramName);
+                    groupFileInfo[fileOrder].name = uploadedUrl;
+                    delete groupFileInfo[fileOrder].object;
+                    updateFilesForGroup(groupId, paramName, groupFileInfo);
+
+                    if (allFilesUploaded()) {
+                        $("#cancelUpload").hide();
+                        submitTask();
+                    }
+                    
+                      
+          		 },
+         		 failure: function(err){
+         	    	 $("#cancelUpload").trigger("click");
+         	         $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
+         	         $("#fileUploadDiv").show();
+         	         console.log("Error uploading the file " + file.name + " :" + event.statusText);
+         		 },
+         		 error: function(err){
+         	    	 $("#cancelUpload").trigger("click");
+         	         $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
+         	         $("#fileUploadDiv").show();
+         	         console.log("Error uploading the file " + file.name + " :" + event.statusText);
+         		 }
+         	 });
+    		 // if there are more waiting S3 uploads kick off the next one now 
+    		  
+    		  
+    	  } else {
+    		  aCallback();
+    	  }
+      }
+    };
+    xhr.upload.addEventListener("progress", function (evt) {
+    	 if (event.lengthComputable) {
+
+             var percentComplete = Math.round(event.loaded * 100 / event.total);
+             console.log("percent complete: " + percentComplete);
+
+             $("#file_" + fileId).progressbar({
+                 value: percentComplete
+             });
+
+             $("#file_" + fileId + "Percentage").text(percentComplete.toString() + "%");
+         }
+         else {
+             $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
+         }
+    }, false);
+    xhr.onerror = function(e) {
+    	 $("#cancelUpload").trigger("click");
+         $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
+         $("#fileUploadDiv").show();
+         console.log("Error uploading the file " + file.name + " :" + event.statusText);
+    }
+    
+    from_byte = (partNum-1) * partSize;  
+    to_byte = (partNum ) * partSize;
+    blob = file.slice(from_byte,  to_byte);
+    xhr.send(blob); 
+    fileUploadRequests.push(xhr);
+}
+
+
+
+
+
 // upload file
 function uploadFile(paramName, file, fileOrder, fileId, groupId) {
     var id = fileId;
@@ -3728,68 +3903,75 @@ function uploadFile(paramName, file, fileOrder, fileId, groupId) {
     formData.append('paramName', paramName);
     formData.append('index', id);
 
-    var progressEvent = function (event) {
-        if (event.lengthComputable) {
-
-            var percentComplete = Math.round(event.loaded * 100 / event.total);
-            console.log("percent complete: " + percentComplete);
-
-            $("#" + fileId).progressbar({
-                value: percentComplete
-            });
-
-            $("#" + fileId + "Percentage").text(percentComplete.toString() + "%");
-        }
-        else {
-            $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
-        }
-    };
-
-    var xhr = null;
-    $.ajax({
-        type: "POST",
-        cache: false,
-        url: destinationUrl,
-        data: formData,
-        processData: false,
-        contentType: false,
-        xhr: function () {
-            xhr = new window.XMLHttpRequest();
-            //Upload progress
-            if (xhr.upload) {
-                xhr.upload.addEventListener("progress", progressEvent, false);
-            }
-
-            return xhr;
-        },
-        success: function (event) {
-            console.log("on load response: " + event);
-
-            var parsedEvent = typeof event === "string" ? $.parseJSON(event) : event;
-
-            var groupFileInfo = getFilesForGroup(groupId, paramName);
-            groupFileInfo[fileOrder].name = parsedEvent.location;
-            delete groupFileInfo[fileOrder].object;
-
-            updateFilesForGroup(groupId, paramName, groupFileInfo);
-
-            if (allFilesUploaded()) {
-                $("#cancelUpload").hide();
-                submitTask();
-            }
-
-        },
-        error: function (event) {
-            $("#cancelUpload").trigger("click");
-            $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
-            $("#fileUploadDiv").show();
-            console.log("Error uploading the file " + file.name + " :" + event.statusText);
-        }
-    });
-
-    //keep track of all the upload requests so that they can be canceled
-    //using the cancel button
-    fileUploadRequests.push(xhr);
+    // JTL test for alt direct S3 method
+    if ((directExternalUploadTriggerSize > 0) && (file.size > directExternalUploadTriggerSize)){
+		// check if its big enough we want to do a direct upload to an external site (S3)
+		// if -1 then always upload directly to the GP server
+	
+		uploadFileToExternalFileManager(paramName, file, id, fileOrder, groupId);
+	
+    } else {
+    
+	    var progressEvent = function (event) {
+	        if (event.lengthComputable) {
+	            var percentComplete = Math.round(event.loaded * 100 / event.total);
+	            console.log("percent complete: " + percentComplete);
+	            $("#" + fileId).progressbar({
+	                value: percentComplete
+	            });
+	            $("#" + fileId + "Percentage").text(percentComplete.toString() + "%");
+	        }
+	        else {
+	            $("#fileUploadDiv").append('<p>Unable to determine progress</p>');
+	        }
+	    };
+	
+	    var xhr = null;
+	    $.ajax({
+	        type: "POST",
+	        cache: false,
+	        url: destinationUrl,
+	        data: formData,
+	        processData: false,
+	        contentType: false,
+	        xhr: function () {
+	            xhr = new window.XMLHttpRequest();
+	            //Upload progress
+	            if (xhr.upload) {
+	                xhr.upload.addEventListener("progress", progressEvent, false);
+	            }
+	
+	            return xhr;
+	        },
+	        success: function (event) {
+	            console.log("on load response: " + event);
+	
+	            var parsedEvent = typeof event === "string" ? $.parseJSON(event) : event;
+	
+	            var groupFileInfo = getFilesForGroup(groupId, paramName);
+	            groupFileInfo[fileOrder].name = parsedEvent.location;
+	            delete groupFileInfo[fileOrder].object;
+	
+	            updateFilesForGroup(groupId, paramName, groupFileInfo);
+	
+	            if (allFilesUploaded()) {
+	                $("#cancelUpload").hide();
+	                submitTask();
+	            }
+	
+	        },
+	        error: function (event) {
+	            $("#cancelUpload").trigger("click");
+	            $("#fileUploadDiv").html("<span style='color:red;'>There was an unexpected file transfer error while submitting your job. Please check your network connection and try to submit again or use the Uploader in the Files tab.</span>");
+	            $("#fileUploadDiv").show();
+	            console.log("Error uploading the file " + file.name + " :" + event.statusText);
+	        }
+	    });
+	
+	    //keep track of all the upload requests so that they can be canceled
+	    //using the cancel button
+	    fileUploadRequests.push(xhr);
+    }
 }
 
 /*

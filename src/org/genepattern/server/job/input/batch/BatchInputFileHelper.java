@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.dm.ExternalFile;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
@@ -260,6 +261,16 @@ public class BatchInputFileHelper {
         return "";
     }
     
+    
+    public static boolean isDirectUploadEnabled(GpConfig jobConfig, final GpContext jobContext){
+        final boolean directDownloadEnabled_obsolete = (jobConfig.getGPProperty(jobContext, "download.aws.s3.downloader.class", null) != null);
+        final boolean directExternalUploadEnabled = (jobConfig.getGPIntegerProperty(jobContext, "direct_external_upload_trigger_size", -1) >= 0);
+        final boolean directDownloadEnabled = (jobConfig.getGPProperty(jobContext, ExternalFileManager.classPropertyKey, null) != null);
+        
+        return (directExternalUploadEnabled || directDownloadEnabled || directDownloadEnabled_obsolete);
+    }
+    
+    
     /**
      * Helper method, based on the value provided from the web upload form
      * or the REST API request,
@@ -284,7 +295,9 @@ public class BatchInputFileHelper {
                 throw new GpServerException("batch input not supported for param="+paramId.getFqName()+", value="+value);
             }
             if (!gpPath.getServerFile().exists()) {
-                throw new GpServerException("batch input file does not exist for param="+paramId.getFqName()+", value="+value);
+                if (!isDirectUploadEnabled(gpConfig, gpContext)){
+                    throw new GpServerException("batch input file does not exist for param="+paramId.getFqName()+", value="+value);
+                }
             }
 
             if (gpPath.isDirectory()) {
