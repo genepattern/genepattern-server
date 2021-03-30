@@ -89,6 +89,8 @@ public class GPConstants {
 
     public static final String TASK_DOC = "taskDoc";
     
+    public static final String SRC_REPO = "src.repo";
+       
     public static final String CREATION_DATE = "creationDate";
     
     public static final String GP_VERSION = "gpVersion";

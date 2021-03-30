@@ -32,6 +32,8 @@ public class ModuleJSON extends JSONObject {
     public static final String LSID = "LSID";
     public static final String TASK_TYPE = "taskType";
     public static final String CATEGORIES = "categories";
+    public static final String SRC_REPO = GPConstants.SRC_REPO;
+    
     //public static final String LANGUAGE = "language";
     //public static final String JVM_LEVEL = "JVMLevel";        
     //public static final String CPU = "cpuType";
@@ -109,6 +111,7 @@ public class ModuleJSON extends JSONObject {
             //this.put(OS, tia.get(GPConstants.OS));
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
+            this.put(SRC_REPO, tia.get(GPConstants.SRC_REPO));
 
             //add remaining task info attributes
             Set keys = tia.keySet();

@@ -265,6 +265,7 @@ function saveModule()
     {
         author = author + ";" + organization;
     }
+    var src_repo = $('input[name="src.repo"]').val();
 
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
@@ -348,7 +349,7 @@ function saveModule()
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": taskType, "version": version,
         "job.docker.image": dockerImage,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile};
+        "filesToDelete": filesToDelete, "fileFormat": fileFormats, "license":licenseFile, "taskDoc":documentationFile, "src.repo":src_repo};
 
     var useEditor = $("input[name='param_groups_editor_ok']:checked").val();
     if (useEditor && ($("#param_groups_editor").val().length > 0)){
@@ -2483,7 +2484,10 @@ function loadModuleInfo(module)
     {
         $('input[name="dockerImage"]').val(module["job.docker.image"]);
     }
-
+    if(module["src.repo"] !== undefined)
+    {
+        $('input[name="src.repo"]').val(module["src.repo"]);
+    }
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
@@ -2618,6 +2622,7 @@ function loadModuleInfo(module)
             && keyName != "LSID" && keyName != "lsidVersions" && keyName != "cpuType"
             && keyName != "privacy" && keyName != "language" && keyName != "version"
             && keyName != "job.docker.image"
+            && keyName != "src.repo"
             && keyName != "supportFiles" && keyName != "categories" && keyName != "taskType"
             && keyName != "quality" && keyName != "license" && keyName != "taskDoc")
         {

@@ -892,8 +892,7 @@ public class ModuleQueryServlet extends HttpServlet {
 	        return;
 	    }
 
-	    final GpConfig gpConfig=ServerConfigurationFactory.instance();
-//      
+	    final GpConfig gpConfig=ServerConfigurationFactory.instance();      
         try
         {
             TaskInfo taskInfo = getTaskInfo(lsid);
@@ -901,14 +900,12 @@ public class ModuleQueryServlet extends HttpServlet {
 
             //check if user is allowed to edit the module
             boolean adminOverrideAllowed = gpConfig.getGPBooleanProperty(taskContext, "allowAdminEditNonLocalModules", false);
-//          
+          
             boolean createModuleAllowed = AuthorizationHelper.createModule(username);
             boolean editable = createModuleAllowed && taskInfo.getUserId().equals(username);
-            // && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
-
+           
             boolean isLocalLsid = LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
             if (!isLocalLsid){
-                
                 editable = LSIDUtil.isEditableForUser(gpConfig, taskContext, lsid, username);
             }
                 
@@ -968,11 +965,8 @@ public class ModuleQueryServlet extends HttpServlet {
                 allFiles = supportFiles.toArray(new File[0]);
             }
             
-            
-
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
             moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
-            
             
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
             if (paramGroupsJson != null){
