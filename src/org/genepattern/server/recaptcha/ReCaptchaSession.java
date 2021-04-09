@@ -52,6 +52,11 @@ public class ReCaptchaSession {
      */
     public static final String PROP_ENABLED="recaptcha.enabled";
 
+    /**
+     * Set recaptcha.required-for-rest to 'true' to enforce recaptcha tokens on REST user registration calls
+     */
+    public static final String REQUIRED_FOR_REST="recaptcha.required-for-rest";
+
     /** 
      * set the 'recaptcha.verify-url' to the REST API endpoint for verifying the user's response. 
      */
@@ -89,12 +94,14 @@ public class ReCaptchaSession {
     }
 
     private final boolean enabled;
+    private final boolean requiredForRest;
     private final URL verifyUrl;
     private final String siteKey;
     private final String secretKey;
     
     protected ReCaptchaSession(final GpConfig gpConfig, final GpContext serverContext) {
         this.enabled=gpConfig.getGPBooleanProperty(serverContext, ReCaptchaSession.PROP_ENABLED, false);
+        this.requiredForRest=gpConfig.getGPBooleanProperty(serverContext, ReCaptchaSession.REQUIRED_FOR_REST, false);
         this.siteKey=gpConfig.getGPProperty(serverContext, ReCaptchaSession.PROP_SITE_KEY, "");
         this.secretKey=gpConfig.getGPProperty(serverContext, PROP_SECRET_KEY, "");
         this.verifyUrl=initVerifyUrl(gpConfig, serverContext);
@@ -121,6 +128,13 @@ public class ReCaptchaSession {
     public boolean isEnabled() {
         return enabled;
     }
+
+    /**
+     * If captcha being enforced for REST registration calls?
+     *
+     * @return true if 'recaptcha.required-for-rest' is true
+     */
+    public boolean isRequiredForRest() { return this.requiredForRest; }
     
     /**
      * Use this in the HTML code your site serves to users.
@@ -133,11 +147,10 @@ public class ReCaptchaSession {
     protected String getSecretKey() {
         return secretKey;
     }
-    
     /**
      * Get the 'G_RECAPTCHA_RESPONSE' from the HttpServletRequest.
      */
-    protected static String initResponseTokenFromRequest(final HttpServletRequest request) {
+    public static String initResponseTokenFromRequest(final HttpServletRequest request) {
         if (request == null) {
             return "";
         }
