@@ -29,7 +29,7 @@ public class SlurmJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(SlurmJobRunner.class);
 
     
-
+    public String remotePrefix ;
     
     public SlurmJobRunner(){
         super();
@@ -186,7 +186,7 @@ public class SlurmJobRunner implements JobRunner {
      */
     String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String partition, String account, String maxTime, String remoteHomeDirectory, String sbatchPrefix) throws CommandExecutorException {
         File workingDirectory = new File(workDirPath);
-        File jobScript = new File(workingDirectory, "launchJob.sh.txt");
+        File jobScript = new File(workingDirectory, "launchJob.sh");
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
                             "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
@@ -199,7 +199,7 @@ public class SlurmJobRunner implements JobRunner {
                             "#SBATCH --time=" + maxTime + "\n" +
                             "#SBATCH --account=" + account + "\n" +
                             "#\n" +
-                            "#SBATCH -partition " + partition + " -n 1\n" +
+                            "#SBATCH --partition " + partition + " \n" +
                             " \n" +
                             "module load singularitypro/3.5\n\n" +
                             sbatchPrefix + " " + commandLine + "\n";
@@ -272,15 +272,28 @@ public class SlurmJobRunner implements JobRunner {
         scriptPath = scriptPath.replaceAll(replacePath, replaceWithPath);
 
         // add prefix to ssh to a submit node if needed
-        String remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+        // XXX need to cache this because we cannot get the config to retrieve it 
+        // later in get status calls
+        if (remotePrefix == null)  remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+   
         String[] remotePrefixArray = remotePrefix.split("\\s+");
-        List<String> commandArray = Arrays.asList(remotePrefixArray);
+        List<String> prefixArray = Arrays.asList(remotePrefixArray);
+        ArrayList<String> commandArray = new ArrayList<String>();
+        commandArray.addAll(prefixArray);
         commandArray.add("sbatch");
         commandArray.add(scriptPath);
         
         // Run the command line through the Slurm shell script
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
+        
+        StringBuffer buff = new StringBuffer();
+        for (String s: commandArray){
+            buff.append(s);
+            buff.append(" ");
+        }
+        log.error("slurm job command: " + buff.toString());
+        
         try {
             output = commandRunner.runCmd(commandArray);
         }
@@ -295,10 +308,17 @@ public class SlurmJobRunner implements JobRunner {
         // Extract the external job ID from the output
         String extJobId = null;
         try {
+            for (String s: output){
+                log.error("slurm job output: " + s);
+            }
             extJobId = extractExternalID(output);
+            log.error("slurm job id: " + extJobId);
         }
         catch (Exception e) {
-            log.error("Error obtaining slurm job ID: " + e.getMessage());
+            
+            
+            log.error("Error obtaining slurm job ID: " + e.getMessage()+ "\n -- " + buff.toString());
+            
             throw new CommandExecutorException(e.getMessage());
         }
 
@@ -402,14 +422,29 @@ public class SlurmJobRunner implements JobRunner {
         // Run the command line to get status
         CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
         List<String> output = null;
+        
+        String[] remotePrefixArray = remotePrefix.split("\\s+");
+        List<String> prefixArray = Arrays.asList(remotePrefixArray);
+        ArrayList<String> commandArray = new ArrayList<String>();
+        commandArray.addAll(prefixArray);
+        commandArray.add("squeue");
+        commandArray.add(        "-l");
+        commandArray.add("-t 'PENDING,RUNNING,SUSPENDED,CANCELLED,COMPLETING,COMPLETED,CONFIGURING,FAILED,TIMEOUT,PREEMPTED,NODE_FAIL'");
+        commandArray.add("-j " + extJobId);
+        
         try {
-            output = commandRunner.runCmd(Arrays.asList("squeue",
-                                                        "-l",
-                                                        "-t 'PENDING,RUNNING,SUSPENDED,CANCELLED,COMPLETING,COMPLETED,CONFIGURING,FAILED,TIMEOUT,PREEMPTED,NODE_FAIL'",
-                                                        "-j " + extJobId));
+            StringBuffer buff = new StringBuffer();
+            for (String s: commandArray){
+                buff.append(s);
+                buff.append(" ");
+            }
+            log.error("slurm getStatus command: " + buff.toString());
+            
+            
+            output = commandRunner.runCmd(commandArray);
         }
         catch (Throwable e) {
-            log.error("Error getting status for slurm job: " + e.getMessage());
+            log.error("Error getting status for slurm job: " + extJobId + "  " +  e.getMessage());
         }
 
         try {

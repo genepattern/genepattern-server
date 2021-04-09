@@ -50,9 +50,21 @@ public class DefaultGpFileTypeFilter implements GpFileTypeFilter {
             log.error("relativePath==null");
             return null;
         }
+        String relPath = relativePath.getPath();
+        
+        
         if (relativePath.isAbsolute()) {
-            log.error("expecting relative path, relativePath="+relativePath);
-            return null;
+            // check if its in the jobDir anyway
+            String jobDirPath = jobDir.getPath();
+            if (relPath.startsWith(jobDirPath)){
+                // make it relative
+                relPath = jobDir.toURI().relativize(relativePath.toURI()).getPath();
+                log.error("expecting relative path, converted relativePath="+relativePath + "  to=" + relPath);
+                
+            } else {
+                log.error("expecting relative path or child of jobDir, relativePath="+relativePath + "  jobDir=" + jobDirPath);
+                return null;
+            }
         }
         
         boolean isHidden = filenameFilter == null ? false :
@@ -61,16 +73,16 @@ public class DefaultGpFileTypeFilter implements GpFileTypeFilter {
         if ("".equals(relativePath.getPath())) {
             return GpFileType.GP_JOB_DIR;
         }
-        if (relativePath.getPath().equals(executionLogFilename)) {
+        if (relPath.equals(executionLogFilename)) {
             return GpFileType.GP_EXECUTION_LOG;
         }
-        if (relativePath.getPath().endsWith(pipelineLogFilenameSuffix)) {
+        if (relPath.endsWith(pipelineLogFilenameSuffix)) {
             return GpFileType.GP_PIPELINE_LOG;
         }
-        if (relativePath.getPath().equals(stdoutFilename)) {
+        if (relPath.equals(stdoutFilename)) {
             return GpFileType.STDOUT;
         }
-        if (relativePath.getPath().equals(stderrFilename)) {
+        if (relPath.equals(stderrFilename)) {
             return GpFileType.STDERR;
         }
         if (attrs!=null && attrs.isDirectory()) {

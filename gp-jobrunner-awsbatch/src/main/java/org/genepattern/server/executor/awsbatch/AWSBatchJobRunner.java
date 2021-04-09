@@ -305,7 +305,15 @@ public class AWSBatchJobRunner implements JobRunner {
             try {
                 final Map<String,String> cmdEnv=initAwsCmdEnv(jobRecord);
                 exec.execute(cl, cmdEnv);
-                final JSONObject jobJSON = new JSONObject(outputStream.toString().trim());
+                String output = outputStream.toString().trim();
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("getStatus call is: " + checkStatusScript + " " + awsId);
+                    log.debug("getStatus response: "+output);
+                }
+                
+                
+                final JSONObject jobJSON = new JSONObject(output);
                 final JSONArray jobsArr=jobJSON.optJSONArray("jobs");
                 if (jobsArr==null || jobsArr.length()==0) {
                     final String message="Error getting status for job: expecting 'jobs' key in JSON response";
@@ -361,6 +369,8 @@ public class AWSBatchJobRunner implements JobRunner {
                 
                 final DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 final DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
+                log.debug("DRM status: "+jobState.toString());
+                log.debug("state map: " + batchToGPStatusMap);
                 b.jobState(jobState);
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
@@ -378,12 +388,15 @@ public class AWSBatchJobRunner implements JobRunner {
                     final File metadataDir=getMetadataDir(jobRecord);
                     try {
                         refreshWorkingDirFromS3(jobRecord, metadataDir, cmdEnv);
+                        log.debug("A");
                     } 
                     catch (Throwable t) {
+                        log.debug("ERROR A");
                         log.error("Error copying output files from s3 for job="+jobRecord.getGpJobNo(), t);
                     }
                     final Integer exitCode=getExitCodeFromMetadataDir(metadataDir);
                     if (exitCode != null) {
+                        log.debug("B");
                         b.exitCode(exitCode);
                         // special-case: custom timeout
                         if (exitCode==142) {
@@ -391,6 +404,7 @@ public class AWSBatchJobRunner implements JobRunner {
                         }
                     }
                     else if (containerExitCode >= 0) {
+                        log.debug("C");
                         // special-case: aws batch timeout
                         //   awsStatusCode: FAILED
                         //   awsStatusReason: Job attempt duration exceeded timeout
@@ -402,6 +416,7 @@ public class AWSBatchJobRunner implements JobRunner {
                         getAdditionalErrorLogs(jobRecord, metadataDir);
                     }
                     else {
+                        log.debug("D");
                         log.error("Error getting exitCode for job="+jobRecord.getGpJobNo());
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
@@ -409,11 +424,14 @@ public class AWSBatchJobRunner implements JobRunner {
                         }
                     }
                 }
+                log.debug("E");
                 return b.build();
             } 
             catch (Throwable t) {
+                log.debug("F");
                 log.error(t);
             }
+            log.debug("G");
             // status unknown
             return null;
         }
@@ -1022,9 +1040,11 @@ public class AWSBatchJobRunner implements JobRunner {
 
         final File script=new File(script_dir, script_name);
         try {
+            
             boolean success=script.createNewFile();
             if (!success) {
                 log.error("createNewFile failed, script="+script);
+                log.error("              failed, exits ="+script.exists());
                 return;
             }
         }

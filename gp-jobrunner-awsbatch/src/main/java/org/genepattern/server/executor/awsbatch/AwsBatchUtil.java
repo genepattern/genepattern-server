@@ -33,10 +33,10 @@ import org.genepattern.server.job.input.ParamId;
 import org.genepattern.server.job.input.ParamListHelper;
 import org.genepattern.server.job.input.ParamValue;
 import org.genepattern.server.rest.ParameterInfoRecord;
-//import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
-//import org.hibernate.CacheMode;
+import org.hibernate.CacheMode;
 
 import com.google.common.base.Strings;
 
@@ -174,18 +174,20 @@ public class AwsBatchUtil {
         JobInfo jobInfo = null;
         final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         
-//        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
-//            try {
-//                mgr.getSession().setCacheMode(CacheMode.REFRESH);
-//                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobRecord.getGpJobNo());
-//            }
-//            catch (Throwable t) {
-//                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo(), t);
-//            }
-//        }
+        if (jobRecord!=null && jobRecord.getGpJobNo() != null) {
+            try {
+                mgr.getSession().setCacheMode(CacheMode.REFRESH);
+               
+                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobRecord.getGpJobNo());
+                //mgr.getSession().refresh(jobInfo);
+            }
+            catch (Throwable t) {
+                log.debug("Error initializing jobInfo from db, jobNumber="+jobRecord.getGpJobNo());
+            }
+        }
         final GpContext jobContext=new GpContext.Builder()
             .jobNumber(jobRecord.getGpJobNo())
-  //          .jobInfo(jobInfo)
+            .jobInfo(jobInfo)
         .build();
         return jobContext;
     }
@@ -194,18 +196,18 @@ public class AwsBatchUtil {
         JobInfo jobInfo = null;
         final HibernateSessionManager mgr = org.genepattern.server.database.HibernateUtil.instance();
         
-//        if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
-//            try {
-//                mgr.getSession().setCacheMode(CacheMode.REFRESH);
-//                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobSubmission.getGpJobNo());
-//            }
-//            catch (Throwable t) {
-//                log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);
-//            }
-//        }
+        if (jobSubmission!=null && jobSubmission.getGpJobNo() != null) {
+            try {
+                mgr.getSession().setCacheMode(CacheMode.REFRESH);
+                jobInfo = new AnalysisDAO(mgr).getJobInfo(jobSubmission.getGpJobNo());
+            }
+            catch (Throwable t) {
+                log.debug("Error initializing jobInfo from db, jobNumber="+jobSubmission.getGpJobNo(), t);
+            }
+        }
         final GpContext jobContext=new GpContext.Builder()
             .jobNumber(jobSubmission.getGpJobNo())
-     //       .jobInfo(jobInfo)
+            .jobInfo(jobInfo)
         .build();
         return jobContext;
     }
