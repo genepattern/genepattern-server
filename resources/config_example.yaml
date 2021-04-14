@@ -41,6 +41,10 @@ default.properties:
     #  by default, ignore stderr output
     job.error_status.stderr: false
 
+    # custom drop-down Job Options menus on the job input form - configured via the file specified here
+    job.inputParams: "jobInputParams.yaml"
+
+
     ##############################################################
     # "show.registration.link"
     #   Show the link to the registration page on the login page
