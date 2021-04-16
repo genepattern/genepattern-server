@@ -461,7 +461,14 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
  * @returns a choiceInfo object
  */
 function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, enableBatch, initialValuesList) {
-    $.getJSON( choiceInfoIn.href,
+    var protocolLessHref = choiceInfoIn.href;
+    var arr = protocolLessHref.split("/");
+    if (arr[0] != window.location.protocol){
+    	protocolLessHref = protocolLessHref.replace(arr[0], window.location.protocol);
+    }
+	
+	
+	$.getJSON( protocolLessHref,
         function( choiceInfo ) {
             if (window.console) {
                 console.log("drop-down loaded from: " + choiceInfo.href);
