@@ -31,6 +31,7 @@ public class SlurmJobRunner implements JobRunner {
 
     
     public String remotePrefix ;
+    public boolean failIfStderr = false;
     
     public SlurmJobRunner(){
         super();
@@ -294,8 +295,13 @@ public class SlurmJobRunner implements JobRunner {
         // add prefix to ssh to a submit node if needed
         // XXX need to cache this because we cannot get the config to retrieve it 
         // later in get status calls
-        if (remotePrefix == null)  remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+        if (remotePrefix == null) {
+            remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+            failIfStderr = config.getGPBooleanProperty(context, "job.error_status.stderr", false);
+        }
    
+        
+        
         String[] remotePrefixArray = remotePrefix.split("\\s+");
         List<String> prefixArray = Arrays.asList(remotePrefixArray);
         ArrayList<String> commandArray = new ArrayList<String>();
@@ -371,12 +377,14 @@ public class SlurmJobRunner implements JobRunner {
                     count++;
                 }
                 slurmStatusString = tokenizer.nextToken();
+                log.debug("     slurm status: " + slurmStatusString);
             }
         }
 
         return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
     }
     private DrmJobStatus slurmStatusToDrmStatus(String extJobId, File stderr, String slurmStatusString) throws CommandExecutorException {
+        
         // Build the correct status from the string, and return
         if (slurmStatusString == null) {
             log.error("Cannot retrieve Slurm status string: null");
@@ -398,11 +406,10 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
-            if (stderr != null && stderr.exists() && stderr.length() != 0) {
+            if (failIfStderr && (stderr != null && stderr.exists() && stderr.length() != 0) ) {
                 Thread.currentThread().interrupt();
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
-            }
-            else {
+            } else {
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.DONE).exitCode(0).endTime(new Date()).build();
             }
         }
@@ -475,6 +482,7 @@ public class SlurmJobRunner implements JobRunner {
         }
 
         try {
+           
             return extractSlurmStatus(extJobId, stderr, output);
         }
         catch (Exception e) {
