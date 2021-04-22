@@ -1,0 +1,32 @@
+#
+# AWS Batch customization
+#
+{
+
+name: "Job Options",
+hidden: false,
+parameters: [
+{ name: "job.memory",
+  altName: "job.memory",
+  choices: [ "=(default)", "1G", "2Gb", "4Gb", "8Gb", "16Gb", "32Gb", "64Gb", "128Gb" ],
+  defaultValue: "",
+  optional: true
+},
+
+{ name: "job.walltime",
+  altName: "walltime",
+  description: "the runtime limit for the job in {days-hh:mm:ss} format",
+  choices: [ "=(default)", "00:00:02=debug (2 seconds)", "02:00:00=short (2 hours)", "04:00:00=long (4 hours)", "24:00:00=max (1 day)" ],
+  defaultValue: "02:00:00",
+  optional: true
+},
+
+{ name: "job.cpuCount",
+  description: "optional --container-overrides vcpus=(job.cpuCount)",
+  choices: [ "=(default)", "1", "2", "4", "8", "12", "16" ],
+  defaultValue: "",
+  optional: true
+},
+
+]
+}

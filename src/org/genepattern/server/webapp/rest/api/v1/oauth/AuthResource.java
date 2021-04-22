@@ -25,8 +25,11 @@ import org.apache.oltu.oauth2.rs.request.OAuthAccessResourceRequest;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.GpConfig;
+import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.recaptcha.ReCaptchaException;
+import org.genepattern.server.recaptcha.ReCaptchaSession;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.OAuthManager;
 import org.genepattern.server.webapp.jsf.ForgotPasswordBean;
@@ -436,8 +439,6 @@ public class AuthResource {
      * This endpoint allows clients to register and obtain client_id and client_secret's.
      * This would allow us to track which clients are using the REST API through OAuth2.
      *
-     * Currently this endpoint is a stub without a full implementation
-     *
      * @param request
      * @return
      * @throws OAuthSystemException
@@ -472,6 +473,17 @@ public class AuthResource {
         else if (clientID == null || "".equals(clientID)) {
             errorMessage = "missing or invalid client ID";
             validationError = true;
+        }
+
+        ReCaptchaSession recaptcha = ReCaptchaSession.init(ServerConfigurationFactory.instance(), GpContext.getServerContext());
+        if (recaptcha.isEnabled() && (recaptcha.isRequiredForRest() || !ReCaptchaSession.initResponseTokenFromRequest(request).isEmpty())) {
+            try {
+                recaptcha.verifyReCaptcha(request);
+            }
+            catch (ReCaptchaException e) {
+                errorMessage = "missing or invalid recaptcha token";
+                validationError = true;
+            }
         }
 
         // Return error response
