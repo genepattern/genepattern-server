@@ -2811,13 +2811,12 @@ function createJobWidget(job) {
                 }
 
                 else if (downloadAction) {
-                	//if (diskInfo.externalDirectDownloadsEnabled == true){
-                	//	alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
-                	//	return;
-                	//}
                 	
-                    $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
-
+                	
+                    //$(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload');
+                    window.open( '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', '_blank');
+                    
+                    
                     $(".search-widget:visible").searchslider("hide");
                 }
 
