@@ -76,7 +76,7 @@ function ajaxEmailResponse(req) {
 }
 
 // Requires jQuery & jQuery UI
-function showDialog(title, message, button, zIndex) {
+function showDialog(title, message, button, zIndex, openFn) {
     "use strict";
     var alert = document.createElement("div");
 
@@ -105,6 +105,12 @@ function showDialog(title, message, button, zIndex) {
         width : 400,
         title : title,
         buttons : button,
+        open: function() {
+        	
+        	if (openFn != null){
+        		openFn(alert);
+        	}
+        },
         close : function() {
             $(this).dialog("destroy");
             $(this).remove();
@@ -2813,8 +2819,40 @@ function createJobWidget(job) {
                 else if (downloadAction) {
                 	
                 	
+                	$("body").css("cursor", "progress");
+                    var a = document.createElement("a");
+                    a.href = '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload';
+                    a.setAttribute("download", job.jobId + ".zip");
+                    
                     //$(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload');
-                    window.open( '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', '_blank');
+                    // window.open( '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', '_blank');
+                	var dlg = showDialog("Prepare zip","Preparing the job result zip file, this may take a moment.",
+                			{},
+                			9999,
+                			function (aDlg){
+                				$("body").css("cursor", "progress");
+                				
+                				 var req = new XMLHttpRequest();
+                			     req.open("GET", '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', true);
+                			     req.responseType = "blob";
+                			     req.onload = function (event) {
+                			    	 
+                			         var blob = req.response;
+                			         var fileName = req.getResponseHeader("fileName") //if you have the fileName header available
+                			         var link=document.createElement('a');
+                			         link.href=window.URL.createObjectURL(blob);
+                			         link.download= ""+job.jobId +".zip";
+                			         link.click();
+                			         
+                			         $("body").css("cursor", "default");
+                			         $(aDlg).dialog("close");
+                			     };
+
+                			     req.send();
+                     		   
+                     		   
+                     		   
+                			});
                     
                     
                     $(".search-widget:visible").searchslider("hide");
