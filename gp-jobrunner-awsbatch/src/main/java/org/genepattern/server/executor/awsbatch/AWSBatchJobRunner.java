@@ -307,22 +307,29 @@ public class AWSBatchJobRunner implements JobRunner {
                 exec.execute(cl, cmdEnv);
                 String output = outputStream.toString().trim();
                 
-                if (log.isDebugEnabled()) {
-                    log.debug("getStatus call is: " + checkStatusScript + " " + awsId);
-                    log.debug("getStatus response: "+output);
-                }
-                
-                
                 final JSONObject jobJSON = new JSONObject(output);
                 final JSONArray jobsArr=jobJSON.optJSONArray("jobs");
                 if (jobsArr==null || jobsArr.length()==0) {
+                    if (log.isDebugEnabled()) {
+                        
+                        log.debug("getStatus("+jobRecord.getGpJobNo()+") FAILED call is: " + checkStatusScript + " " + awsId);
+                        log.debug("getStatus("+jobRecord.getGpJobNo()+") FAILED response: "+output);
+                    
+                    } 
+                    
                     final String message="Error getting status for job: expecting 'jobs' key in JSON response";
                     log.error(message+", gp_job_id='"+jobRecord.getGpJobNo()+"', aws_job_id="+jobRecord.getExtJobId());
-                    return new DrmJobStatus.Builder()
-                        .extJobId(jobRecord.getExtJobId())
-                        .jobState(DrmJobState.UNDETERMINED)
-                        .jobStatusMessage(message)
-                    .build();
+                    // UNDETERMINED is a terminal state.  We really want it to try again and not mark this as a failuer
+                    // since this happens sometimes.  So instead of returning undertimined we return null and it will try again later.
+                    // XXX Need to determine if this ever leads to real problems with failed jobs on batch.  We do know that 
+                    // for submitted jobs due to the parallel distributed nature of batch sometimes we get back a job not found immediately after
+                    // a submission.  Its an "eventually consistent"  kind of thing in DB speak
+                    return null;
+//                    return new DrmJobStatus.Builder()
+//                        .extJobId(jobRecord.getExtJobId())
+//                        .jobState(DrmJobState.UNDETERMINED)
+//                        .jobStatusMessage(message)
+//                    .build();
                 }
                 final JSONObject awsJob = jobsArr.optJSONObject(0);
                 // jobs[0].jobDefinition
@@ -355,13 +362,12 @@ public class AWSBatchJobRunner implements JobRunner {
                 // jobs[0].statusReason
                 final String awsStatusReason = awsJob.optString("statusReason");
                 if (log.isDebugEnabled()) {
-                    log.debug("jobs[0].jobDefinition: "+jobDefinition);
-                    if (containerImage!=null) {
-                        log.debug("jobs[0].container.image: "+containerImage);
-                    }
-                    log.debug("jobs[0].jobQueue: "+jobQueue);
-                    log.debug("jobs[0].status: "+awsStatusCode);
-                    log.debug("jobs[0].statusReason: "+awsStatusReason);
+                    
+                  //  log.debug("getStatus("+jobRecord.getGpJobNo()+") call is: " + checkStatusScript + " " + awsId);
+                  //  log.debug("getStatus("+jobRecord.getGpJobNo()+") response: "+output);
+                    log.debug("jobs["+jobRecord.getGpJobNo()+"].jobQueue: "+jobQueue);
+                    log.debug("jobs["+jobRecord.getGpJobNo()+"].status: "+awsStatusCode);
+                    log.debug("jobs["+jobRecord.getGpJobNo()+"].statusReason: "+awsStatusReason);
                 } 
 
                 final Date startTime=getOrDefaultDate(awsJob, "startedAt", null);
@@ -369,8 +375,6 @@ public class AWSBatchJobRunner implements JobRunner {
                 
                 final DrmJobStatus.Builder b=new DrmJobStatus.Builder().extJobId(awsId);
                 final DrmJobState jobState=getOrDefault(batchToGPStatusMap, awsStatusCode, DrmJobState.UNDETERMINED);
-                log.debug("DRM status: "+jobState.toString());
-                log.debug("state map: " + batchToGPStatusMap);
                 b.jobState(jobState);
                 if (awsJob.has("jobQueue")) {
                     b.queueId(awsJob.getString("jobQueue"));
@@ -416,7 +420,7 @@ public class AWSBatchJobRunner implements JobRunner {
                         getAdditionalErrorLogs(jobRecord, metadataDir);
                     }
                     else {
-                        log.debug("D");
+                        
                         log.error("Error getting exitCode for job="+jobRecord.getGpJobNo());
                         if (awsStatusReason != null) {
                             b.jobStatusMessage(awsStatusReason);
@@ -424,14 +428,14 @@ public class AWSBatchJobRunner implements JobRunner {
                         }
                     }
                 }
-                log.debug("E");
+                
                 return b.build();
             } 
             catch (Throwable t) {
-                log.debug("F");
+                
                 log.error(t);
             }
-            log.debug("G");
+            
             // status unknown
             return null;
         }
@@ -1211,10 +1215,15 @@ public class AWSBatchJobRunner implements JobRunner {
 
         final CommandLine cl = initAwsBatchScript(gpJob, inputDir, inputFiles, inputFileMap);
         if (log.isDebugEnabled()) {
-            log.debug("aws-batch-script-cmd='"+cl.getExecutable()+"'");
+            StringBuffer buff = new StringBuffer("aws-batch-script-cmd='");
+            buff.append(cl.getExecutable());
+            buff.append("' ");
             for(final String arg : cl.getArguments()) {
-                log.debug("     '"+arg+"'");
+                buff.append("     '");
+                buff.append(arg);
+                buff.append("'");
             }
+            log.debug(buff.toString());
         }
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
