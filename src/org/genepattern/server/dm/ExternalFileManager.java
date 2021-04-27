@@ -44,4 +44,6 @@ public abstract class ExternalFileManager {
     
     public abstract ArrayList<GpFilePath> listFiles(GpContext userContext,  File file) throws IOException;
     
+    public abstract boolean syncRemoteFileToLocal(GpContext userContext,  File file) throws IOException;
+    
 }

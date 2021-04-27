@@ -281,12 +281,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         File dummyFile = File.createTempFile(placeholderPrefix, "");
         
         String thePath = subdir.getAbsolutePath();
-        String userId = userContext.getUserId();
-        //if (userId.contains("@")){
-        //    String altId = userId.replace("@", "%40");
-        //    thePath = thePath.replace(userId, altId);
-        //}
-        
+        String userId = userContext.getUserId();       
         
         String[] execArgs = new String[] {awsfilepath+awsfilename, "s3", "cp", dummyFile.getAbsolutePath(),"s3://"+bucket+ "/"+bucketRoot+thePath+"/"+dummyFile.getName()};
         
@@ -411,6 +406,45 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             throw new  Exception("Error initializing upload file reference for '" + uploadFile.getPath() + "': "+e.getLocalizedMessage());
         }
     }
+    
+    public  boolean syncRemoteFileToLocal(GpContext userContext,  File file) throws IOException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
+        String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+         
+        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "sync", 
+                "s3://"+bucket+ "/"+bucketRoot+file.getParentFile().getAbsolutePath(), 
+                file.getParentFile().getAbsolutePath(),
+                "--exclude", "*",
+                "--include", file.getName()};
+        
+       
+        boolean success = false;
+        Process proc = Runtime.getRuntime().exec(execArgs);
+        try {
+            proc.waitFor(3, TimeUnit.MINUTES);
+        
+            success = (proc.exitValue() == 0);
+            if (!success){
+                logStdout(proc, "sync S3 file"); 
+                logStderr(proc, "sync S3 file"); 
+            }
+            
+        } catch (Exception e){
+            log.debug(e);
+            return false;
+            
+        } finally {
+            proc.destroy();
+        }
+        return success;
+        
+        
+    }
+    
+    
    
     final static DateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     final private Date parseDateFormat(final String dateSpec) throws ParseException {
