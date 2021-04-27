@@ -3719,10 +3719,11 @@ function uploadFileToExternalFileManager(paramName, file, index, fileProgressObj
         	var runningProgress = []; // will be used to keep progress across all parts for feedback for this file
         	var uploadPath = multipartPostData.gpUrl;
         	
-        	aCallback = function(filex, uploadPathx, numPartsx, nextPartNumx, partSizex, multipartPostDatax, aCallbackx, runningProgressx, fileOrderx, groupIdx, paramNamex, fileProgressObjIdx){
-        		if (partNums.length > 0){
-        			var nextPartNum = partNums.pop();
-        			RTF_s3MultipartUploadOnePart(filex, uploadPathx, numPartsx, nextPartNumx, partSizex, multipartPostDatax, aCallbackx, runningProgressx, fileOrderx, groupIdx, paramNamex, fileProgressObjIdx);
+        	// variables in the callback have "x" added to ensure proper variable scoping
+        	aCallback = function(filex, uploadPathx, numPartsx, nextPartNumx, partSizex, multipartPostDatax, aCallbackx, runningProgressx, fileOrderx, groupIdx, paramNamex, fileProgressObjIdx, partNumsx){
+        		if (partNumsx.length > 0){
+        			var nextPartNumx = partNumsx.pop();
+        			RTF_s3MultipartUploadOnePart(filex, uploadPathx, numPartsx, nextPartNumx, partSizex, multipartPostDatax, aCallbackx, runningProgressx, fileOrderx, groupIdx, paramNamex, fileProgressObjIdx, partNumsx);
         		}    		
         	}
         	
@@ -3733,7 +3734,7 @@ function uploadFileToExternalFileManager(paramName, file, index, fileProgressObj
         
         	for (var ii =0; ii < simulUploadCount; ii++){
         		var nextPartNum = partNums.pop();
-        		RTF_s3MultipartUploadOnePart(file, uploadPath, numParts, nextPartNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId);
+        		RTF_s3MultipartUploadOnePart(file, uploadPath, numParts, nextPartNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId, partNums);
         	}
         },
         error: function(data) {
@@ -3750,7 +3751,7 @@ function uploadFileToExternalFileManager(paramName, file, index, fileProgressObj
 
 
 
-function RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId){
+function RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId, partNums){
 	// var presignedUrl = multipartPostData.presignedUrls[partNum-1]
 	var url = encodeURI("/gp/rest/v1/upload/getS3MultipartUploadPresignedUrlOnePart/?path="+path+"&partNum="+ partNum+"&uploadId="+ multipartPostData.UploadId);
 	// first get a presigned URL for this one part
@@ -3759,7 +3760,7 @@ function RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, m
         url: url,
         success: function(data) {
         	// next go and PUT that part to S3
-        	_RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, data.presignedUrl, fileOrder, groupId, paramName, fileProgressObjId);
+        	_RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, data.presignedUrl, fileOrder, groupId, paramName, fileProgressObjId, partNums);
         	
         },
         error: function(data) {
@@ -3775,7 +3776,7 @@ function RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, m
 
 
 
-function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, presignedUrl, fileOrder, groupId, paramName, fileProgressObjId){
+function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, multipartPostData, aCallback, runningProgress, presignedUrl, fileOrder, groupId, paramName, fileProgressObjId, partNums){
 
 	var xhr = new XMLHttpRequest();
     xhr.open('PUT', presignedUrl, true);
@@ -3835,24 +3836,27 @@ function _RTF_s3MultipartUploadOnePart(file, path, numParts, partNum, partSize, 
     		  
     		  
     	  } else {
-    		  aCallback(file, uploadPath, numParts, nextPartNum, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId);
+    	      // incrementing the part num happens in the callback
+    	    	  aCallback(file, path, numParts, whichPart, partSize, multipartPostData, aCallback, runningProgress, fileOrder, groupId, paramName, fileProgressObjId, partNums);
+     	    	  	     
+    	      
     	  }
       }
     };
     xhr.upload.addEventListener("progress", function (evt) {
     	 if (event.lengthComputable) {
 
-             var percentComplete = Math.round(event.loaded * 100 / event.total);
-             console.log("percent complete: " + percentComplete);
+             runningProgress[partNum] =  ((evt.loaded / evt.total)/numParts);
+              
+         	 var percentComplete = sumIgnoreNull(runningProgress);
+         	percentComplete = Math.floor(100 * percentComplete);
+             
+             console.log("rtf percent complete: " + percentComplete + " "  + partNum + "  " );
              $("#"+fileProgressObjId).progressbar({
                  value: percentComplete
              });
-             $("#"+fileProgressObjId + "Percentage").text(percentComplete.toString() + "%");
-           //  $("#file_" + fileId).progressbar({
-           //      value: percentComplete
-           //  });
-
-           //  $("#file_" + fileId + "Percentage").text(percentComplete.toString() + "%");
+             $("#"+fileProgressObjId + "Percentage").text(percentComplete.toString() + "% ");
+        
          }
          else {
              $("#fileUploadDiv").append('<p>Unable to determine progress</p>');

@@ -2744,7 +2744,7 @@ function createJobWidget(job) {
         "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
-    if ((job.status.isFinished) && (diskInfo.externalDirectDownloadsEnabled != true )){
+    if ((job.status.isFinished) ){
         actionData.push({
             "lsid": "",
             "name": "Download Job",
@@ -2811,10 +2811,10 @@ function createJobWidget(job) {
                 }
 
                 else if (downloadAction) {
-                	if (diskInfo.externalDirectDownloadsEnabled == true){
-                		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
-                		return;
-                	}
+                	//if (diskInfo.externalDirectDownloadsEnabled == true){
+                	//	alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
+                	//	return;
+                	//}
                 	
                     $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
 
