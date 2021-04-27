@@ -351,7 +351,7 @@ public class DataManager {
         return moved;
     }
 
-    private static ExternalFileManager getExternalFileManager(GpContext gpContext) {
+    public static ExternalFileManager getExternalFileManager(GpContext gpContext) {
         ExternalFileManager externalManager = null;
         String downloaderClass_obsolete = ServerConfigurationFactory.instance().getGPProperty(gpContext, "download.aws.s3.downloader.class", null);
         String downloaderClass = ServerConfigurationFactory.instance().getGPProperty(gpContext, ExternalFileManager.classPropertyKey, downloaderClass_obsolete);
@@ -809,7 +809,7 @@ public class DataManager {
      * @param jobSubmission
      * @return
      */
-    protected static boolean isUseS3NonLocalFiles (GpContext gpContext) {
+    public static boolean isUseS3NonLocalFiles (GpContext gpContext) {
        
         GpConfig jobConfig = ServerConfigurationFactory.instance();
         
