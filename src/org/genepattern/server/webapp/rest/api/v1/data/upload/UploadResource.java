@@ -783,7 +783,10 @@ public class UploadResource {
             try {
                 if (tmp != null)
                     tmp.delete();
-            } catch (Exception e){}
+            } catch (Exception e){
+                log.error("GSU: Failed to delete " + tmp.getAbsolutePath(), e);
+                tmp.deleteOnExit();
+            }
         }
 
 
@@ -923,7 +926,11 @@ public class UploadResource {
         } finally {
             try {
                 if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
-            } catch (Exception e){}
+            } catch (Exception e){
+                log.error("SMU: Failed to delete:" + tmp.getAbsolutePath(), e );
+                tmp.deleteOnExit();
+                
+            }
             try {
                 if (!log.isDebugEnabled()) if (tmpInput != null) tmpInput.delete();
             } catch (Exception e){}
@@ -1023,7 +1030,11 @@ public class UploadResource {
         } finally {
              try {
                 if (!log.isDebugEnabled())  if (tmp != null) tmp.delete();   
-            } catch (Exception e){}
+            } catch (Exception e){
+                log.error("GSM: Failed to delete:" + tmp.getAbsolutePath(), e );
+                tmp.deleteOnExit();
+                
+            }
             try {
                 if (!log.isDebugEnabled()) if (tmpInput != null) tmpInput.delete();
             } catch (Exception e){}
