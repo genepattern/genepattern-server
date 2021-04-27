@@ -782,14 +782,8 @@ public class AnalysisDAO extends BaseDAO {
             if (postJobDeleteScript != null){
                 // Runtime.getRuntime().exec(postJobDeleteScript, args );
                 ProcessBuilder pb = new ProcessBuilder(postJobDeleteScript, "bash", args[0], args[1]).inheritIO();
-                //Map<String, String> env = pb.environment();
-                //env.put("VAR1", "myValue");
-                //env.remove("OTHERVAR");
-                //env.put("VAR2", env.get("VAR1") + "suffix");
-                //pb.directory(new File(jobDir.getAbsolutePath()));
                 Process p = pb.start();
-                p.waitFor();
-              
+                p.wait(10000);
             }
             
             

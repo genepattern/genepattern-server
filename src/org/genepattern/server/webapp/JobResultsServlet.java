@@ -746,7 +746,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         response.setDateHeader("Expires", 0);
         OutputStream os = response.getOutputStream();
         
-        JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper);
+        JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper, GpContext.getServerContext());
         os.flush();
         os.close();
     }

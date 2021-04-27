@@ -5,6 +5,7 @@
 package org.genepattern.server.purger.impl02;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.helpers.OptionConverter;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.config.GpConfig;
@@ -29,6 +31,8 @@ import org.genepattern.server.purger.Purger;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+
+import javassist.tools.reflect.Loader;
 
 /**
  * Periodically purge jobs that completed some number of days ago and input files.
@@ -52,6 +56,10 @@ public class Purger02 extends TimerTask {
         gpConfig=ServerConfigurationFactory.instance();
     }
 
+    
+   
+    
+    
     @Override
     public void run() {
         log.debug("running Purger ...");

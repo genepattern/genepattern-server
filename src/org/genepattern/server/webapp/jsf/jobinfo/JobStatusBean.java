@@ -291,7 +291,7 @@ public class JobStatusBean {
         
         try {
             OutputStream os = response.getOutputStream();
-            JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper);
+            JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper, GpContext.getServerContext());
             os.close();
         }
         catch (IOException e) {

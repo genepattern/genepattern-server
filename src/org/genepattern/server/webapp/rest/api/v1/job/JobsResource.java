@@ -3,12 +3,15 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,10 +26,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
@@ -930,7 +936,7 @@ public class JobsResource {
             response.setDateHeader("Expires", 0);
 
             OutputStream os = response.getOutputStream();
-            JobInfoManager.writeOutputFilesToZipStream(os, wrapper);
+            JobInfoManager.writeOutputFilesToZipStream(os, wrapper, userContext);
             os.close();
         }
         catch (Throwable t) {
@@ -941,6 +947,58 @@ public class JobsResource {
         return Response.ok().build();
     }
 
+    private static ExecutorService executor = Executors.newFixedThreadPool(10);
+
+    /**
+     * Sets the correct download headers and serves up the zip file for the job
+     * @param request
+     * @param response
+     * @param jobId
+     * @return
+     */
+    @GET
+    @Path("/{jobId}/slowDownload")
+    public Response asyncDownloadJob(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("jobId") String jobId) {
+        final GpContext userContext = Util.getUserContext(request);
+        final String contextPath = request.getContextPath();
+        final String cookie = request.getHeader("Cookie");
+        final int id = Integer.parseInt(jobId);
+       
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream out) throws IOException, WebApplicationException {
+                try {
+                    JobInfoManager manager = new JobInfoManager();
+                    JobInfoWrapper wrapper = manager.getJobInfo(cookie, contextPath, userContext.getUserId(), id);
+                       
+                    JobInfoManager.writeOutputFilesToZipStream(out, wrapper, userContext);
+                    out.flush();
+                    out.close();
+                }
+                catch (Throwable t) {
+                    String message = "Error downloading output files for job " + id + ": " + t.getLocalizedMessage();
+                    throw new WebApplicationException(message);
+                    
+                }
+                } 
+            }; 
+            
+            response.setHeader("Content-Disposition", "attachment; filename=" + jobId + ".zip" + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+            return Response.ok(stream).build();
+      
+    }
+
+    
+    
+    
+    
+    
+    
+    
     /**
      * Get a JSON List of the JSOn objects for the most recent jobs,
      * as well as the total number of processing jobs for the current user.
