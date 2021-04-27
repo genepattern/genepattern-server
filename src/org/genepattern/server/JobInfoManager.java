@@ -23,11 +23,13 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.JavascriptHandler;
@@ -524,7 +526,29 @@ public class JobInfoManager {
         return logFile;
     }
 
-    public static void writeOutputFilesToZipStream(OutputStream os, JobInfoWrapper jobInfo) throws IOException {
+    public static void writeOutputFilesToZipStream(OutputStream os, JobInfoWrapper jobInfo, GpContext gpContext) throws IOException {
+        if (DataManager.isUseS3NonLocalFiles(gpContext)) {
+            ExternalFileManager externalFileManager = DataManager.getExternalFileManager(gpContext);
+            // if an ExternalFileManager is in play, we need to make sure that all of the desired 
+            // files are local because we cannot be certain (e.g. S3) that the files can be zipped 
+            // wherever they actually are
+            for(OutputFile outputFile : jobInfo.getOutputFiles()) {
+                System.out.println("1. Fetch for download zip "+outputFile.getOutputFile()+"   " + outputFile.getOutputFile().exists()  );
+                if (!outputFile.getOutputFile().exists())
+                    externalFileManager.syncRemoteFileToLocal(gpContext, outputFile.getOutputFile());
+                
+            }
+            for(JobInfoWrapper step : jobInfo.getAllSteps()) {
+                for(OutputFile outputFile : step.getOutputFiles()) {
+                    System.out.println("2. Fetch for download zip "+outputFile.getOutputFile()+"   " + outputFile.getOutputFile().exists()  );
+                    
+                    if (!outputFile.getOutputFile().exists())
+                        externalFileManager.syncRemoteFileToLocal(gpContext, outputFile.getOutputFile());
+                }
+            }
+        }
+        
+        
         ZipOutputStream zipStream = new ZipOutputStream(os);
         JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
         w.writeOutputFilesToZip(zipStream);
