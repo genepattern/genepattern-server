@@ -177,9 +177,12 @@ public class Purger02 extends TimerTask {
             @SuppressWarnings("deprecation")
             final GpContext userContext = GpContext.getContextForUser(userId);
             final Date cutoffDate=JobPurgerUtil.getCutoffForUser(gpConfig, userContext, now);
+            Date publicCutoffDate = JobPurgerUtil.getPublicJobCutoffForUser(gpConfig, userContext, now);
+            if (publicCutoffDate == null) publicCutoffDate = cutoffDate;
+            
             if (cutoffDate != null) {
                 try {
-                    purgeJobsForUser(mgr, userContext, cutoffDate);
+                    purgeJobsForUser(mgr, userContext, cutoffDate, publicCutoffDate);
                     purgeUserUploadsForUser(exec, mgr, userContext, cutoffDate);
                     purgeBatchJobsForUser(mgr, userContext, cutoffDate);
                 }
@@ -192,20 +195,39 @@ public class Purger02 extends TimerTask {
         log.debug("done purging data for each user.");
     }
     
-    private void purgeJobsForUser(final HibernateSessionManager mgr, final GpContext userContext, final Date cutoffDate) {
+    public void printList(String message, List<Integer> aList){
+        System.out.print (message);
+        for (int i: aList){
+            System.out.print("  "+ i);
+        }
+        System.out.println();
+    }
+    
+    
+    private void purgeJobsForUser(final HibernateSessionManager mgr, final GpContext userContext, final Date cutoffDate, final Date publicJobCutoffDate) {
         log.debug("purging jobs for user="+userContext.getUserId()+" ...");
-        final List<Integer> jobIds=getJobIdsForUser(mgr, userContext.getUserId(), cutoffDate);
+        final List<Integer> jobIds=getNonPublicJobIdsForUser(mgr, userContext.getUserId(), cutoffDate);
+        final List<Integer> publicJobIds=getPublicJobIdsForUser(mgr, userContext.getUserId(), publicJobCutoffDate);
+       
+       
         for(Integer jobId : jobIds) {
             deleteJob(mgr, jobId);
          }
+        for(Integer jobId : publicJobIds) {
+            deleteJob(mgr, jobId);
+         }
+        
+        
         log.debug("done purging job results.");
     }
 
-    private List<Integer> getJobIdsForUser(final HibernateSessionManager mgr, final String userId, final Date cutoffDate) {
+    // getPublicAnalysisJobIdsForUser
+    
+    private List<Integer> getPublicJobIdsForUser(final HibernateSessionManager mgr, final String userId, final Date cutoffDate) {
         final boolean isInTransaction=mgr.isInTransaction();
         try {
             AnalysisDAO ds = new AnalysisDAO(mgr);
-            List<Integer> jobIds = ds.getAnalysisJobIdsForUser(userId, cutoffDate);
+            List<Integer> jobIds = ds.getPublicAnalysisJobIdsForUser(userId, cutoffDate);
             return jobIds;
         }
         catch (Throwable t) {
@@ -219,6 +241,25 @@ public class Purger02 extends TimerTask {
         return Collections.emptyList();
     }
 
+    private List<Integer> getNonPublicJobIdsForUser(final HibernateSessionManager mgr, final String userId, final Date cutoffDate) {
+        final boolean isInTransaction=mgr.isInTransaction();
+        try {
+            AnalysisDAO ds = new AnalysisDAO(mgr);
+            List<Integer> jobIds = ds.getNonPublicAnalysisJobIdsForUser(userId, cutoffDate);
+            return jobIds;
+        }
+        catch (Throwable t) {
+            log.error("Unexpected error getting list of jobIds for user="+userId, t);
+        }
+        finally {
+            if (!isInTransaction) {
+                mgr.closeCurrentSession();
+            }
+        }
+        return Collections.emptyList();
+    }
+    
+    
     private boolean deleteJob(final HibernateSessionManager mgr, final Integer jobId) {
         // delete the job from the database and recursively delete the job directory
         final boolean isInTransaction=mgr.isInTransaction();

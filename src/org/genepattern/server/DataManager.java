@@ -468,7 +468,12 @@ public class DataManager {
     public static boolean deleteUserUploadFile(final HibernateSessionManager mgr, final String userId, final GpFilePath uploadedFileObj) {
         File file = uploadedFileObj.getServerFile();
         GpContext gpContext=GpContext.getServerContext();
-        boolean nonLocalFile = isUseS3NonLocalFiles(gpContext);
+        boolean nonLocalFiles = DataManager.isUseS3NonLocalFiles(gpContext);
+        ExternalFileManager externalFileManager = null;
+        if (nonLocalFiles){
+            externalFileManager = DataManager.getExternalFileManager(gpContext);
+        }
+        
         
         //1) if it exists, delete the file from the file system
         boolean deleted = false;
@@ -479,8 +484,7 @@ public class DataManager {
         }
         if (!file.exists()) {
             try {
-                if (nonLocalFile){
-                    ExternalFileManager externalFileManager =  getExternalFileManager(gpContext); 
+                if (nonLocalFiles){
                     if (directory){
                         externalFileManager.deleteDirectory(gpContext, file);
                     } else {

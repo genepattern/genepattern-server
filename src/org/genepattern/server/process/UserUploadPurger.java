@@ -229,7 +229,7 @@ public class UserUploadPurger {
             selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, cutoffDate);
         }
         catch (Throwable t) {
-            log.error("Unexpeted error getting selectedFiles", t);
+            log.error("Unexpected error getting selectedFiles", t);
             selectedFiles=Collections.emptyList();
         }
         finally {
@@ -263,11 +263,7 @@ public class UserUploadPurger {
         final List<GpFilePath> missingFiles = new ArrayList<GpFilePath>();
         
         GpContext gpContext=GpContext.getServerContext();
-        boolean nonLocalFiles = DataManager.isUseS3NonLocalFiles(gpContext);
-        ExternalFileManager externalFileManager = null;
-        if (nonLocalFiles){
-            externalFileManager = DataManager.getExternalFileManager(gpContext);
-        }
+        
         
         //quick and dirty way to delete files and parent directories without conflicts
         //on the first pass, delete all files, don't delete any directories
