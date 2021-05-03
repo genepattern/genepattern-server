@@ -1,5 +1,6 @@
 package org.genepattern.server.job.input.cache;
 
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,6 +32,7 @@ public class CachedFtpFileFactory {
     }
     
     public CachedFtpFile newCachedFtpFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final GpContext gpContext, final String urlString) {
+        
         String str=gpConfig.getGPProperty(gpContext, CachedFtpFileType.PROP_FTP_DOWNLOADER_TYPE, CachedFtpFileType.EDT_FTP_J.name());
         CachedFtpFileType type=null;
         try {
@@ -40,6 +42,17 @@ public class CachedFtpFileFactory {
             log.error(t);
             type=CachedFtpFileType.EDT_FTP_J;
         }
+        // override to allow http files even though http cannot be used for directories
+        try {
+            URL url = new URL(urlString);
+            if (url.getProtocol().toLowerCase().contains("http")){
+                
+                type=CachedFtpFileType.HTTP;
+            }
+        } catch (Exception e){
+            log.error("Trying to get cached remote file, URL is invalid.  Going to try further anyway...",e);
+        }
+        
         return newCachedFtpFile(type, mgr, gpConfig, urlString);
     }
 
@@ -51,6 +64,10 @@ public class CachedFtpFileFactory {
         return type.newCachedFtpFile(mgr, gpConfig, urlString);
     }
 
+    public CachedFtpFile newHttpImpl(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+        return new HttpImpl(mgr, gpConfig, urlString, interruptionService);
+    }
+    
     /**
      * This FTP downloader is implemented with standard Java 6 libraries.
      * @param urlString

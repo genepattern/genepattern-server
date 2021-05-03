@@ -10,6 +10,13 @@ import org.genepattern.server.database.HibernateSessionManager;
 public enum CachedFtpFileType {
 
     /** Hand coded implementation with Java 6 standard library methods */
+    HTTP {
+        @Override
+        public CachedFtpFile newCachedFtpFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
+            return CachedFtpFileFactory.instance().newHttpImpl(mgr, gpConfig, urlString);
+        }
+    },
+    /** Hand coded implementation with Java 6 standard library methods */
     JAVA_6 {
         @Override
         public CachedFtpFile newCachedFtpFile(final HibernateSessionManager mgr, final GpConfig gpConfig, final String urlString) {
