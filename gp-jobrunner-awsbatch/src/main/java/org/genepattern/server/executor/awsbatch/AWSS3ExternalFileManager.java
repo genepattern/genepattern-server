@@ -36,6 +36,18 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
    
     
     public void downloadFile(GpContext userContext, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException {
+        try {
+           String redirectUrl = getDownloadURL(userContext, file);
+           
+           resp.sendRedirect(redirectUrl);
+           
+        } catch (Exception e){
+            log.debug(e);
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+    
+    public String getDownloadURL(GpContext userContext,  File file) throws Exception {
         // For S3 file downloads, we want to generate a presigned URL to redirect to
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
@@ -44,16 +56,8 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
         
         String thePath = bucket+ "/"+bucketRoot+file.getAbsolutePath();
-        // GP- there are multiple encodings going on and usernames with '@' in them are not being done properly
-        // so we do them explicitly here.  S3 seems to handle these differently if they are in a path (escaped to %40)
-        // than in a key (not)
-        String userId = userContext.getUserId();
-      //  if (userId != null) {
-      //      if (userId.contains("@")){
-      //          String altId = userId.replace("@", "%40");
-      //          thePath = thePath.replace(userId, altId);
-      //      }
-      //  }
+        
+        
         String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign",thePath};
        // String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "presign", bucket+ "/"+bucketRoot+file.getAbsolutePath()};
         BufferedReader stdInput = null;
@@ -73,11 +77,11 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
            // Read any errors from the attempted command
            logStderr(proc, " download file");    
            
-           resp.sendRedirect(redirectUrl);
+           return redirectUrl;
            
         } catch (Exception e){
             log.debug(e);
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            throw(e);
         } finally {
             proc.destroy();
             if (stdInput != null) stdInput.close();
@@ -85,6 +89,7 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
     
     
     }
+    
     
     private void logStderr(Process proc, String action) throws IOException {
         String s;

@@ -202,10 +202,15 @@ public class SlurmJobRunner implements JobRunner {
      
         String partition = drmJobSubmission.getQueue("shared");
         String account =  config.getGPProperty(jobContext, "slurm.account", "WHO_PAYS_FOR_THIS");
-        String maxTime = drmJobSubmission.getWalltime("00:01:00").toString();
+        String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
         
         File workingDirectory = new File(workDirPath);
         File jobScript = new File(workingDirectory, ".launchJob.sb");
+        Memory memRequested = drmJobSubmission.getMemory();
+        if (memRequested == null) memRequested =  Memory.fromString("2 Gb");
+        Integer nCPU = drmJobSubmission.getCpuCount();
+        if (nCPU == null) nCPU = 1;
+        
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
                             "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
@@ -214,8 +219,8 @@ public class SlurmJobRunner implements JobRunner {
                             "#SBATCH --error="+workDirPath+"/stderr.txt\n" +
                             "#SBATCH --nodes=1\n" +     // no parallel jobs here
                             "#SBATCH --ntasks-per-node=1\n" +
-                            "#SBATCH --mem="+ memFormatG(drmJobSubmission.getMemory()) + "\n" +
-                            "#SBATCH --cpus-per-task="+ drmJobSubmission.getCpuCount() + "\n" +
+                            "#SBATCH --mem="+ memFormatG(memRequested) + "\n" +
+                            "#SBATCH --cpus-per-task="+ nCPU + "\n" +
                             "#SBATCH --time=" + maxTime + "\n" +
                             "#SBATCH --account=" + account + "\n" +
                             "#\n" +

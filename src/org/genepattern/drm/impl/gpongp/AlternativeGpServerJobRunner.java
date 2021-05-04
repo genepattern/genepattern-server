@@ -3,6 +3,7 @@ package org.genepattern.drm.impl.gpongp;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
@@ -23,6 +25,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.CommandExecutorException;
@@ -75,12 +78,16 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     @Override
     public String startJob(DrmJobSubmission jobSubmission) throws CommandExecutorException {
         Integer externalJobId = -1;
+        
+        
         // XXX HACK for now just refresh this with each run
         config = jobSubmission.getGpConfig();
         GpContext jobContext = jobSubmission.getJobContext();
         String user = config.getGPProperty(jobContext, "remote.user");
         String pass = config.getGPProperty(jobContext, "remote.password");
         String gpurl = config.getGPProperty(jobContext, "remote.genepattern.url");
+        ExternalFileManager externalFileManager = DataManager.getExternalFileManager(jobContext);
+        
         try {
             System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
              
@@ -111,14 +118,26 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               JsonObject P = null;
               if (val.indexOf("<GenePatternURL>") >= 0){
                   File serverFile = null;
-                  try {
+                  Object value2 = null;
+                  if (externalFileManager != null) {
                       GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
                       serverFile = gpfp.getServerFile();
-                  } catch (Exception e){
-                      serverFile = this.getFileForUrl(val, jobContext);
-                  }
+                      value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
+                      
+                  } else {
+                      try {
+                          GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
+                          serverFile = gpfp.getServerFile();
+                      } catch (Exception e){
+                          serverFile = this.getFileForUrl(val, jobContext);
+                      }
+                      
+                      value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                  } 
                   
-                  Object value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                 
+                  
+                  
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
              
               }  else {
