@@ -119,25 +119,18 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               if (val.indexOf("<GenePatternURL>") >= 0){
                   File serverFile = null;
                   Object value2 = null;
-                  if (externalFileManager != null) {
-                      GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
-                      serverFile = gpfp.getServerFile();
-                      value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
-                      
-                  } else {
-                      try {
-                          GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
-                          serverFile = gpfp.getServerFile();
-                      } catch (Exception e){
-                          serverFile = this.getFileForUrl(val, jobContext);
-                      }
-                      
+                  GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
+                  serverFile = gpfp.getServerFile();
+                  //
+                  // When an external file manager is in use, its still possible that a file is local (legacy files and a few
+                  // otehr cases) so we make sure its not local first.
+                  //
+                  if (serverFile.exists()) {
                       value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                  } else if ((externalFileManager != null) ) {
+                      value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
                   } 
-                  
-                 
-                  
-                  
+
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
              
               }  else {
@@ -415,7 +408,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         outputFileRetryCount.remove(localJobId);
                     }
                 }
-                
+                GpContext serverContext = GpContext.getServerContext();
+                ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
                 
                 for (int i=0; i < outputFiles.size();i++){
                     String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
@@ -427,7 +421,10 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         name = getSpecialRemoteFileNames().get(name);
                     }
                     log.debug("Saving remote result file " + name + " to " + dir.getAbsolutePath());
-                    gpRestClient.getOutputFile(outFileUrl, dir, name);
+                    File outFile = gpRestClient.getOutputFile(outFileUrl, dir, name);
+                    if (externalFileManager != null){
+                        externalFileManager.syncLocalFileToRemote(serverContext, outFile);
+                    }
                     
                     
                 }
