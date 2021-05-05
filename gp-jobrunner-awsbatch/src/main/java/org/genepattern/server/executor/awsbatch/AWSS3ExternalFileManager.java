@@ -445,9 +445,46 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             proc.destroy();
         }
         return success;
+    }
+    
+    public  boolean syncLocalFileToRemote(GpContext userContext,  File file) throws IOException {
+        final GpConfig gpConfig=ServerConfigurationFactory.instance();
+        String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
+        String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
+        String awsfilepath = gpConfig.getGPProperty(userContext,"aws-batch-script-dir");
+        String awsfilename = gpConfig.getGPProperty(userContext, AWSBatchJobRunner.PROP_AWS_CLI, "aws-cli.sh");
+         
+        String execArgs[] = new String[] {awsfilepath+awsfilename, "s3", "sync", 
+                file.getParentFile().getAbsolutePath(),
+                "s3://"+bucket+ "/"+bucketRoot+file.getParentFile().getAbsolutePath(), 
+                "--exclude", "*",
+                "--include", file.getName()};
+        
+       
+        boolean success = false;
+        Process proc = Runtime.getRuntime().exec(execArgs);
+        try {
+            proc.waitFor(3, TimeUnit.MINUTES);
+        
+            success = (proc.exitValue() == 0);
+            if (!success){
+                logStdout(proc, "sync S3 file"); 
+                logStderr(proc, "sync S3 file"); 
+            }
+            
+        } catch (Exception e){
+            log.debug(e);
+            return false;
+            
+        } finally {
+            proc.destroy();
+        }
+        return success;
         
         
     }
+    
+    
     
     
    
