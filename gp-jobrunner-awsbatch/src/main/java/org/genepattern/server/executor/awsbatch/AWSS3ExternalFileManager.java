@@ -446,8 +446,9 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
         }
         return success;
     }
+  
     
-    public  boolean syncLocalFileToRemote(GpContext userContext,  File file) throws IOException {
+    public  boolean syncLocalFileToRemote(GpContext userContext,  File file, boolean deleteLocalAfterSync) throws IOException {
         final GpConfig gpConfig=ServerConfigurationFactory.instance();
         String bucket = AwsBatchUtil.getBucketName(gpConfig, userContext);
         String bucketRoot = AwsBatchUtil.getBucketRoot(gpConfig, userContext);
@@ -470,6 +471,15 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
             if (!success){
                 logStdout(proc, "sync S3 file"); 
                 logStderr(proc, "sync S3 file"); 
+            } else {
+                try {
+                    if (deleteLocalAfterSync){
+                        boolean deleted = file.delete();
+                        if (!deleted) file.deleteOnExit();
+                    }
+                } catch (Exception e){
+                    file.deleteOnExit();
+                }
             }
             
         } catch (Exception e){

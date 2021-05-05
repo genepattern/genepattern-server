@@ -1,6 +1,8 @@
 package org.genepattern.drm.impl.gpongp;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
@@ -8,6 +10,7 @@ import java.net.URLDecoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -40,6 +43,8 @@ import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -346,6 +351,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         
     }
     
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-M-dd", Locale.ENGLISH);
+    private static final SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss", Locale.ENGLISH);
+    
+    
+    
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
         // TODO Auto-generated method stub
@@ -386,6 +396,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 log.debug("JOB IS DONE " + status + "  " + localJobId) ;
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
+                JSONArray outFilesJSON = new JSONArray();
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
                 log.debug("Job output files are " + outputFiles.toString());
                 File dir = drmJobRecord.getWorkingDir();
@@ -423,11 +434,28 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                     log.debug("Saving remote result file " + name + " to " + dir.getAbsolutePath());
                     File outFile = gpRestClient.getOutputFile(outFileUrl, dir, name);
                     if (externalFileManager != null){
-                        externalFileManager.syncLocalFileToRemote(serverContext, outFile);
+                        Date date = new Date(outFile.lastModified());
+                        JSONObject oneFileJSON = new JSONObject();
+                        oneFileJSON.put("filename", outFile.getAbsolutePath());
+                        oneFileJSON.put("size", outFile.length());
+                        oneFileJSON.put("date", dateFormatter.format(date));
+                        oneFileJSON.put("time", timeFormatter.format(date));
+                        outFilesJSON.put(oneFileJSON);
+                        externalFileManager.syncLocalFileToRemote(serverContext, outFile, true);
+                        
                     }
                     
                     
                 }
+                // for externally managed files, write the JSON file so they are added to the DB
+                if (outFilesJSON.length() > 0){
+                    File outListFile = new File(drmJobRecord.getWorkingDir(), ExternalFileManager.nonRetrievedFilesFileName);
+                    BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
+                    writer.append(outFilesJSON.toString());
+                    writer.close();
+                }
+                
+                
                 Boolean delRemote = new Boolean(delete);
                 try {
                     if (delRemote) {
@@ -463,6 +491,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         return new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
     }
 
+  
+    
+    
+    
+    
     @Override
     public boolean cancelJob(DrmJobRecord jobRecord) throws Exception {
        
