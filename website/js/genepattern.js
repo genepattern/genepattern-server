@@ -1057,7 +1057,17 @@ function s3DirectUploadAddToToaster(r, file, directoryUrl){
 	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
-	if (($('#upload-toaster').dialog('isOpen') === true)){
+	var alreadyOpen = false;
+	// if the dialog is not already created then the dialog('isOpen') call throws an exception
+	try {
+		alreadyOpen = ($('#upload-toaster').dialog('isOpen'));
+	} catch (e){
+		//ignore
+		alreadyOpen = false;
+	}
+	
+	
+	if (alreadyOpen === true){
 		appendToUploadToaster(file);
 	} else {
 		var filelist = [file];
@@ -1710,10 +1720,31 @@ function initUploadToaster(filelist) {
                 $(".upload-dialog").find(".ui-dialog-titlebar-close").hide();
             },
             "minimize" : function() {
+            	 var head = document.getElementsByTagName('head')[0];
+
+            	 var style = document.createElement('link');
+            	 style.href = "../css/frozen/pulsing.css";
+            	 style.type = 'text/css';
+            	 style.rel = 'stylesheet';
+            	 head.append(style);
+            	
+            	
+            	
                 $("#dialog-extend-fixed-container")
                     .find(".upload-dialog")
                     .removeAttr("style");
+                
+                toaster.dialog('option', 'title', 'Uploads In Progress');
+                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewImage' />");
+                //alert("X");
+                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
             },
+            "beforeRestore" : function(evt) {  
+            	
+            	toaster.dialog('option', 'title', 'GenePattern Uploads');
+            	$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").removeClass("pulsingUpload");
+            },
+            
             "icons" : {
                 "close" : "ui-icon-close",
                 "minimize" : "ui-icon-minus",
