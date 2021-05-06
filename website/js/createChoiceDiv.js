@@ -197,10 +197,16 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         // if its default is blank and blank does not match any of the choices
         // add a default --select an option -- to the top
         // <option disabled selected value> -- select an option -- </option>
-        if ((choiceMapping[""] == null) && ((paramDetails.defaultValue == "") || (paramDetails.defaultValue == null))){
-        	var pleaseSelectLabel =  " -- select an option -- ";
-        	choiceMapping[""] =pleaseSelectLabel;
-        	choice.append("<option disabled value=''>"+pleaseSelectLabel+"</option>");
+        if ((!choiceMapping[""]) && ((paramDetails.default_value == "") || (paramDetails.default_value === null))){
+        	if (paramDetails.required == true){
+	        	var pleaseSelectLabel =  " -- select an option -- ";
+	        	choiceMapping[""] =pleaseSelectLabel;
+	        	choice.append("<option disabled value=''>"+pleaseSelectLabel+"</option>");
+        	} else {
+        		var pleaseSelectLabel =  " ";
+	        	choiceMapping[""] =pleaseSelectLabel;
+	        	choice.append("<option value=''>"+pleaseSelectLabel+"</option>");
+        	}
         }
         
         for(var c=0;c<choiceInfo.choices.length;c++)
