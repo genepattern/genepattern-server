@@ -238,6 +238,7 @@ public class JobExecutor implements CommandExecutor2 {
     private long minDelay=100L;
     private long maxDelay=30*SEC;
     private boolean useDynamicDelay=true;
+    private boolean strictMinDelay = false;
     
     // default retry cutoff, when getStatus fails
     private Walltime retryCutoff=new Walltime(1, TimeUnit.DAYS);
@@ -310,6 +311,7 @@ public class JobExecutor implements CommandExecutor2 {
         }
     }
     
+    private static final long MILLISEC=1L; 
     private static final long SEC=1000L; 
     private static final long MINUTE=60L*SEC;
     
@@ -350,6 +352,18 @@ public class JobExecutor implements CommandExecutor2 {
         final Date now=new Date();
         final Date submitTime=drmJobStatus.getSubmitTime();
         final Date startTime=drmJobStatus.getStartTime();
+        
+        long effectiveMinDelay = minDelay;
+        if (!this.strictMinDelay){
+            // old style GP capped the min at 2 seconds
+            effectiveMinDelay = Math.min(minDelay, 2L * SEC);
+        }
+        // first period of dynamic delay, up to 2 min (default) unless dynamic is set longer
+        long stage1 = Math.max((effectiveMinDelay * 50), 2L * MINUTE);
+        long stage2 = Math.max((effectiveMinDelay * 150), 5L * MINUTE);
+        long stage3 = Math.max((effectiveMinDelay * 300), 10L * MINUTE);
+        
+        
         long elapsed;
         if (startTime != null) {
             elapsed=now.getTime()-startTime.getTime();
@@ -360,18 +374,26 @@ public class JobExecutor implements CommandExecutor2 {
         else {
             elapsed=SEC;
         }
-        
+        long delay = effectiveMinDelay;
         //hard-coded rule as a function of how long the job has been 'pending' or 'running'
-        if (elapsed < 2L*MINUTE) {
-            return Math.min(minDelay, 2L * SEC);
+        if (elapsed < stage1) {
+            // up to ~ 2 min
+            delay = effectiveMinDelay;
         }
-        else if (elapsed < 5L*MINUTE) {
-            return 2L * SEC;
+        else if (elapsed < stage2) {
+            // after ~ 5 min
+            delay =  Math.min(maxDelay, 10L * effectiveMinDelay);
         }
-        else if (elapsed < 10L*MINUTE) {
-            return 5L * SEC;
+        else if (elapsed < stage3) {
+            delay =  Math.min(maxDelay, 25L * effectiveMinDelay);
+        } else {
+            delay =  maxDelay;
         }
-        return maxDelay;
+        log.debug("Dynamic delay set: "+ delay+ "  after elapsed "+elapsed);
+        System.out.println("Dynamic delay set: "+ delay+ "  after elapsed "+elapsed + "  stages: "+stage1+", "+ stage2+", "+stage3+ "  min:"+minDelay+"  max:"+maxDelay);
+        
+        return delay;
+        
     }
     
     @Override
@@ -396,6 +418,11 @@ public class JobExecutor implements CommandExecutor2 {
             log.error("Error initializing value from config file, "+PROP_LOOKUP_TYPE+": "+lookupTypeStr, t);
         }
 
+        // original GP had a min delay that maxed-out at 2 seconds.  If strictMinDelay is set
+        // then it overrides this maximum
+        this.strictMinDelay=new Boolean(   properties.getProperty("strictMinDelay", "false"));
+        
+        
         String minDelayStr=properties.getProperty(PROP_MIN_DELAY);
         if (minDelayStr != null && minDelayStr.trim().length()>0) {
             if (log.isDebugEnabled()) {
