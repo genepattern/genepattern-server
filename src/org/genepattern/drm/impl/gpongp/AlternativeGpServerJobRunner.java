@@ -383,7 +383,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             
             String submitTime = null;
             try {
-                submitTime = statusJsonObj.getAsJsonObject("status").get("submitTime").getAsString();
+                submitTime = statusJsonObj.get("dateSubmitted").getAsString();
             } catch (Exception e){}
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
