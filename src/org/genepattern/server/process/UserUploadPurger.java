@@ -26,7 +26,6 @@ import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
-import org.genepattern.server.executor.awsbatch.AwsBatchUtil;
 
 /**
  * Helper class for purging user upload files for the given user.
