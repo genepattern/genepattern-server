@@ -383,7 +383,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
             
-            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
+            final GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
             String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
@@ -413,7 +413,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                 JSONArray outFilesJSON = new JSONArray();
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
                 log.debug("Job output files are " + outputFiles.toString());
-                File dir = drmJobRecord.getWorkingDir();
+                final File dir = drmJobRecord.getWorkingDir();
                 
                 if (outputFiles.size() == 0){
                     // We get a race condition sometimes when the job is done but the files have not yet been registered
@@ -433,8 +433,8 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         outputFileRetryCount.remove(localJobId);
                     }
                 }
-                GpContext serverContext = GpContext.getServerContext();
-                ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
+                final GpContext serverContext = GpContext.getServerContext();
+                final ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
                 int numOutputFilesRetrieved = 0;
                 for (int i=0; i < outputFiles.size();i++){
                     final String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
