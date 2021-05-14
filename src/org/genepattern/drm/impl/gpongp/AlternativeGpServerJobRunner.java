@@ -437,7 +437,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                 ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
                 int numOutputFilesRetrieved = 0;
                 for (int i=0; i < outputFiles.size();i++){
-                    String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
+                    final String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
                     String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
                     String origName = outFileUrl.substring(outFileUrl.lastIndexOf('/')+1);
                     // so we get the actual filename by looking at the end of the URL because the Name part of the link and 
@@ -507,7 +507,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                                 name = getSpecialRemoteFileNames().get(origName);
                                 outFileNameAndPath = outFileNameAndPath.replace(origName, name);
                             } 
-                            File outFile = new File(dir, outFileNameAndPath);
+                            final File outFile = new File(dir, outFileNameAndPath);
                             
                             //System.out.println(" 4. Download complete " + outFile.getAbsolutePath() + "  len= " +  outFile.length());
                             
