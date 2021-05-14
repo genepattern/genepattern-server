@@ -49,6 +49,8 @@ import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -473,17 +475,18 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         
                         if (!downloadMarker.exists()){
                             downloadMarker.createNewFile();
+                            Future<Boolean> f=executor.submit(new Callable<Boolean>() {
+                                @Override
+                                public Boolean call() throws Exception {
+                                        File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
+                                        // delay briefly because the file found later needs to be flushed
+                                        boolean markerGone = downloadMarker.delete();
+                                        return downloadedFile.exists();
+                                }
+                            });
+                            
                             executor.submit(() -> {
-                                try {
-                                    File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
-                                    // delay briefly because the file found later needs to be flushed
-                                    boolean markerGone = downloadMarker.delete();
-                                }
-                                catch (Exception e) {
-                                    log.debug(" Download failed " + downloadMarker.getAbsolutePath());
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                }
+                                
 
                             });                
                         }
@@ -519,13 +522,15 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                             oneFileJSON.put("date", dateFormatter.format(date));
                             oneFileJSON.put("time", timeFormatter.format(date));
                             outFilesJSON.put(oneFileJSON);
-                            executor.submit(() -> {
-                                try {
-                                    externalFileManager.syncLocalFileToRemote(serverContext, outFile, false);
-                                } catch (IOException ioe){
-                                    ioe.printStackTrace();
+                            
+                            Future<Boolean> f=executor.submit(new Callable<Boolean>() {
+                                @Override
+                                public Boolean call() throws Exception {
+                                    
+                                    return externalFileManager.syncLocalFileToRemote(serverContext, outFile, true);
                                 }
                             });
+                           
                         }
                         // all files retrieved so lets mark it done
                         // for externally managed files, write the JSON file so they are added to the DB
