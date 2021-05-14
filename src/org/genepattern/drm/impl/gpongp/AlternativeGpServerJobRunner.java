@@ -3,6 +3,7 @@ package org.genepattern.drm.impl.gpongp;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
@@ -48,16 +49,27 @@ import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
     GpConfig config;
     HashMap<Integer,Integer> outputFileRetryCount;
     
+    ThreadPoolExecutor executor;
+    
     public AlternativeGpServerJobRunner(){
         outputFileRetryCount = new HashMap<Integer,Integer>();
-
-    
+        // 3 threads standing, one each for two output files, stdout, stderr
+        executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+        executor.setKeepAliveTime(60, TimeUnit.SECONDS);
+        executor.setMaximumPoolSize(30);
+       
+        
     }
     
     @Override
@@ -458,43 +470,25 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         // in a new thread and actually call it done when all the files are present, returning the RUNNING
                         // state until that is so.
                         //
-                        // note: - not using Future<T> because we are still stuck in java7
-                        //         
-                        //
                         
                         if (!downloadMarker.exists()){
-                            
                             downloadMarker.createNewFile();
-                            Thread thread = new Thread(){
-                                public void run(){
-                                    try {
-                                        File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
-                                        // possible race condition to call it done when a large file is not finished downloading but does exist
-                                        // so download as file.tmp and rename once its complete
-                                        
-                                        
-                                         
-                                        //System.out.println(" 1. Download complete " + downloadedFile.getAbsolutePath() + "  len= " +  downloadedFile.length());
-                                        // delay briefly because the file found later needs to be flushed
-                                        Thread.currentThread().sleep(30000);
-                                        boolean markerGone = downloadMarker.delete();
-                                        
-                                       // System.out.println(" 2. Download complete " + downloadedFile.getAbsolutePath() + "  len= " +  downloadedFile.length());
-                                        
-                                    }
-                                    catch (Exception e) {
-                                        log.debug(" Download failed " + downloadMarker.getAbsolutePath());
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                    }
+                            executor.submit(() -> {
+                                try {
+                                    File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
+                                    // delay briefly because the file found later needs to be flushed
+                                    boolean markerGone = downloadMarker.delete();
                                 }
-                            };
-                            thread.start();
+                                catch (Exception e) {
+                                    log.debug(" Download failed " + downloadMarker.getAbsolutePath());
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+
+                            });                
                         }
     
                     }  else if (outFile.exists() && (!downloadMarker.exists())){
-                       // System.out.println(" 3. Download complete " + outFile.getAbsolutePath() + "  len= " +  outFile.length());
-                        
                         numOutputFilesRetrieved +=1;
                     }         
                 }
@@ -525,7 +519,13 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                             oneFileJSON.put("date", dateFormatter.format(date));
                             oneFileJSON.put("time", timeFormatter.format(date));
                             outFilesJSON.put(oneFileJSON);
-                            externalFileManager.syncLocalFileToRemote(serverContext, outFile, false);
+                            executor.submit(() -> {
+                                try {
+                                    externalFileManager.syncLocalFileToRemote(serverContext, outFile, false);
+                                } catch (IOException ioe){
+                                    ioe.printStackTrace();
+                                }
+                            });
                         }
                         // all files retrieved so lets mark it done
                         // for externally managed files, write the JSON file so they are added to the DB
