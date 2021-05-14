@@ -460,38 +460,43 @@ public class AWSS3ExternalFileManager extends ExternalFileManager {
                 "s3://"+bucket+ "/"+bucketRoot+file.getParentFile().getAbsolutePath(), 
                 "--exclude", "*",
                 "--include", file.getName()};
-        
-       
-        boolean success = false;
-        Process proc = Runtime.getRuntime().exec(execArgs);
-        try {
-            proc.waitFor(3, TimeUnit.MINUTES);
-        
-            success = (proc.exitValue() == 0);
-            if (!success){
-                logStdout(proc, "sync S3 file"); 
-                logStderr(proc, "sync S3 file"); 
-            } else {
-                try {
-                    if (deleteLocalAfterSync){
-                        boolean deleted = file.delete();
-                        if (!deleted) file.deleteOnExit();
-                    }
-                } catch (Exception e){
-                    file.deleteOnExit();
-                }
+
+        Thread thread = new Thread(){
+            public void run(){
+              System.out.println("Thread Running");
+              boolean success = false;
+              Process proc = null;
+              try {
+                  proc = Runtime.getRuntime().exec(execArgs);
+                  proc.waitFor(3, TimeUnit.MINUTES);
+                  success = (proc.exitValue() == 0);
+                  if (!success){
+                      logStdout(proc, "sync S3 file"); 
+                      logStderr(proc, "sync S3 file"); 
+                  } else {
+                      try {
+                          if (deleteLocalAfterSync){
+                              boolean deleted = file.delete();
+                              if (!deleted) file.deleteOnExit();
+                          }
+                      } catch (Exception e){
+                          file.deleteOnExit();
+                      }
+                  }
+                  
+              } catch (Exception e){
+                  log.debug(e);
+                
+                  
+              } finally {
+                  if (proc != null) proc.destroy();
+              }
+              
+              
             }
-            
-        } catch (Exception e){
-            log.debug(e);
-            return false;
-            
-        } finally {
-            proc.destroy();
-        }
-        return success;
-        
-        
+          };
+        thread.start();
+        return true;
     }
     
     

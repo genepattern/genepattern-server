@@ -2949,6 +2949,18 @@ public class GenePatternAnalysisTask {
         if (isStderr) {
             paramOut._setAsStderrFile();
         }
+        
+        ParameterInfo[] params =  jobInfo.getParameterInfoArray();
+        for (int i=0; i< params.length; i++){
+            if (params[i].isOutputFile()){
+                if (params[i].getName().equals(label) && params[i].getValue().equals(fileName)){
+                    // don't add it again
+                    return;
+                }
+            }
+            
+        }
+        
         jobInfo.addParameterInfo(paramOut);
         if (parentJobInfo != null) {
             parentJobInfo.addParameterInfo(paramOut);

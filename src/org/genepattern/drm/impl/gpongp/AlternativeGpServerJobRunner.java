@@ -421,52 +421,142 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                 }
                 GpContext serverContext = GpContext.getServerContext();
                 ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
-                
+                int numOutputFilesRetrieved = 0;
                 for (int i=0; i < outputFiles.size();i++){
                     String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
-                    
-                    String name = outFileUrl.substring(outFileUrl.lastIndexOf('/'));
+                    String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
+                    String origName = outFileUrl.substring(outFileUrl.lastIndexOf('/')+1);
+                    // so we get the actual filename by looking at the end of the URL because the Name part of the link and 
+                    // figure out any directories by pulling the name off the path to see what is left
+                    String pathBits[] = outFileNameAndPath.split("/");
+                    for (int ii=0; ii< pathBits.length-1; ii++){
+                        System.out.println("subDir = " + pathBits[ii]);
+                        File outFileDir = new File(dir, pathBits[ii]);
+                        outFileDir.mkdirs();
+                    }
+                    String name = origName;
                     
                     // avoid stomping on the special files
-                    if (getSpecialRemoteFileNames().keySet().contains(name)){
-                        name = getSpecialRemoteFileNames().get(name);
-                    }
-                    log.debug("Saving remote result file " + name + " to " + dir.getAbsolutePath());
-                    File outFile = gpRestClient.getOutputFile(outFileUrl, dir, name);
-                    if (externalFileManager != null){
-                        Date date = new Date(outFile.lastModified());
-                        JSONObject oneFileJSON = new JSONObject();
-                        oneFileJSON.put("filename", outFile.getAbsolutePath());
-                        oneFileJSON.put("size", outFile.length());
-                        oneFileJSON.put("date", dateFormatter.format(date));
-                        oneFileJSON.put("time", timeFormatter.format(date));
-                        outFilesJSON.put(oneFileJSON);
-                        externalFileManager.syncLocalFileToRemote(serverContext, outFile, true);
+                    if (getSpecialRemoteFileNames().keySet().contains(origName)){
+                        name = getSpecialRemoteFileNames().get(origName);
+                        outFileNameAndPath = outFileNameAndPath.replace(origName, name);
+                    } 
+                   
+                    
+                    log.debug("Saving remote result file " + outFileNameAndPath + " to " + dir.getAbsolutePath());
+                    File outFile = new File(dir, outFileNameAndPath);
+                    final String finalName = outFileNameAndPath;
+                    
+                    System.out.println("Creating marker with >>" + dir+"<< and >>" + name);
+                    final File downloadMarker = new File(dir, ".marker." + name+".marker");
+                    
+                    if ((!outFile.exists())  && (!downloadMarker.exists()) ){
+                        //
+                        // Here we use a separate thread to download the files because for jobs with lots of
+                        // files or large files, the download can take longer than the polling frequency and if we just
+                        // do it synchronously we get stuck downloading over and over again forever.  So instead we download
+                        // in a new thread and actually call it done when all the files are present, returning the RUNNING
+                        // state until that is so.
+                        //
+                        // note: - not using Future<T> because we are still stuck in java7
+                        //         
+                        //
                         
+                        if (!downloadMarker.exists()){
+                            
+                            downloadMarker.createNewFile();
+                            Thread thread = new Thread(){
+                                public void run(){
+                                    try {
+                                        File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
+                                        // possible race condition to call it done when a large file is not finished downloading but does exist
+                                        // so download as file.tmp and rename once its complete
+                                        
+                                        
+                                         
+                                        //System.out.println(" 1. Download complete " + downloadedFile.getAbsolutePath() + "  len= " +  downloadedFile.length());
+                                        // delay briefly because the file found later needs to be flushed
+                                        Thread.currentThread().sleep(30000);
+                                        boolean markerGone = downloadMarker.delete();
+                                        
+                                       // System.out.println(" 2. Download complete " + downloadedFile.getAbsolutePath() + "  len= " +  downloadedFile.length());
+                                        
+                                    }
+                                    catch (Exception e) {
+                                        log.debug(" Download failed " + downloadMarker.getAbsolutePath());
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            thread.start();
+                        }
+    
+                    }  else if (outFile.exists() && (!downloadMarker.exists())){
+                       // System.out.println(" 3. Download complete " + outFile.getAbsolutePath() + "  len= " +  outFile.length());
+                        
+                        numOutputFilesRetrieved +=1;
+                    }         
+                }
+                log.debug("    ---- Found "+numOutputFilesRetrieved+ " of " + outputFiles.size());
+                
+                if (numOutputFilesRetrieved == outputFiles.size()){
+                    if (externalFileManager != null){
+                        for (int i=0; i < outputFiles.size();i++){
+                            String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
+                            String name = outFileUrl.substring(outFileUrl.lastIndexOf('/'));
+                            String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
+                            String origName = outFileUrl.substring(outFileUrl.lastIndexOf('/')+1);
+                            
+                            // avoid stomping on the special files
+                            if (getSpecialRemoteFileNames().keySet().contains(origName)){
+                                name = getSpecialRemoteFileNames().get(origName);
+                                outFileNameAndPath = outFileNameAndPath.replace(origName, name);
+                            } 
+                            File outFile = new File(dir, outFileNameAndPath);
+                            
+                            //System.out.println(" 4. Download complete " + outFile.getAbsolutePath() + "  len= " +  outFile.length());
+                            
+                            
+                            Date date = new Date(outFile.lastModified());
+                            JSONObject oneFileJSON = new JSONObject();
+                            oneFileJSON.put("filename", outFile.getAbsolutePath());
+                            oneFileJSON.put("size", outFile.length());
+                            oneFileJSON.put("date", dateFormatter.format(date));
+                            oneFileJSON.put("time", timeFormatter.format(date));
+                            outFilesJSON.put(oneFileJSON);
+                            externalFileManager.syncLocalFileToRemote(serverContext, outFile, false);
+                        }
+                        // all files retrieved so lets mark it done
+                        // for externally managed files, write the JSON file so they are added to the DB
+                        File outListFile = new File(drmJobRecord.getWorkingDir(), ExternalFileManager.nonRetrievedFilesFileName);
+                        BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
+                        writer.append(outFilesJSON.toString());
+                        writer.close();
+                    }
+                    
+                    Boolean delRemote = new Boolean(delete);
+                    try {
+                        if (delRemote) {
+                            //analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
+                            //analysisProxy.deleteJob(new Integer(drmJobId));  
+                            gpRestClient.deleteJob(drmJobId);
+                        }
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        log.error(e);
                     }
                     
                     
-                }
-                // for externally managed files, write the JSON file so they are added to the DB
-                if (outFilesJSON.length() > 0){
-                    File outListFile = new File(drmJobRecord.getWorkingDir(), ExternalFileManager.nonRetrievedFilesFileName);
-                    BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
-                    writer.append(outFilesJSON.toString());
-                    writer.close();
-                }
-                
-                
-                Boolean delRemote = new Boolean(delete);
-                try {
-                    if (delRemote) {
-                        //analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
-                        //analysisProxy.deleteJob(new Integer(drmJobId));  
-                        gpRestClient.deleteJob(drmJobId);
-                    }
+                } else {
+                    // leave it in RUNNING state while the files are downloading until they are all present
                     
-                } catch (Exception e){
-                    e.printStackTrace();
-                    log.error(e);
+                    statusBuilder = new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING); 
+                    log.debug("  Remote job state is " + state + " but leaving it as running until output files retrieved.");
+                    statusBuilder.startTime(getDate(startTime));
+                    statusBuilder.submitTime(getDate(submitTime));
+                    
                 }
             }
             
