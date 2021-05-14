@@ -485,10 +485,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                                 }
                             });
                             
-                            executor.submit(() -> {
-                                
-
-                            });                
+                                  
                         }
     
                     }  else if (outFile.exists() && (!downloadMarker.exists())){
