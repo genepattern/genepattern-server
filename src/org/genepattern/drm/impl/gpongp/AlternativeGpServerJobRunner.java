@@ -1,12 +1,16 @@
 package org.genepattern.drm.impl.gpongp;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -15,7 +19,9 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
@@ -23,6 +29,7 @@ import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
 import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.executor.CommandExecutorException;
@@ -37,19 +44,34 @@ import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AlternativeGpServerJobRunner implements JobRunner {
     private static final Logger log = Logger.getLogger(AlternativeGpServerJobRunner.class);
     GpConfig config;
     HashMap<Integer,Integer> outputFileRetryCount;
     
+    ThreadPoolExecutor executor;
+    
     public AlternativeGpServerJobRunner(){
         outputFileRetryCount = new HashMap<Integer,Integer>();
-
-    
+        // 3 threads standing, one each for two output files, stdout, stderr
+        executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+        executor.setKeepAliveTime(60, TimeUnit.SECONDS);
+        executor.setMaximumPoolSize(30);
+       
+        
     }
     
     @Override
@@ -75,12 +97,16 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     @Override
     public String startJob(DrmJobSubmission jobSubmission) throws CommandExecutorException {
         Integer externalJobId = -1;
+        
+        
         // XXX HACK for now just refresh this with each run
         config = jobSubmission.getGpConfig();
         GpContext jobContext = jobSubmission.getJobContext();
         String user = config.getGPProperty(jobContext, "remote.user");
         String pass = config.getGPProperty(jobContext, "remote.password");
         String gpurl = config.getGPProperty(jobContext, "remote.genepattern.url");
+        ExternalFileManager externalFileManager = DataManager.getExternalFileManager(jobContext);
+        
         try {
             System.out.println("--------------- --- -- - submitting remote job to " + gpurl +" as " +user);
              
@@ -111,14 +137,19 @@ public class AlternativeGpServerJobRunner implements JobRunner {
               JsonObject P = null;
               if (val.indexOf("<GenePatternURL>") >= 0){
                   File serverFile = null;
-                  try {
-                      GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
-                      serverFile = gpfp.getServerFile();
-                  } catch (Exception e){
-                      serverFile = this.getFileForUrl(val, jobContext);
-                  }
-                  
-                  Object value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                  Object value2 = null;
+                  GpFilePath gpfp = GpFileObjFactory.getRequestedGpFileObj(config, val);
+                  serverFile = gpfp.getServerFile();
+                  //
+                  // When an external file manager is in use, its still possible that a file is local (legacy files and a few
+                  // otehr cases) so we make sure its not local first.
+                  //
+                  if (serverFile.exists()) {
+                      value2 = gpRestClient.uploadFileIfNecessary(true, serverFile.getAbsolutePath());
+                  } else if ((externalFileManager != null) ) {
+                      value2 = new URL(externalFileManager.getDownloadURL(jobContext, serverFile));
+                  } 
+
                   P = gpRestClient.createParameterJsonObject(pis[i].getName(), value2);
              
               }  else {
@@ -334,6 +365,41 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         
     }
     
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-M-dd", Locale.ENGLISH);
+    private static final SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss", Locale.ENGLISH);
+    
+    // try to get cpu time or extimate it if unavailable
+    protected long getCpuTime(JsonObject statusObj){
+        long cpuTime = 0L;
+        try {
+            
+            cpuTime = statusObj.getAsJsonObject("status").get("cpuTimeMillis").getAsLong();
+            if (cpuTime != 0) return cpuTime;
+            
+            long end = getDate(statusObj.get("dateCompleted").getAsString()).getTime();
+            long start = getDate(statusObj.get("dateSubmitted").getAsString()).getTime();
+            cpuTime = end - start;
+            
+            long nCpu = 1;
+            JsonArray requirements = statusObj.get("status").getAsJsonObject().get("resourceRequirements").getAsJsonArray();
+            for (int i=0; i< requirements.size(); i++){
+                JsonObject req = requirements.get(i).getAsJsonObject();
+                if ("job.cpuCount".equalsIgnoreCase(req.get("key").getAsString())){
+                    nCpu = req.get("value").getAsLong();
+                    break;
+                }
+            }
+            return nCpu * cpuTime;
+            
+        } catch(Exception e){
+            // swallow it, not always gonna be able to get this detail
+            return cpuTime;
+        } 
+       
+    }
+    
+    
+    
     @Override
     public DrmJobStatus getStatus(DrmJobRecord drmJobRecord) {
         // TODO Auto-generated method stub
@@ -347,7 +413,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             String gpurl = config.getGPProperty(context, "remote.genepattern.url");
             String delete = config.getGPProperty(context, "delete.on.remote.on.completion");
             
-            GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
+            final GenePatternRestApiV1Client gpRestClient = new GenePatternRestApiV1Client(gpurl, user, pass);
             JsonObject statusJsonObj = gpRestClient.getJobStatus(drmJobId);
             String status = statusJsonObj.getAsJsonObject("status").get("statusFlag").getAsString();
             
@@ -361,7 +427,7 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             
             String submitTime = null;
             try {
-                submitTime = statusJsonObj.getAsJsonObject("status").get("submitTime").getAsString();
+                submitTime = statusJsonObj.get("dateSubmitted").getAsString();
             } catch (Exception e){}
             
             DrmJobState state = jobInfoStatusToDrmJobState(status);
@@ -369,14 +435,16 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             log.debug("  remote job state is " + state);
             statusBuilder.startTime(getDate(startTime));
             statusBuilder.submitTime(getDate(submitTime));
-            
-            
+             
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 log.debug("JOB IS DONE " + status + "  " + localJobId) ;
+                statusBuilder.cpuTime(new CpuTime(getCpuTime(statusJsonObj)));
+                
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
+                JSONArray outFilesJSON = new JSONArray();
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");
                 log.debug("Job output files are " + outputFiles.toString());
-                File dir = drmJobRecord.getWorkingDir();
+                final File dir = drmJobRecord.getWorkingDir();
                 
                 if (outputFiles.size() == 0){
                     // We get a race condition sometimes when the job is done but the files have not yet been registered
@@ -396,33 +464,132 @@ public class AlternativeGpServerJobRunner implements JobRunner {
                         outputFileRetryCount.remove(localJobId);
                     }
                 }
-                
-                
+                final GpContext serverContext = GpContext.getServerContext();
+                final ExternalFileManager externalFileManager = DataManager.getExternalFileManager(serverContext);
+                int numOutputFilesRetrieved = 0;
                 for (int i=0; i < outputFiles.size();i++){
-                    String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
-                    
-                    String name = outFileUrl.substring(outFileUrl.lastIndexOf('/'));
+                    final String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
+                    String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
+                    String origName = outFileUrl.substring(outFileUrl.lastIndexOf('/')+1);
+                    // so we get the actual filename by looking at the end of the URL because the Name part of the link and 
+                    // figure out any directories by pulling the name off the path to see what is left
+                    String pathBits[] = outFileNameAndPath.split("/");
+                    for (int ii=0; ii< pathBits.length-1; ii++){
+                        System.out.println("subDir = " + pathBits[ii]);
+                        File outFileDir = new File(dir, pathBits[ii]);
+                        outFileDir.mkdirs();
+                    }
+                    String name = origName;
                     
                     // avoid stomping on the special files
-                    if (getSpecialRemoteFileNames().keySet().contains(name)){
-                        name = getSpecialRemoteFileNames().get(name);
-                    }
-                    log.debug("Saving remote result file " + name + " to " + dir.getAbsolutePath());
-                    gpRestClient.getOutputFile(outFileUrl, dir, name);
+                    if (getSpecialRemoteFileNames().keySet().contains(origName)){
+                        name = getSpecialRemoteFileNames().get(origName);
+                        outFileNameAndPath = outFileNameAndPath.replace(origName, name);
+                    } 
+                   
                     
+                    log.debug("Saving remote result file " + outFileNameAndPath + " to " + dir.getAbsolutePath());
+                    File outFile = new File(dir, outFileNameAndPath);
+                    final String finalName = outFileNameAndPath;
                     
+                    System.out.println("Creating marker with >>" + dir+"<< and >>" + name);
+                    final File downloadMarker = new File(dir, ".marker." + name+".marker");
+                    
+                    if ((!outFile.exists())  && (!downloadMarker.exists()) ){
+                        //
+                        // Here we use a separate thread to download the files because for jobs with lots of
+                        // files or large files, the download can take longer than the polling frequency and if we just
+                        // do it synchronously we get stuck downloading over and over again forever.  So instead we download
+                        // in a new thread and actually call it done when all the files are present, returning the RUNNING
+                        // state until that is so.
+                        //
+                        
+                        if (!downloadMarker.exists()){
+                            downloadMarker.createNewFile();
+                            Future<Boolean> f=executor.submit(new Callable<Boolean>() {
+                                @Override
+                                public Boolean call() throws Exception {
+                                        File downloadedFile = gpRestClient.getOutputFile(outFileUrl, dir, finalName);
+                                        // delay briefly because the file found later needs to be flushed
+                                        boolean markerGone = downloadMarker.delete();
+                                        return downloadedFile.exists();
+                                }
+                            });
+                            
+                                  
+                        }
+    
+                    }  else if (outFile.exists() && (!downloadMarker.exists())){
+                        numOutputFilesRetrieved +=1;
+                    }         
                 }
-                Boolean delRemote = new Boolean(delete);
-                try {
-                    if (delRemote) {
-                        //analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
-                        //analysisProxy.deleteJob(new Integer(drmJobId));  
-                        gpRestClient.deleteJob(drmJobId);
+                log.debug("    ---- Found "+numOutputFilesRetrieved+ " of " + outputFiles.size());
+                
+                if (numOutputFilesRetrieved == outputFiles.size()){
+                    if (externalFileManager != null){
+                        for (int i=0; i < outputFiles.size();i++){
+                            String outFileUrl = outputFiles.get(i).getAsJsonObject().get("link").getAsJsonObject().get("href").getAsString();
+                            String name = outFileUrl.substring(outFileUrl.lastIndexOf('/'));
+                            String outFileNameAndPath = outputFiles.get(i).getAsJsonObject().get("path").getAsString();
+                            String origName = outFileUrl.substring(outFileUrl.lastIndexOf('/')+1);
+                            
+                            // avoid stomping on the special files
+                            if (getSpecialRemoteFileNames().keySet().contains(origName)){
+                                name = getSpecialRemoteFileNames().get(origName);
+                                outFileNameAndPath = outFileNameAndPath.replace(origName, name);
+                            } 
+                            final File outFile = new File(dir, outFileNameAndPath);
+                            
+                            //System.out.println(" 4. Download complete " + outFile.getAbsolutePath() + "  len= " +  outFile.length());
+                            
+                            
+                            Date date = new Date(outFile.lastModified());
+                            JSONObject oneFileJSON = new JSONObject();
+                            oneFileJSON.put("filename", outFile.getAbsolutePath());
+                            oneFileJSON.put("size", outFile.length());
+                            oneFileJSON.put("date", dateFormatter.format(date));
+                            oneFileJSON.put("time", timeFormatter.format(date));
+                            outFilesJSON.put(oneFileJSON);
+                            
+                            Future<Boolean> f=executor.submit(new Callable<Boolean>() {
+                                @Override
+                                public Boolean call() throws Exception {
+                                    
+                                    return externalFileManager.syncLocalFileToRemote(serverContext, outFile, true);
+                                }
+                            });
+                           
+                        }
+                        // all files retrieved so lets mark it done
+                        // for externally managed files, write the JSON file so they are added to the DB
+                        File outListFile = new File(drmJobRecord.getWorkingDir(), ExternalFileManager.nonRetrievedFilesFileName);
+                        BufferedWriter writer = new BufferedWriter(new FileWriter (outListFile));
+                        writer.append(outFilesJSON.toString());
+                        writer.close();
                     }
                     
-                } catch (Exception e){
-                    e.printStackTrace();
-                    log.error(e);
+                    Boolean delRemote = new Boolean(delete);
+                    try {
+                        if (delRemote) {
+                            //analysisProxy = new AnalysisWebServiceProxy(gpurl, user, pass, false);
+                            //analysisProxy.deleteJob(new Integer(drmJobId));  
+                            gpRestClient.deleteJob(drmJobId);
+                        }
+                        
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        log.error(e);
+                    }
+                    
+                    
+                } else {
+                    // leave it in RUNNING state while the files are downloading until they are all present
+                    
+                    statusBuilder = new DrmJobStatus.Builder(drmJobId,DrmJobState.RUNNING); 
+                    log.debug("  Remote job state is " + state + " but leaving it as running until output files retrieved.");
+                    statusBuilder.startTime(getDate(startTime));
+                    statusBuilder.submitTime(getDate(submitTime));
+                    
                 }
             }
             
@@ -447,6 +614,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
         return new DrmJobStatus.Builder(drmJobId, DrmJobState.FAILED).build();
     }
 
+  
+    
+    
+    
+    
     @Override
     public boolean cancelJob(DrmJobRecord jobRecord) throws Exception {
        

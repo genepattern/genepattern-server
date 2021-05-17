@@ -193,6 +193,25 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
         for(var c=0;c<choiceInfo.choices.length;c++)
         {
             choiceMapping[choiceInfo.choices[c].value] = choiceInfo.choices[c].label;
+        }
+        // if its default is blank and blank does not match any of the choices
+        // add a default --select an option -- to the top
+        // <option disabled selected value> -- select an option -- </option>
+        if ((!choiceMapping[""]) && ((paramDetails.default_value == "") || (paramDetails.default_value === null))){
+        	if (paramDetails.required == true){
+	        	var pleaseSelectLabel =  " -- select an option -- ";
+	        	choiceMapping[""] =pleaseSelectLabel;
+	        	choice.append("<option disabled value=''>"+pleaseSelectLabel+"</option>");
+        	} else {
+        		var pleaseSelectLabel =  " ";
+	        	choiceMapping[""] =pleaseSelectLabel;
+	        	choice.append("<option value=''>"+pleaseSelectLabel+"</option>");
+        	}
+        }
+        
+        for(var c=0;c<choiceInfo.choices.length;c++)
+        {
+        //    choiceMapping[choiceInfo.choices[c].value] = choiceInfo.choices[c].label;
             choice.append("<option value='"+choiceInfo.choices[c].value+"'>"
                     + choiceInfo.choices[c].label+"</option>");
             if(choiceInfo.choices[c].label.length > longChars)
@@ -200,6 +219,8 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 longChars = choiceInfo.choices[c].label.length;
             }
         }
+        
+        
 
         selectChoiceDiv.append(choice);
 
@@ -284,7 +305,7 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                     var valuesList = parameter_and_val_groups[paramName].groups[groupId].values;
                     var textList = [];
 
-
+                     
                     for(var l=0 ;l < checkedItems.length;l++)
                     {
                         var value = checkedItems[l].value;
@@ -358,12 +379,16 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
                 $(this).parent().val(paramDetails.default_value);
                 $(this).parent().data("default_value", paramDetails.default_value);
                 $(this).parent().multiselect("refresh");
+            } else if(paramDetails.default_value == "" && $(this).val() == paramDetails.default_value){
+            	$(this).parent().val(paramDetails.default_value);
+                $(this).parent().data("default_value", paramDetails.default_value);
+                $(this).parent().multiselect("refresh");
             }
+            	
         });
 
         //select initial values if there are any
-        if( initialValuesList != undefined &&  initialValuesList != null)
-        {
+        if ( initialValuesList != undefined &&  initialValuesList != null) {
             var matchingValueList = [];
             for(var n=0;n<initialValuesList.length;n++)
             {
@@ -461,7 +486,14 @@ function buildChoiceDiv(selectChoiceDiv, choiceInfo, paramDetails, parameterName
  * @returns a choiceInfo object
  */
 function reloadChoiceDiv(selectChoiceDiv, choiceInfoIn, paramDetails, parameterName, groupId, enableBatch, initialValuesList) {
-    $.getJSON( choiceInfoIn.href,
+    var protocolLessHref = choiceInfoIn.href;
+    var arr = protocolLessHref.split("/");
+    if (arr[0] != window.location.protocol){
+    	protocolLessHref = protocolLessHref.replace(arr[0], window.location.protocol);
+    }
+	
+	
+	$.getJSON( protocolLessHref,
         function( choiceInfo ) {
             if (window.console) {
                 console.log("drop-down loaded from: " + choiceInfo.href);

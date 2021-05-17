@@ -782,14 +782,8 @@ public class AnalysisDAO extends BaseDAO {
             if (postJobDeleteScript != null){
                 // Runtime.getRuntime().exec(postJobDeleteScript, args );
                 ProcessBuilder pb = new ProcessBuilder(postJobDeleteScript, "bash", args[0], args[1]).inheritIO();
-                //Map<String, String> env = pb.environment();
-                //env.put("VAR1", "myValue");
-                //env.remove("OTHERVAR");
-                //env.put("VAR2", env.get("VAR1") + "suffix");
-                //pb.directory(new File(jobDir.getAbsolutePath()));
                 Process p = pb.start();
-                p.waitFor();
-              
+                p.wait(10000);
             }
             
             
@@ -925,6 +919,37 @@ public class AnalysisDAO extends BaseDAO {
         return jobIds;
         
     }
+    
+//    select  distinct  a.job_No from analysis_job as a
+//    where ((a.parent = null) OR (a.parent = -1))  
+//    AND a.deleted = false  
+//    AND a.job_no in (select job_no from job_group p where p.group_id in ( 'public', '*' ) )  
+//    and a.user_Id = 'ted'
+//    
+    public List<Integer> getPublicAnalysisJobIdsForUser(final String userId, final Date date) {
+        
+        String hql = "select a.jobNo from org.genepattern.server.domain.AnalysisJob as a ";
+        hql += " left join a.permissions as p  where a.userId = :userId and a.completedDate < :completedDate ";
+        hql += " AND  ((a.parent = null) OR (a.parent = -1)) AND a.deleted = false ";
+        hql += " AND   p.groupId in ('public','*')   ";
+        hql += " ORDER BY a.jobNo ASC";
+        Query query = getSession().createQuery(hql);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        query.setCalendar("completedDate", cal);
+        query.setString("userId", userId);
+       
+          
+        
+        @SuppressWarnings("unchecked")
+        List<Integer> jobIds = query.list();
+        
+        
+        
+        return jobIds;
+        
+    }
+    
     public List<Integer> getAnalysisJobIdsForUser(final String userId, final Date date) {
         String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob as j where j.userId = :userId and j.completedDate < :completedDate";
         hql += " ORDER BY jobNo ASC";
@@ -938,6 +963,24 @@ public class AnalysisDAO extends BaseDAO {
         return jobIds;
         
     }
+    
+    // TODO do the exclusion in the database
+    public List<Integer> getNonPublicAnalysisJobIdsForUser(final String userId, final Date date) {
+        List<Integer> allForUser = getAnalysisJobIdsForUser(userId, date);
+        List<Integer> publicForUser = getPublicAnalysisJobIdsForUser(userId, date);
+        
+        
+        
+        allForUser.removeAll(publicForUser);
+        
+        
+        
+        return allForUser;
+    }
+        
+    
+    
+    
     public List<AnalysisJob> getAnalysisJobs(Date date) {
         String hql = "from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
         hql += " ORDER BY jobNo ASC";
@@ -1199,8 +1242,17 @@ public class AnalysisDAO extends BaseDAO {
         return results.toArray(new JobInfo[] {});
     }
 
-    //TODO: use named queries (see AnalysisJob.hbm.xml) because it is easier to understand what is going on
+    
     private String getAnalysisJobQuery(boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        return getAnalysisJobQuery( filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs, false);
+    }
+    private String getAnalysisJobIdQuery(boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        return getAnalysisJobQuery( filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs, true);
+    }
+    
+    
+    //TODO: use named queries (see AnalysisJob.hbm.xml) because it is easier to understand what is going on
+    private String getAnalysisJobQuery(boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs, boolean idsOnly) {
         /* 
         Example SQL query
         select (distinct a.job_no) ...
@@ -1250,7 +1302,9 @@ public class AnalysisDAO extends BaseDAO {
          );   
          */
         
-        StringBuffer hql = new StringBuffer("select a from org.genepattern.server.domain.AnalysisJob as a where a.jobNo IN (");
+        StringBuffer hql;
+        if (idsOnly) hql = new StringBuffer("select a.jobNo from org.genepattern.server.domain.AnalysisJob as a where a.jobNo IN (");
+        else hql = new StringBuffer("select a from org.genepattern.server.domain.AnalysisJob as a where a.jobNo IN (");
 
         hql.append(" select ");
         if (includeGroups) {

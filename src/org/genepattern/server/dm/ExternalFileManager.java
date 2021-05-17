@@ -31,17 +31,28 @@ public abstract class ExternalFileManager {
     }
     
     public abstract void downloadFile( GpContext context, HttpServletRequest req, HttpServletResponse resp, File file) throws IOException;
-
+    
+    public abstract String getDownloadURL(GpContext userContext,  File file) throws Exception;
+    
     public abstract boolean moveFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    
     public abstract boolean moveDirectory(GpContext userContext,  File fromFile, File toFile) throws IOException;
 
     public abstract boolean copyFile(GpContext userContext,  File fromFile, File toFile) throws IOException;
+    
     public abstract boolean copyDirectory(GpContext userContext,  File fromFile, File toFile) throws IOException;
     
     public abstract boolean deleteFile(GpContext userContext,  File file) throws IOException;
+    
     public abstract boolean deleteDirectory(GpContext userContext,  File file) throws IOException;
+    
     public abstract boolean createSubDirectory(GpContext userContext,  File file) throws IOException;
     
     public abstract ArrayList<GpFilePath> listFiles(GpContext userContext,  File file) throws IOException;
+    
+    public abstract boolean syncRemoteFileToLocal(GpContext userContext,  File file) throws IOException;
+    
+    public abstract boolean syncLocalFileToRemote(GpContext userContext,  File file, boolean deleteLocalAfterSync) throws IOException;
+    
     
 }

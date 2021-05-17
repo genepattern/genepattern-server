@@ -13,6 +13,7 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.JobRunner;
+import org.genepattern.drm.Memory;
 import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.drm.impl.lsf.core.CmdException;
 import org.genepattern.drm.impl.lsf.core.CommonsExecCmdRunner;
@@ -30,6 +31,7 @@ public class SlurmJobRunner implements JobRunner {
 
     
     public String remotePrefix ;
+    public boolean failIfStderr = false;
     
     public SlurmJobRunner(){
         super();
@@ -170,7 +172,13 @@ public class SlurmJobRunner implements JobRunner {
         // If we weren't able to get the job number or had no lines of output, throw an error
         throw new CommandExecutorException("Cannot extract Slurm ID");
     }
-
+    public static String memFormatG(final Memory m) {
+        
+        long mib = (long) Math.ceil(
+            (double) m.getNumBytes() / (double) Memory.Unit.g.getMultiplier()
+        );
+        return ""+mib+"G";
+    }
     
     /**
      * Build the shell script necessary to initiate the Slurm job
@@ -184,24 +192,42 @@ public class SlurmJobRunner implements JobRunner {
      * @return - Return the path to the submission script
      * @throws CommandExecutorException
      */
-    String buildSubmissionScript(String gpJobId, String workDirPath, String commandLine, String partition, String account, String maxTime, String remoteHomeDirectory, String sbatchPrefix) throws CommandExecutorException {
+    String buildSubmissionScript(DrmJobSubmission drmJobSubmission, String gpJobId, String workDirPath, String commandLine) throws CommandExecutorException {
+        GpConfig config = drmJobSubmission.getGpConfig();
+        GpContext jobContext = drmJobSubmission.getJobContext();
+        
+        // Get necessary configuration variables
+        String sbatchPrefix = config.getGPProperty(jobContext, "slurm.sbatch.prefix", "");
+        String sbatchExtra = config.getGPProperty(jobContext, "slurm.additional.command", "");
+     
+        String partition = drmJobSubmission.getQueue("shared");
+        String account =  config.getGPProperty(jobContext, "slurm.account", "WHO_PAYS_FOR_THIS");
+        String maxTime = drmJobSubmission.getWalltime("02:00:00").toString();
+        
         File workingDirectory = new File(workDirPath);
-        File jobScript = new File(workingDirectory, "launchJob.sh");
+        File jobScript = new File(workingDirectory, ".launchJob.sb");
+        Memory memRequested = drmJobSubmission.getMemory();
+        if (memRequested == null) memRequested =  Memory.fromString("2 Gb");
+        Integer nCPU = drmJobSubmission.getCpuCount();
+        if (nCPU == null) nCPU = 1;
+        
         String scriptText = "#!/bin/bash -l\n" +
                             "#\n" +
                             "#SBATCH --job-name=gp_job_" + gpJobId + "\n" +
-                            "#SBATCH -D " + remoteHomeDirectory + "/jobResults/" + gpJobId + "\n" +
-                            "#SBATCH --output=stdout.txt\n" +
-                            "#SBATCH --error=stderr.txt\n" +
+                            "#SBATCH -D " + workDirPath  + "\n" +
+                            "#SBATCH --output="+workDirPath+"/stdout.txt\n" +
+                            "#SBATCH --error="+workDirPath+"/stderr.txt\n" +
                             "#SBATCH --nodes=1\n" +     // no parallel jobs here
                             "#SBATCH --ntasks-per-node=1\n" +
-
+                            "#SBATCH --mem="+ memFormatG(memRequested) + "\n" +
+                            "#SBATCH --cpus-per-task="+ nCPU + "\n" +
                             "#SBATCH --time=" + maxTime + "\n" +
                             "#SBATCH --account=" + account + "\n" +
                             "#\n" +
                             "#SBATCH --partition " + partition + " \n" +
                             " \n" +
-                            "module load singularitypro/3.5\n\n" +
+                            sbatchExtra + 
+                            "\n\n" +
                             sbatchPrefix + " " + commandLine + "\n";
 
         // Test working directory before writing
@@ -251,22 +277,22 @@ public class SlurmJobRunner implements JobRunner {
         List<String> commandLineList = drmJobSubmission.getCommandLine();
         String commandLine = Joiner.on(" ").join(commandLineList);
 
+        log.error("SBatch working dir " + workDir);
+        
         // Get configuration and context objects
         GpConfig config = drmJobSubmission.getGpConfig();
         GpContext context = drmJobSubmission.getJobContext();
 
-        // Get necessary configuration variables
-        String queue = drmJobSubmission.getQueue("shared");
-        String account =  config.getGPProperty(context, "slurm.account", "WHO_PAYS_FOR_THIS");
-        String maxTime = drmJobSubmission.getWalltime("00:01:00").toString();
+        
         String replacePath =  config.getGPProperty(context, "path.to.replace", null);
         String replaceWithPath =  config.getGPProperty(context, "path.replaced.with", null);
-        String sbatchPrefix = config.getGPProperty(context, "slurm.sbatch.prefix", null);
+          
+        
         if ((replacePath != null )&&(replaceWithPath != null ))
             commandLine = commandLine.replaceAll(replacePath, replaceWithPath);
 
         // Build the shell script for submitting the slurm job
-        String scriptPath = buildSubmissionScript(gpJobId, workDir, commandLine, queue, account, maxTime, replaceWithPath, sbatchPrefix);
+        String scriptPath = buildSubmissionScript(drmJobSubmission, gpJobId, workDir, commandLine);
 
         // Substitute file path prefixes with the correct prefixes for the execution server
         scriptPath = scriptPath.replaceAll(replacePath, replaceWithPath);
@@ -274,8 +300,13 @@ public class SlurmJobRunner implements JobRunner {
         // add prefix to ssh to a submit node if needed
         // XXX need to cache this because we cannot get the config to retrieve it 
         // later in get status calls
-        if (remotePrefix == null)  remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+        if (remotePrefix == null) {
+            remotePrefix = config.getGPProperty(context, "remote.exec.prefix", "");
+            failIfStderr = config.getGPBooleanProperty(context, "job.error_status.stderr", false);
+        }
    
+        
+        
         String[] remotePrefixArray = remotePrefix.split("\\s+");
         List<String> prefixArray = Arrays.asList(remotePrefixArray);
         ArrayList<String> commandArray = new ArrayList<String>();
@@ -351,9 +382,14 @@ public class SlurmJobRunner implements JobRunner {
                     count++;
                 }
                 slurmStatusString = tokenizer.nextToken();
+                log.debug("     slurm status: " + slurmStatusString);
             }
         }
 
+        return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
+    }
+    private DrmJobStatus slurmStatusToDrmStatus(String extJobId, File stderr, String slurmStatusString) throws CommandExecutorException {
+        
         // Build the correct status from the string, and return
         if (slurmStatusString == null) {
             log.error("Cannot retrieve Slurm status string: null");
@@ -375,11 +411,10 @@ public class SlurmJobRunner implements JobRunner {
             return new DrmJobStatus.Builder(extJobId, DrmJobState.RUNNING).build();
         }
         else if (slurmStatusString.compareToIgnoreCase("COMPLETE") == 0 || slurmStatusString.compareToIgnoreCase("COMPLETED") == 0) {
-            if (stderr != null && stderr.exists() && stderr.length() != 0) {
+            if (failIfStderr && (stderr != null && stderr.exists() && stderr.length() != 0) ) {
                 Thread.currentThread().interrupt();
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
-            }
-            else {
+            } else {
                 return new DrmJobStatus.Builder(extJobId, DrmJobState.DONE).exitCode(0).endTime(new Date()).build();
             }
         }
@@ -442,19 +477,69 @@ public class SlurmJobRunner implements JobRunner {
             
             
             output = commandRunner.runCmd(commandArray);
+            log.error("slurm getStatus result: \n" + output.get(0)+"\n"+output.get(1)+"\n"+output.get(2));
+            
+            
         }
         catch (Throwable e) {
-            log.error("Error getting status for slurm job: " + extJobId + "  " +  e.getMessage());
+            log.error("Error getting status for slurm job with squeue: " + extJobId + "  " +  e.getMessage());
+            return this.altGetStatus(drmJobRecord);
         }
 
         try {
+           
             return extractSlurmStatus(extJobId, stderr, output);
         }
         catch (Exception e) {
             // It is likely that this job finished a long time ago, mark as failed
-            log.error("Exception checking job status: " + e);
+            log.error("Exception checking job status with squeue: " + e);
             Thread.currentThread().interrupt();
             return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
         }
     }
+    
+    public DrmJobStatus altGetStatus(DrmJobRecord drmJobRecord) {
+        String extJobId = drmJobRecord.getExtJobId();
+        File stderr = drmJobRecord.getStderrFile();
+
+        // Run the command line to get status
+        CommonsExecCmdRunner commandRunner = new CommonsExecCmdRunner();
+        List<String> output = null;
+        
+        String[] remotePrefixArray = remotePrefix.split("\\s+");
+        List<String> prefixArray = Arrays.asList(remotePrefixArray);
+        ArrayList<String> commandArray = new ArrayList<String>();
+        commandArray.addAll(prefixArray);
+        commandArray.add("sacct");
+        commandArray.add("-n");
+        commandArray.add("--format STATE");
+        commandArray.add("-j " + extJobId+".batch"); // only the batch step, must be submitted using sbatch
+        
+        try {
+            StringBuffer buff = new StringBuffer();
+            for (String s: commandArray){
+                buff.append(s);
+                buff.append(" ");
+            }
+            log.error("slurm getStatus command: " + buff.toString());
+            
+            
+            output = commandRunner.runCmd(commandArray);
+        
+            String slurmStatusString = null;
+            if (output.size() > 1) log.warn("Extra lines found in Slurm sacct status output");
+            if (output.size() > 0) {
+                slurmStatusString = output.get(0);
+            }
+            return slurmStatusToDrmStatus(extJobId, stderr, slurmStatusString);
+        }
+        catch (Exception e) {
+            // It is likely that this job finished a long time ago, mark as failed
+            log.error("Exception checking job status with sacct: " + e);
+            Thread.currentThread().interrupt();
+            return new DrmJobStatus.Builder(extJobId, DrmJobState.FAILED).exitCode(-1).build();
+        }
+    }
+    
+    
 }

@@ -35,6 +35,25 @@ public class JobPurgerUtil {
         return getCutoff(now, purgeJobsAfter, purgeTime);
     }
 
+    
+    /**
+     * Allow customization of the purge interval by checking for the 'purgeJobsAfter' and 'purgeTime' properties
+     * on a per-user basis. Defaults to the server setting if there are no user customizations.
+     * 
+     * @param userContext
+     * @param now
+     * @return
+     */
+    public static Date getPublicJobCutoffForUser(final GpConfig gpConfig, GpContext userContext, final Date now) {
+        if (userContext==null) {
+            //use the system defaults
+            userContext=GpContext.getServerContext();
+        }
+        final int purgeJobsAfter=gpConfig.getGPIntegerProperty(userContext, "purgePublicJobsAfter", -1);
+        final String purgeTime=gpConfig.getGPProperty(userContext, "purgeTime", "23:00");
+        return getCutoff(now, purgeJobsAfter, purgeTime);
+    }
+    
     /**
      * Given the current timestamp (now) a purgeTime (time of day) and a purgeJobsAfter interval
      * (the number of days to keep jobs before purging them) get a cutoff date.

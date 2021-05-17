@@ -6,3 +6,4 @@
 /bin
 .gp_metadata/
 /build/
+.idea/*

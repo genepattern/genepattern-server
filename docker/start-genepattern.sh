@@ -36,8 +36,8 @@ To install Docker  ...
 
 if [[  $VERSION == "NULL"  ]]
 then
-    echo "No GenePattern version provided with the -v flag.  Using default of v3.9.11-rc.5-b253"
-    VERSION="v3.9.11-rc.5-b253"
+    echo "No GenePattern version provided with the -v flag.  Using default of v3.9_21.04.05_b325"
+    VERSION="v3.9_21.04.05_b325"
 fi
 
 
@@ -57,17 +57,44 @@ else
     echo "Setting up local directories, this will take up to 30 seconds  genepattern/genepattern-server:$VERSION"
     if [[ -d resources ]]
     then
-        var=`date +"%FORMAT_STRING"`
-        now=`date +"%m_%d_%Y"`
-        now=`date +"%Y-%m-%d"`
+        echo "Saving old resources dir"
+        now=`date +"%Y-%m-%d-%H:%M"`
         echo "${now}"
-        mv resources resources_${now}
+        mv  ./resources ./resources_${now}
+        echo "     -- copied to resources_${now}"
     fi
-    echo "test run of genepattern/genepattern-server:$VERSION"
+    echo "test run of genepattern/genepattern-server:$VERSION on ${now}"
     docker run --name tmpserver -d -t genepattern/genepattern-server:$VERSION sleep 30s 
     # give the container a moment to start
     sleep 5s
-    docker cp tmpserver:/opt/genepattern/resources  ./resources
+   
+    if [ -d "resources_${now}" ]; then
+        docker cp tmpserver:/opt/genepattern/resources  "./resources"
+        echo "     The following existing files will be preserved from the old resources "
+        echo "     into the new structure to maintain continuity."
+        echo "         copy: resources/config_custom.yaml (if present)"
+        echo "         copy: resources/genepattern.properties"
+        echo "         copy: resources/GenePatternDB.properties	"
+        echo "         copy: resources/GenePatternDB.script"
+        echo "         copy: resources/userGroups.xml"
+        echo "         copy: resources/permissionsMap.xml"	  
+        echo "         copy: resources/database_custom.properties"
+  
+        cp ./resources_${now}/config_custom.yaml ./resources/
+        cp ./resources_${now}/genepattern.properties ./resources/
+        cp ./resources_${now}/GenePatternDB.properties ./resources/
+        cp ./resources_${now}/GenePatternDB.script ./resources/
+        cp ./resources_${now}/userGroups.xml ./resources/
+        if [ -f ./resources_${now}/database_custom.properties ]; then
+            cp resources_${now}/database_custom.properties ./resources/
+        fi
+        if [ -f resources_${now}/GenePatternDB.log ]; then
+        	cp resources_${now}/GenePatternDB.log ./resources/
+        fi 
+    else
+        echo "Did not find resources_${now}"
+        docker cp tmpserver:/opt/genepattern/resources  ./resources
+    fi
     docker stop tmpserver
     docker rm tmpserver
 

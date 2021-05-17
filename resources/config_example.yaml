@@ -41,6 +41,10 @@ default.properties:
     #  by default, ignore stderr output
     job.error_status.stderr: false
 
+    # custom drop-down Job Options menus on the job input form - configured via the file specified here
+    job.inputParams: "jobInputParams.yaml"
+
+
     ##############################################################
     # "show.registration.link"
     #   Show the link to the registration page on the login page
@@ -77,6 +81,10 @@ default.properties:
     #     Set as a global (aka server level) value. 
     #   purgeJobsAfter - the number of days to keep each job. 
     #     To never delete files set purgeJobsAfter to -1. 
+    #     Can be customized per user or group.
+    #   purgePublicJobsAfter -  (optional) the number of days to keep
+    #     jobs that have been shared to the public.  To never delete  
+    #     output files set purgePublicJobsAfter to -1.
     #     Can be customized per user or group.
     #
     # Example 1: cleanup nightly at 11pm, keep jobs for one week

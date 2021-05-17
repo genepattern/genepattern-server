@@ -1181,18 +1181,13 @@ public class GenePatternAnalysisTask {
         for(final String inputFile : inputFiles) {
             jobContext.addLocalFilePath(inputFile);
             
-            
-            // #### JTL XXX TESTING
-            System.out.println("Input File: " + inputFile);
             try {
                 File f = new File(inputFile);
-                f.setLastModified(System.currentTimeMillis());
+                if (f.exists()) f.setLastModified(System.currentTimeMillis());
              } catch (Exception e){
                 System.out.println("  PROBLEM WITH setting last modified on Input File: " + inputFile);
                 e.printStackTrace();
             }
-            
-         // #### END JTL XXX TESTING
         }
 
         // build the command line, replacing <variableName> with the same name from the properties
@@ -1214,7 +1209,14 @@ public class GenePatternAnalysisTask {
         if (javaFlags != null) {
             props.setProperty("java_flags", javaFlags);
         }
-
+        // ensure that the docker image is set before the command line is created.  This has to be handled specially
+        // to get the correct default
+        String dockerImage=(gpConfig.getValue(jobContext,JobRunner.PROP_DOCKER_IMAGE)).getValue();
+        if (Strings.isNullOrEmpty(dockerImage)) {
+            dockerImage=(gpConfig.getValue(jobContext,JobRunner.PROP_DOCKER_IMAGE_DEFAULT)).getValue();
+        }
+        props.setProperty(JobRunner.PROP_DOCKER_IMAGE, dockerImage);
+        
         paramsCopy = stripOutSpecialParams(paramsCopy);
         // check that all parameters are used in the command line
         // and that all non-optional parameters that are cited actually exist
@@ -2947,6 +2949,18 @@ public class GenePatternAnalysisTask {
         if (isStderr) {
             paramOut._setAsStderrFile();
         }
+        
+        ParameterInfo[] params =  jobInfo.getParameterInfoArray();
+        for (int i=0; i< params.length; i++){
+            if (params[i].isOutputFile()){
+                if (params[i].getName().equals(label) && params[i].getValue().equals(fileName)){
+                    // don't add it again
+                    return;
+                }
+            }
+            
+        }
+        
         jobInfo.addParameterInfo(paramOut);
         if (parentJobInfo != null) {
             parentJobInfo.addParameterInfo(paramOut);

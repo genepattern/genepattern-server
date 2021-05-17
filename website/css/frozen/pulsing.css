@@ -1,0 +1,20 @@
+.pulsingUpload {
+	animation-name: color;
+  	animation-duration: 4s ;
+  	animation-iteration-count: infinite;
+  	background-image: none;
+  	background: none;
+  	background-color: #d4e0ed;
+}
+
+@keyframes color {
+  0% {
+    background-color: #d4e0ed;
+  }
+  50% {
+    background-color: #EEEEEE;
+  }
+  100 {
+    background-color: #d4e0ed;
+  }
+}

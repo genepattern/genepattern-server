@@ -76,7 +76,7 @@ function ajaxEmailResponse(req) {
 }
 
 // Requires jQuery & jQuery UI
-function showDialog(title, message, button, zIndex) {
+function showDialog(title, message, button, zIndex, openFn) {
     "use strict";
     var alert = document.createElement("div");
 
@@ -105,6 +105,12 @@ function showDialog(title, message, button, zIndex) {
         width : 400,
         title : title,
         buttons : button,
+        open: function() {
+        	
+        	if (openFn != null){
+        		openFn(alert);
+        	}
+        },
         close : function() {
             $(this).dialog("destroy");
             $(this).remove();
@@ -1051,7 +1057,17 @@ function s3DirectUploadAddToToaster(r, file, directoryUrl){
 	var fileName = file.fileName;
 	file.name = fileName; // done to preserve compatibility with pre-resumablejs
 	
-	if (($('#upload-toaster').dialog('isOpen') === true)){
+	var alreadyOpen = false;
+	// if the dialog is not already created then the dialog('isOpen') call throws an exception
+	try {
+		alreadyOpen = ($('#upload-toaster').dialog('isOpen'));
+	} catch (e){
+		//ignore
+		alreadyOpen = false;
+	}
+	
+	
+	if (alreadyOpen === true){
 		appendToUploadToaster(file);
 	} else {
 		var filelist = [file];
@@ -1704,10 +1720,31 @@ function initUploadToaster(filelist) {
                 $(".upload-dialog").find(".ui-dialog-titlebar-close").hide();
             },
             "minimize" : function() {
+            	 var head = document.getElementsByTagName('head')[0];
+
+            	 var style = document.createElement('link');
+            	 style.href = "../css/frozen/pulsing.css";
+            	 style.type = 'text/css';
+            	 style.rel = 'stylesheet';
+            	 head.append(style);
+            	
+            	
+            	
                 $("#dialog-extend-fixed-container")
                     .find(".upload-dialog")
                     .removeAttr("style");
+                
+                toaster.dialog('option', 'title', 'Uploads In Progress');
+                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").prepend("<img height='15px' style='float:left;' src='../images/run.gif' id='myNewImage' />");
+                //alert("X");
+                $("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").addClass("pulsingUpload");
             },
+            "beforeRestore" : function(evt) {  
+            	
+            	toaster.dialog('option', 'title', 'GenePattern Uploads');
+            	$("#dialog-extend-fixed-container").find(".upload-dialog").find(".ui-dialog-titlebar").removeClass("pulsingUpload");
+            },
+            
             "icons" : {
                 "close" : "ui-icon-close",
                 "minimize" : "ui-icon-minus",
@@ -2744,7 +2781,7 @@ function createJobWidget(job) {
         "version": "<span class='glyphicon glyphicon-info-sign' ></span>", "documentation": "", "categories": [], "suites": [], "tags": []
     });
 
-    if ((job.status.isFinished) && (diskInfo.externalDirectDownloadsEnabled != true )){
+    if ((job.status.isFinished) ){
         actionData.push({
             "lsid": "",
             "name": "Download Job",
@@ -2811,13 +2848,44 @@ function createJobWidget(job) {
                 }
 
                 else if (downloadAction) {
-                	if (diskInfo.externalDirectDownloadsEnabled == true){
-                		alert("Zipped downloads of jobs are disabled. Contact your GenePattern Administrator if you need this feature.");
-                		return;
-                	}
                 	
-                    $(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/download');
+                	
+                	$("body").css("cursor", "progress");
+                    var a = document.createElement("a");
+                    a.href = '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload';
+                    a.setAttribute("download", job.jobId + ".zip");
+                    
+                    //$(location).attr('href', '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload');
+                    // window.open( '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', '_blank');
+                	var dlg = showDialog("Prepare zip","Preparing the job result zip file, this may take a moment.",
+                			{},
+                			9999,
+                			function (aDlg){
+                				$("body").css("cursor", "progress");
+                				
+                				 var req = new XMLHttpRequest();
+                			     req.open("GET", '/gp/rest/v1/jobs/' + job.jobId + '/slowDownload', true);
+                			     req.responseType = "blob";
+                			     req.onload = function (event) {
+                			    	 
+                			         var blob = req.response;
+                			         var fileName = req.getResponseHeader("fileName") //if you have the fileName header available
+                			         var link=document.createElement('a');
+                			         link.href=window.URL.createObjectURL(blob);
+                			         link.download= ""+job.jobId +".zip";
+                			         link.click();
+                			         
+                			         $("body").css("cursor", "default");
+                			         $(aDlg).dialog("close");
+                			     };
 
+                			     req.send();
+                     		   
+                     		   
+                     		   
+                			});
+                    
+                    
                     $(".search-widget:visible").searchslider("hide");
                 }
 

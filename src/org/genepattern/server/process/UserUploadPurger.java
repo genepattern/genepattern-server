@@ -15,10 +15,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.genepattern.drm.DrmJobSubmission;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
+import org.genepattern.server.config.ServerConfigurationFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.ExternalFileManager;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.dm.userupload.dao.UserUpload;
@@ -225,7 +228,7 @@ public class UserUploadPurger {
             selectedFiles=dao.selectAllUserUpload(userId, includeTempFiles, cutoffDate);
         }
         catch (Throwable t) {
-            log.error("Unexpeted error getting selectedFiles", t);
+            log.error("Unexpected error getting selectedFiles", t);
             selectedFiles=Collections.emptyList();
         }
         finally {
@@ -245,6 +248,8 @@ public class UserUploadPurger {
         return gpFilePath;
     }
 
+    
+    
     /**
      * Delete each UserUpload file from the given list.
      * Make sure to delete child files before parent directories.
@@ -256,6 +261,9 @@ public class UserUploadPurger {
         final List<GpFilePath> tmpDirs = new ArrayList<GpFilePath>();
         final List<GpFilePath> missingFiles = new ArrayList<GpFilePath>();
         
+        GpContext gpContext=GpContext.getServerContext();
+        
+        
         //quick and dirty way to delete files and parent directories without conflicts
         //on the first pass, delete all files, don't delete any directories
         int numFilesToPurge=0;
@@ -266,6 +274,7 @@ public class UserUploadPurger {
                 if (gpFilePath.isFile()) {
                     ++numFilesToPurge;
                     purgeUserUploadFile(gpFilePath); 
+                    
                 }
                 else if (gpFilePath.isDirectory()) {
                     ++numDirsToPurge;

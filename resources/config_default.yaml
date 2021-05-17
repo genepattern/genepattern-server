@@ -436,6 +436,16 @@ executors:
             jobRunnerName: CommonsExecJobRunner
             # interval for polling for job status (in ms)
             #minDelay: 100
+            #
+            # Legacy GP set a max value for min delay at 2 seconds if 'useDynamicDelay' was true.  If 'strictMinDelay' is
+            # true then it forces the poller to use the defined value however large it is.  Useful for when working on systems
+            # (e.g. SLURM) that do not like/expect get status calls to be coming quickly. Also when true, the dynamic delay steps 
+            # from 
+            #     minDelay to 10*minDelay after (50*minDelay) 
+            #     10*minDelay to 25*minDelay after (150*minDelay) 
+            #     25*minDelay to maxDelay after (300*minDelay) 
+            #strictMinDelay: false
+            #
             ## when 'useDynamicDelay' is true, use a built-in algorithm to increase the polling interval
             #useDynamicDelay: true
             ## the max polling interval, when 'useDynamicDelay' is true
