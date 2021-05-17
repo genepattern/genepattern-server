@@ -30,6 +30,7 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.log4j.Logger;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
@@ -279,6 +280,21 @@ public class AWSBatchJobRunner implements JobRunner {
         return null;
     }
 
+    
+    protected long getCpuTime(JSONObject awsJob){
+        try {
+            long start = awsJob.getLong("startedAt");
+            long end = awsJob.getLong("stopedAt");
+        
+            return (end - start);
+        } catch (Exception e){
+            return 0;
+        }
+        
+        
+    }
+    
+    
     @Override
     public DrmJobStatus getStatus(final DrmJobRecord jobRecord) {
         if (log.isTraceEnabled()) {
@@ -381,6 +397,8 @@ public class AWSBatchJobRunner implements JobRunner {
                 }
                 b.startTime( startTime  );
                 b.submitTime( submitTime );
+                b.cpuTime(new CpuTime(getCpuTime((awsJob))));
+                
                 if (jobState.is(DrmJobState.TERMINATED)) {
                     // job cleanup, TERMINATED covers SUCCEEDED and FAILED
                     if (log.isDebugEnabled()) {

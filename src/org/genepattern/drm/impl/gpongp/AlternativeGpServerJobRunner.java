@@ -3,7 +3,6 @@ package org.genepattern.drm.impl.gpongp;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
@@ -20,6 +19,7 @@ import org.genepattern.drm.DrmJobRecord;
 import org.genepattern.drm.DrmJobState;
 import org.genepattern.drm.DrmJobStatus;
 import org.genepattern.drm.DrmJobSubmission;
+import org.genepattern.drm.CpuTime;
 import org.genepattern.drm.JobRunner;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.InputFilePermissionsHelper;
@@ -368,6 +368,36 @@ public class AlternativeGpServerJobRunner implements JobRunner {
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-M-dd", Locale.ENGLISH);
     private static final SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss", Locale.ENGLISH);
     
+    // try to get cpu time or extimate it if unavailable
+    protected long getCpuTime(JsonObject statusObj){
+        long cpuTime = 0L;
+        try {
+            
+            cpuTime = statusObj.getAsJsonObject("status").get("cpuTimeMillis").getAsLong();
+            if (cpuTime != 0) return cpuTime;
+            
+            long end = getDate(statusObj.get("dateCompleted").getAsString()).getTime();
+            long start = getDate(statusObj.get("dateSubmitted").getAsString()).getTime();
+            cpuTime = end - start;
+            
+            long nCpu = 1;
+            JsonArray requirements = statusObj.get("status").getAsJsonObject().get("resourceRequirements").getAsJsonArray();
+            for (int i=0; i< requirements.size(); i++){
+                JsonObject req = requirements.get(i).getAsJsonObject();
+                if ("job.cpuCount".equalsIgnoreCase(req.get("key").getAsString())){
+                    nCpu = req.get("value").getAsLong();
+                    break;
+                }
+            }
+            return nCpu * cpuTime;
+            
+        } catch(Exception e){
+            // swallow it, not always gonna be able to get this detail
+            return cpuTime;
+        } 
+       
+    }
+    
     
     
     @Override
@@ -405,10 +435,11 @@ public class AlternativeGpServerJobRunner implements JobRunner {
             log.debug("  remote job state is " + state);
             statusBuilder.startTime(getDate(startTime));
             statusBuilder.submitTime(getDate(submitTime));
-            
-            
+             
             if (statusJsonObj.getAsJsonObject("status").get("isFinished").getAsBoolean()){
                 log.debug("JOB IS DONE " + status + "  " + localJobId) ;
+                statusBuilder.cpuTime(new CpuTime(getCpuTime(statusJsonObj)));
+                
                 //String resultFiles[] = analysisProxy.getResultFiles(ji.getJobNumber());
                 JSONArray outFilesJSON = new JSONArray();
                 JsonArray outputFiles = statusJsonObj.getAsJsonArray("outputFiles");

@@ -29,8 +29,18 @@ public class UsageStatsDAO extends BaseDAO {
         super(mgr);
     }
     
-    public String generateUserExclusionClause(String userOrEmailList){
-        StringBuffer sqlBuff = new StringBuffer("select USER_ID from gp_user where (USER_ID  in "+userOrEmailList +") or (EMAIL in "+userOrEmailList+")" );
+    public String generateUserExclusionClause(String userOrEmailList, String pattern){
+        StringBuffer sqlBuff = new StringBuffer("select USER_ID from gp_user where ");
+        sqlBuff.append(" ( USER_ID  in ");
+        sqlBuff.append(userOrEmailList);
+        sqlBuff.append(") or (EMAIL in ");
+        sqlBuff.append(userOrEmailList);
+        sqlBuff.append(") ");
+        if (pattern != null){
+            sqlBuff.append(" or email like ") ;
+            sqlBuff.append(pattern);
+        }
+        
         ResultSet rs = null;
         StringBuffer buff = new StringBuffer(" and ( USER_ID not in (");
         try {
@@ -283,24 +293,30 @@ public class UsageStatsDAO extends BaseDAO {
         
         @SuppressWarnings("deprecation")
         PreparedStatement pstmt = getSession().connection().prepareStatement(
-                "select task_name, count(*) as MC from ANALYSIS_JOB AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+                "select task_name, count(*), sum(JRJ.cpu_time) as MC from ANALYSIS_JOB AJ, JOB_RUNNER_JOB JRJ where (date_completed BETWEEN ? and ?)  " 
+                + " AND AJ.job_no=JRJ.gp_job_no "
+                        + userExclusionClause 
                 + " GROUP BY TASK_NAME order by MC desc");
               
         pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
         pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
         PreparedStatement pstmt2 = getSession().connection().prepareStatement(
-                "select task_name, count(*) as MC from ANALYSIS_JOB_ARCHIVE AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
-                + " GROUP BY TASK_NAME order by MC desc");
+                "select task_name, count(*), sum(JRJ.cpu_time) as MC from ANALYSIS_JOB_ARCHIVE AJ, JOB_RUNNER_JOB JRJ where (date_completed BETWEEN ? and ?)  " 
+                        + " AND AJ.job_no=JRJ.gp_job_no "
+                                + userExclusionClause 
+                        + " GROUP BY TASK_NAME order by MC desc");
               
         pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
         pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
         HashMap<String, Integer> modJobs = new   HashMap <String, Integer>();
-          
+        HashMap<String, Long> modCpu = new   HashMap <String, Long>();
+        
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery(); // this.executeSQL(sqlBuff.toString());
             while (rs.next()) {
                 modJobs.put(rs.getString(1), rs.getInt(2));
+                modCpu.put(rs.getString(1), rs.getLong(3));
             }
         } finally {
             if (rs != null)
@@ -313,11 +329,18 @@ public class UsageStatsDAO extends BaseDAO {
             while (rs.next()) {
                 String mod = rs.getString(1);
                 Integer c = rs.getInt(2);
+                Long cpu = rs.getLong(3);
                 if (modJobs.containsKey(mod)) {
                     int prev = modJobs.get(mod);  
                     modJobs.put(mod, prev + c);
                 } else {        
                     modJobs.put(mod, c);
+                } 
+                if (modCpu.containsKey(mod)) {
+                    long prev = modCpu.get(mod);  
+                    modCpu.put(mod, prev + cpu);
+                } else {        
+                    modCpu.put(mod, cpu);
                 } 
             }
         } finally {
@@ -340,7 +363,10 @@ public class UsageStatsDAO extends BaseDAO {
             JSONObject user = new JSONObject();
             user.put("moduleName",entry.getKey());
             user.put("jobsRun",entry.getValue());
-           
+            Long cpu = modCpu.get(entry.getKey());
+            if (cpu == null) cpu = 0L;
+            user.put("cpu", cpu);
+            
             moduleCounts.put(user);
         }       
         return moduleCounts;
@@ -576,13 +602,64 @@ public class UsageStatsDAO extends BaseDAO {
    }
     
     
+    public long getTotalJobsCPUBetweenDates(Date startDate, Date endDate,  String userExclusionClause) throws Exception {
+        Long count = 0L;
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt = getSession().connection().prepareStatement(
+                "select  sum(JRJ.cpu_time) from ANALYSIS_JOB AJ, JOB_RUNNER_JOB JRJ where (date_completed BETWEEN ? and ?)  "
+                    + " AND AJ.job_no=JRJ.gp_job_no  "
+                    + userExclusionClause );
+              
+        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+        
+        @SuppressWarnings("deprecation")
+        PreparedStatement pstmt2 = getSession().connection().prepareStatement(
+                "select  sum(JRJ.cpu_time) from ANALYSIS_JOB_ARCHIVE AJ, JOB_RUNNER_JOB JRJ  where (date_completed BETWEEN ? and ?)  "
+                        + " AND AJ.job_no=JRJ.gp_job_no  "
+                        + userExclusionClause );
+              
+        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
+        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
+        
+        ResultSet rs = null;
+        try {
+            System.out.println(pstmt);
+            rs = pstmt.executeQuery(); 
+            if (rs.next()){
+                count += rs.getLong(1);
+            }
+        } finally {
+            rs.close();
+        }
+        try {
+            rs = pstmt2.executeQuery(); 
+            if (rs.next()){
+               
+                count += rs.getLong(1);
+            }
+        } finally {
+            rs.close();
+        }
+        
+        return count;
+    }
+    
+    
+//        select AJ.user_id, sum(JRJ.cpu_time)
+//        from ANALYSIS_JOB AJ, JOB_RUNNER_JOB JRJ
+//        where AJ.job_no=JRJ.gp_job_no and  AJ.job_no >68000
+//        GROUP by AJ.user_id
+     
     public JSONArray getUserRunCountsBetweenDates(Date startDate, Date endDate, String userExclusionClause) throws Exception {
         JSONArray userCounts = new JSONArray();
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt = getSession().connection().prepareStatement(
-               "select user_id, count(*) as MC from ANALYSIS_JOB AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
-               + " GROUP BY USER_ID order by MC desc");
+               "select user_id, count(*) as MC, sum(JRJ.cpu_time) from ANALYSIS_JOB AJ, JOB_RUNNER_JOB JRJ where (date_completed BETWEEN ? and ?)  "
+                   + " AND AJ.job_no=JRJ.gp_job_no  "
+                   + userExclusionClause 
+               + " GROUP BY AJ.USER_ID order by MC desc");
              
        pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
        pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
@@ -591,12 +668,15 @@ public class UsageStatsDAO extends BaseDAO {
        
        @SuppressWarnings("deprecation")
        PreparedStatement pstmt2 = getSession().connection().prepareStatement(
-               "select user_id, count(*) as MC from ANALYSIS_JOB_ARCHIVE AJ where (date_completed BETWEEN ? and ?)  "  + userExclusionClause 
+               "select user_id, count(*) as MC, sum(JRJ.cpu_time) from ANALYSIS_JOB_ARCHIVE AJ, JOB_RUNNER_JOB JRJ  where (date_completed BETWEEN ? and ?)  "
+                       + " AND AJ.job_no=JRJ.gp_job_no  "
+                       + userExclusionClause 
                + " GROUP BY USER_ID order by MC desc");
              
        pstmt2.setDate(1, new java.sql.Date(startDate.getTime()));
        pstmt2.setDate(2, new java.sql.Date(endDate.getTime()));
        HashMap<String, Integer> userJobs = new   HashMap <String, Integer>();
+       HashMap<String, Long> userCpu = new   HashMap <String, Long>();
        
        ResultSet rs = null;
        try {
@@ -605,8 +685,10 @@ public class UsageStatsDAO extends BaseDAO {
              
                String u = rs.getString(1);
                Integer c = rs.getInt(2);
+               Long cpu = rs.getLong(3);
                
                userJobs.put(u,c);
+               userCpu.put(u, cpu);
            }
        } finally {
            if (rs != null)
@@ -619,21 +701,28 @@ public class UsageStatsDAO extends BaseDAO {
            
                String userId = rs.getString(1);
                Integer c = rs.getInt(2);
-              
+               Long cpu = rs.getLong(3);
+               
                if (userJobs.containsKey(userId)) {
                    int prev = userJobs.get(userId);  
-                  
                    userJobs.put(userId, prev + c);
-                   
                } else {
-                   
                    userJobs.put(userId, c);
                }
+               if (userCpu.containsKey(userId)) {
+                   long prev = userJobs.get(userId);  
+                   userCpu.put(userId, prev + cpu);
+               } else {
+                   userCpu.put(userId, cpu);
+               }
+           
            }
        } finally {
            if (rs != null)
                rs.close();
        }
+
+       
        
        
        // Now we have collected the values, sort them and add to the json object
@@ -652,7 +741,10 @@ public class UsageStatsDAO extends BaseDAO {
            JSONObject user = new JSONObject();
            user.put("user_id",entry.getKey());
            user.put("jobsRun",entry.getValue());
-          
+           Long cpu = userCpu.get(entry.getKey());
+           if (cpu == null) cpu = 0L;
+           user.put("cpu", cpu);
+           
            userCounts.put(user);
        }       
        

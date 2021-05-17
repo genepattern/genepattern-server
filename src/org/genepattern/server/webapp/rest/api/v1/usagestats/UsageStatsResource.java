@@ -197,6 +197,22 @@ public class UsageStatsResource {
                     writer.flush();
                     try {
                         long t1 = System.currentTimeMillis();
+                        object.put("JobsCpu",ds.getTotalJobsCPUBetweenDates(startDate, endDate, excludedUsers));
+                        long t2 = System.currentTimeMillis();
+                        executionTime.put("totalCPU et (ms): " + (t2-t1));
+                        System.out.println("totalCPU et (ms): " + (t2-t1));
+                   } catch (Exception e){
+                        e.printStackTrace();
+                        errors.put(e.getMessage());
+                    }
+                    writer.write(" ");
+                    writer.flush();
+                    
+                    
+                    
+                    
+                    try {
+                        long t1 = System.currentTimeMillis();
                         
                         object.put("InternalJobsRun",ds.getInternalJobsRunCountBetweenDates(startDate, endDate, excludedUsers, internalDomain));
                         long t2 = System.currentTimeMillis();
@@ -337,7 +353,9 @@ public class UsageStatsResource {
     private String getUserExclusionClause( GpContext userContext, UsageStatsDAO ds){
         StringBuffer buff = new StringBuffer("  (  ");
         String propValue = ServerConfigurationFactory.instance().getGPProperty(userContext, "excludeUsersFromStats", null);
-        if (propValue == null) return "";
+        String matchingEmailPattern = ServerConfigurationFactory.instance().getGPProperty(userContext, "excludeUsersFromStatsEmailPattern", null);
+        
+        if ((propValue == null)  && (matchingEmailPattern == null)) return "";
         
         String[] user_ids = propValue.split("\\s+");
         for (String user : user_ids) {
@@ -347,8 +365,21 @@ public class UsageStatsResource {
         }
         buff.append(" \'admin\') ");  // default to except
         
+        String pattern = null;
+        if (matchingEmailPattern != null){
+            StringBuffer patternBuff = new StringBuffer("    ");
+            
+            patternBuff.append("\'");
+            patternBuff.append(matchingEmailPattern);
+            patternBuff.append("\' "); 
+      
+            pattern = patternBuff.toString();
+        }
+        
+        
+        
         // hand this off to the dao to get the user_ids of any users that match case insensitive on username or email
-        return ds.generateUserExclusionClause(buff.toString());
+        return ds.generateUserExclusionClause(buff.toString(), pattern);
       
     }
     
