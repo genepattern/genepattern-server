@@ -624,7 +624,7 @@ public class UsageStatsDAO extends BaseDAO {
         
         ResultSet rs = null;
         try {
-            System.out.println(pstmt);
+          
             rs = pstmt.executeQuery(); 
             if (rs.next()){
                 count += rs.getLong(1);
